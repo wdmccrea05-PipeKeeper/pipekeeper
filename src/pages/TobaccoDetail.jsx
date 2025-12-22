@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
+import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -55,6 +56,11 @@ export default function TobaccoDetailPage() {
       return blends[0];
     },
     enabled: !!blendId,
+  });
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ['pipes'],
+    queryFn: () => base44.entities.Pipe.list(),
   });
 
   const updateMutation = useMutation({
@@ -122,6 +128,13 @@ export default function TobaccoDetailPage() {
             Back to Tobacco
           </Button>
         </Link>
+
+        {/* Top Pipe Matches */}
+        {pipes.length > 0 && (
+          <div className="mb-6">
+            <TopPipeMatches blend={blend} pipes={pipes} />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Photo */}

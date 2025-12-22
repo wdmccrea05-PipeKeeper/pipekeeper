@@ -28,6 +28,7 @@ import MatchingEngine from "@/components/ai/MatchingEngine";
 import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import PipeSpecialization from "@/components/pipes/PipeSpecialization";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -131,6 +132,17 @@ export default function PipeDetailPage() {
             Back to Pipes
           </Button>
         </Link>
+
+        {/* Pipe Specialization */}
+        {blends.length > 0 && (
+          <div className="mb-6">
+            <PipeSpecialization 
+              pipe={pipe} 
+              blends={blends}
+              onUpdate={(data) => updateMutation.mutate(data)}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Photo Gallery */}
