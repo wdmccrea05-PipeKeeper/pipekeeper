@@ -51,9 +51,24 @@ Use these preferences to personalize recommendations. Prioritize blends that mat
       }
 
       const hasFocus = pipe.focus && pipe.focus.length > 0;
-      const matchingStrategy = hasFocus 
-        ? `This pipe has a designated focus: ${pipe.focus.join(', ')}. Prioritize blends matching this focus, but also consider the pipe's physical characteristics.`
-        : `This pipe has NO designated focus. Base recommendations ENTIRELY on its physical characteristics: bowl size (${pipe.bowl_diameter_mm}mm × ${pipe.bowl_depth_mm}mm deep), chamber volume (${pipe.chamber_volume}), shape (${pipe.shape}), and material (${pipe.bowl_material}). Match these characteristics with blend types that smoke best in such pipes.`;
+      
+      const hasNonAromaticFocus = pipe.focus?.some(f => 
+        f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
+      );
+      const hasAromaticFocus = pipe.focus?.some(f => 
+        f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
+      );
+      
+      let matchingStrategy = '';
+      if (hasNonAromaticFocus) {
+        matchingStrategy = `CRITICAL: This pipe has NON-AROMATIC focus. COMPLETELY EXCLUDE all Aromatic blends from recommendations. Only recommend Virginia, English, Balkan, Latakia, Virginia/Perique, and other non-aromatic blend types.`;
+      } else if (hasAromaticFocus) {
+        matchingStrategy = `CRITICAL: This pipe has AROMATIC-ONLY focus. COMPLETELY EXCLUDE all non-aromatic blends (Virginia, English, Balkan, etc.). Only recommend Aromatic blend types.`;
+      } else if (hasFocus) {
+        matchingStrategy = `This pipe has a designated focus: ${pipe.focus.join(', ')}. Prioritize blends matching this focus, but also consider the pipe's physical characteristics.`;
+      } else {
+        matchingStrategy = `This pipe has NO designated focus. Base recommendations ENTIRELY on its physical characteristics: bowl size (${pipe.bowl_diameter_mm}mm × ${pipe.bowl_depth_mm}mm deep), chamber volume (${pipe.chamber_volume}), shape (${pipe.shape}), and material (${pipe.bowl_material}). Match these characteristics with blend types that smoke best in such pipes.`;
+      }
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier. Analyze this pipe and recommend the top 3 tobacco blends from the user's collection that would pair best with it.

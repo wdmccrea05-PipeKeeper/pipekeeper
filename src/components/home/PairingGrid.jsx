@@ -42,11 +42,27 @@ export default function PairingGrid({ pipes, blends }) {
 
   // Calculate adjusted scores with priority order:
   // 1. User profile preferences (highest weight)
-  // 2. Pipe focus
+  // 2. Pipe focus (with aromatic/non-aromatic exclusions)
   // 3. Pipe shape/characteristics
   // 4. Tobacco blend characteristics (already in base score)
   const getAdjustedScore = (pipe, blend, baseScore) => {
     if (!baseScore) return baseScore;
+    
+    // CRITICAL: Aromatic/Non-Aromatic Exclusions
+    const hasNonAromaticFocus = pipe.focus?.some(f => 
+      f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
+    );
+    const hasAromaticFocus = pipe.focus?.some(f => 
+      f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
+    );
+    
+    const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
+    
+    // If pipe has non-aromatic focus and blend is aromatic, return 0
+    if (hasNonAromaticFocus && isAromaticBlend) return 0;
+    
+    // If pipe has aromatic focus and blend is not aromatic, return 0
+    if (hasAromaticFocus && !isAromaticBlend) return 0;
     
     let adjustment = 0;
     

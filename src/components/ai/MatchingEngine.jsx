@@ -32,9 +32,24 @@ export default function MatchingEngine({ pipe, blends }) {
         : '';
 
       const hasFocus = pipe.focus && pipe.focus.length > 0;
-      const focusContext = hasFocus
-        ? `\n\nThis pipe has a DESIGNATED FOCUS: ${pipe.focus.join(', ')}. Prioritize these blend types but also consider the pipe's physical characteristics.`
-        : `\n\nThis pipe has NO designated focus. Base ALL recommendations ENTIRELY on its physical characteristics.`;
+      
+      const hasNonAromaticFocus = pipe.focus?.some(f => 
+        f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
+      );
+      const hasAromaticFocus = pipe.focus?.some(f => 
+        f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
+      );
+      
+      let focusContext = '';
+      if (hasNonAromaticFocus) {
+        focusContext = `\n\nCRITICAL: This pipe has NON-AROMATIC focus. COMPLETELY EXCLUDE all Aromatic blends. Only recommend Virginia, English, Balkan, Latakia, Virginia/Perique, and other non-aromatic types.`;
+      } else if (hasAromaticFocus) {
+        focusContext = `\n\nCRITICAL: This pipe has AROMATIC-ONLY focus. COMPLETELY EXCLUDE all non-aromatic blends. Only recommend Aromatic blend types.`;
+      } else if (hasFocus) {
+        focusContext = `\n\nThis pipe has a DESIGNATED FOCUS: ${pipe.focus.join(', ')}. Prioritize these blend types but also consider the pipe's physical characteristics.`;
+      } else {
+        focusContext = `\n\nThis pipe has NO designated focus. Base ALL recommendations ENTIRELY on its physical characteristics.`;
+      }
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples.

@@ -104,6 +104,8 @@ ${JSON.stringify(blendsData, null, 2)}${profileContext}
 For each pipe, evaluate which tobacco blends would pair well.
 
 CRITICAL MATCHING LOGIC:
+- If a pipe has "Non-Aromatic" or "Non Aromatic" focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
+- If a pipe has "Aromatic" focus: COMPLETELY EXCLUDE all non-aromatic blends (Virginia, English, Balkan, etc.) (score = 0)
 - If a pipe HAS a focus field set (non-empty array), HEAVILY prioritize blends matching those designated types
 - If a pipe has NO focus (empty or null), base ALL recommendations on physical characteristics:
   * Bowl size - smaller bowls suit lighter tobaccos, larger bowls handle fuller blends
