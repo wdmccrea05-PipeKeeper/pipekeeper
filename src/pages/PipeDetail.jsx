@@ -30,6 +30,7 @@ import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
 import TopBlendMatches from "@/components/pipes/TopBlendMatches";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -69,6 +70,8 @@ export default function PipeDetailPage() {
     },
     enabled: !!user,
   });
+
+  const isPaidUser = user?.subscription_level === 'paid';
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
@@ -408,7 +411,14 @@ export default function PipeDetailPage() {
           <TabsContent value="value">
             <Card className="border-stone-200">
               <CardContent className="p-6">
-                <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
+                {isPaidUser ? (
+                  <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
+                ) : (
+                  <UpgradePrompt 
+                    featureName="AI Value Lookup"
+                    description="Get instant market value estimates for your pipes based on maker, model, condition, and current market trends."
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -416,7 +426,14 @@ export default function PipeDetailPage() {
           <TabsContent value="identify">
             <Card className="border-stone-200">
               <CardContent className="p-6">
-                <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
+                {isPaidUser ? (
+                  <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
+                ) : (
+                  <UpgradePrompt 
+                    featureName="AI Pipe Identification"
+                    description="Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics."
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>

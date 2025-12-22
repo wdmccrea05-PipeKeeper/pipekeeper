@@ -8,9 +8,11 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, X, Loader2, Camera, Search, Edit } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
 import ImageCropper from "@/components/pipes/ImageCropper";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -49,6 +51,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [cropperImage, setCropperImage] = useState(null);
   const [cropperType, setCropperType] = useState(null);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const isPaidUser = user?.subscription_level === 'paid';
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -224,7 +233,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </CardContent>
           </Card>
 
-          <PhotoIdentifier onIdentify={handlePhotoIdentify} />
+          {isPaidUser ? (
+            <PhotoIdentifier onIdentify={handlePhotoIdentify} />
+          ) : (
+            <UpgradePrompt 
+              featureName="AI Photo Identification"
+              description="Upload photos of your pipe's stampings to instantly identify the maker, model, and approximate value using advanced AI."
+            />
+          )}
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
