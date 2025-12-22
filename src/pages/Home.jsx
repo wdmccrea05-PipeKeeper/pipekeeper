@@ -64,7 +64,7 @@ export default function HomePage() {
         id: onboardingStatus.id,
         data: { completed: true, current_step: 5 }
       });
-    } else if (user) {
+    } else if (user?.email) {
       await createOnboardingMutation.mutateAsync({
         user_email: user.email,
         completed: true,
@@ -80,7 +80,7 @@ export default function HomePage() {
         id: onboardingStatus.id,
         data: { skipped: true }
       });
-    } else if (user) {
+    } else if (user?.email) {
       await createOnboardingMutation.mutateAsync({
         user_email: user.email,
         skipped: true,
