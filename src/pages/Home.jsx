@@ -136,7 +136,7 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-amber-100 to-amber-50 border-amber-200 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-4 text-center">
+                <CardContent className="p-6 text-center">
                   <img 
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
                     alt="Pipes"
