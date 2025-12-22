@@ -578,7 +578,21 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
 
                             <p className="text-xs text-stone-600 mb-3">{change.reasoning}</p>
 
-                            {!hasAppliedFocus ? (
+                            {hasAppliedFocus ? (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <Check className="w-3 h-3 mr-1" />
+                                Applied!
+                              </Badge>
+                            ) : pipe?.focus && pipe.focus.length > 0 ? (
+                              <Button
+                                size="sm"
+                                className="bg-amber-600 hover:bg-amber-700 text-white"
+                                onClick={() => applySpecialization(pipe.id, change.recommended_focus)}
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Update Focus
+                              </Button>
+                            ) : (
                               <Button
                                 size="sm"
                                 className="bg-violet-600 hover:bg-violet-700 text-white"
@@ -587,11 +601,6 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
                                 <Check className="w-4 h-4 mr-1" />
                                 Apply This Focus
                               </Button>
-                            ) : (
-                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
-                                <Check className="w-3 h-3 mr-1" />
-                                Applied!
-                              </Badge>
                             )}
                           </div>
                         </div>
