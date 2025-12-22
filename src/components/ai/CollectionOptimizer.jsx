@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -17,6 +19,12 @@ export default function CollectionOptimizer({ pipes, blends }) {
     const saved = localStorage.getItem('collectionOptimizerCollapsed');
     return saved === 'true';
   });
+  const [showWhatIf, setShowWhatIf] = useState(false);
+  const [whatIfQuery, setWhatIfQuery] = useState('');
+  const [whatIfPhotos, setWhatIfPhotos] = useState([]);
+  const [whatIfDescription, setWhatIfDescription] = useState('');
+  const [whatIfLoading, setWhatIfLoading] = useState(false);
+  const [whatIfResult, setWhatIfResult] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -272,6 +280,114 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
       id: pipeId,
       data: { focus }
     });
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    const uploadedUrls = [];
+    
+    for (const file of files) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploadedUrls.push(file_url);
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+      }
+    }
+    
+    setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
+  };
+
+  const analyzeWhatIf = async () => {
+    setWhatIfLoading(true);
+    try {
+      const pipesData = pipes.map(p => ({
+        id: p.id,
+        name: p.name,
+        maker: p.maker,
+        shape: p.shape,
+        bowl_material: p.bowl_material,
+        chamber_volume: p.chamber_volume,
+        bowl_diameter_mm: p.bowl_diameter_mm,
+        bowl_depth_mm: p.bowl_depth_mm,
+        focus: p.focus
+      }));
+
+      const blendsData = blends.map(b => ({
+        id: b.id,
+        name: b.name,
+        manufacturer: b.manufacturer,
+        blend_type: b.blend_type,
+        strength: b.strength
+      }));
+
+      let profileContext = "";
+      if (userProfile) {
+        profileContext = `\n\nUser Smoking Preferences:
+- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
+- Strength Preference: ${userProfile.strength_preference}`;
+      }
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
+
+Current Collection:
+Pipes: ${JSON.stringify(pipesData, null, 2)}
+Tobacco Blends: ${JSON.stringify(blendsData, null, 2)}${profileContext}
+
+User Question/Scenario:
+${whatIfQuery}
+
+${whatIfDescription ? `Potential Pipe Details: ${whatIfDescription}` : ''}
+
+Provide a detailed "What If" analysis covering:
+
+1. **COLLECTION IMPACT SCORE** (1-10): Rate the overall value this change would add
+2. **TROPHY PAIRINGS**: Which specific blends would achieve 9-10 scores with this change
+3. **REDUNDANCY CHECK**: Does this duplicate existing coverage or fill a gap?
+4. **RECOMMENDATION CATEGORY**:
+   - "ESSENTIAL UPGRADE" - Fills critical gap, creates multiple trophies
+   - "STRONG ADDITION" - Adds meaningful coverage, some new trophies
+   - "NICE TO HAVE" - Minor improvement, mostly redundant
+   - "SKIP IT" - No meaningful improvement, purely redundant
+
+5. **DETAILED REASONING**: Explain the impact on collection performance and pairing scores
+
+Be specific about which user-owned blends benefit and by how much.`,
+        file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            impact_score: { type: "number" },
+            trophy_pairings: {
+              type: "array",
+              items: { type: "string" }
+            },
+            redundancy_analysis: { type: "string" },
+            recommendation_category: { type: "string" },
+            detailed_reasoning: { type: "string" },
+            gaps_filled: {
+              type: "array",
+              items: { type: "string" }
+            },
+            score_improvements: { type: "string" }
+          }
+        }
+      });
+
+      setWhatIfResult(result);
+    } catch (err) {
+      console.error('Error analyzing what-if:', err);
+    } finally {
+      setWhatIfLoading(false);
+    }
+  };
+
+  const resetWhatIf = () => {
+    setWhatIfQuery('');
+    setWhatIfPhotos([]);
+    setWhatIfDescription('');
+    setWhatIfResult(null);
   };
 
   const getVersatilityColor = (score) => {
@@ -678,13 +794,194 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
             </div>
           )}
 
+          {/* What If Analysis */}
+          <div>
+            <Button
+              variant="outline"
+              className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
+              onClick={() => setShowWhatIf(!showWhatIf)}
+            >
+              <HelpCircle className="w-4 h-4 mr-2" />
+              {showWhatIf ? 'Hide' : 'Show'} "What If" Analysis
+            </Button>
+
+            {showWhatIf && (
+              <Card className="mt-4 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
+                    <Lightbulb className="w-5 h-5" />
+                    What If Scenario Analysis
+                  </CardTitle>
+                  <p className="text-sm text-stone-600">
+                    Analyze potential changes to your collection before making them
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
+                      Your Question or Scenario
+                    </label>
+                    <Textarea
+                      placeholder="e.g., 'Should I buy a Peterson System pipe for English blends?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"
+                      value={whatIfQuery}
+                      onChange={(e) => setWhatIfQuery(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
+                      Pipe Details (Optional)
+                    </label>
+                    <Textarea
+                      placeholder="Describe characteristics: shape, bowl size, material, etc."
+                      value={whatIfDescription}
+                      onChange={(e) => setWhatIfDescription(e.target.value)}
+                      className="min-h-[60px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
+                      Upload Photos (Optional)
+                    </label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handlePhotoUpload}
+                      className="mb-2"
+                    />
+                    {whatIfPhotos.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {whatIfPhotos.map((url, idx) => (
+                          <div key={idx} className="relative">
+                            <img src={url} alt="" className="w-20 h-20 object-cover rounded border" />
+                            <button
+                              onClick={() => setWhatIfPhotos(whatIfPhotos.filter((_, i) => i !== idx))}
+                              className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={analyzeWhatIf}
+                      disabled={whatIfLoading || !whatIfQuery.trim()}
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      {whatIfLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Analyze Scenario
+                        </>
+                      )}
+                    </Button>
+                    {(whatIfResult || whatIfQuery || whatIfPhotos.length > 0) && (
+                      <Button variant="outline" onClick={resetWhatIf}>
+                        Reset
+                      </Button>
+                    )}
+                  </div>
+
+                  {whatIfResult && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 space-y-4"
+                    >
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
+                        <div>
+                          <p className="text-sm font-medium text-indigo-700">Collection Impact Score</p>
+                          <p className="text-3xl font-bold text-indigo-900">{whatIfResult.impact_score}/10</p>
+                        </div>
+                        <Badge className={
+                          whatIfResult.recommendation_category?.includes('ESSENTIAL') ? 'bg-emerald-600 text-white text-lg px-4 py-2' :
+                          whatIfResult.recommendation_category?.includes('STRONG') ? 'bg-blue-600 text-white text-lg px-4 py-2' :
+                          whatIfResult.recommendation_category?.includes('NICE') ? 'bg-amber-500 text-white text-lg px-4 py-2' :
+                          'bg-rose-500 text-white text-lg px-4 py-2'
+                        }>
+                          {whatIfResult.recommendation_category}
+                        </Badge>
+                      </div>
+
+                      {whatIfResult.trophy_pairings?.length > 0 && (
+                        <Card className="border-amber-200 bg-amber-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
+                              <Trophy className="w-4 h-4" />
+                              Trophy Pairings (9-10 scores):
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {whatIfResult.trophy_pairings.map((blend, idx) => (
+                                <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
+                                  {blend}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {whatIfResult.gaps_filled?.length > 0 && (
+                        <Card className="border-emerald-200 bg-emerald-50">
+                          <CardContent className="p-4">
+                            <p className="text-sm font-medium text-emerald-700 mb-2">Gaps Filled:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {whatIfResult.gaps_filled.map((gap, idx) => (
+                                <Badge key={idx} className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                                  {gap}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      <Card className="border-stone-200">
+                        <CardContent className="p-4 space-y-3">
+                          <div>
+                            <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
+                            <p className="text-sm text-stone-600">{whatIfResult.redundancy_analysis}</p>
+                          </div>
+
+                          {whatIfResult.score_improvements && (
+                            <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                              <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
+                              <p className="text-sm text-emerald-800">{whatIfResult.score_improvements}</p>
+                            </div>
+                          )}
+
+                          <div>
+                            <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
+                            <p className="text-sm text-stone-600">{whatIfResult.detailed_reasoning}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
           <div className="text-center pt-2 text-xs text-stone-500">
             {savedOptimization?.generated_date && (
               <p>Last updated: {new Date(savedOptimization.generated_date).toLocaleDateString()}</p>
             )}
           </div>
-        </CardContent>
-      )}
-    </Card>
+          </CardContent>
+          )}
+          </Card>
   );
 }
