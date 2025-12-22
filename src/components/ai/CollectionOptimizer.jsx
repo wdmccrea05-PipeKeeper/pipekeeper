@@ -466,7 +466,8 @@ Be specific about which user-owned blends benefit and by how much.`,
             <div className="space-y-3">
               {optimization.pipe_specializations?.map((spec, idx) => {
                 const pipe = pipes.find(p => p.id === spec.pipe_id);
-                
+                if (!pipe) return null;
+
                 return (
                   <motion.div
                     key={spec.pipe_id}
@@ -624,7 +625,9 @@ Be specific about which user-owned blends benefit and by how much.`,
               <div className="space-y-3">
                 {optimization.priority_focus_changes.map((change, idx) => {
                   const pipe = pipes.find(p => p.id === change.pipe_id);
-                  const hasAppliedFocus = pipe?.focus && 
+                  if (!pipe) return null;
+
+                  const hasAppliedFocus = pipe.focus && 
                     JSON.stringify(pipe.focus.sort()) === JSON.stringify(change.recommended_focus.sort());
 
                   return (
