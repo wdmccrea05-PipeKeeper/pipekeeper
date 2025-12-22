@@ -37,9 +37,11 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     rating: null,
     notes: '',
     photo: '',
+    logo: '',
     is_favorite: false
   });
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [fetchingPhoto, setFetchingPhoto] = useState(false);
   const [newComponent, setNewComponent] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -137,6 +139,21 @@ Return complete and accurate information based on the blend name or description 
     }
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      handleChange('logo', result.file_url);
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const addComponent = () => {
     if (newComponent.trim()) {
       handleChange('tobacco_components', [...(formData.tobacco_components || []), newComponent.trim()]);
@@ -225,11 +242,11 @@ Return complete and accurate information based on the blend name or description 
         </>
       )}
 
-      {/* Photo */}
+      {/* Photo & Logo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-stone-800">Blend Photo</CardTitle>
+            <CardTitle className="text-lg text-stone-800">Images</CardTitle>
             {(formData.manufacturer || formData.name) && !formData.photo && (
               <Button
                 type="button"
@@ -252,37 +269,80 @@ Return complete and accurate information based on the blend name or description 
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            {formData.photo ? (
-              <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200">
-                <img src={formData.photo} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => handleChange('photo', '')}
-                  className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
-                >
-                  <X className="w-3 h-3 text-white" />
-                </button>
-              </div>
-            ) : (
-              <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
-                {uploading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Tin Photo */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Tin Photo</Label>
+              <div className="flex items-center gap-4">
+                {formData.photo ? (
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200">
+                    <img src={formData.photo} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleChange('photo', '')}
+                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
                 ) : (
-                  <>
-                    <Camera className="w-6 h-6" />
-                    <span className="text-xs">Add Photo</span>
-                  </>
+                  <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+                    {uploading ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <>
+                        <Camera className="w-6 h-6" />
+                        <span className="text-xs">Add Photo</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                      disabled={uploading}
+                    />
+                  </label>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                  disabled={uploading}
-                />
-              </label>
-            )}
+              </div>
+            </div>
+
+            {/* Label/Logo */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Label/Logo</Label>
+              <div className="flex items-center gap-4">
+                {formData.logo ? (
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 bg-white">
+                    <img src={formData.logo} alt="" className="w-full h-full object-contain p-2" />
+                    <button
+                      type="button"
+                      onClick={() => handleChange('logo', '')}
+                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+                    {uploadingLogo ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6" />
+                        <span className="text-xs">Add Label</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                      disabled={uploadingLogo}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
