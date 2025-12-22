@@ -11,7 +11,6 @@ import { Upload, X, Loader2, Camera, Plus, Search, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
-import LogoLibraryBrowser from "@/components/tobacco/LogoLibraryBrowser";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -48,12 +47,20 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [logoMatches, setLogoMatches] = useState([]);
-  const [showLogoBrowser, setShowLogoBrowser] = useState(false);
   
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
     queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
   });
+
+  const createLogoMutation = useMutation({
+    mutationFn: (data) => base44.entities.TobaccoLogoLibrary.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom-tobacco-logos'] });
+    },
+  });
+
+  const queryClient = useQueryClient();
 
   const handleChange = (field, value) => {
     setFormData(prev => {
@@ -156,6 +163,15 @@ Return complete and accurate information based on the blend name or description 
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
       handleChange('logo', result.file_url);
+      
+      // Save to library if manufacturer exists
+      if (formData.manufacturer) {
+        await createLogoMutation.mutateAsync({
+          brand_name: formData.manufacturer,
+          logo_url: result.file_url,
+          is_custom: true
+        });
+      }
     } catch (err) {
       console.error('Upload error:', err);
     } finally {
@@ -195,14 +211,7 @@ Return complete and accurate information based on the blend name or description 
   };
 
   return (
-    <>
-      <LogoLibraryBrowser
-        open={showLogoBrowser}
-        onClose={() => setShowLogoBrowser(false)}
-        onSelect={(logo) => handleChange('logo', logo)}
-        currentLogo={formData.logo}
-      />
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* AI Search Section */}
       {!blend && (
         <>
@@ -385,17 +394,7 @@ Return complete and accurate information based on the blend name or description 
                   </label>
                 )}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowLogoBrowser(true)}
-                className="w-full"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Browse Logo Library
-              </Button>
-            </div>
+              </div>
           </div>
         </CardContent>
       </Card>
@@ -636,7 +635,7 @@ Return complete and accurate information based on the blend name or description 
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end">
+      <div className="flex gap-3 justify-end pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
@@ -650,6 +649,5 @@ Return complete and accurate information based on the blend name or description 
         </Button>
       </div>
     </form>
-    </>
-  );
-}
+    );
+    }
