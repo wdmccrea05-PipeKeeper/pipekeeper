@@ -101,13 +101,16 @@ ${JSON.stringify(pipesData, null, 2)}
 Tobacco Blends:
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe, evaluate which tobacco blends would pair well based on:
-1. Bowl size - smaller bowls suit lighter tobaccos, larger bowls handle fuller blends
-2. Bowl depth - affects burn time and flavor development
-3. Material - meerschaum is excellent for Virginias, briar for everything
-4. Chamber volume - impacts how tobacco characteristics develop
-5. Shape - affects smoke temperature and moisture
-6. Pipe focus field - if set, prioritize blends matching the focus
+For each pipe, evaluate which tobacco blends would pair well.
+
+CRITICAL MATCHING LOGIC:
+- If a pipe HAS a focus field set (non-empty array), HEAVILY prioritize blends matching those designated types
+- If a pipe has NO focus (empty or null), base ALL recommendations on physical characteristics:
+  * Bowl size - smaller bowls suit lighter tobaccos, larger bowls handle fuller blends
+  * Bowl depth - affects burn time and flavor development
+  * Material - meerschaum is excellent for Virginias, briar for everything
+  * Chamber volume - impacts how tobacco characteristics develop
+  * Shape - affects smoke temperature and moisture
 
 Rate each pairing on a scale of 1-10 where:
 - 10 = Perfect pairing, optimal characteristics match
@@ -115,7 +118,7 @@ Rate each pairing on a scale of 1-10 where:
 - 4-6 = Good pairing, will work well
 - 1-3 = Poor pairing, not recommended
 
-CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with scores and brief reasoning. Do not skip any pipes.`,
+CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with scores and brief reasoning. When focus is not set, emphasize how the pipe's physical attributes make it ideal for certain blend types.`,
         response_json_schema: {
           type: "object",
           properties: {

@@ -31,17 +31,23 @@ export default function MatchingEngine({ pipe, blends }) {
           ).join('\n')}`
         : '';
 
+      const hasFocus = pipe.focus && pipe.focus.length > 0;
+      const focusContext = hasFocus
+        ? `\n\nThis pipe has a DESIGNATED FOCUS: ${pipe.focus.join(', ')}. Prioritize these blend types but also consider the pipe's physical characteristics.`
+        : `\n\nThis pipe has NO designated focus. Base ALL recommendations ENTIRELY on its physical characteristics.`;
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples.
 
 ${pipeDescription}
-${userBlendsDescription}
+${userBlendsDescription}${focusContext}
 
 Consider:
 1. Bowl size affects burn rate and flavor development - smaller bowls suit mild tobaccos, larger bowls can handle fuller blends
 2. Meerschaum pipes are excellent for Virginias and light blends, Briar works with everything
 3. Churchwarden and long pipes cool smoke - good for stronger tobaccos
 4. Wide shallow bowls suit flakes, deeper bowls work well with ribbon cuts
+5. If pipe has a focus, prioritize matching blends but explain how the physical characteristics support that focus
 
 Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
