@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { fetchTobaccoStockPhoto } from "@/components/ai/StockPhotoFetcher";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -42,7 +41,6 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [fetchingPhoto, setFetchingPhoto] = useState(false);
   const [newComponent, setNewComponent] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -103,24 +101,6 @@ Return complete and accurate information based on the blend name or description 
       console.error('Search error:', err);
     } finally {
       setSearching(false);
-    }
-  };
-
-  const handleFetchStockPhoto = async () => {
-    if (!formData.manufacturer && !formData.name) {
-      return;
-    }
-
-    setFetchingPhoto(true);
-    try {
-      const stockPhoto = await fetchTobaccoStockPhoto(formData);
-      if (stockPhoto) {
-        handleChange('photo', stockPhoto);
-      }
-    } catch (err) {
-      console.error('Error fetching stock photo:', err);
-    } finally {
-      setFetchingPhoto(false);
     }
   };
 
@@ -245,28 +225,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Photo & Logo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-stone-800">Images</CardTitle>
-            {(formData.manufacturer || formData.name) && !formData.photo && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleFetchStockPhoto}
-                disabled={fetchingPhoto}
-                className="text-xs"
-              >
-                {fetchingPhoto ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Finding...
-                  </>
-                ) : (
-                  'Find Stock Photo'
-                )}
-              </Button>
-            )}
-          </div>
+          <CardTitle className="text-lg text-stone-800">Images</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
