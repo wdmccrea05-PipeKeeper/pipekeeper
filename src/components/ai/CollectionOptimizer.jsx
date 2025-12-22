@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -111,7 +111,7 @@ Tailor all recommendations to match user preferences. Suggest specializations an
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco consultant. Analyze this pipe collection and provide strategic recommendations to optimize it for maximum versatility and smoking experience.
+        prompt: `You are an expert pipe tobacco consultant specializing in collection optimization for MAXIMUM PAIRING SCORES. Your goal is to help achieve 9-10 "trophy winning" pairings for every blend type the user enjoys.
 
 Pipes Collection:
 ${JSON.stringify(pipesData, null, 2)}
@@ -119,30 +119,45 @@ ${JSON.stringify(pipesData, null, 2)}
 Tobacco Blends in Cellar:
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
+OPTIMIZATION GOALS (IN PRIORITY ORDER):
+1. **MAXIMIZE PAIRING SCORES** - Create trophy-winning (9-10 score) pairings for user's preferred blend types
+2. **USER PREFERENCE ALIGNMENT** - Every recommendation must prioritize what the user actually enjoys smoking
+3. **STRATEGIC SPECIALIZATION** - Dedicated pipes score MUCH higher than versatile pipes
+4. **COLLECTION COMPLETENESS** - Ensure user's favorite blend types have optimal pipe representation
+
 Analysis Requirements:
 
-1. FOR EACH PIPE: Recommend a specialization strategy:
-   - Assign specific blend types it should be dedicated to (e.g., "English/Latakia blends only", "Virginias", "Aromatics")
-   - AROMATIC vs NON-AROMATIC: Smaller bowls (<18mm diameter) work better for Aromatics (cooler smoke, less ghosting). Larger bowls (>22mm) are better for Non-Aromatic blends. Recommend "Aromatic" or "Non-Aromatic" specialization accordingly.
-   - Explain WHY this pipe is ideal for those blends based on its characteristics AND user preferences
-   - Suggest ideal rotation/usage pattern
-   - Rate the pipe's versatility (1-10)
+1. FOR EACH PIPE - SPECIALIZATION FOR MAXIMUM SCORES:
+   - Identify which specific blend type(s) this pipe should be EXCLUSIVELY dedicated to for 9-10 scores
+   - CRITICAL: Prioritize specializations matching USER PREFERRED BLEND TYPES first
+   - AROMATIC vs NON-AROMATIC: Smaller bowls (<18mm) = Aromatic specialization, Larger bowls (>22mm) = Non-Aromatic
+   - Calculate POTENTIAL SCORE IMPROVEMENT: If pipe currently has no focus, estimate score increase (e.g., "Will increase from 6/10 to 9/10 for English blends")
+   - Explain how specialization will achieve trophy-level pairings
+   - Rate versatility (1-10), but EMPHASIZE that lower versatility = higher peak performance
+   - Show which specific user-owned blends will become 9-10 matches
 
-2. COLLECTION GAPS: Identify what's missing:
-   - Which blend types lack optimal pipe representation?
-   - What smoking experiences can't be fully achieved with current pipes?
-   - Any redundancy or overlap in the collection?
-   - Consider user preferences
+2. COLLECTION GAPS - SCORE MAXIMIZATION ANALYSIS:
+   - Which of USER'S PREFERRED blend types lack a 9-10 rated pipe?
+   - Identify blend types where current best score is 7 or below - these need dedicated pipes
+   - List redundancies: Multiple pipes scoring 6-7 for same blend vs one pipe scoring 9-10
+   - Calculate: "You have X blend types in cellar, but only Y have trophy-winning pipes"
+   - PRIORITIZE gaps in user's favorite blend types
 
-3. ACQUISITION RECOMMENDATION: Suggest ONE specific pipe to buy next:
-   - Exact shape and specifications
-   - Material recommendations
-   - Which gap it would fill
-   - Estimated budget range
-   - Why it would maximize the collection's coverage
-   - MUST align with user preferences (shape, size, smoking style)
+3. NEXT PIPE ACQUISITION - "TROPHY PIPE" RECOMMENDATION:
+   - Suggest ONE pipe that will create the MOST new 9-10 pairings with user's preferred blends
+   - Exact specifications optimized for a specific blend type the user loves
+   - State explicitly: "This will achieve 9-10 scores with [list specific user-owned blends]"
+   - Expected score improvements: "Currently these blends score 6/10, this pipe will make them 9-10"
+   - Budget range and why this investment maximizes collection quality
+   - Must target a gap in USER'S PREFERRED blend types
 
-Be specific, practical, and focused on achieving the best smoking experience across all blend types while heavily considering user preferences.`,
+CRITICAL SUCCESS METRICS:
+- Count potential 9-10 pairings before and after implementing recommendations
+- Emphasize that specialized pipes >> versatile pipes for score optimization
+- Every recommendation must reference user preferences explicitly
+- Goal: Every preferred blend type should have at least one trophy-winning pipe match
+
+Be aggressive in recommending specialization - versatile pipes are enemies of excellence.`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -159,7 +174,12 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                   },
                   reasoning: { type: "string" },
                   usage_pattern: { type: "string" },
-                  versatility_score: { type: "number" }
+                  versatility_score: { type: "number" },
+                  score_improvement: { type: "string" },
+                  trophy_blends: { 
+                    type: "array",
+                    items: { type: "string" }
+                  }
                 }
               }
             },
@@ -331,6 +351,23 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                             </div>
 
                             <p className="text-sm text-stone-600 mb-2">{spec.reasoning}</p>
+                            
+                            {spec.score_improvement && (
+                              <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
+                                <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
+                                <p className="text-xs text-emerald-800 font-semibold">{spec.score_improvement}</p>
+                              </div>
+                            )}
+
+                            {spec.trophy_blends && spec.trophy_blends.length > 0 && (
+                              <div className="bg-amber-50 rounded-lg p-2 border border-amber-200 mb-2">
+                                <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
+                                  <Trophy className="w-3 h-3" />
+                                  Trophy Matches (9-10 scores):
+                                </p>
+                                <p className="text-xs text-amber-800">{spec.trophy_blends.join(', ')}</p>
+                              </div>
+                            )}
                             
                             <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
                               <p className="text-xs font-medium text-blue-700">Usage Pattern:</p>
