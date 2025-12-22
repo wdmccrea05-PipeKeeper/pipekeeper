@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter, Grid3X3, List } from "lucide-react";
+import { Plus, Search, Filter, Grid3X3, List, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeForm from "@/components/pipes/PipeForm";
+import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 
 const SHAPES = ["All Shapes", "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Other"];
 const MATERIALS = ["All Materials", "Briar", "Meerschaum", "Corn Cob", "Clay", "Other"];
@@ -22,6 +23,7 @@ export default function PipesPage() {
   const [shapeFilter, setShapeFilter] = useState('All Shapes');
   const [materialFilter, setMaterialFilter] = useState('All Materials');
   const [viewMode, setViewMode] = useState('grid');
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -60,6 +62,13 @@ export default function PipesPage() {
     setShowForm(true);
   };
 
+  const handleQuickSearchAdd = (pipe) => {
+    queryClient.invalidateQueries({ queryKey: ['pipes'] });
+    // Open the edit form for the newly added pipe
+    setEditingPipe(pipe);
+    setShowForm(true);
+  };
+
   const filteredPipes = pipes.filter(pipe => {
     const matchesSearch = !searchQuery || 
       pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,13 +91,23 @@ export default function PipesPage() {
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
-          <Button 
-            onClick={() => { setEditingPipe(null); setShowForm(true); }}
-            className="bg-amber-700 hover:bg-amber-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Pipe
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowQuickSearch(true)}
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Quick Search
+            </Button>
+            <Button 
+              onClick={() => { setEditingPipe(null); setShowForm(true); }}
+              className="bg-amber-700 hover:bg-amber-800"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Pipe
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -199,6 +218,13 @@ export default function PipesPage() {
             />
           </SheetContent>
         </Sheet>
+
+        {/* Quick Search Dialog */}
+        <QuickSearchPipe
+          open={showQuickSearch}
+          onOpenChange={setShowQuickSearch}
+          onAdd={handleQuickSearchAdd}
+        />
       </div>
     </div>
   );

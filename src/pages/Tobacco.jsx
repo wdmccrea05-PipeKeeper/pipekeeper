@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
+import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -22,6 +23,7 @@ export default function TobaccoPage() {
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [strengthFilter, setStrengthFilter] = useState('All Strengths');
   const [viewMode, setViewMode] = useState('grid');
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -55,6 +57,13 @@ export default function TobaccoPage() {
     }
   };
 
+  const handleQuickSearchAdd = (blend) => {
+    queryClient.invalidateQueries({ queryKey: ['blends'] });
+    // Open the edit form for the newly added blend
+    setEditingBlend(blend);
+    setShowForm(true);
+  };
+
   const filteredBlends = blends.filter(blend => {
     const matchesSearch = !searchQuery || 
       blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -77,13 +86,23 @@ export default function TobaccoPage() {
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
             </p>
           </div>
-          <Button 
-            onClick={() => { setEditingBlend(null); setShowForm(true); }}
-            className="bg-amber-700 hover:bg-amber-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Blend
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowQuickSearch(true)}
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Quick Search
+            </Button>
+            <Button 
+              onClick={() => { setEditingBlend(null); setShowForm(true); }}
+              className="bg-amber-700 hover:bg-amber-800"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Blend
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -194,6 +213,13 @@ export default function TobaccoPage() {
             />
           </SheetContent>
         </Sheet>
+
+        {/* Quick Search Dialog */}
+        <QuickSearchTobacco
+          open={showQuickSearch}
+          onOpenChange={setShowQuickSearch}
+          onAdd={handleQuickSearchAdd}
+        />
       </div>
     </div>
   );
