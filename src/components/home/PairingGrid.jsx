@@ -155,14 +155,15 @@ export default function PairingGrid({ pipes, blends }) {
   };
 
   const getScoreClass = (score) => {
-    if (score === 10) return 'score-10';
-    if (score === 9) return 'score-9';
-    if (score === 8) return 'score-8';
-    if (score === 7) return 'score-7';
-    if (score === 6) return 'score-6';
-    if (score === 5) return 'score-5';
-    if (score === 4) return 'score-4';
-    return 'score-low';
+    if (score === 0) return 'bg-stone-200 text-stone-400'; // Incompatible
+    if (score === 10) return 'bg-emerald-200 text-emerald-900';
+    if (score === 9) return 'bg-emerald-100 text-emerald-900';
+    if (score === 8) return 'bg-green-100 text-green-900';
+    if (score === 7) return 'bg-blue-100 text-blue-900';
+    if (score === 6) return 'bg-purple-100 text-purple-900';
+    if (score === 5) return 'bg-yellow-100 text-yellow-900';
+    if (score === 4) return 'bg-orange-100 text-orange-900';
+    return 'bg-red-100 text-red-900'; // score < 4
   };
 
   if (!savedPairings || pipes.length === 0 || blends.length === 0) {
