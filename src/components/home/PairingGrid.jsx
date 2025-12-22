@@ -134,14 +134,11 @@ export default function PairingGrid({ pipes, blends }) {
       th { background-color: #f3f4f6; font-weight: bold; }
       .pipe-name { background-color: #fef3c7; font-weight: bold; text-align: left; }
       .blend-header { background-color: #dbeafe; font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; }
-      .score-10 { background-color: #d1fae5; font-weight: bold; }
-      .score-9 { background-color: #d1fae5; }
-      .score-8 { background-color: #bbf7d0; }
-      .score-7 { background-color: #bfdbfe; }
-      .score-6 { background-color: #ddd6fe; }
-      .score-5 { background-color: #fef08a; }
-      .score-4 { background-color: #fed7aa; }
-      .score-low { background-color: #fecaca; }
+      .score-high { background-color: #d1fae5; font-weight: bold; }
+      .score-mid { background-color: #bfdbfe; }
+      .score-low { background-color: #fef08a; }
+      .score-poor { background-color: #fecaca; }
+      .score-incompatible { background-color: #fecaca; font-weight: bold; }
       .trophy-icon { width: 12px; height: 12px; display: inline-block; }
       h1 { font-size: 24px; margin-bottom: 10px; }
       .legend { margin-top: 20px; font-size: 12px; }
@@ -156,15 +153,13 @@ export default function PairingGrid({ pipes, blends }) {
   };
 
   const getScoreClass = (score) => {
-    if (score === 0) return 'bg-stone-200 text-stone-400'; // Incompatible
-    if (score === 10) return 'bg-emerald-200 text-emerald-900';
-    if (score === 9) return 'bg-emerald-100 text-emerald-900';
-    if (score === 8) return 'bg-green-100 text-green-900';
-    if (score === 7) return 'bg-blue-100 text-blue-900';
-    if (score === 6) return 'bg-purple-100 text-purple-900';
-    if (score === 5) return 'bg-yellow-100 text-yellow-900';
-    if (score === 4) return 'bg-orange-100 text-orange-900';
-    return 'bg-red-100 text-red-900'; // score < 4
+    if (score === 0) return 'bg-red-200 text-red-900'; // Incompatible (aromatic/non-aromatic mismatch)
+    if (score >= 9) return 'bg-emerald-200 text-emerald-900'; // High ratings - green
+    if (score >= 8) return 'bg-emerald-100 text-emerald-800';
+    if (score >= 6) return 'bg-blue-200 text-blue-900'; // Mid-tier - blue
+    if (score >= 5) return 'bg-blue-100 text-blue-800';
+    if (score >= 3) return 'bg-yellow-200 text-yellow-900'; // Lower tier - yellow
+    return 'bg-red-100 text-red-900'; // Very poor
   };
 
   if (!savedPairings || pipes.length === 0 || blends.length === 0) {
@@ -310,31 +305,19 @@ export default function PairingGrid({ pipes, blends }) {
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-1">
                   <div className="w-6 h-4 bg-emerald-200 border border-stone-300"></div>
-                  <span>10-9 Perfect</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-green-200 border border-stone-300"></div>
-                  <span>8 Excellent</span>
+                  <span>9-10 Excellent (Green)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-6 h-4 bg-blue-200 border border-stone-300"></div>
-                  <span>7 Very Good</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-purple-200 border border-stone-300"></div>
-                  <span>6 Good</span>
+                  <span>6-8 Good (Blue)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-6 h-4 bg-yellow-200 border border-stone-300"></div>
-                  <span>5 Average</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-orange-200 border border-stone-300"></div>
-                  <span>4 Fair</span>
+                  <span>3-5 Average (Yellow)</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-6 h-4 bg-red-200 border border-stone-300"></div>
-                  <span>1-3 Poor</span>
+                  <span>0-2 Poor/Incompatible (Red)</span>
                 </div>
               </div>
               <p className="mt-3 text-stone-600">
