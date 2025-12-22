@@ -91,13 +91,15 @@ export default function HomePage() {
   };
 
   const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes'],
-    queryFn: () => base44.entities.Pipe.list('-created_date'),
+    queryKey: ['pipes', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user.email }, '-created_date'),
+    enabled: !!user,
   });
 
   const { data: blends = [] } = useQuery({
-    queryKey: ['blends'],
-    queryFn: () => base44.entities.TobaccoBlend.list('-created_date'),
+    queryKey: ['blends', user?.email],
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date'),
+    enabled: !!user,
   });
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);

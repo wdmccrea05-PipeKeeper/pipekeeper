@@ -30,9 +30,15 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: pipes = [], isLoading } = useQuery({
-    queryKey: ['pipes'],
-    queryFn: () => base44.entities.Pipe.list('-created_date'),
+    queryKey: ['pipes', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user.email }, '-created_date'),
+    enabled: !!user,
   });
 
   const createMutation = useMutation({

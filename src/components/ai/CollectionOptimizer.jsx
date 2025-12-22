@@ -63,7 +63,7 @@ export default function CollectionOptimizer({ pipes, blends }) {
   const updatePipeMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Pipe.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
     },
   });
 

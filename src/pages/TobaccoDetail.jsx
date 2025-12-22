@@ -69,16 +69,22 @@ export default function TobaccoDetailPage() {
     }
   }, [blend?.id]);
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes'],
-    queryFn: () => base44.entities.Pipe.list(),
+    queryKey: ['pipes', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user.email }),
+    enabled: !!user,
   });
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.TobaccoBlend.update(blendId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blend', blendId] });
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
       setShowEdit(false);
     },
   });

@@ -52,14 +52,15 @@ export default function PipeDetailPage() {
     enabled: !!pipeId,
   });
 
-  const { data: blends = [] } = useQuery({
-    queryKey: ['blends'],
-    queryFn: () => base44.entities.TobaccoBlend.list(),
-  });
-
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+  });
+
+  const { data: blends = [] } = useQuery({
+    queryKey: ['blends', user?.email],
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user.email }),
+    enabled: !!user,
   });
 
   const { data: userProfile } = useQuery({
@@ -80,7 +81,7 @@ export default function PipeDetailPage() {
     mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipe', pipeId] });
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowEdit(false);
     },
   });
