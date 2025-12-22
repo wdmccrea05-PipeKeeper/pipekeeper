@@ -1,17 +1,17 @@
-import Pipes from './pages/Pipes';
+import Home from './pages/Home';
 import PipeDetail from './pages/PipeDetail';
+import Pipes from './pages/Pipes';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Pipes": Pipes,
+    "Home": Home,
     "PipeDetail": PipeDetail,
+    "Pipes": Pipes,
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
-    "Home": Home,
 }
 
 export const pagesConfig = {

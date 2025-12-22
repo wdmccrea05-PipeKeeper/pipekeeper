@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 
 export default function HomePage() {
   const { data: pipes = [] } = useQuery({
@@ -218,6 +219,18 @@ export default function HomePage() {
             className="mb-12"
           >
             <PairingMatrix pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
+        {/* Collection Optimizer */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="mb-12"
+          >
+            <CollectionOptimizer pipes={pipes} blends={blends} />
           </motion.div>
         )}
 
