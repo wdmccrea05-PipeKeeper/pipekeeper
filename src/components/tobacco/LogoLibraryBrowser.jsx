@@ -2,12 +2,30 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Check } from "lucide-react";
-import { getAvailableBrands, getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
+import { getAvailableBrands } from "@/components/tobacco/TobaccoLogoLibrary";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLogo }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const allBrands = getAvailableBrands();
+  const [uploading, setUploading] = useState(false);
+  const [newBrandName, setNewBrandName] = useState('');
+  const queryClient = useQueryClient();
+  
+  const { data: customLogos = [] } = useQuery({
+    queryKey: ['custom-tobacco-logos'],
+    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.TobaccoLogoLibrary.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom-tobacco-logos'] });
+    },
+  });
+  
+  const allBrands = getAvailableBrands(customLogos);
   
   // Smart search - prioritize starts-with, then includes, then word matches
   const filteredBrands = searchQuery.trim() === '' 
@@ -28,16 +46,44 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             if (words.some(w => w.startsWith(queryLower))) score = 40;
           }
           
-          return { brand, score };
+          return { ...brandObj, score };
         })
         .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map(item => item.brand);
+        .sort((a, b) => b.score - a.score);
 
-  const handleSelect = (brand) => {
-    const logo = getTobaccoLogo(brand);
-    onSelect(logo);
+  const handleSelect = (brandObj) => {
+    onSelect(brandObj.logo);
     onClose();
+  };
+  
+  const handleUploadLogo = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !newBrandName.trim()) return;
+    
+    setUploading(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.TobaccoLogoLibrary.create({
+        brand_name: newBrandName.trim(),
+        logo_url: result.file_url,
+        is_custom: true
+      });
+      queryClient.invalidateQueries({ queryKey: ['custom-tobacco-logos'] });
+      setNewBrandName('');
+      e.target.value = '';
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+  
+  const handleDeleteCustom = (e, brandObj) => {
+    e.stopPropagation();
+    const logoEntry = customLogos.find(l => l.brand_name === brandObj.brand);
+    if (logoEntry) {
+      deleteMutation.mutate(logoEntry.id);
+    }
   };
 
   return (
@@ -48,6 +94,41 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
         </DialogHeader>
         
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+          {/* Add Custom Logo */}
+          <div className="border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2">
+            <p className="text-sm font-medium text-amber-800">Add Custom Logo</p>
+            <div className="flex gap-2">
+              <Input
+                value={newBrandName}
+                onChange={(e) => setNewBrandName(e.target.value)}
+                placeholder="Brand name..."
+                className="flex-1"
+              />
+              <label className={`inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                !newBrandName.trim() || uploading
+                  ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                  : 'bg-amber-700 text-white hover:bg-amber-800 cursor-pointer'
+              }`}>
+                {uploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Logo
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleUploadLogo}
+                  disabled={!newBrandName.trim() || uploading}
+                />
+              </label>
+            </div>
+          </div>
+          
+          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
             <Input
@@ -60,14 +141,13 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
 
           <div className="flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {filteredBrands.map((brand) => {
-                const logo = getTobaccoLogo(brand);
-                const isSelected = currentLogo === logo;
+              {filteredBrands.map((brandObj) => {
+                const isSelected = currentLogo === brandObj.logo;
                 
                 return (
-                  <div key={brand} className="flex flex-col">
+                  <div key={`${brandObj.brand}-${brandObj.isCustom}`} className="flex flex-col">
                     <button
-                      onClick={() => handleSelect(brand)}
+                      onClick={() => handleSelect(brandObj)}
                       className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 overflow-hidden ${
                         isSelected 
                           ? 'border-amber-600 bg-amber-100' 
@@ -76,8 +156,8 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                     >
                       <div className="w-full h-full flex items-center justify-center p-3 bg-white">
                         <img 
-                          src={logo} 
-                          alt={brand}
+                          src={brandObj.logo} 
+                          alt={brandObj.brand}
                           className="max-w-full max-h-full object-contain"
                           loading="lazy"
                           onError={(e) => {
@@ -92,8 +172,19 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       )}
+                      {brandObj.isCustom && (
+                        <button
+                          onClick={(e) => handleDeleteCustom(e, brandObj)}
+                          className="absolute bottom-2 right-2 bg-rose-500/90 hover:bg-rose-600 rounded-full p-1"
+                        >
+                          <Trash2 className="w-3 h-3 text-white" />
+                        </button>
+                      )}
                     </button>
-                    <p className="text-xs text-stone-600 mt-1 px-1 text-center truncate">{brand}</p>
+                    <p className="text-xs text-stone-600 mt-1 px-1 text-center truncate">
+                      {brandObj.brand}
+                      {brandObj.isCustom && <span className="text-amber-600"> ✦</span>}
+                    </p>
                   </div>
                 );
               })}
