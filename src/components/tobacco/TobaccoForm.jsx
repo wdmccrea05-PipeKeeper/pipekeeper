@@ -189,7 +189,7 @@ Return complete and accurate information based on the blend name or description 
       ...formData,
       tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
       quantity_owned: formData.quantity_owned ? Number(formData.quantity_owned) : null,
-      rating: formData.rating ? Number(formData.rating) : null,
+      rating: formData.rating ? Math.round(Number(formData.rating)) : null,
     };
     onSave(cleanedData);
   };
@@ -587,7 +587,17 @@ Return complete and accurate information based on the blend name or description 
               max="5"
               step="1"
               value={formData.rating || ''}
-              onChange={(e) => handleChange('rating', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || (Number(val) >= 1 && Number(val) <= 5 && Number.isInteger(Number(val)))) {
+                  handleChange('rating', val);
+                }
+              }}
+              onBlur={(e) => {
+                if (e.target.value && Number(e.target.value)) {
+                  handleChange('rating', Math.round(Number(e.target.value)));
+                }
+              }}
               placeholder="Optional"
               className="border-stone-200"
             />
