@@ -16,6 +16,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -24,6 +25,8 @@ export default function HomePage() {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
   });
+
+  const isPaidUser = user?.subscription_level === 'paid';
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -303,7 +306,14 @@ export default function HomePage() {
             transition={{ delay: 0.75 }}
             className="mb-12"
           >
-            <CollectionOptimizer pipes={pipes} blends={blends} />
+            {isPaidUser ? (
+              <CollectionOptimizer pipes={pipes} blends={blends} />
+            ) : (
+              <UpgradePrompt 
+                featureName="Collection Optimization"
+                description="Get AI-powered recommendations for specializing your pipes, identifying collection gaps, and suggestions for your next pipe purchase based on your smoking preferences."
+              />
+            )}
           </motion.div>
         )}
 
