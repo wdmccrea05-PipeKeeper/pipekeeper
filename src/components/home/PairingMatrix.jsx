@@ -24,10 +24,10 @@ export default function PairingMatrix({ pipes, blends }) {
   const { data: savedPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.filter({ created_by: user.email }, '-created_date', 1);
+      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email }, '-created_date', 1);
       return results[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   useEffect(() => {
@@ -51,10 +51,10 @@ export default function PairingMatrix({ pipes, blends }) {
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
       return profiles[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   const generatePairings = async () => {

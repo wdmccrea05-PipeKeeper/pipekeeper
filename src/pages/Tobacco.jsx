@@ -37,8 +37,8 @@ export default function TobaccoPage() {
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date'),
-    enabled: !!user,
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
+    enabled: !!user?.email,
   });
 
   const createMutation = useMutation({

@@ -76,8 +76,8 @@ export default function TobaccoDetailPage() {
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user.email }),
-    enabled: !!user,
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
   });
 
   const updateMutation = useMutation({

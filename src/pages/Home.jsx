@@ -92,14 +92,14 @@ export default function HomePage() {
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user.email }, '-created_date'),
-    enabled: !!user,
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date'),
+    enabled: !!user?.email,
   });
 
   const { data: blends = [] } = useQuery({
     queryKey: ['blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date'),
-    enabled: !!user,
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
+    enabled: !!user?.email,
   });
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);

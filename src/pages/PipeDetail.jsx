@@ -59,8 +59,8 @@ export default function PipeDetailPage() {
 
   const { data: blends = [] } = useQuery({
     queryKey: ['blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user.email }),
-    enabled: !!user,
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
   });
 
   const { data: userProfile } = useQuery({
