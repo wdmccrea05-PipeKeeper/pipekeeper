@@ -475,10 +475,11 @@ export default function HomePage() {
                   Add Your First Blend
                 </Button>
               </Link>
-          </div>
+            </div>
+          </motion.div>
         )}
+        </div>
       </div>
-    </div>
     </>
   );
 }
