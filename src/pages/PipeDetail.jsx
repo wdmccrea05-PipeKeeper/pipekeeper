@@ -71,7 +71,10 @@ export default function PipeDetailPage() {
     enabled: !!user,
   });
 
-  const isPaidUser = user?.subscription_level === 'paid';
+  // Check if user has paid access (subscription or 7-day trial)
+  const isWithinTrial = user?.created_date && 
+    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
