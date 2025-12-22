@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeCard from "@/components/pipes/PipeCard";
+import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 
@@ -196,7 +197,11 @@ export default function PipesPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                 >
                   <Link to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
-                    <PipeCard pipe={pipe} onClick={() => {}} />
+                    {viewMode === 'grid' ? (
+                      <PipeCard pipe={pipe} onClick={() => {}} />
+                    ) : (
+                      <PipeListItem pipe={pipe} onClick={() => {}} />
+                    )}
                   </Link>
                 </motion.div>
               ))}

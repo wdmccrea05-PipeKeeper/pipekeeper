@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import TobaccoCard from "@/components/tobacco/TobaccoCard";
+import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 
@@ -191,7 +192,11 @@ export default function TobaccoPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                 >
                   <Link to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
-                    <TobaccoCard blend={blend} onClick={() => {}} />
+                    {viewMode === 'grid' ? (
+                      <TobaccoCard blend={blend} onClick={() => {}} />
+                    ) : (
+                      <TobaccoListItem blend={blend} onClick={() => {}} />
+                    )}
                   </Link>
                 </motion.div>
               ))}
