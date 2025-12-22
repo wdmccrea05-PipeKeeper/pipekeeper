@@ -2,19 +2,20 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Pipette, Leaf, Menu, X } from "lucide-react";
+import { Home, Leaf, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg';
+
 const navItems = [
-  { name: 'Home', page: 'Home', icon: Home },
-  { name: 'Pipes', page: 'Pipes', icon: Pipette },
-  { name: 'Tobacco', page: 'Tobacco', icon: Leaf },
+  { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
+  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
+  { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
 ];
 
 function NavLink({ item, currentPage, onClick }) {
   const isActive = currentPage === item.page;
-  const Icon = item.icon;
   
   return (
     <Link 
@@ -27,7 +28,11 @@ function NavLink({ item, currentPage, onClick }) {
           : "text-stone-600 hover:bg-stone-100 hover:text-stone-800"
       )}
     >
-      <Icon className="w-5 h-5" />
+      {item.isIconComponent ? (
+        <item.icon className="w-5 h-5" />
+      ) : (
+        <img src={item.icon} alt={item.name} className="w-5 h-5 object-contain mix-blend-multiply" />
+      )}
       {item.name}
     </Link>
   );
@@ -46,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
                 alt="PipeKeeper"
-                className="w-8 h-8 object-contain"
+                className="w-8 h-8 object-contain mix-blend-multiply"
               />
               <span className="font-bold text-xl text-stone-800">PipeKeeper</span>
             </Link>
@@ -66,7 +71,7 @@ export default function Layout({ children, currentPageName }) {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
               alt="PipeKeeper"
-              className="w-7 h-7 object-contain"
+              className="w-7 h-7 object-contain mix-blend-multiply"
             />
             <span className="font-bold text-lg text-stone-800">PipeKeeper</span>
           </Link>

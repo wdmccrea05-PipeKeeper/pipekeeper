@@ -8,7 +8,7 @@ export default function PipeShapeIcon({ shape, className = "w-16 h-16" }) {
       <img 
         src={PIPE_IMAGE} 
         alt={shape || "Pipe"} 
-        className="w-full h-full object-contain opacity-40"
+        className="w-full h-full object-contain opacity-40 mix-blend-multiply"
       />
     </div>
   );
