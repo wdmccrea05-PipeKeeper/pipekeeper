@@ -73,7 +73,8 @@ export default function CollectionOptimizer({ pipes, blends }) {
         bowl_diameter_mm: p.bowl_diameter_mm,
         bowl_depth_mm: p.bowl_depth_mm,
         stem_material: p.stem_material,
-        finish: p.finish
+        finish: p.finish,
+        focus: p.focus
       }));
 
       const blendsData = blends.map(b => ({
@@ -86,6 +87,20 @@ export default function CollectionOptimizer({ pipes, blends }) {
         flavor_notes: b.flavor_notes
       }));
 
+      let profileContext = "";
+      if (userProfile) {
+        profileContext = `\n\nUser Smoking Preferences:
+- Clenching: ${userProfile.clenching_preference}
+- Smoke Duration: ${userProfile.smoke_duration_preference}
+- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
+- Pipe Size Preference: ${userProfile.pipe_size_preference}
+- Preferred Shapes: ${userProfile.preferred_shapes?.join(', ') || 'None'}
+- Strength Preference: ${userProfile.strength_preference}
+- Additional Notes: ${userProfile.notes || 'None'}
+
+Tailor all recommendations to match user preferences. Suggest specializations and future pipes that align with their smoking style.`;
+      }
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco consultant. Analyze this pipe collection and provide strategic recommendations to optimize it for maximum versatility and smoking experience.
 
@@ -93,13 +108,13 @@ Pipes Collection:
 ${JSON.stringify(pipesData, null, 2)}
 
 Tobacco Blends in Cellar:
-${JSON.stringify(blendsData, null, 2)}
+${JSON.stringify(blendsData, null, 2)}${profileContext}
 
 Analysis Requirements:
 
 1. FOR EACH PIPE: Recommend a specialization strategy:
    - Assign specific blend types it should be dedicated to (e.g., "English/Latakia blends only", "Virginias", "Aromatics")
-   - Explain WHY this pipe is ideal for those blends based on its characteristics
+   - Explain WHY this pipe is ideal for those blends based on its characteristics AND user preferences
    - Suggest ideal rotation/usage pattern
    - Rate the pipe's versatility (1-10)
 
@@ -107,6 +122,7 @@ Analysis Requirements:
    - Which blend types lack optimal pipe representation?
    - What smoking experiences can't be fully achieved with current pipes?
    - Any redundancy or overlap in the collection?
+   - Consider user preferences
 
 3. ACQUISITION RECOMMENDATION: Suggest ONE specific pipe to buy next:
    - Exact shape and specifications
@@ -114,8 +130,9 @@ Analysis Requirements:
    - Which gap it would fill
    - Estimated budget range
    - Why it would maximize the collection's coverage
+   - MUST align with user preferences (shape, size, smoking style)
 
-Be specific, practical, and focused on achieving the best smoking experience across all blend types.`,
+Be specific, practical, and focused on achieving the best smoking experience across all blend types while heavily considering user preferences.`,
         response_json_schema: {
           type: "object",
           properties: {
