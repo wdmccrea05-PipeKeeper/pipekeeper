@@ -12,6 +12,18 @@ export default function PipeSpecialization({ pipe, blends, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [newDesignation, setNewDesignation] = useState('');
   const [designations, setDesignations] = useState(pipe.focus || []);
+  const [isAdding, setIsAdding] = useState(false);
+  
+  const suggestedFocusOptions = [
+    'Aromatic',
+    'Non-Aromatic',
+    'English',
+    'Virginia',
+    'Virginia/Perique',
+    'Balkan',
+    'Latakia Blend',
+    'Burley'
+  ];
 
   const handleAdd = () => {
     if (newDesignation.trim()) {
@@ -29,12 +41,28 @@ export default function PipeSpecialization({ pipe, blends, onUpdate }) {
   };
 
   // Find matching blends based on designations
-  const matchingBlends = blends.filter(blend => 
-    designations.some(designation => 
+  const hasNonAromaticFocus = designations.some(d => 
+    d.toLowerCase().includes('non-aromatic') || d.toLowerCase().includes('non aromatic')
+  );
+  const hasAromaticFocus = designations.some(d => 
+    d.toLowerCase() === 'aromatic' && !d.toLowerCase().includes('non')
+  );
+  
+  const matchingBlends = blends.filter(blend => {
+    const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
+    
+    // Exclude aromatics if non-aromatic focus
+    if (hasNonAromaticFocus && isAromaticBlend) return false;
+    
+    // Exclude non-aromatics if aromatic focus
+    if (hasAromaticFocus && !isAromaticBlend) return false;
+    
+    // Otherwise match on blend type
+    return designations.some(designation => 
       blend.blend_type?.toLowerCase().includes(designation.toLowerCase()) ||
       designation.toLowerCase().includes(blend.blend_type?.toLowerCase())
-    )
-  );
+    );
+  });
 
   if (!editing && (!designations || designations.length === 0)) {
     return (
@@ -94,17 +122,34 @@ export default function PipeSpecialization({ pipe, blends, onUpdate }) {
         </div>
 
         {editing && (
-          <div className="flex gap-2">
-            <Input
-              placeholder="Add designation (e.g., English blends, Virginias)"
-              value={newDesignation}
-              onChange={(e) => setNewDesignation(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-              className="text-sm"
-            />
-            <Button size="sm" onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4" />
-            </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add designation (e.g., English, Non-Aromatic)"
+                value={newDesignation}
+                onChange={(e) => setNewDesignation(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                className="text-sm"
+              />
+              <Button size="sm" onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <p className="text-xs text-stone-500 w-full mb-1">Quick add:</p>
+              {suggestedFocusOptions.map(option => (
+                <Badge
+                  key={option}
+                  variant="outline"
+                  className="cursor-pointer hover:bg-blue-100 text-xs border-blue-200"
+                  onClick={() => {
+                    setNewDesignation(option);
+                  }}
+                >
+                  {option}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
 

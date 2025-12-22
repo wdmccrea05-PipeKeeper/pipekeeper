@@ -114,6 +114,7 @@ Analysis Requirements:
 
 1. FOR EACH PIPE: Recommend a specialization strategy:
    - Assign specific blend types it should be dedicated to (e.g., "English/Latakia blends only", "Virginias", "Aromatics")
+   - AROMATIC vs NON-AROMATIC: Smaller bowls (<18mm diameter) work better for Aromatics (cooler smoke, less ghosting). Larger bowls (>22mm) are better for Non-Aromatic blends. Recommend "Aromatic" or "Non-Aromatic" specialization accordingly.
    - Explain WHY this pipe is ideal for those blends based on its characteristics AND user preferences
    - Suggest ideal rotation/usage pattern
    - Rate the pipe's versatility (1-10)
