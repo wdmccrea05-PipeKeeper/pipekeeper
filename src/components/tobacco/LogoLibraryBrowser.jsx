@@ -31,8 +31,8 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   const filteredBrands = searchQuery.trim() === '' 
     ? allBrands 
     : allBrands
-        .map(brand => {
-          const brandLower = brand.toLowerCase();
+        .map(brandObj => {
+          const brandLower = brandObj.brand.toLowerCase();
           const queryLower = searchQuery.toLowerCase();
           
           // Calculate relevance score
