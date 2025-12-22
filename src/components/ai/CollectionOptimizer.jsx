@@ -143,13 +143,21 @@ Analysis Requirements:
    - Calculate: "You have X blend types in cellar, but only Y have trophy-winning pipes"
    - PRIORITIZE gaps in user's favorite blend types
 
-3. NEXT PIPE ACQUISITION - "TROPHY PIPE" RECOMMENDATION:
-   - Suggest ONE pipe that will create the MOST new 9-10 pairings with user's preferred blends
-   - Exact specifications optimized for a specific blend type the user loves
+3. PRIORITY FOCUS CHANGES - "QUICK WINS":
+   - Identify TOP 3 existing pipes that should have their focus changed for maximum score gains
+   - For each: current state, recommended new focus, expected score improvements
+   - Show which specific user-owned blends will jump from low scores to 9-10
+   - Prioritize changes that target user's preferred blend types
+   - Calculate total trophy pairings gained from these 3 changes
+
+4. NEXT PIPE ACQUISITIONS - "TROPHY PIPE" RECOMMENDATIONS:
+   - Suggest TOP 3 pipes to buy next, ranked by impact
+   - Each pipe should target different gaps in user's preferred blend types
+   - Exact specifications optimized for specific blend types the user loves
    - State explicitly: "This will achieve 9-10 scores with [list specific user-owned blends]"
    - Expected score improvements: "Currently these blends score 6/10, this pipe will make them 9-10"
-   - Budget range and why this investment maximizes collection quality
-   - Must target a gap in USER'S PREFERRED blend types
+   - Budget range and priority ranking (1 = highest priority)
+   - Show cumulative impact: how many new trophy pairings all 3 pipes would create
 
 CRITICAL SUCCESS METRICS:
 - Count potential 9-10 pairings before and after implementing recommendations
@@ -197,15 +205,48 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
                 overall_assessment: { type: "string" }
               }
             },
-            next_pipe_recommendation: {
-              type: "object",
-              properties: {
-                shape: { type: "string" },
-                material: { type: "string" },
-                chamber_specs: { type: "string" },
-                gap_filled: { type: "string" },
-                budget_range: { type: "string" },
-                reasoning: { type: "string" }
+            priority_focus_changes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  pipe_id: { type: "string" },
+                  pipe_name: { type: "string" },
+                  current_focus: { 
+                    type: "array",
+                    items: { type: "string" }
+                  },
+                  recommended_focus: { 
+                    type: "array",
+                    items: { type: "string" }
+                  },
+                  score_improvement: { type: "string" },
+                  trophy_blends_gained: { 
+                    type: "array",
+                    items: { type: "string" }
+                  },
+                  reasoning: { type: "string" }
+                }
+              }
+            },
+            next_pipe_recommendations: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  priority_rank: { type: "number" },
+                  shape: { type: "string" },
+                  material: { type: "string" },
+                  chamber_specs: { type: "string" },
+                  gap_filled: { type: "string" },
+                  budget_range: { type: "string" },
+                  reasoning: { type: "string" },
+                  trophy_blends: { 
+                    type: "array",
+                    items: { type: "string" }
+                  },
+                  score_improvement: { type: "string" }
+                }
               }
             }
           }
@@ -457,45 +498,174 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
             </div>
           )}
 
-          {/* Next Pipe Recommendation */}
-          {optimization.next_pipe_recommendation && (
+          {/* Priority Focus Changes */}
+          {optimization.priority_focus_changes && optimization.priority_focus_changes.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-violet-600" />
+                Quick Wins - Priority Focus Changes
+              </h3>
+              <div className="space-y-3">
+                {optimization.priority_focus_changes.map((change, idx) => {
+                  const pipe = pipes.find(p => p.id === change.pipe_id);
+                  const hasAppliedFocus = pipe?.focus && 
+                    JSON.stringify(pipe.focus.sort()) === JSON.stringify(change.recommended_focus.sort());
+
+                  return (
+                    <Card key={idx} className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
+                            {pipe?.photos?.[0] ? (
+                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                            ) : (
+                              <PipeShapeIcon shape={pipe?.shape} className="w-10 h-10" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <Link to={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
+                                <h4 className="font-semibold text-stone-800 hover:text-violet-700 transition-colors">
+                                  {change.pipe_name}
+                                </h4>
+                              </Link>
+                              <Badge className="bg-violet-600 text-white">
+                                Quick Win #{idx + 1}
+                              </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div>
+                                <p className="text-xs font-medium text-stone-500 mb-1">Current Focus:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {change.current_focus && change.current_focus.length > 0 ? (
+                                    change.current_focus.map((f, i) => (
+                                      <Badge key={i} variant="outline" className="text-xs">
+                                        {f}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-stone-400">None set</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs font-medium text-violet-700 mb-1">Recommended Focus:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {change.recommended_focus.map((f, i) => (
+                                    <Badge key={i} className="bg-violet-100 text-violet-800 border-violet-200 text-xs">
+                                      {f}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
+                              <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
+                              <p className="text-xs text-emerald-800 font-semibold">{change.score_improvement}</p>
+                            </div>
+
+                            {change.trophy_blends_gained && change.trophy_blends_gained.length > 0 && (
+                              <div className="bg-amber-50 rounded-lg p-2 border border-amber-200 mb-2">
+                                <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
+                                  <Trophy className="w-3 h-3" />
+                                  Trophy Pairings Gained:
+                                </p>
+                                <p className="text-xs text-amber-800">{change.trophy_blends_gained.join(', ')}</p>
+                              </div>
+                            )}
+
+                            <p className="text-xs text-stone-600 mb-3">{change.reasoning}</p>
+
+                            {!hasAppliedFocus ? (
+                              <Button
+                                size="sm"
+                                className="bg-violet-600 hover:bg-violet-700 text-white"
+                                onClick={() => applySpecialization(pipe.id, change.recommended_focus)}
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Apply This Focus
+                              </Button>
+                            ) : (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <Check className="w-3 h-3 mr-1" />
+                                Applied!
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Next Pipe Recommendations */}
+          {optimization.next_pipe_recommendations && optimization.next_pipe_recommendations.length > 0 && (
             <div>
               <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-emerald-600" />
-                What to Buy Next
+                Top 3 Pipes to Buy Next
               </h3>
-              <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold text-emerald-800 text-lg">
-                          {optimization.next_pipe_recommendation.shape} in {optimization.next_pipe_recommendation.material}
-                        </h4>
-                        <p className="text-sm text-emerald-600 font-medium">
-                          {optimization.next_pipe_recommendation.budget_range}
-                        </p>
-                      </div>
-                      <Badge className="bg-emerald-600 text-white border-emerald-700">
-                        Recommended
-                      </Badge>
-                    </div>
+              <div className="space-y-3">
+                {optimization.next_pipe_recommendations.map((rec, idx) => (
+                  <Card key={idx} className={`border-emerald-200 bg-gradient-to-br from-emerald-50 to-white ${idx === 0 ? 'ring-2 ring-emerald-400' : ''}`}>
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge className={idx === 0 ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-800"}>
+                                Priority #{rec.priority_rank}
+                              </Badge>
+                              {idx === 0 && <Badge className="bg-amber-500 text-white">Highest Impact</Badge>}
+                            </div>
+                            <h4 className="font-semibold text-emerald-800 text-lg">
+                              {rec.shape} in {rec.material}
+                            </h4>
+                            <p className="text-sm text-emerald-600 font-medium">
+                              {rec.budget_range}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div className="bg-white rounded-lg p-3 border border-emerald-200 space-y-2">
-                      <div>
-                        <p className="text-xs font-medium text-stone-700">Specifications:</p>
-                        <p className="text-sm text-stone-600">{optimization.next_pipe_recommendation.chamber_specs}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-stone-700">Fills Gap:</p>
-                        <p className="text-sm text-emerald-700 font-medium">{optimization.next_pipe_recommendation.gap_filled}</p>
-                      </div>
-                    </div>
+                        <div className="bg-white rounded-lg p-3 border border-emerald-200 space-y-2">
+                          <div>
+                            <p className="text-xs font-medium text-stone-700">Specifications:</p>
+                            <p className="text-sm text-stone-600">{rec.chamber_specs}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-stone-700">Fills Gap:</p>
+                            <p className="text-sm text-emerald-700 font-medium">{rec.gap_filled}</p>
+                          </div>
+                        </div>
 
-                    <p className="text-sm text-stone-600">{optimization.next_pipe_recommendation.reasoning}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                        {rec.score_improvement && (
+                          <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200">
+                            <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
+                            <p className="text-xs text-emerald-800 font-semibold">{rec.score_improvement}</p>
+                          </div>
+                        )}
+
+                        {rec.trophy_blends && rec.trophy_blends.length > 0 && (
+                          <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
+                            <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
+                              <Trophy className="w-3 h-3" />
+                              Will Create Trophy Matches With:
+                            </p>
+                            <p className="text-xs text-amber-800">{rec.trophy_blends.join(', ')}</p>
+                          </div>
+                        )}
+
+                        <p className="text-sm text-stone-600">{rec.reasoning}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
 
