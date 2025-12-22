@@ -75,13 +75,15 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Clear crop area
+    // Calculate crop area (but don't clear it - keep it visible)
     const cropX = (crop.x / img.width) * img.width * scale + x;
     const cropY = (crop.y / img.height) * img.height * scale + y;
     const cropW = (crop.width / img.width) * img.width * scale;
     const cropH = (crop.height / img.height) * img.height * scale;
 
-    ctx.clearRect(cropX, cropY, cropW, cropH);
+    // Draw transparent crop area (just reduce overlay opacity in this area)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.fillRect(cropX, cropY, cropW, cropH);
 
     // Draw crop border
     ctx.strokeStyle = '#fff';

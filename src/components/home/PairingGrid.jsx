@@ -45,8 +45,27 @@ export default function PairingGrid({ pipes, blends }) {
   // 2. Pipe focus (with aromatic/non-aromatic exclusions)
   // 3. Pipe shape/characteristics
   // 4. Tobacco blend characteristics (already in base score)
+  // Calculate basic compatibility score based on pipe and blend characteristics
+  const calculateBasicScore = (pipe, blend) => {
+    let score = 5; // Start with neutral score
+    
+    // Chamber size vs blend strength
+    if (pipe.chamber_volume === 'Small' && blend.strength === 'Mild') score += 1;
+    if (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full')) score += 1;
+    if (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') score += 1;
+    
+    // Bowl material compatibility
+    if (pipe.bowl_material === 'Meerschaum' && blend.blend_type === 'Virginia') score += 1;
+    if (pipe.bowl_material === 'Briar') score += 0.5;
+    
+    // Shape considerations
+    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') score += 0.5;
+    
+    return Math.max(3, Math.min(7, score)); // Clamp between 3-7 for basic scores
+  };
+
   const getAdjustedScore = (pipe, blend, baseScore) => {
-    if (!baseScore) return baseScore;
+    if (!baseScore) return calculateBasicScore(pipe, blend);
     
     // CRITICAL: Aromatic/Non-Aromatic Exclusions
     const hasNonAromaticFocus = pipe.focus?.some(f => 
@@ -241,7 +260,13 @@ export default function PairingGrid({ pipes, blends }) {
                       </td>
                       {blends.map(blend => {
                         const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
-                        const baseScore = match?.score || 0;
+                        let baseScore = match?.score || 0;
+                        
+                        // If no score exists, calculate a basic compatibility score
+                        if (baseScore === 0) {
+                          baseScore = calculateBasicScore(pipe, blend);
+                        }
+                        
                         const adjustedScore = getAdjustedScore(pipe, blend, baseScore);
                         const displayScore = userProfile ? adjustedScore : baseScore;
                         
@@ -249,11 +274,11 @@ export default function PairingGrid({ pipes, blends }) {
                           <td 
                             key={blend.id}
                             className={`border border-stone-300 p-2 text-center font-semibold ${
-                              displayScore > 0 ? getScoreClass(displayScore) : 'bg-stone-50 text-stone-400'
+                              getScoreClass(displayScore)
                             }`}
-                            title={match?.reasoning || ''}
+                            title={match?.reasoning || 'Basic compatibility score'}
                           >
-                            {displayScore > 0 ? displayScore : '-'}
+                            {displayScore.toFixed(1)}
                           </td>
                         );
                       })}
