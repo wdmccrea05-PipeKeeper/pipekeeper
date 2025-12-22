@@ -18,12 +18,62 @@ export default function PairingGrid({ pipes, blends }) {
     },
   });
 
-  const generateGrid = async () => {
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return profiles[0];
+    },
+    enabled: !!user,
+  });
+
+  const generateGrid = () => {
     if (!savedPairings) {
-      alert('Please generate pairings first');
+      alert('Please generate pairings from the AI Pairing Recommendations section first');
       return;
     }
     setShowGrid(true);
+  };
+
+  // Calculate adjusted scores based on user profile preferences
+  const getAdjustedScore = (pipe, blend, baseScore) => {
+    if (!userProfile || !baseScore) return baseScore;
+    
+    let adjustment = 0;
+    
+    // Boost if pipe has focus matching blend type
+    if (pipe.focus && pipe.focus.length > 0) {
+      const focusMatch = pipe.focus.some(f => 
+        blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
+        f.toLowerCase().includes(blend.blend_type?.toLowerCase())
+      );
+      if (focusMatch) adjustment += 1.5;
+    }
+    
+    // Boost if blend type matches user preferences
+    if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
+      adjustment += 1;
+    }
+    
+    // Boost if strength matches user preference
+    if (userProfile.strength_preference !== 'No Preference' && 
+        blend.strength === userProfile.strength_preference) {
+      adjustment += 0.5;
+    }
+    
+    // Boost if pipe size matches user preference
+    if (userProfile.pipe_size_preference !== 'No Preference' &&
+        pipe.chamber_volume === userProfile.pipe_size_preference) {
+      adjustment += 0.5;
+    }
+    
+    const adjustedScore = Math.min(10, baseScore + adjustment);
+    return Math.round(adjustedScore * 10) / 10;
   };
 
   const handlePrint = () => {
@@ -162,19 +212,27 @@ export default function PairingGrid({ pipes, blends }) {
                     <tr key={pipe.id}>
                       <td className="bg-amber-100 border border-stone-300 p-2 font-semibold text-sm sticky left-0 z-10">
                         {pipeIdx + 1}. {pipe.name}
+                        {pipe.focus && pipe.focus.length > 0 && (
+                          <div className="text-xs font-normal text-amber-700 mt-0.5">
+                            Focus: {pipe.focus.join(', ')}
+                          </div>
+                        )}
                       </td>
                       {blends.map(blend => {
                         const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
-                        const score = match?.score || 0;
+                        const baseScore = match?.score || 0;
+                        const adjustedScore = getAdjustedScore(pipe, blend, baseScore);
+                        const displayScore = userProfile ? adjustedScore : baseScore;
                         
                         return (
                           <td 
                             key={blend.id}
                             className={`border border-stone-300 p-2 text-center font-semibold ${
-                              score > 0 ? getScoreClass(score) : 'bg-stone-50 text-stone-400'
+                              displayScore > 0 ? getScoreClass(displayScore) : 'bg-stone-50 text-stone-400'
                             }`}
+                            title={match?.reasoning || ''}
                           >
-                            {score > 0 ? score : '-'}
+                            {displayScore > 0 ? displayScore : '-'}
                           </td>
                         );
                       })}
@@ -217,7 +275,15 @@ export default function PairingGrid({ pipes, blends }) {
                 </div>
               </div>
               <p className="mt-3 text-stone-600">
-                Ratings based on chamber size, bowl characteristics, material compatibility, and traditional pairings.
+                Ratings based on chamber size, bowl characteristics, material compatibility, pipe focus, and traditional pairings.
+                {userProfile && (
+                  <span className="block mt-1 font-medium text-blue-700">
+                    ✨ Scores adjusted based on your smoking profile preferences
+                  </span>
+                )}
+              </p>
+              <p className="mt-2 text-stone-500 italic">
+                Hover over any score to see pairing reasoning
               </p>
             </div>
           </div>
