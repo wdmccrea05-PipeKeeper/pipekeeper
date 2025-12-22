@@ -52,7 +52,7 @@ export default function PipesPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Pipe.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowForm(false);
       setEditingPipe(null);
     },
@@ -72,7 +72,7 @@ export default function PipesPage() {
   };
 
   const handleQuickSearchAdd = (pipe) => {
-    queryClient.invalidateQueries({ queryKey: ['pipes'] });
+    queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
     // Open the edit form for the newly added pipe
     setEditingPipe(pipe);
     setShowForm(true);

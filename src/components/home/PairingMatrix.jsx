@@ -22,11 +22,12 @@ export default function PairingMatrix({ pipes, blends }) {
 
   // Load saved pairings
   const { data: savedPairings } = useQuery({
-    queryKey: ['saved-pairings'],
+    queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.list('-created_date', 1);
+      const results = await base44.entities.PairingMatrix.filter({ created_by: user.email }, '-created_date', 1);
       return results[0];
     },
+    enabled: !!user,
   });
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function PairingMatrix({ pipes, blends }) {
   const savePairingsMutation = useMutation({
     mutationFn: (data) => base44.entities.PairingMatrix.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
     },
   });
 
@@ -48,7 +49,7 @@ export default function PairingMatrix({ pipes, blends }) {
   });
 
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
       return profiles[0];

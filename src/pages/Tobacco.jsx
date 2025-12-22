@@ -52,7 +52,7 @@ export default function TobaccoPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TobaccoBlend.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
       setShowForm(false);
       setEditingBlend(null);
     },
@@ -67,7 +67,7 @@ export default function TobaccoPage() {
   };
 
   const handleQuickSearchAdd = (blend) => {
-    queryClient.invalidateQueries({ queryKey: ['blends'] });
+    queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
     // Open the edit form for the newly added blend
     setEditingBlend(blend);
     setShowForm(true);

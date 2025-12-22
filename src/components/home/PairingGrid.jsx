@@ -11,11 +11,12 @@ export default function PairingGrid({ pipes, blends }) {
   const gridRef = useRef(null);
 
   const { data: savedPairings } = useQuery({
-    queryKey: ['saved-pairings'],
+    queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.list('-created_date', 1);
+      const results = await base44.entities.PairingMatrix.filter({ created_by: user.email }, '-created_date', 1);
       return results[0];
     },
+    enabled: !!user,
   });
 
   const { data: user } = useQuery({
@@ -24,7 +25,7 @@ export default function PairingGrid({ pipes, blends }) {
   });
 
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
       return profiles[0];
