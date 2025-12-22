@@ -64,12 +64,12 @@ export default function PipeDetailPage() {
   });
 
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
       return profiles[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   // Check if user has paid access (subscription or 7-day trial)
