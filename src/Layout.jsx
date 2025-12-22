@@ -5,13 +5,13 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import PipeIcon from "@/components/icons/PipeIcon";
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/33de7d282_bent_billiard_pipe_line_drawing.png';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
-  { name: 'Pipes', page: 'Pipes', icon: PipeIcon, isIconComponent: true },
+  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
 ];
@@ -30,7 +30,11 @@ function NavLink({ item, currentPage, onClick }) {
           : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
     >
-      <item.icon className="w-5 h-5" />
+      {item.isIconComponent ? (
+        <item.icon className="w-5 h-5" />
+      ) : (
+        <img src={item.icon} alt={item.name} className="w-5 h-5 object-contain brightness-0 invert opacity-70" />
+      )}
       {item.name}
     </Link>
   );

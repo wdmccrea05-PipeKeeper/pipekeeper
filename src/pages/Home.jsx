@@ -138,7 +138,7 @@ export default function HomePage() {
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
                   <img 
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/33de7d282_bent_billiard_pipe_line_drawing.png"
                     alt="Pipes"
                     className="w-8 h-8 mx-auto mb-2 object-contain brightness-0 invert"
                   />
@@ -202,7 +202,7 @@ export default function HomePage() {
               <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <img 
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/33de7d282_bent_billiard_pipe_line_drawing.png"
                     alt="Pipes"
                     className="w-10 h-10 object-contain brightness-0 invert"
                   />
