@@ -35,7 +35,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     quantity_owned: '',
     production_status: '',
     aging_potential: '',
-    rating: '',
+    rating: null,
     notes: '',
     photo: '',
     is_favorite: false
@@ -397,9 +397,9 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
               type="number"
               min="1"
               max="5"
-              value={formData.rating}
+              value={formData.rating || ''}
               onChange={(e) => handleChange('rating', e.target.value)}
-              placeholder="1-5"
+              placeholder="Optional"
               className="border-stone-200"
             />
           </div>
