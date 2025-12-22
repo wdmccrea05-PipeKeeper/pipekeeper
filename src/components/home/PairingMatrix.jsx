@@ -3,16 +3,40 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Trophy, Sparkles, ChevronRight } from "lucide-react";
+import { Loader2, Trophy, Sparkles, ChevronRight, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [pairings, setPairings] = useState(null);
   const [selectedPipe, setSelectedPipe] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Load saved pairings
+  const { data: savedPairings } = useQuery({
+    queryKey: ['saved-pairings'],
+    queryFn: async () => {
+      const results = await base44.entities.PairingMatrix.list('-created_date', 1);
+      return results[0];
+    },
+  });
+
+  useEffect(() => {
+    if (savedPairings && !pairings) {
+      setPairings(savedPairings.pairings);
+    }
+  }, [savedPairings]);
+
+  const savePairingsMutation = useMutation({
+    mutationFn: (data) => base44.entities.PairingMatrix.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+    },
+  });
 
   const generatePairings = async () => {
     if (pipes.length === 0 || blends.length === 0) return;
@@ -92,7 +116,14 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
         }
       });
 
-      setPairings(result.pairings || []);
+      const generatedPairings = result.pairings || [];
+      setPairings(generatedPairings);
+      
+      // Save pairings to database
+      await savePairingsMutation.mutateAsync({
+        pairings: generatedPairings,
+        generated_date: new Date().toISOString()
+      });
     } catch (err) {
       console.error('Error generating pairings:', err);
     } finally {
@@ -131,25 +162,28 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
               Find the perfect tobacco blend for each pipe in your collection
             </CardDescription>
           </div>
-          {!pairings && (
-            <Button
-              onClick={generatePairings}
-              disabled={loading}
-              className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Pairings
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            onClick={generatePairings}
+            disabled={loading}
+            className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : pairings ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Update Pairings
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Pairings
+              </>
+            )}
+          </Button>
         </div>
       </CardHeader>
       
@@ -270,14 +304,10 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
             })}
           </div>
 
-          <div className="mt-4 flex justify-center">
-            <Button
-              onClick={() => { setPairings(null); setSelectedPipe(null); }}
-              variant="outline"
-              size="sm"
-            >
-              Regenerate Pairings
-            </Button>
+          <div className="mt-4 text-center text-xs text-stone-500">
+            {savedPairings?.generated_date && (
+              <p>Last updated: {new Date(savedPairings.generated_date).toLocaleDateString()}</p>
+            )}
           </div>
         </CardContent>
       )}

@@ -1,17 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 
 export default function CollectionOptimizer({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [optimization, setOptimization] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Load saved optimization
+  const { data: savedOptimization } = useQuery({
+    queryKey: ['saved-optimization'],
+    queryFn: async () => {
+      const results = await base44.entities.CollectionOptimization.list('-created_date', 1);
+      return results[0];
+    },
+  });
+
+  useEffect(() => {
+    if (savedOptimization && !optimization) {
+      setOptimization(savedOptimization);
+    }
+  }, [savedOptimization]);
+
+  const saveOptimizationMutation = useMutation({
+    mutationFn: (data) => base44.entities.CollectionOptimization.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+    },
+  });
+
+  const updatePipeMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Pipe.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+    },
+  });
 
   const analyzeCollection = async () => {
     if (pipes.length === 0 || blends.length === 0) return;
@@ -121,11 +152,24 @@ Be specific, practical, and focused on achieving the best smoking experience acr
       });
 
       setOptimization(result);
+      
+      // Save optimization to database
+      await saveOptimizationMutation.mutateAsync({
+        ...result,
+        generated_date: new Date().toISOString()
+      });
     } catch (err) {
       console.error('Error analyzing collection:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applySpecialization = async (pipeId, designations) => {
+    await updatePipeMutation.mutateAsync({
+      id: pipeId,
+      data: { designations }
+    });
   };
 
   const getVersatilityColor = (score) => {
@@ -161,6 +205,11 @@ Be specific, practical, and focused on achieving the best smoking experience acr
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Analyzing...
+              </>
+            ) : optimization ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Update Analysis
               </>
             ) : (
               <>
@@ -230,6 +279,23 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                               <p className="text-xs font-medium text-blue-700">Usage Pattern:</p>
                               <p className="text-xs text-stone-600">{spec.usage_pattern}</p>
                             </div>
+
+                            {!pipe?.designations || pipe.designations.length === 0 ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                                onClick={() => applySpecialization(pipe.id, spec.recommended_blend_types)}
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Apply Specialization
+                              </Button>
+                            ) : (
+                              <Badge className="mt-2 bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <Check className="w-3 h-3 mr-1" />
+                                Specialization Applied
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -326,14 +392,10 @@ Be specific, practical, and focused on achieving the best smoking experience acr
             </div>
           )}
 
-          <div className="flex justify-center pt-2">
-            <Button
-              onClick={() => setOptimization(null)}
-              variant="outline"
-              size="sm"
-            >
-              Run New Analysis
-            </Button>
+          <div className="text-center pt-2 text-xs text-stone-500">
+            {savedOptimization?.generated_date && (
+              <p>Last updated: {new Date(savedOptimization.generated_date).toLocaleDateString()}</p>
+            )}
           </div>
         </CardContent>
       )}

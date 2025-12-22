@@ -4,12 +4,11 @@ const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/p
 
 export default function PipeShapeIcon({ shape, className = "w-16 h-16" }) {
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <img 
-        src={PIPE_IMAGE} 
-        alt={shape || "Pipe"} 
-        className="w-full h-full object-contain opacity-40 mix-blend-multiply"
-      />
-    </div>
+    <img 
+      src={PIPE_IMAGE} 
+      alt={shape || "Pipe"} 
+      className={`${className} object-contain opacity-40`}
+      style={{ mixBlendMode: 'multiply' }}
+    />
   );
 }
