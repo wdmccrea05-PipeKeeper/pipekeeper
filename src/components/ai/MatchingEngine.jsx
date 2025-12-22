@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, ExternalLink, Star, Flame } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
-export default function MatchingEngine({ pipe, blends }) {
+export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
 
@@ -101,6 +102,15 @@ Provide recommendations in JSON format with:
       setLoading(false);
     }
   };
+
+  if (!isPaidUser) {
+    return (
+      <UpgradePrompt 
+        featureName="AI Tobacco Matching (New Blends)"
+        description="Get AI-powered recommendations for new tobacco blends to buy based on your pipe's characteristics and smoking profile. Discover perfect matches you don't own yet."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

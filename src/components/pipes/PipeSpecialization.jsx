@@ -7,8 +7,9 @@ import { Target, Plus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
-export default function PipeSpecialization({ pipe, blends, onUpdate }) {
+export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const [editing, setEditing] = useState(false);
   const [newDesignation, setNewDesignation] = useState('');
   const [designations, setDesignations] = useState(pipe.focus || []);
@@ -63,6 +64,15 @@ export default function PipeSpecialization({ pipe, blends, onUpdate }) {
       designation.toLowerCase().includes(blend.blend_type?.toLowerCase())
     );
   });
+
+  if (!isPaidUser) {
+    return (
+      <UpgradePrompt 
+        featureName="Pipe Specialization"
+        description="Designate each pipe for specific tobacco types (English, Virginia, Aromatic, etc.) and see which blends from your collection match perfectly."
+      />
+    );
+  }
 
   if (!editing && (!designations || designations.length === 0)) {
     return (

@@ -158,6 +158,7 @@ export default function PipeDetailPage() {
               pipe={pipe} 
               blends={blends}
               onUpdate={(data) => updateMutation.mutate(data)}
+              isPaidUser={isPaidUser}
             />
           </div>
         )}
@@ -403,7 +404,7 @@ export default function PipeDetailPage() {
           <TabsContent value="match">
             <Card className="border-stone-200">
               <CardContent className="p-6">
-                <MatchingEngine pipe={pipe} blends={blends} />
+                <MatchingEngine pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
               </CardContent>
             </Card>
           </TabsContent>
