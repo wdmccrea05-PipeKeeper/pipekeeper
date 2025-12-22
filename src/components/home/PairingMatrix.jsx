@@ -38,6 +38,20 @@ export default function PairingMatrix({ pipes, blends }) {
     },
   });
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return profiles[0];
+    },
+    enabled: !!user,
+  });
+
   const generatePairings = async () => {
     if (pipes.length === 0 || blends.length === 0) return;
 
@@ -51,7 +65,8 @@ export default function PairingMatrix({ pipes, blends }) {
         bowl_material: p.bowl_material,
         chamber_volume: p.chamber_volume,
         bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm
+        bowl_depth_mm: p.bowl_depth_mm,
+        focus: p.focus
       }));
 
       const blendsData = blends.map(b => ({
@@ -64,6 +79,19 @@ export default function PairingMatrix({ pipes, blends }) {
         flavor_notes: b.flavor_notes
       }));
 
+      let profileContext = "";
+      if (userProfile) {
+        profileContext = `\n\nUser Smoking Preferences:
+- Clenching: ${userProfile.clenching_preference}
+- Smoke Duration: ${userProfile.smoke_duration_preference}
+- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
+- Pipe Size Preference: ${userProfile.pipe_size_preference}
+- Strength Preference: ${userProfile.strength_preference}
+- Additional Notes: ${userProfile.notes || 'None'}
+
+Weight these preferences heavily when scoring pairings. Prioritize blends that match their preferred types and strength.`;
+      }
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier. Analyze these pipes and tobacco blends to create optimal pairings.
 
@@ -71,7 +99,7 @@ Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
 Tobacco Blends:
-${JSON.stringify(blendsData, null, 2)}
+${JSON.stringify(blendsData, null, 2)}${profileContext}
 
 For each pipe, evaluate which tobacco blends would pair well based on:
 1. Bowl size - smaller bowls suit lighter tobaccos, larger bowls handle fuller blends
@@ -79,6 +107,7 @@ For each pipe, evaluate which tobacco blends would pair well based on:
 3. Material - meerschaum is excellent for Virginias, briar for everything
 4. Chamber volume - impacts how tobacco characteristics develop
 5. Shape - affects smoke temperature and moisture
+6. Pipe focus field - if set, prioritize blends matching the focus
 
 Rate each pairing on a scale of 1-10 where:
 - 10 = Perfect pairing, optimal characteristics match
@@ -86,7 +115,7 @@ Rate each pairing on a scale of 1-10 where:
 - 4-6 = Good pairing, will work well
 - 1-3 = Poor pairing, not recommended
 
-For each pipe, return ALL blend pairings with scores and brief reasoning.`,
+CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with scores and brief reasoning. Do not skip any pipes.`,
         response_json_schema: {
           type: "object",
           properties: {

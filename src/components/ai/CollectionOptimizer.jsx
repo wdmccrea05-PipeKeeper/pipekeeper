@@ -15,6 +15,20 @@ export default function CollectionOptimizer({ pipes, blends }) {
   const [optimization, setOptimization] = useState(null);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return profiles[0];
+    },
+    enabled: !!user,
+  });
+
   // Load saved optimization
   const { data: savedOptimization } = useQuery({
     queryKey: ['saved-optimization'],

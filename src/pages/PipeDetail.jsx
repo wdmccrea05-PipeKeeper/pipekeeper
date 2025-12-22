@@ -29,6 +29,7 @@ import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
+import TopBlendMatches from "@/components/pipes/TopBlendMatches";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -53,6 +54,20 @@ export default function PipeDetailPage() {
   const { data: blends = [] } = useQuery({
     queryKey: ['blends'],
     queryFn: () => base44.entities.TobaccoBlend.list(),
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return profiles[0];
+    },
+    enabled: !!user,
   });
 
   const updateMutation = useMutation({
@@ -140,6 +155,17 @@ export default function PipeDetailPage() {
               pipe={pipe} 
               blends={blends}
               onUpdate={(data) => updateMutation.mutate(data)}
+            />
+          </div>
+        )}
+
+        {/* Top Blend Matches */}
+        {blends.length > 0 && (
+          <div className="mb-6">
+            <TopBlendMatches 
+              pipe={pipe} 
+              blends={blends}
+              userProfile={userProfile}
             />
           </div>
         )}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X } from "lucide-react";
+import { Home, Leaf, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
+  { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
 ];
 
 function NavLink({ item, currentPage, onClick }) {
