@@ -23,7 +23,9 @@ export default function TobaccoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [strengthFilter, setStrengthFilter] = useState('All Strengths');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('tobaccoViewMode') || 'grid';
+  });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   const queryClient = useQueryClient();
@@ -137,7 +139,10 @@ export default function TobaccoPage() {
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
-              onClick={() => setViewMode('grid')}
+              onClick={() => {
+                setViewMode('grid');
+                localStorage.setItem('tobaccoViewMode', 'grid');
+              }}
               className="rounded-r-none"
             >
               <Grid3X3 className="w-4 h-4" />
@@ -145,7 +150,10 @@ export default function TobaccoPage() {
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
-              onClick={() => setViewMode('list')}
+              onClick={() => {
+                setViewMode('list');
+                localStorage.setItem('tobaccoViewMode', 'list');
+              }}
               className="rounded-l-none"
             >
               <List className="w-4 h-4" />

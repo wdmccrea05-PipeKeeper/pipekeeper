@@ -23,7 +23,9 @@ export default function PipesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [shapeFilter, setShapeFilter] = useState('All Shapes');
   const [materialFilter, setMaterialFilter] = useState('All Materials');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('pipesViewMode') || 'grid';
+  });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   const queryClient = useQueryClient();
@@ -142,7 +144,10 @@ export default function PipesPage() {
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
-              onClick={() => setViewMode('grid')}
+              onClick={() => {
+                setViewMode('grid');
+                localStorage.setItem('pipesViewMode', 'grid');
+              }}
               className="rounded-r-none"
             >
               <Grid3X3 className="w-4 h-4" />
@@ -150,7 +155,10 @@ export default function PipesPage() {
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
-              onClick={() => setViewMode('list')}
+              onClick={() => {
+                setViewMode('list');
+                localStorage.setItem('pipesViewMode', 'list');
+              }}
               className="rounded-l-none"
             >
               <List className="w-4 h-4" />
