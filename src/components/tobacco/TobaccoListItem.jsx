@@ -35,6 +35,10 @@ export default function TobaccoListItem({ blend, onClick }) {
                 src={blend.photo} 
                 alt={blend.name} 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-3xl">🍂</div></div>';
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">

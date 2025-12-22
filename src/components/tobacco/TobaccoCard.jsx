@@ -37,6 +37,10 @@ export default function TobaccoCard({ blend, onClick }) {
               src={blend.photo} 
               alt={blend.name} 
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-center"><div class="text-4xl mb-2">🍂</div><p class="text-xs text-amber-700/60">No photo</p></div></div>';
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
