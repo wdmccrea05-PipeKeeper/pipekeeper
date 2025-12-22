@@ -579,6 +579,7 @@ Return complete and accurate information based on the blend name or description 
               type="number"
               min="1"
               max="5"
+              step="1"
               value={formData.rating || ''}
               onChange={(e) => handleChange('rating', e.target.value)}
               placeholder="Optional"
