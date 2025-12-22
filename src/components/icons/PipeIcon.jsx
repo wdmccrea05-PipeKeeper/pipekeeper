@@ -6,22 +6,23 @@ export default function PipeIcon({ className = "w-5 h-5" }) {
       viewBox="0 0 24 24" 
       fill="none" 
       stroke="currentColor" 
-      strokeWidth="2" 
+      strokeWidth="2.5" 
       strokeLinecap="round" 
       strokeLinejoin="round"
       className={className}
     >
-      {/* Bowl */}
-      <path d="M3 14c0 2.2 1.8 4 4 4s4-1.8 4-4v-3H3v3z" />
+      {/* Bowl - cylindrical billiard shape */}
+      <ellipse cx="5.5" cy="10" rx="2" ry="1.5" />
+      <path d="M3.5 10v4c0 1.1.9 2 2 2s2-.9 2-2v-4" />
       
       {/* Shank */}
-      <path d="M11 11h6" />
+      <path d="M7.5 12h6" />
       
-      {/* Stem (bent) */}
-      <path d="M17 11c0 0 1 0 2 1s2 3 2 3" />
+      {/* Stem - bent upward */}
+      <path d="M13.5 12c1 0 2 .5 3 1.5s1.5 2.5 2 3.5" />
       
-      {/* Bit */}
-      <circle cx="21" cy="15" r="1" fill="currentColor" />
+      {/* Bit end */}
+      <circle cx="18.5" cy="17" r="0.8" fill="currentColor" />
     </svg>
   );
 }
