@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2, Camera, Search } from "lucide-react";
+import { Upload, X, Loader2, Camera, Search, Edit } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
@@ -48,6 +48,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [uploadingStamping, setUploadingStamping] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
   const [cropperType, setCropperType] = useState(null);
+  const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -131,10 +132,25 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       // Upload
       const result = await base44.integrations.Core.UploadFile({ file });
       
-      if (isStamping) {
-        handleChange('stamping_photos', [...(formData.stamping_photos || []), result.file_url]);
+      // If editing existing photo, replace it
+      if (editingPhotoIndex !== null) {
+        if (isStamping) {
+          const newPhotos = [...(formData.stamping_photos || [])];
+          newPhotos[editingPhotoIndex] = result.file_url;
+          handleChange('stamping_photos', newPhotos);
+        } else {
+          const newPhotos = [...(formData.photos || [])];
+          newPhotos[editingPhotoIndex] = result.file_url;
+          handleChange('photos', newPhotos);
+        }
+        setEditingPhotoIndex(null);
       } else {
-        handleChange('photos', [...(formData.photos || []), result.file_url]);
+        // Adding new photo
+        if (isStamping) {
+          handleChange('stamping_photos', [...(formData.stamping_photos || []), result.file_url]);
+        } else {
+          handleChange('photos', [...(formData.photos || []), result.file_url]);
+        }
       }
     } catch (err) {
       console.error('Upload error:', err);
@@ -155,6 +171,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     } else {
       handleChange('photos', formData.photos.filter((_, i) => i !== index));
     }
+  };
+
+  const editPhoto = (index, isStamping = false) => {
+    setEditingPhotoIndex(index);
+    const photoUrl = isStamping ? formData.stamping_photos[index] : formData.photos[index];
+    setCropperImage(photoUrl);
+    setCropperType(isStamping ? 'stamping' : 'photo');
   };
 
   const handleSubmit = (e) => {
@@ -178,6 +201,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           onCancel={() => {
             setCropperImage(null);
             setCropperType(null);
+            setEditingPhotoIndex(null);
           }}
         />
       )}
@@ -221,15 +245,24 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200">
+              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(idx)}
-                  className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
-                >
-                  <X className="w-3 h-3 text-white" />
-                </button>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => editPhoto(idx, false)}
+                    className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                  >
+                    <Edit className="w-3.5 h-3.5 text-stone-700" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx)}
+                    className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
               </div>
             ))}
             <label className="aspect-square rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
@@ -263,15 +296,24 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.stamping_photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200">
+              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(idx, true)}
-                  className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
-                >
-                  <X className="w-3 h-3 text-white" />
-                </button>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => editPhoto(idx, true)}
+                    className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                  >
+                    <Edit className="w-3.5 h-3.5 text-stone-700" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx, true)}
+                    className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
               </div>
             ))}
             <label className="aspect-square rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
