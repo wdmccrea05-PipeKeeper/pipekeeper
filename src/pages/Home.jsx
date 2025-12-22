@@ -51,12 +51,12 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    if (!onboardingLoading && user && !onboardingStatus) {
+    if (!onboardingLoading && user?.email && !onboardingStatus) {
       setShowOnboarding(true);
     } else if (onboardingStatus && !onboardingStatus.completed && !onboardingStatus.skipped) {
       setShowOnboarding(true);
     }
-  }, [user, onboardingStatus, onboardingLoading]);
+  }, [user?.email, onboardingStatus, onboardingLoading]);
 
   const handleOnboardingComplete = async () => {
     if (onboardingStatus) {
