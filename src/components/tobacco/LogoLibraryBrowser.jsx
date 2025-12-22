@@ -9,9 +9,30 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   const [searchQuery, setSearchQuery] = useState('');
   const allBrands = getAvailableBrands();
   
-  const filteredBrands = allBrands.filter(brand => 
-    brand.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Smart search - prioritize starts-with, then includes, then word matches
+  const filteredBrands = searchQuery.trim() === '' 
+    ? allBrands 
+    : allBrands
+        .map(brand => {
+          const brandLower = brand.toLowerCase();
+          const queryLower = searchQuery.toLowerCase();
+          
+          // Calculate relevance score
+          let score = 0;
+          if (brandLower === queryLower) score = 100; // exact match
+          else if (brandLower.startsWith(queryLower)) score = 80; // starts with
+          else if (brandLower.includes(queryLower)) score = 60; // contains
+          else {
+            // Check if any word starts with query
+            const words = brandLower.split(/[\s&]+/);
+            if (words.some(w => w.startsWith(queryLower))) score = 40;
+          }
+          
+          return { brand, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.brand);
 
   const handleSelect = (brand) => {
     const logo = getTobaccoLogo(brand);
@@ -44,27 +65,36 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                 const isSelected = currentLogo === logo;
                 
                 return (
-                  <button
-                    key={brand}
-                    onClick={() => handleSelect(brand)}
-                    className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 ${
-                      isSelected 
-                        ? 'border-amber-600 bg-amber-100' 
-                        : 'border-stone-200 bg-white'
-                    }`}
-                  >
-                    <img 
-                      src={logo} 
-                      alt={brand}
-                      className="w-full h-full object-contain p-2"
-                    />
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1">
-                        <Check className="w-3 h-3 text-white" />
+                  <div key={brand} className="flex flex-col">
+                    <button
+                      onClick={() => handleSelect(brand)}
+                      className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 overflow-hidden ${
+                        isSelected 
+                          ? 'border-amber-600 bg-amber-100' 
+                          : 'border-stone-200 bg-white'
+                      }`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center p-3 bg-white">
+                        <img 
+                          src={logo} 
+                          alt={brand}
+                          className="max-w-full max-h-full object-contain"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            const parent = e.target.parentElement;
+                            parent.innerHTML = `<div class="text-amber-600 text-4xl">🍂</div>`;
+                          }}
+                        />
                       </div>
-                    )}
-                    <p className="text-xs text-stone-600 mt-1 px-1 truncate">{brand}</p>
-                  </button>
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </button>
+                    <p className="text-xs text-stone-600 mt-1 px-1 text-center truncate">{brand}</p>
+                  </div>
                 );
               })}
             </div>
