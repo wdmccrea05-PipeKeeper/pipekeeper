@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -45,14 +45,25 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [newComponent, setNewComponent] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const [logoMatches, setLogoMatches] = useState([]);
 
   const handleChange = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
       
-      // Auto-set logo from library when manufacturer changes
-      if (field === 'manufacturer' && value && !prev.logo) {
-        updated.logo = getTobaccoLogo(value);
+      // Check for logo matches when manufacturer changes
+      if (field === 'manufacturer' && value) {
+        const matches = getMatchingLogos(value);
+        setLogoMatches(matches);
+        
+        // Auto-set logo if exactly one match and no logo currently set
+        if (matches.length === 1 && !prev.logo) {
+          updated.logo = matches[0].logo;
+        } else if (matches.length === 0 && !prev.logo) {
+          // Use generic icon if no matches
+          updated.logo = getTobaccoLogo(value);
+        }
+        // If multiple matches, show selection UI (don't auto-set)
       }
       
       return updated;
@@ -232,10 +243,58 @@ Return complete and accurate information based on the blend name or description 
         </>
       )}
 
+      {/* Logo Selection from Library */}
+      {logoMatches.length > 1 && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-amber-800">Select Logo</CardTitle>
+            <p className="text-sm text-stone-600">
+              Multiple logos found for "{formData.manufacturer}". Choose one:
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {logoMatches.map((match, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    handleChange('logo', match.logo);
+                    setLogoMatches([]);
+                  }}
+                  className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 ${
+                    formData.logo === match.logo 
+                      ? 'border-amber-600 bg-amber-100' 
+                      : 'border-stone-200 bg-white'
+                  }`}
+                >
+                  <img 
+                    src={match.logo} 
+                    alt={match.brand}
+                    className="w-full h-full object-contain p-2"
+                  />
+                  {formData.logo === match.logo && (
+                    <div className="absolute top-1 right-1 bg-amber-600 rounded-full p-1">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                  <p className="text-xs text-stone-600 mt-1">{match.brand}</p>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Photo & Logo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-stone-800">Images</CardTitle>
+          {formData.logo && !uploading && !uploadingLogo && (
+            <p className="text-xs text-stone-500">
+              Logo auto-populated from library. You can upload a custom one to replace it.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

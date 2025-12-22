@@ -28,32 +28,42 @@ const TOBACCO_LOGOS = {
 const GENERIC_TOBACCO_ICON = 'https://cdn-icons-png.flaticon.com/512/2917/2917995.png';
 
 /**
- * Get tobacco brand logo URL
+ * Get all matching tobacco brand logos
+ * @param {string} manufacturer - Brand/manufacturer name
+ * @returns {Array<{brand: string, logo: string}>} Array of matching brands and logos
+ */
+export function getMatchingLogos(manufacturer) {
+  if (!manufacturer) return [];
+  
+  const normalized = manufacturer.trim();
+  const lowerManufacturer = normalized.toLowerCase();
+  const matches = [];
+  
+  // Direct match
+  if (TOBACCO_LOGOS[normalized]) {
+    matches.push({ brand: normalized, logo: TOBACCO_LOGOS[normalized] });
+  }
+  
+  // Partial matches (case insensitive)
+  for (const [brand, logo] of Object.entries(TOBACCO_LOGOS)) {
+    if (brand !== normalized && 
+        (lowerManufacturer.includes(brand.toLowerCase()) || 
+         brand.toLowerCase().includes(lowerManufacturer))) {
+      matches.push({ brand, logo });
+    }
+  }
+  
+  return matches;
+}
+
+/**
+ * Get tobacco brand logo URL (returns first match or generic icon)
  * @param {string} manufacturer - Brand/manufacturer name
  * @returns {string} Logo URL or generic tobacco icon
  */
 export function getTobaccoLogo(manufacturer) {
-  if (!manufacturer) return GENERIC_TOBACCO_ICON;
-  
-  // Normalize the manufacturer name for matching
-  const normalized = manufacturer.trim();
-  
-  // Direct match
-  if (TOBACCO_LOGOS[normalized]) {
-    return TOBACCO_LOGOS[normalized];
-  }
-  
-  // Partial match (case insensitive)
-  const lowerManufacturer = normalized.toLowerCase();
-  for (const [brand, logo] of Object.entries(TOBACCO_LOGOS)) {
-    if (lowerManufacturer.includes(brand.toLowerCase()) || 
-        brand.toLowerCase().includes(lowerManufacturer)) {
-      return logo;
-    }
-  }
-  
-  // Return generic fallback
-  return GENERIC_TOBACCO_ICON;
+  const matches = getMatchingLogos(manufacturer);
+  return matches.length > 0 ? matches[0].logo : GENERIC_TOBACCO_ICON;
 }
 
 /**
