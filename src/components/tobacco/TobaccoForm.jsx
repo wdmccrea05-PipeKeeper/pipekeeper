@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import TobaccoSearch from "@/components/ai/TobaccoSearch";
 import { fetchTobaccoStockPhoto } from "@/components/ai/StockPhotoFetcher";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
@@ -43,16 +42,66 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [uploading, setUploading] = useState(false);
   const [fetchingPhoto, setFetchingPhoto] = useState(false);
   const [newComponent, setNewComponent] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSearchSelect = (searchData) => {
-    setFormData(prev => ({
-      ...prev,
-      ...searchData
-    }));
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || searching) return;
+
+    setSearching(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Find detailed information about this pipe tobacco blend: "${searchQuery}"
+        
+Include all available details such as:
+- Official blend name
+- Manufacturer/Brand
+- Blend type (Virginia, English, Aromatic, etc.)
+- Tobacco components (types of tobacco used)
+- Cut type (Flake, Ribbon, etc.)
+- Strength level
+- Room note
+- Flavor notes/profile
+- Tin sizes commonly available
+- Production status (current, discontinued, etc.)
+- Aging potential
+
+Return complete and accurate information based on the blend name or description provided.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            manufacturer: { type: "string" },
+            blend_type: { type: "string" },
+            tobacco_components: { type: "array", items: { type: "string" } },
+            cut: { type: "string" },
+            strength: { type: "string" },
+            room_note: { type: "string" },
+            flavor_notes: { type: "array", items: { type: "string" } },
+            tin_size_oz: { type: "number" },
+            production_status: { type: "string" },
+            aging_potential: { type: "string" }
+          }
+        }
+      });
+
+      if (result) {
+        setFormData(prev => ({
+          ...prev,
+          ...result
+        }));
+        setSearchQuery('');
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleFetchStockPhoto = async () => {
@@ -135,7 +184,33 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
               </p>
             </CardHeader>
             <CardContent>
-              <TobaccoSearch onSelect={handleSearchSelect} />
+              <div className="flex gap-2">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="e.g., Peterson Irish Flake, Dunhill Nightcap..."
+                  className="border-stone-200"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
+                />
+                <Button 
+                  type="button"
+                  onClick={handleSearch}
+                  disabled={searching || !searchQuery.trim()}
+                  className="bg-amber-700 hover:bg-amber-800 shrink-0"
+                >
+                  {searching ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
