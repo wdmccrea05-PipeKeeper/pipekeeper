@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
@@ -433,11 +434,22 @@ export default function HomePage() {
                     {recentBlends.map(blend => (
                       <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
                         <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden flex items-center justify-center">
-                            {blend.photo ? (
-                              <img src={blend.photo} alt="" className="w-full h-full object-cover" />
+                          <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center border border-stone-200">
+                            {blend.logo || blend.photo ? (
+                              <img 
+                                src={blend.logo || blend.photo} 
+                                alt="" 
+                                className={`${blend.logo ? 'w-full h-full object-contain p-1' : 'w-full h-full object-cover'}`}
+                                onError={(e) => {
+                                  e.target.src = getTobaccoLogo(blend.manufacturer);
+                                }}
+                              />
                             ) : (
-                              <span className="text-xl">🍂</span>
+                              <img 
+                                src={getTobaccoLogo(blend.manufacturer)} 
+                                alt=""
+                                className="w-full h-full object-contain p-1"
+                              />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
