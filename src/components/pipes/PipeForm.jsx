@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2, Camera, Search, Edit } from "lucide-react";
+import { Upload, X, Loader2, Camera, Search, Edit, ArrowLeftRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import PipeSearch from "@/components/ai/PipeSearch";
@@ -17,7 +17,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const STEM_MATERIALS = ["Vulcanite", "Acrylic", "Lucite", "Cumberland", "Amber", "Horn", "Bone", "Other"];
-const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Carved", "Natural", "Other"];
+const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Partially Rusticated", "Carved", "Natural", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
 const CONDITIONS = ["Mint", "Excellent", "Very Good", "Good", "Fair", "Poor", "Estate - Unrestored"];
 const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
@@ -28,6 +28,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     maker: '',
     country_of_origin: '',
     shape: '',
+    length_mm: '',
+    weight_grams: '',
+    bowl_height_mm: '',
+    bowl_width_mm: '',
     bowl_diameter_mm: '',
     bowl_depth_mm: '',
     chamber_volume: '',
@@ -46,6 +50,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     stamping_photos: [],
     is_favorite: false
   });
+  const [useImperial, setUseImperial] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamping, setUploadingStamping] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
@@ -193,6 +198,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     e.preventDefault();
     const cleanedData = {
       ...formData,
+      length_mm: formData.length_mm ? Number(formData.length_mm) : null,
+      weight_grams: formData.weight_grams ? Number(formData.weight_grams) : null,
+      bowl_height_mm: formData.bowl_height_mm ? Number(formData.bowl_height_mm) : null,
+      bowl_width_mm: formData.bowl_width_mm ? Number(formData.bowl_width_mm) : null,
       bowl_diameter_mm: formData.bowl_diameter_mm ? Number(formData.bowl_diameter_mm) : null,
       bowl_depth_mm: formData.bowl_depth_mm ? Number(formData.bowl_depth_mm) : null,
       purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
@@ -422,8 +431,17 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* Physical Characteristics */}
       <Card className="border-stone-200">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-lg text-stone-800">Physical Characteristics</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setUseImperial(!useImperial)}
+          >
+            <ArrowLeftRight className="w-4 h-4 mr-2" />
+            {useImperial ? 'Metric' : 'Imperial'}
+          </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
@@ -493,22 +511,68 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Bowl Diameter (mm)</Label>
+            <Label>Length {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              value={formData.bowl_diameter_mm}
-              onChange={(e) => handleChange('bowl_diameter_mm', e.target.value)}
-              placeholder="e.g., 20"
+              step="0.1"
+              value={useImperial && formData.length_mm ? (formData.length_mm / 25.4).toFixed(2) : formData.length_mm}
+              onChange={(e) => handleChange('length_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
               className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
-            <Label>Bowl Depth (mm)</Label>
+            <Label>Weight {useImperial ? '(oz)' : '(g)'}</Label>
             <Input
               type="number"
-              value={formData.bowl_depth_mm}
-              onChange={(e) => handleChange('bowl_depth_mm', e.target.value)}
-              placeholder="e.g., 35"
+              step="0.1"
+              value={useImperial && formData.weight_grams ? (formData.weight_grams / 28.35).toFixed(2) : formData.weight_grams}
+              onChange={(e) => handleChange('weight_grams', useImperial ? (parseFloat(e.target.value || 0) * 28.35).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Bowl Height {useImperial ? '(in)' : '(mm)'}</Label>
+            <Input
+              type="number"
+              step="0.1"
+              value={useImperial && formData.bowl_height_mm ? (formData.bowl_height_mm / 25.4).toFixed(2) : formData.bowl_height_mm}
+              onChange={(e) => handleChange('bowl_height_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Bowl Width {useImperial ? '(in)' : '(mm)'}</Label>
+            <Input
+              type="number"
+              step="0.1"
+              value={useImperial && formData.bowl_width_mm ? (formData.bowl_width_mm / 25.4).toFixed(2) : formData.bowl_width_mm}
+              onChange={(e) => handleChange('bowl_width_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Chamber Diameter {useImperial ? '(in)' : '(mm)'}</Label>
+            <Input
+              type="number"
+              step="0.1"
+              value={useImperial && formData.bowl_diameter_mm ? (formData.bowl_diameter_mm / 25.4).toFixed(2) : formData.bowl_diameter_mm}
+              onChange={(e) => handleChange('bowl_diameter_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Chamber Depth {useImperial ? '(in)' : '(mm)'}</Label>
+            <Input
+              type="number"
+              step="0.1"
+              value={useImperial && formData.bowl_depth_mm ? (formData.bowl_depth_mm / 25.4).toFixed(2) : formData.bowl_depth_mm}
+              onChange={(e) => handleChange('bowl_depth_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
               className="border-stone-200"
             />
           </div>
