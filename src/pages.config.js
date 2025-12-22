@@ -19,7 +19,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Pipes",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
