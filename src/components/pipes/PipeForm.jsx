@@ -10,6 +10,7 @@ import { Upload, X, Loader2, Camera, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
+import { fetchPipeStockPhoto } from "@/components/ai/StockPhotoFetcher";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -20,6 +21,8 @@ const CONDITIONS = ["Mint", "Excellent", "Very Good", "Good", "Fair", "Poor", "E
 const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
 
 export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
+  const [fetchingPhoto, setFetchingPhoto] = React.useState(false);
+
   const [formData, setFormData] = useState(pipe || {
     name: '',
     maker: '',
@@ -62,6 +65,24 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       ...prev,
       ...identifiedData
     }));
+  };
+
+  const handleFetchStockPhoto = async () => {
+    if (!formData.maker && !formData.name && !formData.shape) {
+      return;
+    }
+
+    setFetchingPhoto(true);
+    try {
+      const stockPhoto = await fetchPipeStockPhoto(formData);
+      if (stockPhoto) {
+        handleChange('photos', [...(formData.photos || []), stockPhoto]);
+      }
+    } catch (err) {
+      console.error('Error fetching stock photo:', err);
+    } finally {
+      setFetchingPhoto(false);
+    }
   };
 
   const handlePhotoUpload = async (e, isStamping = false) => {
@@ -151,7 +172,28 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Photos Section */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Pipe Photos</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg text-stone-800">Pipe Photos</CardTitle>
+            {(formData.maker || formData.name || formData.shape) && formData.photos?.length === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleFetchStockPhoto}
+                disabled={fetchingPhoto}
+                className="text-xs"
+              >
+                {fetchingPhoto ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Finding...
+                  </>
+                ) : (
+                  'Find Stock Photo'
+                )}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">

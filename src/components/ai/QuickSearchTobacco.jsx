@@ -13,6 +13,7 @@ import {
 import { Loader2, Search, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchTobaccoStockPhoto } from "./StockPhotoFetcher";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -95,6 +96,9 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
   const handleAddBlend = async (blend) => {
     setAdding(blend.name);
     try {
+      // Fetch stock photo
+      const stockPhoto = await fetchTobaccoStockPhoto(blend);
+      
       const blendData = {
         name: blend.name || '',
         manufacturer: blend.manufacturer || '',
@@ -109,6 +113,7 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
         aging_potential: blend.aging_potential || '',
         rating: blend.typical_rating || null,
         notes: blend.description || '',
+        photo: stockPhoto || '',
         quantity_owned: 0
       };
 

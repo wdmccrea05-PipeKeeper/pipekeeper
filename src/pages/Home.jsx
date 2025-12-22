@@ -11,6 +11,7 @@ import {
   ArrowRight, Heart, DollarSign, 
   Leaf, Package, Star, Sparkles, Search, Camera
 } from "lucide-react";
+import PairingMatrix from "@/components/home/PairingMatrix";
 
 export default function HomePage() {
   const { data: pipes = [] } = useQuery({
@@ -55,13 +56,15 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-gradient-to-br from-amber-100 to-amber-50 border-amber-200">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl mb-2">🪈</div>
-                <p className="text-3xl font-bold text-amber-800">{pipes.length}</p>
-                <p className="text-sm text-amber-600">Pipes</p>
-              </CardContent>
-            </Card>
+            <Link to={createPageUrl('Pipes')}>
+              <Card className="bg-gradient-to-br from-amber-100 to-amber-50 border-amber-200 cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-6 text-center">
+                  <div className="text-4xl mb-2">🪈</div>
+                  <p className="text-3xl font-bold text-amber-800">{pipes.length}</p>
+                  <p className="text-sm text-amber-600">Pipes</p>
+                </CardContent>
+              </Card>
+            </Link>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -81,13 +84,15 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-gradient-to-br from-orange-100 to-orange-50 border-orange-200">
-              <CardContent className="p-6 text-center">
-                <Leaf className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-                <p className="text-3xl font-bold text-orange-800">{blends.length}</p>
-                <p className="text-sm text-orange-600">Tobacco Blends</p>
-              </CardContent>
-            </Card>
+            <Link to={createPageUrl('Tobacco')}>
+              <Card className="bg-gradient-to-br from-orange-100 to-orange-50 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-6 text-center">
+                  <Leaf className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                  <p className="text-3xl font-bold text-orange-800">{blends.length}</p>
+                  <p className="text-sm text-orange-600">Tobacco Blends</p>
+                </CardContent>
+              </Card>
+            </Link>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -195,12 +200,24 @@ export default function HomePage() {
           </motion.div>
         </div>
 
+        {/* Pairing Matrix */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-12"
+          >
+            <PairingMatrix pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
         {/* Favorites */}
         {(favoritePipes.length > 0 || favoriteBlends.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.8 }}
             className="mb-12"
           >
             <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
@@ -238,7 +255,7 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
             >
               <Card className="border-stone-200">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -283,7 +300,7 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
+              transition={{ delay: 1.0 }}
             >
               <Card className="border-stone-200">
                 <CardHeader className="flex flex-row items-center justify-between">
