@@ -40,13 +40,32 @@ export default function PairingGrid({ pipes, blends }) {
     setShowGrid(true);
   };
 
-  // Calculate adjusted scores based on user profile preferences
+  // Calculate adjusted scores with priority order:
+  // 1. User profile preferences (highest weight)
+  // 2. Pipe focus
+  // 3. Pipe shape/characteristics
+  // 4. Tobacco blend characteristics (already in base score)
   const getAdjustedScore = (pipe, blend, baseScore) => {
-    if (!userProfile || !baseScore) return baseScore;
+    if (!baseScore) return baseScore;
     
     let adjustment = 0;
     
-    // Boost if pipe has focus matching blend type
+    // PRIORITY 1: User Profile Preferences (highest weight: +2 points)
+    if (userProfile) {
+      if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
+        adjustment += 2;
+      }
+      if (userProfile.strength_preference !== 'No Preference' && 
+          blend.strength === userProfile.strength_preference) {
+        adjustment += 1;
+      }
+      if (userProfile.pipe_size_preference !== 'No Preference' &&
+          pipe.chamber_volume === userProfile.pipe_size_preference) {
+        adjustment += 0.5;
+      }
+    }
+    
+    // PRIORITY 2: Pipe Focus (second highest: +1.5 points)
     if (pipe.focus && pipe.focus.length > 0) {
       const focusMatch = pipe.focus.some(f => 
         blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
@@ -55,22 +74,8 @@ export default function PairingGrid({ pipes, blends }) {
       if (focusMatch) adjustment += 1.5;
     }
     
-    // Boost if blend type matches user preferences
-    if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
-      adjustment += 1;
-    }
-    
-    // Boost if strength matches user preference
-    if (userProfile.strength_preference !== 'No Preference' && 
-        blend.strength === userProfile.strength_preference) {
-      adjustment += 0.5;
-    }
-    
-    // Boost if pipe size matches user preference
-    if (userProfile.pipe_size_preference !== 'No Preference' &&
-        pipe.chamber_volume === userProfile.pipe_size_preference) {
-      adjustment += 0.5;
-    }
+    // PRIORITY 3: Pipe shape/characteristics already factored into baseScore
+    // No additional adjustment needed here as AI analysis handles this
     
     const adjustedScore = Math.min(10, baseScore + adjustment);
     return Math.round(adjustedScore * 10) / 10;

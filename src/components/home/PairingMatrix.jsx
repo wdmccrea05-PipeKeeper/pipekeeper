@@ -195,7 +195,15 @@ CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with score
             </CardDescription>
           </div>
           <Button
-            onClick={generatePairings}
+            onClick={() => {
+              if (pairings) {
+                if (confirm('Update pairing analysis? This will regenerate all recommendations based on your current collection and profile.')) {
+                  generatePairings();
+                }
+              } else {
+                generatePairings();
+              }
+            }}
             disabled={loading}
             className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800"
           >

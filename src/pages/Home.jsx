@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,73 @@ import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 
 export default function HomePage() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
+    queryKey: ['onboarding-status', user?.email],
+    queryFn: async () => {
+      const results = await base44.entities.OnboardingStatus.filter({ user_email: user.email });
+      return results[0];
+    },
+    enabled: !!user,
+  });
+
+  const createOnboardingMutation = useMutation({
+    mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
+  });
+
+  const updateOnboardingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.OnboardingStatus.update(id, data),
+  });
+
+  useEffect(() => {
+    if (!onboardingLoading && user && !onboardingStatus) {
+      setShowOnboarding(true);
+    } else if (onboardingStatus && !onboardingStatus.completed && !onboardingStatus.skipped) {
+      setShowOnboarding(true);
+    }
+  }, [user, onboardingStatus, onboardingLoading]);
+
+  const handleOnboardingComplete = async () => {
+    if (onboardingStatus) {
+      await updateOnboardingMutation.mutateAsync({
+        id: onboardingStatus.id,
+        data: { completed: true, current_step: 5 }
+      });
+    } else if (user) {
+      await createOnboardingMutation.mutateAsync({
+        user_email: user.email,
+        completed: true,
+        current_step: 5
+      });
+    }
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = async () => {
+    if (onboardingStatus) {
+      await updateOnboardingMutation.mutateAsync({
+        id: onboardingStatus.id,
+        data: { skipped: true }
+      });
+    } else if (user) {
+      await createOnboardingMutation.mutateAsync({
+        user_email: user.email,
+        skipped: true,
+        current_step: 0
+      });
+    }
+    setShowOnboarding(false);
+  };
+
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes'],
     queryFn: () => base44.entities.Pipe.list('-created_date'),
@@ -35,8 +100,15 @@ export default function HomePage() {
   const recentBlends = blends.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      {showOnboarding && (
+        <OnboardingFlow 
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero */}
         <motion.div 
           className="text-center mb-12"
