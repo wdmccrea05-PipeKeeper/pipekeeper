@@ -12,6 +12,8 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   const imageRef = useRef(null);
   const containerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -22,13 +24,14 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     img.onload = () => {
       imageRef.current = img;
       setImageLoaded(true);
-      // Center crop on image
-      const size = Math.min(img.width, img.height) * 0.8;
+      // Center crop on image - free form (4:3 ratio as default)
+      const width = Math.min(img.width * 0.8, img.width);
+      const height = Math.min(img.height * 0.8, img.height);
       setCrop({
-        x: (img.width - size) / 2,
-        y: (img.height - size) / 2,
-        width: size,
-        height: size
+        x: (img.width - width) / 2,
+        y: (img.height - height) / 2,
+        width: width,
+        height: height
       });
       drawCanvas();
     };
@@ -89,6 +92,14 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.strokeRect(cropX, cropY, cropW, cropH);
+    
+    // Draw resize handles
+    const handleSize = 8;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(cropX - handleSize/2, cropY - handleSize/2, handleSize, handleSize);
+    ctx.fillRect(cropX + cropW - handleSize/2, cropY - handleSize/2, handleSize, handleSize);
+    ctx.fillRect(cropX - handleSize/2, cropY + cropH - handleSize/2, handleSize, handleSize);
+    ctx.fillRect(cropX + cropW - handleSize/2, cropY + cropH - handleSize/2, handleSize, handleSize);
 
     // Draw grid
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
@@ -109,30 +120,87 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   const handleMouseDown = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setIsDragging(true);
-    setDragStart({ x, y });
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    const img = imageRef.current;
+    const canvas = canvasRef.current;
+    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * zoom;
+    const x = (canvas.width - img.width * scale) / 2;
+    const y = (canvas.height - img.height * scale) / 2;
+    
+    const cropX = (crop.x / img.width) * img.width * scale + x;
+    const cropY = (crop.y / img.height) * img.height * scale + y;
+    const cropW = (crop.width / img.width) * img.width * scale;
+    const cropH = (crop.height / img.height) * img.height * scale;
+    
+    const handleSize = 10;
+    
+    // Check for resize handles
+    if (Math.abs(mouseX - cropX) < handleSize && Math.abs(mouseY - cropY) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('nw');
+    } else if (Math.abs(mouseX - (cropX + cropW)) < handleSize && Math.abs(mouseY - cropY) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('ne');
+    } else if (Math.abs(mouseX - cropX) < handleSize && Math.abs(mouseY - (cropY + cropH)) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('sw');
+    } else if (Math.abs(mouseX - (cropX + cropW)) < handleSize && Math.abs(mouseY - (cropY + cropH)) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('se');
+    } else if (mouseX >= cropX && mouseX <= cropX + cropW && mouseY >= cropY && mouseY <= cropY + cropH) {
+      // Inside crop area - drag to move
+      setIsDragging(true);
+    }
+    
+    setDragStart({ x: mouseX, y: mouseY });
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const dx = (x - dragStart.x) / zoom;
-    const dy = (y - dragStart.y) / zoom;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const dx = (mouseX - dragStart.x) / zoom;
+    const dy = (mouseY - dragStart.y) / zoom;
     
-    setCrop(prev => ({
-      ...prev,
-      x: Math.max(0, Math.min(imageRef.current.width - prev.width, prev.x + dx)),
-      y: Math.max(0, Math.min(imageRef.current.height - prev.height, prev.y + dy))
-    }));
-    setDragStart({ x, y });
+    if (isResizing) {
+      const img = imageRef.current;
+      setCrop(prev => {
+        let newCrop = { ...prev };
+        
+        if (resizeHandle.includes('n')) {
+          newCrop.y = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
+          newCrop.height = prev.height - (newCrop.y - prev.y);
+        }
+        if (resizeHandle.includes('s')) {
+          newCrop.height = Math.max(50, Math.min(img.height - prev.y, prev.height + dy));
+        }
+        if (resizeHandle.includes('w')) {
+          newCrop.x = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
+          newCrop.width = prev.width - (newCrop.x - prev.x);
+        }
+        if (resizeHandle.includes('e')) {
+          newCrop.width = Math.max(50, Math.min(img.width - prev.x, prev.width + dx));
+        }
+        
+        return newCrop;
+      });
+      setDragStart({ x: mouseX, y: mouseY });
+    } else if (isDragging) {
+      setCrop(prev => ({
+        ...prev,
+        x: Math.max(0, Math.min(imageRef.current.width - prev.width, prev.x + dx)),
+        y: Math.max(0, Math.min(imageRef.current.height - prev.height, prev.y + dy))
+      }));
+      setDragStart({ x: mouseX, y: mouseY });
+    }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
   };
 
   const getCroppedImage = () => {
@@ -226,24 +294,9 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCrop(prev => ({ ...prev, width: prev.width * 1.1, height: prev.height * 1.1 }))}
-                className="flex-1"
-              >
-                Larger Crop
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCrop(prev => ({ ...prev, width: prev.width * 0.9, height: prev.height * 0.9 }))}
-                className="flex-1"
-              >
-                Smaller Crop
-              </Button>
-            </div>
+            <p className="text-xs text-stone-500 text-center">
+              Drag to move crop area • Drag corners to resize freely
+            </p>
           </div>
         </div>
 
