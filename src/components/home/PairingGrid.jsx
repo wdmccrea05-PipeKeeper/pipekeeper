@@ -10,6 +10,11 @@ export default function PairingGrid({ pipes, blends }) {
   const [showGrid, setShowGrid] = useState(false);
   const gridRef = useRef(null);
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: savedPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
@@ -17,11 +22,6 @@ export default function PairingGrid({ pipes, blends }) {
       return results[0];
     },
     enabled: !!user?.email,
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
   });
 
   const { data: userProfile } = useQuery({

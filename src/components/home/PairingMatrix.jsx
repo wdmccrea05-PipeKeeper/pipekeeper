@@ -20,6 +20,11 @@ export default function PairingMatrix({ pipes, blends }) {
   });
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   // Load saved pairings
   const { data: savedPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
@@ -41,11 +46,6 @@ export default function PairingMatrix({ pipes, blends }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
     },
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
   });
 
   const { data: userProfile } = useQuery({
