@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
@@ -48,6 +48,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [searching, setSearching] = useState(false);
   const [logoMatches, setLogoMatches] = useState([]);
   
+  const queryClient = useQueryClient();
+
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
     queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
@@ -59,8 +61,6 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
       queryClient.invalidateQueries({ queryKey: ['custom-tobacco-logos'] });
     },
   });
-
-  const queryClient = useQueryClient();
 
   const handleChange = (field, value) => {
     setFormData(prev => {
