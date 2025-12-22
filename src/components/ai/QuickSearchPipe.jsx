@@ -13,7 +13,6 @@ import {
 import { Loader2, Search, Plus, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchPipeStockPhoto } from "./StockPhotoFetcher";
 
 export default function QuickSearchPipe({ open, onOpenChange, onAdd }) {
   const [query, setQuery] = useState('');
@@ -84,9 +83,6 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
   const handleAddPipe = async (pipe) => {
     setAdding(pipe.name);
     try {
-      // Fetch stock photo
-      const stockPhoto = await fetchPipeStockPhoto(pipe);
-      
       const pipeData = {
         name: pipe.name || '',
         maker: pipe.maker || '',
@@ -101,7 +97,7 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
         bowl_depth_mm: pipe.bowl_depth_mm || null,
         estimated_value: pipe.price_range_low ? Math.round((pipe.price_range_low + (pipe.price_range_high || pipe.price_range_low)) / 2) : null,
         notes: pipe.description || '',
-        photos: stockPhoto ? [stockPhoto] : [],
+        photos: [],
         stamping_photos: []
       };
 
