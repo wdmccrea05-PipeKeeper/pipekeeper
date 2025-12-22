@@ -148,21 +148,31 @@ export default function TobaccoDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Photo */}
           <motion.div 
-            className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200 shadow-xl"
+            className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl"
             layoutId={`blend-${blend.id}`}
           >
-            {blend.photo ? (
+            {blend.logo || blend.photo ? (
               <img 
-                src={blend.photo} 
+                src={blend.logo || blend.photo} 
                 alt={blend.name}
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'}`}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const fallbackLogo = getTobaccoLogo(blend.manufacturer);
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-6"><img src="' + fallbackLogo + '" class="w-full h-full object-contain" /></div>';
+                }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-amber-600 text-center">
-                  <div className="text-8xl mb-4">🍂</div>
-                  <p className="text-amber-700/60">No photo</p>
-                </div>
+              <div className="w-full h-full flex items-center justify-center bg-white p-6">
+                <img 
+                  src={getTobaccoLogo(blend.manufacturer)} 
+                  alt={blend.manufacturer || 'Tobacco'}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-8xl">🍂</div></div>';
+                  }}
+                />
               </div>
             )}
           </motion.div>
