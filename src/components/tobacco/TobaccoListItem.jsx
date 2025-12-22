@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Package } from "lucide-react";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -30,29 +31,27 @@ export default function TobaccoListItem({ blend, onClick }) {
         <div className="flex items-center gap-4">
           {/* Photo */}
           <div className="relative w-24 h-24 rounded-lg bg-white border border-amber-200 overflow-hidden shrink-0">
-            {blend.logo ? (
+            {blend.logo || blend.photo ? (
               <img 
-                src={blend.logo} 
+                src={blend.logo || blend.photo} 
                 alt={blend.name} 
-                className="w-full h-full object-contain p-1"
+                className={`w-full h-full ${blend.logo ? 'object-contain p-2' : 'object-cover'}`}
                 onError={(e) => {
                   e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-3xl">🍂</div></div>';
-                }}
-              />
-            ) : blend.photo ? (
-              <img 
-                src={blend.photo} 
-                alt={blend.name} 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-3xl">🍂</div></div>';
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center p-2"><img src="' + getTobaccoLogo(blend.manufacturer) + '" class="w-full h-full object-contain" /></div>';
                 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-amber-600 text-3xl">🍂</div>
+              <div className="w-full h-full flex items-center justify-center p-2">
+                <img 
+                  src={getTobaccoLogo(blend.manufacturer)} 
+                  alt={blend.manufacturer || 'Tobacco'}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-3xl">🍂</div></div>';
+                  }}
+                />
               </div>
             )}
             {blend.is_favorite && (

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getTobaccoLogo } from "@/utils/tobaccoLogos";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];

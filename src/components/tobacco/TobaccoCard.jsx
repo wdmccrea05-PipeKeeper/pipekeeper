@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -31,33 +32,28 @@ export default function TobaccoCard({ blend, onClick }) {
         className="overflow-hidden cursor-pointer bg-gradient-to-br from-amber-50/50 to-stone-50 border-stone-200/60 hover:shadow-xl hover:shadow-amber-900/10 transition-all duration-300"
         onClick={onClick}
       >
-        <div className="relative aspect-[4/3] bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden">
-          {blend.logo ? (
+        <div className="relative aspect-[4/3] bg-white overflow-hidden">
+          {blend.logo || blend.photo ? (
             <img 
-              src={blend.logo} 
+              src={blend.logo || blend.photo} 
               alt={blend.name} 
-              className="w-full h-full object-contain p-2"
+              className={`w-full h-full ${blend.logo ? 'object-contain p-3' : 'object-cover'}`}
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-center"><div class="text-4xl mb-2">🍂</div><p class="text-xs text-amber-700/60">No label</p></div></div>';
-              }}
-            />
-          ) : blend.photo ? (
-            <img 
-              src={blend.photo} 
-              alt={blend.name} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-center"><div class="text-4xl mb-2">🍂</div><p class="text-xs text-amber-700/60">No photo</p></div></div>';
+                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-3"><img src="' + getTobaccoLogo(blend.manufacturer) + '" class="w-full h-full object-contain" /></div>';
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-amber-600 text-center">
-                <div className="text-4xl mb-2">🍂</div>
-                <p className="text-xs text-amber-700/60">No label</p>
-              </div>
+            <div className="w-full h-full flex items-center justify-center bg-white p-3">
+              <img 
+                src={getTobaccoLogo(blend.manufacturer)} 
+                alt={blend.manufacturer || 'Tobacco'}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-4xl">🍂</div></div>';
+                }}
+              />
             </div>
           )}
           {blend.is_favorite && (
