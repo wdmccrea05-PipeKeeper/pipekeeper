@@ -50,6 +50,11 @@ export default function TopBlendMatches({ pipe, blends, userProfile }) {
 Use these preferences to personalize recommendations. Prioritize blends that match their preferences.`;
       }
 
+      const hasFocus = pipe.focus && pipe.focus.length > 0;
+      const matchingStrategy = hasFocus 
+        ? `This pipe has a designated focus: ${pipe.focus.join(', ')}. Prioritize blends matching this focus, but also consider the pipe's physical characteristics.`
+        : `This pipe has NO designated focus. Base recommendations ENTIRELY on its physical characteristics: bowl size (${pipe.bowl_diameter_mm}mm × ${pipe.bowl_depth_mm}mm deep), chamber volume (${pipe.chamber_volume}), shape (${pipe.shape}), and material (${pipe.bowl_material}). Match these characteristics with blend types that smoke best in such pipes.`;
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier. Analyze this pipe and recommend the top 3 tobacco blends from the user's collection that would pair best with it.
 
@@ -59,11 +64,13 @@ ${JSON.stringify(pipeData, null, 2)}
 Available Blends:
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
+${matchingStrategy}
+
 Rate each blend and return ONLY the top 3 best matches. For each match, provide:
 - blend_id
 - blend_name
 - score (1-10)
-- reasoning (why this blend pairs well with this specific pipe, considering user preferences if provided)`,
+- reasoning (why this blend pairs well with this specific pipe's characteristics, considering user preferences if provided)`,
         response_json_schema: {
           type: "object",
           properties: {
