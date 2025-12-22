@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   ArrowLeft, Edit, Trash2, Heart, DollarSign, 
-  Sparkles, ScanSearch, Ruler, Calendar, MapPin 
+  Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight 
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -40,6 +40,7 @@ export default function PipeDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(0);
+  const [useImperial, setUseImperial] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -302,7 +303,71 @@ export default function PipeDetailPage() {
             {/* Details Grid */}
             <Card className="border-stone-200">
               <CardContent className="p-6">
+                <div className="flex justify-end mb-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUseImperial(!useImperial)}
+                  >
+                    <ArrowLeftRight className="w-3 h-3 mr-2" />
+                    {useImperial ? 'mm' : 'inches'}
+                  </Button>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
+                  {pipe.length_mm && (
+                    <div className="flex items-center gap-2">
+                      <Ruler className="w-4 h-4 text-stone-400" />
+                      <div>
+                        <p className="text-xs text-stone-500">Length</p>
+                        <p className="font-medium text-stone-800">
+                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${pipe.length_mm}mm`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {pipe.weight_grams && (
+                    <div className="flex items-center gap-2">
+                      <Weight className="w-4 h-4 text-stone-400" />
+                      <div>
+                        <p className="text-xs text-stone-500">Weight</p>
+                        <p className="font-medium text-stone-800">
+                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)}oz` : `${pipe.weight_grams}g`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {pipe.bowl_height_mm && (
+                    <div>
+                      <p className="text-xs text-stone-500">Bowl Height</p>
+                      <p className="font-medium text-stone-800">
+                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_height_mm}mm`}
+                      </p>
+                    </div>
+                  )}
+                  {pipe.bowl_width_mm && (
+                    <div>
+                      <p className="text-xs text-stone-500">Bowl Width</p>
+                      <p className="font-medium text-stone-800">
+                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_width_mm}mm`}
+                      </p>
+                    </div>
+                  )}
+                  {pipe.bowl_diameter_mm && (
+                    <div>
+                      <p className="text-xs text-stone-500">Chamber Diameter</p>
+                      <p className="font-medium text-stone-800">
+                        {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_diameter_mm}mm`}
+                      </p>
+                    </div>
+                  )}
+                  {pipe.bowl_depth_mm && (
+                    <div>
+                      <p className="text-xs text-stone-500">Chamber Depth</p>
+                      <p className="font-medium text-stone-800">
+                        {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_depth_mm}mm`}
+                      </p>
+                    </div>
+                  )}
                   {pipe.country_of_origin && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-stone-400" />
@@ -318,19 +383,6 @@ export default function PipeDetailPage() {
                       <div>
                         <p className="text-xs text-stone-500">Year</p>
                         <p className="font-medium text-stone-800">{pipe.year_made}</p>
-                      </div>
-                    </div>
-                  )}
-                  {(pipe.bowl_diameter_mm || pipe.bowl_depth_mm) && (
-                    <div className="flex items-center gap-2">
-                      <Ruler className="w-4 h-4 text-stone-400" />
-                      <div>
-                        <p className="text-xs text-stone-500">Dimensions</p>
-                        <p className="font-medium text-stone-800">
-                          {pipe.bowl_diameter_mm && `${pipe.bowl_diameter_mm}mm ⌀`}
-                          {pipe.bowl_diameter_mm && pipe.bowl_depth_mm && ' × '}
-                          {pipe.bowl_depth_mm && `${pipe.bowl_depth_mm}mm deep`}
-                        </p>
                       </div>
                     </div>
                   )}
