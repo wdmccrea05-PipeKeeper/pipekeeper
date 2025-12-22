@@ -167,7 +167,11 @@ export default function PipesPage() {
           </div>
         ) : filteredPipes.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🪈</div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+              alt="No pipes"
+              className="w-24 h-24 mx-auto mb-4 object-contain opacity-30"
+            />
             <h3 className="text-xl font-semibold text-stone-800 mb-2">No pipes found</h3>
             <p className="text-stone-500 mb-6">
               {pipes.length === 0 ? "Add your first pipe to start building your collection" : "Try adjusting your filters"}

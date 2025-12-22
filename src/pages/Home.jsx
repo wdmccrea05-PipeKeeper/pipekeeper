@@ -60,7 +60,11 @@ export default function HomePage() {
             <Link to={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-amber-100 to-amber-50 border-amber-200 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-2">⌒</div>
+                  <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+                    alt="Pipes"
+                    className="w-16 h-16 mx-auto mb-2 object-contain"
+                  />
                   <p className="text-3xl font-bold text-amber-800">{pipes.length}</p>
                   <p className="text-sm text-amber-600">Pipes</p>
                 </CardContent>
@@ -120,7 +124,11 @@ export default function HomePage() {
             <Card className="h-full hover:shadow-lg transition-shadow border-stone-200 overflow-hidden">
               <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="text-3xl">⌒</div>
+                  <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+                    alt="Pipes"
+                    className="w-10 h-10 object-contain brightness-0 invert"
+                  />
                   <div>
                     <h3 className="text-xl font-bold">Pipe Collection</h3>
                     <p className="text-amber-100">Track and value your pipes</p>

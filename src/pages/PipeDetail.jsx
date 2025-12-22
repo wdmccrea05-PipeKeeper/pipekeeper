@@ -105,7 +105,11 @@ export default function PipeDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">🪈</div>
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
+            alt="Pipe not found"
+            className="w-24 h-24 mx-auto mb-4 object-contain opacity-30"
+          />
           <h2 className="text-2xl font-semibold text-stone-800 mb-2">Pipe not found</h2>
           <Link to={createPageUrl('Pipes')}>
             <Button variant="outline">Back to Pipes</Button>
