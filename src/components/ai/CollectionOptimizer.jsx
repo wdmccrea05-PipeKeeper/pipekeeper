@@ -30,12 +30,12 @@ export default function CollectionOptimizer({ pipes, blends }) {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
       return profiles[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   // Load saved optimization
