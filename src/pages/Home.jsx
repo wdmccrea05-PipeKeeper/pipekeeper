@@ -36,10 +36,10 @@ export default function HomePage() {
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.OnboardingStatus.filter({ user_email: user.email });
+      const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
       return results[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   const createOnboardingMutation = useMutation({
