@@ -18,7 +18,7 @@ import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/829bbd43a_bent_billiard_pipe_thick_lines_short_stem.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/5c08e5ef6_bent_billiard_pipe_thick_lines_short_stem_transparent.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
