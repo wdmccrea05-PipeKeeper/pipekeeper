@@ -1,31 +1,31 @@
-// Tobacco brand logo library
+// Tobacco brand logo library - using generic branded placeholders
 const TOBACCO_LOGOS = {
-  'Peterson': 'https://logos-world.net/wp-content/uploads/2023/08/Peterson-Logo.png',
-  'Dunhill': 'https://1000logos.net/wp-content/uploads/2020/09/Dunhill-Logo.png',
-  'Cornell & Diehl': 'https://www.cornellanddiehl.com/images/cd-logo.png',
-  'Samuel Gawith': 'https://www.samualgawith.com/wp-content/uploads/2019/04/samuel-gawith-logo.png',
-  'Gawith Hoggarth': 'https://www.gawithhoggarth.co.uk/wp-content/uploads/2019/03/gh-logo.png',
-  'G.L. Pease': 'https://www.glpease.com/images/GLPease-Logo.png',
-  'McClelland': 'https://pipes.org/wp-content/uploads/2018/01/mcclelland-logo.png',
-  'Rattray': 'https://www.rattrays.com/wp-content/uploads/2019/01/rattrays-logo.png',
-  'Orlik': 'https://www.pipesandcigars.com/images/brands/orlik-logo.png',
-  'Stanwell': 'https://stanwellpipes.com/wp-content/uploads/2019/02/stanwell-logo.png',
-  'Sutliff': 'https://www.sutliff.com/wp-content/uploads/2019/03/sutliff-logo.png',
-  'Mac Baren': 'https://www.mac-baren.com/media/wysiwyg/macbaren-logo.png',
-  'Captain Black': 'https://www.captainblackcigarillos.com/images/captain-black-logo.png',
-  'Lane Limited': 'https://www.pipesandcigars.com/images/brands/lane-limited-logo.png',
-  'Escudo': 'https://www.smokingpipes.com/images/brands/escudo-logo.png',
-  'Davidoff': 'https://1000logos.net/wp-content/uploads/2020/08/Davidoff-Logo.png',
-  'Balkan Sobranie': 'https://www.pipesandcigars.com/images/brands/balkan-sobranie-logo.png',
-  'Frog Morton': 'https://www.mcclellandtobacco.com/images/frog-morton-logo.png',
-  'Germain': 'https://germainspipetobacco.com/wp-content/uploads/2019/01/germains-logo.png',
-  'Seattle Pipe Club': 'https://seattlepipeclub.org/images/spc-logo.png',
-  'The Country Squire Tobacconist': 'https://www.countrysquireonline.com/images/country-squire-logo.png',
-  'Scandinavian Tobacco Group': 'https://www.st-group.com/media/wysiwyg/stg-logo.png',
+  'Peterson': 'https://via.placeholder.com/400x200/8B4513/FFFFFF?text=Peterson',
+  'Dunhill': 'https://via.placeholder.com/400x200/1a1a1a/FFFFFF?text=Dunhill',
+  'Cornell & Diehl': 'https://via.placeholder.com/400x200/2c5f2d/FFFFFF?text=Cornell+%26+Diehl',
+  'Samuel Gawith': 'https://via.placeholder.com/400x200/8B0000/FFFFFF?text=Samuel+Gawith',
+  'Gawith Hoggarth': 'https://via.placeholder.com/400x200/654321/FFFFFF?text=Gawith+Hoggarth',
+  'G.L. Pease': 'https://via.placeholder.com/400x200/4B0082/FFFFFF?text=G.L.+Pease',
+  'McClelland': 'https://via.placeholder.com/400x200/800020/FFFFFF?text=McClelland',
+  'Rattray': 'https://via.placeholder.com/400x200/C19A6B/FFFFFF?text=Rattray',
+  'Orlik': 'https://via.placeholder.com/400x200/DAA520/FFFFFF?text=Orlik',
+  'Stanwell': 'https://via.placeholder.com/400x200/2F4F4F/FFFFFF?text=Stanwell',
+  'Sutliff': 'https://via.placeholder.com/400x200/8B4513/FFFFFF?text=Sutliff',
+  'Mac Baren': 'https://via.placeholder.com/400x200/DC143C/FFFFFF?text=Mac+Baren',
+  'Captain Black': 'https://via.placeholder.com/400x200/000080/FFFFFF?text=Captain+Black',
+  'Lane Limited': 'https://via.placeholder.com/400x200/556B2F/FFFFFF?text=Lane+Limited',
+  'Escudo': 'https://via.placeholder.com/400x200/8B4513/FFFFFF?text=Escudo',
+  'Davidoff': 'https://via.placeholder.com/400x200/1a1a1a/FFD700?text=Davidoff',
+  'Balkan Sobranie': 'https://via.placeholder.com/400x200/191970/FFFFFF?text=Balkan+Sobranie',
+  'Frog Morton': 'https://via.placeholder.com/400x200/228B22/FFFFFF?text=Frog+Morton',
+  'Germain': 'https://via.placeholder.com/400x200/8B0000/FFFFFF?text=Germain',
+  'Seattle Pipe Club': 'https://via.placeholder.com/400x200/483D8B/FFFFFF?text=Seattle+Pipe+Club',
+  'The Country Squire Tobacconist': 'https://via.placeholder.com/400x200/8B4513/FFFFFF?text=Country+Squire',
+  'Scandinavian Tobacco Group': 'https://via.placeholder.com/400x200/4682B4/FFFFFF?text=STG',
 };
 
 // Generic tobacco leaf fallback image
-const GENERIC_TOBACCO_ICON = 'https://cdn-icons-png.flaticon.com/512/2917/2917995.png';
+export const GENERIC_TOBACCO_ICON = 'https://via.placeholder.com/400x200/D2691E/FFFFFF?text=Tobacco';
 
 /**
  * Get all matching tobacco brand logos

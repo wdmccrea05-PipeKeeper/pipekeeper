@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { getTobaccoLogo, GENERIC_TOBACCO_ICON } from "@/components/tobacco/TobaccoLogoLibrary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,11 +61,13 @@ export default function TobaccoDetailPage() {
 
   // Auto-populate logo from library if missing
   useEffect(() => {
-    if (blend && blend.manufacturer && !blend.logo) {
+    if (blend && blend.manufacturer && !blend.logo && !updateMutation.isPending) {
       const libraryLogo = getTobaccoLogo(blend.manufacturer);
-      updateMutation.mutate({ logo: libraryLogo });
+      if (libraryLogo && libraryLogo !== GENERIC_TOBACCO_ICON) {
+        updateMutation.mutate({ logo: libraryLogo });
+      }
     }
-  }, [blend?.id, blend?.manufacturer, blend?.logo]);
+  }, [blend?.id]);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes'],
