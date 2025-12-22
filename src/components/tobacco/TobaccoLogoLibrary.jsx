@@ -3,7 +3,6 @@ const TOBACCO_LOGOS = {
   'Peterson': 'https://www.pipesandcigars.com/media/wysiwyg/peterson-logo.png',
   'Dunhill': 'https://www.dunhill.com/content/dam/dunhill/global/homepage/logo.png',
   'Cornell & Diehl': 'https://www.pipesandcigars.com/media/wysiwyg/cornell-diehl-logo.png',
-  'C&D': 'https://www.pipesandcigars.com/media/wysiwyg/cornell-diehl-logo.png',
   'Samuel Gawith': 'https://www.samuelgawith.co.uk/images/logo.png',
   'Gawith Hoggarth': 'https://www.gawithhoggarth.co.uk/images/logo.png',
   'G.L. Pease': 'https://www.glpease.com/images/glp-logo.png',
@@ -20,7 +19,6 @@ const TOBACCO_LOGOS = {
   'Balkan Sobranie': 'https://www.pipesandcigars.com/media/wysiwyg/balkan-sobranie-logo.png',
   'Frog Morton': 'https://www.mccranies.com/images/frog-morton-logo.png',
   'Germain': 'https://www.germainspipetobacco.com/images/logo.png',
-  'H&H': 'https://www.pipesandcigars.com/media/wysiwyg/h-h-logo.png',
   'Seattle Pipe Club': 'https://www.seattlepipeclub.org/images/logo.png',
 };
 
