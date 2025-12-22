@@ -32,7 +32,17 @@ export default function TobaccoCard({ blend, onClick }) {
         onClick={onClick}
       >
         <div className="relative aspect-[4/3] bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden">
-          {blend.photo ? (
+          {blend.logo ? (
+            <img 
+              src={blend.logo} 
+              alt={blend.name} 
+              className="w-full h-full object-contain p-2"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-center"><div class="text-4xl mb-2">🍂</div><p class="text-xs text-amber-700/60">No label</p></div></div>';
+              }}
+            />
+          ) : blend.photo ? (
             <img 
               src={blend.photo} 
               alt={blend.name} 
@@ -46,7 +56,7 @@ export default function TobaccoCard({ blend, onClick }) {
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-amber-600 text-center">
                 <div className="text-4xl mb-2">🍂</div>
-                <p className="text-xs text-amber-700/60">No photo</p>
+                <p className="text-xs text-amber-700/60">No label</p>
               </div>
             </div>
           )}

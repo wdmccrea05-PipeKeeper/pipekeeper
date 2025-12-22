@@ -29,8 +29,18 @@ export default function TobaccoListItem({ blend, onClick }) {
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Photo */}
-          <div className="relative w-24 h-24 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden shrink-0">
-            {blend.photo ? (
+          <div className="relative w-24 h-24 rounded-lg bg-white border border-amber-200 overflow-hidden shrink-0">
+            {blend.logo ? (
+              <img 
+                src={blend.logo} 
+                alt={blend.name} 
+                className="w-full h-full object-contain p-1"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-3xl">🍂</div></div>';
+                }}
+              />
+            ) : blend.photo ? (
               <img 
                 src={blend.photo} 
                 alt={blend.name} 
