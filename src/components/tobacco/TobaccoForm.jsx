@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getTobaccoLogo } from "@/utils/tobaccoLogos";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -46,7 +47,16 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [searching, setSearching] = useState(false);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Auto-set logo from library when manufacturer changes
+      if (field === 'manufacturer' && value && !prev.logo) {
+        updated.logo = getTobaccoLogo(value);
+      }
+      
+      return updated;
+    });
   };
 
   const handleSearch = async () => {
