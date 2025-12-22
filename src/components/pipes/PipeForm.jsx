@@ -10,6 +10,7 @@ import { Upload, X, Loader2, Camera, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
+import ImageCropper from "@/components/pipes/ImageCropper";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -45,6 +46,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   });
   const [uploading, setUploading] = useState(false);
   const [uploadingStamping, setUploadingStamping] = useState(false);
+  const [cropperImage, setCropperImage] = useState(null);
+  const [cropperType, setCropperType] = useState(null);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -70,6 +73,19 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
+    // For single file, open cropper
+    if (files.length === 1) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCropperImage(event.target.result);
+        setCropperType(isStamping ? 'stamping' : 'photo');
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // For multiple files, upload directly
     if (isStamping) {
       setUploadingStamping(true);
     } else {
@@ -89,6 +105,42 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     } catch (err) {
       console.error('Upload error:', err);
     } finally {
+      if (isStamping) {
+        setUploadingStamping(false);
+      } else {
+        setUploading(false);
+      }
+    }
+  };
+
+  const handleCroppedImage = async (croppedDataUrl) => {
+    const isStamping = cropperType === 'stamping';
+    
+    if (isStamping) {
+      setUploadingStamping(true);
+    } else {
+      setUploading(true);
+    }
+
+    try {
+      // Convert data URL to blob
+      const response = await fetch(croppedDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
+      
+      // Upload
+      const result = await base44.integrations.Core.UploadFile({ file });
+      
+      if (isStamping) {
+        handleChange('stamping_photos', [...(formData.stamping_photos || []), result.file_url]);
+      } else {
+        handleChange('photos', [...(formData.photos || []), result.file_url]);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      setCropperImage(null);
+      setCropperType(null);
       if (isStamping) {
         setUploadingStamping(false);
       } else {
@@ -118,7 +170,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      {cropperImage && (
+        <ImageCropper
+          imageUrl={cropperImage}
+          onSave={handleCroppedImage}
+          onCancel={() => {
+            setCropperImage(null);
+            setCropperType(null);
+          }}
+        />
+      )}
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* AI Search Section */}
       {!pipe && (
         <>
@@ -467,5 +530,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </Button>
       </div>
     </form>
+    </>
   );
 }
