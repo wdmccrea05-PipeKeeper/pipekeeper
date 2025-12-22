@@ -108,24 +108,37 @@ ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
 For each pipe, evaluate which tobacco blends would pair well.
 
-CRITICAL MATCHING LOGIC:
-- If a pipe has "Non-Aromatic" or "Non Aromatic" focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
-- If a pipe has "Aromatic" focus: COMPLETELY EXCLUDE all non-aromatic blends (Virginia, English, Balkan, etc.) (score = 0)
-- If a pipe HAS a focus field set (non-empty array), HEAVILY prioritize blends matching those designated types
-- If a pipe has NO focus (empty or null), base ALL recommendations on physical characteristics:
-  * Bowl size - smaller bowls suit lighter tobaccos, larger bowls handle fuller blends
-  * Bowl depth - affects burn time and flavor development
-  * Material - meerschaum is excellent for Virginias, briar for everything
-  * Chamber volume - impacts how tobacco characteristics develop
-  * Shape - affects smoke temperature and moisture
+CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
-Rate each pairing on a scale of 1-10 where:
-- 10 = Perfect pairing, optimal characteristics match
-- 7-9 = Excellent pairing, very compatible
-- 4-6 = Good pairing, will work well
-- 1-3 = Poor pairing, not recommended
+1. **PIPE SPECIALIZATION/FOCUS** (HIGHEST PRIORITY - Weight: 40%):
+   - If a pipe has "Non-Aromatic" or "Non Aromatic" in focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
+   - If a pipe has "Aromatic" in focus: COMPLETELY EXCLUDE all non-aromatic blends (score = 0)
+   - If a pipe HAS ANY focus field set (non-empty array): Give 9-10 scores ONLY to blends matching that focus
+   - Blends NOT matching the pipe's focus should receive maximum 5/10 score
+   - A dedicated pipe should excel at its specialization - reward this heavily
 
-CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with scores and brief reasoning. When focus is not set, emphasize how the pipe's physical attributes make it ideal for certain blend types.`,
+2. **USER SMOKING PREFERENCES** (SECOND PRIORITY - Weight: 30%):
+   - User's preferred blend types should receive +2 bonus points
+   - User's preferred strength should receive +1 bonus point
+   - User's pipe size preference should influence recommendations
+   - If user prefers certain shapes, highlight how those pipes work with their preferred blends
+   - Tailor ALL recommendations to align with stated preferences
+
+3. **PHYSICAL PIPE CHARACTERISTICS** (THIRD PRIORITY - Weight: 30%):
+   - Bowl diameter: <18mm for milder tobaccos, 18-22mm versatile, >22mm for fuller blends
+   - Chamber volume: Small for aromatics/milds, Large for full/English blends
+   - Material: Meerschaum excellent for Virginias, Briar versatile
+   - Shape: Affects smoke temperature and moisture retention
+
+RATING SCALE:
+- 10 = Perfect match (specialization + user preference aligned)
+- 9 = Excellent (strong specialization or preference match)
+- 7-8 = Very good (partial matches)
+- 5-6 = Acceptable (no conflicts but not optimal)
+- 3-4 = Suboptimal (conflicts with focus or preferences)
+- 0-2 = Poor/Incompatible (violates focus rules or strong conflicts)
+
+CRITICAL: Prioritize pipe specialization above all else. A pipe designated for English blends should score 9-10 for English blends and much lower for others, regardless of physical characteristics.`,
         response_json_schema: {
           type: "object",
           properties: {

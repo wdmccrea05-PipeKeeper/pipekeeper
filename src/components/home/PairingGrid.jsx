@@ -86,14 +86,28 @@ export default function PairingGrid({ pipes, blends }) {
     
     let adjustment = 0;
     
-    // PRIORITY 1: User Profile Preferences (highest weight: +2 points)
+    // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight: +3 points for exact match)
+    if (pipe.focus && pipe.focus.length > 0) {
+      const focusMatch = pipe.focus.some(f => 
+        blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
+        f.toLowerCase().includes(blend.blend_type?.toLowerCase())
+      );
+      if (focusMatch) {
+        adjustment += 3; // Increased from 1.5 to 3
+      } else {
+        // Penalize non-matching blends for specialized pipes
+        adjustment -= 2;
+      }
+    }
+    
+    // PRIORITY 2: User Profile Preferences (second highest: +2.5 points total)
     if (userProfile) {
       if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
         adjustment += 2;
       }
       if (userProfile.strength_preference !== 'No Preference' && 
           blend.strength === userProfile.strength_preference) {
-        adjustment += 1;
+        adjustment += 1.5; // Increased from 1
       }
       if (userProfile.pipe_size_preference !== 'No Preference' &&
           pipe.chamber_volume === userProfile.pipe_size_preference) {
@@ -101,19 +115,10 @@ export default function PairingGrid({ pipes, blends }) {
       }
     }
     
-    // PRIORITY 2: Pipe Focus (second highest: +1.5 points)
-    if (pipe.focus && pipe.focus.length > 0) {
-      const focusMatch = pipe.focus.some(f => 
-        blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
-        f.toLowerCase().includes(blend.blend_type?.toLowerCase())
-      );
-      if (focusMatch) adjustment += 1.5;
-    }
-    
     // PRIORITY 3: Pipe shape/characteristics already factored into baseScore
     // No additional adjustment needed here as AI analysis handles this
     
-    const adjustedScore = Math.min(10, baseScore + adjustment);
+    const adjustedScore = Math.max(0, Math.min(10, baseScore + adjustment));
     return Math.round(adjustedScore * 10) / 10;
   };
 
