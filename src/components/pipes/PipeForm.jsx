@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, X, Loader2, Camera } from "lucide-react";
+import { Upload, X, Loader2, Camera, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import PipeSearch from "@/components/ai/PipeSearch";
+import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -46,6 +48,20 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSearchSelect = (searchData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...searchData
+    }));
+  };
+
+  const handlePhotoIdentify = (identifiedData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...identifiedData
+    }));
   };
 
   const handlePhotoUpload = async (e, isStamping = false) => {
@@ -101,6 +117,37 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* AI Search Section */}
+      {!pipe && (
+        <>
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg text-amber-800 flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Search for Pipe
+              </CardTitle>
+              <p className="text-sm text-stone-600">
+                Search by maker or model to auto-fill details
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PipeSearch onSelect={handleSearchSelect} />
+            </CardContent>
+          </Card>
+
+          <PhotoIdentifier onIdentify={handlePhotoIdentify} />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-stone-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-stone-500">Or enter manually</span>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Photos Section */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">

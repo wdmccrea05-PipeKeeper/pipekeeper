@@ -9,7 +9,7 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Heart, DollarSign, 
-  Leaf, Package, Star, Sparkles
+  Leaf, Package, Star, Sparkles, Search, Camera
 } from "lucide-react";
 
 export default function HomePage() {
@@ -43,8 +43,8 @@ export default function HomePage() {
             Pipe & Tobacco Collection
           </h1>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto">
-            Manage your pipes and tobacco blends. Get AI-powered matching suggestions 
-            and market valuations.
+            Manage your pipes and tobacco blends with AI-powered search, photo identification, 
+            pairing suggestions, and market valuations.
           </p>
         </motion.div>
 
@@ -124,8 +124,12 @@ export default function HomePage() {
               <CardContent className="p-6">
                 <ul className="space-y-2 text-stone-600 mb-6">
                   <li className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    AI-powered pipe identification
+                    <Search className="w-4 h-4 text-amber-500" />
+                    AI web search to auto-fill pipe details
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-amber-500" />
+                    Photo identification from stamps
                   </li>
                   <li className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4 text-amber-500" />
@@ -163,6 +167,10 @@ export default function HomePage() {
               </div>
               <CardContent className="p-6">
                 <ul className="space-y-2 text-stone-600 mb-6">
+                  <li className="flex items-center gap-2">
+                    <Search className="w-4 h-4 text-stone-500" />
+                    AI web search for blend information
+                  </li>
                   <li className="flex items-center gap-2">
                     <Package className="w-4 h-4 text-stone-500" />
                     Track inventory quantities
@@ -330,7 +338,7 @@ export default function HomePage() {
               Welcome to Your Collection
             </h2>
             <p className="text-stone-500 mb-8 max-w-md mx-auto">
-              Start by adding your first pipe or tobacco blend to begin tracking your collection.
+              Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.
             </p>
             <div className="flex gap-4 justify-center">
               <Link to={createPageUrl('Pipes')}>

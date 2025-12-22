@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import TobaccoSearch from "@/components/ai/TobaccoSearch";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -43,6 +44,13 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSearchSelect = (searchData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...searchData
+    }));
   };
 
   const handlePhotoUpload = async (e) => {
@@ -93,6 +101,35 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* AI Search Section */}
+      {!blend && (
+        <>
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg text-amber-800 flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Search for Tobacco Blend
+              </CardTitle>
+              <p className="text-sm text-stone-600">
+                Search by name or manufacturer to auto-fill details
+              </p>
+            </CardHeader>
+            <CardContent>
+              <TobaccoSearch onSelect={handleSearchSelect} />
+            </CardContent>
+          </Card>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-stone-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-stone-500">Or enter manually</span>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Photo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
