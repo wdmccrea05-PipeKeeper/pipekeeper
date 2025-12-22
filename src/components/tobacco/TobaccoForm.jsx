@@ -549,13 +549,18 @@ Return complete and accurate information based on the blend name or description 
           </div>
           <div className="space-y-2">
             <Label>Quantity Owned</Label>
-            <Input
-              type="number"
-              value={formData.quantity_owned}
-              onChange={(e) => handleChange('quantity_owned', e.target.value)}
-              placeholder="Number of tins"
-              className="border-stone-200"
-            />
+            <Select value={formData.quantity_owned?.toString() || ''} onValueChange={(v) => handleChange('quantity_owned', v)}>
+              <SelectTrigger className="border-stone-200">
+                <SelectValue placeholder="Select quantity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1</SelectItem>
+                <SelectItem value="2">2</SelectItem>
+                <SelectItem value="3">3</SelectItem>
+                <SelectItem value="4">4</SelectItem>
+                <SelectItem value="5">5</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Production Status</Label>
