@@ -110,7 +110,7 @@ export default function HomePage() {
           onSkip={handleOnboardingSkip}
         />
       )}
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero */}
         <motion.div 
@@ -118,10 +118,10 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-800 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#e8d5b7] mb-4">
             Pipe & Tobacco Collection
           </h1>
-          <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+          <p className="text-lg text-[#e8d5b7]/70 max-w-2xl mx-auto">
             Manage your pipes and tobacco blends with AI-powered search, photo identification, 
             pairing suggestions, and market valuations.
           </p>
@@ -135,15 +135,15 @@ export default function HomePage() {
             transition={{ delay: 0.1 }}
           >
             <Link to={createPageUrl('Pipes')}>
-              <Card className="bg-gradient-to-br from-amber-100 to-amber-50 border-amber-200 cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
                   <img 
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
                     alt="Pipes"
-                    className="w-8 h-8 mx-auto mb-2 object-contain mix-blend-multiply"
+                    className="w-8 h-8 mx-auto mb-2 object-contain brightness-0 invert"
                   />
-                  <p className="text-3xl font-bold text-amber-800">{pipes.length}</p>
-                  <p className="text-sm text-amber-600">Pipes</p>
+                  <p className="text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
+                  <p className="text-sm text-[#e8d5b7]/80">Pipes</p>
                 </CardContent>
               </Card>
             </Link>
@@ -153,11 +153,11 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-gradient-to-br from-emerald-100 to-emerald-50 border-emerald-200">
+            <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
               <CardContent className="p-6 text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                <p className="text-3xl font-bold text-emerald-800">${totalPipeValue.toLocaleString()}</p>
-                <p className="text-sm text-emerald-600">Collection Value</p>
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-[#1a2c42]" />
+                <p className="text-3xl font-bold text-[#1a2c42]">${totalPipeValue.toLocaleString()}</p>
+                <p className="text-sm text-[#1a2c42]/80">Collection Value</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -167,11 +167,11 @@ export default function HomePage() {
             transition={{ delay: 0.3 }}
           >
             <Link to={createPageUrl('Tobacco')}>
-              <Card className="bg-gradient-to-br from-orange-100 to-orange-50 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <Leaf className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-                  <p className="text-3xl font-bold text-orange-800">{blends.length}</p>
-                  <p className="text-sm text-orange-600">Tobacco Blends</p>
+                  <Leaf className="w-8 h-8 mx-auto mb-2 text-[#e8d5b7]" />
+                  <p className="text-3xl font-bold text-[#e8d5b7]">{blends.length}</p>
+                  <p className="text-sm text-[#e8d5b7]/80">Tobacco Blends</p>
                 </CardContent>
               </Card>
             </Link>
@@ -181,11 +181,11 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="bg-gradient-to-br from-violet-100 to-violet-50 border-violet-200">
+            <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
               <CardContent className="p-6 text-center">
-                <Package className="w-8 h-8 mx-auto mb-2 text-violet-600" />
-                <p className="text-3xl font-bold text-violet-800">{totalTins}</p>
-                <p className="text-sm text-violet-600">Tins in Cellar</p>
+                <Package className="w-8 h-8 mx-auto mb-2 text-[#1a2c42]" />
+                <p className="text-3xl font-bold text-[#1a2c42]">{totalTins}</p>
+                <p className="text-sm text-[#1a2c42]/80">Tins in Cellar</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -198,8 +198,8 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="h-full hover:shadow-lg transition-shadow border-stone-200 overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-6 text-white">
+            <Card className="h-full hover:shadow-lg transition-shadow border-[#e8d5b7]/30 overflow-hidden bg-[#243548]">
+              <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <img 
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
@@ -208,31 +208,31 @@ export default function HomePage() {
                   />
                   <div>
                     <h3 className="text-xl font-bold">Pipe Collection</h3>
-                    <p className="text-amber-100">Track and value your pipes</p>
+                    <p className="text-[#e8d5b7]/80">Track and value your pipes</p>
                   </div>
                 </div>
               </div>
               <CardContent className="p-6">
-                <ul className="space-y-2 text-stone-600 mb-6">
+                <ul className="space-y-2 text-[#e8d5b7]/80 mb-6">
                   <li className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-amber-500" />
+                    <Search className="w-4 h-4 text-[#d4a574]" />
                     AI web search to auto-fill pipe details
                   </li>
                   <li className="flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-amber-500" />
+                    <Camera className="w-4 h-4 text-[#d4a574]" />
                     Photo identification from stamps
                   </li>
                   <li className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-amber-500" />
+                    <DollarSign className="w-4 h-4 text-[#d4a574]" />
                     Market value lookup
                   </li>
                   <li className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-amber-500" />
+                    <Star className="w-4 h-4 text-[#d4a574]" />
                     Tobacco pairing suggestions
                   </li>
                 </ul>
                 <Link to={createPageUrl('Pipes')}>
-                  <Button className="w-full bg-amber-700 hover:bg-amber-800">
+                  <Button className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]">
                     View Pipes
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -246,37 +246,37 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="h-full hover:shadow-lg transition-shadow border-stone-200 overflow-hidden">
-              <div className="bg-gradient-to-r from-stone-700 to-stone-800 p-6 text-white">
+            <Card className="h-full hover:shadow-lg transition-shadow border-[#e8d5b7]/30 overflow-hidden bg-[#243548]">
+              <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="text-3xl">🍂</div>
                   <div>
                     <h3 className="text-xl font-bold">Tobacco Cellar</h3>
-                    <p className="text-stone-300">Manage your blends</p>
+                    <p className="text-[#e8d5b7]/80">Manage your blends</p>
                   </div>
                 </div>
               </div>
               <CardContent className="p-6">
-                <ul className="space-y-2 text-stone-600 mb-6">
+                <ul className="space-y-2 text-[#e8d5b7]/80 mb-6">
                   <li className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-stone-500" />
+                    <Search className="w-4 h-4 text-[#d4a574]" />
                     AI web search for blend information
                   </li>
                   <li className="flex items-center gap-2">
-                    <Package className="w-4 h-4 text-stone-500" />
+                    <Package className="w-4 h-4 text-[#d4a574]" />
                     Track inventory quantities
                   </li>
                   <li className="flex items-center gap-2">
-                    <Leaf className="w-4 h-4 text-stone-500" />
+                    <Leaf className="w-4 h-4 text-[#d4a574]" />
                     Flavor profiles & tasting notes
                   </li>
                   <li className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-stone-500" />
+                    <Star className="w-4 h-4 text-[#d4a574]" />
                     Rate and review blends
                   </li>
                 </ul>
                 <Link to={createPageUrl('Tobacco')}>
-                  <Button className="w-full bg-stone-700 hover:bg-stone-800">
+                  <Button className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]">
                     View Tobacco
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
