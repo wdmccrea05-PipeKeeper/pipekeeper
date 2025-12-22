@@ -172,7 +172,7 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
                     <CardContent className="p-4">
                       <div 
                         className="flex items-center justify-between cursor-pointer"
-                        onClick={() => setIsExpanded ? setSelectedPipe(null) : setSelectedPipe(pipePairing.pipe_id)}
+                        onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(pipePairing.pipe_id)}
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center">
