@@ -246,12 +246,7 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="h-full hover:shadow-lg transition-shadow border-stone-200 overflow-hidden relative">
-              {!isPaidUser && (
-                <div className="absolute top-2 right-2 z-10">
-                  <Badge className="bg-amber-600 text-white">Premium</Badge>
-                </div>
-              )}
+            <Card className="h-full hover:shadow-lg transition-shadow border-stone-200 overflow-hidden">
               <div className="bg-gradient-to-r from-stone-700 to-stone-800 p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="text-3xl">🍂</div>
@@ -282,7 +277,7 @@ export default function HomePage() {
                 </ul>
                 <Link to={createPageUrl('Tobacco')}>
                   <Button className="w-full bg-stone-700 hover:bg-stone-800">
-                    {isPaidUser ? 'View Tobacco' : 'Upgrade to Access'}
+                    View Tobacco
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>

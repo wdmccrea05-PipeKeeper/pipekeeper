@@ -13,7 +13,6 @@ import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -30,13 +29,6 @@ export default function TobaccoPage() {
   const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   const queryClient = useQueryClient();
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const isPaidUser = user?.subscription_level === 'paid';
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends'],
@@ -85,24 +77,6 @@ export default function TobaccoPage() {
   });
 
   const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
-
-  if (!isPaidUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🍂</div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">Tobacco Cellar Management</h1>
-            <p className="text-stone-600">Premium feature for tracking and managing your tobacco collection</p>
-          </div>
-          <UpgradePrompt 
-            featureName="Tobacco Cellar Management"
-            description="Track your entire tobacco collection with detailed blend information, inventory management, tasting notes, aging potential tracking, and AI-powered pairing recommendations with your pipes."
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100">

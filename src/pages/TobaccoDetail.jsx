@@ -11,7 +11,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,13 +48,6 @@ export default function TobaccoDetailPage() {
   const [showDelete, setShowDelete] = useState(false);
 
   const queryClient = useQueryClient();
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const isPaidUser = user?.subscription_level === 'paid';
 
   const { data: blend, isLoading } = useQuery({
     queryKey: ['blend', blendId],
@@ -105,30 +97,6 @@ export default function TobaccoDetailPage() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isPaidUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-          <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🍂</div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">Tobacco Cellar Management</h1>
-            <p className="text-stone-600">Premium feature required to view tobacco details</p>
-          </div>
-          <UpgradePrompt 
-            featureName="Tobacco Cellar Management"
-            description="Track your entire tobacco collection with detailed blend information, inventory management, tasting notes, aging potential tracking, and AI-powered pairing recommendations with your pipes."
-          />
         </div>
       </div>
     );
