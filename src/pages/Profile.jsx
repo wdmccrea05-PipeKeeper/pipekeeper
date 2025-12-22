@@ -41,12 +41,12 @@ export default function ProfilePage() {
   });
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
       return profiles[0];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function ProfilePage() {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const profileData = { ...data, user_email: user.email };
+      const profileData = { ...data, user_email: user?.email };
       if (profile) {
         return base44.entities.UserProfile.update(profile.id, profileData);
       } else {
@@ -73,7 +73,7 @@ export default function ProfilePage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile', user?.email] });
     },
   });
 
