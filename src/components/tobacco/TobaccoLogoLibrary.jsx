@@ -28,17 +28,29 @@ const TOBACCO_LOGOS = {
 export const GENERIC_TOBACCO_ICON = 'https://placehold.co/400x200/D2691E/FFFFFF?text=Tobacco';
 
 /**
- * Get all matching tobacco brand logos
+ * Get all matching tobacco brand logos (including custom uploaded logos)
  * @param {string} manufacturer - Brand/manufacturer name
+ * @param {Array} customLogos - Array of custom logo objects from database
  * @returns {Array<{brand: string, logo: string}>} Array of matching brands and logos
  */
-export function getMatchingLogos(manufacturer) {
+export function getMatchingLogos(manufacturer, customLogos = []) {
   if (!manufacturer) return [];
   
   const normalized = manufacturer.trim();
   const lowerManufacturer = normalized.toLowerCase();
   const matches = [];
   
+  // Check custom logos first (higher priority)
+  for (const customLogo of customLogos) {
+    const brandLower = customLogo.brand_name.toLowerCase();
+    if (brandLower === lowerManufacturer) {
+      matches.push({ brand: customLogo.brand_name, logo: customLogo.logo_url });
+    } else if (lowerManufacturer.includes(brandLower) || brandLower.includes(lowerManufacturer)) {
+      matches.push({ brand: customLogo.brand_name, logo: customLogo.logo_url });
+    }
+  }
+  
+  // Then check built-in logos
   // Direct match
   if (TOBACCO_LOGOS[normalized]) {
     matches.push({ brand: normalized, logo: TOBACCO_LOGOS[normalized] });
@@ -59,10 +71,11 @@ export function getMatchingLogos(manufacturer) {
 /**
  * Get tobacco brand logo URL (returns first match or generic icon)
  * @param {string} manufacturer - Brand/manufacturer name
+ * @param {Array} customLogos - Array of custom logo objects from database
  * @returns {string} Logo URL or generic tobacco icon
  */
-export function getTobaccoLogo(manufacturer) {
-  const matches = getMatchingLogos(manufacturer);
+export function getTobaccoLogo(manufacturer, customLogos = []) {
+  const matches = getMatchingLogos(manufacturer, customLogos);
   return matches.length > 0 ? matches[0].logo : GENERIC_TOBACCO_ICON;
 }
 

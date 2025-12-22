@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import LogoLibraryBrowser from "@/components/tobacco/LogoLibraryBrowser";
 
@@ -48,26 +49,31 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [searching, setSearching] = useState(false);
   const [logoMatches, setLogoMatches] = useState([]);
   const [showLogoBrowser, setShowLogoBrowser] = useState(false);
+  
+  const { data: customLogos = [] } = useQuery({
+    queryKey: ['custom-tobacco-logos'],
+    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+  });
 
   const handleChange = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
-      
+
       // Check for logo matches when manufacturer changes
       if (field === 'manufacturer' && value) {
-        const matches = getMatchingLogos(value);
+        const matches = getMatchingLogos(value, customLogos);
         setLogoMatches(matches);
-        
+
         // Auto-set logo if exactly one match and no logo currently set
         if (matches.length === 1 && !prev.logo) {
           updated.logo = matches[0].logo;
         } else if (matches.length === 0 && !prev.logo) {
           // Use generic icon if no matches
-          updated.logo = getTobaccoLogo(value);
+          updated.logo = getTobaccoLogo(value, customLogos);
         }
         // If multiple matches, show selection UI (don't auto-set)
       }
-      
+
       return updated;
     });
   };
