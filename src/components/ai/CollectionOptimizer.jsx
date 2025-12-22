@@ -165,10 +165,10 @@ Be specific, practical, and focused on achieving the best smoking experience acr
     }
   };
 
-  const applySpecialization = async (pipeId, designations) => {
+  const applySpecialization = async (pipeId, focus) => {
     await updatePipeMutation.mutateAsync({
       id: pipeId,
-      data: { designations }
+      data: { focus }
     });
   };
 
@@ -245,9 +245,9 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                         <div className="flex items-start gap-3">
                           <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
                             {pipe?.photos?.[0] ? (
-                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
+                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
                             ) : (
-                              <PipeShapeIcon shape={pipe?.shape} className="text-2xl" />
+                              <PipeShapeIcon shape={pipe?.shape} className="w-10 h-10" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -281,7 +281,7 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                             </div>
 
                             <div className="flex gap-2 mt-2">
-                              {!pipe?.designations || pipe.designations.length === 0 ? (
+                              {!pipe?.focus || pipe.focus.length === 0 ? (
                                 <>
                                   <Button
                                     size="sm"
@@ -305,7 +305,7 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                               ) : (
                                 <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
                                   <Check className="w-3 h-3 mr-1" />
-                                  Specialization Applied
+                                  Focus Applied
                                 </Badge>
                               )}
                             </div>

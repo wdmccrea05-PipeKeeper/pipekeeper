@@ -209,11 +209,11 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
                         onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(pipePairing.pipe_id)}
                       >
                         <div className="flex items-center gap-3 flex-1">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
                             {pipe?.photos?.[0] ? (
-                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
+                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
                             ) : (
-                              <PipeShapeIcon shape={pipe?.shape} className="text-xl" />
+                              <PipeShapeIcon shape={pipe?.shape} className="w-8 h-8" />
                             )}
                           </div>
                           <div className="flex-1">
@@ -271,7 +271,7 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
                                         )}
                                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden flex items-center justify-center shrink-0">
                                           {blend?.photo ? (
-                                            <img src={blend.photo} alt="" className="w-full h-full object-cover" />
+                                            <img src={blend.photo} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} />
                                           ) : (
                                             <span className="text-lg">🍂</span>
                                           )}

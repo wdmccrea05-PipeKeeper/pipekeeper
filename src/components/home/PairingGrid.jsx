@@ -155,16 +155,16 @@ export default function PairingGrid({ pipes, blends }) {
                 </tr>
               </thead>
               <tbody>
-                {savedPairings.pairings.map((pipePairing, pipeIdx) => {
-                  const pipe = pipes.find(p => p.id === pipePairing.pipe_id);
+                {pipes.map((pipe, pipeIdx) => {
+                  const pipePairing = savedPairings.pairings.find(p => p.pipe_id === pipe.id);
                   
                   return (
-                    <tr key={pipePairing.pipe_id}>
+                    <tr key={pipe.id}>
                       <td className="bg-amber-100 border border-stone-300 p-2 font-semibold text-sm sticky left-0 z-10">
-                        {pipeIdx + 1}. {pipePairing.pipe_name}
+                        {pipeIdx + 1}. {pipe.name}
                       </td>
                       {blends.map(blend => {
-                        const match = pipePairing.blend_matches?.find(m => m.blend_id === blend.id);
+                        const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
                         const score = match?.score || 0;
                         
                         return (

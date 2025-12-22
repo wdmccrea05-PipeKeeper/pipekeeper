@@ -11,21 +11,21 @@ import { createPageUrl } from "@/utils";
 export default function PipeSpecialization({ pipe, blends, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [newDesignation, setNewDesignation] = useState('');
-  const [designations, setDesignations] = useState(pipe.designations || []);
+  const [designations, setDesignations] = useState(pipe.focus || []);
 
   const handleAdd = () => {
     if (newDesignation.trim()) {
       const updated = [...designations, newDesignation.trim()];
       setDesignations(updated);
       setNewDesignation('');
-      onUpdate({ designations: updated });
+      onUpdate({ focus: updated });
     }
   };
 
   const handleRemove = (index) => {
     const updated = designations.filter((_, i) => i !== index);
     setDesignations(updated);
-    onUpdate({ designations: updated });
+    onUpdate({ focus: updated });
   };
 
   // Find matching blends based on designations

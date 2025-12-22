@@ -7,8 +7,12 @@ export default function PipeShapeIcon({ shape, className = "w-16 h-16" }) {
     <img 
       src={PIPE_IMAGE} 
       alt={shape || "Pipe"} 
-      className={`${className} object-contain opacity-40`}
-      style={{ mixBlendMode: 'multiply' }}
+      className={`object-contain opacity-40 ${className}`}
+      style={{ mixBlendMode: 'multiply', display: 'block' }}
+      onError={(e) => {
+        e.target.style.display = 'none';
+        e.target.parentElement.innerHTML = '🪈';
+      }}
     />
   );
 }
