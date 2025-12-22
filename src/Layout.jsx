@@ -33,7 +33,7 @@ function NavLink({ item, currentPage, onClick }) {
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
       ) : (
-        <img src={item.icon} alt={item.name} className="w-5 h-5 object-contain mix-blend-multiply" />
+        <img src={item.icon} alt={item.name} className="w-5 h-5 object-contain brightness-0 invert opacity-70" />
       )}
       {item.name}
     </Link>
