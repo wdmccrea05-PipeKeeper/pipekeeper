@@ -14,6 +14,7 @@ import {
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
+import PairingGrid from "@/components/home/PairingGrid";
 
 export default function HomePage() {
   const { data: pipes = [] } = useQuery({
@@ -231,6 +232,18 @@ export default function HomePage() {
             className="mb-12"
           >
             <CollectionOptimizer pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
+        {/* Pairing Grid */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mb-12"
+          >
+            <PairingGrid pipes={pipes} blends={blends} />
           </motion.div>
         )}
 

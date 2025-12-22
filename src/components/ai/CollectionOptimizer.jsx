@@ -280,22 +280,35 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                               <p className="text-xs text-stone-600">{spec.usage_pattern}</p>
                             </div>
 
-                            {!pipe?.designations || pipe.designations.length === 0 ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="mt-2 border-blue-300 text-blue-700 hover:bg-blue-50"
-                                onClick={() => applySpecialization(pipe.id, spec.recommended_blend_types)}
-                              >
-                                <Check className="w-4 h-4 mr-1" />
-                                Apply Specialization
-                              </Button>
-                            ) : (
-                              <Badge className="mt-2 bg-emerald-100 text-emerald-800 border-emerald-300">
-                                <Check className="w-3 h-3 mr-1" />
-                                Specialization Applied
-                              </Badge>
-                            )}
+                            <div className="flex gap-2 mt-2">
+                              {!pipe?.designations || pipe.designations.length === 0 ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                    onClick={() => applySpecialization(pipe.id, spec.recommended_blend_types)}
+                                  >
+                                    <Check className="w-4 h-4 mr-1" />
+                                    Apply Suggested
+                                  </Button>
+                                  <Link to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-stone-300 text-stone-700 hover:bg-stone-50"
+                                    >
+                                      Create Custom
+                                    </Button>
+                                  </Link>
+                                </>
+                              ) : (
+                                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Specialization Applied
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardContent>
