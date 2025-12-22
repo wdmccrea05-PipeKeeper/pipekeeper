@@ -14,6 +14,10 @@ export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [pairings, setPairings] = useState(null);
   const [selectedPipe, setSelectedPipe] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('pairingMatrixCollapsed');
+    return saved === 'true';
+  });
   const queryClient = useQueryClient();
 
   // Load saved pairings
@@ -183,20 +187,36 @@ CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with score
     return null;
   }
 
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('pairingMatrixCollapsed', newState.toString());
+  };
+
   return (
     <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-violet-800">
-              <Sparkles className="w-5 h-5" />
-              AI Pairing Recommendations
-            </CardTitle>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-violet-800">
+                <Sparkles className="w-5 h-5" />
+                AI Pairing Recommendations
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleCollapse}
+                className="text-violet-600 hover:text-violet-800"
+              >
+                {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </Button>
+            </div>
             <CardDescription className="mt-2">
               Find the perfect tobacco blend for each pipe in your collection
             </CardDescription>
           </div>
-          <Button
+          {!isCollapsed && <Button
             onClick={() => {
               if (pairings) {
                 if (confirm('Update pairing analysis? This will regenerate all recommendations based on your current collection and profile.')) {
@@ -225,11 +245,11 @@ CRITICAL: For EVERY pipe in the collection, return ALL blend pairings with score
                 Generate Pairings
               </>
             )}
-          </Button>
+          </Button>}
         </div>
       </CardHeader>
       
-      {pairings && (
+      {!isCollapsed && pairings && (
         <CardContent>
           <div className="space-y-4">
             {pairings.map((pipePairing, idx) => {

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -13,6 +13,10 @@ import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 export default function CollectionOptimizer({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [optimization, setOptimization] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('collectionOptimizerCollapsed');
+    return saved === 'true';
+  });
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -215,20 +219,36 @@ Be specific, practical, and focused on achieving the best smoking experience acr
     return null;
   }
 
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('collectionOptimizerCollapsed', newState.toString());
+  };
+
   return (
     <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-blue-800">
-              <Target className="w-5 h-5" />
-              Collection Optimization
-            </CardTitle>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <Target className="w-5 h-5" />
+                Collection Optimization
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleCollapse}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </Button>
+            </div>
             <CardDescription className="mt-2">
               Maximize your collection's potential with strategic pipe specializations
             </CardDescription>
           </div>
-          <Button
+          {!isCollapsed && <Button
             onClick={analyzeCollection}
             disabled={loading}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
@@ -249,11 +269,11 @@ Be specific, practical, and focused on achieving the best smoking experience acr
                 Optimize Collection
               </>
             )}
-          </Button>
+          </Button>}
         </div>
       </CardHeader>
 
-      {optimization && (
+      {!isCollapsed && optimization && (
         <CardContent className="space-y-6">
           {/* Pipe Specializations */}
           <div>
