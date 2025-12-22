@@ -44,7 +44,7 @@ export default function PipesPage() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowForm(false);
     },
   });

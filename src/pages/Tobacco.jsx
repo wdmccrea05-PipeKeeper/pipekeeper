@@ -44,7 +44,7 @@ export default function TobaccoPage() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.TobaccoBlend.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
       setShowForm(false);
     },
   });
