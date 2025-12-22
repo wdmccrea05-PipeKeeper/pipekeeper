@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer } from "lucide-react";
+import { Loader2, Download, Grid3X3, Printer, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function PairingGrid({ pipes, blends }) {
@@ -142,6 +142,7 @@ export default function PairingGrid({ pipes, blends }) {
       .score-5 { background-color: #fef08a; }
       .score-4 { background-color: #fed7aa; }
       .score-low { background-color: #fecaca; }
+      .trophy-icon { width: 12px; height: 12px; display: inline-block; }
       h1 { font-size: 24px; margin-bottom: 10px; }
       .legend { margin-top: 20px; font-size: 12px; }
       .legend-item { display: inline-block; margin-right: 15px; }
@@ -271,6 +272,18 @@ export default function PairingGrid({ pipes, blends }) {
                         const adjustedScore = getAdjustedScore(pipe, blend, baseScore);
                         const displayScore = userProfile ? adjustedScore : baseScore;
                         
+                        // Find best score for this blend across all pipes
+                        const allScoresForBlend = pipes.map(p => {
+                          const pPairing = savedPairings.pairings.find(pp => pp.pipe_id === p.id);
+                          const m = pPairing?.blend_matches?.find(mm => mm.blend_id === blend.id);
+                          let bs = m?.score || 0;
+                          if (bs === 0) bs = calculateBasicScore(p, blend);
+                          const as = getAdjustedScore(p, blend, bs);
+                          return userProfile ? as : bs;
+                        });
+                        const bestScore = Math.max(...allScoresForBlend);
+                        const isBestPipe = displayScore === bestScore && displayScore > 0;
+                        
                         return (
                           <td 
                             key={blend.id}
@@ -279,7 +292,10 @@ export default function PairingGrid({ pipes, blends }) {
                             }`}
                             title={match?.reasoning || 'Basic compatibility score'}
                           >
-                            {displayScore.toFixed(1)}
+                            <div className="flex items-center justify-center gap-1">
+                              {isBestPipe && <Trophy className="w-3 h-3 text-amber-600" />}
+                              <span>{displayScore.toFixed(1)}</span>
+                            </div>
                           </td>
                         );
                       })}
