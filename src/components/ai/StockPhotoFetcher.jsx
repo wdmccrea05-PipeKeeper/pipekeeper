@@ -30,7 +30,11 @@ Return a direct image URL that is publicly accessible. Prefer high resolution im
       }
     });
 
-    return result.image_url || null;
+    // Validate the URL exists and is accessible
+    if (result.image_url && result.image_url.startsWith('http')) {
+      return result.image_url;
+    }
+    return null;
   } catch (err) {
     console.error('Error fetching pipe photo:', err);
     return null;

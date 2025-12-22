@@ -27,6 +27,7 @@ import PipeForm from "@/components/pipes/PipeForm";
 import MatchingEngine from "@/components/ai/MatchingEngine";
 import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
+import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -143,8 +144,8 @@ export default function PipeDetailPage() {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-stone-400 text-center">
-                    <div className="text-8xl mb-4">🪈</div>
-                    <p>No photos</p>
+                    <PipeShapeIcon shape={pipe.shape} className="text-9xl mb-4" />
+                    <p>{pipe.shape || 'No photos'}</p>
                   </div>
                 </div>
               )}

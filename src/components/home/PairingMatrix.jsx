@@ -7,6 +7,7 @@ import { Loader2, Trophy, Sparkles, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -178,7 +179,7 @@ For each pipe, return ALL blend pairings with scores and brief reasoning.`,
                             {pipe?.photos?.[0] ? (
                               <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-xl">🪈</span>
+                              <PipeShapeIcon shape={pipe?.shape} className="text-xl" />
                             )}
                           </div>
                           <div className="flex-1">

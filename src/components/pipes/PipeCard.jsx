@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import PipeShapeIcon from "./PipeShapeIcon";
 
 export default function PipeCard({ pipe, onClick }) {
   const mainPhoto = pipe.photos?.[0];
@@ -26,8 +27,8 @@ export default function PipeCard({ pipe, onClick }) {
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-stone-400 text-center">
-                <div className="text-4xl mb-2">🪈</div>
-                <p className="text-xs">No photo</p>
+                <PipeShapeIcon shape={pipe.shape} className="text-5xl mb-2" />
+                <p className="text-xs">{pipe.shape || 'No photo'}</p>
               </div>
             </div>
           )}
