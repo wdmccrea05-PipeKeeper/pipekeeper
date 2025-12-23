@@ -144,7 +144,7 @@ export default function HomePage() {
             <Link to={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-10 h-10 mx-auto mb-2 object-contain brightness-0 invert" />
+                  <img src={PIPE_ICON} alt="Pipes" className="w-13 h-13 mx-auto mb-2 object-contain brightness-0 invert" />
                   <p className="text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
                   <p className="text-sm text-[#e8d5b7]/80">Pipes</p>
                 </CardContent>
@@ -204,7 +204,7 @@ export default function HomePage() {
             <Card className="h-full hover:shadow-lg transition-shadow border-[#e8d5b7]/30 overflow-hidden bg-[#243548]">
               <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-10 h-10 object-contain brightness-0 invert" />
+                  <img src={PIPE_ICON} alt="Pipes" className="w-13 h-13 object-contain brightness-0 invert" />
                   <div>
                     <h3 className="text-xl font-bold">Pipe Collection</h3>
                     <p className="text-[#e8d5b7]/80">Track and value your pipes</p>
