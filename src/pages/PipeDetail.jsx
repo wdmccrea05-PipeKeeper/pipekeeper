@@ -224,8 +224,8 @@ export default function PipeDetailPage() {
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-stone-800">{pipe.name}</h1>
-                <p className="text-lg text-stone-500">{pipe.maker || 'Unknown maker'}</p>
+                <h1 className="text-3xl font-bold text-[#e8d5b7]">{pipe.name}</h1>
+                <p className="text-lg text-[#e8d5b7]/70">{pipe.maker || 'Unknown maker'}</p>
               </div>
               <div className="flex gap-2">
                 <Button
