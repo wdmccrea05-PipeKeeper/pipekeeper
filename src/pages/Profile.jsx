@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Save, X, Sparkles } from "lucide-react";
+import { User, Save, X, Sparkles, Crown, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
@@ -39,6 +41,16 @@ export default function ProfilePage() {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Check if user has paid access (subscription or 7-day trial)
+  const trialEndDate = user?.created_date 
+    ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
+  const isInTrial = trialEndDate && new Date() < trialEndDate;
+  const daysLeftInTrial = isInTrial 
+    ? Math.ceil((trialEndDate - new Date()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const hasActiveSubscription = user?.subscription_level === 'paid';
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user-profile', user?.email],
@@ -124,9 +136,53 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Subscription Status Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    {hasActiveSubscription ? (
+                      <>
+                        <h3 className="font-semibold text-amber-900">Premium Active</h3>
+                        <p className="text-sm text-amber-700">Full access to all features</p>
+                      </>
+                    ) : isInTrial ? (
+                      <>
+                        <h3 className="font-semibold text-amber-900">Free Trial Active</h3>
+                        <p className="text-sm text-amber-700">{daysLeftInTrial} days remaining</p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-semibold text-stone-800">Free Account</h3>
+                        <p className="text-sm text-stone-600">Limited features available</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Link to={createPageUrl('Subscription')}>
+                  <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
+                    {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
         >
           <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
             <CardHeader>
