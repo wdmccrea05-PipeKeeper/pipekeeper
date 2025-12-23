@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/70ea43f6e_360_F_1826176062_5qMqZUKj6dcmLEArlJYU714IcDEutPcW.jpg';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
@@ -36,7 +36,7 @@ function NavLink({ item, currentPage, onClick }) {
         <img 
           src={item.icon} 
           alt={item.name} 
-          className="w-6 h-6 object-contain"
+          className="w-5 h-5 object-contain"
           style={{
             filter: isActive 
               ? 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
