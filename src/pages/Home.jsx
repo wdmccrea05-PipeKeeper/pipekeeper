@@ -143,8 +143,8 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-12 h-12 mx-auto mb-2 object-contain brightness-0 invert" />
+                <CardContent className="p-4 text-center">
+                  <img src={PIPE_ICON} alt="Pipes" className="w-8 h-8 mx-auto mb-2 object-contain brightness-0 invert" />
                   <p className="text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
                   <p className="text-sm text-[#e8d5b7]/80">Pipes</p>
                 </CardContent>
