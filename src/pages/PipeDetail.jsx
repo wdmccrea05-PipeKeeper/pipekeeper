@@ -150,7 +150,7 @@ export default function PipeDetailPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <Link to={createPageUrl('Pipes')}>
-          <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
+          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Pipes
           </Button>
