@@ -131,8 +131,10 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   const handleMouseDown = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const scaleX = canvasRef.current.width / rect.width;
+    const scaleY = canvasRef.current.height / rect.height;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
     
     const img = imageRef.current;
     const canvas = canvasRef.current;
@@ -145,9 +147,9 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     const cropW = (crop.width / img.width) * img.width * scale;
     const cropH = (crop.height / img.height) * img.height * scale;
     
-    const handleSize = 10;
+    const handleSize = 20;
     
-    // Check for resize handles
+    // Check for resize handles with larger hit area
     if (Math.abs(mouseX - cropX) < handleSize && Math.abs(mouseY - cropY) < handleSize) {
       setIsResizing(true);
       setResizeHandle('nw');
@@ -169,27 +171,37 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   };
 
   const handleMouseMove = (e) => {
+    if (!isDragging && !isResizing) return;
+    
     const rect = canvasRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const dx = (mouseX - dragStart.x) / zoom;
-    const dy = (mouseY - dragStart.y) / zoom;
+    const scaleX = canvasRef.current.width / rect.width;
+    const scaleY = canvasRef.current.height / rect.height;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
+    
+    const img = imageRef.current;
+    const canvas = canvasRef.current;
+    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * zoom;
+    
+    const dx = (mouseX - dragStart.x) / scale;
+    const dy = (mouseY - dragStart.y) / scale;
     
     if (isResizing) {
-      const img = imageRef.current;
       setCrop(prev => {
         let newCrop = { ...prev };
         
         if (resizeHandle.includes('n')) {
-          newCrop.y = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
-          newCrop.height = prev.height - (newCrop.y - prev.y);
+          const newY = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
+          newCrop.height = prev.height + (prev.y - newY);
+          newCrop.y = newY;
         }
         if (resizeHandle.includes('s')) {
           newCrop.height = Math.max(50, Math.min(img.height - prev.y, prev.height + dy));
         }
         if (resizeHandle.includes('w')) {
-          newCrop.x = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
-          newCrop.width = prev.width - (newCrop.x - prev.x);
+          const newX = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
+          newCrop.width = prev.width + (prev.x - newX);
+          newCrop.x = newX;
         }
         if (resizeHandle.includes('e')) {
           newCrop.width = Math.max(50, Math.min(img.width - prev.x, prev.width + dx));
@@ -201,8 +213,8 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     } else if (isDragging) {
       setCrop(prev => ({
         ...prev,
-        x: Math.max(0, Math.min(imageRef.current.width - prev.width, prev.x + dx)),
-        y: Math.max(0, Math.min(imageRef.current.height - prev.height, prev.y + dy))
+        x: Math.max(0, Math.min(img.width - prev.width, prev.x + dx)),
+        y: Math.max(0, Math.min(img.height - prev.height, prev.y + dy))
       }));
       setDragStart({ x: mouseX, y: mouseY });
     }
