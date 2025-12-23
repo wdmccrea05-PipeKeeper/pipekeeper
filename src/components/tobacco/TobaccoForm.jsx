@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search, Check } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
+import ImageCropper from "@/components/pipes/ImageCropper";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -47,6 +48,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [logoMatches, setLogoMatches] = useState([]);
+  const [cropperImage, setCropperImage] = useState(null);
+  const [cropperType, setCropperType] = useState(null);
   
   const queryClient = useQueryClient();
 
@@ -144,39 +147,72 @@ Return complete and accurate information based on the blend name or description 
     const file = e.target.files[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      handleChange('photo', result.file_url);
-    } catch (err) {
-      console.error('Upload error:', err);
-    } finally {
-      setUploading(false);
-    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCropperImage(event.target.result);
+      setCropperType('photo');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setUploadingLogo(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCropperImage(event.target.result);
+      setCropperType('logo');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedImage = async (croppedDataUrl) => {
+    const isLogo = cropperType === 'logo';
+    
+    if (isLogo) {
+      setUploadingLogo(true);
+    } else {
+      setUploading(true);
+    }
+
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      handleChange('logo', result.file_url);
+      const response = await fetch(croppedDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
       
-      // Save to library if manufacturer exists
-      if (formData.manufacturer) {
-        await createLogoMutation.mutateAsync({
-          brand_name: formData.manufacturer,
-          logo_url: result.file_url,
-          is_custom: true
-        });
+      const result = await base44.integrations.Core.UploadFile({ file });
+      
+      if (isLogo) {
+        handleChange('logo', result.file_url);
+        
+        if (formData.manufacturer) {
+          await createLogoMutation.mutateAsync({
+            brand_name: formData.manufacturer,
+            logo_url: result.file_url,
+            is_custom: true
+          });
+        }
+      } else {
+        handleChange('photo', result.file_url);
       }
     } catch (err) {
       console.error('Upload error:', err);
     } finally {
-      setUploadingLogo(false);
+      setCropperImage(null);
+      setCropperType(null);
+      if (isLogo) {
+        setUploadingLogo(false);
+      } else {
+        setUploading(false);
+      }
     }
+  };
+
+  const editPhoto = (type) => {
+    const photoUrl = type === 'logo' ? formData.logo : formData.photo;
+    setCropperImage(photoUrl);
+    setCropperType(type);
   };
 
   const addComponent = () => {
@@ -211,7 +247,18 @@ Return complete and accurate information based on the blend name or description 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      {cropperImage && (
+        <ImageCropper
+          imageUrl={cropperImage}
+          onSave={handleCroppedImage}
+          onCancel={() => {
+            setCropperImage(null);
+            setCropperType(null);
+          }}
+        />
+      )}
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* AI Search Section */}
       {!blend && (
         <>
@@ -327,15 +374,24 @@ Return complete and accurate information based on the blend name or description 
               <Label className="text-sm font-medium">Tin Photo</Label>
               <div className="flex items-center gap-4">
                 {formData.photo ? (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200">
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
                     <img src={formData.photo} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleChange('photo', '')}
-                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
-                    >
-                      <X className="w-3 h-3 text-white" />
-                    </button>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => editPhoto('photo')}
+                        className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                      >
+                        <Edit className="w-3.5 h-3.5 text-stone-700" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('photo', '')}
+                        className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                      >
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
@@ -364,15 +420,24 @@ Return complete and accurate information based on the blend name or description 
               <Label className="text-sm font-medium">Label/Logo</Label>
               <div className="flex items-center gap-4">
                 {formData.logo ? (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 bg-white">
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 bg-white group">
                     <img src={formData.logo} alt="" className="w-full h-full object-contain p-2" />
-                    <button
-                      type="button"
-                      onClick={() => handleChange('logo', '')}
-                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 hover:bg-black/70"
-                    >
-                      <X className="w-3 h-3 text-white" />
-                    </button>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => editPhoto('logo')}
+                        className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                      >
+                        <Edit className="w-3.5 h-3.5 text-stone-700" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('logo', '')}
+                        className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                      >
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
@@ -649,5 +714,6 @@ Return complete and accurate information based on the blend name or description 
         </Button>
       </div>
     </form>
-    );
-    }
+    </>
+  );
+}

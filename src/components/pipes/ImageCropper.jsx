@@ -51,8 +51,8 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     if (!canvas || !ctx || !img) return;
 
     // Set canvas size
-    canvas.width = 400;
-    canvas.height = 400;
+    canvas.width = 500;
+    canvas.height = 500;
 
     // Clear canvas
     ctx.fillStyle = '#f5f5f5';
@@ -84,25 +84,36 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     const cropW = (crop.width / img.width) * img.width * scale;
     const cropH = (crop.height / img.height) * img.height * scale;
 
-    // Draw transparent crop area (just reduce overlay opacity in this area)
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-    ctx.fillRect(cropX, cropY, cropW, cropH);
+    // Clear crop area (make it fully transparent)
+    ctx.clearRect(cropX, cropY, cropW, cropH);
+    
+    // Redraw image in crop area
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cropX, cropY, cropW, cropH);
+    ctx.clip();
+    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+    ctx.restore();
 
     // Draw crop border
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 3;
     ctx.strokeRect(cropX, cropY, cropW, cropH);
     
     // Draw resize handles
-    const handleSize = 8;
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(cropX - handleSize/2, cropY - handleSize/2, handleSize, handleSize);
-    ctx.fillRect(cropX + cropW - handleSize/2, cropY - handleSize/2, handleSize, handleSize);
-    ctx.fillRect(cropX - handleSize/2, cropY + cropH - handleSize/2, handleSize, handleSize);
-    ctx.fillRect(cropX + cropW - handleSize/2, cropY + cropH - handleSize/2, handleSize, handleSize);
+    const handleSize = 12;
+    ctx.fillStyle = '#fbbf24';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    
+    // Corner handles
+    [[cropX, cropY], [cropX + cropW, cropY], [cropX, cropY + cropH], [cropX + cropW, cropY + cropH]].forEach(([hx, hy]) => {
+      ctx.fillRect(hx - handleSize/2, hy - handleSize/2, handleSize, handleSize);
+      ctx.strokeRect(hx - handleSize/2, hy - handleSize/2, handleSize, handleSize);
+    });
 
     // Draw grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
     ctx.lineWidth = 1;
     for (let i = 1; i < 3; i++) {
       ctx.beginPath();
@@ -236,15 +247,18 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Crop & Adjust Image</DialogTitle>
+          <p className="text-sm text-stone-500">
+            Drag to move • Drag corners to resize • Use sliders to zoom and rotate
+          </p>
         </DialogHeader>
         
         <div className="space-y-4">
           <div 
             ref={containerRef}
-            className="relative bg-stone-100 rounded-lg overflow-hidden"
+            className="relative bg-stone-900 rounded-lg overflow-hidden"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -253,24 +267,24 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
             <canvas
               ref={canvasRef}
               className="w-full h-auto cursor-move"
-              style={{ maxHeight: '400px' }}
+              style={{ maxHeight: '500px' }}
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
-                  <ZoomIn className="w-4 h-4" />
+                  <ZoomIn className="w-4 h-4 text-amber-600" />
                   Zoom
                 </label>
-                <span className="text-sm text-stone-500">{zoom.toFixed(1)}x</span>
+                <span className="text-sm font-mono text-stone-600">{zoom.toFixed(1)}x</span>
               </div>
               <Slider
                 value={[zoom]}
                 onValueChange={([v]) => setZoom(v)}
-                min={0.5}
-                max={3}
+                min={0.3}
+                max={4}
                 step={0.1}
                 className="w-full"
               />
@@ -279,24 +293,36 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
-                  <RotateCw className="w-4 h-4" />
+                  <RotateCw className="w-4 h-4 text-amber-600" />
                   Rotation
                 </label>
-                <span className="text-sm text-stone-500">{rotation}°</span>
+                <span className="text-sm font-mono text-stone-600">{rotation}°</span>
               </div>
-              <Slider
-                value={[rotation]}
-                onValueChange={([v]) => setRotation(v)}
-                min={0}
-                max={360}
-                step={15}
-                className="w-full"
-              />
+              <div className="flex gap-2">
+                <Slider
+                  value={[rotation]}
+                  onValueChange={([v]) => setRotation(v)}
+                  min={0}
+                  max={360}
+                  step={1}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRotation((rotation + 90) % 360)}
+                  className="shrink-0"
+                >
+                  90°
+                </Button>
+              </div>
             </div>
+          </div>
 
-            <p className="text-xs text-stone-500 text-center">
-              Drag to move crop area • Drag corners to resize freely
-            </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-50 rounded-lg p-2">
+            <Crop className="w-4 h-4" />
+            <span>Drag inside to move • Drag corners to resize • Free-form cropping enabled</span>
           </div>
         </div>
 
@@ -307,7 +333,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </Button>
           <Button onClick={handleSave} className="bg-amber-700 hover:bg-amber-800">
             <Check className="w-4 h-4 mr-2" />
-            Apply
+            Apply Crop
           </Button>
         </DialogFooter>
       </DialogContent>
