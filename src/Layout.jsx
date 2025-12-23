@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/5c08e5ef6_bent_billiard_pipe_thick_lines_short_stem_transparent.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/70ea43f6e_360_F_1826176062_5qMqZUKj6dcmLEArlJYU714IcDEutPcW.jpg';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
@@ -33,7 +33,16 @@ function NavLink({ item, currentPage, onClick }) {
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
       ) : (
-        <img src={item.icon} alt={item.name} className="w-6 h-6 object-contain brightness-0 invert" />
+        <img 
+          src={item.icon} 
+          alt={item.name} 
+          className="w-6 h-6 object-contain"
+          style={{
+            filter: isActive 
+              ? 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
+              : 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%) opacity(0.7)'
+          }}
+        />
       )}
       {item.name}
     </Link>
