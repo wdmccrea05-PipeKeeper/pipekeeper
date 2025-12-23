@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -388,6 +388,95 @@ Be specific about which user-owned blends benefit and by how much.`,
     setWhatIfPhotos([]);
     setWhatIfDescription('');
     setWhatIfResult(null);
+  };
+
+  const implementWhatIf = async () => {
+    if (!whatIfResult) return;
+    
+    setWhatIfLoading(true);
+    try {
+      // Use LLM to parse the scenario and determine implementation actions
+      const implementationPlan = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are analyzing a "what if" scenario to determine how to implement it in the user's pipe collection.
+
+User's Question: ${whatIfQuery}
+Pipe Description: ${whatIfDescription || 'N/A'}
+Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
+
+Current Pipes: ${JSON.stringify(pipes.map(p => ({ id: p.id, name: p.name, maker: p.maker, shape: p.shape, focus: p.focus })), null, 2)}
+Current Blends: ${JSON.stringify(blends.map(b => ({ id: b.id, name: b.name, blend_type: b.blend_type })), null, 2)}
+
+Determine the implementation action:
+1. If this is about BUYING A NEW PIPE - extract pipe specifications to create
+2. If this is about CHANGING AN EXISTING PIPE'S FOCUS - identify which pipe and what new focus
+3. If no specific action can be taken - explain why
+
+Provide concrete, actionable steps with specific field values.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            action_type: { 
+              type: "string",
+              enum: ["create_new_pipe", "update_pipe_focus", "no_action"]
+            },
+            pipe_data: {
+              type: "object",
+              properties: {
+                pipe_id: { type: "string" },
+                name: { type: "string" },
+                maker: { type: "string" },
+                shape: { type: "string" },
+                bowl_material: { type: "string" },
+                chamber_volume: { type: "string" },
+                stem_material: { type: "string" },
+                finish: { type: "string" },
+                focus: { 
+                  type: "array",
+                  items: { type: "string" }
+                },
+                notes: { type: "string" }
+              }
+            },
+            explanation: { type: "string" }
+          }
+        }
+      });
+
+      if (implementationPlan.action_type === "create_new_pipe") {
+        // Create new pipe with photos from what-if
+        const newPipeData = {
+          ...implementationPlan.pipe_data,
+          photos: whatIfPhotos,
+          notes: `${implementationPlan.pipe_data.notes || ''}\n\nAdded based on What-If analysis: ${whatIfResult.detailed_reasoning}`.trim()
+        };
+        
+        await base44.entities.Pipe.create(newPipeData);
+        queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+        
+        alert(`New pipe created: ${newPipeData.name || 'Untitled Pipe'}\n\nYou can edit the details from your Pipes page.`);
+      } else if (implementationPlan.action_type === "update_pipe_focus") {
+        // Update existing pipe's focus
+        if (implementationPlan.pipe_data.pipe_id && implementationPlan.pipe_data.focus) {
+          await updatePipeMutation.mutateAsync({
+            id: implementationPlan.pipe_data.pipe_id,
+            data: { focus: implementationPlan.pipe_data.focus }
+          });
+          
+          const pipeName = pipes.find(p => p.id === implementationPlan.pipe_data.pipe_id)?.name || 'Pipe';
+          alert(`Updated ${pipeName}'s focus to: ${implementationPlan.pipe_data.focus.join(', ')}`);
+        }
+      } else {
+        alert(`Cannot implement automatically:\n\n${implementationPlan.explanation}`);
+      }
+      
+      // Reset what-if after implementation
+      resetWhatIf();
+    } catch (err) {
+      console.error('Error implementing what-if:', err);
+      alert('Failed to implement scenario. Please try again or add manually.');
+    } finally {
+      setWhatIfLoading(false);
+    }
   };
 
   const getVersatilityColor = (score) => {
@@ -971,12 +1060,47 @@ Be specific about which user-owned blends benefit and by how much.`,
                           </div>
                         </CardContent>
                       </Card>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
+
+                      {/* Implement Button */}
+                      {whatIfResult.recommendation_category && 
+                       !whatIfResult.recommendation_category.includes('SKIP') && (
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            onClick={implementWhatIf}
+                            disabled={whatIfLoading}
+                            className={
+                              whatIfResult.recommendation_category?.includes('ESSENTIAL') 
+                                ? 'bg-emerald-600 hover:bg-emerald-700 flex-1'
+                                : 'bg-indigo-600 hover:bg-indigo-700 flex-1'
+                            }
+                          >
+                            {whatIfLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Implementing...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCheck className="w-4 h-4 mr-2" />
+                                Implement This Scenario
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={resetWhatIf}
+                            disabled={whatIfLoading}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      )}
+                      </motion.div>
+                      )}
+                      </CardContent>
+                      </Card>
+                      )}
+                      </div>
 
           <div className="text-center pt-2 text-xs text-stone-500">
             {savedOptimization?.generated_date && (
