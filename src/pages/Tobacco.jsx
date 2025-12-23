@@ -90,8 +90,8 @@ export default function TobaccoPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-stone-800">My Tobacco</h1>
-            <p className="text-stone-500 mt-1">
+            <h1 className="text-3xl font-bold text-[#e8d5b7]">My Tobacco</h1>
+            <p className="text-[#e8d5b7]/70 mt-1">
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
             </p>
           </div>
@@ -99,14 +99,14 @@ export default function TobaccoPage() {
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
-              className="border-amber-300 text-amber-700 hover:bg-amber-50"
+              className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Quick Search
             </Button>
             <Button 
               onClick={() => { setEditingBlend(null); setShowForm(true); }}
-              className="bg-amber-700 hover:bg-amber-800"
+              className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Blend
@@ -149,7 +149,7 @@ export default function TobaccoPage() {
                 setViewMode('grid');
                 localStorage.setItem('tobaccoViewMode', 'grid');
               }}
-              className="rounded-r-none"
+              className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
@@ -160,7 +160,7 @@ export default function TobaccoPage() {
                 setViewMode('list');
                 localStorage.setItem('tobaccoViewMode', 'list');
               }}
-              className="rounded-l-none"
+              className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
             >
               <List className="w-4 h-4" />
             </Button>

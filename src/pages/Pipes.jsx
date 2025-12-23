@@ -95,8 +95,8 @@ export default function PipesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-stone-800">My Pipes</h1>
-            <p className="text-stone-500 mt-1">
+            <h1 className="text-3xl font-bold text-[#e8d5b7]">My Pipes</h1>
+            <p className="text-[#e8d5b7]/70 mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
@@ -104,14 +104,14 @@ export default function PipesPage() {
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
-              className="border-amber-300 text-amber-700 hover:bg-amber-50"
+              className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Quick Search
             </Button>
             <Button 
               onClick={() => { setEditingPipe(null); setShowForm(true); }}
-              className="bg-amber-700 hover:bg-amber-800"
+              className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Pipe
@@ -122,16 +122,16 @@ export default function PipesPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#e8d5b7]/60" />
             <Input
               placeholder="Search pipes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white border-stone-200"
+              className="pl-10 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/50"
             />
           </div>
           <Select value={shapeFilter} onValueChange={setShapeFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-white border-stone-200">
+            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,14 +139,14 @@ export default function PipesPage() {
             </SelectContent>
           </Select>
           <Select value={materialFilter} onValueChange={setMaterialFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-white border-stone-200">
+            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="flex border border-stone-200 rounded-lg bg-white">
+          <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548]">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
@@ -154,7 +154,7 @@ export default function PipesPage() {
                 setViewMode('grid');
                 localStorage.setItem('pipesViewMode', 'grid');
               }}
-              className="rounded-r-none"
+              className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
@@ -165,7 +165,7 @@ export default function PipesPage() {
                 setViewMode('list');
                 localStorage.setItem('pipesViewMode', 'list');
               }}
-              className="rounded-l-none"
+              className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -186,12 +186,12 @@ export default function PipesPage() {
               alt="No pipes"
               className="w-24 h-24 mx-auto mb-4 object-contain opacity-30 mix-blend-multiply"
             />
-            <h3 className="text-xl font-semibold text-stone-800 mb-2">No pipes found</h3>
-            <p className="text-stone-500 mb-6">
+            <h3 className="text-xl font-semibold text-[#e8d5b7] mb-2">No pipes found</h3>
+            <p className="text-[#e8d5b7]/70 mb-6">
               {pipes.length === 0 ? "Add your first pipe to start building your collection" : "Try adjusting your filters"}
             </p>
             {pipes.length === 0 && (
-              <Button onClick={() => setShowForm(true)} className="bg-amber-700 hover:bg-amber-800">
+              <Button onClick={() => setShowForm(true)} className="bg-[#8b3a3a] hover:bg-[#6d2e2e]">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Pipe
               </Button>
