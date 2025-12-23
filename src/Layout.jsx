@@ -36,7 +36,7 @@ function NavLink({ item, currentPage, onClick }) {
         <img 
           src={item.icon} 
           alt={item.name} 
-          className="w-5 h-5 object-contain"
+          className="w-6 h-6 object-contain"
           style={{
             filter: isActive 
               ? 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
