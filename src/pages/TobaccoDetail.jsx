@@ -140,7 +140,7 @@ export default function TobaccoDetailPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <Link to={createPageUrl('Tobacco')}>
-          <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
+          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Tobacco
           </Button>
@@ -189,8 +189,8 @@ export default function TobaccoDetailPage() {
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-stone-800">{blend.name}</h1>
-                <p className="text-lg text-stone-500">{blend.manufacturer || 'Unknown maker'}</p>
+                <h1 className="text-3xl font-bold text-[#e8d5b7]">{blend.name}</h1>
+                <p className="text-lg text-[#e8d5b7]/70">{blend.manufacturer || 'Unknown maker'}</p>
               </div>
               <div className="flex gap-2">
                 <Button
