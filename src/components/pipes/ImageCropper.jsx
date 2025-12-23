@@ -129,12 +129,22 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     ctx.restore();
   };
 
-  const handleMouseDown = (e) => {
+  const getEventCoordinates = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const scaleX = canvasRef.current.width / rect.width;
     const scaleY = canvasRef.current.height / rect.height;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const mouseY = (e.clientY - rect.top) * scaleY;
+    
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
+    
+    const mouseX = (clientX - rect.left) * scaleX;
+    const mouseY = (clientY - rect.top) * scaleY;
+    
+    return { mouseX, mouseY };
+  };
+
+  const handleMouseDown = (e) => {
+    const { mouseX, mouseY } = getEventCoordinates(e);
     
     const img = imageRef.current;
     const canvas = canvasRef.current;
@@ -173,11 +183,8 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   const handleMouseMove = (e) => {
     if (!isDragging && !isResizing) return;
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const mouseY = (e.clientY - rect.top) * scaleY;
+    e.preventDefault();
+    const { mouseX, mouseY } = getEventCoordinates(e);
     
     const img = imageRef.current;
     const canvas = canvasRef.current;
@@ -270,11 +277,14 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
         <div className="space-y-4">
           <div 
             ref={containerRef}
-            className="relative bg-stone-900 rounded-lg overflow-hidden"
+            className="relative bg-stone-900 rounded-lg overflow-hidden touch-none"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleMouseDown}
+            onTouchMove={handleMouseMove}
+            onTouchEnd={handleMouseUp}
           >
             <canvas
               ref={canvasRef}
