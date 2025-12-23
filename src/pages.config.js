@@ -5,6 +5,7 @@ import Profile from './pages/Profile';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
+import Subscription from './pages/Subscription';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
+    "Subscription": Subscription,
 }
 
 export const pagesConfig = {
