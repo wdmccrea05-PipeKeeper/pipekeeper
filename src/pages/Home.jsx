@@ -432,9 +432,13 @@ export default function HomePage() {
                     {recentBlends.map(blend => (
                       <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
                         <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden flex items-center justify-center">
-                            {blend.photo ? (
-                              <img src={blend.photo} alt="" className="w-full h-full object-cover" />
+                          <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                            {blend.logo || blend.photo ? (
+                              <img 
+                                src={blend.logo || blend.photo} 
+                                alt="" 
+                                className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                              />
                             ) : (
                               <span className="text-xl">🍂</span>
                             )}
