@@ -99,7 +99,7 @@ export default function TobaccoPage() {
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
-              className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
+              className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Quick Search
