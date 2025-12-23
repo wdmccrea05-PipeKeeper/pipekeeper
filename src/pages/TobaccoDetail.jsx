@@ -102,7 +102,7 @@ export default function TobaccoDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -121,7 +121,7 @@ export default function TobaccoDetailPage() {
 
   if (!blend) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
           <h2 className="text-2xl font-semibold text-stone-800 mb-2">Blend not found</h2>
@@ -136,7 +136,7 @@ export default function TobaccoDetailPage() {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <Link to={createPageUrl('Tobacco')}>
