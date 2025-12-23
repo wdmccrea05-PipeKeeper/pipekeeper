@@ -166,12 +166,12 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
                   <div className="p-3 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden flex items-center justify-center shrink-0">
-                          {blend?.photo ? (
+                        <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
+                          {blend?.logo || blend?.photo ? (
                             <img 
-                              src={blend.photo} 
+                              src={blend.logo || blend.photo} 
                               alt="" 
-                              className="w-full h-full object-cover" 
+                              className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                               onError={(e) => { 
                                 e.target.style.display = 'none'; 
                                 e.target.parentElement.innerHTML = '🍂'; 
