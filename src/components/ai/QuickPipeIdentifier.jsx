@@ -3,12 +3,20 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, Upload, Loader2, CheckCircle2, Sparkles, ArrowRight, TrendingUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const [photos, setPhotos] = useState([]);
+  const [hints, setHints] = useState({
+    name: '',
+    maker: '',
+    shape: '',
+    stamping: ''
+  });
   const [loading, setLoading] = useState(false);
   const [identified, setIdentified] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -48,9 +56,16 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
 
     setLoading(true);
     try {
+      const additionalContext = [
+        hints.name && `Name/Description: ${hints.name}`,
+        hints.maker && `Brand/Maker: ${hints.maker}`,
+        hints.shape && `Shape: ${hints.shape}`,
+        hints.stamping && `Stampings/Markings: ${hints.stamping}`
+      ].filter(Boolean).join('\n');
+
       const prompt = `Analyze these pipe photos and provide detailed identification information.
 
-Return a JSON object with this exact structure:
+${additionalContext ? `Additional context provided by user:\n${additionalContext}\n\n` : ''}Return a JSON object with this exact structure:
 {
   "name": "Brief descriptive name for the pipe",
   "maker": "Pipe maker/brand if identifiable",
@@ -131,6 +146,7 @@ Be as specific as possible based on visible features.`;
 
   const handleReset = () => {
     setPhotos([]);
+    setHints({ name: '', maker: '', shape: '', stamping: '' });
     setIdentified(null);
   };
 
@@ -194,6 +210,39 @@ Be as specific as possible based on visible features.`;
                 ))}
               </div>
             )}
+
+            {/* Optional Hint Fields */}
+            <div className="space-y-3 pt-2">
+              <Label className="text-xs text-[#e8d5b7]/70">
+                Optional: Provide hints to improve identification
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Name/Description"
+                  value={hints.name}
+                  onChange={(e) => setHints({...hints, name: e.target.value})}
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                />
+                <Input
+                  placeholder="Brand/Maker"
+                  value={hints.maker}
+                  onChange={(e) => setHints({...hints, maker: e.target.value})}
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                />
+                <Input
+                  placeholder="Shape"
+                  value={hints.shape}
+                  onChange={(e) => setHints({...hints, shape: e.target.value})}
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                />
+                <Input
+                  placeholder="Stampings"
+                  value={hints.stamping}
+                  onChange={(e) => setHints({...hints, stamping: e.target.value})}
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                />
+              </div>
+            </div>
 
             {/* Identify Button */}
             <Button
