@@ -71,6 +71,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
+  const creatingRef = useRef(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -145,11 +146,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   // Create conversation on open (only once when opened)
   useEffect(() => {
-    if (open && !conversationId && user?.email) {
-      console.log('Creating conversation for first time');
+    if (open && !conversationId && user?.email && !creatingRef.current) {
+      console.log('🆕 Creating conversation for first time');
+      creatingRef.current = true;
       createConversation();
     }
-  }, [open]);
+  }, [open, user?.email]);
 
   const createConversation = async () => {
     try {
@@ -164,10 +166,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       
       console.log('✅ Created conversation:', conv.id, 'Messages:', conv.messages?.length || 0);
       setConversationId(conv.id);
-      setMessages(conv.messages || []);  // Set initial messages from created conversation
+      setMessages(conv.messages || []);
+      creatingRef.current = false;
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      console.error('❌ Failed to create conversation:', error);
       toast.error('Failed to start conversation');
+      creatingRef.current = false;
     }
   };
 
@@ -284,13 +288,15 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setInput('');
     setConversationId(null);
     setMessages([]);
+    creatingRef.current = false;
     
     // Wait a tick for state to clear
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Now create fresh conversation
-    if (user?.email) {
+    if (user?.email && !creatingRef.current) {
       console.log('🔄 RESET: Creating new conversation');
+      creatingRef.current = true;
       await createConversation();
     }
   };
