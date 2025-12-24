@@ -64,30 +64,178 @@ export default function FAQPage() {
 
               <AccordionItem value="item-3a">
                 <AccordionTrigger>How do I install PipeKeeper on my phone?</AccordionTrigger>
-                <AccordionContent className="text-stone-600 space-y-3">
-                  <p>PipeKeeper works as a web app that can be installed on your mobile device for an app-like experience:</p>
+                <AccordionContent className="text-stone-600 space-y-6">
+                  <p className="font-medium">PipeKeeper can be installed on your mobile device for an app-like experience. Follow the step-by-step guide below for your device:</p>
                   
-                  <div>
-                    <p className="font-semibold mb-1">On iPhone/iPad (Safari):</p>
-                    <ol className="list-decimal ml-5 space-y-1">
-                      <li>Open PipeKeeper in Safari browser</li>
-                      <li>Tap the Share button (square with arrow pointing up)</li>
-                      <li>Scroll down and tap "Add to Home Screen"</li>
-                      <li>Tap "Add" to confirm</li>
-                    </ol>
+                  {/* iPhone Installation Guide */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-bold text-blue-900 text-lg mb-4 flex items-center gap-2">
+                      📱 iPhone / iPad Installation (Safari)
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open PipeKeeper in Safari</p>
+                          <p className="text-sm text-stone-600 mb-2">Make sure you're using Safari browser (not Chrome or others)</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <img 
+                              src="https://developer.apple.com/assets/elements/icons/safari/safari-96x96_2x.png"
+                              alt="Safari browser icon"
+                              className="w-16 h-16"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Tap the Share Button</p>
+                          <p className="text-sm text-stone-600 mb-2">Look at the bottom of Safari for the share icon (square with arrow pointing up)</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <svg className="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Select "Add to Home Screen"</p>
+                          <p className="text-sm text-stone-600 mb-2">Scroll down in the menu and tap this option</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="flex items-center gap-2 bg-blue-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">➕</span>
+                              <span className="font-medium text-blue-900">Add to Home Screen</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">4</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Confirm Installation</p>
+                          <p className="text-sm text-stone-600 mb-2">Tap "Add" in the top right corner</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="bg-green-100 rounded-lg px-6 py-2 w-fit">
+                              <span className="font-semibold text-green-900">Add</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span className="text-xl">✅</span>
+                          Done! PipeKeeper will appear on your home screen
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <p className="font-semibold mb-1">On Android (Chrome):</p>
-                    <ol className="list-decimal ml-5 space-y-1">
-                      <li>Open PipeKeeper in Chrome browser</li>
-                      <li>Tap the menu (three dots) in the top right</li>
-                      <li>Tap "Add to Home screen" or "Install app"</li>
-                      <li>Tap "Add" or "Install" to confirm</li>
-                    </ol>
+                  {/* Android Installation Guide */}
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-bold text-green-900 text-lg mb-4 flex items-center gap-2">
+                      🤖 Android Installation (Chrome)
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">1</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open PipeKeeper in Chrome</p>
+                          <p className="text-sm text-stone-600 mb-2">Chrome browser works best for Android installation</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <img 
+                              src="https://www.gstatic.com/images/branding/product/1x/chrome_96dp.png"
+                              alt="Chrome browser icon"
+                              className="w-16 h-16"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">2</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open the Menu</p>
+                          <p className="text-sm text-stone-600 mb-2">Tap the three dots (⋮) in the top right corner</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <span className="text-6xl text-green-700 font-light">⋮</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">3</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Select "Install app" or "Add to Home screen"</p>
+                          <p className="text-sm text-stone-600 mb-3">You'll see one of these options in the menu</p>
+                          <div className="bg-white/70 rounded-lg p-3 space-y-2">
+                            <div className="flex items-center gap-2 bg-green-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">📥</span>
+                              <span className="font-medium text-green-900">Install app</span>
+                            </div>
+                            <p className="text-xs text-stone-500 text-center">or</p>
+                            <div className="flex items-center gap-2 bg-green-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">➕</span>
+                              <span className="font-medium text-green-900">Add to Home screen</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">4</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Confirm Installation</p>
+                          <p className="text-sm text-stone-600 mb-2">A popup will appear - tap "Install" or "Add"</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="bg-green-100 rounded-lg px-6 py-2 w-fit">
+                              <span className="font-semibold text-green-900">Install</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span className="text-xl">✅</span>
+                          Done! PipeKeeper icon will appear on your home screen
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <p className="text-sm italic">Once installed, PipeKeeper will appear on your home screen like a native app and can work offline with cached data.</p>
+                  {/* Troubleshooting Tips */}
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                    <h5 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                      💡 Troubleshooting Tips
+                    </h5>
+                    <ul className="space-y-2 text-sm text-amber-900">
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span><strong>iPhone:</strong> Must use Safari browser - other browsers don't support PWA installation on iOS</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span><strong>Android:</strong> Chrome works best, but Firefox and Edge also support installation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>If you don't see the install option, try refreshing the page first</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>Once installed, the app works offline and loads faster than the browser version</span>
+                      </li>
+                    </ul>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
