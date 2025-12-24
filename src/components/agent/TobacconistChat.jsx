@@ -115,8 +115,10 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
     console.log('Setting up subscription for conversation:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      console.log('Received conversation update:', data);
-      setMessages(data.messages || []);
+      console.log('Received conversation update, messages count:', data.messages?.length);
+      if (data.messages) {
+        setMessages(data.messages);
+      }
     });
 
     return () => {
@@ -132,11 +134,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       createConversation();
     }
   }, [open, user?.email]);
-  
-  // Debug messages changes
-  useEffect(() => {
-    console.log('Messages updated:', messages.length, messages);
-  }, [messages]);
 
   const createConversation = async () => {
     try {
@@ -217,13 +214,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setInput('');
     setSending(true);
 
-    // Optimistically add user message to UI
-    const optimisticMessage = {
-      role: "user",
-      content: userMessage
-    };
-    setMessages(prev => [...prev, optimisticMessage]);
-
     try {
       // Build context summary for first message
       const contextSummary = messages.length === 0 ? buildContextSummary() : '';
@@ -231,19 +221,21 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n---\n\nFor context, here's my collection and preferences:\n${contextSummary}\n\nPlease use this to provide personalized advice.`
         : userMessage;
 
+      console.log('Sending message with context:', messageContent.substring(0, 200));
+
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
       
-      // Add user message
+      // Add user message - subscription will update UI
       await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
+      
+      console.log('Message sent successfully');
     } catch (error) {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
-      // Remove optimistic message on error
-      setMessages(prev => prev.slice(0, -1));
     } finally {
       setSending(false);
     }
