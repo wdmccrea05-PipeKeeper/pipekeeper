@@ -231,7 +231,7 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Pipes')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/95 via-[#6d2e2e]/90 to-[#5a2525]/95 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/70 via-[#6d2e2e]/60 to-[#5a2525]/70 z-10" />
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
                   style={{
@@ -287,7 +287,7 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Tobacco')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/95 via-[#2d4a3d]/90 to-[#1d3a2d]/95 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/70 via-[#2d4a3d]/60 to-[#1d3a2d]/70 z-10" />
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
                   style={{
