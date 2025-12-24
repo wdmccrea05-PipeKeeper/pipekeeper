@@ -164,7 +164,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       
       console.log('✅ Created conversation:', conv.id, 'Messages:', conv.messages?.length || 0);
       setConversationId(conv.id);
-      setMessages([]);  // Always start with empty messages for new conversation
+      setMessages(conv.messages || []);  // Set initial messages from created conversation
     } catch (error) {
       console.error('Failed to create conversation:', error);
       toast.error('Failed to start conversation');
