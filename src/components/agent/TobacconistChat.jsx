@@ -113,11 +113,16 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   useEffect(() => {
     if (!conversationId) return;
 
+    console.log('Setting up subscription for conversation:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+      console.log('Received conversation update:', data);
       setMessages(data.messages || []);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('Cleaning up subscription');
+      unsubscribe();
+    };
   }, [conversationId]);
 
   // Create conversation on open
@@ -211,14 +216,19 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n---\n\nFor context, here's my collection and preferences:\n${contextSummary}\n\nPlease use this to provide personalized advice.`
         : userMessage;
 
+      console.log('Sending message:', messageContent);
+
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
+      console.log('Current conversation state:', conv);
       
       // Add user message
       await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
+      
+      console.log('Message sent successfully');
     } catch (error) {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
