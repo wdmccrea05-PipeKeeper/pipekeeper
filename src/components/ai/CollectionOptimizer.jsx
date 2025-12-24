@@ -301,7 +301,12 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
   };
 
   const analyzeWhatIf = async () => {
+    if (!whatIfQuery.trim()) return;
+    
     setWhatIfLoading(true);
+    setWhatIfResult(null);
+    setSuggestedProducts(null);
+    
     try {
       const pipesData = pipes.map(p => ({
         id: p.id,
@@ -380,6 +385,7 @@ Be specific about which user-owned blends benefit and by how much.`,
       setWhatIfResult(result);
     } catch (err) {
       console.error('Error analyzing what-if:', err);
+      alert('Failed to analyze scenario. Please try again.');
     } finally {
       setWhatIfLoading(false);
     }
