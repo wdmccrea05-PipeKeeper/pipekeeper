@@ -19,6 +19,8 @@ const navItems = [
 function NavLink({ item, currentPage, onClick }) {
   const isActive = currentPage === item.page;
   
+  const isMobile = window.innerWidth < 768;
+  
   return (
     <Link 
       to={createPageUrl(item.page)} 
@@ -27,7 +29,9 @@ function NavLink({ item, currentPage, onClick }) {
         "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
-          : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
+          : isMobile 
+            ? "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
+            : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
     >
       {item.isIconComponent ? (
@@ -40,7 +44,9 @@ function NavLink({ item, currentPage, onClick }) {
           style={{
             filter: isActive 
               ? 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
-              : 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%) opacity(0.7)'
+              : isMobile
+                ? 'brightness(0) saturate(100%) invert(12%) sepia(24%) saturate(1391%) hue-rotate(178deg) brightness(96%) contrast(90%)'
+                : 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%) opacity(0.7)'
           }}
         />
       )}
@@ -121,7 +127,7 @@ export default function Layout({ children, currentPageName }) {
                     "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
                     currentPageName === 'Invite'
                       ? "bg-[#8b3a3a] text-[#e8d5b7]" 
-                      : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
+                      : "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
                   )}
                 >
                   <UserPlus className="w-5 h-5" />
