@@ -27,10 +27,19 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
         Smoking Characteristics: ${pipe.smoking_characteristics || 'Not specified'}
       `;
 
+      const existingBlends = blends.map(b => ({
+        manufacturer: b.manufacturer?.toLowerCase() || '',
+        name: b.name?.toLowerCase() || '',
+        fullName: `${b.manufacturer || ''} ${b.name || ''}`.toLowerCase()
+      }));
+
+      const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
+      
       const userBlendsDescription = blends.length > 0 
-        ? `\n\nUser's tobacco collection:\n${blends.map(b => 
-            `- ${b.name} (${b.blend_type || 'Unknown type'}, ${b.strength || 'Unknown strength'})`
-          ).join('\n')}`
+        ? `\n\nCRITICAL: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
+${existingBlendsText}
+
+Only recommend NEW, DIFFERENT blends the user should purchase.`
         : '';
 
       const hasFocus = pipe.focus && pipe.focus.length > 0;
@@ -54,7 +63,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples.
+        prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples that the user should BUY.
 
 ${pipeDescription}
 ${userBlendsDescription}${focusContext}
@@ -70,7 +79,7 @@ Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
 - reasoning: why these types work well with this pipe
 - from_collection: array of blend names from the user's collection that would pair well (if any match)
-- product_recommendations: array of 3-5 specific real products with name, manufacturer, blend_type, and brief description
+- product_recommendations: array of 3-5 specific NEW real products to BUY (NOT from user's collection) with name, manufacturer, blend_type, and brief description
 - smoking_tips: specific tips for smoking these blend types in this pipe`,
         add_context_from_internet: true,
         response_json_schema: {
@@ -95,6 +104,18 @@ Provide recommendations in JSON format with:
           }
         }
       });
+
+      // Filter out any product recommendations that match existing blends
+      if (result.product_recommendations) {
+        result.product_recommendations = result.product_recommendations.filter(product => {
+          const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase();
+          return !existingBlends.some(existing => 
+            existing.fullName.includes(product.name?.toLowerCase()) ||
+            productFullName.includes(existing.name) ||
+            (existing.manufacturer && product.manufacturer?.toLowerCase().includes(existing.manufacturer))
+          );
+        });
+      }
 
       setRecommendations(result);
     } catch (err) {

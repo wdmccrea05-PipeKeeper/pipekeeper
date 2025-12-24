@@ -11,6 +11,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
+  const [collapsed, setCollapsed] = useState(false);
   const queryClient = useQueryClient();
 
   const updatePipeMutation = useMutation({
@@ -157,18 +158,27 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
               )}
             </Button>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={generateSchedule}
-              disabled={generating}
-            >
-              Regenerate
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? 'Show' : 'Hide'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateSchedule}
+                disabled={generating}
+              >
+                Regenerate
+              </Button>
+            </div>
           )}
         </div>
       </CardHeader>
-      {schedule.length > 0 && (
+      {schedule.length > 0 && !collapsed && (
         <CardContent>
           {progress < 100 && (
             <div className="mb-4 bg-stone-200 rounded-full h-2 overflow-hidden">
