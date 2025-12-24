@@ -193,7 +193,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     if (!input.trim() || !conversationId || sending) return;
 
     const userMessage = input.trim();
-    setInput('');
     setSending(true);
 
     try {
@@ -203,16 +202,22 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
         : userMessage;
 
+      console.log('🚀 Sending:', userMessage);
+
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
+      console.log('📖 Conv has', conv.messages?.length, 'messages');
 
       // Add user message - subscription will update UI
-      await base44.agents.addMessage(conv, {
+      const result = await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
+
+      console.log('✅ Sent, result:', result);
+      setInput('');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('❌ Error:', error);
       toast.error('Failed to send message');
     } finally {
       setSending(false);
@@ -255,6 +260,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-stone-50 to-white">
+          {/* Minimal debug */}
+          <div className="text-xs text-stone-500 mb-2 p-2 bg-stone-100 rounded">
+            Conv: {conversationId?.substring(0, 8)} | Msgs: {messages.length} | Sending: {sending ? 'yes' : 'no'}
+          </div>
+
           {!conversationId ? (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-stone-400" />
