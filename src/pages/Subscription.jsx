@@ -97,7 +97,7 @@ function CheckoutForm({ trialEndDate, onSuccess }) {
         ) : (
           <>
             <CreditCard className="w-4 h-4 mr-2" />
-            Subscribe - $12.99/year
+            Subscribe Now
           </>
         )}
       </Button>
@@ -174,7 +174,7 @@ export default function SubscriptionPage() {
         stripe_subscription_id: `sub_${paymentMethodId}`,
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        amount: 12.99
+        amount: 19.99
       });
     }
 
@@ -256,8 +256,8 @@ export default function SubscriptionPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                   <div>
-                    <p className="font-medium text-emerald-800">Annual Plan</p>
-                    <p className="text-sm text-emerald-600">$12.99/year</p>
+                    <p className="font-medium text-emerald-800">Premium Plan</p>
+                    <p className="text-sm text-emerald-600">$1.99/month or $19.99/year</p>
                   </div>
                   <Badge className="bg-emerald-600 text-white">Active</Badge>
                 </div>
@@ -372,7 +372,7 @@ export default function SubscriptionPage() {
             <CardHeader>
               <CardTitle>Subscribe to Premium</CardTitle>
               <CardDescription>
-                $12.99 per year • Cancel anytime
+                $1.99/month or $19.99/year • Automatic renewal until cancelled
                 {isInTrial && ` • Trial until ${new Date(trialEndDate).toLocaleDateString()}`}
               </CardDescription>
             </CardHeader>
