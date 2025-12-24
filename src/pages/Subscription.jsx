@@ -306,33 +306,65 @@ export default function SubscriptionPage() {
         </Card>
 
         {/* Features List */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Premium Features</CardTitle>
-            <CardDescription>Everything you get with PipeKeeper Premium</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                "AI-powered tobacco pairing recommendations",
-                "Photo identification for pipes and tobacco",
-                "Market value lookup and tracking",
-                "Collection optimization suggestions",
-                "Advanced pairing matrix",
-                "Break-in schedule generator",
-                "Bulk CSV import for pipes & tobacco",
-                "Unlimited pipes and tobacco blends",
-                "AI web search for auto-fill",
-                "Priority customer support"
-              ].map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span className="text-stone-700">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Free Features */}
+          <Card className="border-stone-200 bg-[#243548]">
+            <CardHeader>
+              <CardTitle className="text-[#e8d5b7]">Free Features</CardTitle>
+              <CardDescription className="text-[#e8d5b7]/70">What's included with your free PipeKeeper account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  "Manual pipe and tobacco entry",
+                  "Organize and browse your collection",
+                  "Track basic pipe and tobacco details",
+                  "Log smoking sessions manually",
+                  "View recent pipes and tobacco",
+                  "Basic collection statistics",
+                  "7-day free trial of Premium features"
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="text-[#e8d5b7]">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Premium Features */}
+          <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-600" />
+                Premium Features
+              </CardTitle>
+              <CardDescription>Everything you get with PipeKeeper Premium</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  "AI-powered tobacco pairing recommendations",
+                  "Photo identification for pipes and tobacco",
+                  "Market value lookup and tracking",
+                  "Collection optimization suggestions",
+                  "Advanced pairing matrix",
+                  "Break-in schedule generator",
+                  "Bulk CSV import for pipes & tobacco",
+                  "Unlimited pipes and tobacco blends",
+                  "AI web search for auto-fill",
+                  "Priority customer support"
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <span className="text-stone-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Payment Form */}
         {!hasActiveSubscription && (
