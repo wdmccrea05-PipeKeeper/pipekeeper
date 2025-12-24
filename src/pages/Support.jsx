@@ -195,6 +195,12 @@ ${formData.message}
             </form>
           </CardContent>
         </Card>
+
+        <div className="mt-6 text-center">
+          <Link to={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline">
+            → Bulk Logo Upload Tool
+          </Link>
+        </div>
       </div>
     </div>
   );
