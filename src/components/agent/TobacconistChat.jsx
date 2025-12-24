@@ -289,14 +289,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-stone-50 to-white">
-          {/* DEBUG INFO */}
-          <div className="bg-yellow-100 p-2 text-xs mb-4">
-            <div>ConvID: {conversationId || 'none'}</div>
-            <div>Messages: {messages.length}</div>
-            <div>Sending: {sending ? 'yes' : 'no'}</div>
-            <div>Messages data: {JSON.stringify(messages.map(m => ({role: m.role, content: m.content?.substring(0, 30)})))}</div>
-          </div>
-          
           {!conversationId ? (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-stone-400" />
