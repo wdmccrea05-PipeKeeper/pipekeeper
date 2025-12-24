@@ -10,6 +10,7 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Support from './pages/Support';
 import Invite from './pages/Invite';
+import Import from './pages/Import';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +27,7 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "Support": Support,
     "Invite": Invite,
+    "Import": Import,
 }
 
 export const pagesConfig = {
