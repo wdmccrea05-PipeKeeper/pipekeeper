@@ -9,10 +9,10 @@ export default function PipeListItem({ pipe, onClick }) {
   
   return (
     <Card 
-      className="overflow-hidden cursor-pointer bg-gradient-to-br from-stone-50 to-amber-50/30 border-stone-200/60 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300"
+      className="overflow-hidden cursor-pointer bg-gradient-to-br from-[#f5ead8] to-[#e8d5b7]/30 border-[#e8d5b7]/60 hover:shadow-lg hover:shadow-[#8b3a3a]/10 transition-all duration-300"
       onClick={onClick}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-4 bg-[#f5ead8]/50">
         <div className="flex items-center gap-4">
           {/* Photo */}
           <div className="relative w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden shrink-0">

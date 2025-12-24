@@ -24,10 +24,10 @@ export default function TobaccoListItem({ blend, onClick }) {
   
   return (
     <Card 
-      className="overflow-hidden cursor-pointer bg-gradient-to-br from-amber-50/50 to-stone-50 border-stone-200/60 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300"
+      className="overflow-hidden cursor-pointer bg-gradient-to-br from-[#f5ead8] to-[#e8d5b7]/30 border-[#e8d5b7]/60 hover:shadow-lg hover:shadow-[#8b3a3a]/10 transition-all duration-300"
       onClick={onClick}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-4 bg-[#f5ead8]/50">
         <div className="flex items-center gap-4">
           {/* Photo */}
           <div className="relative w-24 h-24 rounded-lg bg-white border border-amber-200 overflow-hidden shrink-0">

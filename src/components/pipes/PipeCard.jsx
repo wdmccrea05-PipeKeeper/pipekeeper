@@ -14,7 +14,7 @@ export default function PipeCard({ pipe, onClick }) {
       transition={{ duration: 0.2 }}
     >
       <Card 
-        className="overflow-hidden cursor-pointer bg-gradient-to-br from-stone-50 to-amber-50/30 border-stone-200/60 hover:shadow-xl hover:shadow-amber-900/10 transition-all duration-300"
+        className="overflow-hidden cursor-pointer bg-gradient-to-br from-[#f5ead8] to-[#e8d5b7]/30 border-[#e8d5b7]/60 hover:shadow-xl hover:shadow-[#8b3a3a]/10 transition-all duration-300"
         onClick={onClick}
       >
         <div className="relative aspect-[4/3] bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
@@ -45,7 +45,7 @@ export default function PipeCard({ pipe, onClick }) {
             </div>
           )}
         </div>
-        <CardContent className="p-4">
+        <CardContent className="p-4 bg-[#f5ead8]/50">
           <h3 className="font-semibold text-stone-800 truncate">{pipe.name}</h3>
           <p className="text-sm text-stone-500 truncate">{pipe.maker || 'Unknown maker'}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
