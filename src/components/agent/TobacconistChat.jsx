@@ -90,26 +90,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     return () => unsubscribe();
   }, [conversationId]);
 
-  const buildContext = () => {
-    const parts = [];
-    
-    if (pipes.length > 0) {
-      const pipeList = pipes.map(p => 
-        `${p.name} (${p.maker || 'Unknown'}, ${p.shape || ''}, ${p.chamber_volume || ''})`
-      ).join(', ');
-      parts.push(`MY PIPES: ${pipeList}`);
-    }
-    
-    if (blends.length > 0) {
-      const blendList = blends.map(b => 
-        `${b.name} (${b.manufacturer || ''}, ${b.blend_type || ''}, ${b.strength || ''})`
-      ).join(', ');
-      parts.push(`MY TOBACCO: ${blendList}`);
-    }
-    
-    return parts.join('\n\n');
-  };
-
   const handleSend = async () => {
     if (!input.trim() || !conversationId || sending) return;
 
@@ -118,13 +98,10 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setSending(true);
 
     try {
-      const context = messages.length === 0 ? buildContext() : '';
-      const content = context ? `${userMessage}\n\n[COLLECTION]\n${context}` : userMessage;
-
       const conv = await base44.agents.getConversation(conversationId);
       await base44.agents.addMessage(conv, {
         role: "user",
-        content: content
+        content: userMessage
       });
     } catch (error) {
       console.error('Send error:', error);
