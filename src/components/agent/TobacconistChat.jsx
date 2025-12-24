@@ -223,6 +223,10 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setInput('');
     setSending(true);
 
+    // Add user message immediately
+    const tempMessage = { role: "user", content: userMessage };
+    setMessages(prev => [...prev, tempMessage]);
+
     try {
       // Build context summary for first message
       const contextSummary = messages.length === 0 ? buildContextSummary() : '';
@@ -253,6 +257,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     } catch (error) {
       console.error('❌ Failed to send message:', error);
       toast.error('Failed to send message');
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setSending(false);
     }
