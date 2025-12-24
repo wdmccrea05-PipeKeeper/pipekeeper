@@ -227,19 +227,41 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
         : userMessage;
 
-      console.log('🚀 Sending message...');
+      console.log('🚀 Sending message:', userMessage);
+      console.log('📦 Context included:', !!contextSummary);
 
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
       console.log('📖 Current conversation has', conv.messages?.length, 'messages before send');
 
-      // Add user message - subscription will update UI
-      await base44.agents.addMessage(conv, {
+      // Add user message
+      const result = await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
 
-      console.log('✅ Message sent, waiting for subscription update');
+      console.log('✅ Message sent successfully, result:', result);
+      
+      // Poll for response updates
+      let attempts = 0;
+      const maxAttempts = 60; // 30 seconds max
+      const pollInterval = setInterval(async () => {
+        attempts++;
+        const updated = await base44.agents.getConversation(conversationId);
+        console.log(`🔄 Poll ${attempts}: ${updated.messages?.length} messages`);
+        
+        if (updated.messages?.length > conv.messages?.length) {
+          console.log('✨ New messages detected!');
+          setMessages(updated.messages);
+          setSending(false);
+          clearInterval(pollInterval);
+        } else if (attempts >= maxAttempts) {
+          console.log('⏱️ Polling timeout');
+          setSending(false);
+          clearInterval(pollInterval);
+        }
+      }, 500);
+      
     } catch (error) {
       console.error('❌ Send error:', error);
       toast.error('Failed to send message');
