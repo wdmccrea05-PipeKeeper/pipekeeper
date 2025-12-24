@@ -215,7 +215,7 @@ export default function SubscriptionPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">
             <Crown className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">PipeKeeper Premium</h1>
+          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Premium</h1>
           <p className="text-stone-600">Unlock the full power of AI-driven pipe and tobacco management</p>
         </div>
 
