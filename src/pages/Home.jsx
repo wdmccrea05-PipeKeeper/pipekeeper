@@ -381,25 +381,44 @@ export default function HomePage() {
           transition={{ delay: 0.81 }}
           className="mb-6"
         >
-          <Card 
-            className="border-[#e8d5b7]/30 bg-gradient-to-br from-[#8b3a3a]/20 to-[#6d2e2e]/10 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => setShowTobacconist(true)}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center">
-                    <span className="text-2xl">🪈</span>
+          {isPaidUser ? (
+            <Card 
+              className="border-[#e8d5b7]/30 bg-gradient-to-br from-[#8b3a3a]/20 to-[#6d2e2e]/10 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setShowTobacconist(true)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center">
+                      <span className="text-2xl">🪈</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#e8d5b7] text-lg">Speak to the Tobacconist</p>
+                      <p className="text-sm text-[#e8d5b7]/70">Expert advice on pairings, collection optimization & strategy</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-[#e8d5b7] text-lg">Speak to the Tobacconist</p>
-                    <p className="text-sm text-[#e8d5b7]/70">Expert advice on pairings, collection optimization & strategy</p>
+                  <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70 flex-shrink-0 ml-2" />
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-[#8b3a3a]/20 to-[#6d2e2e]/10">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center">
+                      <span className="text-2xl">🪈</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#e8d5b7] text-lg">Speak to the Tobacconist</p>
+                      <p className="text-sm text-[#e8d5b7]/70">Expert advice on pairings, collection optimization & strategy</p>
+                      <Badge className="bg-amber-600 text-white mt-2">Premium Feature</Badge>
+                    </div>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70 flex-shrink-0 ml-2" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
 
         {/* Quick Pipe Identifier */}
