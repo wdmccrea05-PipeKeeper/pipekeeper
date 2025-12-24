@@ -119,25 +119,25 @@ export default function HomePage() {
           onSkip={handleOnboardingSkip}
         />
       )}
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12 px-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-[#e8d5b7] mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8d5b7] mb-3 sm:mb-4 leading-tight">
             Pipe & Tobacco Collection
           </h1>
-          <p className="text-lg text-[#e8d5b7]/70 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-[#e8d5b7]/70 max-w-2xl mx-auto px-2">
             Manage your pipes and tobacco blends with AI-powered search, photo identification, 
             pairing suggestions, and market valuations.
           </p>
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -145,10 +145,10 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-8 h-8 mx-auto mb-2 object-contain brightness-0 invert" />
-                  <p className="text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
-                  <p className="text-sm text-[#e8d5b7]/80">Pipes</p>
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain brightness-0 invert" />
+                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
+                  <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Pipes</p>
                 </CardContent>
               </Card>
             </Link>
@@ -159,10 +159,10 @@ export default function HomePage() {
             transition={{ delay: 0.2 }}
           >
             <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
-              <CardContent className="p-6 text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-[#1a2c42]" />
-                <p className="text-3xl font-bold text-[#1a2c42]">${totalPipeValue.toLocaleString()}</p>
-                <p className="text-sm text-[#1a2c42]/80">Collection Value</p>
+              <CardContent className="p-3 sm:p-6 text-center">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
+                <p className="text-xl sm:text-3xl font-bold text-[#1a2c42] break-words">${totalPipeValue.toLocaleString()}</p>
+                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Value</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -173,10 +173,10 @@ export default function HomePage() {
           >
             <Link to={createPageUrl('Tobacco')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <Leaf className="w-8 h-8 mx-auto mb-2 text-[#e8d5b7]" />
-                  <p className="text-3xl font-bold text-[#e8d5b7]">{blends.length}</p>
-                  <p className="text-sm text-[#e8d5b7]/80">Tobacco Blends</p>
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#e8d5b7]" />
+                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{blends.length}</p>
+                  <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Blends</p>
                 </CardContent>
               </Card>
             </Link>
@@ -187,17 +187,17 @@ export default function HomePage() {
             transition={{ delay: 0.4 }}
           >
             <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
-              <CardContent className="p-6 text-center">
-                <Package className="w-8 h-8 mx-auto mb-2 text-[#1a2c42]" />
-                <p className="text-3xl font-bold text-[#1a2c42]">{totalTins}</p>
-                <p className="text-sm text-[#1a2c42]/80">Tins in Cellar</p>
+              <CardContent className="p-3 sm:p-6 text-center">
+                <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
+                <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{totalTins}</p>
+                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Tins</p>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -212,42 +212,42 @@ export default function HomePage() {
                     backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/027742301_image.png)'
                   }}
                 />
-                <div className="relative z-20 p-8 h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <h3 className="text-3xl font-bold text-white mb-2">Pipe Collection</h3>
-                      <p className="text-[#e8d5b7] text-base">Track and value your pipes</p>
+                <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-4 sm:mb-6">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <img src={PIPE_ICON} alt="Pipes" className="w-8 h-8 object-contain brightness-0 invert" />
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
+                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain brightness-0 invert" />
                     </div>
                   </div>
 
-                  <div className="flex-1 mb-6">
-                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
-                      <p className="text-4xl font-bold text-white mb-1">{pipes.length}</p>
-                      <p className="text-[#e8d5b7] text-base">Pipes in Collection</p>
+                  <div className="flex-1 mb-4 sm:mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{pipes.length}</p>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
                     </div>
 
-                    <ul className="space-y-2.5 text-[#e8d5b7] text-base">
+                    <ul className="space-y-2 sm:space-y-2.5 text-[#e8d5b7] text-sm sm:text-base">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        AI web search to auto-fill details
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>AI web search to auto-fill details</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        Photo identification from stamps
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>Photo identification from stamps</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        Market value lookup
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>Market value lookup</span>
                       </li>
                     </ul>
                   </div>
 
-                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-base">
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
                     <span className="font-semibold">View Collection</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
               </Card>
@@ -268,42 +268,42 @@ export default function HomePage() {
                     backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/19a8321a9_image.png)'
                   }}
                 />
-                <div className="relative z-20 p-8 h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <h3 className="text-3xl font-bold text-white mb-2">Tobacco Cellar</h3>
-                      <p className="text-[#e8d5b7] text-base">Manage your blends</p>
+                <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-4 sm:mb-6">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Manage your blends</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <Leaf className="w-8 h-8 text-white" />
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
+                      <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                   </div>
 
-                  <div className="flex-1 mb-6">
-                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
-                      <p className="text-4xl font-bold text-white mb-1">{blends.length}</p>
-                      <p className="text-[#e8d5b7] text-base">Tobacco Blends</p>
+                  <div className="flex-1 mb-4 sm:mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{blends.length}</p>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
                     </div>
 
-                    <ul className="space-y-2.5 text-[#e8d5b7] text-base">
+                    <ul className="space-y-2 sm:space-y-2.5 text-[#e8d5b7] text-sm sm:text-base">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        AI web search for blend info
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>AI web search for blend info</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        Track inventory quantities
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>Track inventory quantities</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
-                        Flavor profiles & ratings
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
+                        <span>Flavor profiles & ratings</span>
                       </li>
                     </ul>
                   </div>
 
-                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-base">
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
                     <span className="font-semibold">View Cellar</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
               </Card>
@@ -545,33 +545,33 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-center py-12"
+            className="text-center py-8 sm:py-12 px-4"
           >
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <img 
                 src={PIPE_ICON}
                 alt="Pipe"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
                 style={{
                   filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
                 }}
               />
-              <Leaf className="w-16 h-16 text-[#e8d5b7]" />
+              <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
             </div>
-            <h2 className="text-2xl font-semibold text-[#e8d5b7] mb-2">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
               Welcome to Your Collection
             </h2>
-            <p className="text-[#e8d5b7]/70 mb-8 max-w-md mx-auto">
+            <p className="text-sm sm:text-base text-[#e8d5b7]/70 mb-6 sm:mb-8 max-w-md mx-auto px-2">
               Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.
             </p>
-            <div className="flex gap-4 justify-center">
-              <Link to={createPageUrl('Pipes')}>
-                <Button className="bg-amber-700 hover:bg-amber-800">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
+              <Link to={createPageUrl('Pipes')} className="w-full sm:w-auto">
+                <Button className="bg-amber-700 hover:bg-amber-800 w-full">
                   Add Your First Pipe
                 </Button>
               </Link>
-              <Link to={createPageUrl('Tobacco')}>
-                <Button variant="outline">
+              <Link to={createPageUrl('Tobacco')} className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full">
                   Add Your First Blend
                 </Button>
               </Link>
