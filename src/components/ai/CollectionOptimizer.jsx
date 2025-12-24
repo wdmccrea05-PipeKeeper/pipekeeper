@@ -404,8 +404,19 @@ Be specific about which user-owned blends benefit and by how much.`,
 
     setLoadingProducts(true);
     try {
+      // Determine if question is about pipes or tobacco
+      const isPipeQuery = /pipe|briar|meerschaum|shape|chamber|stem|bowl/i.test(whatIfQuery);
+      const isTobaccoQuery = /tobacco|blend|tin|virginia|english|latakia|aromatic|flake|ribbon/i.test(whatIfQuery);
+      
+      let productType = 'both';
+      if (isPipeQuery && !isTobaccoQuery) {
+        productType = 'pipes';
+      } else if (isTobaccoQuery && !isPipeQuery) {
+        productType = 'tobacco';
+      }
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Based on this "What If" analysis, suggest 5 specific real-world products (pipes or tobacco blends) that match the criteria.
+        prompt: `Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'PIPES ONLY' : productType === 'tobacco' ? 'TOBACCO BLENDS ONLY' : 'products (pipes or tobacco blends)'} that match the criteria.
 
 User's Question: ${whatIfQuery}
 Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
@@ -413,12 +424,13 @@ Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
 For each product, provide:
 - Product name (actual product if known, or descriptive name)
 - Brand/Manufacturer
-- Type (Pipe or Tobacco Blend)
-- For Pipes: Shape, material, chamber size, stem material, finish
-- For Blends: Blend type, strength, cut, flavor profile
+${productType !== 'tobacco' ? '- For Pipes: Shape, material, chamber size, stem material, finish' : ''}
+${productType !== 'pipes' ? '- For Blends: Blend type, strength, cut, flavor profile' : ''}
 - Price range
 - Why it fits the scenario
-- Where to find it (retailer or online)
+
+${productType === 'pipes' ? 'ONLY suggest pipes. Do NOT suggest tobacco blends.' : ''}
+${productType === 'tobacco' ? 'ONLY suggest tobacco blends. Do NOT suggest pipes.' : ''}
 
 Be specific with real product names when possible (e.g., "Peterson System Standard 305", "Samuel Gawith Full Virginia Flake"). Focus on products that address the gaps and achieve the trophy pairings identified in the analysis.`,
         add_context_from_internet: true,
@@ -443,8 +455,7 @@ Be specific with real product names when possible (e.g., "Peterson System Standa
                   cut: { type: "string" },
                   flavor_profile: { type: "string" },
                   price_range: { type: "string" },
-                  why_it_fits: { type: "string" },
-                  where_to_find: { type: "string" }
+                  why_it_fits: { type: "string" }
                 }
               }
             }
@@ -835,12 +846,6 @@ Provide concrete, actionable steps with specific field values.`,
                           <div className="bg-indigo-50 rounded p-2 mt-2">
                             <p className="text-xs text-indigo-800"><span className="font-medium">Why:</span> {product.why_it_fits}</p>
                           </div>
-
-                          {product.where_to_find && (
-                            <div className="text-xs text-stone-600">
-                              <span className="font-medium">Where to find:</span> {product.where_to_find}
-                            </div>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
