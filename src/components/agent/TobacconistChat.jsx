@@ -111,13 +111,22 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   // Subscribe to conversation updates
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId) {
+      console.log('No conversation ID, skipping subscription');
+      return;
+    }
 
     console.log('Setting up subscription for conversation:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      console.log('Received conversation update, messages count:', data.messages?.length);
-      if (data.messages) {
-        setMessages(data.messages);
+      console.log('📨 SUBSCRIPTION UPDATE:', {
+        messageCount: data.messages?.length,
+        messages: data.messages,
+        conversationId: data.id
+      });
+      
+      if (data.messages && data.messages.length > 0) {
+        console.log('✅ Setting messages:', data.messages);
+        setMessages([...data.messages]);
       }
     });
 
@@ -303,9 +312,24 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
             </div>
           ) : (
             <>
-              {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} />
-              ))}
+              {messages.map((msg, idx) => {
+                console.log('Rendering message:', idx, msg.role, msg.content?.substring(0, 50));
+                return <MessageBubble key={idx} message={msg} />;
+              })}
+              {sending && (
+                <div className="flex gap-3 justify-start">
+                  <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
+                    <img 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
+                      alt="Tobacconist"
+                      className="w-full h-full object-cover scale-110"
+                    />
+                  </div>
+                  <div className="rounded-2xl px-4 py-2.5 bg-white border border-stone-200">
+                    <Loader2 className="w-4 h-4 animate-spin text-stone-400" />
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </>
           )}
