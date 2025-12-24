@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ScanSearch, Info } from "lucide-react";
+import { Loader2, ScanSearch, Info, Camera, Upload, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,16 +10,46 @@ export default function PipeIdentifier({ pipe, onUpdatePipe }) {
   const [loading, setLoading] = useState(false);
   const [identification, setIdentification] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of Array.from(files)) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploadedUrls.push(file_url);
+      }
+      setCapturedPhotos([...capturedPhotos, ...uploadedUrls]);
+    } catch (err) {
+      console.error('Error uploading files:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePhoto = (index) => {
+    setCapturedPhotos(capturedPhotos.filter((_, i) => i !== index));
+  };
 
   const identifyPipe = async () => {
-    if (!pipe.stamping_photos?.length && !pipe.photos?.length) {
+    const allPhotos = [
+      ...(pipe.stamping_photos || []),
+      ...(pipe.photos || []),
+      ...capturedPhotos
+    ];
+
+    if (allPhotos.length === 0) {
       return;
     }
 
     setLoading(true);
     try {
-      const photos = [...(pipe.stamping_photos || []), ...(pipe.photos || [])];
-      
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe identifier with extensive knowledge of pipe makers, stamps, and hallmarks. Analyze these images to identify this pipe.
 
@@ -52,7 +82,7 @@ Provide the identification in JSON format with:
 - additional_info: interesting facts about this maker or model (no sources or links)
 - suggested_updates: object with any fields that should be updated on the pipe record`,
         add_context_from_internet: true,
-        file_urls: photos,
+        file_urls: allPhotos,
         response_json_schema: {
           type: "object",
           properties: {
@@ -90,7 +120,7 @@ Provide the identification in JSON format with:
     }
   };
 
-  const hasPhotos = pipe.stamping_photos?.length > 0 || pipe.photos?.length > 0;
+  const hasPhotos = pipe.stamping_photos?.length > 0 || pipe.photos?.length > 0 || capturedPhotos.length > 0;
 
   const confidenceColors = {
     high: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -106,12 +136,75 @@ Provide the identification in JSON format with:
             <ScanSearch className="w-8 h-8 text-violet-600" />
           </div>
           <h3 className="text-lg font-semibold text-stone-800 mb-2">AI Pipe Identification</h3>
-          <p className="text-stone-500 mb-6 max-w-md mx-auto">
-            {hasPhotos 
-              ? "Analyze photos and stamps to identify maker, era, and authenticity"
-              : "Add photos of your pipe and its stamping for AI identification"
-            }
+          <p className="text-stone-500 mb-4 max-w-md mx-auto">
+            Take or upload photos of your pipe and its stamping for AI identification
           </p>
+
+          {/* Photo Upload Options */}
+          <div className="flex gap-3 justify-center mb-6">
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFileUpload(e.target.files)}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFileUpload(e.target.files)}
+            />
+            <Button
+              variant="outline"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 mr-2" />
+              )}
+              Take Photo
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Photo
+            </Button>
+          </div>
+
+          {/* Captured Photos Preview */}
+          {capturedPhotos.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm text-stone-500 mb-3">Photos for identification:</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {capturedPhotos.map((photo, idx) => (
+                  <div key={idx} className="relative">
+                    <img
+                      src={photo}
+                      alt={`Captured ${idx + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border-2 border-stone-200"
+                    />
+                    <button
+                      onClick={() => removePhoto(idx)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Button
             onClick={identifyPipe}
             disabled={loading || !hasPhotos}
@@ -234,7 +327,10 @@ Provide the identification in JSON format with:
             )}
 
               <div className="text-center">
-                <Button variant="outline" onClick={() => setIdentification(null)}>
+                <Button variant="outline" onClick={() => {
+                  setIdentification(null);
+                  setCapturedPhotos([]);
+                }}>
                   Identify Again
                 </Button>
               </div>
