@@ -25,6 +25,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [whatIfDescription, setWhatIfDescription] = useState('');
   const [whatIfLoading, setWhatIfLoading] = useState(false);
   const [whatIfResult, setWhatIfResult] = useState(null);
+  const [suggestedProducts, setSuggestedProducts] = useState(null);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -388,6 +390,68 @@ Be specific about which user-owned blends benefit and by how much.`,
     setWhatIfPhotos([]);
     setWhatIfDescription('');
     setWhatIfResult(null);
+    setSuggestedProducts(null);
+  };
+
+  const suggestProducts = async () => {
+    if (!whatIfResult) return;
+
+    setLoadingProducts(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Based on this "What If" analysis, suggest 5 specific real-world products (pipes or tobacco blends) that match the criteria.
+
+User's Question: ${whatIfQuery}
+Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
+
+For each product, provide:
+- Product name (actual product if known, or descriptive name)
+- Brand/Manufacturer
+- Type (Pipe or Tobacco Blend)
+- For Pipes: Shape, material, chamber size, stem material, finish
+- For Blends: Blend type, strength, cut, flavor profile
+- Price range
+- Why it fits the scenario
+- Where to find it (retailer or online)
+
+Be specific with real product names when possible (e.g., "Peterson System Standard 305", "Samuel Gawith Full Virginia Flake"). Focus on products that address the gaps and achieve the trophy pairings identified in the analysis.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            suggestions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  brand: { type: "string" },
+                  type: { type: "string" },
+                  shape: { type: "string" },
+                  material: { type: "string" },
+                  chamber_size: { type: "string" },
+                  stem_material: { type: "string" },
+                  finish: { type: "string" },
+                  blend_type: { type: "string" },
+                  strength: { type: "string" },
+                  cut: { type: "string" },
+                  flavor_profile: { type: "string" },
+                  price_range: { type: "string" },
+                  why_it_fits: { type: "string" },
+                  where_to_find: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      setSuggestedProducts(result);
+    } catch (err) {
+      console.error('Error suggesting products:', err);
+    } finally {
+      setLoadingProducts(false);
+    }
   };
 
   const implementWhatIf = async () => {
@@ -694,6 +758,88 @@ Provide concrete, actionable steps with specific field values.`,
                     Cancel
                   </Button>
                 </div>
+              )}
+
+              {/* Product Suggestions */}
+              <div className="mt-4">
+                <Button
+                  onClick={suggestProducts}
+                  disabled={loadingProducts}
+                  variant="outline"
+                  className="w-full border-violet-300 text-violet-700 hover:bg-violet-50"
+                >
+                  {loadingProducts ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Finding Products...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Suggest Specific Products
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {suggestedProducts?.suggestions && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 space-y-3"
+                >
+                  <h4 className="font-semibold text-stone-800 flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    Recommended Products
+                  </h4>
+                  {suggestedProducts.suggestions.map((product, idx) => (
+                    <Card key={idx} className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h5 className="font-semibold text-stone-800">{product.name}</h5>
+                            <p className="text-sm text-stone-600">{product.brand}</p>
+                            <Badge className="mt-1 bg-violet-100 text-violet-800 border-violet-200">
+                              {product.type}
+                            </Badge>
+                          </div>
+                          <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                            {product.price_range}
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          {product.type === 'Pipe' ? (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {product.shape && <div><span className="text-stone-500">Shape:</span> {product.shape}</div>}
+                              {product.material && <div><span className="text-stone-500">Material:</span> {product.material}</div>}
+                              {product.chamber_size && <div><span className="text-stone-500">Chamber:</span> {product.chamber_size}</div>}
+                              {product.stem_material && <div><span className="text-stone-500">Stem:</span> {product.stem_material}</div>}
+                              {product.finish && <div><span className="text-stone-500">Finish:</span> {product.finish}</div>}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {product.blend_type && <div><span className="text-stone-500">Type:</span> {product.blend_type}</div>}
+                              {product.strength && <div><span className="text-stone-500">Strength:</span> {product.strength}</div>}
+                              {product.cut && <div><span className="text-stone-500">Cut:</span> {product.cut}</div>}
+                              {product.flavor_profile && <div className="col-span-2"><span className="text-stone-500">Flavors:</span> {product.flavor_profile}</div>}
+                            </div>
+                          )}
+
+                          <div className="bg-indigo-50 rounded p-2 mt-2">
+                            <p className="text-xs text-indigo-800"><span className="font-medium">Why:</span> {product.why_it_fits}</p>
+                          </div>
+
+                          {product.where_to_find && (
+                            <div className="text-xs text-stone-600">
+                              <span className="font-medium">Where to find:</span> {product.where_to_find}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </motion.div>
               )}
             </motion.div>
           )}
