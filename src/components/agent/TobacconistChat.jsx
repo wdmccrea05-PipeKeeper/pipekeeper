@@ -140,6 +140,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   const createConversation = async () => {
     try {
+      console.log('Creating new conversation...');
       const conv = await base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: {
@@ -148,6 +149,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         }
       });
       
+      console.log('Conversation created:', conv);
       setConversationId(conv.id);
       setMessages(conv.messages || []);
     } catch (error) {
@@ -283,7 +285,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-stone-50 to-white">
-          {messages.length === 0 ? (
+          {!conversationId ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-stone-400" />
+              <p className="text-sm text-stone-600">Starting conversation...</p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-full bg-[#8b3a3a]/10 flex items-center justify-center mx-auto mb-4 overflow-hidden">
                 <img 
