@@ -12,6 +12,7 @@ import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import FAQ from './pages/FAQ';
+import BulkLogoUpload from './pages/BulkLogoUpload';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "FAQ": FAQ,
+    "BulkLogoUpload": BulkLogoUpload,
 }
 
 export const pagesConfig = {
