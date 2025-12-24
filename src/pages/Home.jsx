@@ -375,15 +375,7 @@ export default function HomePage() {
 
 
 
-        {/* Quick Pipe Identifier */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.82 }}
-          className="mb-6"
-        >
-          <QuickPipeIdentifier pipes={pipes} blends={blends} />
-        </motion.div>
+
 
         {/* Import Link */}
         <motion.div
@@ -412,34 +404,20 @@ export default function HomePage() {
           </Link>
         </motion.div>
 
-        {/* AI Pairing Recommendations */}
+        {/* Expert Tobacconist - Consolidated AI Features */}
         {pipes.length > 0 && blends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.86 }}
-            className="mb-12"
-          >
-            <PairingMatrix pipes={pipes} blends={blends} />
-          </motion.div>
-        )}
-
-
-
-        {/* Collection Optimization */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.88 }}
+            transition={{ delay: 0.82 }}
             className="mb-12"
           >
             {isPaidUser ? (
-              <CollectionOptimizer pipes={pipes} blends={blends} />
+              <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={isPaidUser} />
             ) : (
               <UpgradePrompt 
-                featureName="Collection Optimization"
-                description="Get AI-powered recommendations for specializing your pipes, identifying collection gaps, and suggestions for your next pipe purchase based on your smoking preferences."
+                featureName="Expert Tobacconist"
+                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
               />
             )}
           </motion.div>
