@@ -61,27 +61,29 @@ Use these preferences to personalize recommendations. Prioritize blends that mat
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Analyze this pipe and recommend the top 3 tobacco blends that the user should consider purchasing to pair with this pipe.
+        prompt: `You are an expert pipe tobacco sommelier recommending NEW tobacco blends for purchase.
 
-IMPORTANT: The user already owns these blends: ${existingBlends}
-Do NOT recommend any blends they already own. Only suggest NEW blends they should buy.
+CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
+${existingBlends}
 
-Pipe:
+Your task: Recommend 3 DIFFERENT tobacco blends (NOT in the list above) that would pair well with this pipe and that the user should BUY.
+
+Pipe Details:
 ${JSON.stringify(pipeData, null, 2)}${profileContext}
 
 ${matchingStrategy}
 
-Recommend 3 specific real tobacco blends (include manufacturer and blend name) that:
-1. Are NOT already in their collection
-2. Match the pipe's characteristics and focus
-3. Align with user preferences (if provided)
-4. Are currently available for purchase
+Requirements for recommendations:
+1. MUST NOT be any blend the user already owns (listed above)
+2. MUST be real, commercially available tobacco blends
+3. MUST match the pipe's characteristics and focus
+4. SHOULD align with user preferences if provided
 
-For each recommendation, provide:
-- manufacturer (brand name)
-- blend_name (specific product name)
-- score (1-10, how well it matches)
-- reasoning (why this blend pairs well with this pipe's characteristics and user preferences)`,
+For each of the 3 NEW blend recommendations, provide:
+- manufacturer (the brand/company name)
+- blend_name (the specific product name)
+- score (1-10, compatibility with this pipe)
+- reasoning (why this NEW blend would pair well with this pipe)`,
         response_json_schema: {
           type: "object",
           properties: {
