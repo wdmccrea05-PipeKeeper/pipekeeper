@@ -99,9 +99,6 @@ export default function PipesPage() {
             <p className="text-[#e8d5b7]/70 mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
-            <Link to={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline mt-1 inline-block">
-              → Bulk Logo Upload
-            </Link>
           </div>
           <div className="flex gap-2">
             <Button 
