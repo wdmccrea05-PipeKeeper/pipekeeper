@@ -235,7 +235,7 @@ export default function HomePage() {
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
                   style={{
-                    backgroundImage: 'url(https://images.unsplash.com/photo-1606383260722-b2bdd7b6d5fa?w=800&q=80)'
+                    backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/027742301_image.png)'
                   }}
                 />
                 <div className="relative z-20 p-8 h-full flex flex-col">
