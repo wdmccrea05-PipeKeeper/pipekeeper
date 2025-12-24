@@ -19,11 +19,13 @@ import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
+import TobacconistChat from "@/components/agent/TobacconistChat";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTobacconist, setShowTobacconist] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -371,6 +373,34 @@ export default function HomePage() {
             <PairingGrid pipes={pipes} blends={blends} />
           </motion.div>
         )}
+
+        {/* Tobacconist Consultation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.81 }}
+          className="mb-6"
+        >
+          <Card 
+            className="border-[#e8d5b7]/30 bg-gradient-to-br from-[#8b3a3a]/20 to-[#6d2e2e]/10 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => setShowTobacconist(true)}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center">
+                    <span className="text-2xl">🪈</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#e8d5b7] text-lg">Speak to the Tobacconist</p>
+                    <p className="text-sm text-[#e8d5b7]/70">Expert advice on pairings, collection optimization & strategy</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70 flex-shrink-0 ml-2" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Quick Pipe Identifier */}
         <motion.div
