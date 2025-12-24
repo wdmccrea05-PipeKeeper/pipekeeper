@@ -110,39 +110,42 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Subscribe to conversation updates
+  // Poll for conversation updates when sending
   useEffect(() => {
-    if (!conversationId) {
-      console.log('⏭️ No conversationId, skipping subscription');
-      return;
-    }
+    if (!conversationId || !sending) return;
 
-    console.log('🔌 Setting up subscription for:', conversationId);
-    const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      console.log('📨 SUBSCRIPTION UPDATE:', {
-        conversationId: data.id,
-        messageCount: data.messages?.length,
-        firstMsg: data.messages?.[0]?.role,
-        lastMsg: data.messages?.[data.messages?.length - 1]?.role
-      });
-      
-      // Always update with fresh array
-      const newMessages = data.messages || [];
-      console.log('✍️ Setting messages to:', newMessages.length, 'messages');
-      setMessages(newMessages);
-      
-      // Stop sending indicator when we get a response from assistant
-      if (newMessages.length > 0 && newMessages[newMessages.length - 1]?.role === 'assistant') {
-        console.log('✅ Got assistant response, stopping send indicator');
+    console.log('🔄 Starting polling for conversation updates');
+    let attempts = 0;
+    const maxAttempts = 60; // 30 seconds max
+    
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      try {
+        const updated = await base44.agents.getConversation(conversationId);
+        console.log(`🔄 Poll ${attempts}:`, updated.messages?.length, 'messages');
+        
+        setMessages(updated.messages || []);
+        
+        // Check if we got a response from assistant
+        const lastMsg = updated.messages?.[updated.messages.length - 1];
+        if (lastMsg?.role === 'assistant') {
+          console.log('✅ Got assistant response!');
+          setSending(false);
+          clearInterval(pollInterval);
+        } else if (attempts >= maxAttempts) {
+          console.log('⏱️ Polling timeout');
+          setSending(false);
+          clearInterval(pollInterval);
+        }
+      } catch (error) {
+        console.error('❌ Polling error:', error);
         setSending(false);
+        clearInterval(pollInterval);
       }
-    });
+    }, 500);
 
-    return () => {
-      console.log('🔌 Unsubscribing from:', conversationId);
-      unsubscribe();
-    };
-  }, [conversationId]);
+    return () => clearInterval(pollInterval);
+  }, [conversationId, sending]);
 
   // Create conversation on open (only once when opened)
   useEffect(() => {
@@ -237,18 +240,13 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
 
-      // Add user message
+      // Add user message - this triggers polling in useEffect
       await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
       
-      // Wait then check for response
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const updated = await base44.agents.getConversation(conversationId);
-      setMessages(updated.messages || []);
-      setSending(false);
+      // Polling will handle fetching updates and setting messages
       
     } catch (error) {
       console.error('❌ Send error:', error);
