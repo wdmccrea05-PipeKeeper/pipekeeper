@@ -547,11 +547,21 @@ export default function HomePage() {
             transition={{ delay: 0.5 }}
             className="text-center py-12"
           >
-            <div className="text-6xl mb-4">🪈🍂</div>
-            <h2 className="text-2xl font-semibold text-stone-800 mb-2">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <img 
+                src={PIPE_ICON}
+                alt="Pipe"
+                className="w-16 h-16 object-contain"
+                style={{
+                  filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
+                }}
+              />
+              <Leaf className="w-16 h-16 text-[#e8d5b7]" />
+            </div>
+            <h2 className="text-2xl font-semibold text-[#e8d5b7] mb-2">
               Welcome to Your Collection
             </h2>
-            <p className="text-stone-500 mb-8 max-w-md mx-auto">
+            <p className="text-[#e8d5b7]/70 mb-8 max-w-md mx-auto">
               Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.
             </p>
             <div className="flex gap-4 justify-center">
