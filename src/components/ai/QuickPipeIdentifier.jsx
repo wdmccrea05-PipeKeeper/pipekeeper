@@ -82,7 +82,7 @@ ${additionalContext ? `Additional context provided by user:\n${additionalContext
   "confidence": "high/medium/low"
 }
 
-Be as specific as possible based on visible features.`;
+Be as specific as possible based on visible features. Do NOT include any source URLs, links, or references in your response.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
