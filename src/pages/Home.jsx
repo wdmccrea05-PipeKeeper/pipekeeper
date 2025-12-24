@@ -389,11 +389,11 @@ export default function HomePage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center p-1">
+                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center overflow-hidden">
                       <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
                         alt="Tobacconist"
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover scale-110"
                       />
                     </div>
                     <div>
@@ -410,11 +410,11 @@ export default function HomePage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center p-1">
+                    <div className="w-12 h-12 rounded-lg bg-[#8b3a3a] flex items-center justify-center overflow-hidden">
                       <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
                         alt="Tobacconist"
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover scale-110"
                       />
                     </div>
                     <div>

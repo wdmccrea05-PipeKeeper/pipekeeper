@@ -16,11 +16,11 @@ function MessageBubble({ message }) {
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
-        <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 p-0.5">
+        <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
             alt="Tobacconist"
-            className="w-full h-full object-cover rounded-lg"
+            className="w-full h-full object-cover scale-110"
           />
         </div>
       )}
@@ -161,11 +161,11 @@ export default function TobacconistChat({ open, onOpenChange }) {
       <SheetContent className="w-full sm:max-w-2xl flex flex-col p-0">
         <SheetHeader className="p-6 pb-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#8b3a3a] flex items-center justify-center p-0.5">
+            <div className="w-10 h-10 rounded-lg bg-[#8b3a3a] flex items-center justify-center overflow-hidden">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
                 alt="Tobacconist"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover scale-110"
               />
             </div>
             <div>
@@ -179,11 +179,11 @@ export default function TobacconistChat({ open, onOpenChange }) {
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-stone-50 to-white">
           {messages.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-[#8b3a3a]/10 flex items-center justify-center mx-auto mb-4 p-1">
+              <div className="w-16 h-16 rounded-full bg-[#8b3a3a]/10 flex items-center justify-center mx-auto mb-4 overflow-hidden">
                 <img 
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
                   alt="Tobacconist"
-                  className="w-full h-full object-cover rounded-full"
+                  className="w-full h-full object-cover scale-110"
                 />
               </div>
               <h3 className="font-semibold text-stone-800 mb-2">Welcome to Your Personal Tobacconist</h3>
