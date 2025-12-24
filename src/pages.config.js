@@ -9,6 +9,7 @@ import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Support from './pages/Support';
+import Invite from './pages/Invite';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "PrivacyPolicy": PrivacyPolicy,
     "Support": Support,
+    "Invite": Invite,
 }
 
 export const pagesConfig = {

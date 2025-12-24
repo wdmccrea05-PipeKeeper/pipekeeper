@@ -70,15 +70,18 @@ export default function Layout({ children, currentPageName }) {
               {navItems.map(item => (
                 <NavLink key={item.page} item={item} currentPage={currentPageName} />
               ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open('https://base44.com/invite?ref=pipekeeper', '_blank')}
-                className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
+              <Link 
+                to={createPageUrl('Invite')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
+                  currentPageName === 'Invite'
+                    ? "bg-[#8b3a3a] text-[#e8d5b7]" 
+                    : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
+                )}
               >
-                <UserPlus className="w-4 h-4 mr-2" />
+                <UserPlus className="w-5 h-5" />
                 Invite
-              </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -111,6 +114,19 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setMobileOpen(false)}
                   />
                 ))}
+                <Link 
+                  to={createPageUrl('Invite')}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
+                    currentPageName === 'Invite'
+                      ? "bg-[#8b3a3a] text-[#e8d5b7]" 
+                      : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
+                  )}
+                >
+                  <UserPlus className="w-5 h-5" />
+                  Invite
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
