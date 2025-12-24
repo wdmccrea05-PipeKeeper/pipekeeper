@@ -14,7 +14,7 @@ import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 
-const SHAPES = ["All Shapes", "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Other"];
+const SHAPES = ["All Shapes", "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Liverpool", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Other"];
 const MATERIALS = ["All Materials", "Briar", "Meerschaum", "Corn Cob", "Clay", "Other"];
 
 export default function PipesPage() {
