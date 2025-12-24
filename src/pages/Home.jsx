@@ -196,55 +196,6 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Smoking Log Panel */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="mb-6"
-          >
-            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
-          </motion.div>
-        )}
-
-        {/* Import Link */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.47 }}
-          className="mb-6"
-        >
-          <Link to={createPageUrl('Import')}>
-            <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10 hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-[#d4a574]" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
-                      <p className="text-xs text-[#e8d5b7]/70">Import pipes & tobacco from CSV</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </motion.div>
-
-        {/* Quick Pipe Identifier */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mb-6"
-        >
-          <QuickPipeIdentifier pipes={pipes} blends={blends} />
-        </motion.div>
-
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           <motion.div
@@ -360,57 +311,12 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Pairing Matrix */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="mb-12"
-          >
-            <PairingMatrix pipes={pipes} blends={blends} />
-          </motion.div>
-        )}
-
-
-
-        {/* Collection Optimizer */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75 }}
-            className="mb-12"
-          >
-            {isPaidUser ? (
-              <CollectionOptimizer pipes={pipes} blends={blends} />
-            ) : (
-              <UpgradePrompt 
-                featureName="Collection Optimization"
-                description="Get AI-powered recommendations for specializing your pipes, identifying collection gaps, and suggestions for your next pipe purchase based on your smoking preferences."
-              />
-            )}
-          </motion.div>
-        )}
-
-        {/* Pairing Grid */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mb-12"
-          >
-            <PairingGrid pipes={pipes} blends={blends} />
-          </motion.div>
-        )}
-
         {/* Favorites */}
         {(favoritePipes.length > 0 || favoriteBlends.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.7 }}
             className="mb-12"
           >
             <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
@@ -439,6 +345,100 @@ export default function HomePage() {
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+        )}
+
+        {/* Smoking Log Panel */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="mb-12"
+          >
+            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+          </motion.div>
+        )}
+
+        {/* Pairing Grid */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mb-12"
+          >
+            <PairingGrid pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
+        {/* Quick Pipe Identifier */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.82 }}
+          className="mb-6"
+        >
+          <QuickPipeIdentifier pipes={pipes} blends={blends} />
+        </motion.div>
+
+        {/* Import Link */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.84 }}
+          className="mb-6"
+        >
+          <Link to={createPageUrl('Import')}>
+            <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-[#d4a574]" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
+                      <p className="text-xs text-[#e8d5b7]/70">Import pipes & tobacco from CSV</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </motion.div>
+
+        {/* AI Pairing Recommendations */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.86 }}
+            className="mb-12"
+          >
+            <PairingMatrix pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
+
+
+        {/* Collection Optimization */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.88 }}
+            className="mb-12"
+          >
+            {isPaidUser ? (
+              <CollectionOptimizer pipes={pipes} blends={blends} />
+            ) : (
+              <UpgradePrompt 
+                featureName="Collection Optimization"
+                description="Get AI-powered recommendations for specializing your pipes, identifying collection gaps, and suggestions for your next pipe purchase based on your smoking preferences."
+              />
+            )}
           </motion.div>
         )}
 
