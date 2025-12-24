@@ -377,6 +377,25 @@ export default function HomePage() {
 
 
 
+        {/* Expert Tobacconist - Consolidated AI Features */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.82 }}
+            className="mb-12"
+          >
+            {isPaidUser ? (
+              <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={isPaidUser} />
+            ) : (
+              <UpgradePrompt 
+                featureName="Expert Tobacconist"
+                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
+              />
+            )}
+          </motion.div>
+        )}
+
         {/* Import Link */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -403,25 +422,6 @@ export default function HomePage() {
             </Card>
           </Link>
         </motion.div>
-
-        {/* Expert Tobacconist - Consolidated AI Features */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.82 }}
-            className="mb-12"
-          >
-            {isPaidUser ? (
-              <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={isPaidUser} />
-            ) : (
-              <UpgradePrompt 
-                featureName="Expert Tobacconist"
-                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
-              />
-            )}
-          </motion.div>
-        )}
 
         {/* Recently Added */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
