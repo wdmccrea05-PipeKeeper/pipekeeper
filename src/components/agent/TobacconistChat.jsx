@@ -129,28 +129,16 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   const createConversation = async () => {
     try {
-      // Build context summary
-      const contextSummary = buildContextSummary();
-      
       const conv = await base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: {
           name: "Tobacconist Consultation",
-          description: "Expert pipe and tobacco advice",
-          user_context: contextSummary
+          description: "Expert pipe and tobacco advice"
         }
       });
       
       setConversationId(conv.id);
       setMessages(conv.messages || []);
-      
-      // Add context as first message if we have data (but don't wait for response)
-      if (contextSummary) {
-        base44.agents.addMessage(conv, {
-          role: "user",
-          content: `Here's my collection and preferences:\n\n${contextSummary}\n\nPlease use this information to provide personalized advice without asking me for these details again.`
-        }).catch(err => console.error('Failed to add context:', err));
-      }
     } catch (error) {
       console.error('Failed to create conversation:', error);
       toast.error('Failed to start conversation');
@@ -217,13 +205,19 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setSending(true);
 
     try {
+      // Build context summary for first message
+      const contextSummary = messages.length === 0 ? buildContextSummary() : '';
+      const messageContent = contextSummary 
+        ? `${userMessage}\n\n---\n\nFor context, here's my collection and preferences:\n${contextSummary}\n\nPlease use this to provide personalized advice.`
+        : userMessage;
+
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
       
       // Add user message
       await base44.agents.addMessage(conv, {
         role: "user",
-        content: userMessage
+        content: messageContent
       });
     } catch (error) {
       console.error('Failed to send message:', error);
