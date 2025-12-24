@@ -209,13 +209,21 @@ export default function ImportPage() {
               <TabsContent value="pipes" className="space-y-6">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                   <h3 className="font-semibold text-amber-900 mb-2">How to Import Pipes</h3>
-                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside">
+                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
                     <li>Download the CSV template below</li>
                     <li>Open it in Excel, Google Sheets, or any spreadsheet app</li>
                     <li>Fill in your pipe data (one pipe per row)</li>
                     <li>Save as CSV format</li>
                     <li>Upload the completed file</li>
                   </ol>
+                  <div className="mt-3 pt-3 border-t border-amber-300">
+                    <p className="text-sm font-semibold text-amber-900 mb-1">Required Fields:</p>
+                    <ul className="text-sm text-amber-800 space-y-1">
+                      <li>• <strong>name</strong> - Name or identifier for the pipe (required)</li>
+                      <li>• <strong>maker</strong> - Pipe brand (e.g., Peterson, Savinelli, Custom)</li>
+                    </ul>
+                    <p className="text-xs text-amber-700 mt-2 italic">Note: 'Custom' is a valid maker for handmade or unbranded pipes. All other fields are optional.</p>
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
@@ -263,13 +271,20 @@ export default function ImportPage() {
               <TabsContent value="tobacco" className="space-y-6">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                   <h3 className="font-semibold text-amber-900 mb-2">How to Import Tobacco</h3>
-                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside">
+                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
                     <li>Download the CSV template below</li>
                     <li>Open it in Excel, Google Sheets, or any spreadsheet app</li>
                     <li>Fill in your tobacco data (one blend per row)</li>
                     <li>Save as CSV format</li>
                     <li>Upload the completed file</li>
                   </ol>
+                  <div className="mt-3 pt-3 border-t border-amber-300">
+                    <p className="text-sm font-semibold text-amber-900 mb-1">Required Fields:</p>
+                    <ul className="text-sm text-amber-800 space-y-1">
+                      <li>• <strong>name</strong> - Name of the tobacco blend (required)</li>
+                    </ul>
+                    <p className="text-xs text-amber-700 mt-2 italic">Note: All other fields are optional but recommended for better tracking.</p>
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
