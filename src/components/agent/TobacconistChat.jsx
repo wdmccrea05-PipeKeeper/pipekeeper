@@ -118,9 +118,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       console.log('📨 SUBSCRIPTION UPDATE:', {
         conversationId: data.id,
         messageCount: data.messages?.length,
-        firstMessage: data.messages?.[0]?.content?.substring(0, 50)
+        messages: data.messages
       });
-      setMessages(data.messages || []);
+      if (data.messages) {
+        setMessages([...data.messages]);
+      }
     });
 
     return () => {
@@ -240,8 +242,10 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   };
 
   const handleReset = async () => {
-    setConversationId(null);
+    setSending(false);
+    setInput('');
     setMessages([]);
+    setConversationId(null);
     if (user?.email) {
       await createConversation();
     }
@@ -289,9 +293,10 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
             </div>
           ) : (
             <>
-              {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} />
-              ))}
+              {messages.map((msg, idx) => {
+                console.log('Rendering message', idx, ':', msg.role, msg.content?.substring(0, 30));
+                return <MessageBubble key={`${conversationId}-${idx}`} message={msg} />;
+              })}
               {sending && (
                 <div className="flex gap-3 justify-start">
                   <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
