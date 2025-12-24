@@ -128,9 +128,15 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   // Create conversation on open
   useEffect(() => {
     if (open && !conversationId && user?.email) {
+      console.log('Creating conversation, open:', open, 'conversationId:', conversationId);
       createConversation();
     }
   }, [open, user?.email]);
+  
+  // Debug messages changes
+  useEffect(() => {
+    console.log('Messages updated:', messages.length, messages);
+  }, [messages]);
 
   const createConversation = async () => {
     try {
