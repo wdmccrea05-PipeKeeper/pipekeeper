@@ -182,7 +182,7 @@ export default function PipeDetailPage() {
 
         {/* Break-In Schedule */}
         <div className="mb-6">
-          <BreakInSchedule pipe={pipe} blends={blends} />
+          <BreakInSchedule pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

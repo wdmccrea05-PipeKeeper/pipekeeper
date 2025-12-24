@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Loader2, Plus, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
-export default function BreakInSchedule({ pipe, blends }) {
+export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
   const queryClient = useQueryClient();
@@ -102,6 +103,25 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
   const totalBowls = schedule.reduce((sum, s) => sum + s.suggested_bowls, 0);
   const completedBowls = schedule.reduce((sum, s) => sum + (s.bowls_completed || 0), 0);
   const progress = totalBowls > 0 ? Math.round((completedBowls / totalBowls) * 100) : 0;
+
+  if (!isPaidUser) {
+    return (
+      <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-violet-800">
+            <Sparkles className="w-5 h-5" />
+            Break-In Schedule
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UpgradePrompt 
+            featureName="Break-In Schedule"
+            description="Get AI-generated break-in schedules tailored to your pipe's characteristics. Track your progress with recommended tobacco blends and bowl counts for optimal pipe conditioning."
+          />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
