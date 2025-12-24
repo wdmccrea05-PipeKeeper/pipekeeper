@@ -111,29 +111,14 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   // Subscribe to conversation updates
   useEffect(() => {
-    if (!conversationId) {
-      console.log('No conversation ID, skipping subscription');
-      return;
-    }
+    if (!conversationId) return;
 
-    console.log('Setting up subscription for conversation:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      console.log('📨 SUBSCRIPTION UPDATE:', {
-        messageCount: data.messages?.length,
-        messages: data.messages,
-        conversationId: data.id
-      });
-      
-      if (data.messages && data.messages.length > 0) {
-        console.log('✅ Setting messages:', data.messages);
-        setMessages([...data.messages]);
-      }
+      console.log('📨 SUBSCRIPTION:', data.messages?.length, 'messages');
+      setMessages(data.messages || []);
     });
 
-    return () => {
-      console.log('Cleaning up subscription');
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [conversationId]);
 
   // Create conversation on open
@@ -146,7 +131,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   const createConversation = async () => {
     try {
-      console.log('Creating new conversation...');
       const conv = await base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: {
@@ -155,7 +139,6 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         }
       });
       
-      console.log('Conversation created:', conv);
       setConversationId(conv.id);
       setMessages(conv.messages || []);
     } catch (error) {
@@ -293,10 +276,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
             </div>
           ) : (
             <>
-              {messages.map((msg, idx) => {
-                console.log('Rendering message:', idx, msg.role, msg.content?.substring(0, 50));
-                return <MessageBubble key={idx} message={msg} />;
-              })}
+              {messages.map((msg, idx) => (
+                <MessageBubble key={idx} message={msg} />
+              ))}
               {sending && (
                 <div className="flex gap-3 justify-start">
                   <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
