@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -14,6 +14,7 @@ const navItems = [
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
+  { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
 
 function NavLink({ item, currentPage, onClick }) {
@@ -157,6 +158,9 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm text-[#e8d5b7]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
+              <Link to={createPageUrl('FAQ')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+                FAQ
+              </Link>
               <Link to={createPageUrl('Support')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 Support
               </Link>

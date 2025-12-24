@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tantml:react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import ImageCropper from "@/components/pipes/ImageCropper";
+import FieldWithInfo from "@/components/forms/FieldWithInfo";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -470,8 +471,11 @@ Return complete and accurate information based on the blend name or description 
           <CardTitle className="text-lg text-stone-800">Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Blend Name *</Label>
+          <FieldWithInfo 
+            label="Blend Name" 
+            required 
+            helpText="The official or common name of the tobacco blend."
+          >
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
@@ -479,18 +483,22 @@ Return complete and accurate information based on the blend name or description 
               required
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Manufacturer</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Manufacturer" 
+            helpText="The company or brand that makes this blend (e.g., Peterson, Dunhill, Sutliff)."
+          >
             <Input
               value={formData.manufacturer}
               onChange={(e) => handleChange('manufacturer', e.target.value)}
               placeholder="e.g., Orlik, Peterson"
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Blend Type</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Blend Type" 
+            helpText="The primary tobacco category. Virginia is sweet, English has Latakia (smoky), Aromatic has toppings."
+          >
             <Select value={formData.blend_type} onValueChange={(v) => handleChange('blend_type', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select type" />
@@ -499,9 +507,11 @@ Return complete and accurate information based on the blend name or description 
                 {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Cut</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Cut" 
+            helpText="How the tobacco is processed. Flake requires rubbing out, Ribbon is ready to smoke, Plug needs slicing."
+          >
             <Select value={formData.cut} onValueChange={(v) => handleChange('cut', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select cut" />
@@ -510,9 +520,11 @@ Return complete and accurate information based on the blend name or description 
                 {CUTS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Strength</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Strength" 
+            helpText="Nicotine content and body. Mild is gentle, Full is strong. Affects your smoking experience significantly."
+          >
             <Select value={formData.strength} onValueChange={(v) => handleChange('strength', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select strength" />
@@ -521,9 +533,11 @@ Return complete and accurate information based on the blend name or description 
                 {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Room Note</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Room Note" 
+            helpText="How the smoke smells to people around you. Pleasant aromatics vs stronger, more pronounced scents."
+          >
             <Select value={formData.room_note} onValueChange={(v) => handleChange('room_note', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select room note" />
@@ -532,7 +546,7 @@ Return complete and accurate information based on the blend name or description 
                 {ROOM_NOTES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
+          </FieldWithInfo>
         </CardContent>
       </Card>
 

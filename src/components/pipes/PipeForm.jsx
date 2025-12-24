@@ -13,6 +13,7 @@ import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
 import ImageCropper from "@/components/pipes/ImageCropper";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import FieldWithInfo from "@/components/forms/FieldWithInfo";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -369,8 +370,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           <CardTitle className="text-lg text-stone-800">Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Name *</Label>
+          <FieldWithInfo 
+            label="Name" 
+            required 
+            helpText="A descriptive name for your pipe. Can be based on shape, maker, or your own nickname."
+          >
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
@@ -378,45 +382,55 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               required
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Maker / Brand</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Maker / Brand" 
+            helpText="The pipe manufacturer or maker (e.g., Dunhill, Peterson, Savinelli)."
+          >
             <Input
               value={formData.maker}
               onChange={(e) => handleChange('maker', e.target.value)}
               placeholder="e.g., Dunhill, Peterson"
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Country of Origin</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Country of Origin" 
+            helpText="Where the pipe was manufactured (e.g., England, Denmark, Italy)."
+          >
             <Input
               value={formData.country_of_origin}
               onChange={(e) => handleChange('country_of_origin', e.target.value)}
               placeholder="e.g., England, Denmark"
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Year Made</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Year Made" 
+            helpText="Year or era the pipe was made. Can be approximate (e.g., '1970s', 'c. 2005')."
+          >
             <Input
               value={formData.year_made}
               onChange={(e) => handleChange('year_made', e.target.value)}
               placeholder="e.g., 1970s, 2020"
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Stamping / Markings</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Stamping / Markings" 
+            helpText="Text, logos, or markings stamped on the pipe (usually on the shank or stem)."
+          >
             <Input
               value={formData.stamping}
               onChange={(e) => handleChange('stamping', e.target.value)}
               placeholder="Text on the pipe"
               className="border-stone-200"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Condition</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Condition" 
+            helpText="Overall condition of the pipe from mint (perfect) to poor (heavily damaged)."
+          >
             <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select condition" />
@@ -425,7 +439,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
+          </FieldWithInfo>
         </CardContent>
       </Card>
 
@@ -444,8 +458,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Shape</Label>
+          <FieldWithInfo 
+            label="Shape" 
+            helpText="The classic shape category of your pipe (e.g., Billiard, Dublin, Bent)."
+          >
             <Select value={formData.shape} onValueChange={(v) => handleChange('shape', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select shape" />
@@ -454,9 +470,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Bowl Material</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Bowl Material" 
+            helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool smoking."
+          >
             <Select value={formData.bowl_material} onValueChange={(v) => handleChange('bowl_material', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select material" />
@@ -465,9 +483,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {BOWL_MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Stem Material</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Stem Material" 
+            helpText="What the mouthpiece is made from. Vulcanite is traditional but oxidizes; Acrylic is more durable."
+          >
             <Select value={formData.stem_material} onValueChange={(v) => handleChange('stem_material', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select material" />
@@ -476,9 +496,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {STEM_MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Finish</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Finish" 
+            helpText="Surface treatment of the bowl. Smooth shows the wood grain; Sandblast reveals ring grain texture."
+          >
             <Select value={formData.finish} onValueChange={(v) => handleChange('finish', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select finish" />
@@ -487,9 +509,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {FINISHES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Chamber Volume</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Chamber Volume" 
+            helpText="Overall size of the tobacco chamber. Small = 15-30 min smoke, Medium = 30-45 min, Large = 45-60 min, Extra Large = 60+ min."
+          >
             <Select value={formData.chamber_volume} onValueChange={(v) => handleChange('chamber_volume', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select volume" />
@@ -498,9 +522,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {CHAMBER_VOLUMES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Filter Type</Label>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Filter Type" 
+            helpText="Size of removable filter or 'None' if filterless. 9mm filters absorb moisture and cool smoke."
+          >
             <Select value={formData.filter_type} onValueChange={(v) => handleChange('filter_type', v)}>
               <SelectTrigger className="border-stone-200">
                 <SelectValue placeholder="Select filter" />
@@ -509,7 +535,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 {FILTER_TYPES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
+          </FieldWithInfo>
           <div className="space-y-2">
             <Label>Length {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
