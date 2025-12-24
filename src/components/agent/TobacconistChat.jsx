@@ -113,12 +113,20 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   useEffect(() => {
     if (!conversationId) return;
 
+    console.log('🔌 Setting up subscription for:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      console.log('📨 SUBSCRIPTION:', data.messages?.length, 'messages');
+      console.log('📨 SUBSCRIPTION UPDATE:', {
+        conversationId: data.id,
+        messageCount: data.messages?.length,
+        firstMessage: data.messages?.[0]?.content?.substring(0, 50)
+      });
       setMessages(data.messages || []);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('🔌 Unsubscribing from:', conversationId);
+      unsubscribe();
+    };
   }, [conversationId]);
 
   // Create conversation on open
