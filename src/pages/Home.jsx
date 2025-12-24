@@ -610,6 +610,12 @@ export default function HomePage() {
             </div>
           </motion.div>
         )}
+
+        {/* Tobacconist Chat */}
+        <TobacconistChat 
+          open={showTobacconist} 
+          onOpenChange={setShowTobacconist}
+        />
         </div>
       </div>
     </>
