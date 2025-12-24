@@ -425,7 +425,7 @@ Provide analysis as JSON:
                     variant="outline"
                     className="border-[#e8d5b7]/30"
                   >
-                    Try Another
+                    Cancel
                   </Button>
                 </>
               ) : (
@@ -452,7 +452,7 @@ Provide analysis as JSON:
                     variant="outline"
                     className="border-[#e8d5b7]/30"
                   >
-                    Try Another
+                    Cancel
                   </Button>
                 </>
               )}
