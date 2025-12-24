@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function ValueLookup({ pipe, onUpdateValue }) {
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const lookupValue = async () => {
     setLoading(true);
@@ -124,8 +125,21 @@ Provide a detailed valuation in JSON format with:
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-4"
           >
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-stone-800">Results</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? 'Show' : 'Hide'}
+              </Button>
+            </div>
+
+            {!collapsed && (
+              <div className="space-y-6">
             {/* Value Estimate */}
             <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white overflow-hidden">
               <CardHeader className="pb-3">
@@ -207,11 +221,13 @@ Provide a detailed valuation in JSON format with:
               </Card>
             )}
 
-            <div className="text-center">
-              <Button variant="outline" onClick={() => setValuation(null)}>
-                Search Again
-              </Button>
+              <div className="text-center">
+                <Button variant="outline" onClick={() => setValuation(null)}>
+                  Search Again
+                </Button>
+              </div>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

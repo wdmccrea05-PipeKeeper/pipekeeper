@@ -10,6 +10,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const getRecommendations = async () => {
     setLoading(true);
@@ -148,8 +149,21 @@ Provide recommendations in JSON format with:
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-4"
           >
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-stone-800">Results</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? 'Show' : 'Hide'}
+              </Button>
+            </div>
+
+            {!collapsed && (
+              <div className="space-y-6">
             {/* Ideal Blend Types */}
             <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
               <CardHeader className="pb-3">
@@ -231,11 +245,13 @@ Provide recommendations in JSON format with:
               </CardContent>
             </Card>
 
-            <div className="text-center">
-              <Button variant="outline" onClick={() => setRecommendations(null)}>
-                Get New Recommendations
-              </Button>
+              <div className="text-center">
+                <Button variant="outline" onClick={() => setRecommendations(null)}>
+                  Get New Recommendations
+                </Button>
+              </div>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

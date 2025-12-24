@@ -10,6 +10,7 @@ import { createPageUrl } from "@/utils";
 export default function TopBlendMatches({ pipe, blends, userProfile }) {
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const findMatches = async () => {
     setLoading(true);
@@ -161,17 +162,27 @@ For each of the 3 NEW blend recommendations, provide:
                 <Sparkles className="w-4 h-4 text-violet-600" />
                 <span className="text-sm font-medium text-violet-800">Recommended Blends to Try</span>
               </div>
-              <Button
-                onClick={findMatches}
-                disabled={loading}
-                variant="ghost"
-                size="sm"
-                className="text-violet-700"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setCollapsed(!collapsed)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-violet-700"
+                >
+                  {collapsed ? 'Show' : 'Hide'}
+                </Button>
+                <Button
+                  onClick={findMatches}
+                  disabled={loading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-violet-700"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            {matches.map((match, idx) => (
+            {!collapsed && matches.map((match, idx) => (
               <div key={idx} className="p-3 rounded-lg bg-white border border-violet-200">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 flex-1">

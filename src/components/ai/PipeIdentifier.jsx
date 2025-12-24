@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function PipeIdentifier({ pipe, onUpdatePipe }) {
   const [loading, setLoading] = useState(false);
   const [identification, setIdentification] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const identifyPipe = async () => {
     if (!pipe.stamping_photos?.length && !pipe.photos?.length) {
@@ -134,8 +135,21 @@ Provide the identification in JSON format with:
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-4"
           >
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-stone-800">Results</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? 'Show' : 'Hide'}
+              </Button>
+            </div>
+
+            {!collapsed && (
+              <div className="space-y-6">
             {/* Identification Result */}
             <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
               <CardHeader className="pb-3">
@@ -217,11 +231,13 @@ Provide the identification in JSON format with:
               </Card>
             )}
 
-            <div className="text-center">
-              <Button variant="outline" onClick={() => setIdentification(null)}>
-                Identify Again
-              </Button>
+              <div className="text-center">
+                <Button variant="outline" onClick={() => setIdentification(null)}>
+                  Identify Again
+                </Button>
+              </div>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

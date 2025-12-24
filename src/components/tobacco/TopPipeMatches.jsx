@@ -11,6 +11,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 export default function TopPipeMatches({ blend, pipes }) {
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const findMatches = async () => {
     if (pipes.length === 0) return;
@@ -117,12 +118,22 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                 <Sparkles className="w-5 h-5 text-violet-600" />
                 <span className="font-semibold text-violet-800">Top Pipe Matches</span>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => setMatches(null)}>
-                Refresh
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={() => setCollapsed(!collapsed)}
+                >
+                  {collapsed ? 'Show' : 'Hide'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setMatches(null)}>
+                  Refresh
+                </Button>
+              </div>
             </div>
 
-            <div className="space-y-2">
+            {!collapsed && (
+              <div className="space-y-2">
               {matches.map((match, idx) => {
                 const pipe = pipes.find(p => p.id === match.pipe_id);
                 if (!pipe) return null;
@@ -151,7 +162,8 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                   </Link>
                 );
               })}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
