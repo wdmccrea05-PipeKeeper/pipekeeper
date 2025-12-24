@@ -345,9 +345,14 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                                         {isBest && (
                                           <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
                                         )}
-                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden flex items-center justify-center shrink-0">
-                                          {blend?.photo ? (
-                                            <img src={blend.photo} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} />
+                                        <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
+                                          {blend?.logo || blend?.photo ? (
+                                            <img 
+                                              src={blend.logo || blend.photo} 
+                                              alt="" 
+                                              className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`}
+                                              onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
+                                            />
                                           ) : (
                                             <span className="text-lg">🍂</span>
                                           )}
