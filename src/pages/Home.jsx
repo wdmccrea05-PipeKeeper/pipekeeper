@@ -227,7 +227,7 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.47 }}
+          transition={{ delay: 0.5 }}
           className="mb-6"
         >
           <QuickPipeIdentifier pipes={pipes} blends={blends} />
@@ -360,17 +360,7 @@ export default function HomePage() {
           </motion.div>
         )}
 
-        {/* Smoking Log Panel */}
-        {pipes.length > 0 && blends.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.72 }}
-            className="mb-12"
-          >
-            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
-          </motion.div>
-        )}
+
 
         {/* Collection Optimizer */}
         {pipes.length > 0 && blends.length > 0 && (
