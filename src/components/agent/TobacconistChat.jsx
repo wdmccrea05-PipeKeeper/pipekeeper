@@ -225,49 +225,34 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setSending(true);
 
     try {
-      // Include context on first message
-      const contextSummary = messages.length === 0 ? buildContextSummary() : '';
-      const messageContent = contextSummary 
-        ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
-        : userMessage;
-
       console.log('🚀 Sending message:', userMessage);
-      console.log('📦 Context included:', !!contextSummary);
+      console.log('📍 Conversation ID:', conversationId);
 
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
       console.log('📖 Current conversation has', conv.messages?.length, 'messages before send');
 
-      // Add user message
+      // Send simple message first to test
       const result = await base44.agents.addMessage(conv, {
         role: "user",
-        content: messageContent
+        content: userMessage
       });
 
-      console.log('✅ Message sent successfully, result:', result);
+      console.log('✅ addMessage returned:', result);
       
-      // Poll for response updates
-      let attempts = 0;
-      const maxAttempts = 60; // 30 seconds max
-      const pollInterval = setInterval(async () => {
-        attempts++;
-        const updated = await base44.agents.getConversation(conversationId);
-        console.log(`🔄 Poll ${attempts}: ${updated.messages?.length} messages`);
-        
-        if (updated.messages?.length > conv.messages?.length) {
-          console.log('✨ New messages detected!');
-          setMessages(updated.messages);
-          setSending(false);
-          clearInterval(pollInterval);
-        } else if (attempts >= maxAttempts) {
-          console.log('⏱️ Polling timeout');
-          setSending(false);
-          clearInterval(pollInterval);
-        }
-      }, 500);
+      // Wait a bit then manually check for response
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const updated = await base44.agents.getConversation(conversationId);
+      console.log('🔍 After 2s, conversation has', updated.messages?.length, 'messages');
+      console.log('🔍 Messages:', JSON.stringify(updated.messages, null, 2));
+      
+      setMessages(updated.messages || []);
+      setSending(false);
       
     } catch (error) {
       console.error('❌ Send error:', error);
+      console.error('❌ Error details:', JSON.stringify(error, null, 2));
       toast.error('Failed to send message');
       setSending(false);
     }
