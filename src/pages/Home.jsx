@@ -18,6 +18,7 @@ import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
+import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -220,6 +221,16 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </Link>
+        </motion.div>
+
+        {/* Quick Pipe Identifier */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.47 }}
+          className="mb-6"
+        >
+          <QuickPipeIdentifier pipes={pipes} blends={blends} />
         </motion.div>
 
         {/* Quick Actions */}
