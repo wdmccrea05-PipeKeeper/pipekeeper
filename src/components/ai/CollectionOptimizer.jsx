@@ -416,7 +416,7 @@ Be specific about which user-owned blends benefit and by how much.`,
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'PIPES ONLY' : productType === 'tobacco' ? 'TOBACCO BLENDS ONLY' : 'products (pipes or tobacco blends)'} that match the criteria.
+        prompt: `Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'SMOKING PIPES ONLY' : productType === 'tobacco' ? 'PIPE TOBACCO BLENDS ONLY' : 'products (smoking pipes or pipe tobacco blends)'} that match the criteria.
 
 User's Question: ${whatIfQuery}
 Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
@@ -429,8 +429,10 @@ ${productType !== 'pipes' ? '- For Blends: Blend type, strength, cut, flavor pro
 - Price range
 - Why it fits the scenario
 
-${productType === 'pipes' ? 'ONLY suggest pipes. Do NOT suggest tobacco blends.' : ''}
-${productType === 'tobacco' ? 'ONLY suggest tobacco blends. Do NOT suggest pipes.' : ''}
+${productType === 'pipes' ? 'ONLY suggest smoking pipes (briar, meerschaum, corncob, etc.). Do NOT suggest tobacco blends, cigars, cigarettes, or vapes.' : ''}
+${productType === 'tobacco' ? 'ONLY suggest pipe tobacco blends (tinned or bulk tobacco for smoking pipes). Do NOT suggest pipes, cigars, cigarettes, or vapes.' : ''}
+
+CRITICAL: This is for PIPE SMOKING only. Do NOT suggest cigars, cigarettes, vaping products, or any other tobacco products. Only suggest smoking pipes and pipe tobacco blends.
 
 Be specific with real product names when possible (e.g., "Peterson System Standard 305", "Samuel Gawith Full Virginia Flake"). Focus on products that address the gaps and achieve the trophy pairings identified in the analysis.`,
         add_context_from_internet: true,
