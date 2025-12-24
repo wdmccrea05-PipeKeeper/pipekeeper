@@ -315,10 +315,12 @@ export default function SubscriptionPage() {
             <div className="grid md:grid-cols-2 gap-4">
               {[
                 "AI-powered tobacco pairing recommendations",
-                "Photo identification for pipes",
+                "Photo identification for pipes and tobacco",
                 "Market value lookup and tracking",
                 "Collection optimization suggestions",
                 "Advanced pairing matrix",
+                "Break-in schedule generator",
+                "Bulk CSV import for pipes & tobacco",
                 "Unlimited pipes and tobacco blends",
                 "AI web search for auto-fill",
                 "Priority customer support"
