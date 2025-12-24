@@ -135,6 +135,9 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm text-[#e8d5b7]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
+              <Link to={createPageUrl('Support')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+                Support
+              </Link>
               <Link to={createPageUrl('TermsOfService')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 Terms of Service
               </Link>
