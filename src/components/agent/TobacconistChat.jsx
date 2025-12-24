@@ -141,6 +141,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   const createConversation = async () => {
     try {
+      console.log('📝 Creating new conversation...');
       const conv = await base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: {
@@ -149,8 +150,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         }
       });
       
+      console.log('✅ Created conversation:', conv.id, 'Messages:', conv.messages?.length || 0);
       setConversationId(conv.id);
-      setMessages(conv.messages || []);
+      setMessages([]);  // Always start with empty messages for new conversation
     } catch (error) {
       console.error('Failed to create conversation:', error);
       toast.error('Failed to start conversation');
@@ -242,11 +244,20 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   };
 
   const handleReset = async () => {
+    console.log('🔄 RESET: Clearing all state');
+    
+    // Clear everything first
     setSending(false);
     setInput('');
-    setMessages([]);
     setConversationId(null);
+    setMessages([]);
+    
+    // Wait a tick for state to clear
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Now create fresh conversation
     if (user?.email) {
+      console.log('🔄 RESET: Creating new conversation');
       await createConversation();
     }
   };
