@@ -25,7 +25,11 @@ export default function TopBlendMatches({ pipe, blends, userProfile }) {
         focus: pipe.focus
       };
 
-      const existingBlends = blends.map(b => `${b.manufacturer} ${b.name}`).join(', ');
+      const existingBlends = blends.map(b => ({
+        manufacturer: b.manufacturer?.toLowerCase() || '',
+        name: b.name?.toLowerCase() || '',
+        fullName: `${b.manufacturer || ''} ${b.name || ''}`.toLowerCase()
+      }));
 
       let profileContext = "";
       if (userProfile) {
@@ -60,13 +64,15 @@ Use these preferences to personalize recommendations. Prioritize blends that mat
         matchingStrategy = `This pipe has NO designated focus. Base recommendations ENTIRELY on its physical characteristics: bowl size (${pipe.bowl_diameter_mm}mm × ${pipe.bowl_depth_mm}mm deep), chamber volume (${pipe.chamber_volume}), shape (${pipe.shape}), and material (${pipe.bowl_material}). Match these characteristics with blend types that smoke best in such pipes.`;
       }
 
+      const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe tobacco sommelier recommending NEW tobacco blends for purchase.
 
 CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
-${existingBlends}
+${existingBlendsText}
 
-Your task: Recommend 3 DIFFERENT tobacco blends (NOT in the list above) that would pair well with this pipe and that the user should BUY.
+Your task: Recommend 3 COMPLETELY DIFFERENT tobacco blends (NOT in the list above) that would pair well with this pipe and that the user should BUY.
 
 Pipe Details:
 ${JSON.stringify(pipeData, null, 2)}${profileContext}
@@ -103,7 +109,17 @@ For each of the 3 NEW blend recommendations, provide:
         }
       });
 
-      setMatches(result.matches || []);
+      // Filter out any recommendations that match existing blends
+      const filteredMatches = (result.matches || []).filter(match => {
+        const matchFullName = `${match.manufacturer || ''} ${match.blend_name || ''}`.toLowerCase();
+        return !existingBlends.some(existing => 
+          existing.fullName.includes(match.blend_name?.toLowerCase()) ||
+          matchFullName.includes(existing.name) ||
+          (existing.manufacturer && match.manufacturer?.toLowerCase().includes(existing.manufacturer))
+        );
+      });
+
+      setMatches(filteredMatches);
     } catch (err) {
       console.error('Error finding matches:', err);
     } finally {
