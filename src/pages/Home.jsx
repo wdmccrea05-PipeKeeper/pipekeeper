@@ -443,7 +443,7 @@ export default function HomePage() {
         )}
 
         {/* Recently Added */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-md md:max-w-none mx-auto">
           {recentPipes.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
