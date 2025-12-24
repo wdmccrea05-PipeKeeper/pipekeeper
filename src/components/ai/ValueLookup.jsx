@@ -34,9 +34,20 @@ ${pipeDescription}
 
 Search for:
 1. Recent eBay sold listings for similar pipes
-2. Estate pipe dealer prices
+2. Estate pipe dealer prices (smokingpipes.com, cupojoes.com, 4noggins.com, etc.)
 3. Auction results for this maker/style
 4. Collector forum discussions on value
+
+IMPORTANT VALUATION GUIDELINES:
+- Estate pipes from quality makers typically range from $100-$500+
+- Artisan pipes often start at $200-$300 and can exceed $1000
+- Factory pipes in good condition: $75-$300 depending on maker
+- Premium makers (Dunhill, Charatan, Peterson, Savinelli): $150-$800+
+- Modern artisans: $250-$2000+
+- Vintage collectibles can command significant premiums
+- Condition heavily impacts value - excellent condition adds 30-50%
+
+BE REALISTIC with valuations based on actual market prices, not theoretical values.
 
 CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
 

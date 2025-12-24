@@ -82,7 +82,16 @@ ${additionalContext ? `Additional context provided by user:\n${additionalContext
   "confidence": "high/medium/low"
 }
 
-Be as specific as possible based on visible features. Do NOT include any source URLs, links, or references in your response.`;
+IMPORTANT VALUE ESTIMATION GUIDELINES:
+- Estate pipes from quality makers: $100-$500+
+- Artisan pipes: $200-$2000+ depending on maker reputation
+- Factory pipes: $75-$300 depending on brand and condition
+- Premium brands (Dunhill, Charatan, Peterson): $150-$800+
+- No-name or basket pipes: $25-$75
+- Vintage collectibles can be worth significantly more
+- Excellent condition adds 30-50% to value
+
+Be realistic with estimated_value based on actual market prices. Be as specific as possible based on visible features. Do NOT include any source URLs, links, or references in your response.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,

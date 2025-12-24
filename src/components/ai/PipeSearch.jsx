@@ -32,6 +32,16 @@ Search the web for detailed information about this specific pipe maker, model, o
 
 If this is a specific model or line, provide details about that model.
 
+IMPORTANT PRICING GUIDELINES - Use realistic market values:
+- Estate quality makers: $100-$500+
+- Artisan pipes: $200-$2000+ 
+- Factory pipes: $75-$300
+- Premium brands (Dunhill, Charatan, Peterson, Savinelli): $150-$800+
+- Budget/basket pipes: $25-$75
+- High-end artisans can exceed $2000
+
+Base prices on actual current market data from estate dealers and auction results.
+
 Return an array of relevant pipe matches with detailed information.`,
         add_context_from_internet: true,
         response_json_schema: {
