@@ -241,8 +241,8 @@ export default function HomePage() {
                 <div className="relative z-20 p-8 h-full flex flex-col">
                   <div className="flex items-start justify-between mb-6">
                     <div>
-                      <h3 className="text-2xl font-bold text-[#1a2c42] mb-1">Pipe Collection</h3>
-                      <p className="text-[#1a2c42]/80 text-sm">Track and value your pipes</p>
+                      <h3 className="text-3xl font-bold text-white mb-2">Pipe Collection</h3>
+                      <p className="text-[#e8d5b7] text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                       <img src={PIPE_ICON} alt="Pipes" className="w-8 h-8 object-contain brightness-0 invert" />
@@ -251,27 +251,27 @@ export default function HomePage() {
 
                   <div className="flex-1 mb-6">
                     <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
-                      <p className="text-3xl font-bold text-[#1a2c42] mb-1">{pipes.length}</p>
-                      <p className="text-[#1a2c42]/70 text-sm">Pipes in Collection</p>
+                      <p className="text-4xl font-bold text-white mb-1">{pipes.length}</p>
+                      <p className="text-[#e8d5b7] text-base">Pipes in Collection</p>
                     </div>
 
-                    <ul className="space-y-2.5 text-[#1a2c42]/80 text-sm">
+                    <ul className="space-y-2.5 text-[#e8d5b7] text-base">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         AI web search to auto-fill details
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         Photo identification from stamps
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         Market value lookup
                       </li>
                     </ul>
                   </div>
 
-                  <div className="flex items-center justify-between text-[#1a2c42] group-hover:translate-x-1 transition-transform">
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-base">
                     <span className="font-semibold">View Collection</span>
                     <ArrowRight className="w-5 h-5" />
                   </div>
@@ -297,37 +297,37 @@ export default function HomePage() {
                 <div className="relative z-20 p-8 h-full flex flex-col">
                   <div className="flex items-start justify-between mb-6">
                     <div>
-                      <h3 className="text-2xl font-bold text-[#1a2c42] mb-1">Tobacco Cellar</h3>
-                      <p className="text-[#1a2c42]/80 text-sm">Manage your blends</p>
+                      <h3 className="text-3xl font-bold text-white mb-2">Tobacco Cellar</h3>
+                      <p className="text-[#e8d5b7] text-base">Manage your blends</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <Leaf className="w-8 h-8 text-[#1a2c42]" />
+                      <Leaf className="w-8 h-8 text-white" />
                     </div>
                   </div>
 
                   <div className="flex-1 mb-6">
                     <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
-                      <p className="text-3xl font-bold text-[#1a2c42] mb-1">{blends.length}</p>
-                      <p className="text-[#1a2c42]/70 text-sm">Tobacco Blends</p>
+                      <p className="text-4xl font-bold text-white mb-1">{blends.length}</p>
+                      <p className="text-[#e8d5b7] text-base">Tobacco Blends</p>
                     </div>
 
-                    <ul className="space-y-2.5 text-[#1a2c42]/80 text-sm">
+                    <ul className="space-y-2.5 text-[#e8d5b7] text-base">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         AI web search for blend info
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         Track inventory quantities
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#1a2c42]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7]" />
                         Flavor profiles & ratings
                       </li>
                     </ul>
                   </div>
 
-                  <div className="flex items-center justify-between text-[#1a2c42] group-hover:translate-x-1 transition-transform">
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-base">
                     <span className="font-semibold">View Cellar</span>
                     <ArrowRight className="w-5 h-5" />
                   </div>
