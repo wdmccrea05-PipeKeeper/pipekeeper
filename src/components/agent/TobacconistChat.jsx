@@ -214,6 +214,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setInput('');
     setSending(true);
 
+    // Show user message immediately
+    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+
     try {
       // Build context summary for first message
       const contextSummary = messages.length === 0 ? buildContextSummary() : '';
@@ -221,12 +224,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n---\n\nFor context, here's my collection and preferences:\n${contextSummary}\n\nPlease use this to provide personalized advice.`
         : userMessage;
 
-      console.log('Sending message with context:', messageContent.substring(0, 200));
+      console.log('Sending message, context length:', messageContent.length);
 
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
       
-      // Add user message - subscription will update UI
+      // Add user message
       await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
@@ -236,6 +239,8 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     } catch (error) {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
+      // Remove optimistic message on error
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setSending(false);
     }
