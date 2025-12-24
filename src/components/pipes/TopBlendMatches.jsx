@@ -12,8 +12,6 @@ export default function TopBlendMatches({ pipe, blends, userProfile }) {
   const [matches, setMatches] = useState(null);
 
   const findMatches = async () => {
-    if (blends.length === 0) return;
-
     setLoading(true);
     try {
       const pipeData = {
@@ -27,15 +25,7 @@ export default function TopBlendMatches({ pipe, blends, userProfile }) {
         focus: pipe.focus
       };
 
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        manufacturer: b.manufacturer,
-        blend_type: b.blend_type,
-        strength: b.strength,
-        cut: b.cut,
-        flavor_notes: b.flavor_notes
-      }));
+      const existingBlends = blends.map(b => `${b.manufacturer} ${b.name}`).join(', ');
 
       let profileContext = "";
       if (userProfile) {
@@ -71,21 +61,27 @@ Use these preferences to personalize recommendations. Prioritize blends that mat
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Analyze this pipe and recommend the top 3 tobacco blends from the user's collection that would pair best with it.
+        prompt: `You are an expert pipe tobacco sommelier. Analyze this pipe and recommend the top 3 tobacco blends that the user should consider purchasing to pair with this pipe.
+
+IMPORTANT: The user already owns these blends: ${existingBlends}
+Do NOT recommend any blends they already own. Only suggest NEW blends they should buy.
 
 Pipe:
-${JSON.stringify(pipeData, null, 2)}
-
-Available Blends:
-${JSON.stringify(blendsData, null, 2)}${profileContext}
+${JSON.stringify(pipeData, null, 2)}${profileContext}
 
 ${matchingStrategy}
 
-Rate each blend and return ONLY the top 3 best matches. For each match, provide:
-- blend_id
-- blend_name
-- score (1-10)
-- reasoning (why this blend pairs well with this specific pipe's characteristics, considering user preferences if provided)`,
+Recommend 3 specific real tobacco blends (include manufacturer and blend name) that:
+1. Are NOT already in their collection
+2. Match the pipe's characteristics and focus
+3. Align with user preferences (if provided)
+4. Are currently available for purchase
+
+For each recommendation, provide:
+- manufacturer (brand name)
+- blend_name (specific product name)
+- score (1-10, how well it matches)
+- reasoning (why this blend pairs well with this pipe's characteristics and user preferences)`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -94,7 +90,7 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
               items: {
                 type: "object",
                 properties: {
-                  blend_id: { type: "string" },
+                  manufacturer: { type: "string" },
                   blend_name: { type: "string" },
                   score: { type: "number" },
                   reasoning: { type: "string" }
@@ -119,8 +115,6 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
     return 'bg-amber-100 text-amber-800 border-amber-300';
   };
 
-  if (blends.length === 0) return null;
-
   return (
     <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
       <CardContent className="p-4">
@@ -133,12 +127,12 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Finding Best Matches...
+                Finding Recommendations...
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Find Best Tobacco Matches
+                Get Blend Recommendations
               </>
             )}
           </Button>
@@ -147,7 +141,7 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-violet-600" />
-                <span className="text-sm font-medium text-violet-800">Top Tobacco Matches</span>
+                <span className="text-sm font-medium text-violet-800">Recommended Blends to Try</span>
               </div>
               <Button
                 onClick={findMatches}
@@ -159,41 +153,24 @@ Rate each blend and return ONLY the top 3 best matches. For each match, provide:
                 <RefreshCw className="w-4 h-4" />
               </Button>
             </div>
-            {matches.map((match, idx) => {
-              const blend = blends.find(b => b.id === match.blend_id);
-              return (
-                <Link key={match.blend_id} to={createPageUrl(`TobaccoDetail?id=${match.blend_id}`)}>
-                  <div className="p-3 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
-                          {blend?.logo || blend?.photo ? (
-                            <img 
-                              src={blend.logo || blend.photo} 
-                              alt="" 
-                              className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
-                              onError={(e) => { 
-                                e.target.style.display = 'none'; 
-                                e.target.parentElement.innerHTML = '🍂'; 
-                              }} 
-                            />
-                          ) : (
-                            <span className="text-lg">🍂</span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-stone-800">{match.blend_name}</p>
-                          <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>
-                        </div>
-                      </div>
-                      <Badge className={getScoreColor(match.score)}>
-                        {match.score}/10
-                      </Badge>
+            {matches.map((match, idx) => (
+              <div key={idx} className="p-3 rounded-lg bg-white border border-violet-200">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center shrink-0">
+                      <span className="text-lg">🍂</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-stone-800">{match.manufacturer} - {match.blend_name}</p>
+                      <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>
                     </div>
                   </div>
-                </Link>
-              );
-            })}
+                  <Badge className={getScoreColor(match.score)}>
+                    {match.score}/10
+                  </Badge>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
