@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Save, X, Sparkles, Crown, ArrowRight } from "lucide-react";
+import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -347,11 +347,38 @@ export default function ProfilePage() {
           </Card>
         </motion.div>
 
-        {/* Legal Links */}
+        {/* Logout Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="mt-6"
+        >
+          <Card className="border-rose-200 bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-stone-800">Sign Out</h3>
+                  <p className="text-sm text-stone-600">Log out of your PipeKeeper account</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-rose-200 text-rose-600 hover:bg-rose-50"
+                  onClick={() => base44.auth.logout()}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Legal Links */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
           className="mt-6"
         >
           <Card className="border-stone-200/60 bg-white/50">
