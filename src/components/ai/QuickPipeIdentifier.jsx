@@ -22,6 +22,8 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [impactAnalysis, setImpactAnalysis] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [clarificationNeeded, setClarificationNeeded] = useState(null);
+  const [clarificationResponses, setClarificationResponses] = useState({});
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -65,9 +67,63 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
         hints.stamping && `Stampings/Markings: ${hints.stamping}`
       ].filter(Boolean).join('\n');
 
+      // First pass: Deep analysis and clarification check
+      const clarificationPrompt = `You are an expert pipe identifier. Analyze these pipe photos carefully, paying special attention to:
+- Stampings, hallmarks, and maker's marks
+- Shape characteristics and proportions
+- Material quality and finish type
+- Any distinctive features or craftsmanship details
+
+${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}
+Examine the photos thoroughly. If you can make a confident identification, provide it. If you need more information to give an accurate identification, ask specific clarifying questions.
+
+Return a JSON object:
+{
+  "needs_clarification": true/false,
+  "clarification_questions": ["Question 1?", "Question 2?"] (if needs_clarification is true),
+  "initial_observations": "What you can determine from the photos",
+  "confidence_without_clarification": "high/medium/low"
+}`;
+
+      const clarificationCheck = await base44.integrations.Core.InvokeLLM({
+        prompt: clarificationPrompt,
+        file_urls: photos,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            needs_clarification: { type: "boolean" },
+            clarification_questions: { type: "array", items: { type: "string" } },
+            initial_observations: { type: "string" },
+            confidence_without_clarification: { type: "string" }
+          }
+        }
+      });
+
+      // If clarification needed and confidence is not high, show questions
+      if (clarificationCheck.needs_clarification && clarificationCheck.confidence_without_clarification !== 'high') {
+        setClarificationNeeded(clarificationCheck);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise proceed with identification
+      await performFinalIdentification(additionalContext);
+    } catch (error) {
+      console.error('Identification failed:', error);
+      alert('Failed to identify pipe. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const performFinalIdentification = async (additionalContext) => {
+    try {
+      const clarificationContext = Object.entries(clarificationResponses)
+        .map(([q, a]) => `Q: ${q}\nA: ${a}`)
+        .join('\n\n');
+
       const prompt = `Analyze these pipe photos and provide detailed identification information.
 
-${additionalContext ? `Additional context provided by user:\n${additionalContext}\n\n` : ''}Return a JSON object with this exact structure:
+${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${clarificationContext ? `Additional clarifications:\n${clarificationContext}\n\n` : ''}Return a JSON object with this exact structure:
 {
   "name": "Brief descriptive name for the pipe",
   "maker": "Pipe maker/brand if identifiable",
@@ -115,12 +171,26 @@ Be realistic with estimated_value based on actual market prices. Be as specific 
       });
 
       setIdentified(result);
+      setClarificationNeeded(null);
+      setClarificationResponses({});
     } catch (error) {
       console.error('Identification failed:', error);
       alert('Failed to identify pipe. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClarificationSubmit = async () => {
+    setLoading(true);
+    const additionalContext = [
+      hints.name && `Name/Description: ${hints.name}`,
+      hints.maker && `Brand/Maker: ${hints.maker}`,
+      hints.shape && `Shape: ${hints.shape}`,
+      hints.stamping && `Stampings/Markings: ${hints.stamping}`
+    ].filter(Boolean).join('\n');
+    
+    await performFinalIdentification(additionalContext);
   };
 
   const handleAnalyzeImpact = async () => {
@@ -211,6 +281,8 @@ Provide analysis as JSON:
     setHints({ name: '', maker: '', shape: '', stamping: '' });
     setIdentified(null);
     setImpactAnalysis(null);
+    setClarificationNeeded(null);
+    setClarificationResponses({});
   };
 
   return (
@@ -228,7 +300,64 @@ Provide analysis as JSON:
           </div>
         </div>
 
-        {!identified ? (
+        {clarificationNeeded && !identified ? (
+          <div className="space-y-4">
+            {/* Initial Observations */}
+            <div className="bg-[#243548]/50 rounded-lg p-4">
+              <p className="text-xs text-[#e8d5b7]/60 mb-2">Initial Analysis</p>
+              <p className="text-sm text-[#e8d5b7]">{clarificationNeeded.initial_observations}</p>
+            </div>
+
+            {/* Clarification Questions */}
+            <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-4">
+              <p className="text-sm font-semibold text-amber-300 mb-3">Additional Information Needed</p>
+              <div className="space-y-3">
+                {clarificationNeeded.clarification_questions?.map((question, idx) => (
+                  <div key={idx}>
+                    <Label className="text-xs text-[#e8d5b7]/80 mb-1 block">{question}</Label>
+                    <Input
+                      placeholder="Your answer..."
+                      value={clarificationResponses[question] || ''}
+                      onChange={(e) => setClarificationResponses({
+                        ...clarificationResponses,
+                        [question]: e.target.value
+                      })}
+                      className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={handleClarificationSubmit}
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  'Continue Identification'
+                )}
+              </Button>
+              <Button
+                onClick={() => {
+                  setClarificationNeeded(null);
+                  setClarificationResponses({});
+                }}
+                variant="outline"
+                className="border-[#e8d5b7]/30"
+              >
+                Skip & Identify Now
+              </Button>
+            </div>
+          </div>
+        ) : !identified ? (
           <div className="space-y-4">
             {/* Photo Upload Section */}
             <div className="grid grid-cols-2 gap-3">
