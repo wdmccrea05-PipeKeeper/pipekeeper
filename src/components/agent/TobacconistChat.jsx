@@ -127,8 +127,14 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       
       // Always update with fresh array
       const newMessages = data.messages || [];
-      console.log('Setting messages to:', newMessages.length, 'messages');
+      console.log('✍️ Setting messages to:', newMessages.length, 'messages');
       setMessages(newMessages);
+      
+      // Stop sending indicator when we get a response from assistant
+      if (newMessages.length > 0 && newMessages[newMessages.length - 1]?.role === 'assistant') {
+        console.log('✅ Got assistant response, stopping send indicator');
+        setSending(false);
+      }
     });
 
     return () => {
