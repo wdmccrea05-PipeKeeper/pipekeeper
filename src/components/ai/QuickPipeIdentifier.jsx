@@ -400,13 +400,13 @@ Provide analysis as JSON:
             )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {!impactAnalysis ? (
                 <>
                   <Button
                     onClick={handleAnalyzeImpact}
                     disabled={analyzing}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 col-span-2"
                   >
                     {analyzing ? (
                       <>
@@ -443,7 +443,7 @@ Provide analysis as JSON:
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Add to Collection
+                        Add
                       </>
                     )}
                   </Button>
@@ -453,6 +453,16 @@ Provide analysis as JSON:
                     className="border-[#e8d5b7]/30"
                   >
                     Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIdentified(null);
+                      setImpactAnalysis(null);
+                    }}
+                    variant="outline"
+                    className="border-[#e8d5b7]/30"
+                  >
+                    Try Another
                   </Button>
                 </>
               )}
