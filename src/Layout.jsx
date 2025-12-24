@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -66,10 +66,19 @@ export default function Layout({ children, currentPageName }) {
               />
               <span className="font-bold text-xl text-[#e8d5b7]">PipeKeeper</span>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {navItems.map(item => (
                 <NavLink key={item.page} item={item} currentPage={currentPageName} />
               ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open('https://base44.com/invite?ref=pipekeeper', '_blank')}
+                className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Invite
+              </Button>
             </div>
           </div>
         </div>
@@ -109,9 +118,33 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-16 md:pt-16">
+      <main className="pt-16 md:pt-16 pb-20">
         {children}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-[#1a2c42]/95 border-t border-[#8b3a3a] mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <img 
+                src={PIPEKEEPER_LOGO}
+                alt="PipeKeeper"
+                className="w-5 h-5 object-contain"
+              />
+              <span className="text-sm text-[#e8d5b7]/70">© 2025 PipeKeeper. All rights reserved.</span>
+            </div>
+            <div className="flex gap-6">
+              <Link to={createPageUrl('TermsOfService')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+                Terms of Service
+              </Link>
+              <Link to={createPageUrl('PrivacyPolicy')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -346,6 +346,28 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Legal Links */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6"
+        >
+          <Card className="border-stone-200/60 bg-white/50">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                <Link to={createPageUrl('TermsOfService')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
+                  Terms of Service
+                </Link>
+                <span className="text-stone-300">•</span>
+                <Link to={createPageUrl('PrivacyPolicy')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
