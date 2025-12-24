@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf } from "lucide-react";
+import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone } from "lucide-react";
 
 export default function FAQPage() {
   return (
@@ -59,6 +59,68 @@ export default function FAQPage() {
                 <AccordionTrigger>What can I do with the onboarding tutorial?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   The onboarding tutorial walks you through PipeKeeper's main features including AI pairing recommendations, photo identification, value lookup, and collection optimization. You can revisit it anytime from the Help menu in the navigation bar.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3a">
+                <AccordionTrigger>How do I install PipeKeeper on my phone?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p>PipeKeeper works as a web app that can be installed on your mobile device for an app-like experience:</p>
+                  
+                  <div>
+                    <p className="font-semibold mb-1">On iPhone/iPad (Safari):</p>
+                    <ol className="list-decimal ml-5 space-y-1">
+                      <li>Open PipeKeeper in Safari browser</li>
+                      <li>Tap the Share button (square with arrow pointing up)</li>
+                      <li>Scroll down and tap "Add to Home Screen"</li>
+                      <li>Tap "Add" to confirm</li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold mb-1">On Android (Chrome):</p>
+                    <ol className="list-decimal ml-5 space-y-1">
+                      <li>Open PipeKeeper in Chrome browser</li>
+                      <li>Tap the menu (three dots) in the top right</li>
+                      <li>Tap "Add to Home screen" or "Install app"</li>
+                      <li>Tap "Add" or "Install" to confirm</li>
+                    </ol>
+                  </div>
+
+                  <p className="text-sm italic">Once installed, PipeKeeper will appear on your home screen like a native app and can work offline with cached data.</p>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/95 backdrop-blur-sm mb-6">
+          <CardHeader>
+            <CardTitle className="text-stone-800 flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-blue-600" />
+              Mobile & Installation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-mobile-1">
+                <AccordionTrigger>Is PipeKeeper available in the App Store or Google Play?</AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  PipeKeeper is a Progressive Web App (PWA) that works directly in your browser. While it's not in the app stores, you can install it on your phone's home screen for the same experience as a native app - no downloads from the app store needed!
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-mobile-2">
+                <AccordionTrigger>Can I use PipeKeeper offline?</AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  Once installed on your device, PipeKeeper caches your data so you can view your collection offline. Some features like AI search and photo identification require an internet connection, but basic browsing and editing work offline.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-mobile-3">
+                <AccordionTrigger>Will my data sync across devices?</AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  Yes! Your collection data is stored in the cloud and automatically syncs across all your devices. Log in with the same account on your phone, tablet, or computer to access your pipes and tobacco anywhere.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
