@@ -225,34 +225,33 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setSending(true);
 
     try {
+      // Include context on first message
+      const contextSummary = messages.length === 0 ? buildContextSummary() : '';
+      const messageContent = contextSummary 
+        ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
+        : userMessage;
+
       console.log('🚀 Sending message:', userMessage);
-      console.log('📍 Conversation ID:', conversationId);
+      console.log('📦 Context included:', !!contextSummary);
 
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
-      console.log('📖 Current conversation has', conv.messages?.length, 'messages before send');
 
-      // Send simple message first to test
-      const result = await base44.agents.addMessage(conv, {
+      // Add user message
+      await base44.agents.addMessage(conv, {
         role: "user",
-        content: userMessage
+        content: messageContent
       });
-
-      console.log('✅ addMessage returned:', result);
       
-      // Wait a bit then manually check for response
+      // Wait then check for response
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const updated = await base44.agents.getConversation(conversationId);
-      console.log('🔍 After 2s, conversation has', updated.messages?.length, 'messages');
-      console.log('🔍 Messages:', JSON.stringify(updated.messages, null, 2));
-      
       setMessages(updated.messages || []);
       setSending(false);
       
     } catch (error) {
       console.error('❌ Send error:', error);
-      console.error('❌ Error details:', JSON.stringify(error, null, 2));
       toast.error('Failed to send message');
       setSending(false);
     }
