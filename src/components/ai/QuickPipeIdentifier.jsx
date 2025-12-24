@@ -19,6 +19,8 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   });
   const [loading, setLoading] = useState(false);
   const [identified, setIdentified] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [impactAnalysis, setImpactAnalysis] = useState(null);
   const [adding, setAdding] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -112,6 +114,57 @@ Be as specific as possible based on visible features.`;
     }
   };
 
+  const handleAnalyzeImpact = async () => {
+    if (!identified) return;
+
+    setAnalyzing(true);
+    try {
+      const pipeContext = pipes.map(p => `${p.name} - ${p.maker || 'Unknown'} ${p.shape || ''} (${p.chamber_volume || 'Unknown size'})`).join('\n');
+      const blendContext = blends.map(b => `${b.name} - ${b.manufacturer || 'Unknown'} ${b.blend_type || ''}`).join('\n');
+
+      const prompt = `Analyze the impact of adding this new pipe to the collection:
+
+NEW PIPE:
+${identified.name} - ${identified.maker || 'Unknown'} ${identified.shape || ''} ${identified.bowl_material || ''}
+
+CURRENT PIPES:
+${pipeContext || 'No pipes in collection yet'}
+
+TOBACCO BLENDS:
+${blendContext || 'No tobacco blends yet'}
+
+Provide analysis as JSON:
+{
+  "fills_gap": "What gap this pipe fills in the collection",
+  "redundancy": "Any redundancy with existing pipes",
+  "recommended_for": ["Blend 1", "Blend 2"],
+  "value_proposition": "Overall value this adds",
+  "recommendation": "Strong addition / Good addition / Consider alternatives"
+}`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            fills_gap: { type: "string" },
+            redundancy: { type: "string" },
+            recommended_for: { type: "array", items: { type: "string" } },
+            value_proposition: { type: "string" },
+            recommendation: { type: "string" }
+          }
+        }
+      });
+
+      setImpactAnalysis(result);
+    } catch (error) {
+      console.error('Impact analysis failed:', error);
+      alert('Failed to analyze impact. You can still add the pipe directly.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const handleAddToCollection = async () => {
     if (!identified) return;
 
@@ -148,6 +201,7 @@ Be as specific as possible based on visible features.`;
     setPhotos([]);
     setHints({ name: '', maker: '', shape: '', stamping: '' });
     setIdentified(null);
+    setImpactAnalysis(null);
   };
 
   return (
@@ -303,33 +357,105 @@ Be as specific as possible based on visible features.`;
               )}
             </div>
 
+            {/* Impact Analysis */}
+            {impactAnalysis && (
+              <div className="bg-[#1a2c42]/50 rounded-lg p-4 border border-[#e8d5b7]/20 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-blue-400" />
+                  <span className="font-semibold text-[#e8d5b7] text-sm">Collection Impact</span>
+                </div>
+                
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[#e8d5b7]/60">Fills Gap:</span>
+                    <p className="text-[#e8d5b7] mt-1">{impactAnalysis.fills_gap}</p>
+                  </div>
+                  
+                  {impactAnalysis.redundancy && (
+                    <div>
+                      <span className="text-[#e8d5b7]/60">Redundancy Check:</span>
+                      <p className="text-[#e8d5b7] mt-1">{impactAnalysis.redundancy}</p>
+                    </div>
+                  )}
+                  
+                  {impactAnalysis.recommended_for?.length > 0 && (
+                    <div>
+                      <span className="text-[#e8d5b7]/60">Best For:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {impactAnalysis.recommended_for.map((blend, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-amber-900/30 text-amber-300 rounded text-xs">
+                            {blend}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <span className="text-[#e8d5b7]/60">Overall:</span>
+                    <p className="text-[#e8d5b7] mt-1 font-medium">{impactAnalysis.recommendation}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3">
-              <Button
-                onClick={handleAddToCollection}
-                disabled={adding}
-                className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
-              >
-                {adding ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Add to Collection
-                  </>
-                )}
-              </Button>
-
-              <Button
-                onClick={handleReset}
-                variant="outline"
-                className="border-[#e8d5b7]/30"
-              >
-                Try Another
-              </Button>
+              {!impactAnalysis ? (
+                <>
+                  <Button
+                    onClick={handleAnalyzeImpact}
+                    disabled={analyzing}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {analyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Analyze Impact
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="border-[#e8d5b7]/30"
+                  >
+                    Try Another
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleAddToCollection}
+                    disabled={adding}
+                    className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
+                  >
+                    {adding ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Add to Collection
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="border-[#e8d5b7]/30"
+                  >
+                    Try Another
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
