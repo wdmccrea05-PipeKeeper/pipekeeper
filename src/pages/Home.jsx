@@ -17,6 +17,7 @@ import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/5c08e5ef6_bent_billiard_pipe_thick_lines_short_stem_transparent.png';
 
@@ -294,6 +295,18 @@ export default function HomePage() {
             className="mb-12"
           >
             <PairingMatrix pipes={pipes} blends={blends} />
+          </motion.div>
+        )}
+
+        {/* Smoking Log Panel */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.72 }}
+            className="mb-12"
+          >
+            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
           </motion.div>
         )}
 

@@ -31,6 +31,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
 import TopBlendMatches from "@/components/pipes/TopBlendMatches";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -178,6 +179,11 @@ export default function PipeDetailPage() {
             />
           </div>
         )}
+
+        {/* Break-In Schedule */}
+        <div className="mb-6">
+          <BreakInSchedule pipe={pipe} blends={blends} />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Photo Gallery */}
