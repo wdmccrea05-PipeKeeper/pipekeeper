@@ -443,16 +443,17 @@ export default function HomePage() {
         )}
 
         {/* Recently Added */}
-        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-md md:max-w-none mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
           {recentPipes.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
+              className="w-full"
             >
-              <Card className="border-stone-200">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-stone-800">Recent Pipes</CardTitle>
+              <Card className="border-stone-200 w-full">
+                <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
+                  <CardTitle className="text-stone-800 text-lg">Recent Pipes</CardTitle>
                   <Link to={createPageUrl('Pipes')}>
                     <Button variant="ghost" size="sm">
                       View All <ArrowRight className="w-4 h-4 ml-1" />
@@ -463,20 +464,20 @@ export default function HomePage() {
                   <div className="space-y-3">
                     {recentPipes.map(pipe => (
                       <Link key={pipe.id} to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
-                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center">
+                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                             {pipe.photos?.[0] ? (
                               <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <PipeShapeIcon shape={pipe.shape} className="text-xl" />
+                              <PipeShapeIcon shape={pipe.shape} className="text-lg sm:text-xl" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-stone-800 truncate">{pipe.name}</p>
-                            <p className="text-sm text-stone-500 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
+                            <p className="font-medium text-stone-800 truncate text-sm sm:text-base">{pipe.name}</p>
+                            <p className="text-xs sm:text-sm text-stone-500 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
                           </div>
                           {pipe.estimated_value && (
-                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs sm:text-sm flex-shrink-0">
                               ${pipe.estimated_value}
                             </Badge>
                           )}
@@ -494,22 +495,23 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.0 }}
+              className="w-full"
             >
-              <Card className="border-stone-200">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-stone-800">Recent Tobacco</CardTitle>
+              <Card className="border-stone-200 w-full">
+                <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
+                  <CardTitle className="text-stone-800 text-lg">Recent Tobacco</CardTitle>
                   <Link to={createPageUrl('Tobacco')}>
                     <Button variant="ghost" size="sm">
                       View All <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   </Link>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="space-y-2 sm:space-y-3">
                     {recentBlends.map(blend => (
                       <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
-                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center">
+                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                             {blend.logo || blend.photo ? (
                               <img 
                                 src={blend.logo || blend.photo} 
@@ -517,15 +519,15 @@ export default function HomePage() {
                                 className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
                               />
                             ) : (
-                              <span className="text-xl">🍂</span>
+                              <span className="text-lg sm:text-xl">🍂</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-stone-800 truncate">{blend.name}</p>
-                            <p className="text-sm text-stone-500 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
+                            <p className="font-medium text-stone-800 truncate text-sm sm:text-base">{blend.name}</p>
+                            <p className="text-xs sm:text-sm text-stone-500 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
                           </div>
                           {blend.quantity_owned > 0 && (
-                            <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
                               {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
                             </Badge>
                           )}
