@@ -64,7 +64,7 @@ function MessageBubble({ message }) {
   );
 }
 
-export default function TobacconistChat({ open, onOpenChange }) {
+export default function TobacconistChat({ open, onOpenChange, pipes = [], blends = [] }) {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -75,6 +75,33 @@ export default function TobacconistChat({ open, onOpenChange }) {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: pairings } = useQuery({
+    queryKey: ['pairings', user?.email],
+    queryFn: async () => {
+      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email });
+      return results[0];
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: optimization } = useQuery({
+    queryKey: ['optimization', user?.email],
+    queryFn: async () => {
+      const results = await base44.entities.CollectionOptimization.filter({ created_by: user?.email });
+      return results[0];
+    },
+    enabled: !!user?.email,
   });
 
   // Auto-scroll to bottom
@@ -102,19 +129,86 @@ export default function TobacconistChat({ open, onOpenChange }) {
 
   const createConversation = async () => {
     try {
+      // Build context summary
+      const contextSummary = buildContextSummary();
+      
       const conv = await base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: {
           name: "Tobacconist Consultation",
-          description: "Expert pipe and tobacco advice"
+          description: "Expert pipe and tobacco advice",
+          user_context: contextSummary
         }
       });
       setConversationId(conv.id);
-      setMessages(conv.messages || []);
+      
+      // Add context as first system message if we have data
+      if (contextSummary) {
+        await base44.agents.addMessage(conv, {
+          role: "user",
+          content: `Here's my collection and preferences:\n\n${contextSummary}\n\nPlease use this information to provide personalized advice without asking me for these details again.`
+        });
+      }
+      
+      // Refresh messages
+      const updatedConv = await base44.agents.getConversation(conv.id);
+      setMessages(updatedConv.messages || []);
     } catch (error) {
       console.error('Failed to create conversation:', error);
       toast.error('Failed to start conversation');
     }
+  };
+
+  const buildContextSummary = () => {
+    let summary = [];
+
+    // Collection overview
+    if (pipes.length > 0 || blends.length > 0) {
+      summary.push(`**Collection Overview:**\n- ${pipes.length} pipes, ${blends.length} tobacco blends`);
+    }
+
+    // Pipes summary
+    if (pipes.length > 0) {
+      const pipeSummary = pipes.slice(0, 10).map(p => 
+        `${p.name} (${p.maker || 'Unknown maker'}, ${p.shape || 'Unknown shape'}, ${p.chamber_volume || 'Unknown size'}${p.focus?.length > 0 ? `, specialized for: ${p.focus.join(', ')}` : ''})`
+      ).join('\n- ');
+      summary.push(`**My Pipes:**\n- ${pipeSummary}${pipes.length > 10 ? `\n- ...and ${pipes.length - 10} more` : ''}`);
+    }
+
+    // Blends summary
+    if (blends.length > 0) {
+      const blendSummary = blends.slice(0, 10).map(b => 
+        `${b.name} (${b.manufacturer || 'Unknown'}, ${b.blend_type || 'Unknown type'}, ${b.strength || 'Unknown strength'}${b.quantity_owned > 0 ? `, ${b.quantity_owned} tins` : ''})`
+      ).join('\n- ');
+      summary.push(`**My Tobacco:**\n- ${blendSummary}${blends.length > 10 ? `\n- ...and ${blends.length - 10} more` : ''}`);
+    }
+
+    // User preferences
+    if (userProfile) {
+      let prefs = ['**My Preferences:**'];
+      if (userProfile.clenching_preference) prefs.push(`- Clenching: ${userProfile.clenching_preference}`);
+      if (userProfile.smoke_duration_preference) prefs.push(`- Session duration: ${userProfile.smoke_duration_preference}`);
+      if (userProfile.strength_preference) prefs.push(`- Strength preference: ${userProfile.strength_preference}`);
+      if (userProfile.pipe_size_preference) prefs.push(`- Pipe size: ${userProfile.pipe_size_preference}`);
+      if (userProfile.preferred_blend_types?.length > 0) prefs.push(`- Favorite blend types: ${userProfile.preferred_blend_types.join(', ')}`);
+      if (userProfile.preferred_shapes?.length > 0) prefs.push(`- Favorite pipe shapes: ${userProfile.preferred_shapes.join(', ')}`);
+      if (userProfile.notes) prefs.push(`- Additional notes: ${userProfile.notes}`);
+      if (prefs.length > 1) summary.push(prefs.join('\n'));
+    }
+
+    // Optimization insights
+    if (optimization?.pipe_specializations) {
+      const specs = optimization.pipe_specializations.slice(0, 5).map(s => 
+        `${s.pipe_name}: ${s.recommended_focus.join(', ')}`
+      ).join('\n- ');
+      summary.push(`**AI Specialization Recommendations:**\n- ${specs}`);
+    }
+
+    if (optimization?.collection_gaps) {
+      summary.push(`**Collection Analysis:**\n${JSON.stringify(optimization.collection_gaps, null, 2)}`);
+    }
+
+    return summary.join('\n\n');
   };
 
   const handleSend = async () => {

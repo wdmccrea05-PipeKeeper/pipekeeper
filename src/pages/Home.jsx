@@ -642,6 +642,8 @@ export default function HomePage() {
         <TobacconistChat 
           open={showTobacconist} 
           onOpenChange={setShowTobacconist}
+          pipes={pipes}
+          blends={blends}
         />
         </div>
       </div>
