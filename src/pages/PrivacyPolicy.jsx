@@ -18,12 +18,12 @@ export default function PrivacyPolicyPage() {
 
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
-            <CardTitle className="text-3xl text-[#e8d5b7]">Privacy Policy</CardTitle>
-            <p className="text-[#e8d5b7]/70 mt-2">Last updated: December 24, 2025</p>
+            <CardTitle className="text-3xl text-stone-900">Privacy Policy</CardTitle>
+            <p className="text-stone-600 mt-2">Last updated: December 24, 2025</p>
           </CardHeader>
-          <CardContent className="prose prose-stone max-w-none text-[#e8d5b7]/90 space-y-6">
+          <CardContent className="prose prose-stone max-w-none text-stone-800 space-y-6">
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">1. Information We Collect</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">1. Information We Collect</h2>
               <p>
                 We collect information you provide directly to us, including:
               </p>
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">2. How We Use Your Information</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">2. How We Use Your Information</h2>
               <p>
                 We use the information we collect to:
               </p>
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">3. Information Sharing</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">3. Information Sharing</h2>
               <p>
                 We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:
               </p>
@@ -65,7 +65,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">4. Data Storage and Security</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">4. Data Storage and Security</h2>
               <p>
                 We implement appropriate technical and organizational measures to protect your personal information. 
                 Your data is stored securely on cloud infrastructure with encryption in transit and at rest. 
@@ -74,7 +74,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">5. AI Processing</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Processing</h2>
               <p>
                 When you use AI features (photo identification, market valuations, recommendations), your data may be 
                 processed by third-party AI providers. We ensure these providers maintain appropriate data protection standards.
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">6. Cookies and Tracking</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Cookies and Tracking</h2>
               <p>
                 We use cookies and similar tracking technologies to track activity on our Service and hold certain information. 
                 You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">7. Your Rights</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Your Rights</h2>
               <p>
                 You have the right to:
               </p>
@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">8. Children's Privacy</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Children's Privacy</h2>
               <p>
                 Our Service is not intended for children under 13 years of age. We do not knowingly collect 
                 personal information from children under 13.
@@ -112,7 +112,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">9. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Changes to This Policy</h2>
               <p>
                 We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
                 the new Privacy Policy on this page and updating the "Last updated" date.
@@ -120,14 +120,14 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#e8d5b7] mb-3">10. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Contact Us</h2>
               <p>
                 If you have questions about this Privacy Policy, please contact us through the app's support channels.
               </p>
             </section>
 
-            <div className="mt-8 pt-6 border-t border-[#e8d5b7]/30">
-              <p className="text-sm">
+            <div className="mt-8 pt-6 border-t border-stone-200">
+              <p className="text-sm text-stone-600">
                 © 2025 PipeKeeper. All rights reserved.
               </p>
             </div>
