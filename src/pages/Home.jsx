@@ -196,11 +196,23 @@ export default function HomePage() {
           </motion.div>
         </div>
 
+        {/* Smoking Log Panel */}
+        {pipes.length > 0 && blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="mb-6"
+          >
+            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+          </motion.div>
+        )}
+
         {/* Import Link */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
+          transition={{ delay: 0.47 }}
           className="mb-6"
         >
           <Link to={createPageUrl('Import')}>
