@@ -229,43 +229,55 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="h-full hover:shadow-lg transition-shadow border-[#e8d5b7]/30 overflow-hidden bg-[#243548]">
-              <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-12 h-12 object-contain brightness-0 invert" />
-                  <div>
-                    <h3 className="text-xl font-bold">Pipe Collection</h3>
-                    <p className="text-[#e8d5b7]/80">Track and value your pipes</p>
+            <Link to={createPageUrl('Pipes')}>
+              <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/95 via-[#6d2e2e]/90 to-[#5a2525]/95 z-10" />
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1606383260722-b2bdd7b6d5fa?w=800&q=80)'
+                  }}
+                />
+                <div className="relative z-20 p-8 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-1">Pipe Collection</h3>
+                      <p className="text-[#e8d5b7]/90 text-sm">Track and value your pipes</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <img src={PIPE_ICON} alt="Pipes" className="w-8 h-8 object-contain brightness-0 invert" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
+                      <p className="text-3xl font-bold text-white mb-1">{pipes.length}</p>
+                      <p className="text-[#e8d5b7]/80 text-sm">Pipes in Collection</p>
+                    </div>
+                    
+                    <ul className="space-y-2.5 text-[#e8d5b7]/90 text-sm">
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        AI web search to auto-fill details
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        Photo identification from stamps
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        Market value lookup
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform">
+                    <span className="font-semibold">View Collection</span>
+                    <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-6">
-                <ul className="space-y-2 text-[#e8d5b7]/80 mb-6">
-                  <li className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-[#d4a574]" />
-                    AI web search to auto-fill pipe details
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-[#d4a574]" />
-                    Photo identification from stamps
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-[#d4a574]" />
-                    Market value lookup
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-[#d4a574]" />
-                    Tobacco pairing suggestions
-                  </li>
-                </ul>
-                <Link to={createPageUrl('Pipes')}>
-                  <Button className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                    View Pipes
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              </Card>
+            </Link>
           </motion.div>
 
           <motion.div
@@ -273,43 +285,55 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="h-full hover:shadow-lg transition-shadow border-[#e8d5b7]/30 overflow-hidden bg-[#243548]">
-              <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="text-3xl">🍂</div>
-                  <div>
-                    <h3 className="text-xl font-bold">Tobacco Cellar</h3>
-                    <p className="text-[#e8d5b7]/80">Manage your blends</p>
+            <Link to={createPageUrl('Tobacco')}>
+              <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/95 via-[#2d4a3d]/90 to-[#1d3a2d]/95 z-10" />
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
+                  style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=800&q=80)'
+                  }}
+                />
+                <div className="relative z-20 p-8 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-1">Tobacco Cellar</h3>
+                      <p className="text-[#e8d5b7]/90 text-sm">Manage your blends</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <Leaf className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 mb-3">
+                      <p className="text-3xl font-bold text-white mb-1">{blends.length}</p>
+                      <p className="text-[#e8d5b7]/80 text-sm">Tobacco Blends</p>
+                    </div>
+                    
+                    <ul className="space-y-2.5 text-[#e8d5b7]/90 text-sm">
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        AI web search for blend info
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        Track inventory quantities
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4a574]" />
+                        Flavor profiles & ratings
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform">
+                    <span className="font-semibold">View Cellar</span>
+                    <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-6">
-                <ul className="space-y-2 text-[#e8d5b7]/80 mb-6">
-                  <li className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-[#d4a574]" />
-                    AI web search for blend information
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Package className="w-4 h-4 text-[#d4a574]" />
-                    Track inventory quantities
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Leaf className="w-4 h-4 text-[#d4a574]" />
-                    Flavor profiles & tasting notes
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-[#d4a574]" />
-                    Rate and review blends
-                  </li>
-                </ul>
-                <Link to={createPageUrl('Tobacco')}>
-                  <Button className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                    View Tobacco
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              </Card>
+            </Link>
           </motion.div>
         </div>
 
