@@ -19,7 +19,7 @@ import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/5c08e5ef6_bent_billiard_pipe_thick_lines_short_stem_transparent.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
