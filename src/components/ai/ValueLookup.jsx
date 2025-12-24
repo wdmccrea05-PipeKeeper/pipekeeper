@@ -38,14 +38,16 @@ Search for:
 3. Auction results for this maker/style
 4. Collector forum discussions on value
 
+CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
+
 Provide a detailed valuation in JSON format with:
 - estimated_value_low: low end of value range in USD
 - estimated_value_high: high end of value range in USD
 - estimated_value_mid: most likely value in USD
 - confidence: "high", "medium", or "low" based on data availability
-- market_factors: array of factors affecting value (positive and negative)
-- comparable_sales: brief description of similar pipes and their prices
-- notes: any important considerations for this specific pipe
+- market_factors: array of factors affecting value (positive and negative, no sources)
+- comparable_sales: brief description of similar pipes and their prices (no sources or links)
+- notes: any important considerations for this specific pipe (no sources or links)
 - value_trend: "rising", "stable", or "declining"`,
         add_context_from_internet: true,
         response_json_schema: {

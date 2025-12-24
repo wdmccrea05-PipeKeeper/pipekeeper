@@ -75,12 +75,14 @@ Consider:
 4. Wide shallow bowls suit flakes, deeper bowls work well with ribbon cuts
 5. If pipe has a focus, prioritize matching blends but explain how the physical characteristics support that focus
 
+CRITICAL: Do NOT include any URLs, links, sources, or citations in your response. Provide only product names, manufacturers, and descriptions.
+
 Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
-- reasoning: why these types work well with this pipe
+- reasoning: why these types work well with this pipe (no sources or links)
 - from_collection: array of blend names from the user's collection that would pair well (if any match)
-- product_recommendations: array of 3-5 specific NEW real products to BUY (NOT from user's collection) with name, manufacturer, blend_type, and brief description
-- smoking_tips: specific tips for smoking these blend types in this pipe`,
+- product_recommendations: array of 3-5 specific NEW real products to BUY (NOT from user's collection) with name, manufacturer, blend_type, and brief description (no URLs or sources)
+- smoking_tips: specific tips for smoking these blend types in this pipe (no sources or links)`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

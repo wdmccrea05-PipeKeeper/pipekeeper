@@ -86,11 +86,13 @@ Requirements for recommendations:
 3. MUST match the pipe's characteristics and focus
 4. SHOULD align with user preferences if provided
 
+CRITICAL: Do NOT include any URLs, links, sources, or citations in your response. Provide only product names and descriptions.
+
 For each of the 3 NEW blend recommendations, provide:
 - manufacturer (the brand/company name)
 - blend_name (the specific product name)
 - score (1-10, compatibility with this pipe)
-- reasoning (why this NEW blend would pair well with this pipe)`,
+- reasoning (why this NEW blend would pair well with this pipe, no sources or links)`,
         response_json_schema: {
           type: "object",
           properties: {

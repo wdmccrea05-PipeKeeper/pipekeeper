@@ -39,15 +39,17 @@ Based on the images (especially any stamping/hallmarks visible), identify:
 
 Search for information about pipe stamps, hallmarks, and maker marks to accurately identify this pipe.
 
+CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
+
 Provide the identification in JSON format with:
 - identified_maker: the maker/brand name
 - confidence: "high", "medium", or "low"
 - model_line: specific model or line if known
 - estimated_era: when it was likely made
 - country: country of manufacture
-- identification_basis: what led to this identification
-- authenticity_notes: any concerns or confirmations about authenticity
-- additional_info: interesting facts about this maker or model
+- identification_basis: what led to this identification (no sources or links)
+- authenticity_notes: any concerns or confirmations about authenticity (no sources or links)
+- additional_info: interesting facts about this maker or model (no sources or links)
 - suggested_updates: object with any fields that should be updated on the pipe record`,
         add_context_from_internet: true,
         file_urls: photos,
