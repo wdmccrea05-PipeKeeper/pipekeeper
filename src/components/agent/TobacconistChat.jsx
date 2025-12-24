@@ -165,15 +165,45 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   };
 
   const buildContextSummary = () => {
-    // Keep context brief for first message
-    let summary = [];
+    let parts = [];
 
-    // Collection overview only
-    if (pipes.length > 0 || blends.length > 0) {
-      summary.push(`I have ${pipes.length} pipes and ${blends.length} tobacco blends in my collection.`);
+    // Pipes
+    if (pipes.length > 0) {
+      const pipeList = pipes.map(p => 
+        `${p.name} (${p.maker || 'Unknown'}, ${p.shape || ''}, ${p.chamber_volume || ''}${p.focus?.length ? `, focus: ${p.focus.join(', ')}` : ''})`
+      ).join(', ');
+      parts.push(`MY PIPES: ${pipeList}`);
     }
 
-    return summary.join(' ');
+    // Tobacco
+    if (blends.length > 0) {
+      const blendList = blends.map(b => 
+        `${b.name} (${b.manufacturer || ''}, ${b.blend_type || ''}, ${b.strength || ''})`
+      ).join(', ');
+      parts.push(`MY TOBACCO: ${blendList}`);
+    }
+
+    // User Profile
+    if (userProfile) {
+      let prefs = [];
+      if (userProfile.clenching_preference) prefs.push(`Clenching: ${userProfile.clenching_preference}`);
+      if (userProfile.smoke_duration_preference) prefs.push(`Duration: ${userProfile.smoke_duration_preference}`);
+      if (userProfile.strength_preference) prefs.push(`Strength: ${userProfile.strength_preference}`);
+      if (userProfile.pipe_size_preference) prefs.push(`Size: ${userProfile.pipe_size_preference}`);
+      if (userProfile.preferred_blend_types?.length) prefs.push(`Favorite types: ${userProfile.preferred_blend_types.join(', ')}`);
+      if (userProfile.preferred_shapes?.length) prefs.push(`Favorite shapes: ${userProfile.preferred_shapes.join(', ')}`);
+      if (prefs.length > 0) parts.push(`MY PREFERENCES: ${prefs.join(', ')}`);
+    }
+
+    // Optimization data
+    if (optimization?.pipe_specializations) {
+      const specs = optimization.pipe_specializations.slice(0, 3).map(s => 
+        `${s.pipe_name}: ${s.recommended_focus.join(', ')}`
+      ).join(', ');
+      parts.push(`SPECIALIZATIONS: ${specs}`);
+    }
+
+    return parts.join('\n\n');
   };
 
   const handleSend = async () => {
@@ -188,8 +218,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setMessages(prev => [...prev, tempMessage]);
 
     try {
-      // Keep message simple - agent can query entities itself
-      const messageContent = userMessage;
+      // Include context on first message
+      const contextSummary = messages.length === 0 ? buildContextSummary() : '';
+      const messageContent = contextSummary 
+        ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
+        : userMessage;
 
       console.log('🚀 Sending message:', {
         conversationId,
