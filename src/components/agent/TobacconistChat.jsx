@@ -140,19 +140,17 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
           user_context: contextSummary
         }
       });
-      setConversationId(conv.id);
       
-      // Add context as first system message if we have data
+      setConversationId(conv.id);
+      setMessages(conv.messages || []);
+      
+      // Add context as first message if we have data (but don't wait for response)
       if (contextSummary) {
-        await base44.agents.addMessage(conv, {
+        base44.agents.addMessage(conv, {
           role: "user",
           content: `Here's my collection and preferences:\n\n${contextSummary}\n\nPlease use this information to provide personalized advice without asking me for these details again.`
-        });
+        }).catch(err => console.error('Failed to add context:', err));
       }
-      
-      // Refresh messages
-      const updatedConv = await base44.agents.getConversation(conv.id);
-      setMessages(updatedConv.messages || []);
     } catch (error) {
       console.error('Failed to create conversation:', error);
       toast.error('Failed to start conversation');
