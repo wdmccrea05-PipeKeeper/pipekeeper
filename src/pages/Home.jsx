@@ -460,8 +460,8 @@ export default function HomePage() {
                     </Button>
                   </Link>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="space-y-2 sm:space-y-3">
                     {recentPipes.map(pipe => (
                       <Link key={pipe.id} to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
                         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
