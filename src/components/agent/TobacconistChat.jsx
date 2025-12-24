@@ -242,11 +242,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setConversationId(null);
     setMessages([]);
-    if (open && user?.email) {
-      createConversation();
+    if (user?.email) {
+      await createConversation();
     }
   };
 
