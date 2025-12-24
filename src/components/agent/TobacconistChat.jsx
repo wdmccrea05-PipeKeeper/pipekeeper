@@ -165,55 +165,15 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   };
 
   const buildContextSummary = () => {
+    // Keep context brief for first message
     let summary = [];
 
-    // Collection overview
+    // Collection overview only
     if (pipes.length > 0 || blends.length > 0) {
-      summary.push(`**Collection Overview:**\n- ${pipes.length} pipes, ${blends.length} tobacco blends`);
+      summary.push(`I have ${pipes.length} pipes and ${blends.length} tobacco blends in my collection.`);
     }
 
-    // Pipes summary
-    if (pipes.length > 0) {
-      const pipeSummary = pipes.slice(0, 10).map(p => 
-        `${p.name} (${p.maker || 'Unknown maker'}, ${p.shape || 'Unknown shape'}, ${p.chamber_volume || 'Unknown size'}${p.focus?.length > 0 ? `, specialized for: ${p.focus.join(', ')}` : ''})`
-      ).join('\n- ');
-      summary.push(`**My Pipes:**\n- ${pipeSummary}${pipes.length > 10 ? `\n- ...and ${pipes.length - 10} more` : ''}`);
-    }
-
-    // Blends summary
-    if (blends.length > 0) {
-      const blendSummary = blends.slice(0, 10).map(b => 
-        `${b.name} (${b.manufacturer || 'Unknown'}, ${b.blend_type || 'Unknown type'}, ${b.strength || 'Unknown strength'}${b.quantity_owned > 0 ? `, ${b.quantity_owned} tins` : ''})`
-      ).join('\n- ');
-      summary.push(`**My Tobacco:**\n- ${blendSummary}${blends.length > 10 ? `\n- ...and ${blends.length - 10} more` : ''}`);
-    }
-
-    // User preferences
-    if (userProfile) {
-      let prefs = ['**My Preferences:**'];
-      if (userProfile.clenching_preference) prefs.push(`- Clenching: ${userProfile.clenching_preference}`);
-      if (userProfile.smoke_duration_preference) prefs.push(`- Session duration: ${userProfile.smoke_duration_preference}`);
-      if (userProfile.strength_preference) prefs.push(`- Strength preference: ${userProfile.strength_preference}`);
-      if (userProfile.pipe_size_preference) prefs.push(`- Pipe size: ${userProfile.pipe_size_preference}`);
-      if (userProfile.preferred_blend_types?.length > 0) prefs.push(`- Favorite blend types: ${userProfile.preferred_blend_types.join(', ')}`);
-      if (userProfile.preferred_shapes?.length > 0) prefs.push(`- Favorite pipe shapes: ${userProfile.preferred_shapes.join(', ')}`);
-      if (userProfile.notes) prefs.push(`- Additional notes: ${userProfile.notes}`);
-      if (prefs.length > 1) summary.push(prefs.join('\n'));
-    }
-
-    // Optimization insights
-    if (optimization?.pipe_specializations) {
-      const specs = optimization.pipe_specializations.slice(0, 5).map(s => 
-        `${s.pipe_name}: ${s.recommended_focus.join(', ')}`
-      ).join('\n- ');
-      summary.push(`**AI Specialization Recommendations:**\n- ${specs}`);
-    }
-
-    if (optimization?.collection_gaps) {
-      summary.push(`**Collection Analysis:**\n${JSON.stringify(optimization.collection_gaps, null, 2)}`);
-    }
-
-    return summary.join('\n\n');
+    return summary.join(' ');
   };
 
   const handleSend = async () => {
@@ -228,11 +188,8 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setMessages(prev => [...prev, tempMessage]);
 
     try {
-      // Build context summary for first message
-      const contextSummary = messages.length === 0 ? buildContextSummary() : '';
-      const messageContent = contextSummary 
-        ? `${userMessage}\n\n---\n\nFor context, here's my collection and preferences:\n${contextSummary}\n\nPlease use this to provide personalized advice.`
-        : userMessage;
+      // Keep message simple - agent can query entities itself
+      const messageContent = userMessage;
 
       console.log('🚀 Sending message:', {
         conversationId,
