@@ -111,18 +111,24 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   // Subscribe to conversation updates
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId) {
+      console.log('⏭️ No conversationId, skipping subscription');
+      return;
+    }
 
     console.log('🔌 Setting up subscription for:', conversationId);
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
       console.log('📨 SUBSCRIPTION UPDATE:', {
         conversationId: data.id,
         messageCount: data.messages?.length,
-        messages: data.messages
+        firstMsg: data.messages?.[0]?.role,
+        lastMsg: data.messages?.[data.messages?.length - 1]?.role
       });
-      if (data.messages) {
-        setMessages([...data.messages]);
-      }
+      
+      // Always update with fresh array
+      const newMessages = data.messages || [];
+      console.log('Setting messages to:', newMessages.length, 'messages');
+      setMessages(newMessages);
     });
 
     return () => {
@@ -131,13 +137,13 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     };
   }, [conversationId]);
 
-  // Create conversation on open
+  // Create conversation on open (only once when opened)
   useEffect(() => {
     if (open && !conversationId && user?.email) {
-      console.log('Creating conversation, open:', open, 'conversationId:', conversationId);
+      console.log('Creating conversation for first time');
       createConversation();
     }
-  }, [open, conversationId, user?.email]);
+  }, [open]);
 
   const createConversation = async () => {
     try {
@@ -205,6 +211,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     if (!input.trim() || !conversationId || sending) return;
 
     const userMessage = input.trim();
+    setInput('');
     setSending(true);
 
     try {
@@ -214,24 +221,22 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         ? `${userMessage}\n\n[MY COLLECTION DATA]\n${contextSummary}`
         : userMessage;
 
-      console.log('🚀 Sending:', userMessage);
+      console.log('🚀 Sending message...');
 
       // Fetch latest conversation state
       const conv = await base44.agents.getConversation(conversationId);
-      console.log('📖 Conv has', conv.messages?.length, 'messages');
+      console.log('📖 Current conversation has', conv.messages?.length, 'messages before send');
 
       // Add user message - subscription will update UI
-      const result = await base44.agents.addMessage(conv, {
+      await base44.agents.addMessage(conv, {
         role: "user",
         content: messageContent
       });
 
-      console.log('✅ Sent, result:', result);
-      setInput('');
+      console.log('✅ Message sent, waiting for subscription update');
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error('❌ Send error:', error);
       toast.error('Failed to send message');
-    } finally {
       setSending(false);
     }
   };
