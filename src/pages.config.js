@@ -13,6 +13,7 @@ import TermsOfService from './pages/TermsOfService';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
+import Index from './pages/Index';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
+    "Index": Index,
 }
 
 export const pagesConfig = {

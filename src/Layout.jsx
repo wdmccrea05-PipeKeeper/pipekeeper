@@ -19,22 +19,21 @@ const navItems = [
 
 function NavLink({ item, currentPage, onClick }) {
   const isActive = currentPage === item.page;
-  
-  const isMobile = window.innerWidth < 768;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
   return (
     <Link 
       to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium active:scale-95 transition-transform",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
             ? "text-[#1a2c42] active:bg-[#8b3a3a]/10"
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
     >
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
@@ -108,8 +107,8 @@ export default function Layout({ children, currentPageName }) {
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-[#e8d5b7] p-2 -mr-2 active:scale-95 transition-transform"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            className="text-[#e8d5b7] p-2 -mr-2 touch-manipulation"
+            style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -120,11 +119,11 @@ export default function Layout({ children, currentPageName }) {
       {mobileOpen && (
         <>
           <div 
-            className="md:hidden fixed inset-0 bg-black/50 z-50"
+            className="md:hidden fixed inset-0 bg-black/50 z-50 touch-manipulation"
             onClick={() => setMobileOpen(false)}
-            style={{ top: '56px' }}
+            style={{ top: '56px', touchAction: 'manipulation' }}
           />
-          <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl">
+          <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto">
             <div className="flex flex-col gap-2 p-4">
               {navItems.map(item => (
                 <NavLink 
@@ -138,12 +137,12 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl('Invite')}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium active:scale-95 transition-transform",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
                   currentPageName === 'Invite'
                     ? "bg-[#8b3a3a] text-[#e8d5b7]" 
                     : "text-[#1a2c42] active:bg-[#8b3a3a]/10"
                 )}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
+                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
               >
                 <UserPlus className="w-5 h-5" />
                 Invite
