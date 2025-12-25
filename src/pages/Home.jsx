@@ -9,7 +9,7 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Heart, DollarSign, 
-  Leaf, Package, Star, Sparkles, Search, Camera
+  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -22,19 +22,33 @@ import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
+const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTestingNotice, setShowTestingNotice] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
   });
 
-  // Check if user has paid access (subscription or 7-day trial)
-  const isWithinTrial = user?.created_date && 
+  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
+  const now = new Date();
+  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
+  const isWithinSevenDayTrial = user?.created_date && 
     new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+
+  useEffect(() => {
+    if (user?.email && isBeforeExtendedTrialEnd) {
+      const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
+      if (!hasSeenNotice) {
+        setShowTestingNotice(true);
+      }
+    }
+  }, [user?.email, isBeforeExtendedTrialEnd]);
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -112,6 +126,11 @@ export default function HomePage() {
   const recentPipes = pipes.slice(0, 4);
   const recentBlends = blends.slice(0, 4);
 
+  const handleDismissNotice = () => {
+    localStorage.setItem('testingNoticeSeen', 'true');
+    setShowTestingNotice(false);
+  };
+
   return (
     <>
       {showOnboarding && (
@@ -120,6 +139,52 @@ export default function HomePage() {
           onSkip={handleOnboardingSkip}
         />
       )}
+      
+      {/* Testing Notice Popup */}
+      {showTestingNotice && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Testing Period Notice</h3>
+                    <p className="text-sm text-white/80 mt-1">Important Information</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleDismissNotice}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-stone-700 text-lg leading-relaxed mb-4">
+                During testing, <span className="font-semibold text-stone-900">no subscription fees will be charged until after January 15, 2026</span>.
+              </p>
+              <p className="text-stone-600 text-sm">
+                All premium features are available free of charge during this period. Thank you for helping us test PipeKeeper!
+              </p>
+              <Button
+                onClick={handleDismissNotice}
+                className="w-full mt-6 bg-[#8b3a3a] hover:bg-[#6d2e2e]"
+              >
+                Got it, thanks!
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
