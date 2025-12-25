@@ -21,17 +21,12 @@ function NavLink({ item, currentPage, onClick }) {
   const isActive = currentPage === item.page;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
-  const handleClick = (e) => {
-    if (onClick) onClick(e);
-  };
-  
   return (
     <Link 
       to={createPageUrl(item.page)} 
-      onTouchStart={handleClick}
-      onClick={handleClick}
+      onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
@@ -39,10 +34,8 @@ function NavLink({ item, currentPage, onClick }) {
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
       style={{ 
-        WebkitTapHighlightColor: 'transparent', 
-        touchAction: 'manipulation',
-        userSelect: 'none',
-        WebkitUserSelect: 'none'
+        WebkitTapHighlightColor: 'transparent',
+        cursor: 'pointer'
       }}
     >
       {item.isIconComponent ? (
@@ -123,14 +116,11 @@ export default function Layout({ children, currentPageName }) {
             <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
           </Link>
           <button
-            onTouchStart={() => setMobileOpen(!mobileOpen)}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-[#e8d5b7] p-2 -mr-2"
+            className="text-[#e8d5b7] p-2 -mr-2 touch-manipulation"
             style={{ 
-              WebkitTapHighlightColor: 'transparent', 
-              touchAction: 'manipulation',
-              userSelect: 'none',
-              WebkitUserSelect: 'none'
+              WebkitTapHighlightColor: 'transparent',
+              cursor: 'pointer'
             }}
           >
             <Menu className="w-6 h-6" />
@@ -142,14 +132,11 @@ export default function Layout({ children, currentPageName }) {
       {mobileOpen && (
         <>
           <div 
-            className="md:hidden fixed inset-0 bg-black/50 z-50"
-            onTouchStart={() => setMobileOpen(false)}
+            className="md:hidden fixed inset-0 bg-black/50 z-50 touch-manipulation"
             onClick={() => setMobileOpen(false)}
             style={{ 
-              top: '56px', 
-              touchAction: 'manipulation',
-              userSelect: 'none',
-              WebkitUserSelect: 'none'
+              top: '56px',
+              cursor: 'pointer'
             }}
           />
           <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto">
@@ -164,19 +151,16 @@ export default function Layout({ children, currentPageName }) {
               ))}
               <Link 
                 to={createPageUrl('Invite')}
-                onTouchStart={() => setMobileOpen(false)}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
                   currentPageName === 'Invite'
                     ? "bg-[#8b3a3a] text-[#e8d5b7]" 
                     : "text-[#1a2c42] active:bg-[#8b3a3a]/10"
                 )}
                 style={{ 
-                  WebkitTapHighlightColor: 'transparent', 
-                  touchAction: 'manipulation',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none'
+                  WebkitTapHighlightColor: 'transparent',
+                  cursor: 'pointer'
                 }}
               >
                 <UserPlus className="w-5 h-5" />
