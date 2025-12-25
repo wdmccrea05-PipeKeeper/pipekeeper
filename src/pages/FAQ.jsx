@@ -4,9 +4,43 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone } from "lucide-react";
+import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone, RotateCcw } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function FAQPage() {
+  const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: onboardingStatus } = useQuery({
+    queryKey: ['onboarding-status', user?.email],
+    queryFn: async () => {
+      const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
+      return results[0];
+    },
+    enabled: !!user?.email,
+  });
+
+  const updateOnboardingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.OnboardingStatus.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['onboarding-status'] });
+      window.location.href = createPageUrl('Home');
+    },
+  });
+
+  const handleRestartTutorial = async () => {
+    if (onboardingStatus) {
+      await updateOnboardingMutation.mutateAsync({
+        id: onboardingStatus.id,
+        data: { completed: false, skipped: false, current_step: 0 }
+      });
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -57,8 +91,19 @@ export default function FAQPage() {
 
               <AccordionItem value="item-3">
                 <AccordionTrigger>What can I do with the onboarding tutorial?</AccordionTrigger>
-                <AccordionContent className="text-stone-600">
-                  The onboarding tutorial walks you through PipeKeeper's main features including AI pairing recommendations, photo identification, value lookup, and collection optimization. You can revisit it anytime from the Help menu in the navigation bar.
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p>The onboarding tutorial walks you through PipeKeeper's main features including AI pairing recommendations, photo identification, value lookup, and collection optimization.</p>
+                  {onboardingStatus && (
+                    <Button
+                      onClick={handleRestartTutorial}
+                      disabled={updateOnboardingMutation.isPending}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      {updateOnboardingMutation.isPending ? 'Restarting...' : 'Restart Tutorial'}
+                    </Button>
+                  )}
                 </AccordionContent>
               </AccordionItem>
 
