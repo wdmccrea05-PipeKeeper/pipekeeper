@@ -103,8 +103,11 @@ function CheckoutForm({ trialEndDate, onSuccess }) {
       </Button>
 
       <p className="text-xs text-center text-stone-500">
-        Your trial ends on {new Date(trialEndDate).toLocaleDateString()}. 
-        You won't be charged until then.
+        {new Date(trialEndDate).getTime() > new Date('2026-01-15').getTime() ? (
+          <>Testing period: No charges until after January 15, 2026</>
+        ) : (
+          <>Your trial ends on {new Date(trialEndDate).toLocaleDateString()}. You won't be charged until then.</>
+        )}
       </p>
     </form>
   );
@@ -141,10 +144,16 @@ export default function SubscriptionPage() {
     },
   });
 
-  // Calculate trial status
-  const trialEndDate = user?.created_date 
-    ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
-    : null;
+  // Calculate trial status - extended until Jan 15, 2026
+  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
+  const now = new Date();
+  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
+  
+  const trialEndDate = isBeforeExtendedTrialEnd 
+    ? EXTENDED_TRIAL_END 
+    : user?.created_date 
+      ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
+      : null;
   
   const isInTrial = trialEndDate && new Date() < trialEndDate;
   const trialExpired = trialEndDate && new Date() >= trialEndDate;
@@ -246,8 +255,17 @@ export default function SubscriptionPage() {
               <Alert className="bg-amber-50 border-amber-200">
                 <Sparkles className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>{daysLeftInTrial} days left</strong> in your free trial. 
-                  Subscribe now to continue enjoying premium features after {new Date(trialEndDate).toLocaleDateString()}.
+                  {isBeforeExtendedTrialEnd ? (
+                    <>
+                      <strong>Testing Period:</strong> No charges until after January 15, 2026. 
+                      All premium features are free during testing.
+                    </>
+                  ) : (
+                    <>
+                      <strong>{daysLeftInTrial} days left</strong> in your free trial. 
+                      Subscribe now to continue enjoying premium features after {new Date(trialEndDate).toLocaleDateString()}.
+                    </>
+                  )}
                 </AlertDescription>
               </Alert>
             )}
@@ -373,8 +391,17 @@ export default function SubscriptionPage() {
             <CardHeader>
               <CardTitle>Subscribe to Premium</CardTitle>
               <CardDescription>
-                $1.99/month or $19.99/year • Automatic renewal until cancelled
-                {isInTrial && ` • Trial until ${new Date(trialEndDate).toLocaleDateString()}`}
+                {isBeforeExtendedTrialEnd ? (
+                  <>
+                    Testing Period: No charges until after January 15, 2026 
+                    {' • '}$1.99/month or $19.99/year after testing ends
+                  </>
+                ) : (
+                  <>
+                    $1.99/month or $19.99/year • Automatic renewal until cancelled
+                    {isInTrial && ` • Trial until ${new Date(trialEndDate).toLocaleDateString()}`}
+                  </>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
