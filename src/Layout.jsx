@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
@@ -27,11 +27,11 @@ function NavLink({ item, currentPage, onClick }) {
       to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium touch-manipulation",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium active:scale-95 transition-transform",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
-            ? "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
+            ? "text-[#1a2c42] active:bg-[#8b3a3a]/10"
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -96,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]" style={{ willChange: 'transform' }}>
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42] border-b border-[#8b3a3a]">
         <div className="flex items-center justify-between h-14 px-4">
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
             <img 
@@ -106,40 +106,52 @@ export default function Layout({ children, currentPageName }) {
             />
             <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
           </Link>
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-[#e8d5b7] touch-manipulation">
-                <Menu className="w-6 h-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-64" style={{ willChange: 'transform' }}>
-              <div className="flex flex-col gap-2 mt-8">
-                {navItems.map(item => (
-                  <NavLink 
-                    key={item.page} 
-                    item={item} 
-                    currentPage={currentPageName}
-                    onClick={() => setMobileOpen(false)}
-                  />
-                ))}
-                <Link 
-                  to={createPageUrl('Invite')}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium touch-manipulation",
-                    currentPageName === 'Invite'
-                      ? "bg-[#8b3a3a] text-[#e8d5b7]" 
-                      : "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
-                  )}
-                >
-                  <UserPlus className="w-5 h-5" />
-                  Invite
-                </Link>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="text-[#e8d5b7] p-2 -mr-2 active:scale-95 transition-transform"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <Menu className="w-6 h-6" />
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {mobileOpen && (
+        <>
+          <div 
+            className="md:hidden fixed inset-0 bg-black/50 z-50"
+            onClick={() => setMobileOpen(false)}
+            style={{ top: '56px' }}
+          />
+          <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl">
+            <div className="flex flex-col gap-2 p-4">
+              {navItems.map(item => (
+                <NavLink 
+                  key={item.page} 
+                  item={item} 
+                  currentPage={currentPageName}
+                  onClick={() => setMobileOpen(false)}
+                />
+              ))}
+              <Link 
+                to={createPageUrl('Invite')}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium active:scale-95 transition-transform",
+                  currentPageName === 'Invite'
+                    ? "bg-[#8b3a3a] text-[#e8d5b7]" 
+                    : "text-[#1a2c42] active:bg-[#8b3a3a]/10"
+                )}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                <UserPlus className="w-5 h-5" />
+                Invite
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Main Content */}
       <main className="pt-16 md:pt-16 pb-20">
