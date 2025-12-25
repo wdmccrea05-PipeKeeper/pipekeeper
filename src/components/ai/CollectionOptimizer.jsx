@@ -432,7 +432,12 @@ ${productType !== 'pipes' ? '- For Blends: Blend type, strength, cut, flavor pro
 ${productType === 'pipes' ? 'ONLY suggest smoking pipes (briar, meerschaum, corncob, etc.). Do NOT suggest tobacco blends, cigars, cigarettes, or vapes.' : ''}
 ${productType === 'tobacco' ? 'ONLY suggest pipe tobacco blends (tinned or bulk tobacco for smoking pipes). Do NOT suggest pipes, cigars, cigarettes, or vapes.' : ''}
 
-CRITICAL: This is for PIPE SMOKING only. Do NOT suggest cigars, cigarettes, vaping products, or any other tobacco products. Only suggest smoking pipes and pipe tobacco blends.
+CRITICAL RULES:
+- This is for PIPE SMOKING only. Do NOT suggest cigars, cigarettes, vaping products, or any other tobacco products.
+- Do NOT include any URLs, website links, retailer names, or purchasing information.
+- Do NOT include source citations or references.
+- Do NOT mention where to buy or find these products.
+- Focus ONLY on product specifications and why they fit the scenario.
 
 Be specific with real product names when possible (e.g., "Peterson System Standard 305", "Samuel Gawith Full Virginia Flake"). Focus on products that address the gaps and achieve the trophy pairings identified in the analysis.`,
         add_context_from_internet: true,
