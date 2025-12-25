@@ -21,19 +21,29 @@ function NavLink({ item, currentPage, onClick }) {
   const isActive = currentPage === item.page;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
+  const handleClick = (e) => {
+    if (onClick) onClick(e);
+  };
+  
   return (
     <Link 
       to={createPageUrl(item.page)} 
-      onClick={onClick}
+      onTouchStart={handleClick}
+      onClick={handleClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
             ? "text-[#1a2c42] active:bg-[#8b3a3a]/10"
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
-      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+      style={{ 
+        WebkitTapHighlightColor: 'transparent', 
+        touchAction: 'manipulation',
+        userSelect: 'none',
+        WebkitUserSelect: 'none'
+      }}
     >
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
@@ -58,6 +68,13 @@ function NavLink({ item, currentPage, onClick }) {
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  // Redirect to Home if on Index page
+  React.useEffect(() => {
+    if (window.location.pathname === '/' || currentPageName === 'Index') {
+      window.location.href = createPageUrl('Home');
+    }
+  }, [currentPageName]);
 
   return (
     <div className="min-h-screen bg-[#1a2c42]">
@@ -106,9 +123,15 @@ export default function Layout({ children, currentPageName }) {
             <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
           </Link>
           <button
+            onTouchStart={() => setMobileOpen(!mobileOpen)}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-[#e8d5b7] p-2 -mr-2 touch-manipulation"
-            style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+            className="text-[#e8d5b7] p-2 -mr-2"
+            style={{ 
+              WebkitTapHighlightColor: 'transparent', 
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none'
+            }}
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -119,9 +142,15 @@ export default function Layout({ children, currentPageName }) {
       {mobileOpen && (
         <>
           <div 
-            className="md:hidden fixed inset-0 bg-black/50 z-50 touch-manipulation"
+            className="md:hidden fixed inset-0 bg-black/50 z-50"
+            onTouchStart={() => setMobileOpen(false)}
             onClick={() => setMobileOpen(false)}
-            style={{ top: '56px', touchAction: 'manipulation' }}
+            style={{ 
+              top: '56px', 
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none'
+            }}
           />
           <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto">
             <div className="flex flex-col gap-2 p-4">
@@ -135,14 +164,20 @@ export default function Layout({ children, currentPageName }) {
               ))}
               <Link 
                 to={createPageUrl('Invite')}
+                onTouchStart={() => setMobileOpen(false)}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium",
                   currentPageName === 'Invite'
                     ? "bg-[#8b3a3a] text-[#e8d5b7]" 
                     : "text-[#1a2c42] active:bg-[#8b3a3a]/10"
                 )}
-                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent', 
+                  touchAction: 'manipulation',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none'
+                }}
               >
                 <UserPlus className="w-5 h-5" />
                 Invite
