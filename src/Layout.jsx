@@ -27,13 +27,14 @@ function NavLink({ item, currentPage, onClick }) {
       to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium touch-manipulation",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
             ? "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
@@ -95,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]" style={{ willChange: 'transform' }}>
         <div className="flex items-center justify-between h-14 px-4">
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
             <img 
@@ -107,11 +108,11 @@ export default function Layout({ children, currentPageName }) {
           </Link>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-[#e8d5b7]">
+              <Button variant="ghost" size="icon" className="text-[#e8d5b7] touch-manipulation">
                 <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
+            <SheetContent side="right" className="w-64" style={{ willChange: 'transform' }}>
               <div className="flex flex-col gap-2 mt-8">
                 {navItems.map(item => (
                   <NavLink 
@@ -125,7 +126,7 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl('Invite')}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
+                    "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium touch-manipulation",
                     currentPageName === 'Invite'
                       ? "bg-[#8b3a3a] text-[#e8d5b7]" 
                       : "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
