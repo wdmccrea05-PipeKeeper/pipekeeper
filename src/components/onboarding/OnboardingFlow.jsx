@@ -298,87 +298,94 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl"
-      >
-        <Card className="border-stone-200 shadow-2xl">
-          <CardHeader className="border-b border-stone-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex gap-2">
-                {steps.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`h-2 rounded-full transition-all ${
-                      idx === currentStep 
-                        ? 'w-8 bg-amber-600' 
-                        : idx < currentStep 
-                        ? 'w-2 bg-amber-400' 
-                        : 'w-2 bg-stone-200'
-                    }`}
-                  />
-                ))}
+    <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="min-h-screen w-full flex items-center justify-center py-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-2xl"
+        >
+          <Card className="border-stone-200 shadow-2xl">
+            <CardHeader className="border-b border-stone-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-2">
+                  {steps.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-2 rounded-full transition-all ${
+                        idx === currentStep 
+                          ? 'w-8 bg-amber-600' 
+                          : idx < currentStep 
+                          ? 'w-2 bg-amber-400' 
+                          : 'w-2 bg-stone-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSkip}
+                  className="text-stone-500 hover:text-stone-700"
+                >
+                  Skip <X className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+              <CardTitle className="text-xl sm:text-2xl">{currentStepData.title}</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {currentStepData.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 max-h-[60vh] sm:max-h-none overflow-y-auto">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {currentStepData.content}
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+            <div className="p-4 sm:p-6 border-t border-stone-200 flex items-center justify-between">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentStep === 0}
+                size="sm"
+                className="sm:size-default"
+              >
+                <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Back</span>
+              </Button>
+              <div className="text-xs sm:text-sm text-stone-500">
+                {currentStep + 1}/{steps.length}
               </div>
               <Button
-                variant="ghost"
+                onClick={handleNext}
+                className="bg-amber-700 hover:bg-amber-800"
                 size="sm"
-                onClick={onSkip}
-                className="text-stone-500 hover:text-stone-700"
+                className="sm:size-default"
               >
-                Skip <X className="w-4 h-4 ml-1" />
+                {currentStep === steps.length - 1 ? (
+                  <>
+                    <span className="hidden sm:inline">Get Started</span>
+                    <span className="sm:hidden">Start</span>
+                    <Check className="w-4 h-4 sm:ml-2" />
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Next</span>
+                    <ArrowRight className="w-4 h-4 sm:ml-2" />
+                  </>
+                )}
               </Button>
             </div>
-            <CardTitle className="text-2xl">{currentStepData.title}</CardTitle>
-            <CardDescription className="text-base">
-              {currentStepData.description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {currentStepData.content}
-              </motion.div>
-            </AnimatePresence>
-          </CardContent>
-          <div className="p-6 border-t border-stone-200 flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 0}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div className="text-sm text-stone-500">
-              Step {currentStep + 1} of {steps.length}
-            </div>
-            <Button
-              onClick={handleNext}
-              className="bg-amber-700 hover:bg-amber-800"
-            >
-              {currentStep === steps.length - 1 ? (
-                <>
-                  Get Started
-                  <Check className="w-4 h-4 ml-2" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
-        </Card>
-      </motion.div>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }
