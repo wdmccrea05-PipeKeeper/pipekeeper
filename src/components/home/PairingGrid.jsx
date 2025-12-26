@@ -15,7 +15,7 @@ export default function PairingGrid({ pipes, blends }) {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: savedPairings } = useQuery({
+  const { data: savedPairings, refetch: refetchPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
       const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email }, '-created_date', 1);
@@ -23,6 +23,13 @@ export default function PairingGrid({ pipes, blends }) {
     },
     enabled: !!user?.email,
   });
+
+  // Auto-refresh when pipes or blends change
+  React.useEffect(() => {
+    if (savedPairings && user?.email) {
+      refetchPairings();
+    }
+  }, [pipes, blends]);
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],

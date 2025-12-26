@@ -63,7 +63,9 @@ Only recommend NEW, DIFFERENT blends the user should purchase.`
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples that the user should BUY.
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+
+You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples that the user should BUY.
 
 ${pipeDescription}
 ${userBlendsDescription}${focusContext}

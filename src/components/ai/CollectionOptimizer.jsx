@@ -121,7 +121,9 @@ Tailor all recommendations to match user preferences. Suggest specializations an
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco consultant specializing in collection optimization for MAXIMUM PAIRING SCORES. Your goal is to help achieve 9-10 "trophy winning" pairings for every blend type the user enjoys.
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+
+You are an expert pipe tobacco consultant specializing in collection optimization for MAXIMUM PAIRING SCORES. Your goal is to help achieve 9-10 "trophy winning" pairings for every blend type the user enjoys.
 
 Pipes Collection:
 ${JSON.stringify(pipesData, null, 2)}
@@ -336,7 +338,9 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+
+You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
 
 Current Collection:
 Pipes: ${JSON.stringify(pipesData, null, 2)}
@@ -416,7 +420,9 @@ Be specific about which user-owned blends benefit and by how much.`,
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'SMOKING PIPES ONLY' : productType === 'tobacco' ? 'PIPE TOBACCO BLENDS ONLY' : 'products (smoking pipes or pipe tobacco blends)'} that match the criteria.
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+
+Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'SMOKING PIPES ONLY' : productType === 'tobacco' ? 'PIPE TOBACCO BLENDS ONLY' : 'products (smoking pipes or pipe tobacco blends)'} that match the criteria.
 
 User's Question: ${whatIfQuery}
 Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
@@ -485,7 +491,9 @@ Be specific with real product names when possible (e.g., "Peterson System Standa
     try {
       // Use LLM to parse the scenario and determine implementation actions
       const implementationPlan = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are analyzing a "what if" scenario to determine how to implement it in the user's pipe collection.
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+
+You are analyzing a "what if" scenario to determine how to implement it in the user's pipe collection.
 
 User's Question: ${whatIfQuery}
 Pipe Description: ${whatIfDescription || 'N/A'}
