@@ -176,7 +176,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       {showCropper && imageToCrop && (
-        <ImageCropper
+        <AvatarCropper
           image={imageToCrop}
           onCropComplete={handleCroppedImage}
           onCancel={() => {
