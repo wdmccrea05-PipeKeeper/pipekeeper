@@ -61,36 +61,40 @@ export default function CommunityPage() {
     enabled: !!user?.email,
   });
 
-  const { data: publicProfiles = [] } = useQuery({
-    queryKey: ['public-profiles', searchQuery, locationFilter],
-    queryFn: async () => {
-      let profiles = await base44.entities.UserProfile.filter({ is_public: true });
-      
-      // Apply location filter
-      if (locationFilter.country !== 'all') {
-        profiles = profiles.filter(p => p.show_location && p.country === locationFilter.country);
-      }
-      if (locationFilter.state !== 'all') {
-        profiles = profiles.filter(p => p.show_location && p.state_province === locationFilter.state);
-      }
-      
-      // Apply search filter
-      if (searchQuery.trim()) {
-        profiles = profiles.filter(p => 
-          p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      return profiles;
-    },
+  // Fetch all public profiles first
+  const { data: allPublicProfiles = [] } = useQuery({
+    queryKey: ['all-public-profiles'],
+    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }),
   });
 
-  // Get unique countries and states for filters
-  const availableCountries = [...new Set(publicProfiles.filter(p => p.show_location && p.country).map(p => p.country))].sort();
+  // Get unique countries and states for filters from ALL profiles
+  const availableCountries = [...new Set(allPublicProfiles.filter(p => p.show_location && p.country).map(p => p.country))].sort();
   const availableStates = locationFilter.country !== 'all' 
-    ? [...new Set(publicProfiles.filter(p => p.show_location && p.country === locationFilter.country && p.state_province).map(p => p.state_province))].sort()
+    ? [...new Set(allPublicProfiles.filter(p => p.show_location && p.country === locationFilter.country && p.state_province).map(p => p.state_province))].sort()
     : [];
+
+  // Apply filters to profiles
+  const publicProfiles = React.useMemo(() => {
+    let filtered = [...allPublicProfiles];
+    
+    // Apply location filter
+    if (locationFilter.country !== 'all') {
+      filtered = filtered.filter(p => p.show_location && p.country === locationFilter.country);
+    }
+    if (locationFilter.state !== 'all') {
+      filtered = filtered.filter(p => p.show_location && p.state_province === locationFilter.state);
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(p => 
+        p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  }, [allPublicProfiles, searchQuery, locationFilter]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -200,31 +204,35 @@ export default function CommunityPage() {
         </div>
 
         <Tabs defaultValue="discover" className="space-y-6">
-          <TabsList className="bg-white/95">
-            <TabsTrigger value="discover">
-              <Search className="w-4 h-4 mr-2" />
-              Discover
+          <TabsList className="bg-white/95 grid grid-cols-3 sm:grid-cols-5">
+            <TabsTrigger value="discover" className="text-xs sm:text-sm">
+              <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Discover</span>
             </TabsTrigger>
-            <TabsTrigger value="friends">
-              <UserCog className="w-4 h-4 mr-2" />
-              Friends ({acceptedFriends.length})
+            <TabsTrigger value="friends" className="text-xs sm:text-sm relative">
+              <UserCog className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Friends ({acceptedFriends.length})</span>
+              <span className="sm:hidden">Friends</span>
               {friendRequests.length > 0 && (
-                <Badge className="ml-2 bg-amber-600 text-white text-xs px-1.5 py-0">
+                <Badge className="absolute -top-1 -right-1 sm:static sm:ml-2 bg-amber-600 text-white text-xs px-1 sm:px-1.5 py-0 min-w-[16px] h-4">
                   {friendRequests.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="following">
-              <Users className="w-4 h-4 mr-2" />
-              Following ({connections.length})
+            <TabsTrigger value="following" className="text-xs sm:text-sm">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Following ({connections.length})</span>
+              <span className="sm:hidden">Follow</span>
             </TabsTrigger>
-            <TabsTrigger value="myprofile">
-              <UserPlus className="w-4 h-4 mr-2" />
-              My Profile
+            <TabsTrigger value="myprofile" className="text-xs sm:text-sm">
+              <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">My Profile</span>
+              <span className="sm:hidden">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="invite">
-              <Mail className="w-4 h-4 mr-2" />
-              Invite Friends
+            <TabsTrigger value="invite" className="text-xs sm:text-sm">
+              <Mail className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Invite Friends</span>
+              <span className="sm:hidden">Invite</span>
             </TabsTrigger>
           </TabsList>
 
@@ -260,39 +268,41 @@ export default function CommunityPage() {
                     />
                   </div>
 
-                  <div className="flex gap-3">
-                    <Select
-                      value={locationFilter.country}
-                      onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Filter by country..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Countries</SelectItem>
-                        {availableCountries.map(country => (
-                          <SelectItem key={country} value={country}>{country}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {locationFilter.country !== 'all' && availableStates.length > 0 && (
+                  {availableCountries.length > 0 && (
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Select
-                        value={locationFilter.state}
-                        onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
+                        value={locationFilter.country}
+                        onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
                       >
                         <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Filter by state..." />
+                          <SelectValue placeholder="Filter by country..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All States</SelectItem>
-                          {availableStates.map(state => (
-                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          <SelectItem value="all">All Countries</SelectItem>
+                          {availableCountries.map(country => (
+                            <SelectItem key={country} value={country}>{country}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    )}
-                  </div>
+
+                      {locationFilter.country !== 'all' && availableStates.length > 0 && (
+                        <Select
+                          value={locationFilter.state}
+                          onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Filter by state..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All States</SelectItem>
+                            {availableStates.map(state => (
+                              <SelectItem key={state} value={state}>{state}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
