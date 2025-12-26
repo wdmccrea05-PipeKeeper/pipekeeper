@@ -14,6 +14,8 @@ import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Index from './pages/Index';
+import Community from './pages/Community';
+import PublicProfile from './pages/PublicProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -34,6 +36,8 @@ export const PAGES = {
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Index": Index,
+    "Community": Community,
+    "PublicProfile": PublicProfile,
 }
 
 export const pagesConfig = {
