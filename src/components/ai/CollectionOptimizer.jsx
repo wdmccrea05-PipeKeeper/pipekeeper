@@ -1010,65 +1010,69 @@ Provide concrete, actionable steps with specific field values.`,
                                   <Star className="w-3 h-3 mr-1" />
                                   Specialized
                                 </Badge>
-                              ) : spec.versatility_score <= 4 ? (
+                              ) : displaySpec.versatility_score <= 4 ? (
                                 <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
                                   <Star className="w-3 h-3 mr-1" />
                                   Recommended: Specialized
                                 </Badge>
                               ) : (
-                                <Badge className={getVersatilityColor(spec.versatility_score)}>
-                                  Versatility {spec.versatility_score}/10
+                                <Badge className={getVersatilityColor(displaySpec.versatility_score)}>
+                                  Versatility {displaySpec.versatility_score}/10
                                 </Badge>
                               )}
                             </div>
                             
-                            <div className="mb-3">
-                              <p className="text-sm font-medium text-blue-800 mb-1">Specialize for:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {spec.recommended_blend_types?.map((type, i) => (
-                                  <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
-                                    {type}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-
-                            <p className="text-sm text-stone-600 mb-2">{spec.reasoning}</p>
-                            
-                            {spec.score_improvement && (
-                              <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
-                                <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
-                                <p className="text-xs text-emerald-800 font-semibold">{spec.score_improvement}</p>
+                            {displaySpec.recommended_blend_types?.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-blue-800 mb-1">Specialize for:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {displaySpec.recommended_blend_types.map((type, i) => (
+                                    <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
+                                      {type}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
                             )}
 
-                            {spec.trophy_blends && spec.trophy_blends.length > 0 && (
+                            <p className="text-sm text-stone-600 mb-2">{displaySpec.reasoning}</p>
+                            
+                            {displaySpec.score_improvement && (
+                              <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
+                                <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
+                                <p className="text-xs text-emerald-800 font-semibold">{displaySpec.score_improvement}</p>
+                              </div>
+                            )}
+
+                            {displaySpec.trophy_blends && displaySpec.trophy_blends.length > 0 && (
                               <div className="bg-amber-50 rounded-lg p-2 border border-amber-200 mb-2">
                                 <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
                                   <Trophy className="w-3 h-3" />
                                   Trophy Matches (9-10 scores):
                                 </p>
-                                <p className="text-xs text-amber-800">{spec.trophy_blends.join(', ')}</p>
+                                <p className="text-xs text-amber-800">{displaySpec.trophy_blends.join(', ')}</p>
                               </div>
                             )}
                             
                             <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
                               <p className="text-xs font-medium text-blue-700">Usage Pattern:</p>
-                              <p className="text-xs text-stone-600">{spec.usage_pattern}</p>
+                              <p className="text-xs text-stone-600">{displaySpec.usage_pattern}</p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 mt-2">
                               {!pipe?.focus || pipe.focus.length === 0 ? (
                                 <>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                                    onClick={() => applySpecialization(pipe.id, spec.recommended_blend_types)}
-                                  >
-                                    <Check className="w-4 h-4 mr-1" />
-                                    Apply Suggested
-                                  </Button>
+                                  {displaySpec.recommended_blend_types?.length > 0 && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                      onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types)}
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      Apply Suggested
+                                    </Button>
+                                  )}
                                   <Link to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
                                     <Button
                                       size="sm"
