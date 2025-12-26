@@ -371,6 +371,7 @@ export default function SubscriptionPage() {
                   "Advanced pairing matrix",
                   "Break-in schedule generator",
                   "Bulk CSV import for pipes & tobacco",
+                  "Community: Share & follow collections",
                   "Unlimited pipes and tobacco blends",
                   "AI web search for auto-fill",
                   "Priority customer support"
