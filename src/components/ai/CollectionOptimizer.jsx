@@ -30,6 +30,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [pipeFeedback, setPipeFeedback] = useState({});
   const [showFeedbackFor, setShowFeedbackFor] = useState(null);
   const [userFeedbackHistory, setUserFeedbackHistory] = useState('');
+  const [showAcceptAll, setShowAcceptAll] = useState(false);
+  const [acceptingAll, setAcceptingAll] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -285,10 +287,11 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
         generated_date: new Date().toISOString()
       });
 
-      // Clear feedback after successful re-analysis
+      // Clear feedback after successful re-analysis and show accept button
       if (withFeedback) {
         setPipeFeedback({});
         setShowFeedbackFor(null);
+        setShowAcceptAll(true);
       }
     } catch (err) {
       console.error('Error analyzing collection:', err);
@@ -315,6 +318,48 @@ User Feedback: ${feedback}
     
     // Re-run analysis with all accumulated feedback
     await analyzeCollection(true);
+  };
+
+  const handleAcceptAll = async () => {
+    if (!optimization?.pipe_specializations) return;
+    
+    setAcceptingAll(true);
+    try {
+      // Apply all recommendations to pipes
+      const updatePromises = optimization.pipe_specializations
+        .filter(spec => spec.recommended_blend_types?.length > 0)
+        .map(spec => {
+          const pipe = pipes.find(p => p.id === spec.pipe_id);
+          if (!pipe) return null;
+          
+          // Only update if focus is different
+          const currentFocus = JSON.stringify(pipe.focus?.sort() || []);
+          const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
+          
+          if (currentFocus !== newFocus) {
+            return updatePipeMutation.mutateAsync({
+              id: spec.pipe_id,
+              data: { focus: spec.recommended_blend_types }
+            });
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      await Promise.all(updatePromises);
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      
+      setShowAcceptAll(false);
+      setUserFeedbackHistory('');
+    } catch (err) {
+      console.error('Error accepting recommendations:', err);
+      alert('Failed to apply recommendations. Please try again.');
+    } finally {
+      setAcceptingAll(false);
+    }
   };
 
   const applySpecialization = async (pipeId, focus) => {
@@ -964,10 +1009,31 @@ Provide concrete, actionable steps with specific field values.`,
         <CardContent className="space-y-6">
           {/* Pipe Specializations */}
           <div>
-            <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-blue-600" />
-              Recommended Pipe Specializations
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-stone-800 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                Recommended Pipe Specializations
+              </h3>
+              {showAcceptAll && (
+                <Button
+                  onClick={handleAcceptAll}
+                  disabled={acceptingAll}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {acceptingAll ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Applying...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCheck className="w-4 h-4 mr-2" />
+                      Accept All Recommendations
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
             <div className="space-y-3">
               {pipes.map((pipe, idx) => {
                 const spec = optimization.pipe_specializations?.find(s => s.pipe_id === pipe.id);
