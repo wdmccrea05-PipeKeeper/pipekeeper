@@ -42,6 +42,8 @@ export default function ProfilePage() {
     notes: ""
   });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -109,15 +111,26 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImageToCrop(event.target.result);
+      setShowCropper(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedImage = async (croppedFile) => {
     setUploadingAvatar(true);
+    setShowCropper(false);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       setFormData({ ...formData, avatar_url: file_url });
     } catch (err) {
       console.error('Error uploading avatar:', err);
       alert('Failed to upload image. Please try again.');
     } finally {
       setUploadingAvatar(false);
+      setImageToCrop(null);
     }
   };
 
@@ -162,6 +175,18 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+      {showCropper && imageToCrop && (
+        <ImageCropper
+          image={imageToCrop}
+          onCropComplete={handleCroppedImage}
+          onCancel={() => {
+            setShowCropper(false);
+            setImageToCrop(null);
+          }}
+          aspectRatio={1}
+          cropShape="round"
+        />
+      )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Subscription Status Card */}
         <motion.div
