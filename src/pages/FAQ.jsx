@@ -369,6 +369,29 @@ export default function FAQPage() {
                   <p>This Premium feature helps you build a well-rounded collection.</p>
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="item-7a">
+                <AccordionTrigger>Can I dispute or modify optimization recommendations?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-2">
+                  <p>Yes! Each pipe recommendation has a "Dispute / Add Info" button that lets you provide feedback. You can:</p>
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li>Disagree with a suggested specialization and explain why</li>
+                    <li>Share additional context about how a pipe actually smokes</li>
+                    <li>Provide your personal preferences for that specific pipe</li>
+                  </ul>
+                  <p>After submitting feedback, the AI will re-analyze your collection taking your input into account and adjust its recommendations accordingly.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-7b">
+                <AccordionTrigger>What does "Specialized" vs "Versatility" mean for pipes?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-2">
+                  <p>When you designate a pipe for specific blend types (its "focus"), it becomes <strong>Specialized</strong> and will show a "Specialized" badge instead of a versatility score.</p>
+                  <p><strong>Specialized pipes</strong> are dedicated to specific tobacco types (like English blends or Virginias) and achieve much higher pairing scores (9-10) with those blends.</p>
+                  <p><strong>Versatile pipes</strong> (rated on a 1-10 scale) can handle multiple blend types but won't achieve the same peak performance as a specialized pipe.</p>
+                  <p>The optimization system recommends specialization for maximum pairing scores - versatile pipes are good for variety, but specialized pipes are better for excellence.</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </CardContent>
         </Card>
