@@ -1029,9 +1029,8 @@ Provide concrete, actionable steps with specific field values.`,
           )}
         </CardContent>
         </Card>
-        </>
-        );
-        }
+      );
+    }
 
   return (
     <>
@@ -1867,8 +1866,9 @@ Provide concrete, actionable steps with specific field values.`,
               <p>Last updated: {new Date(savedOptimization.generated_date).toLocaleDateString()}</p>
             )}
           </div>
-          </CardContent>
-          )}
-          </Card>
+        </CardContent>
+      )}
+    </Card>
+    </>
   );
 }
