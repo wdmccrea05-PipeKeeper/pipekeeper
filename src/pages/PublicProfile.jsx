@@ -206,20 +206,8 @@ export default function PublicProfilePage() {
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>{logs.length} Smoking Sessions</span>
-                  </div>
-                </div>
-                {profile.preferred_blend_types?.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-xs text-stone-500 mb-2">Favorite Blend Types:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.preferred_blend_types.map((type, i) => (
-                        <Badge key={i} className="bg-amber-100 text-amber-800 border-amber-300">
-                          {type}
-                        </Badge>
-                      ))}
                     </div>
-                  </div>
-                )}
+                    </div>
               </div>
             </div>
           </CardContent>
