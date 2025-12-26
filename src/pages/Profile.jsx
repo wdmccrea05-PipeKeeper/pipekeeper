@@ -262,12 +262,21 @@ export default function ProfilePage() {
                       Community Profile
                     </h3>
                     {user?.email && (
-                      <Link to={createPageUrl(`PublicProfile?email=${user.email}&preview=true`)}>
-                        <Button variant="outline" size="sm" className="border-violet-300 text-violet-700">
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview Profile
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-violet-300 text-violet-700"
+                        onClick={async () => {
+                          // Save current form data before preview
+                          await saveMutation.mutateAsync(formData);
+                          // Then navigate to preview
+                          window.open(createPageUrl(`PublicProfile?email=${user.email}&preview=true`), '_blank');
+                        }}
+                        disabled={saveMutation.isPending}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview Profile
+                      </Button>
                     )}
                   </div>
                   
