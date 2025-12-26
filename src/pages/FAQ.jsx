@@ -518,6 +518,87 @@ export default function FAQPage() {
           </CardContent>
         </Card>
 
+        {/* Community Features */}
+        <Card className="bg-white/95 backdrop-blur-sm mb-6">
+          <CardHeader>
+            <CardTitle className="text-stone-800 flex items-center gap-2">
+              <span className="text-2xl">👥</span>
+              Community & Sharing
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="community-1">
+                <AccordionTrigger className="text-left">
+                  What is the Community feature?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  The Community feature (Premium only) lets you connect with other pipe enthusiasts. You can create a public profile showcasing your collection, follow other collectors, comment on their pipes and tobacco blends, and discover new items through the community.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-2">
+                <AccordionTrigger className="text-left">
+                  How do I make my profile public?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Go to your Profile page from the navigation menu</li>
+                    <li>Fill in your Display Name, Bio, and upload a profile picture</li>
+                    <li>Check the box "Make my profile publicly searchable in Community"</li>
+                    <li>Click "Preview Profile" to see how it will look to others</li>
+                    <li>When ready, click "Save Profile" and your profile will be public</li>
+                  </ol>
+                  <p className="mt-3">You can make your profile private again at any time by unchecking the box.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-3">
+                <AccordionTrigger className="text-left">
+                  What information is shared when I make my profile public?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p className="mb-2">When your profile is public, other users can see:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Your display name, bio, and profile picture</li>
+                    <li>Your pipe collection (with photos and details)</li>
+                    <li>Your tobacco cellar (blends and information)</li>
+                    <li>Your smoking session logs</li>
+                  </ul>
+                  <p className="mt-3"><strong>Not shared:</strong> Your email address, personal preferences (clenching, duration, etc.), estimated values, purchase prices, and any notes you've marked as private.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-4">
+                <AccordionTrigger className="text-left">
+                  How do I follow other users?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  Go to the Community page and use the "Discover Users" tab. You can search for users by name or browse public profiles. Click "Follow" on any profile you'd like to follow. You can view all your followed users in the "Following" tab.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-5">
+                <AccordionTrigger className="text-left">
+                  Can I disable comments on my collection?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  Yes! On your Profile page, you can uncheck "Allow comments on my pipes, tobacco, and logs" to disable commenting. You can toggle this on or off at any time.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-6">
+                <AccordionTrigger className="text-left">
+                  How do I report inappropriate comments?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  If you see an inappropriate comment on any profile, click the flag icon next to the comment. You'll be asked to provide a reason for the report. All reports are reviewed, and action will be taken if the comment violates community guidelines.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+
         <Card className="bg-white/95 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-stone-800">Need More Help?</CardTitle>
