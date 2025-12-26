@@ -1149,6 +1149,16 @@ Provide concrete, actionable steps with specific field values.`,
                                     </Button>
                                   </Link>
                                 </>
+                              ) : pipe.focus && displaySpec.recommended_blend_types?.length > 0 && 
+                                 JSON.stringify(pipe.focus.sort()) !== JSON.stringify(displaySpec.recommended_blend_types.sort()) ? (
+                                <Button
+                                  size="sm"
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types)}
+                                >
+                                  <CheckCheck className="w-4 h-4 mr-1" />
+                                  Accept Current Optimization
+                                </Button>
                               ) : (
                                 <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
                                   <Check className="w-3 h-3 mr-1" />
