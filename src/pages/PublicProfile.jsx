@@ -124,7 +124,7 @@ export default function PublicProfilePage() {
 
         {/* Collection Tabs */}
         <Tabs defaultValue="pipes" className="space-y-6">
-          <TabsList className="bg-white/95">
+          <TabsList className="bg-white/95 grid w-full grid-cols-3">
             <TabsTrigger value="pipes">Pipes ({pipes.length})</TabsTrigger>
             <TabsTrigger value="tobacco">Tobacco ({blends.length})</TabsTrigger>
             <TabsTrigger value="logs">Sessions ({logs.length})</TabsTrigger>

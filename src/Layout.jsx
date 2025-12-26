@@ -84,22 +84,10 @@ export default function Layout({ children, currentPageName }) {
               />
               <span className="font-bold text-xl text-[#e8d5b7]">PipeKeeper</span>
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-1 justify-evenly max-w-4xl mx-auto">
               {navItems.map(item => (
                 <NavLink key={item.page} item={item} currentPage={currentPageName} />
               ))}
-              <Link 
-                to={createPageUrl('Invite')}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium",
-                  currentPageName === 'Invite'
-                    ? "bg-[#8b3a3a] text-[#e8d5b7]" 
-                    : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
-                )}
-              >
-                <UserPlus className="w-5 h-5" />
-                Invite
-              </Link>
             </div>
           </div>
         </div>
@@ -150,23 +138,6 @@ export default function Layout({ children, currentPageName }) {
                   onClick={() => setMobileOpen(false)}
                 />
               ))}
-              <Link 
-                to={createPageUrl('Invite')}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
-                  currentPageName === 'Invite'
-                    ? "bg-[#8b3a3a] text-[#e8d5b7]" 
-                    : "text-[#1a2c42] active:bg-[#8b3a3a]/10"
-                )}
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  cursor: 'pointer'
-                }}
-              >
-                <UserPlus className="w-5 h-5" />
-                Invite
-              </Link>
             </div>
           </div>
         </>

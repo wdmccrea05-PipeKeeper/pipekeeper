@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Users, UserPlus, Mail, UserCheck, UserX } from "lucide-react";
+import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -90,6 +90,10 @@ export default function CommunityPage() {
             <TabsTrigger value="following">
               <Users className="w-4 h-4 mr-2" />
               Following ({connections.length})
+            </TabsTrigger>
+            <TabsTrigger value="myprofile">
+              <UserPlus className="w-4 h-4 mr-2" />
+              My Profile
             </TabsTrigger>
             <TabsTrigger value="invite">
               <Mail className="w-4 h-4 mr-2" />
@@ -242,6 +246,69 @@ export default function CommunityPage() {
                 );
               })
             )}
+          </TabsContent>
+
+          <TabsContent value="myprofile">
+            <Card className="bg-white/95">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
+                  {userProfile?.is_public && user?.email && (
+                    <Link to={createPageUrl(`PublicProfile?email=${user.email}`)}>
+                      <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview Profile
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {userProfile?.is_public ? (
+                  <>
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <p className="text-sm text-emerald-800">
+                        ✅ Your profile is public and searchable by other users.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-stone-800">Profile Settings</h4>
+                      <p className="text-sm text-stone-600">
+                        Display Name: <strong>{userProfile.display_name || 'Not set'}</strong>
+                      </p>
+                      {userProfile.bio && (
+                        <p className="text-sm text-stone-600">
+                          Bio: {userProfile.bio}
+                        </p>
+                      )}
+                      <p className="text-sm text-stone-600">
+                        Comments: <strong>{userProfile.allow_comments ? 'Enabled' : 'Disabled'}</strong>
+                      </p>
+                    </div>
+                    <Link to={createPageUrl('Profile')}>
+                      <Button variant="outline" className="w-full">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Edit Profile Settings
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-sm text-amber-800 mb-2">
+                        Your profile is currently private. Enable public visibility to connect with other users.
+                      </p>
+                    </div>
+                    <Link to={createPageUrl('Profile')}>
+                      <Button className="w-full bg-amber-700 hover:bg-amber-800">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Make Profile Public
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="invite">

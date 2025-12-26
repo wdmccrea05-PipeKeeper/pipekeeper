@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut } from "lucide-react";
+import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -30,6 +30,7 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     display_name: "",
     bio: "",
+    avatar_url: "",
     is_public: false,
     allow_comments: true,
     clenching_preference: "Sometimes",
@@ -40,6 +41,7 @@ export default function ProfilePage() {
     strength_preference: "No Preference",
     notes: ""
   });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -70,6 +72,7 @@ export default function ProfilePage() {
       setFormData({
         display_name: profile.display_name || "",
         bio: profile.bio || "",
+        avatar_url: profile.avatar_url || "",
         is_public: profile.is_public || false,
         allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
         clenching_preference: profile.clenching_preference || "Sometimes",
@@ -100,6 +103,22 @@ export default function ProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate(formData);
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData({ ...formData, avatar_url: file_url });
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const toggleBlendType = (type) => {
@@ -211,10 +230,73 @@ export default function ProfilePage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Community Settings */}
                 <div className="space-y-4 pb-6 border-b">
-                  <h3 className="font-semibold text-violet-800 flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Community Profile
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-violet-800 flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Community Profile
+                    </h3>
+                    {formData.is_public && user?.email && (
+                      <Link to={createPageUrl(`PublicProfile?email=${user.email}`)}>
+                        <Button variant="outline" size="sm" className="border-violet-300 text-violet-700">
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <Label className="text-stone-700 font-medium mb-2 block">Profile Picture</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center overflow-hidden">
+                          {formData.avatar_url ? (
+                            <img src={formData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-10 h-10 text-amber-700" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          id="avatar-upload"
+                          className="hidden"
+                          disabled={uploadingAvatar}
+                        />
+                        <label htmlFor="avatar-upload">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingAvatar}
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              document.getElementById('avatar-upload')?.click();
+                            }}
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            {uploadingAvatar ? 'Uploading...' : formData.avatar_url ? 'Change Photo' : 'Upload Photo'}
+                          </Button>
+                        </label>
+                        {formData.avatar_url && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setFormData({ ...formData, avatar_url: "" })}
+                            className="ml-2 text-rose-600 hover:text-rose-700"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <Label className="text-stone-700 font-medium">Display Name</Label>
                     <Input
