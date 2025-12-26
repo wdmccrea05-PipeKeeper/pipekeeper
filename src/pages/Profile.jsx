@@ -266,27 +266,29 @@ export default function ProfilePage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Community Settings */}
                 <div className="space-y-4 pb-6 border-b">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h3 className="font-semibold text-violet-800 flex items-center gap-2">
                       <User className="w-4 h-4" />
                       Community Profile
                     </h3>
                     {user?.email && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="border-violet-300 text-violet-700"
-                        onClick={async () => {
-                          // Save current form data before preview
-                          await saveMutation.mutateAsync(formData);
-                          // Then navigate to preview
-                          window.open(createPageUrl(`PublicProfile?email=${user.email}&preview=true`), '_blank');
-                        }}
-                        disabled={saveMutation.isPending}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview Profile
-                      </Button>
+                      <Link to={createPageUrl(`PublicProfile?email=${user.email}&preview=true`)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="border-violet-300 text-violet-700 w-full sm:w-auto"
+                          onClick={async (e) => {
+                            // Save current form data before preview
+                            e.preventDefault();
+                            await saveMutation.mutateAsync(formData);
+                            window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
+                          }}
+                          disabled={saveMutation.isPending}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview Profile
+                        </Button>
+                      </Link>
                     )}
                   </div>
                   
