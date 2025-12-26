@@ -20,7 +20,7 @@ const navItems = [
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
 
-function NavLink({ item, currentPage, onClick }) {
+function NavLink({ item, currentPage, onClick, hasPaidAccess }) {
   const isActive = currentPage === item.page;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
@@ -103,7 +103,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
             <div className="flex items-center gap-1 flex-1 justify-evenly max-w-4xl mx-auto">
               {navItems.map(item => (
-                <NavLink key={item.page} item={item} currentPage={currentPageName} />
+                <NavLink key={item.page} item={item} currentPage={currentPageName} hasPaidAccess={hasPaidAccess} />
               ))}
             </div>
           </div>
@@ -153,6 +153,7 @@ export default function Layout({ children, currentPageName }) {
                   item={item} 
                   currentPage={currentPageName}
                   onClick={() => setMobileOpen(false)}
+                  hasPaidAccess={hasPaidAccess}
                 />
               ))}
             </div>
