@@ -252,15 +252,15 @@ export default function CommunityPage() {
             <Card className="bg-white/95">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
-                  {userProfile?.is_public && user?.email && (
-                    <Link to={createPageUrl(`PublicProfile?email=${user.email}`)}>
-                      <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview Profile
-                      </Button>
-                    </Link>
-                  )}
+                <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
+                {user?.email && (
+                  <Link to={createPageUrl(`PublicProfile?email=${user.email}${userProfile?.is_public ? '' : '&preview=true'}`)}>
+                    <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
+                      <Eye className="w-4 h-4 mr-2" />
+                      {userProfile?.is_public ? 'View Profile' : 'Preview Profile'}
+                    </Button>
+                  </Link>
+                )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

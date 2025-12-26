@@ -235,11 +235,11 @@ export default function ProfilePage() {
                       <User className="w-4 h-4" />
                       Community Profile
                     </h3>
-                    {formData.is_public && user?.email && (
-                      <Link to={createPageUrl(`PublicProfile?email=${user.email}`)}>
+                    {user?.email && (
+                      <Link to={createPageUrl(`PublicProfile?email=${user.email}&preview=true`)}>
                         <Button variant="outline" size="sm" className="border-violet-300 text-violet-700">
                           <Eye className="w-4 h-4 mr-2" />
-                          Preview
+                          Preview Profile
                         </Button>
                       </Link>
                     )}

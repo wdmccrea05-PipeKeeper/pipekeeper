@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Leaf, MessageSquare } from "lucide-react";
+import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -17,6 +17,13 @@ const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/p
 export default function PublicProfilePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const profileEmail = urlParams.get('email');
+  const isPreview = urlParams.get('preview') === 'true';
+  const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const { data: profile } = useQuery({
     queryKey: ['public-profile', profileEmail],
@@ -45,7 +52,36 @@ export default function PublicProfilePage() {
     enabled: !!profileEmail,
   });
 
-  if (!profile || !profile.is_public) {
+  const makePublicMutation = useMutation({
+    mutationFn: () => base44.entities.UserProfile.update(profile.id, { is_public: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-profile', profileEmail] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile', profileEmail] });
+    },
+  });
+
+  const isOwnProfile = currentUser?.email === profileEmail;
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <Card className="bg-white/95 max-w-md">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-xl font-semibold text-stone-800 mb-2">Profile Not Found</h2>
+            <p className="text-stone-600 mb-4">This profile does not exist.</p>
+            <Link to={createPageUrl('Community')}>
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Community
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!profile.is_public && !isPreview) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <Card className="bg-white/95 max-w-md">
@@ -67,12 +103,79 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={createPageUrl('Community')}>
-          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Community
-          </Button>
-        </Link>
+        {isPreview && isOwnProfile ? (
+          <Link to={createPageUrl('Profile')}>
+            <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Profile Settings
+            </Button>
+          </Link>
+        ) : (
+          <Link to={createPageUrl('Community')}>
+            <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Community
+            </Button>
+          </Link>
+        )}
+
+        {/* Preview Banner */}
+        {isPreview && isOwnProfile && (
+          <Card className="bg-gradient-to-r from-amber-100 to-amber-50 border-amber-300 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye className="w-5 h-5 text-amber-700" />
+                    <h3 className="font-semibold text-amber-900">Preview Mode</h3>
+                  </div>
+                  <p className="text-sm text-amber-800 mb-3">
+                    This is how your profile will appear to other users. Review your information before making it public.
+                  </p>
+                  <div className="flex items-start gap-3 p-3 bg-white/50 rounded-lg border border-amber-200">
+                    <div className="text-amber-700 mt-0.5">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 text-sm">
+                      <p className="font-medium text-amber-900 mb-1">What will be shared:</p>
+                      <ul className="text-amber-800 space-y-1">
+                        <li>• Your display name, bio, and profile picture</li>
+                        <li>• Your pipe collection with photos and details</li>
+                        <li>• Your tobacco cellar with blend information</li>
+                        <li>• Your smoking session logs</li>
+                        {profile.allow_comments && <li>• Other users can comment on your items</li>}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                {!profile.is_public && (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => makePublicMutation.mutate()}
+                      disabled={makePublicMutation.isPending}
+                      className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 whitespace-nowrap"
+                    >
+                      {makePublicMutation.isPending ? (
+                        'Making Public...'
+                      ) : (
+                        <>
+                          <Globe className="w-4 h-4 mr-2" />
+                          Make Profile Public
+                        </>
+                      )}
+                    </Button>
+                    <Link to={createPageUrl('Profile')}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Edit Settings
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Profile Header */}
         <Card className="bg-white/95 mb-6">
@@ -149,13 +252,21 @@ export default function PublicProfilePage() {
                         {pipe.shape}
                       </Badge>
                     )}
-                    {profile.allow_comments && (
+                    {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
                         <CommentSection
                           entityType="pipe"
                           entityId={pipe.id}
                           entityOwnerEmail={profileEmail}
                         />
+                      </div>
+                    )}
+                    {profile.allow_comments && isPreview && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-xs text-stone-500 italic flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" />
+                          Comments will be enabled when profile is public
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -200,13 +311,21 @@ export default function PublicProfilePage() {
                         </Badge>
                       )}
                     </div>
-                    {profile.allow_comments && (
+                    {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
                         <CommentSection
                           entityType="blend"
                           entityId={blend.id}
                           entityOwnerEmail={profileEmail}
                         />
+                      </div>
+                    )}
+                    {profile.allow_comments && isPreview && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-xs text-stone-500 italic flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" />
+                          Comments will be enabled when profile is public
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -246,13 +365,21 @@ export default function PublicProfilePage() {
                   {log.notes && (
                     <p className="text-sm text-stone-600 mb-3">{log.notes}</p>
                   )}
-                  {profile.allow_comments && (
+                  {profile.allow_comments && !isPreview && (
                     <div className="pt-3 border-t">
                       <CommentSection
                         entityType="log"
                         entityId={log.id}
                         entityOwnerEmail={profileEmail}
                       />
+                    </div>
+                  )}
+                  {profile.allow_comments && isPreview && (
+                    <div className="pt-3 border-t">
+                      <p className="text-xs text-stone-500 italic flex items-center gap-1">
+                        <MessageSquare className="w-3 h-3" />
+                        Comments will be enabled when profile is public
+                      </p>
                     </div>
                   )}
                 </CardContent>
