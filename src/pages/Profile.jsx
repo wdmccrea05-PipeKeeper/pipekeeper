@@ -28,6 +28,10 @@ const PIPE_SHAPES = [
 export default function ProfilePage() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
+    display_name: "",
+    bio: "",
+    is_public: false,
+    allow_comments: true,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
     preferred_blend_types: [],
@@ -64,6 +68,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setFormData({
+        display_name: profile.display_name || "",
+        bio: profile.bio || "",
+        is_public: profile.is_public || false,
+        allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
         clenching_preference: profile.clenching_preference || "Sometimes",
         smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -201,6 +209,56 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Community Settings */}
+                <div className="space-y-4 pb-6 border-b">
+                  <h3 className="font-semibold text-violet-800 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Community Profile
+                  </h3>
+                  <div>
+                    <Label className="text-stone-700 font-medium">Display Name</Label>
+                    <Input
+                      value={formData.display_name}
+                      onChange={(e) => setFormData({...formData, display_name: e.target.value})}
+                      placeholder="How you appear to other users"
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-stone-700 font-medium">Bio</Label>
+                    <Textarea
+                      value={formData.bio}
+                      onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                      placeholder="Tell others about your pipe journey..."
+                      className="mt-2 min-h-[80px]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_public"
+                      checked={formData.is_public}
+                      onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
+                      className="w-4 h-4 rounded border-stone-300"
+                    />
+                    <Label htmlFor="is_public" className="text-sm text-stone-700 cursor-pointer">
+                      Make my profile publicly searchable in Community
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="allow_comments"
+                      checked={formData.allow_comments}
+                      onChange={(e) => setFormData({...formData, allow_comments: e.target.checked})}
+                      className="w-4 h-4 rounded border-stone-300"
+                    />
+                    <Label htmlFor="allow_comments" className="text-sm text-stone-700 cursor-pointer">
+                      Allow comments on my pipes, tobacco, and logs
+                    </Label>
+                  </div>
+                </div>
+
                 {/* Clenching Preference */}
                 <div>
                   <Label className="text-stone-700 font-medium">Do you clench your pipes?</Label>
