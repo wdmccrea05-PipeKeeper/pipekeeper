@@ -2,8 +2,10 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
@@ -13,7 +15,7 @@ const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
-  { name: 'Community', page: 'Community', icon: Users, isIconComponent: true },
+  { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
@@ -56,12 +58,27 @@ function NavLink({ item, currentPage, onClick }) {
         />
       )}
       {item.name}
-    </Link>
-  );
-}
+      {item.isPremium && !hasPaidAccess && (
+        <Crown className="w-3 h-3 text-amber-500" />
+      )}
+      </Link>
+      );
+      }
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const trialEndDate = user?.created_date 
+    ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
+  const isInTrial = trialEndDate && new Date() < trialEndDate;
+  const hasActiveSubscription = user?.subscription_level === 'paid';
+  const hasPaidAccess = hasActiveSubscription || isInTrial;
 
   // Redirect to Home if on Index page
   React.useEffect(() => {

@@ -20,6 +20,14 @@ export default function CommunityPage() {
     queryFn: () => base44.auth.me(),
   });
 
+  // Check if user has paid access
+  const trialEndDate = user?.created_date 
+    ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
+  const isInTrial = trialEndDate && new Date() < trialEndDate;
+  const hasActiveSubscription = user?.subscription_level === 'paid';
+  const hasPaidAccess = hasActiveSubscription || isInTrial;
+
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
     queryFn: async () => {
@@ -72,6 +80,27 @@ export default function CommunityPage() {
   const getConnection = (email) => {
     return connections.find(c => c.following_email === email);
   };
+
+  if (!hasPaidAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <UpgradePrompt
+            title="Community Features"
+            description="Connect with fellow pipe enthusiasts, share your collection, and discover new pipes and tobacco blends."
+            features={[
+              "Create a public profile to showcase your collection",
+              "Follow other collectors and see their pipes & tobacco",
+              "Comment on and discuss collections with the community",
+              "Get inspired by other enthusiasts' setups",
+              "Share your expertise and learn from others"
+            ]}
+            icon={<Users className="w-12 h-12" />}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
