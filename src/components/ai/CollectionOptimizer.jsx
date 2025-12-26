@@ -969,13 +969,21 @@ Provide concrete, actionable steps with specific field values.`,
               Recommended Pipe Specializations
             </h3>
             <div className="space-y-3">
-              {optimization.pipe_specializations?.map((spec, idx) => {
-                const pipe = pipes.find(p => p.id === spec.pipe_id);
-                if (!pipe) return null;
+              {pipes.map((pipe, idx) => {
+                const spec = optimization.pipe_specializations?.find(s => s.pipe_id === pipe.id);
+                // Show all pipes, even if no recommendation exists
+                const displaySpec = spec || {
+                  pipe_id: pipe.id,
+                  pipe_name: pipe.name,
+                  recommended_blend_types: [],
+                  reasoning: "No specific recommendation generated. Consider running the optimization again.",
+                  versatility_score: 5,
+                  usage_pattern: "Versatile - suitable for multiple blend types"
+                };
 
                 return (
                   <motion.div
-                    key={spec.pipe_id}
+                    key={pipe.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
