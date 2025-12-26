@@ -14,8 +14,7 @@ import { createPageUrl } from "@/utils";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [showLocationFilters, setShowLocationFilters] = useState(false);
-  const [locationFilter, setLocationFilter] = useState({ country: 'all', state: 'all' });
+  const [locationSearch, setLocationSearch] = useState('');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -68,25 +67,11 @@ export default function CommunityPage() {
     queryFn: () => base44.entities.UserProfile.filter({ is_public: true }),
   });
 
-  // Get unique countries and states for filters from ALL profiles
-  const availableCountries = [...new Set(allPublicProfiles.filter(p => p.show_location && p.country).map(p => p.country))].sort();
-  const availableStates = locationFilter.country !== 'all' 
-    ? [...new Set(allPublicProfiles.filter(p => p.show_location && p.country === locationFilter.country && p.state_province).map(p => p.state_province))].sort()
-    : [];
-
   // Apply filters to profiles
   const publicProfiles = React.useMemo(() => {
     let filtered = [...allPublicProfiles];
     
-    // Apply location filter
-    if (locationFilter.country !== 'all') {
-      filtered = filtered.filter(p => p.show_location && p.country === locationFilter.country);
-    }
-    if (locationFilter.state !== 'all') {
-      filtered = filtered.filter(p => p.show_location && p.state_province === locationFilter.state);
-    }
-    
-    // Apply search filter
+    // Apply name/email search filter
     if (searchQuery.trim()) {
       filtered = filtered.filter(p => 
         p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,8 +79,21 @@ export default function CommunityPage() {
       );
     }
     
+    // Apply location search filter
+    if (locationSearch.trim()) {
+      const searchLower = locationSearch.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.show_location && (
+          p.city?.toLowerCase().includes(searchLower) ||
+          p.state_province?.toLowerCase().includes(searchLower) ||
+          p.country?.toLowerCase().includes(searchLower) ||
+          p.postal_code?.toLowerCase().includes(searchLower)
+        )
+      );
+    }
+    
     return filtered;
-  }, [allPublicProfiles, searchQuery, locationFilter]);
+  }, [allPublicProfiles, searchQuery, locationSearch]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -256,7 +254,7 @@ export default function CommunityPage() {
                 <CardTitle className="text-stone-800">Find Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 mb-6">
+                <div className="space-y-3 mb-6">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
                     <Input
@@ -267,52 +265,14 @@ export default function CommunityPage() {
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowLocationFilters(!showLocationFilters)}
-                      className="w-full sm:w-auto"
-                    >
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {showLocationFilters ? 'Hide' : 'Search by'} Location
-                    </Button>
-
-                    {showLocationFilters && availableCountries.length > 0 && (
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Select
-                          value={locationFilter.country}
-                          onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Filter by country..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Countries</SelectItem>
-                            {availableCountries.map(country => (
-                              <SelectItem key={country} value={country}>{country}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        {locationFilter.country !== 'all' && availableStates.length > 0 && (
-                          <Select
-                            value={locationFilter.state}
-                            onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Filter by state..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All States</SelectItem>
-                              {availableStates.map(state => (
-                                <SelectItem key={state} value={state}>{state}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    )}
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+                    <Input
+                      placeholder="Search by country, city, state, or zip code..."
+                      value={locationSearch}
+                      onChange={(e) => setLocationSearch(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
                 </div>
 
