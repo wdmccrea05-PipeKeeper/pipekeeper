@@ -205,32 +205,32 @@ export default function CommunityPage() {
         </div>
 
         <Tabs defaultValue="discover" className="space-y-6">
-          <div className="overflow-x-auto">
-            <TabsList className="bg-white/95 inline-flex w-full sm:w-auto min-w-full">
-              <TabsTrigger value="discover" className="flex-1 sm:flex-none whitespace-nowrap">
-                <Search className="w-4 h-4 mr-2" />
-                Discover
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="bg-white/95 inline-flex min-w-full sm:w-auto">
+              <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Discover</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex-1 sm:flex-none whitespace-nowrap">
-                <UserCog className="w-4 h-4 mr-2" />
-                Friends
+              <TabsTrigger value="friends" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
+                <UserCog className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Friends</span>
                 {friendRequests.length > 0 && (
-                  <Badge className="ml-1 bg-amber-600 text-white text-xs px-1.5 py-0">
+                  <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-amber-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {friendRequests.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="following" className="flex-1 sm:flex-none whitespace-nowrap">
-                <Users className="w-4 h-4 mr-2" />
-                Following
+              <TabsTrigger value="following" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Following</span>
               </TabsTrigger>
-              <TabsTrigger value="myprofile" className="flex-1 sm:flex-none whitespace-nowrap">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Profile
+              <TabsTrigger value="myprofile" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Profile</span>
               </TabsTrigger>
-              <TabsTrigger value="invite" className="flex-1 sm:flex-none whitespace-nowrap">
-                <Mail className="w-4 h-4 mr-2" />
-                Invite
+              <TabsTrigger value="invite" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Invite</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -267,55 +267,53 @@ export default function CommunityPage() {
                     />
                   </div>
 
-                  {availableCountries.length > 0 && (
-                    <div className="space-y-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowLocationFilters(!showLocationFilters)}
-                        className="w-full sm:w-auto"
-                      >
-                        <MapPin className="w-4 h-4 mr-2" />
-                        {showLocationFilters ? 'Hide' : 'Search by'} Location
-                      </Button>
+                  <div className="space-y-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowLocationFilters(!showLocationFilters)}
+                      className="w-full sm:w-auto"
+                    >
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {showLocationFilters ? 'Hide' : 'Search by'} Location
+                    </Button>
 
-                      {showLocationFilters && (
-                        <div className="flex flex-col sm:flex-row gap-3">
+                    {showLocationFilters && availableCountries.length > 0 && (
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Select
+                          value={locationFilter.country}
+                          onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Filter by country..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Countries</SelectItem>
+                            {availableCountries.map(country => (
+                              <SelectItem key={country} value={country}>{country}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {locationFilter.country !== 'all' && availableStates.length > 0 && (
                           <Select
-                            value={locationFilter.country}
-                            onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
+                            value={locationFilter.state}
+                            onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
                           >
                             <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Filter by country..." />
+                              <SelectValue placeholder="Filter by state..." />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All Countries</SelectItem>
-                              {availableCountries.map(country => (
-                                <SelectItem key={country} value={country}>{country}</SelectItem>
+                              <SelectItem value="all">All States</SelectItem>
+                              {availableStates.map(state => (
+                                <SelectItem key={state} value={state}>{state}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-
-                          {locationFilter.country !== 'all' && availableStates.length > 0 && (
-                            <Select
-                              value={locationFilter.state}
-                              onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
-                            >
-                              <SelectTrigger className="flex-1">
-                                <SelectValue placeholder="Filter by state..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">All States</SelectItem>
-                                {availableStates.map(state => (
-                                  <SelectItem key={state} value={state}>{state}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
