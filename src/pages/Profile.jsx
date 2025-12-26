@@ -12,6 +12,7 @@ import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import AvatarCropper from "@/components/pipes/AvatarCropper";
 
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
