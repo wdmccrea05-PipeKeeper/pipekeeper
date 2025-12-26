@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings } from "lucide-react";
+import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -42,6 +42,22 @@ export default function CommunityPage() {
   const { data: connections = [] } = useQuery({
     queryKey: ['connections', user?.email],
     queryFn: () => base44.entities.UserConnection.filter({ follower_email: user?.email }),
+    enabled: !!user?.email,
+  });
+
+  const { data: friendships = [] } = useQuery({
+    queryKey: ['friendships', user?.email],
+    queryFn: async () => {
+      const sent = await base44.entities.Friendship.filter({ requester_email: user?.email });
+      const received = await base44.entities.Friendship.filter({ recipient_email: user?.email });
+      return [...sent, ...received];
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friend-requests', user?.email],
+    queryFn: () => base44.entities.Friendship.filter({ recipient_email: user?.email, status: 'pending' }),
     enabled: !!user?.email,
   });
 
@@ -94,6 +110,39 @@ export default function CommunityPage() {
     },
   });
 
+  const sendFriendRequestMutation = useMutation({
+    mutationFn: (email) => base44.entities.Friendship.create({
+      requester_email: user?.email,
+      recipient_email: email,
+      status: 'pending'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+    },
+  });
+
+  const acceptFriendRequestMutation = useMutation({
+    mutationFn: (friendshipId) => base44.entities.Friendship.update(friendshipId, { status: 'accepted' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+    },
+  });
+
+  const declineFriendRequestMutation = useMutation({
+    mutationFn: (friendshipId) => base44.entities.Friendship.update(friendshipId, { status: 'declined' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+    },
+  });
+
+  const removeFriendMutation = useMutation({
+    mutationFn: (friendshipId) => base44.entities.Friendship.delete(friendshipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+    },
+  });
+
   const isFollowing = (email) => {
     return connections.some(c => c.following_email === email);
   };
@@ -101,6 +150,25 @@ export default function CommunityPage() {
   const getConnection = (email) => {
     return connections.find(c => c.following_email === email);
   };
+
+  const getFriendship = (email) => {
+    return friendships.find(f => 
+      (f.requester_email === email || f.recipient_email === email) && 
+      (f.requester_email === user?.email || f.recipient_email === user?.email)
+    );
+  };
+
+  const isFriend = (email) => {
+    const friendship = getFriendship(email);
+    return friendship?.status === 'accepted';
+  };
+
+  const hasPendingRequest = (email) => {
+    const friendship = getFriendship(email);
+    return friendship?.status === 'pending';
+  };
+
+  const acceptedFriends = friendships.filter(f => f.status === 'accepted');
 
   if (!hasPaidAccess) {
     return (
@@ -136,6 +204,15 @@ export default function CommunityPage() {
             <TabsTrigger value="discover">
               <Search className="w-4 h-4 mr-2" />
               Discover
+            </TabsTrigger>
+            <TabsTrigger value="friends">
+              <UserCog className="w-4 h-4 mr-2" />
+              Friends ({acceptedFriends.length})
+              {friendRequests.length > 0 && (
+                <Badge className="ml-2 bg-amber-600 text-white text-xs px-1.5 py-0">
+                  {friendRequests.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="following">
               <Users className="w-4 h-4 mr-2" />
@@ -253,27 +330,51 @@ export default function CommunityPage() {
                               </div>
                             )}
                           </div>
-                          {isFollowing(profile.user_email) ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => unfollowMutation.mutate(getConnection(profile.user_email)?.id)}
-                              disabled={unfollowMutation.isPending}
-                            >
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Following
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => followMutation.mutate(profile.user_email)}
-                              disabled={followMutation.isPending}
-                              className="bg-amber-700 hover:bg-amber-800"
-                            >
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              Follow
-                            </Button>
-                          )}
+                          <div className="flex flex-col gap-2">
+                            {isFriend(profile.user_email) ? (
+                              <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                                <UserCheck className="w-3 h-3 mr-1" />
+                                Friends
+                              </Badge>
+                            ) : hasPendingRequest(profile.user_email) ? (
+                              <Badge variant="outline" className="text-amber-700 border-amber-300">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Pending
+                              </Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => sendFriendRequestMutation.mutate(profile.user_email)}
+                                disabled={sendFriendRequestMutation.isPending}
+                                className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Add Friend
+                              </Button>
+                            )}
+                            {isFollowing(profile.user_email) ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => unfollowMutation.mutate(getConnection(profile.user_email)?.id)}
+                                disabled={unfollowMutation.isPending}
+                              >
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Following
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => followMutation.mutate(profile.user_email)}
+                                disabled={followMutation.isPending}
+                                className="bg-amber-700 hover:bg-amber-800"
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Follow
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -288,6 +389,133 @@ export default function CommunityPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="friends" className="space-y-6">
+            {/* Friend Requests */}
+            {friendRequests.length > 0 && (
+              <Card className="bg-amber-50 border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-amber-900 text-lg">Friend Requests</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {friendRequests.map((request) => {
+                    const profile = publicProfiles.find(p => p.user_email === request.requester_email);
+                    return (
+                      <Card key={request.id} className="bg-white border-amber-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarFallback className="bg-amber-200 text-amber-800">
+                                {profile?.display_name?.[0] || request.requester_email[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <Link to={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
+                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                                  {profile?.display_name || request.requester_email}
+                                </h3>
+                              </Link>
+                              <p className="text-xs text-stone-500">Wants to be friends</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => acceptFriendRequestMutation.mutate(request.id)}
+                                disabled={acceptFriendRequestMutation.isPending}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => declineFriendRequestMutation.mutate(request.id)}
+                                disabled={declineFriendRequestMutation.isPending}
+                                className="text-rose-600 hover:bg-rose-50"
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Decline
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Friends List */}
+            {acceptedFriends.length === 0 ? (
+              <Card className="bg-white/95">
+                <CardContent className="py-12 text-center text-stone-500">
+                  <UserCog className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p>You don't have any friends yet</p>
+                  <p className="text-sm mt-2">Send friend requests from the Discover tab</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white/95">
+                <CardHeader>
+                  <CardTitle className="text-stone-800">Your Friends</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {acceptedFriends.map((friendship) => {
+                    const friendEmail = friendship.requester_email === user?.email 
+                      ? friendship.recipient_email 
+                      : friendship.requester_email;
+                    const profile = publicProfiles.find(p => p.user_email === friendEmail);
+                    return (
+                      <Card key={friendship.id} className="bg-white/95 border-stone-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarFallback className="bg-amber-200 text-amber-800">
+                                {profile?.display_name?.[0] || friendEmail[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <Link to={createPageUrl(`PublicProfile?email=${friendEmail}`)}>
+                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                                  {profile?.display_name || friendEmail}
+                                </h3>
+                              </Link>
+                              {profile?.bio && (
+                                <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
+                              )}
+                              {profile?.show_location && (profile?.city || profile?.state_province || profile?.country) && (
+                                <p className="text-xs text-stone-500 mt-1">
+                                  📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (window.confirm('Remove this friend?')) {
+                                  removeFriendMutation.mutate(friendship.id);
+                                }
+                              }}
+                              disabled={removeFriendMutation.isPending}
+                              className="text-rose-600 hover:bg-rose-50"
+                            >
+                              <UserX className="w-4 h-4 mr-2" />
+                              Remove
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="following" className="space-y-4">
