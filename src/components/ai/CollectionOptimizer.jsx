@@ -27,6 +27,9 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [whatIfResult, setWhatIfResult] = useState(null);
   const [suggestedProducts, setSuggestedProducts] = useState(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [pipeFeedback, setPipeFeedback] = useState({});
+  const [showFeedbackFor, setShowFeedbackFor] = useState(null);
+  const [userFeedbackHistory, setUserFeedbackHistory] = useState('');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -77,7 +80,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     },
   });
 
-  const analyzeCollection = async () => {
+  const analyzeCollection = async (withFeedback = false) => {
     if (pipes.length === 0 || blends.length === 0) return;
 
     setLoading(true);
@@ -120,6 +123,15 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 Tailor all recommendations to match user preferences. Suggest specializations and future pipes that align with their smoking style.`;
       }
 
+      let feedbackContext = "";
+      if (withFeedback && userFeedbackHistory) {
+        feedbackContext = `\n\n=== USER FEEDBACK ON PREVIOUS RECOMMENDATIONS ===
+${userFeedbackHistory}
+
+CRITICAL: Take this feedback seriously and adjust your analysis accordingly. If the user disagrees with a recommendation, explain why you're changing it or provide better reasoning for keeping it. Address each piece of feedback directly in your new recommendations.
+===`;
+      }
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
@@ -129,7 +141,7 @@ Pipes Collection:
 ${JSON.stringify(pipesData, null, 2)}
 
 Tobacco Blends in Cellar:
-${JSON.stringify(blendsData, null, 2)}${profileContext}
+${JSON.stringify(blendsData, null, 2)}${profileContext}${feedbackContext}
 
 OPTIMIZATION GOALS (IN PRIORITY ORDER):
 1. **MAXIMIZE PAIRING SCORES** - Create trophy-winning (9-10 score) pairings for user's preferred blend types
@@ -272,11 +284,37 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
         ...result,
         generated_date: new Date().toISOString()
       });
+
+      // Clear feedback after successful re-analysis
+      if (withFeedback) {
+        setPipeFeedback({});
+        setShowFeedbackFor(null);
+      }
     } catch (err) {
       console.error('Error analyzing collection:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmitFeedback = async (pipeId) => {
+    const feedback = pipeFeedback[pipeId];
+    if (!feedback || !feedback.trim()) return;
+
+    const pipe = pipes.find(p => p.id === pipeId);
+    const spec = optimization?.pipe_specializations?.find(s => s.pipe_id === pipeId);
+
+    const feedbackEntry = `
+Pipe: ${pipe?.name || 'Unknown'}
+Recommended Focus: ${spec?.recommended_blend_types?.join(', ') || 'N/A'}
+User Feedback: ${feedback}
+---`;
+
+    setUserFeedbackHistory(prev => prev + feedbackEntry);
+    setShowFeedbackFor(null);
+    
+    // Re-run analysis with all accumulated feedback
+    await analyzeCollection(true);
   };
 
   const applySpecialization = async (pipeId, focus) => {
@@ -999,7 +1037,7 @@ Provide concrete, actionable steps with specific field values.`,
                               <p className="text-xs text-stone-600">{spec.usage_pattern}</p>
                             </div>
 
-                            <div className="flex gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-2">
                               {!pipe?.focus || pipe.focus.length === 0 ? (
                                 <>
                                   <Button
@@ -1027,7 +1065,53 @@ Provide concrete, actionable steps with specific field values.`,
                                   Focus Applied
                                 </Badge>
                               )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                onClick={() => setShowFeedbackFor(showFeedbackFor === pipe.id ? null : pipe.id)}
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                {showFeedbackFor === pipe.id ? 'Cancel' : 'Dispute / Add Info'}
+                              </Button>
                             </div>
+
+                            {showFeedbackFor === pipe.id && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
+                              >
+                                <p className="text-xs font-medium text-amber-800 mb-2">
+                                  Share your thoughts on this recommendation:
+                                </p>
+                                <Textarea
+                                  placeholder="e.g., 'I prefer using this pipe for Latakia blends, not Virginias' or 'This pipe actually smokes hot with strong blends'"
+                                  value={pipeFeedback[pipe.id] || ''}
+                                  onChange={(e) => setPipeFeedback({...pipeFeedback, [pipe.id]: e.target.value})}
+                                  className="min-h-[60px] text-sm mb-2"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSubmitFeedback(pipe.id)}
+                                  disabled={!pipeFeedback[pipe.id]?.trim() || loading}
+                                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                                >
+                                  {loading ? (
+                                    <>
+                                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                      Re-analyzing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-3 h-3 mr-1" />
+                                      Submit & Re-analyze
+                                    </>
+                                  )}
+                                </Button>
+                              </motion.div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
