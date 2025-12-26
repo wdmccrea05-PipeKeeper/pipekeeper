@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ZoomIn, Check, X } from "lucide-react";
+import { ZoomIn, RotateCw, Check, X } from "lucide-react";
 
 export default function AvatarCropper({ image, onCropComplete, onCancel, aspectRatio = 1, cropShape = "round" }) {
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
@@ -31,7 +32,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
     if (imageLoaded) {
       drawCanvas();
     }
-  }, [position, zoom, imageLoaded]);
+  }, [position, zoom, rotation, imageLoaded]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -56,6 +57,11 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
     const x = (canvas.width - img.width * scale) / 2 + position.x;
     const y = (canvas.height - img.height * scale) / 2 + position.y;
 
+    // Apply rotation
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
     // Draw image
     ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
 
@@ -77,6 +83,11 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
       ctx.rect(cropX, cropY, cropSize, cropSize);
     }
     ctx.clip();
+    
+    // Apply rotation again for clipped area
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
     
     // Redraw image in crop area
     ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
@@ -159,6 +170,11 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
       ctx.clip();
     }
 
+    // Apply rotation to output
+    ctx.translate(outputSize / 2, outputSize / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-outputSize / 2, -outputSize / 2);
+
     // Scale coordinates to output size
     const scaleRatio = outputSize / canvasWidth;
     ctx.drawImage(
@@ -192,9 +208,9 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Crop Profile Picture</DialogTitle>
+          <DialogTitle>Edit Profile Picture</DialogTitle>
           <p className="text-sm text-stone-500">
-            Drag to reposition • Pinch or use slider to zoom
+            Drag to move • Zoom • Rotate • Crop
           </p>
         </DialogHeader>
         
@@ -216,22 +232,53 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <ZoomIn className="w-4 h-4 text-amber-600" />
-                Zoom
-              </label>
-              <span className="text-sm font-mono text-stone-600">{zoom.toFixed(1)}x</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <ZoomIn className="w-4 h-4 text-amber-600" />
+                  Zoom
+                </label>
+                <span className="text-sm font-mono text-stone-600">{zoom.toFixed(1)}x</span>
+              </div>
+              <Slider
+                value={[zoom]}
+                onValueChange={([v]) => setZoom(v)}
+                min={0.5}
+                max={3}
+                step={0.1}
+                className="w-full"
+              />
             </div>
-            <Slider
-              value={[zoom]}
-              onValueChange={([v]) => setZoom(v)}
-              min={0.5}
-              max={3}
-              step={0.1}
-              className="w-full"
-            />
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <RotateCw className="w-4 h-4 text-amber-600" />
+                  Rotation
+                </label>
+                <span className="text-sm font-mono text-stone-600">{rotation}°</span>
+              </div>
+              <div className="flex gap-2">
+                <Slider
+                  value={[rotation]}
+                  onValueChange={([v]) => setRotation(v)}
+                  min={0}
+                  max={360}
+                  step={1}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRotation((rotation + 90) % 360)}
+                  className="shrink-0"
+                >
+                  90°
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
