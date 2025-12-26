@@ -1028,9 +1028,9 @@ Provide concrete, actionable steps with specific field values.`,
             </motion.div>
           )}
         </CardContent>
-        </Card>
-      );
-    }
+      </Card>
+    );
+  }
 
   return (
     <>
