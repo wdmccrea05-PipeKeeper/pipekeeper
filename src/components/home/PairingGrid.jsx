@@ -24,12 +24,12 @@ export default function PairingGrid({ pipes, blends }) {
     enabled: !!user?.email,
   });
 
-  // Auto-refresh when pipes or blends change
+  // Auto-refresh when pipes or blends change - use JSON stringify to detect deep changes
   React.useEffect(() => {
-    if (savedPairings && user?.email) {
+    if (showGrid && user?.email) {
       refetchPairings();
     }
-  }, [pipes, blends]);
+  }, [JSON.stringify(pipes.map(p => ({ id: p.id, focus: p.focus }))), blends.length, showGrid]);
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
