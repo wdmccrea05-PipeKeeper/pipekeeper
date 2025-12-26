@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -13,6 +14,7 @@ import { createPageUrl } from "@/utils";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [locationFilter, setLocationFilter] = useState({ country: 'all', state: 'all' });
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -44,16 +46,35 @@ export default function CommunityPage() {
   });
 
   const { data: publicProfiles = [] } = useQuery({
-    queryKey: ['public-profiles', searchQuery],
+    queryKey: ['public-profiles', searchQuery, locationFilter],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ is_public: true });
-      if (!searchQuery.trim()) return profiles;
-      return profiles.filter(p => 
-        p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      let profiles = await base44.entities.UserProfile.filter({ is_public: true });
+      
+      // Apply location filter
+      if (locationFilter.country !== 'all') {
+        profiles = profiles.filter(p => p.show_location && p.country === locationFilter.country);
+      }
+      if (locationFilter.state !== 'all') {
+        profiles = profiles.filter(p => p.show_location && p.state_province === locationFilter.state);
+      }
+      
+      // Apply search filter
+      if (searchQuery.trim()) {
+        profiles = profiles.filter(p => 
+          p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      return profiles;
     },
   });
+
+  // Get unique countries and states for filters
+  const availableCountries = [...new Set(publicProfiles.filter(p => p.show_location && p.country).map(p => p.country))].sort();
+  const availableStates = locationFilter.country !== 'all' 
+    ? [...new Set(publicProfiles.filter(p => p.show_location && p.country === locationFilter.country && p.state_province).map(p => p.state_province))].sort()
+    : [];
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -151,14 +172,50 @@ export default function CommunityPage() {
                 <CardTitle className="text-stone-800">Find Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
-                  <Input
-                    placeholder="Search by name or email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="space-y-4 mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+                    <Input
+                      placeholder="Search by name or email..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Select
+                      value={locationFilter.country}
+                      onValueChange={(value) => setLocationFilter({ country: value, state: 'all' })}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Filter by country..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Countries</SelectItem>
+                        {availableCountries.map(country => (
+                          <SelectItem key={country} value={country}>{country}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {locationFilter.country !== 'all' && availableStates.length > 0 && (
+                      <Select
+                        value={locationFilter.state}
+                        onValueChange={(value) => setLocationFilter({ ...locationFilter, state: value })}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Filter by state..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All States</SelectItem>
+                          {availableStates.map(state => (
+                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -180,6 +237,11 @@ export default function CommunityPage() {
                             </Link>
                             {profile.bio && (
                               <p className="text-sm text-stone-600 line-clamp-2">{profile.bio}</p>
+                            )}
+                            {profile.show_location && (profile.city || profile.state_province || profile.country) && (
+                              <p className="text-xs text-stone-500 mt-1">
+                                📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
+                              </p>
                             )}
                             {profile.preferred_blend_types?.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-2">

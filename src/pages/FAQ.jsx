@@ -595,6 +595,23 @@ export default function FAQPage() {
                   If you see an inappropriate comment on any profile, click the flag icon next to the comment. You'll be asked to provide a reason for the report. All reports are reviewed, and action will be taken if the comment violates community guidelines.
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="community-7">
+                <AccordionTrigger className="text-left">
+                  Can I share my location to find local pipe enthusiasts?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p className="mb-2">Yes! On your Profile page, you can optionally add:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>City</li>
+                    <li>State/Province</li>
+                    <li>Country</li>
+                    <li>Zip/Postal Code</li>
+                  </ul>
+                  <p className="mt-3">Check the box "Show my location publicly and allow others to find me by location" to opt-in. Your location will appear on your public profile, and other users can filter the Community directory by country and state to find nearby collectors.</p>
+                  <p className="mt-2"><strong>Privacy:</strong> Location sharing is completely optional. If you don't check the box, your location remains private even if you've entered it.</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </CardContent>
         </Card>

@@ -191,6 +191,11 @@ export default function PublicProfilePage() {
                 <h1 className="text-2xl font-bold text-stone-800 mb-2">
                   {profile.display_name || 'Anonymous User'}
                 </h1>
+                {profile.show_location && (profile.city || profile.state_province || profile.country) && (
+                  <p className="text-sm text-stone-500 mb-2">
+                    📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
+                  </p>
+                )}
                 {profile.bio && (
                   <p className="text-stone-600 mb-4">{profile.bio}</p>
                 )}

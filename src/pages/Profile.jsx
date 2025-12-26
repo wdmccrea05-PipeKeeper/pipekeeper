@@ -32,6 +32,11 @@ export default function ProfilePage() {
     display_name: "",
     bio: "",
     avatar_url: "",
+    city: "",
+    state_province: "",
+    country: "",
+    postal_code: "",
+    show_location: false,
     is_public: false,
     allow_comments: true,
     clenching_preference: "Sometimes",
@@ -76,6 +81,11 @@ export default function ProfilePage() {
         display_name: profile.display_name || "",
         bio: profile.bio || "",
         avatar_url: profile.avatar_url || "",
+        city: profile.city || "",
+        state_province: profile.state_province || "",
+        country: profile.country || "",
+        postal_code: profile.postal_code || "",
+        show_location: profile.show_location || false,
         is_public: profile.is_public || false,
         allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
         clenching_preference: profile.clenching_preference || "Sometimes",
@@ -374,7 +384,92 @@ export default function ProfilePage() {
                       Allow comments on my pipes, tobacco, and logs
                     </Label>
                   </div>
-                </div>
+
+                  <div className="pt-4 border-t space-y-4">
+                    <h4 className="font-semibold text-violet-800">Location (Optional)</h4>
+                    <p className="text-sm text-stone-600">Share your location to connect with nearby pipe enthusiasts</p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-stone-700 font-medium">City</Label>
+                        <Input
+                          value={formData.city}
+                          onChange={(e) => setFormData({...formData, city: e.target.value})}
+                          placeholder="e.g., Seattle"
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-stone-700 font-medium">State/Province</Label>
+                        <Input
+                          value={formData.state_province}
+                          onChange={(e) => setFormData({...formData, state_province: e.target.value})}
+                          placeholder="e.g., WA"
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-stone-700 font-medium">Country</Label>
+                        <Select
+                          value={formData.country}
+                          onValueChange={(value) => setFormData({ ...formData, country: value })}
+                        >
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select country..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="United States">United States</SelectItem>
+                            <SelectItem value="Canada">Canada</SelectItem>
+                            <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                            <SelectItem value="Ireland">Ireland</SelectItem>
+                            <SelectItem value="Australia">Australia</SelectItem>
+                            <SelectItem value="New Zealand">New Zealand</SelectItem>
+                            <SelectItem value="Germany">Germany</SelectItem>
+                            <SelectItem value="France">France</SelectItem>
+                            <SelectItem value="Italy">Italy</SelectItem>
+                            <SelectItem value="Spain">Spain</SelectItem>
+                            <SelectItem value="Netherlands">Netherlands</SelectItem>
+                            <SelectItem value="Belgium">Belgium</SelectItem>
+                            <SelectItem value="Switzerland">Switzerland</SelectItem>
+                            <SelectItem value="Austria">Austria</SelectItem>
+                            <SelectItem value="Denmark">Denmark</SelectItem>
+                            <SelectItem value="Sweden">Sweden</SelectItem>
+                            <SelectItem value="Norway">Norway</SelectItem>
+                            <SelectItem value="Finland">Finland</SelectItem>
+                            <SelectItem value="Japan">Japan</SelectItem>
+                            <SelectItem value="South Korea">South Korea</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-stone-700 font-medium">Zip/Postal Code</Label>
+                        <Input
+                          value={formData.postal_code}
+                          onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
+                          placeholder="e.g., 98101"
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="show_location"
+                        checked={formData.show_location}
+                        onChange={(e) => setFormData({...formData, show_location: e.target.checked})}
+                        className="w-4 h-4 rounded border-stone-300"
+                      />
+                      <Label htmlFor="show_location" className="text-sm text-stone-700 cursor-pointer">
+                        Show my location publicly and allow others to find me by location
+                      </Label>
+                    </div>
+                  </div>
+                  </div>
 
                 {/* Clenching Preference */}
                 <div>
