@@ -612,6 +612,33 @@ export default function FAQPage() {
                   <p className="mt-2"><strong>Privacy:</strong> Location sharing is completely optional. If you don't check the box, your location remains private even if you've entered it.</p>
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="community-8">
+                <AccordionTrigger className="text-left">
+                  What's the difference between Friends and Following?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p className="mb-3"><strong>Friends:</strong> A mutual connection that requires both users to accept. Send a friend request, and if the other user accepts, you both become friends. Friends appear in your "Friends" tab.</p>
+                  <p><strong>Following:</strong> A one-way connection where you can follow any public profile without their approval. Following lets you keep up with users whose collections interest you, even if they haven't added you as a friend.</p>
+                  <p className="mt-3">You can have both types of connections with the same user - be friends AND follow them.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-9">
+                <AccordionTrigger className="text-left">
+                  How do I add friends?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Go to the Community page and navigate to the "Discover" tab</li>
+                    <li>Find a user you'd like to be friends with (use search or location filters)</li>
+                    <li>Click "Add Friend" next to their profile</li>
+                    <li>They'll receive a friend request in their "Friends" tab</li>
+                    <li>Once they accept, you'll both appear in each other's friends list</li>
+                  </ol>
+                  <p className="mt-3">You can view pending requests, accept incoming requests, and manage your friends in the "Friends" tab. A badge shows the number of pending requests waiting for your response.</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </CardContent>
         </Card>
