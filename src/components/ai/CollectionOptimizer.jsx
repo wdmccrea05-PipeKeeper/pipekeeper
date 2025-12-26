@@ -1002,7 +1002,7 @@ Provide concrete, actionable steps with specific field values.`,
                             <div className="flex items-center gap-2 mb-2">
                               <Link to={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
                                 <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
-                                  {spec.pipe_name}
+                                  {displaySpec.pipe_name}
                                 </h4>
                               </Link>
                               {pipe?.focus && pipe.focus.length > 0 ? (
