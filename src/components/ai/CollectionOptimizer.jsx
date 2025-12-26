@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false }) {
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [userFeedbackHistory, setUserFeedbackHistory] = useState('');
   const [showAcceptAll, setShowAcceptAll] = useState(false);
   const [acceptingAll, setAcceptingAll] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedChanges, setSelectedChanges] = useState({});
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -287,11 +291,21 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
         generated_date: new Date().toISOString()
       });
 
-      // Clear feedback after successful re-analysis and show accept button
+      // Clear feedback after successful re-analysis and show confirmation
       if (withFeedback) {
         setPipeFeedback({});
         setShowFeedbackFor(null);
         setShowAcceptAll(true);
+
+        // Pre-select all changes with recommendations
+        const changes = {};
+        result.pipe_specializations?.forEach(spec => {
+          if (spec.recommended_blend_types?.length > 0) {
+            changes[spec.pipe_id] = true;
+          }
+        });
+        setSelectedChanges(changes);
+        setShowConfirmation(true);
       }
     } catch (err) {
       console.error('Error analyzing collection:', err);
@@ -360,6 +374,67 @@ User Feedback: ${feedback}
     } finally {
       setAcceptingAll(false);
     }
+  };
+
+  const handleConfirmChanges = async () => {
+    if (!optimization?.pipe_specializations) return;
+    
+    setAcceptingAll(true);
+    try {
+      // Apply only selected changes
+      const updatePromises = optimization.pipe_specializations
+        .filter(spec => selectedChanges[spec.pipe_id] && spec.recommended_blend_types?.length > 0)
+        .map(spec => {
+          const pipe = pipes.find(p => p.id === spec.pipe_id);
+          if (!pipe) return null;
+          
+          // Only update if focus is different
+          const currentFocus = JSON.stringify(pipe.focus?.sort() || []);
+          const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
+          
+          if (currentFocus !== newFocus) {
+            return updatePipeMutation.mutateAsync({
+              id: spec.pipe_id,
+              data: { focus: spec.recommended_blend_types }
+            });
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      await Promise.all(updatePromises);
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      
+      setShowConfirmation(false);
+      setShowAcceptAll(false);
+      setSelectedChanges({});
+      setUserFeedbackHistory('');
+    } catch (err) {
+      console.error('Error accepting recommendations:', err);
+      alert('Failed to apply recommendations. Please try again.');
+    } finally {
+      setAcceptingAll(false);
+    }
+  };
+
+  const toggleChange = (pipeId) => {
+    setSelectedChanges(prev => ({
+      ...prev,
+      [pipeId]: !prev[pipeId]
+    }));
+  };
+
+  const toggleAllChanges = (checked) => {
+    const changes = {};
+    optimization.pipe_specializations?.forEach(spec => {
+      if (spec.recommended_blend_types?.length > 0) {
+        changes[spec.pipe_id] = checked;
+      }
+    });
+    setSelectedChanges(changes);
   };
 
   const applySpecialization = async (pipeId, focus) => {
@@ -953,11 +1028,134 @@ Provide concrete, actionable steps with specific field values.`,
             </motion.div>
           )}
         </CardContent>
-      </Card>
-    );
-  }
+        </Card>
+        </>
+        );
+        }
 
   return (
+    <>
+    {/* Confirmation Modal */}
+    <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            Review & Apply Optimization Changes
+          </DialogTitle>
+          <DialogDescription>
+            Select which pipe specializations you'd like to apply. Changes will update your collection and refresh the pairing grid.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="flex items-center gap-2 pb-4 border-b">
+            <Checkbox
+              id="select-all"
+              checked={optimization?.pipe_specializations?.every(spec => 
+                !spec.recommended_blend_types?.length || selectedChanges[spec.pipe_id]
+              )}
+              onCheckedChange={toggleAllChanges}
+            />
+            <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+              Select All
+            </label>
+          </div>
+
+          {optimization?.pipe_specializations?.map(spec => {
+            const pipe = pipes.find(p => p.id === spec.pipe_id);
+            if (!spec.recommended_blend_types?.length || !pipe) return null;
+
+            const currentFocus = pipe.focus || [];
+            const hasChanges = JSON.stringify(currentFocus.sort()) !== JSON.stringify(spec.recommended_blend_types.sort());
+
+            return (
+              <div key={spec.pipe_id} className="flex items-start gap-3 p-3 bg-stone-50 rounded-lg border">
+                <Checkbox
+                  id={`change-${spec.pipe_id}`}
+                  checked={selectedChanges[spec.pipe_id] || false}
+                  onCheckedChange={() => toggleChange(spec.pipe_id)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <label htmlFor={`change-${spec.pipe_id}`} className="cursor-pointer">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold text-stone-800">{spec.pipe_name}</h4>
+                      {!hasChanges && (
+                        <Badge variant="outline" className="text-xs">No Change</Badge>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm mb-2">
+                      <div>
+                        <p className="text-xs text-stone-500 mb-1">Current:</p>
+                        {currentFocus.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {currentFocus.map((f, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">{f}</Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-stone-400 italic">None set</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs text-emerald-700 font-medium mb-1">Recommended:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {spec.recommended_blend_types.map((f, i) => (
+                            <Badge key={i} className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">{f}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {spec.score_improvement && (
+                      <div className="bg-emerald-50 rounded p-2 border border-emerald-200">
+                        <p className="text-xs text-emerald-800">
+                          <strong>Impact:</strong> {spec.score_improvement}
+                        </p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+
+          {optimization?.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length === 0 && (
+            <p className="text-center text-stone-500 py-8">No changes to apply</p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setShowConfirmation(false)}
+            disabled={acceptingAll}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmChanges}
+            disabled={acceptingAll || Object.values(selectedChanges).filter(Boolean).length === 0}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {acceptingAll ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Applying...
+              </>
+            ) : (
+              <>
+                <CheckCheck className="w-4 h-4 mr-2" />
+                Apply {Object.values(selectedChanges).filter(Boolean).length} Change{Object.values(selectedChanges).filter(Boolean).length !== 1 ? 's' : ''}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
