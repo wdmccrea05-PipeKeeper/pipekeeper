@@ -997,9 +997,21 @@ Provide concrete, actionable steps with specific field values.`,
                                   {spec.pipe_name}
                                 </h4>
                               </Link>
-                              <Badge className={getVersatilityColor(spec.versatility_score)}>
-                                Versatility {spec.versatility_score}/10
-                              </Badge>
+                              {pipe?.focus && pipe.focus.length > 0 ? (
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Specialized
+                                </Badge>
+                              ) : spec.versatility_score <= 4 ? (
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Recommended: Specialized
+                                </Badge>
+                              ) : (
+                                <Badge className={getVersatilityColor(spec.versatility_score)}>
+                                  Versatility {spec.versatility_score}/10
+                                </Badge>
+                              )}
                             </div>
                             
                             <div className="mb-3">
