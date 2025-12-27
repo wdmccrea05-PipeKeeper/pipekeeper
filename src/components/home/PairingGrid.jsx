@@ -219,8 +219,13 @@ export default function PairingGrid({ pipes, blends }) {
               <Button
                 onClick={async () => {
                   setRefreshing(true);
+                  // Force recalculation by hiding and showing grid
+                  setShowGrid(false);
                   await refetchPairings();
-                  setRefreshing(false);
+                  setTimeout(() => {
+                    setShowGrid(true);
+                    setRefreshing(false);
+                  }, 100);
                 }}
                 variant="outline"
                 size="sm"
