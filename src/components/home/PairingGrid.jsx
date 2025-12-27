@@ -2,13 +2,12 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw } from "lucide-react";
+import { Loader2, Download, Grid3X3, Printer, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const gridRef = useRef(null);
 
   const { data: user } = useQuery({
@@ -53,12 +52,6 @@ export default function PairingGrid({ pipes, blends }) {
       return;
     }
     setShowGrid(true);
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refetchPairings();
-    setRefreshing(false);
   };
 
   // Calculate adjusted scores with priority order:
@@ -222,16 +215,6 @@ export default function PairingGrid({ pipes, blends }) {
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                size="sm"
-                disabled={refreshing}
-                className="border-emerald-300 text-emerald-700"
-              >
-                <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
               <Button
                 onClick={handleDownload}
                 variant="outline"
