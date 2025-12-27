@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const gridRef = useRef(null);
 
   const { data: user } = useQuery({
@@ -214,15 +215,20 @@ export default function PairingGrid({ pipes, blends }) {
               Show Grid
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
-                onClick={() => refetchPairings()}
+                onClick={async () => {
+                  setRefreshing(true);
+                  await refetchPairings();
+                  setRefreshing(false);
+                }}
                 variant="outline"
                 size="sm"
+                disabled={refreshing}
                 className="border-emerald-300 text-emerald-700"
               >
-                <RefreshCw className="w-4 h-4 mr-1" />
-                Refresh
+                <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Button
                 onClick={handleDownload}
@@ -231,7 +237,7 @@ export default function PairingGrid({ pipes, blends }) {
                 className="border-emerald-300 text-emerald-700"
               >
                 <Download className="w-4 h-4 mr-1" />
-                Download
+                <span className="hidden sm:inline">Download</span>
               </Button>
               <Button
                 onClick={handlePrint}
@@ -240,7 +246,7 @@ export default function PairingGrid({ pipes, blends }) {
                 className="border-emerald-300 text-emerald-700"
               >
                 <Printer className="w-4 h-4 mr-1" />
-                Print
+                <span className="hidden sm:inline">Print</span>
               </Button>
             </div>
           )}
