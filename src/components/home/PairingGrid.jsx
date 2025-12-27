@@ -106,12 +106,27 @@ export default function PairingGrid({ pipes, blends }) {
         const focusLower = f.toLowerCase();
         const blendTypeLower = blend.blend_type?.toLowerCase() || '';
         const blendNameLower = blend.name?.toLowerCase() || '';
+        const blendComponents = blend.tobacco_components || [];
         
-        // Check if focus matches blend type OR blend name
-        return blendTypeLower.includes(focusLower) ||
-               focusLower.includes(blendTypeLower) ||
-               blendNameLower.includes(focusLower) ||
-               focusLower.includes(blendNameLower);
+        // Check blend type match
+        if (blendTypeLower.includes(focusLower) || focusLower.includes(blendTypeLower)) {
+          return true;
+        }
+        
+        // Check blend name match
+        if (blendNameLower.includes(focusLower) || focusLower.includes(blendNameLower)) {
+          return true;
+        }
+        
+        // Check tobacco components match
+        if (blendComponents.some(comp => {
+          const compLower = comp.toLowerCase();
+          return compLower.includes(focusLower) || focusLower.includes(compLower);
+        })) {
+          return true;
+        }
+        
+        return false;
       });
       if (focusMatch) {
         adjustment += 5; // Strong bonus for specialized pipes matching their focus
