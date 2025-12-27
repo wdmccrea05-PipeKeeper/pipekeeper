@@ -14,6 +14,7 @@ import { createPageUrl } from "@/utils";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [locationFilters, setLocationFilters] = useState({
     country: '',
     city: '',
@@ -83,10 +84,10 @@ export default function CommunityPage() {
     let filtered = [...allPublicProfiles];
     
     // Apply name/email search filter
-    if (searchQuery.trim()) {
+    if (activeSearchQuery.trim()) {
       filtered = filtered.filter(p => 
-        p.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.user_email?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.display_name?.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
+        p.user_email?.toLowerCase().includes(activeSearchQuery.toLowerCase())
       );
     }
     
@@ -115,7 +116,7 @@ export default function CommunityPage() {
     }
     
     return filtered;
-  }, [allPublicProfiles, searchQuery, activeLocationFilters]);
+  }, [allPublicProfiles, activeSearchQuery, activeLocationFilters]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -277,14 +278,24 @@ export default function CommunityPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
-                    <Input
-                      placeholder="Search by name or email..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && setActiveSearchQuery(searchQuery)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => setActiveSearchQuery(searchQuery)}
+                      className="bg-amber-700 hover:bg-amber-800"
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      Search
+                    </Button>
                   </div>
 
                   <div className="space-y-3 p-4 bg-stone-50 rounded-lg border border-stone-200">
@@ -337,89 +348,79 @@ export default function CommunityPage() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
-                    <Card key={profile.id} className="border-stone-200">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="w-12 h-12">
-                            <AvatarImage src={profile.avatar_url} />
-                            <AvatarFallback className="bg-amber-200 text-amber-800">
-                              {profile.display_name?.[0] || profile.user_email[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <Link to={createPageUrl(`PublicProfile?email=${profile.user_email}`)}>
-                              <h3 className="font-semibold text-stone-800 hover:text-amber-700">
-                                {profile.display_name || profile.user_email}
-                              </h3>
-                            </Link>
-                            {profile.bio && (
-                              <p className="text-sm text-stone-600 line-clamp-2">{profile.bio}</p>
-                            )}
-                            {profile.show_location && (profile.city || profile.state_province || profile.country) && (
-                              <p className="text-xs text-stone-500 mt-1">
-                                📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
-                              </p>
-                            )}
-                            {profile.preferred_blend_types?.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {profile.preferred_blend_types.slice(0, 3).map((type, i) => (
-                                  <Badge key={i} variant="outline" className="text-xs">
-                                    {type}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {isFriend(profile.user_email) ? (
-                              <Badge variant="outline" className="text-emerald-700 border-emerald-300">
-                                <UserCheck className="w-3 h-3 mr-1" />
-                                Friends
-                              </Badge>
-                            ) : hasPendingRequest(profile.user_email) ? (
-                              <Badge variant="outline" className="text-amber-700 border-amber-300">
-                                <Clock className="w-3 h-3 mr-1" />
-                                Pending
-                              </Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => sendFriendRequestMutation.mutate(profile.user_email)}
-                                disabled={sendFriendRequestMutation.isPending}
-                                className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                              >
-                                <UserPlus className="w-4 h-4 mr-2" />
-                                Add Friend
-                              </Button>
-                            )}
-                            {isFollowing(profile.user_email) ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => unfollowMutation.mutate(getConnection(profile.user_email)?.id)}
-                                disabled={unfollowMutation.isPending}
-                              >
-                                <UserCheck className="w-4 h-4 mr-2" />
-                                Following
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                onClick={() => followMutation.mutate(profile.user_email)}
-                                disabled={followMutation.isPending}
-                                className="bg-amber-700 hover:bg-amber-800"
-                              >
-                                <UserPlus className="w-4 h-4 mr-2" />
-                                Follow
-                              </Button>
-                            )}
-                          </div>
+                    <div key={profile.id} className="p-4 bg-white border border-stone-200 rounded-lg hover:border-amber-400 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="w-12 h-12 flex-shrink-0">
+                          <AvatarImage src={profile.avatar_url} />
+                          <AvatarFallback className="bg-amber-200 text-amber-800">
+                            {profile.display_name?.[0] || profile.user_email[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <Link to={createPageUrl(`PublicProfile?email=${profile.user_email}`)}>
+                            <h3 className="font-semibold text-stone-800 hover:text-amber-700 truncate">
+                              {profile.display_name || profile.user_email}
+                            </h3>
+                          </Link>
+                          {profile.bio && (
+                            <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
+                          )}
+                          {profile.show_location && (profile.city || profile.state_province || profile.country) && (
+                            <p className="text-xs text-stone-500 mt-1">
+                              📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
+                            </p>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                          {isFriend(profile.user_email) ? (
+                            <Badge variant="outline" className="text-emerald-700 border-emerald-300 whitespace-nowrap">
+                              <UserCheck className="w-3 h-3 mr-1" />
+                              Friends
+                            </Badge>
+                          ) : hasPendingRequest(profile.user_email) ? (
+                            <Badge variant="outline" className="text-amber-700 border-amber-300 whitespace-nowrap">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Pending
+                            </Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => sendFriendRequestMutation.mutate(profile.user_email)}
+                              disabled={sendFriendRequestMutation.isPending}
+                              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 whitespace-nowrap"
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Friend
+                            </Button>
+                          )}
+                          {isFollowing(profile.user_email) ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => unfollowMutation.mutate(getConnection(profile.user_email)?.id)}
+                              disabled={unfollowMutation.isPending}
+                              className="whitespace-nowrap"
+                            >
+                              <UserCheck className="w-4 h-4 mr-1" />
+                              Following
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => followMutation.mutate(profile.user_email)}
+                              disabled={followMutation.isPending}
+                              className="bg-amber-700 hover:bg-amber-800 whitespace-nowrap"
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Follow
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
 
                   {publicProfiles.filter(p => p.user_email !== user?.email).length === 0 && (
