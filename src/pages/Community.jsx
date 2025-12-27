@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -27,6 +28,7 @@ export default function CommunityPage() {
     state: '',
     zipCode: ''
   });
+  const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -290,7 +292,10 @@ export default function CommunityPage() {
                       />
                     </div>
                     <Button
-                      onClick={() => setActiveSearchQuery(searchQuery)}
+                      onClick={() => {
+                        setActiveSearchQuery(searchQuery);
+                        setShowResults(true);
+                      }}
                       className="bg-amber-700 hover:bg-amber-800"
                     >
                       <Search className="w-4 h-4 mr-2" />
@@ -305,23 +310,49 @@ export default function CommunityPage() {
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Input
-                        placeholder="Country"
+                      <Select
                         value={locationFilters.country}
-                        onChange={(e) => setLocationFilters({...locationFilters, country: e.target.value})}
-                      />
+                        onValueChange={(value) => setLocationFilters({...locationFilters, country: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={null}>All Countries</SelectItem>
+                          <SelectItem value="United States">United States</SelectItem>
+                          <SelectItem value="Canada">Canada</SelectItem>
+                          <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                          <SelectItem value="Ireland">Ireland</SelectItem>
+                          <SelectItem value="Australia">Australia</SelectItem>
+                          <SelectItem value="New Zealand">New Zealand</SelectItem>
+                          <SelectItem value="Germany">Germany</SelectItem>
+                          <SelectItem value="France">France</SelectItem>
+                          <SelectItem value="Italy">Italy</SelectItem>
+                          <SelectItem value="Spain">Spain</SelectItem>
+                          <SelectItem value="Netherlands">Netherlands</SelectItem>
+                          <SelectItem value="Belgium">Belgium</SelectItem>
+                          <SelectItem value="Switzerland">Switzerland</SelectItem>
+                          <SelectItem value="Austria">Austria</SelectItem>
+                          <SelectItem value="Denmark">Denmark</SelectItem>
+                          <SelectItem value="Sweden">Sweden</SelectItem>
+                          <SelectItem value="Norway">Norway</SelectItem>
+                          <SelectItem value="Finland">Finland</SelectItem>
+                          <SelectItem value="Japan">Japan</SelectItem>
+                          <SelectItem value="South Korea">South Korea</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Input
-                        placeholder="City"
+                        placeholder="City (e.g., Seattle)"
                         value={locationFilters.city}
                         onChange={(e) => setLocationFilters({...locationFilters, city: e.target.value})}
                       />
                       <Input
-                        placeholder="State/Province"
+                        placeholder="State/Province (e.g., WA)"
                         value={locationFilters.state}
                         onChange={(e) => setLocationFilters({...locationFilters, state: e.target.value})}
                       />
                       <Input
-                        placeholder="Zip/Postal Code"
+                        placeholder="Zip/Postal Code (e.g., 98101)"
                         value={locationFilters.zipCode}
                         onChange={(e) => setLocationFilters({...locationFilters, zipCode: e.target.value})}
                       />
@@ -329,7 +360,10 @@ export default function CommunityPage() {
 
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => setActiveLocationFilters(locationFilters)}
+                        onClick={() => {
+                          setActiveLocationFilters(locationFilters);
+                          setShowResults(true);
+                        }}
                         className="flex-1 bg-amber-700 hover:bg-amber-800"
                       >
                         <Search className="w-4 h-4 mr-2" />
@@ -347,8 +381,19 @@ export default function CommunityPage() {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
+            {/* Search Results Sheet */}
+            <Sheet open={showResults} onOpenChange={setShowResults}>
+              <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>Search Results</SheetTitle>
+                  <SheetDescription>
+                    {publicProfiles.filter(p => p.user_email !== user?.email).length} users found
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="space-y-2 mt-6">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
                     <div key={profile.id} className="p-4 bg-white border border-stone-200 rounded-lg hover:border-amber-400 transition-colors">
                       <div className="flex items-center gap-4">
@@ -426,12 +471,12 @@ export default function CommunityPage() {
                   {publicProfiles.filter(p => p.user_email !== user?.email).length === 0 && (
                     <div className="text-center py-12 text-stone-500">
                       <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                      <p>No public profiles found</p>
+                      <p>No users found matching your search</p>
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </SheetContent>
+            </Sheet>
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">
