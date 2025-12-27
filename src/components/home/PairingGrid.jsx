@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy } from "lucide-react";
+import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function PairingGrid({ pipes, blends }) {
@@ -215,6 +215,15 @@ export default function PairingGrid({ pipes, blends }) {
             </Button>
           ) : (
             <div className="flex gap-2">
+              <Button
+                onClick={() => refetchPairings()}
+                variant="outline"
+                size="sm"
+                className="border-emerald-300 text-emerald-700"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Refresh
+              </Button>
               <Button
                 onClick={handleDownload}
                 variant="outline"
