@@ -234,9 +234,13 @@ export default function CommunityPage() {
                 <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">Discover</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
+              <TabsTrigger value="friends" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <UserCog className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">Friends</span>
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Requests</span>
                 {friendRequests.length > 0 && (
                   <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-amber-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {friendRequests.length}
@@ -494,63 +498,6 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">
-            {/* Friend Requests */}
-            {friendRequests.length > 0 && (
-              <Card className="bg-amber-50 border-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-amber-900 text-lg">Friend Requests</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {friendRequests.map((request) => {
-                    const profile = publicProfiles.find(p => p.user_email === request.requester_email);
-                    return (
-                      <Card key={request.id} className="bg-white border-amber-200">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12">
-                              <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-amber-200 text-amber-800">
-                                {profile?.display_name?.[0] || request.requester_email[0].toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <Link to={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
-                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
-                                  {profile?.display_name || request.requester_email}
-                                </h3>
-                              </Link>
-                              <p className="text-xs text-stone-500">Wants to be friends</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => acceptFriendRequestMutation.mutate(request.id)}
-                                disabled={acceptFriendRequestMutation.isPending}
-                                className="bg-emerald-600 hover:bg-emerald-700"
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => declineFriendRequestMutation.mutate(request.id)}
-                                disabled={declineFriendRequestMutation.isPending}
-                                className="text-rose-600 hover:bg-rose-50"
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Decline
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            )}
-
             {/* Friends List */}
             {acceptedFriends.length === 0 ? (
               <Card className="bg-white/95">
@@ -610,6 +557,72 @@ export default function CommunityPage() {
                               <UserX className="w-4 h-4 mr-2" />
                               Remove
                             </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-6">
+            {friendRequests.length === 0 ? (
+              <Card className="bg-white/95">
+                <CardContent className="py-12 text-center text-stone-500">
+                  <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p>No pending friend requests</p>
+                  <p className="text-sm mt-2">Friend requests will appear here</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white/95">
+                <CardHeader>
+                  <CardTitle className="text-stone-800">Pending Friend Requests</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {friendRequests.map((request) => {
+                    const profile = publicProfiles.find(p => p.user_email === request.requester_email);
+                    return (
+                      <Card key={request.id} className="bg-white border-stone-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarFallback className="bg-amber-200 text-amber-800">
+                                {profile?.display_name?.[0] || request.requester_email[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <Link to={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
+                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                                  {profile?.display_name || request.requester_email}
+                                </h3>
+                              </Link>
+                              <p className="text-xs text-stone-500">Wants to be friends</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => acceptFriendRequestMutation.mutate(request.id)}
+                                disabled={acceptFriendRequestMutation.isPending}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => declineFriendRequestMutation.mutate(request.id)}
+                                disabled={declineFriendRequestMutation.isPending}
+                                className="text-rose-600 hover:bg-rose-50"
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Decline
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
