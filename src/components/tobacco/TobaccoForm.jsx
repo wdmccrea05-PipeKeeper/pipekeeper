@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit } from "lucide-react";
+import { Upload, X, Loader2, Camera, Plus, Search, Check, Edit, Library } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import ImageCropper from "@/components/pipes/ImageCropper";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -51,6 +52,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [logoMatches, setLogoMatches] = useState([]);
   const [cropperImage, setCropperImage] = useState(null);
   const [cropperType, setCropperType] = useState(null);
+  const [showLogoBrowser, setShowLogoBrowser] = useState(false);
+  const [logoBrowserSearch, setLogoBrowserSearch] = useState('');
   
   const queryClient = useQueryClient();
 
@@ -247,6 +250,13 @@ Return complete and accurate information based on the blend name or description 
     onSave(cleanedData);
   };
 
+  const filteredLogos = React.useMemo(() => {
+    if (!logoBrowserSearch.trim()) return customLogos;
+    return customLogos.filter(logo => 
+      logo.brand_name?.toLowerCase().includes(logoBrowserSearch.toLowerCase())
+    );
+  }, [customLogos, logoBrowserSearch]);
+
   return (
     <>
       {cropperImage && (
@@ -259,6 +269,66 @@ Return complete and accurate information based on the blend name or description 
           }}
         />
       )}
+
+      {/* Logo Browser Dialog */}
+      <Dialog open={showLogoBrowser} onOpenChange={setShowLogoBrowser}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Browse Logo Library</DialogTitle>
+            <DialogDescription>
+              Select a logo from the library or upload a custom one
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+              <Input
+                value={logoBrowserSearch}
+                onChange={(e) => setLogoBrowserSearch(e.target.value)}
+                placeholder="Search brands..."
+                className="pl-10"
+              />
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
+              {filteredLogos.map((logo, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    handleChange('logo', logo.logo_url);
+                    setShowLogoBrowser(false);
+                    setLogoBrowserSearch('');
+                  }}
+                  className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 ${
+                    formData.logo === logo.logo_url 
+                      ? 'border-amber-600 bg-amber-100' 
+                      : 'border-stone-200 bg-white'
+                  }`}
+                >
+                  <img 
+                    src={logo.logo_url} 
+                    alt={logo.brand_name}
+                    className="w-full h-full object-contain p-2"
+                  />
+                  {formData.logo === logo.logo_url && (
+                    <div className="absolute top-1 right-1 bg-amber-600 rounded-full p-1">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                  <p className="text-xs text-stone-600 mt-1 truncate px-1">{logo.brand_name}</p>
+                </button>
+              ))}
+            </div>
+            {filteredLogos.length === 0 && (
+              <div className="text-center py-12 text-stone-500">
+                <Library className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p>No logos found</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <form onSubmit={handleSubmit} className="space-y-6">
       {/* AI Search Section */}
       {!blend && (
@@ -418,7 +488,19 @@ Return complete and accurate information based on the blend name or description 
 
             {/* Label/Logo */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Label/Logo</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Label/Logo</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLogoBrowser(true)}
+                  className="text-xs"
+                >
+                  <Library className="w-3 h-3 mr-1" />
+                  Browse Library
+                </Button>
+              </div>
               <div className="flex items-center gap-4">
                 {formData.logo ? (
                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 bg-white group">
