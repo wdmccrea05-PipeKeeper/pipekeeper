@@ -99,14 +99,14 @@ export default function PairingGrid({ pipes, blends }) {
     
     let adjustment = 0;
     
-    // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight: +3 points for exact match)
+    // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight: +5 points for exact match)
     if (pipe.focus && pipe.focus.length > 0) {
       const focusMatch = pipe.focus.some(f => 
         blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
         f.toLowerCase().includes(blend.blend_type?.toLowerCase())
       );
       if (focusMatch) {
-        adjustment += 3; // Increased from 1.5 to 3
+        adjustment += 5; // Strong bonus for specialized pipes matching their focus
       } else {
         // Penalize non-matching blends for specialized pipes
         adjustment -= 2;
@@ -296,7 +296,7 @@ export default function PairingGrid({ pipes, blends }) {
                           return userProfile ? as : bs;
                         });
                         const bestScore = Math.max(...allScoresForBlend);
-                        const isBestPipe = displayScore === bestScore && displayScore > 0;
+                        const isBestPipe = displayScore === bestScore && displayScore >= 8.5;
                         
                         return (
                           <td 
