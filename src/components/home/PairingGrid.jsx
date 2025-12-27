@@ -101,10 +101,17 @@ export default function PairingGrid({ pipes, blends }) {
     
     // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight: +5 points for exact match)
     if (pipe.focus && pipe.focus.length > 0) {
-      const focusMatch = pipe.focus.some(f => 
-        blend.blend_type?.toLowerCase().includes(f.toLowerCase()) ||
-        f.toLowerCase().includes(blend.blend_type?.toLowerCase())
-      );
+      const focusMatch = pipe.focus.some(f => {
+        const focusLower = f.toLowerCase();
+        const blendTypeLower = blend.blend_type?.toLowerCase() || '';
+        const blendNameLower = blend.name?.toLowerCase() || '';
+        
+        // Check if focus matches blend type OR blend name
+        return blendTypeLower.includes(focusLower) ||
+               focusLower.includes(blendTypeLower) ||
+               blendNameLower.includes(focusLower) ||
+               focusLower.includes(blendNameLower);
+      });
       if (focusMatch) {
         adjustment += 5; // Strong bonus for specialized pipes matching their focus
       } else {
