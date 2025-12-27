@@ -392,6 +392,20 @@ export default function CommunityPage() {
                   <SheetDescription>
                     {publicProfiles.filter(p => p.user_email !== user?.email).length} users found
                   </SheetDescription>
+                  <div className="flex gap-2 mt-4">
+                    <Link to={createPageUrl('Home')} className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        Return to Home
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setShowResults(false)}
+                    >
+                      Return to Search
+                    </Button>
+                  </div>
                 </SheetHeader>
                 <div className="space-y-2 mt-6">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
