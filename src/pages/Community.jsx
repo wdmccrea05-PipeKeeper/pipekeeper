@@ -14,7 +14,18 @@ import { createPageUrl } from "@/utils";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationSearch, setLocationSearch] = useState('');
+  const [locationFilters, setLocationFilters] = useState({
+    country: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  });
+  const [activeLocationFilters, setActiveLocationFilters] = useState({
+    country: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  });
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -79,21 +90,32 @@ export default function CommunityPage() {
       );
     }
     
-    // Apply location search filter
-    if (locationSearch.trim()) {
-      const searchLower = locationSearch.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.show_location && (
-          p.city?.toLowerCase().includes(searchLower) ||
-          p.state_province?.toLowerCase().includes(searchLower) ||
-          p.country?.toLowerCase().includes(searchLower) ||
-          p.postal_code?.toLowerCase().includes(searchLower)
-        )
-      );
+    // Apply location filters
+    if (activeLocationFilters.country || activeLocationFilters.city || activeLocationFilters.state || activeLocationFilters.zipCode) {
+      filtered = filtered.filter(p => {
+        if (!p.show_location) return false;
+        
+        let matches = true;
+        
+        if (activeLocationFilters.country) {
+          matches = matches && p.country?.toLowerCase().includes(activeLocationFilters.country.toLowerCase());
+        }
+        if (activeLocationFilters.city) {
+          matches = matches && p.city?.toLowerCase().includes(activeLocationFilters.city.toLowerCase());
+        }
+        if (activeLocationFilters.state) {
+          matches = matches && p.state_province?.toLowerCase().includes(activeLocationFilters.state.toLowerCase());
+        }
+        if (activeLocationFilters.zipCode) {
+          matches = matches && p.postal_code?.toLowerCase().includes(activeLocationFilters.zipCode.toLowerCase());
+        }
+        
+        return matches;
+      });
     }
     
     return filtered;
-  }, [allPublicProfiles, searchQuery, locationSearch]);
+  }, [allPublicProfiles, searchQuery, activeLocationFilters]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -254,7 +276,7 @@ export default function CommunityPage() {
                 <CardTitle className="text-stone-800">Find Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 mb-6">
+                <div className="space-y-4 mb-6">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
                     <Input
@@ -265,14 +287,53 @@ export default function CommunityPage() {
                     />
                   </div>
 
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
-                    <Input
-                      placeholder="Search by country, city, state, or zip code..."
-                      value={locationSearch}
-                      onChange={(e) => setLocationSearch(e.target.value)}
-                      className="pl-10"
-                    />
+                  <div className="space-y-3 p-4 bg-stone-50 rounded-lg border border-stone-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4 text-stone-600" />
+                      <h4 className="font-semibold text-stone-800 text-sm">Search by Location</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        placeholder="Country"
+                        value={locationFilters.country}
+                        onChange={(e) => setLocationFilters({...locationFilters, country: e.target.value})}
+                      />
+                      <Input
+                        placeholder="City"
+                        value={locationFilters.city}
+                        onChange={(e) => setLocationFilters({...locationFilters, city: e.target.value})}
+                      />
+                      <Input
+                        placeholder="State/Province"
+                        value={locationFilters.state}
+                        onChange={(e) => setLocationFilters({...locationFilters, state: e.target.value})}
+                      />
+                      <Input
+                        placeholder="Zip/Postal Code"
+                        value={locationFilters.zipCode}
+                        onChange={(e) => setLocationFilters({...locationFilters, zipCode: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setActiveLocationFilters(locationFilters)}
+                        className="flex-1 bg-amber-700 hover:bg-amber-800"
+                      >
+                        <Search className="w-4 h-4 mr-2" />
+                        Search Location
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setLocationFilters({ country: '', city: '', state: '', zipCode: '' });
+                          setActiveLocationFilters({ country: '', city: '', state: '', zipCode: '' });
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
