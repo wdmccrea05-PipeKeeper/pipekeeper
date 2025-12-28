@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from "@/utils";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -67,6 +67,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess }) {
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -163,6 +164,17 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className="pt-16 md:pt-16 pb-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-[#e8d5b7]/70 hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20 mb-4 mt-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
         {children}
       </main>
 
