@@ -548,8 +548,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Length {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.length_mm ? (formData.length_mm / 25.4).toFixed(2) : (formData.length_mm || '')}
+              step="0.01"
+              value={useImperial && formData.length_mm ? formData.length_mm / 25.4 : (formData.length_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -566,8 +566,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Weight {useImperial ? '(oz)' : '(g)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.weight_grams ? (formData.weight_grams / 28.35).toFixed(2) : (formData.weight_grams || '')}
+              step="0.01"
+              value={useImperial && formData.weight_grams ? formData.weight_grams / 28.35 : (formData.weight_grams || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -584,8 +584,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Bowl Height {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.bowl_height_mm ? (formData.bowl_height_mm / 25.4).toFixed(2) : (formData.bowl_height_mm || '')}
+              step="0.01"
+              value={useImperial && formData.bowl_height_mm ? formData.bowl_height_mm / 25.4 : (formData.bowl_height_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -602,8 +602,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Bowl Width {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.bowl_width_mm ? (formData.bowl_width_mm / 25.4).toFixed(2) : (formData.bowl_width_mm || '')}
+              step="0.01"
+              value={useImperial && formData.bowl_width_mm ? formData.bowl_width_mm / 25.4 : (formData.bowl_width_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -620,8 +620,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Chamber Diameter {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.bowl_diameter_mm ? (formData.bowl_diameter_mm / 25.4).toFixed(2) : (formData.bowl_diameter_mm || '')}
+              step="0.01"
+              value={useImperial && formData.bowl_diameter_mm ? formData.bowl_diameter_mm / 25.4 : (formData.bowl_diameter_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -638,8 +638,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Label>Chamber Depth {useImperial ? '(in)' : '(mm)'}</Label>
             <Input
               type="number"
-              step="0.1"
-              value={useImperial && formData.bowl_depth_mm ? (formData.bowl_depth_mm / 25.4).toFixed(2) : (formData.bowl_depth_mm || '')}
+              step="0.01"
+              value={useImperial && formData.bowl_depth_mm ? formData.bowl_depth_mm / 25.4 : (formData.bowl_depth_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
