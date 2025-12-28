@@ -114,12 +114,25 @@ For each of the 3 NEW blend recommendations, provide:
 
       // Filter out any recommendations that match existing blends
       const filteredMatches = (result.matches || []).filter(match => {
-        const matchFullName = `${match.manufacturer || ''} ${match.blend_name || ''}`.toLowerCase();
-        return !existingBlends.some(existing => 
-          existing.fullName.includes(match.blend_name?.toLowerCase()) ||
-          matchFullName.includes(existing.name) ||
-          (existing.manufacturer && match.manufacturer?.toLowerCase().includes(existing.manufacturer))
-        );
+        const matchFullName = `${match.manufacturer || ''} ${match.blend_name || ''}`.toLowerCase().trim();
+        const matchName = match.blend_name?.toLowerCase().trim() || '';
+        const matchMfr = match.manufacturer?.toLowerCase().trim() || '';
+        
+        return !existingBlends.some(existing => {
+          const existingName = existing.name.trim();
+          const existingMfr = existing.manufacturer.trim();
+          const existingFull = existing.fullName.trim();
+          
+          // Check for exact or very close matches only
+          return (
+            // Exact full name match
+            matchFullName === existingFull ||
+            // Exact blend name match with same manufacturer
+            (matchName === existingName && matchMfr === existingMfr) ||
+            // Very close match (>80% similarity) on full name
+            (matchFullName && existingFull && matchFullName === existingFull)
+          );
+        });
       });
 
       setMatches(filteredMatches);
