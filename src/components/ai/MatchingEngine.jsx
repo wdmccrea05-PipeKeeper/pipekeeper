@@ -35,12 +35,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
 
       const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
       
-      const userBlendsDescription = blends.length > 0 
-        ? `\n\nCRITICAL: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
-${existingBlendsText}
-
-Only recommend NEW, DIFFERENT blends the user should purchase.`
-        : '';
+      const blendsListText = blends.map(b => `${b.manufacturer || 'Unknown'} - ${b.name}`).join('\n');
 
       const hasFocus = pipe.focus && pipe.focus.length > 0;
       
@@ -63,12 +58,15 @@ Only recommend NEW, DIFFERENT blends the user should purchase.`
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
-
-You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, recommend the ideal types of tobacco blends that would smoke well in this pipe, and suggest specific real-world product examples that the user should BUY.
+        prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, provide TWO SETS of recommendations:
+1. Blends from the user's collection that pair well
+2. New blends the user should consider buying
 
 ${pipeDescription}
-${userBlendsDescription}${focusContext}
+
+User's Tobacco Collection:
+${blendsListText}
+${focusContext}
 
 Consider:
 1. Bowl size affects burn rate and flavor development - smaller bowls suit mild tobaccos, larger bowls can handle fuller blends
@@ -77,22 +75,33 @@ Consider:
 4. Wide shallow bowls suit flakes, deeper bowls work well with ribbon cuts
 5. If pipe has a focus, prioritize matching blends but explain how the physical characteristics support that focus
 
-CRITICAL: Do NOT include any URLs, links, sources, or citations in your response. Provide only product names, manufacturers, and descriptions.
+CRITICAL: Do NOT include any URLs, links, sources, or citations in your response.
 
 Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
-- reasoning: why these types work well with this pipe (no sources or links)
-- from_collection: array of blend names from the user's collection that would pair well (if any match)
-- product_recommendations: array of 3-5 specific NEW real products to BUY (NOT from user's collection) with name, manufacturer, blend_type, and brief description (no URLs or sources)
-- smoking_tips: specific tips for smoking these blend types in this pipe (no sources or links)`,
+- reasoning: why these types work well with this pipe
+- from_collection: array of 3-5 objects with {name, manufacturer, score (1-10), reasoning} for blends from user's collection that match well
+- to_buy: array of 3-5 objects with {name, manufacturer, blend_type, score (1-10), description} for NEW products to buy (NOT from user's collection)
+- smoking_tips: specific tips for smoking these blend types in this pipe`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
             ideal_blend_types: { type: "array", items: { type: "string" } },
             reasoning: { type: "string" },
-            from_collection: { type: "array", items: { type: "string" } },
-            product_recommendations: { 
+            from_collection: { 
+              type: "array", 
+              items: { 
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  manufacturer: { type: "string" },
+                  score: { type: "number" },
+                  reasoning: { type: "string" }
+                }
+              } 
+            },
+            to_buy: { 
               type: "array", 
               items: { 
                 type: "object",
@@ -100,6 +109,7 @@ Provide recommendations in JSON format with:
                   name: { type: "string" },
                   manufacturer: { type: "string" },
                   blend_type: { type: "string" },
+                  score: { type: "number" },
                   description: { type: "string" }
                 }
               } 
@@ -109,15 +119,23 @@ Provide recommendations in JSON format with:
         }
       });
 
-      // Filter out any product recommendations that match existing blends
-      if (result.product_recommendations) {
-        result.product_recommendations = result.product_recommendations.filter(product => {
-          const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase();
-          return !existingBlends.some(existing => 
-            existing.fullName.includes(product.name?.toLowerCase()) ||
-            productFullName.includes(existing.name) ||
-            (existing.manufacturer && product.manufacturer?.toLowerCase().includes(existing.manufacturer))
-          );
+      // Filter to_buy recommendations to exclude user's collection
+      if (result.to_buy) {
+        result.to_buy = result.to_buy.filter(product => {
+          const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase().trim();
+          const productName = product.name?.toLowerCase().trim() || '';
+          const productMfr = product.manufacturer?.toLowerCase().trim() || '';
+          
+          return !existingBlends.some(existing => {
+            const existingName = existing.name.trim();
+            const existingMfr = existing.manufacturer.trim();
+            const existingFull = existing.fullName.trim();
+            
+            return (
+              productFullName === existingFull ||
+              (productName === existingName && productMfr === existingMfr)
+            );
+          });
         });
       }
 
@@ -132,8 +150,8 @@ Provide recommendations in JSON format with:
   if (!isPaidUser) {
     return (
       <UpgradePrompt 
-        featureName="AI Tobacco Matching (New Blends)"
-        description="Get AI-powered recommendations for new tobacco blends to buy based on your pipe's characteristics and smoking profile. Discover perfect matches you don't own yet."
+        featureName="AI Tobacco Matching"
+        description="Get AI-powered recommendations for blends from your collection and new blends to try based on your pipe's characteristics and smoking profile."
       />
     );
   }
@@ -220,45 +238,61 @@ Provide recommendations in JSON format with:
                   <CardDescription>Blends you already own that pair well</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {recommendations.from_collection.map((name, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200">
-                        {name}
-                      </Badge>
+                  <div className="grid gap-3">
+                    {recommendations.from_collection.map((blend, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-4 rounded-lg bg-emerald-50 border border-emerald-200"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
+                            <p className="text-sm text-stone-600 mt-1">{blend.reasoning}</p>
+                          </div>
+                          <Badge className="bg-emerald-600 text-white shrink-0">
+                            {blend.score}/10
+                          </Badge>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Product Recommendations */}
-            <Card className="border-stone-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Recommended Products</CardTitle>
-                <CardDescription>Real-world blends to try</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3">
-                  {recommendations.product_recommendations?.map((product, idx) => (
-                    <div 
-                      key={idx} 
-                      className="p-4 rounded-lg bg-stone-50 border border-stone-100 hover:border-amber-200 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h4 className="font-semibold text-stone-800">{product.name}</h4>
-                          <p className="text-sm text-stone-500">{product.manufacturer}</p>
+            {/* Recommended to Buy */}
+            {recommendations.to_buy?.length > 0 && (
+              <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-violet-600" />
+                    Recommended to Buy
+                  </CardTitle>
+                  <CardDescription>New blends to try that aren't in your collection</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {recommendations.to_buy.map((product, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-stone-800">{product.manufacturer} - {product.name}</h4>
+                            <p className="text-xs text-stone-500 mt-0.5">{product.blend_type}</p>
+                            <p className="text-sm text-stone-600 mt-2">{product.description}</p>
+                          </div>
+                          <Badge className="bg-violet-600 text-white shrink-0">
+                            {product.score}/10
+                          </Badge>
                         </div>
-                        <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 shrink-0">
-                          {product.blend_type}
-                        </Badge>
                       </div>
-                      <p className="text-sm text-stone-600 mt-2">{product.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Smoking Tips */}
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">

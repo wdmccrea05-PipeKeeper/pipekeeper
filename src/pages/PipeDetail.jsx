@@ -29,7 +29,7 @@ import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
-import TopBlendMatches from "@/components/pipes/TopBlendMatches";
+
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 
@@ -169,16 +169,7 @@ export default function PipeDetailPage() {
           </div>
         )}
 
-        {/* Top Blend Matches */}
-        {blends.length > 0 && (
-          <div className="mb-6">
-            <TopBlendMatches 
-              pipe={pipe} 
-              blends={blends}
-              userProfile={userProfile}
-            />
-          </div>
-        )}
+
 
         {/* Break-In Schedule */}
         <div className="mb-6">
