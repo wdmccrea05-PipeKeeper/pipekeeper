@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
+import CommentSection from "@/components/community/CommentSection";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -78,6 +79,15 @@ export default function TobaccoDetailPage() {
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
     enabled: !!user?.email,
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', blend?.created_by],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: blend.created_by });
+      return profiles[0];
+    },
+    enabled: !!blend?.created_by,
   });
 
   const updateMutation = useMutation({
@@ -330,6 +340,19 @@ export default function TobaccoDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Comments Section */}
+        {userProfile?.allow_comments && (
+          <Card className="border-stone-200 mt-8">
+            <CardContent className="p-6">
+              <CommentSection
+                entityType="blend"
+                entityId={blendId}
+                entityOwnerEmail={blend.created_by}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Edit Sheet */}
         <Sheet open={showEdit} onOpenChange={setShowEdit}>

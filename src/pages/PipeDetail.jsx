@@ -29,6 +29,7 @@ import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
+import CommentSection from "@/components/community/CommentSection";
 
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
@@ -492,6 +493,19 @@ export default function PipeDetailPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Comments Section */}
+        {userProfile?.allow_comments && (
+          <Card className="border-stone-200 mt-8">
+            <CardContent className="p-6">
+              <CommentSection
+                entityType="pipe"
+                entityId={pipeId}
+                entityOwnerEmail={pipe.created_by}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Edit Sheet */}
         <Sheet open={showEdit} onOpenChange={setShowEdit}>
