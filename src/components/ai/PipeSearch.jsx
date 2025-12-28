@@ -78,7 +78,9 @@ Return an array of relevant pipe matches with detailed information.`,
     }
   };
 
-  const handleSelectPipe = (pipe) => {
+  const handleSelectPipe = (pipe, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     // Convert the search result to form data
     const formData = {
       name: pipe.name || '',
@@ -92,6 +94,8 @@ Return an array of relevant pipe matches with detailed information.`,
       notes: pipe.description || ''
     };
     onSelect(formData);
+    setResults([]);
+    setQuery('');
   };
 
   return (
@@ -131,7 +135,7 @@ Return an array of relevant pipe matches with detailed information.`,
               <Card
                 key={idx}
                 className="cursor-pointer hover:bg-amber-50 transition-colors border-stone-200"
-                onClick={() => handleSelectPipe(pipe)}
+                onClick={(e) => handleSelectPipe(pipe, e)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
