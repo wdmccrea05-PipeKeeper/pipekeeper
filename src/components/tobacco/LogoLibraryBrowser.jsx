@@ -27,7 +27,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   
   const allBrands = getAvailableBrands(customLogos);
   
-  // Smart search - prioritize starts-with, then includes, then word matches
+  // Smart search - match any part of any word in the search query
   const filteredBrands = searchQuery.trim() === '' 
     ? allBrands 
     : allBrands
@@ -35,15 +35,50 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
           const brandLower = brandObj.brand.toLowerCase();
           const queryLower = searchQuery.toLowerCase();
           
+          // Split search query into individual terms
+          const searchTerms = queryLower.split(/[\s,]+/).filter(term => term.length > 0);
+          
           // Calculate relevance score
           let score = 0;
-          if (brandLower === queryLower) score = 100; // exact match
-          else if (brandLower.startsWith(queryLower)) score = 80; // starts with
-          else if (brandLower.includes(queryLower)) score = 60; // contains
-          else {
-            // Check if any word starts with query
-            const words = brandLower.split(/[\s&]+/);
-            if (words.some(w => w.startsWith(queryLower))) score = 40;
+          
+          if (brandLower === queryLower) {
+            score = 100; // exact match
+          } else if (brandLower.startsWith(queryLower)) {
+            score = 90; // starts with full query
+          } else if (brandLower.includes(queryLower)) {
+            score = 80; // contains full query
+          } else {
+            // Check if brand matches any of the search terms
+            const brandWords = brandLower.split(/[\s&]+/);
+            let matchCount = 0;
+            
+            for (const term of searchTerms) {
+              // Check exact word match
+              if (brandWords.some(w => w === term)) {
+                matchCount += 10;
+                score += 70;
+              }
+              // Check word starts with term
+              else if (brandWords.some(w => w.startsWith(term))) {
+                matchCount += 5;
+                score += 50;
+              }
+              // Check word contains term
+              else if (brandWords.some(w => w.includes(term))) {
+                matchCount += 3;
+                score += 30;
+              }
+              // Check if brand contains term anywhere
+              else if (brandLower.includes(term)) {
+                matchCount += 1;
+                score += 10;
+              }
+            }
+            
+            // Bonus for matching multiple terms
+            if (matchCount > 0 && searchTerms.length > 1) {
+              score += matchCount * 5;
+            }
           }
           
           return { ...brandObj, score };
