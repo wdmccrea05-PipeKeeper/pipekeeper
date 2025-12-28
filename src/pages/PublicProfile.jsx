@@ -231,23 +231,37 @@ export default function PublicProfilePage() {
               {pipes.map((pipe) => (
                 <Card key={pipe.id} className="bg-white/95 border-stone-200 hover:border-amber-400 transition-colors">
                   <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {pipe.photos?.[0] ? (
-                          <img src={pipe.photos[0]} alt={pipe.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <PipeShapeIcon shape={pipe.shape} className="w-16 h-16" />
-                        )}
+                    <div className="space-y-3">
+                      <div className="flex gap-4">
+                        <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {pipe.photos?.[0] ? (
+                            <img src={pipe.photos[0]} alt={pipe.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <PipeShapeIcon shape={pipe.shape} className="w-16 h-16" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-stone-800 mb-1">{pipe.name}</h3>
+                          {pipe.maker && <p className="text-sm text-stone-600 mb-2">{pipe.maker}</p>}
+                          {pipe.shape && (
+                            <Badge variant="outline" className="text-xs">
+                              {pipe.shape}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-stone-800 mb-1">{pipe.name}</h3>
-                        {pipe.maker && <p className="text-sm text-stone-600 mb-2">{pipe.maker}</p>}
-                        {pipe.shape && (
-                          <Badge variant="outline" className="text-xs">
-                            {pipe.shape}
-                          </Badge>
-                        )}
-                      </div>
+                      {pipe.photos?.length > 1 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {pipe.photos.map((photo, idx) => (
+                            <img
+                              key={idx}
+                              src={photo}
+                              alt={`${pipe.name} ${idx + 1}`}
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200"
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
@@ -285,32 +299,46 @@ export default function PublicProfilePage() {
               {blends.map((blend) => (
                 <Card key={blend.id} className="bg-white/95 border-stone-200 hover:border-amber-400 transition-colors">
                   <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {blend.logo ? (
-                          <img src={blend.logo} alt={blend.manufacturer} className="w-16 h-16 object-contain" />
-                        ) : blend.photo ? (
-                          <img src={blend.photo} alt={blend.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Leaf className="w-16 h-16 text-stone-400" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-stone-800 mb-1">{blend.name}</h3>
-                        {blend.manufacturer && <p className="text-sm text-stone-600 mb-2">{blend.manufacturer}</p>}
-                        <div className="flex gap-2">
-                          {blend.blend_type && (
-                            <Badge variant="outline" className="text-xs">
-                              {blend.blend_type}
-                            </Badge>
-                          )}
-                          {blend.strength && (
-                            <Badge variant="outline" className="text-xs">
-                              {blend.strength}
-                            </Badge>
+                    <div className="space-y-3">
+                      <div className="flex gap-4">
+                        <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {blend.logo ? (
+                            <img src={blend.logo} alt={blend.manufacturer} className="w-16 h-16 object-contain" />
+                          ) : blend.photo ? (
+                            <img src={blend.photo} alt={blend.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Leaf className="w-16 h-16 text-stone-400" />
                           )}
                         </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-stone-800 mb-1">{blend.name}</h3>
+                          {blend.manufacturer && <p className="text-sm text-stone-600 mb-2">{blend.manufacturer}</p>}
+                          <div className="flex gap-2">
+                            {blend.blend_type && (
+                              <Badge variant="outline" className="text-xs">
+                                {blend.blend_type}
+                              </Badge>
+                            )}
+                            {blend.strength && (
+                              <Badge variant="outline" className="text-xs">
+                                {blend.strength}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
+                      {blend.photos?.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {blend.photos.map((photo, idx) => (
+                            <img
+                              key={idx}
+                              src={photo}
+                              alt={`${blend.name} ${idx + 1}`}
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200"
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
