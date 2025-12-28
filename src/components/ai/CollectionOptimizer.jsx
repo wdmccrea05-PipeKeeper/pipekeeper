@@ -337,43 +337,15 @@ User Feedback: ${feedback}
   const handleAcceptAll = async () => {
     if (!optimization?.pipe_specializations) return;
     
-    setAcceptingAll(true);
-    try {
-      // Apply all recommendations to pipes
-      const updatePromises = optimization.pipe_specializations
-        .filter(spec => spec.recommended_blend_types?.length > 0)
-        .map(spec => {
-          const pipe = pipes.find(p => p.id === spec.pipe_id);
-          if (!pipe) return null;
-          
-          // Only update if focus is different
-          const currentFocus = JSON.stringify(pipe.focus?.sort() || []);
-          const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
-          
-          if (currentFocus !== newFocus) {
-            return updatePipeMutation.mutateAsync({
-              id: spec.pipe_id,
-              data: { focus: spec.recommended_blend_types }
-            });
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      await Promise.all(updatePromises);
-      
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['pipes'] });
-      await queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
-      
-      setShowAcceptAll(false);
-      setUserFeedbackHistory('');
-    } catch (err) {
-      console.error('Error accepting recommendations:', err);
-      alert('Failed to apply recommendations. Please try again.');
-    } finally {
-      setAcceptingAll(false);
-    }
+    // Pre-select all changes and open confirmation dialog
+    const changes = {};
+    optimization.pipe_specializations?.forEach(spec => {
+      if (spec.recommended_blend_types?.length > 0) {
+        changes[spec.pipe_id] = true;
+      }
+    });
+    setSelectedChanges(changes);
+    setShowConfirmation(true);
   };
 
   const handleConfirmChanges = async () => {
