@@ -13,10 +13,11 @@ export default function PipeSearch({ onSelect }) {
   const [results, setResults] = useState([]);
 
   const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+    if (e) e.preventDefault();
+    if (!query.trim() || loading) return;
 
     setLoading(true);
+    setResults([]);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Search for information about this pipe: "${query}"

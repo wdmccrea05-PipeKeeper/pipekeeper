@@ -70,17 +70,25 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   };
 
   const handleSearchSelect = (searchData) => {
-    setFormData(prev => ({
-      ...prev,
-      ...searchData
-    }));
+    setFormData(prev => {
+      // Merge search data, but preserve any existing photos
+      const { photos: _photos, stamping_photos: _stampingPhotos, ...rest } = searchData;
+      return {
+        ...prev,
+        ...rest
+      };
+    });
   };
 
   const handlePhotoIdentify = (identifiedData) => {
-    setFormData(prev => ({
-      ...prev,
-      ...identifiedData
-    }));
+    setFormData(prev => {
+      // Merge identified data, but preserve any existing photos
+      const { photos: _photos, stamping_photos: _stampingPhotos, ...rest } = identifiedData;
+      return {
+        ...prev,
+        ...rest
+      };
+    });
   };
 
 
@@ -541,8 +549,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.length_mm ? (formData.length_mm / 25.4).toFixed(2) : formData.length_mm}
-              onChange={(e) => handleChange('length_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              value={useImperial && formData.length_mm ? (formData.length_mm / 25.4).toFixed(2) : (formData.length_mm || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('length_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
               className="border-stone-200"
             />
@@ -552,8 +563,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.weight_grams ? (formData.weight_grams / 28.35).toFixed(2) : formData.weight_grams}
-              onChange={(e) => handleChange('weight_grams', useImperial ? (parseFloat(e.target.value || 0) * 28.35).toFixed(1) : e.target.value)}
+              value={useImperial && formData.weight_grams ? (formData.weight_grams / 28.35).toFixed(2) : (formData.weight_grams || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('weight_grams', val ? (useImperial ? (parseFloat(val) * 28.35).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
               className="border-stone-200"
             />
@@ -563,8 +577,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.bowl_height_mm ? (formData.bowl_height_mm / 25.4).toFixed(2) : formData.bowl_height_mm}
-              onChange={(e) => handleChange('bowl_height_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              value={useImperial && formData.bowl_height_mm ? (formData.bowl_height_mm / 25.4).toFixed(2) : (formData.bowl_height_mm || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('bowl_height_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
               className="border-stone-200"
             />
@@ -574,8 +591,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.bowl_width_mm ? (formData.bowl_width_mm / 25.4).toFixed(2) : formData.bowl_width_mm}
-              onChange={(e) => handleChange('bowl_width_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              value={useImperial && formData.bowl_width_mm ? (formData.bowl_width_mm / 25.4).toFixed(2) : (formData.bowl_width_mm || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('bowl_width_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
               className="border-stone-200"
             />
@@ -585,8 +605,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.bowl_diameter_mm ? (formData.bowl_diameter_mm / 25.4).toFixed(2) : formData.bowl_diameter_mm}
-              onChange={(e) => handleChange('bowl_diameter_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              value={useImperial && formData.bowl_diameter_mm ? (formData.bowl_diameter_mm / 25.4).toFixed(2) : (formData.bowl_diameter_mm || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('bowl_diameter_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
               className="border-stone-200"
             />
@@ -596,8 +619,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.1"
-              value={useImperial && formData.bowl_depth_mm ? (formData.bowl_depth_mm / 25.4).toFixed(2) : formData.bowl_depth_mm}
-              onChange={(e) => handleChange('bowl_depth_mm', useImperial ? (parseFloat(e.target.value || 0) * 25.4).toFixed(1) : e.target.value)}
+              value={useImperial && formData.bowl_depth_mm ? (formData.bowl_depth_mm / 25.4).toFixed(2) : (formData.bowl_depth_mm || '')}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('bowl_depth_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+              }}
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
               className="border-stone-200"
             />
