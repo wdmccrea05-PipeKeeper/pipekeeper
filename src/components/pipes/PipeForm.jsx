@@ -552,7 +552,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.length_mm ? (formData.length_mm / 25.4).toFixed(2) : (formData.length_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('length_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('length_mm', '');
+                } else {
+                  handleChange('length_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
               className="border-stone-200"
@@ -566,7 +570,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.weight_grams ? (formData.weight_grams / 28.35).toFixed(2) : (formData.weight_grams || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('weight_grams', val ? (useImperial ? (parseFloat(val) * 28.35).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('weight_grams', '');
+                } else {
+                  handleChange('weight_grams', useImperial ? String(parseFloat(val) * 28.35) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
               className="border-stone-200"
@@ -580,7 +588,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.bowl_height_mm ? (formData.bowl_height_mm / 25.4).toFixed(2) : (formData.bowl_height_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('bowl_height_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('bowl_height_mm', '');
+                } else {
+                  handleChange('bowl_height_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
               className="border-stone-200"
@@ -594,7 +606,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.bowl_width_mm ? (formData.bowl_width_mm / 25.4).toFixed(2) : (formData.bowl_width_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('bowl_width_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('bowl_width_mm', '');
+                } else {
+                  handleChange('bowl_width_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
               className="border-stone-200"
@@ -608,7 +624,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.bowl_diameter_mm ? (formData.bowl_diameter_mm / 25.4).toFixed(2) : (formData.bowl_diameter_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('bowl_diameter_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('bowl_diameter_mm', '');
+                } else {
+                  handleChange('bowl_diameter_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
               className="border-stone-200"
@@ -622,7 +642,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={useImperial && formData.bowl_depth_mm ? (formData.bowl_depth_mm / 25.4).toFixed(2) : (formData.bowl_depth_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange('bowl_depth_mm', val ? (useImperial ? (parseFloat(val) * 25.4).toFixed(1) : val) : '');
+                if (val === '') {
+                  handleChange('bowl_depth_mm', '');
+                } else {
+                  handleChange('bowl_depth_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                }
               }}
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
               className="border-stone-200"
