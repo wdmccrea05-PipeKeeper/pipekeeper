@@ -6,11 +6,18 @@ import { Loader2, Sparkles, Star, Flame } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { useQuery } from "@tanstack/react-query";
 
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+
+  const { data: customLogos = [] } = useQuery({
+    queryKey: ['tobacco-logos'],
+    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+  });
 
   const getRecommendations = async () => {
     setLoading(true);
@@ -244,8 +251,13 @@ Provide recommendations in JSON format with:
                         key={idx} 
                         className="p-4 rounded-lg bg-emerald-50 border border-emerald-200"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
+                        <div className="flex items-start gap-3">
+                          <img 
+                            src={getTobaccoLogo(blend.manufacturer, customLogos)} 
+                            alt={blend.manufacturer}
+                            className="w-16 h-8 object-contain rounded shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
                             <p className="text-sm text-stone-600 mt-1">{blend.reasoning}</p>
                           </div>
@@ -277,8 +289,13 @@ Provide recommendations in JSON format with:
                         key={idx} 
                         className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
+                        <div className="flex items-start gap-3">
+                          <img 
+                            src={getTobaccoLogo(product.manufacturer, customLogos)} 
+                            alt={product.manufacturer}
+                            className="w-16 h-8 object-contain rounded shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-stone-800">{product.manufacturer} - {product.name}</h4>
                             <p className="text-xs text-stone-500 mt-0.5">{product.blend_type}</p>
                             <p className="text-sm text-stone-600 mt-2">{product.description}</p>
