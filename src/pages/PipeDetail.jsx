@@ -326,7 +326,7 @@ export default function PipeDetailPage() {
                       <div>
                         <p className="text-xs text-stone-500">Length</p>
                         <p className="font-medium text-stone-800">
-                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${pipe.length_mm}mm`}
+                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${Math.round(pipe.length_mm * 10) / 10}mm`}
                         </p>
                       </div>
                     </div>
@@ -337,7 +337,7 @@ export default function PipeDetailPage() {
                       <div>
                         <p className="text-xs text-stone-500">Weight</p>
                         <p className="font-medium text-stone-800">
-                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)}oz` : `${pipe.weight_grams}g`}
+                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)}oz` : `${Math.round(pipe.weight_grams * 10) / 10}g`}
                         </p>
                       </div>
                     </div>
@@ -346,7 +346,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-stone-500">Bowl Height</p>
                       <p className="font-medium text-stone-800">
-                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_height_mm}mm`}
+                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${Math.round(pipe.bowl_height_mm * 10) / 10}mm`}
                       </p>
                     </div>
                   )}
@@ -354,7 +354,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-stone-500">Bowl Width</p>
                       <p className="font-medium text-stone-800">
-                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_width_mm}mm`}
+                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${Math.round(pipe.bowl_width_mm * 10) / 10}mm`}
                       </p>
                     </div>
                   )}
@@ -362,7 +362,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-stone-500">Chamber Diameter</p>
                       <p className="font-medium text-stone-800">
-                        {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_diameter_mm}mm`}
+                        {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${Math.round(pipe.bowl_diameter_mm * 10) / 10}mm`}
                       </p>
                     </div>
                   )}
@@ -370,7 +370,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-stone-500">Chamber Depth</p>
                       <p className="font-medium text-stone-800">
-                        {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_depth_mm}mm`}
+                        {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${Math.round(pipe.bowl_depth_mm * 10) / 10}mm`}
                       </p>
                     </div>
                   )}
