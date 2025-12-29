@@ -16,22 +16,14 @@ const PRICING_OPTIONS = [
   { 
     id: 'plan_Rv4YPft7QPwWVi',
     name: 'Monthly',
-    price: '$1.00',
+    price: '$1.99',
     interval: 'month',
     description: 'Billed monthly'
   },
   { 
-    id: 'plan_Rv4YoDCR9KLXIF',
-    name: 'Quarterly',
-    price: '$1.00',
-    interval: '3 months',
-    description: 'Billed every 3 months',
-    badge: 'Save 17%'
-  },
-  { 
     id: 'plan_Rv4Y83IMnP5MRz',
     name: 'Yearly',
-    price: '$1.00',
+    price: '$19.99',
     interval: 'year',
     description: 'Billed annually',
     badge: 'Best Value'
@@ -40,7 +32,7 @@ const PRICING_OPTIONS = [
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient();
-  const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[2].id); // Default to yearly
+  const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
 
   const { data: user } = useQuery({
@@ -247,8 +239,16 @@ export default function SubscriptionPage() {
           {/* Free Features */}
           <Card className="border-stone-200 bg-[#243548]">
             <CardHeader>
-              <CardTitle className="text-[#e8d5b7]">Free Features</CardTitle>
-              <CardDescription className="text-[#e8d5b7]/70">What's included with your free PipeKeeper account</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-[#e8d5b7]">Free Version</CardTitle>
+                  <CardDescription className="text-[#e8d5b7]/70">What's included with your free PipeKeeper account</CardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-[#e8d5b7]">$0</p>
+                  <p className="text-xs text-[#e8d5b7]/70">forever</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -273,11 +273,19 @@ export default function SubscriptionPage() {
           {/* Premium Features */}
           <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-amber-600" />
-                Premium Features
-              </CardTitle>
-              <CardDescription>Everything you get with PipeKeeper Premium</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="w-5 h-5 text-amber-600" />
+                    Premium Version
+                  </CardTitle>
+                  <CardDescription>Everything you get with PipeKeeper Premium</CardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-stone-800">$1.99</p>
+                  <p className="text-xs text-stone-600">per month</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
