@@ -279,7 +279,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200 group">
+              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-stone-200 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                   <button
@@ -299,7 +299,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 </div>
               </div>
             ))}
-            <label className="aspect-square rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
               {uploading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
@@ -330,7 +330,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.stamping_photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-stone-200 group">
+              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-stone-200 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                   <button
@@ -350,7 +350,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 </div>
               </div>
             ))}
-            <label className="aspect-square rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
               {uploadingStamping ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
