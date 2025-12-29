@@ -43,6 +43,8 @@ IMPORTANT PRICING GUIDELINES - Use realistic market values:
 
 Base prices on actual current market data from estate dealers and auction results.
 
+CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
+
 Return an array of relevant pipe matches with detailed information.`,
         add_context_from_internet: true,
         response_json_schema: {

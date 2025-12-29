@@ -34,6 +34,8 @@ Search the web for detailed information about this specific tobacco blend. Inclu
 - Aging potential
 - Typical reviews and ratings
 
+CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
+
 Return an array of relevant tobacco blend matches with detailed information.`,
         add_context_from_internet: true,
         response_json_schema: {
