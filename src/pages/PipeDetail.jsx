@@ -181,7 +181,7 @@ export default function PipeDetailPage() {
           {/* Photo Gallery */}
           <div className="space-y-4">
             <motion.div 
-              className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl"
+              className="aspect-[16/9] rounded-2xl overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl"
               layoutId={`pipe-${pipe.id}`}
             >
               {allPhotos.length > 0 ? (
@@ -205,7 +205,7 @@ export default function PipeDetailPage() {
                   <button
                     key={idx}
                     onClick={() => setSelectedPhoto(idx)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden shrink-0 transition-all ${
+                    className={`w-20 h-12 rounded-lg overflow-hidden shrink-0 transition-all ${
                       selectedPhoto === idx 
                         ? 'ring-2 ring-amber-600 ring-offset-2' 
                         : 'opacity-70 hover:opacity-100'

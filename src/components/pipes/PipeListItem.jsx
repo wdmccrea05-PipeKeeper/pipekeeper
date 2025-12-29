@@ -15,7 +15,7 @@ export default function PipeListItem({ pipe, onClick }) {
       <CardContent className="p-4 bg-[#f5ead8]/50">
         <div className="flex items-center gap-4">
           {/* Photo */}
-          <div className="relative w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden shrink-0">
+          <div className="relative w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden shrink-0">
             {mainPhoto ? (
               <img 
                 src={mainPhoto} 

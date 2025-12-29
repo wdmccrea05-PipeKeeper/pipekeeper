@@ -17,7 +17,7 @@ export default function PipeCard({ pipe, onClick }) {
         className="overflow-hidden cursor-pointer bg-gradient-to-br from-[#f5ead8] to-[#e8d5b7]/30 border-[#e8d5b7]/60 hover:shadow-xl hover:shadow-[#8b3a3a]/10 transition-all duration-300"
         onClick={onClick}
       >
-        <div className="relative aspect-[4/3] bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
+        <div className="relative aspect-[16/9] bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
           {mainPhoto ? (
             <img 
               src={mainPhoto} 
