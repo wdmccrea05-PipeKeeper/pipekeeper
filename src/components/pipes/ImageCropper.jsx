@@ -28,9 +28,21 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     img.onload = () => {
       imageRef.current = img;
       setImageLoaded(true);
-      // Center crop on image - 16:9 ratio as default
-      const width = Math.min(img.width * 0.8, img.width);
-      const height = width * (9/16);
+      // Center crop on image - 16:9 ratio as default (matches final display)
+      const targetRatio = 16/9;
+      let width, height;
+      
+      // Fit to image while maintaining 16:9
+      if (img.width / img.height > targetRatio) {
+        // Image is wider than 16:9
+        height = img.height * 0.9;
+        width = height * targetRatio;
+      } else {
+        // Image is taller than 16:9
+        width = img.width * 0.9;
+        height = width / targetRatio;
+      }
+      
       const initialCrop = {
         x: (img.width - width) / 2,
         y: (img.height - height) / 2,
@@ -443,8 +455,8 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
           {/* Preset Ratios */}
           <div className="flex flex-wrap gap-2 justify-center">
-            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(16/9)}>
-              16:9
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(16/9)} className="bg-amber-50">
+              16:9 (Default)
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(4/3)}>
               4:3
