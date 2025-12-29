@@ -235,28 +235,46 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   const getCroppedImage = () => {
     const img = imageRef.current;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const outputCanvas = document.createElement('canvas');
+    const outputCtx = outputCanvas.getContext('2d');
 
-    canvas.width = crop.width;
-    canvas.height = crop.height;
+    // Set output canvas to match crop dimensions (preserves aspect ratio)
+    outputCanvas.width = crop.width;
+    outputCanvas.height = crop.height;
 
     // Apply rotation if needed
     if (rotation !== 0) {
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCanvas.width = img.width;
-      tempCanvas.height = img.height;
-      tempCtx.translate(img.width / 2, img.height / 2);
-      tempCtx.rotate((rotation * Math.PI) / 180);
-      tempCtx.translate(-img.width / 2, -img.height / 2);
-      tempCtx.drawImage(img, 0, 0);
-      ctx.drawImage(tempCanvas, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+      const rotatedCanvas = document.createElement('canvas');
+      const rotatedCtx = rotatedCanvas.getContext('2d');
+      
+      // Calculate rotated dimensions
+      const rad = (rotation * Math.PI) / 180;
+      const sin = Math.abs(Math.sin(rad));
+      const cos = Math.abs(Math.cos(rad));
+      rotatedCanvas.width = img.width * cos + img.height * sin;
+      rotatedCanvas.height = img.width * sin + img.height * cos;
+      
+      // Rotate and draw image
+      rotatedCtx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+      rotatedCtx.rotate(rad);
+      rotatedCtx.drawImage(img, -img.width / 2, -img.height / 2);
+      
+      // Crop from rotated image - extract exact pixels without scaling
+      outputCtx.drawImage(
+        rotatedCanvas,
+        crop.x, crop.y, crop.width, crop.height,
+        0, 0, crop.width, crop.height
+      );
     } else {
-      ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+      // Direct crop without rotation - extract exact pixels
+      outputCtx.drawImage(
+        img,
+        crop.x, crop.y, crop.width, crop.height,
+        0, 0, crop.width, crop.height
+      );
     }
 
-    return canvas.toDataURL('image/jpeg', 0.9);
+    return outputCanvas.toDataURL('image/jpeg', 0.95);
   };
 
   const handleSave = () => {
