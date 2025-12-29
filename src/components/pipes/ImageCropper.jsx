@@ -50,9 +50,19 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
     if (!canvas || !ctx || !img) return;
 
-    // Set canvas size
-    canvas.width = 500;
-    canvas.height = 500;
+    // Set canvas size to maintain aspect ratio
+    const maxDimension = 600;
+    const aspectRatio = img.width / img.height;
+    
+    if (aspectRatio > 1) {
+      // Landscape
+      canvas.width = maxDimension;
+      canvas.height = maxDimension / aspectRatio;
+    } else {
+      // Portrait or square
+      canvas.height = maxDimension;
+      canvas.width = maxDimension * aspectRatio;
+    }
 
     // Clear canvas
     ctx.fillStyle = '#f5f5f5';
