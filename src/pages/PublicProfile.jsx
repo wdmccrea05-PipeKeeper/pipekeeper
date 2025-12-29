@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CommentSection from "@/components/community/CommentSection";
+import ImageModal from "@/components/ui/ImageModal";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -19,6 +20,7 @@ export default function PublicProfilePage() {
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
   const queryClient = useQueryClient();
+  const [expandedImage, setExpandedImage] = React.useState(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
@@ -181,7 +183,10 @@ export default function PublicProfilePage() {
         <Card className="bg-white/95 mb-6">
           <CardContent className="p-6">
             <div className="flex items-start gap-6">
-              <Avatar className="w-24 h-24">
+              <Avatar 
+                className="w-24 h-24 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => profile.avatar_url && setExpandedImage(profile.avatar_url)}
+              >
                 <AvatarImage src={profile.avatar_url} />
                 <AvatarFallback className="bg-amber-200 text-amber-800 text-2xl">
                   {profile.display_name?.[0] || profile.user_email[0].toUpperCase()}
@@ -233,7 +238,15 @@ export default function PublicProfilePage() {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex gap-4">
-                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div 
+                          className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={(e) => {
+                            if (pipe.photos?.[0]) {
+                              e.stopPropagation();
+                              setExpandedImage(pipe.photos[0]);
+                            }
+                          }}
+                        >
                           {pipe.photos?.[0] ? (
                             <img src={pipe.photos[0]} alt={pipe.name} className="w-full h-full object-cover" />
                           ) : (
@@ -257,7 +270,11 @@ export default function PublicProfilePage() {
                               key={idx}
                               src={photo}
                               alt={`${pipe.name} ${idx + 1}`}
-                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200"
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedImage(photo);
+                              }}
                             />
                           ))}
                         </div>
@@ -301,7 +318,15 @@ export default function PublicProfilePage() {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex gap-4">
-                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div 
+                          className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={(e) => {
+                            if (blend.logo || blend.photo) {
+                              e.stopPropagation();
+                              setExpandedImage(blend.logo || blend.photo);
+                            }
+                          }}
+                        >
                           {blend.logo ? (
                             <img src={blend.logo} alt={blend.manufacturer} className="w-16 h-16 object-contain" />
                           ) : blend.photo ? (
@@ -334,7 +359,11 @@ export default function PublicProfilePage() {
                               key={idx}
                               src={photo}
                               alt={`${blend.name} ${idx + 1}`}
-                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200"
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-stone-200 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedImage(photo);
+                              }}
                             />
                           ))}
                         </div>
@@ -425,6 +454,14 @@ export default function PublicProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
-}
+
+      {/* Image Modal */}
+      <ImageModal 
+        imageUrl={expandedImage}
+        isOpen={!!expandedImage}
+        onClose={() => setExpandedImage(null)}
+        alt="Profile image"
+      />
+      </div>
+      );
+      }

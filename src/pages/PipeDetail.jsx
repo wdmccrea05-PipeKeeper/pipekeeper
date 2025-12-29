@@ -30,7 +30,7 @@ import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
 import CommentSection from "@/components/community/CommentSection";
-
+import ImageModal from "@/components/ui/ImageModal";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 
@@ -43,6 +43,7 @@ export default function PipeDetailPage() {
   const [showDelete, setShowDelete] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [useImperial, setUseImperial] = useState(false);
+  const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -181,14 +182,15 @@ export default function PipeDetailPage() {
           {/* Photo Gallery */}
           <div className="space-y-4">
             <motion.div 
-              className="aspect-[16/9] rounded-2xl overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl"
+              className="aspect-[16/9] rounded-2xl overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 shadow-xl cursor-pointer"
               layoutId={`pipe-${pipe.id}`}
+              onClick={() => allPhotos.length > 0 && setExpandedImage(allPhotos[selectedPhoto])}
             >
               {allPhotos.length > 0 ? (
                 <img 
                   src={allPhotos[selectedPhoto]} 
                   alt={pipe.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -542,6 +544,14 @@ export default function PipeDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Image Modal */}
+        <ImageModal 
+          imageUrl={expandedImage}
+          isOpen={!!expandedImage}
+          onClose={() => setExpandedImage(null)}
+          alt={pipe.name}
+        />
       </div>
     </div>
   );

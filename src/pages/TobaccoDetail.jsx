@@ -25,6 +25,7 @@ import {
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
 import CommentSection from "@/components/community/CommentSection";
+import ImageModal from "@/components/ui/ImageModal";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -48,6 +49,7 @@ export default function TobaccoDetailPage() {
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -166,14 +168,15 @@ export default function TobaccoDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Photo */}
           <motion.div 
-            className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl"
+            className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
             layoutId={`blend-${blend.id}`}
+            onClick={() => setExpandedImage(blend.logo || blend.photo)}
           >
             {blend.logo || blend.photo ? (
               <img 
                 src={blend.logo || blend.photo} 
                 alt={blend.name}
-                className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'}`}
+                className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'} hover:scale-105 transition-transform duration-300`}
                 onError={(e) => {
                   e.target.style.display = 'none';
                   const fallbackLogo = getTobaccoLogo(blend.manufacturer);
@@ -389,6 +392,14 @@ export default function TobaccoDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Image Modal */}
+        <ImageModal 
+          imageUrl={expandedImage}
+          isOpen={!!expandedImage}
+          onClose={() => setExpandedImage(null)}
+          alt={blend.name}
+        />
       </div>
     </div>
   );
