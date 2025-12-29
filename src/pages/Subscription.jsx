@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { 
   CreditCard, Check, X, Calendar, AlertCircle, Crown, 
   Sparkles, Loader2, ArrowLeft
@@ -14,107 +12,36 @@ import {
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-// Initialize Stripe - Replace with your actual publishable key
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
-
-function CheckoutForm({ trialEndDate, onSuccess }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const cardElement = elements.getElement(CardElement);
-      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-      if (stripeError) {
-        setError(stripeError.message);
-        setLoading(false);
-        return;
-      }
-
-      // In a real implementation, you would:
-      // 1. Send payment method to your backend
-      // 2. Create Stripe subscription with 7-day trial
-      // 3. Store subscription details in database
-      
-      // For now, simulate success
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      onSuccess(paymentMethod.id);
-      
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="p-4 border rounded-lg bg-white">
-        <CardElement 
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                  color: '#aab7c4',
-                },
-              },
-            },
-          }}
-        />
-      </div>
-      
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <Button 
-        type="submit" 
-        disabled={!stripe || loading}
-        className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          <>
-            <CreditCard className="w-4 h-4 mr-2" />
-            Subscribe Now
-          </>
-        )}
-      </Button>
-
-      <p className="text-xs text-center text-stone-500">
-        {new Date(trialEndDate).getTime() > new Date('2026-01-15').getTime() ? (
-          <>Testing period: No charges until after January 15, 2026</>
-        ) : (
-          <>Your trial ends on {new Date(trialEndDate).toLocaleDateString()}. You won't be charged until then.</>
-        )}
-      </p>
-    </form>
-  );
-}
+const PRICING_OPTIONS = [
+  { 
+    id: 'plan_Rv4YPft7QPwWVi',
+    name: 'Monthly',
+    price: '$1.00',
+    interval: 'month',
+    description: 'Billed monthly'
+  },
+  { 
+    id: 'plan_Rv4YoDCR9KLXIF',
+    name: 'Quarterly',
+    price: '$1.00',
+    interval: '3 months',
+    description: 'Billed every 3 months',
+    badge: 'Save 17%'
+  },
+  { 
+    id: 'plan_Rv4Y83IMnP5MRz',
+    name: 'Yearly',
+    price: '$1.00',
+    interval: 'year',
+    description: 'Billed annually',
+    badge: 'Best Value'
+  }
+];
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient();
+  const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[2].id); // Default to yearly
+  const [checkingSession, setCheckingSession] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -130,12 +57,20 @@ export default function SubscriptionPage() {
     enabled: !!user?.email,
   });
 
-  const createSubscriptionMutation = useMutation({
-    mutationFn: (data) => base44.entities.Subscription.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
-    },
-  });
+  // Check for success/cancel in URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      setCheckingSession(true);
+      // Refresh subscription data
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
+        queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        setCheckingSession(false);
+        window.history.replaceState({}, '', createPageUrl('Subscription'));
+      }, 2000);
+    }
+  }, [queryClient, user?.email]);
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Subscription.update(id, data),
@@ -164,32 +99,16 @@ export default function SubscriptionPage() {
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
 
-  const handleSubscribe = async (paymentMethodId) => {
-    if (subscription) {
-      await updateSubscriptionMutation.mutateAsync({
-        id: subscription.id,
-        data: {
-          status: 'active',
-          stripe_subscription_id: `sub_${paymentMethodId}`,
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        }
-      });
-    } else {
-      await createSubscriptionMutation.mutateAsync({
-        user_email: user.email,
-        status: 'active',
-        trial_end_date: trialEndDate?.toISOString(),
-        stripe_subscription_id: `sub_${paymentMethodId}`,
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        amount: 19.99
-      });
+  const handleSubscribe = async () => {
+    try {
+      const response = await base44.functions.invoke('createCheckoutSession', { priceId: selectedPlan });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Failed to start checkout. Please try again.');
     }
-
-    // Update user subscription level
-    await base44.auth.updateMe({ subscription_level: 'paid' });
-    queryClient.invalidateQueries({ queryKey: ['current-user'] });
   };
 
   const handleCancelSubscription = async () => {
@@ -392,26 +311,67 @@ export default function SubscriptionPage() {
             <CardHeader>
               <CardTitle>Subscribe to Premium</CardTitle>
               <CardDescription>
-                {isBeforeExtendedTrialEnd ? (
-                  <>
-                    Testing Period: No charges until after January 15, 2026 
-                    {' • '}$1.99/month or $19.99/year after testing ends
-                  </>
-                ) : (
-                  <>
-                    $1.99/month or $19.99/year • Automatic renewal until cancelled
-                    {isInTrial && ` • Trial until ${new Date(trialEndDate).toLocaleDateString()}`}
-                  </>
-                )}
+                Choose your plan and get instant access to all premium features
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Elements stripe={stripePromise}>
-                <CheckoutForm 
-                  trialEndDate={trialEndDate}
-                  onSuccess={handleSubscribe}
-                />
-              </Elements>
+              {checkingSession ? (
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-amber-600" />
+                  <p className="text-stone-600">Processing your subscription...</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid gap-4">
+                    {PRICING_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setSelectedPlan(option.id)}
+                        className={`relative p-4 rounded-lg border-2 transition-all text-left ${
+                          selectedPlan === option.id
+                            ? 'border-amber-500 bg-amber-50'
+                            : 'border-stone-200 hover:border-stone-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-stone-800">{option.name}</h3>
+                              {option.badge && (
+                                <Badge className="bg-amber-600 text-white text-xs">
+                                  {option.badge}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-stone-600">{option.description}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-stone-800">{option.price}</p>
+                            <p className="text-xs text-stone-500">per {option.interval}</p>
+                          </div>
+                        </div>
+                        {selectedPlan === option.id && (
+                          <div className="absolute top-4 right-4">
+                            <Check className="w-5 h-5 text-amber-600" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button 
+                    onClick={handleSubscribe}
+                    className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Continue to Checkout
+                  </Button>
+
+                  <p className="text-xs text-center text-stone-500">
+                    Secure payment powered by Stripe. Cancel anytime.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
