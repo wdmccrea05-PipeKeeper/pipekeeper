@@ -7,6 +7,7 @@ import { createPageUrl } from "@/utils";
 import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import FAQDownloadButton from "@/components/faq/FAQDownloadButton";
 
 export default function FAQPage() {
   const queryClient = useQueryClient();
@@ -15,6 +16,77 @@ export default function FAQPage() {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
   });
+
+  const faqContent = [
+    {
+      title: 'Getting Started',
+      items: [
+        { question: 'How do I add my first pipe?', answer: 'Navigate to the Pipes page and click Add Pipe. You have three options: Quick Search & Add - Use AI to search for your pipe by maker and model. The system will auto-fill details. Photo Identification - Upload photos of stampings to identify the pipe automatically (Premium feature). Manual Entry - Fill in the form fields yourself with all the details you know.' },
+        { question: 'How do I add tobacco blends?', answer: 'Go to the Tobacco page and click Add Blend. You can: Search - Type the blend name and let AI fetch all the details from the internet. Manual Entry - Add flavor notes, strength, cut type, and your personal ratings. Logos are automatically pulled from our library when you enter the manufacturer name.' },
+        { question: 'What can I do with the onboarding tutorial?', answer: 'The onboarding tutorial walks you through PipeKeeper\'s main features including AI pairing recommendations, photo identification, value lookup, and collection optimization.' },
+        { question: 'How do I install PipeKeeper on my phone?', answer: 'PipeKeeper can be installed on your mobile device for an app-like experience. iPhone/iPad (Safari): Open PipeKeeper in Safari, tap the Share button (square with arrow pointing up), select "Add to Home Screen", confirm by tapping "Add". Android (Chrome): Open PipeKeeper in Chrome, tap the three dots menu, select "Install app" or "Add to Home screen", confirm installation. Note: iPhone must use Safari browser, Android works best with Chrome.' },
+      ],
+    },
+    {
+      title: 'Mobile & Installation',
+      items: [
+        { question: 'Is PipeKeeper available in the App Store or Google Play?', answer: 'PipeKeeper is a Progressive Web App (PWA) that works directly in your browser. While it\'s not in the app stores, you can install it on your phone\'s home screen for the same experience as a native app - no downloads from the app store needed!' },
+        { question: 'Can I use PipeKeeper offline?', answer: 'Once installed on your device, PipeKeeper caches your data so you can view your collection offline. Some features like AI search and photo identification require an internet connection, but basic browsing and editing work offline.' },
+        { question: 'Will my data sync across devices?', answer: 'Yes! Your collection data is stored in the cloud and automatically syncs across all your devices. Log in with the same account on your phone, tablet, or computer to access your pipes and tobacco anywhere.' },
+      ],
+    },
+    {
+      title: 'AI Features',
+      items: [
+        { question: 'How does tobacco pairing work?', answer: 'PipeKeeper uses AI to match your pipes with your tobacco blends based on pipe characteristics (shape, chamber size, material, smoking traits), blend properties (type, strength, cut, flavor profile), and your preferences saved in your profile for personalized recommendations. The pairing matrix on the home page shows your best matches with scores and reasoning.' },
+        { question: 'What is photo identification?', answer: 'Upload clear photos of your pipe\'s stampings, logos, or unique markings. Our AI will analyze them to identify the maker, model, approximate era, and provide market value estimates. This is a Premium feature available with a subscription.' },
+        { question: 'How accurate is the value lookup?', answer: 'Value estimates are based on current market data, recent sales, condition, maker reputation, and rarity. They provide a good baseline but actual values may vary depending on buyer interest, specific features, and market conditions. Always verify with current listings or professional appraisers for important valuations.' },
+        { question: 'What is collection optimization?', answer: 'Collection Optimization analyzes your entire collection to suggest which blends each pipe should be specialized for, identify gaps or redundancies in your collection, recommend your next pipe purchase based on what you already have, and run "what-if" scenarios to see how a new pipe would fit. This Premium feature helps you build a well-rounded collection.' },
+        { question: 'Can I dispute or modify optimization recommendations?', answer: 'Yes! Each pipe recommendation has a "Dispute / Add Info" button that lets you provide feedback. You can disagree with a suggested specialization and explain why, share additional context about how a pipe actually smokes, or provide your personal preferences for that specific pipe. After submitting feedback, the AI will re-analyze your collection taking your input into account and adjust its recommendations accordingly.' },
+        { question: 'What does "Specialized" vs "Versatility" mean for pipes?', answer: 'When you designate a pipe for specific blend types (its "focus"), it becomes Specialized and will show a "Specialized" badge instead of a versatility score. Specialized pipes are dedicated to specific tobacco types (like English blends or Virginias) and achieve much higher pairing scores (9-10) with those blends. Versatile pipes (rated on a 1-10 scale) can handle multiple blend types but won\'t achieve the same peak performance as a specialized pipe. The optimization system recommends specialization for maximum pairing scores - versatile pipes are good for variety, but specialized pipes are better for excellence.' },
+      ],
+    },
+    {
+      title: 'Managing Your Collection',
+      items: [
+        { question: 'What are pipe specializations and focus?', answer: 'You can designate specific blend types or tobacco categories for each pipe. This helps maintain flavor integrity and ensures optimal performance. For example, dedicate one pipe to Latakia blends and another to Virginias. The AI will suggest ideal specializations based on your pipe\'s characteristics.' },
+        { question: 'How do I use the break-in schedule?', answer: 'For new pipes, the break-in schedule feature creates a custom plan to properly cake and season your pipe. It recommends which tobacco blends to use in what order, how many bowls to smoke at each stage, and when to increase or rotate blends. Track your progress directly in the pipe detail page and log sessions as you go.' },
+        { question: 'Can I import my existing collection?', answer: 'Yes! Premium users can bulk import pipes and tobacco from CSV files. Download the template from the Import page, fill it with your data, and upload. The system will process and add everything to your collection automatically.' },
+        { question: 'How do I track smoking sessions?', answer: 'Use the Smoking Log panel on the home page to record each session. Select the pipe and blend used, add notes, and track bowls smoked. This data helps the AI improve pairing recommendations and shows your usage patterns over time.' },
+      ],
+    },
+    {
+      title: 'Understanding Fields',
+      items: [
+        { question: 'What do the pipe measurement fields mean?', answer: 'Length: Overall pipe length from stem tip to bowl bottom. Weight: Total weight of the assembled pipe. Bowl Height: Outer height of the bowl. Bowl Width: Outer diameter of the bowl at widest point. Chamber Diameter: Inner diameter of the tobacco chamber. Chamber Depth: How deep the tobacco chamber is. Chamber Volume: Overall size category (Small/Medium/Large/Extra Large). You can toggle between metric (mm, g) and imperial (inches, oz) units using the conversion button in the form.' },
+        { question: 'What is the difference between bowl material and stem material?', answer: 'Bowl Material is what the tobacco chamber is made from (Briar, Meerschaum, Corncob, etc.). Stem Material is what the mouthpiece is made from (Vulcanite, Acrylic, Lucite, etc.). These affect the pipe\'s smoking characteristics, durability, and maintenance needs.' },
+        { question: 'What are tobacco components?', answer: 'Tobacco components are the different types of leaf tobacco used in a blend. Common types include Virginia, Burley, Latakia, Perique, Oriental, and Cavendish. Most blends use 2-5 different components in varying proportions to create unique flavor profiles.' },
+        { question: 'What does "aging potential" mean?', answer: 'Aging potential indicates how well a tobacco blend improves with storage over time. Blends high in Virginia tobacco typically age excellently, developing deeper flavors over years. Aromatic blends often don\'t age as well. This helps you decide which blends to cellar long-term.' },
+      ],
+    },
+    {
+      title: 'Account & Subscription',
+      items: [
+        { question: 'What\'s included in the free trial?', answer: 'New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, and bulk import. After the trial, you can subscribe to continue using Premium features.' },
+        { question: 'How much does Premium cost?', answer: 'PipeKeeper Premium is $1.99/month or $19.99/year (save 17% with annual billing). Both plans include all Premium features and automatic renewal until cancelled. You can cancel anytime from your Profile page.' },
+        { question: 'What happens if I cancel my subscription?', answer: 'You\'ll keep Premium access until the end of your billing period. After that, Premium features will be locked but you\'ll still have access to your collection data and basic features. You can reactivate anytime to regain Premium access.' },
+      ],
+    },
+    {
+      title: 'Community & Sharing',
+      items: [
+        { question: 'What is the Community feature?', answer: 'The Community feature (Premium only) lets you connect with other pipe enthusiasts. You can create a public profile showcasing your collection, follow other collectors, comment on their pipes and tobacco blends, and discover new items through the community.' },
+        { question: 'How do I make my profile public?', answer: 'Go to your Profile page from the navigation menu. Fill in your Display Name, Bio, and upload a profile picture. Check the box "Make my profile publicly searchable in Community". Click "Preview Profile" to see how it will look to others. When ready, click "Save Profile" and your profile will be public. You can make your profile private again at any time by unchecking the box.' },
+        { question: 'What information is shared when I make my profile public?', answer: 'When your profile is public, other users can see: Your display name, bio, and profile picture; Your pipe collection (with photos and details); Your tobacco cellar (blends and information); Your smoking session logs. Not shared: Your email address, personal preferences (clenching, duration, etc.), estimated values, purchase prices, and any notes you\'ve marked as private.' },
+        { question: 'How do I follow other users?', answer: 'Go to the Community page and use the "Discover Users" tab. You can search for users by name or browse public profiles. Click "Follow" on any profile you\'d like to follow. You can view all your followed users in the "Following" tab.' },
+        { question: 'Can I disable comments on my collection?', answer: 'Yes! On your Profile page, you can uncheck "Allow comments on my pipes, tobacco, and logs" to disable commenting. You can toggle this on or off at any time.' },
+        { question: 'How do I report inappropriate comments?', answer: 'If you see an inappropriate comment on any profile, click the flag icon next to the comment. You\'ll be asked to provide a reason for the report. All reports are reviewed, and action will be taken if the comment violates community guidelines.' },
+        { question: 'Can I share my location to find local pipe enthusiasts?', answer: 'Yes! On your Profile page, you can optionally add: City, State/Province, Country, Zip/Postal Code. Check the box "Show my location publicly and allow others to find me by location" to opt-in. Your location will appear on your public profile, and other users can filter the Community directory by country and state to find nearby collectors. Privacy: Location sharing is completely optional. If you don\'t check the box, your location remains private even if you\'ve entered it.' },
+        { question: 'What\'s the difference between Friends and Following?', answer: 'Friends: A mutual connection that requires both users to accept. Send a friend request, and if the other user accepts, you both become friends. Friends appear in your "Friends" tab. Following: A one-way connection where you can follow any public profile without their approval. Following lets you keep up with users whose collections interest you, even if they haven\'t added you as a friend. You can have both types of connections with the same user - be friends AND follow them.' },
+        { question: 'How do I add friends?', answer: 'Go to the Community page and navigate to the "Discover" tab. Find a user you\'d like to be friends with (use search or location filters). Click "Add Friend" next to their profile. They\'ll receive a friend request in their "Friends" tab. Once they accept, you\'ll both appear in each other\'s friends list. You can view pending requests, accept incoming requests, and manage your friends in the "Friends" tab. A badge shows the number of pending requests waiting for your response.' },
+      ],
+    },
+  ];
 
   const { data: onboardingStatus } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -57,6 +129,9 @@ export default function FAQPage() {
           </div>
           <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Help & FAQ</h1>
           <p className="text-[#e8d5b7]/70">Everything you need to know about PipeKeeper</p>
+          <div className="mt-4">
+            <FAQDownloadButton faqContent={faqContent} />
+          </div>
         </div>
 
         <Card className="bg-white/95 backdrop-blur-sm mb-6">
