@@ -36,6 +36,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     flavor_notes: [],
     tin_size_oz: '',
     quantity_owned: '',
+    cellared_date: '',
+    cellared_amount: '',
     production_status: '',
     aging_potential: '',
     rating: null,
@@ -245,6 +247,7 @@ Return complete and accurate information based on the blend name or description 
       ...formData,
       tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
       quantity_owned: formData.quantity_owned ? Number(formData.quantity_owned) : null,
+      cellared_amount: formData.cellared_amount ? Number(formData.cellared_amount) : null,
       rating: formData.rating ? Math.round(Number(formData.rating)) : null,
     };
     onSave(cleanedData);
@@ -716,6 +719,27 @@ Return complete and accurate information based on the blend name or description 
               value={formData.quantity_owned || ''}
               onChange={(e) => handleChange('quantity_owned', e.target.value)}
               placeholder="e.g., 3"
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Cellared Date</Label>
+            <Input
+              type="date"
+              value={formData.cellared_date || ''}
+              onChange={(e) => handleChange('cellared_date', e.target.value)}
+              className="border-stone-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Cellared Amount (oz)</Label>
+            <Input
+              type="number"
+              step="0.1"
+              min="0"
+              value={formData.cellared_amount || ''}
+              onChange={(e) => handleChange('cellared_amount', e.target.value)}
+              placeholder="e.g., 10.5"
               className="border-stone-200"
             />
           </div>

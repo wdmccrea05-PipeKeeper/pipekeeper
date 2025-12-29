@@ -16,6 +16,13 @@ import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
+const SORT_OPTIONS = [
+  { value: "-created_date", label: "Recently Added" },
+  { value: "name", label: "Name (A-Z)" },
+  { value: "-name", label: "Name (Z-A)" },
+  { value: "cellared_date", label: "Oldest in Cellar" },
+  { value: "-cellared_date", label: "Newest in Cellar" }
+];
 
 export default function TobaccoPage() {
   const [showForm, setShowForm] = useState(false);
@@ -23,6 +30,7 @@ export default function TobaccoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [strengthFilter, setStrengthFilter] = useState('All Strengths');
+  const [sortBy, setSortBy] = useState('-created_date');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
   });
@@ -36,8 +44,8 @@ export default function TobaccoPage() {
   });
 
   const { data: blends = [], isLoading } = useQuery({
-    queryKey: ['blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
+    queryKey: ['blends', user?.email, sortBy],
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, sortBy),
     enabled: !!user?.email,
   });
 
@@ -139,6 +147,14 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-48 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548]">
