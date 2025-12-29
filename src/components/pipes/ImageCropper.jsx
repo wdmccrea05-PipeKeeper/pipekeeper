@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Crop, RotateCw, ZoomIn, Check, X } from "lucide-react";
+import { Crop, RotateCw, ZoomIn, Check, X, Lock, Unlock, Grid3x3, RefreshCw, Maximize2 } from "lucide-react";
 
 export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   const [crop, setCrop] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [aspectRatioLocked, setAspectRatioLocked] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const containerRef = useRef(null);
@@ -16,6 +19,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   const [resizeHandle, setResizeHandle] = useState(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const initialCropRef = useRef(null);
 
   useEffect(() => {
     const img = new Image();
@@ -24,15 +28,17 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     img.onload = () => {
       imageRef.current = img;
       setImageLoaded(true);
-      // Center crop on image - free form (4:3 ratio as default)
+      // Center crop on image - 16:9 ratio as default
       const width = Math.min(img.width * 0.8, img.width);
-      const height = Math.min(img.height * 0.8, img.height);
-      setCrop({
+      const height = width * (9/16);
+      const initialCrop = {
         x: (img.width - width) / 2,
         y: (img.height - height) / 2,
         width: width,
         height: height
-      });
+      };
+      setCrop(initialCrop);
+      initialCropRef.current = initialCrop;
       drawCanvas();
     };
   }, [imageUrl]);
@@ -122,19 +128,33 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
       ctx.strokeRect(hx - handleSize/2, hy - handleSize/2, handleSize, handleSize);
     });
 
-    // Draw grid
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
-    ctx.lineWidth = 1;
-    for (let i = 1; i < 3; i++) {
-      ctx.beginPath();
-      ctx.moveTo(cropX + (cropW / 3) * i, cropY);
-      ctx.lineTo(cropX + (cropW / 3) * i, cropY + cropH);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cropX, cropY + (cropH / 3) * i);
-      ctx.lineTo(cropX + cropW, cropY + (cropH / 3) * i);
-      ctx.stroke();
+    // Draw grid (rule of thirds)
+    if (showGrid) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(cropX + (cropW / 3) * i, cropY);
+        ctx.lineTo(cropX + (cropW / 3) * i, cropY + cropH);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cropX, cropY + (cropH / 3) * i);
+        ctx.lineTo(cropX + cropW, cropY + (cropH / 3) * i);
+        ctx.stroke();
+      }
     }
+    
+    // Draw edge midpoint handles
+    ctx.fillStyle = '#fbbf24';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    const midHandleSize = 10;
+    
+    [[cropX + cropW/2, cropY], [cropX + cropW/2, cropY + cropH], 
+     [cropX, cropY + cropH/2], [cropX + cropW, cropY + cropH/2]].forEach(([hx, hy]) => {
+      ctx.fillRect(hx - midHandleSize/2, hy - midHandleSize/2, midHandleSize, midHandleSize);
+      ctx.strokeRect(hx - midHandleSize/2, hy - midHandleSize/2, midHandleSize, midHandleSize);
+    });
 
     ctx.restore();
   };
@@ -170,6 +190,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     const handleSize = 20;
     
     // Check for resize handles with larger hit area
+    // Corners
     if (Math.abs(mouseX - cropX) < handleSize && Math.abs(mouseY - cropY) < handleSize) {
       setIsResizing(true);
       setResizeHandle('nw');
@@ -182,6 +203,20 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     } else if (Math.abs(mouseX - (cropX + cropW)) < handleSize && Math.abs(mouseY - (cropY + cropH)) < handleSize) {
       setIsResizing(true);
       setResizeHandle('se');
+    }
+    // Edge midpoints
+    else if (Math.abs(mouseX - (cropX + cropW/2)) < handleSize && Math.abs(mouseY - cropY) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('n');
+    } else if (Math.abs(mouseX - (cropX + cropW/2)) < handleSize && Math.abs(mouseY - (cropY + cropH)) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('s');
+    } else if (Math.abs(mouseX - cropX) < handleSize && Math.abs(mouseY - (cropY + cropH/2)) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('w');
+    } else if (Math.abs(mouseX - (cropX + cropW)) < handleSize && Math.abs(mouseY - (cropY + cropH/2)) < handleSize) {
+      setIsResizing(true);
+      setResizeHandle('e');
     } else if (mouseX >= cropX && mouseX <= cropX + cropW && mouseY >= cropY && mouseY <= cropY + cropH) {
       // Inside crop area - drag to move
       setIsDragging(true);
@@ -206,22 +241,75 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     if (isResizing) {
       setCrop(prev => {
         let newCrop = { ...prev };
+        const aspectRatio = prev.width / prev.height;
         
-        if (resizeHandle.includes('n')) {
-          const newY = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
-          newCrop.height = prev.height + (prev.y - newY);
-          newCrop.y = newY;
-        }
-        if (resizeHandle.includes('s')) {
-          newCrop.height = Math.max(50, Math.min(img.height - prev.y, prev.height + dy));
-        }
-        if (resizeHandle.includes('w')) {
-          const newX = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
-          newCrop.width = prev.width + (prev.x - newX);
-          newCrop.x = newX;
-        }
-        if (resizeHandle.includes('e')) {
-          newCrop.width = Math.max(50, Math.min(img.width - prev.x, prev.width + dx));
+        if (resizeHandle === 'nw' || resizeHandle === 'ne' || resizeHandle === 'sw' || resizeHandle === 'se') {
+          // Corner resize
+          if (resizeHandle.includes('n')) {
+            const newY = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
+            newCrop.height = prev.height + (prev.y - newY);
+            newCrop.y = newY;
+            if (aspectRatioLocked) {
+              newCrop.width = newCrop.height * aspectRatio;
+              if (resizeHandle.includes('e')) {
+                // Keep left edge fixed
+              } else {
+                // Keep right edge fixed, adjust x
+                newCrop.x = prev.x + prev.width - newCrop.width;
+              }
+            }
+          }
+          if (resizeHandle.includes('s') && !resizeHandle.includes('n')) {
+            newCrop.height = Math.max(50, Math.min(img.height - prev.y, prev.height + dy));
+            if (aspectRatioLocked) {
+              newCrop.width = newCrop.height * aspectRatio;
+              if (resizeHandle.includes('e')) {
+                // Keep left edge fixed
+              } else {
+                // Keep right edge fixed, adjust x
+                newCrop.x = prev.x + prev.width - newCrop.width;
+              }
+            }
+          }
+          if (resizeHandle.includes('w') && !aspectRatioLocked) {
+            const newX = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
+            newCrop.width = prev.width + (prev.x - newX);
+            newCrop.x = newX;
+          }
+          if (resizeHandle.includes('e') && !aspectRatioLocked) {
+            newCrop.width = Math.max(50, Math.min(img.width - prev.x, prev.width + dx));
+          }
+        } else {
+          // Edge resize
+          if (resizeHandle === 'n') {
+            const newY = Math.max(0, Math.min(prev.y + dy, prev.y + prev.height - 50));
+            newCrop.height = prev.height + (prev.y - newY);
+            newCrop.y = newY;
+            if (aspectRatioLocked) {
+              newCrop.width = newCrop.height * aspectRatio;
+              newCrop.x = prev.x + (prev.width - newCrop.width) / 2;
+            }
+          } else if (resizeHandle === 's') {
+            newCrop.height = Math.max(50, Math.min(img.height - prev.y, prev.height + dy));
+            if (aspectRatioLocked) {
+              newCrop.width = newCrop.height * aspectRatio;
+              newCrop.x = prev.x + (prev.width - newCrop.width) / 2;
+            }
+          } else if (resizeHandle === 'w') {
+            const newX = Math.max(0, Math.min(prev.x + dx, prev.x + prev.width - 50));
+            newCrop.width = prev.width + (prev.x - newX);
+            newCrop.x = newX;
+            if (aspectRatioLocked) {
+              newCrop.height = newCrop.width / aspectRatio;
+              newCrop.y = prev.y + (prev.height - newCrop.height) / 2;
+            }
+          } else if (resizeHandle === 'e') {
+            newCrop.width = Math.max(50, Math.min(img.width - prev.x, prev.width + dx));
+            if (aspectRatioLocked) {
+              newCrop.height = newCrop.width / aspectRatio;
+              newCrop.y = prev.y + (prev.height - newCrop.height) / 2;
+            }
+          }
         }
         
         return newCrop;
@@ -292,6 +380,38 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     onSave(croppedImage);
   };
 
+  const setPresetRatio = (ratio) => {
+    const centerX = crop.x + crop.width / 2;
+    const centerY = crop.y + crop.height / 2;
+    const newWidth = Math.min(crop.width, imageRef.current.width * 0.8);
+    const newHeight = newWidth / ratio;
+    setCrop({
+      x: Math.max(0, centerX - newWidth / 2),
+      y: Math.max(0, centerY - newHeight / 2),
+      width: newWidth,
+      height: newHeight,
+    });
+  };
+
+  const resetCrop = () => {
+    if (initialCropRef.current) {
+      setCrop(initialCropRef.current);
+    }
+  };
+
+  const fitToCanvas = () => {
+    const img = imageRef.current;
+    if (!img) return;
+    const width = img.width * 0.95;
+    const height = img.height * 0.95;
+    setCrop({
+      x: (img.width - width) / 2,
+      y: (img.height - height) / 2,
+      width,
+      height
+    });
+  };
+
   return (
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-3xl">
@@ -321,6 +441,27 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
             />
           </div>
 
+          {/* Preset Ratios */}
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(16/9)}>
+              16:9
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(4/3)}>
+              4:3
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(1)}>
+              <span>Square</span>
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={fitToCanvas}>
+              <Maximize2 className="w-3 h-3 mr-1" />
+              Max
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={resetCrop}>
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Reset
+            </Button>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -335,7 +476,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
                 onValueChange={([v]) => setZoom(v)}
                 min={0.3}
                 max={4}
-                step={0.1}
+                step={0.05}
                 className="w-full"
               />
             </div>
@@ -370,9 +511,33 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-xs text-stone-500 bg-stone-50 rounded-lg p-2">
+          {/* Controls */}
+          <div className="flex flex-wrap items-center gap-4 p-3 bg-stone-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={aspectRatioLocked}
+                onCheckedChange={setAspectRatioLocked}
+              />
+              <label className="text-sm font-medium flex items-center gap-1 cursor-pointer" onClick={() => setAspectRatioLocked(!aspectRatioLocked)}>
+                {aspectRatioLocked ? <Lock className="w-4 h-4 text-amber-600" /> : <Unlock className="w-4 h-4 text-stone-400" />}
+                Lock Ratio
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={showGrid}
+                onCheckedChange={setShowGrid}
+              />
+              <label className="text-sm font-medium flex items-center gap-1 cursor-pointer" onClick={() => setShowGrid(!showGrid)}>
+                <Grid3x3 className="w-4 h-4 text-amber-600" />
+                Grid
+              </label>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-xs text-stone-500">
             <Crop className="w-4 h-4" />
-            <span>Drag inside to move • Drag corners to resize • Free-form cropping enabled</span>
+            <span>Drag to move • Drag handles to resize • {aspectRatioLocked ? 'Aspect locked' : 'Free-form'}</span>
           </div>
         </div>
 
