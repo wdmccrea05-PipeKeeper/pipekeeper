@@ -233,7 +233,7 @@ export default function PublicProfilePage() {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex gap-4">
-                        <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                           {pipe.photos?.[0] ? (
                             <img src={pipe.photos[0]} alt={pipe.name} className="w-full h-full object-cover" />
                           ) : (
@@ -301,7 +301,7 @@ export default function PublicProfilePage() {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex gap-4">
-                        <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                           {blend.logo ? (
                             <img src={blend.logo} alt={blend.manufacturer} className="w-16 h-16 object-contain" />
                           ) : blend.photo ? (
