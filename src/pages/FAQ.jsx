@@ -509,8 +509,67 @@ export default function FAQPage() {
 
               <AccordionItem value="item-11">
                 <AccordionTrigger>How do I track smoking sessions?</AccordionTrigger>
-                <AccordionContent className="text-stone-600">
-                  Use the Smoking Log panel on the home page to record each session. Select the pipe and blend used, add notes, and track bowls smoked. This data helps the AI improve pairing recommendations and shows your usage patterns over time.
+                <AccordionContent className="text-stone-600 space-y-2">
+                  <p>Use the Smoking Log panel on the home page to record each session. Select the pipe and blend used, add notes, and track bowls smoked.</p>
+                  <p><strong>Features:</strong></p>
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li><strong>Pipe Rest Tracking:</strong> The system shows which pipes are ready to smoke and which need rest. Pipes need 24 hours between sessions.</li>
+                    <li><strong>Tobacco Usage Estimation:</strong> Based on your pipe's bowl size, the app estimates tobacco consumption per session.</li>
+                    <li><strong>Auto Inventory Reduction:</strong> Enable the toggle to automatically reduce your cellared tobacco amount when logging sessions.</li>
+                  </ul>
+                  <p>This data helps the AI improve pairing recommendations and shows your usage patterns over time.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-11b">
+                <AccordionTrigger>How do I export my collection data?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p>PipeKeeper offers several export options to back up your data or use it for insurance purposes:</p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-semibold text-stone-800 mb-1">Pipe Collection Export</p>
+                      <p className="text-sm">From the Pipes page, use the export buttons to generate:</p>
+                      <ul className="list-disc ml-5 space-y-1 text-sm">
+                        <li><strong>CSV Export:</strong> Complete collection data in spreadsheet format</li>
+                        <li><strong>Insurance Report (PDF):</strong> Professional document with photos, stamping images, values, and detailed descriptions for insurance claims</li>
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <p className="font-semibold text-stone-800 mb-1">Tobacco Collection Export</p>
+                      <p className="text-sm">From the Tobacco page, export your cellar as:</p>
+                      <ul className="list-disc ml-5 space-y-1 text-sm">
+                        <li><strong>CSV Export:</strong> All blend details, quantities, and ratings</li>
+                        <li><strong>PDF Summary:</strong> Collection overview with statistics and blend details</li>
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <p className="font-semibold text-stone-800 mb-1">Pairing Reference Guide</p>
+                      <p className="text-sm">From the AI Pairing Recommendations section on the Home page:</p>
+                      <ul className="list-disc ml-5 space-y-1 text-sm">
+                        <li><strong>CSV Export:</strong> Complete pairing matrix with scores and reasoning</li>
+                        <li><strong>PDF Guide:</strong> Formatted reference document for each pipe with best tobacco matches</li>
+                      </ul>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-11c">
+                <AccordionTrigger>How do tobacco inventory alerts work?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-2">
+                  <p>The Tobacco Collection Stats panel on your home page monitors your cellared tobacco levels and alerts you when supplies run low.</p>
+                  <p><strong>Setting Up Alerts:</strong></p>
+                  <ol className="list-decimal ml-5 space-y-1">
+                    <li>Look for the Tobacco Collection Stats panel on your Home page</li>
+                    <li>Click the settings icon (⚙️) in the panel header</li>
+                    <li>Set your "Low Inventory Threshold" in ounces</li>
+                    <li>Save your settings</li>
+                  </ol>
+                  <p>When any blend's cellared amount drops to or below your threshold, you'll see a warning banner listing all blends running low. Click any blend to view details or reorder.</p>
+                  <p className="text-sm bg-amber-50 border border-amber-200 rounded p-2"><strong>💡 Tip:</strong> Default threshold is 2 oz, but adjust based on your smoking frequency and preferred stock levels.</p>
                 </AccordionContent>
               </AccordionItem>
 
