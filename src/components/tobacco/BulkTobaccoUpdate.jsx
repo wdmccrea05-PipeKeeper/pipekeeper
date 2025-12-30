@@ -38,8 +38,13 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
     );
   };
 
+  const allSelected = useMemo(() => 
+    filteredBlends.length > 0 && selectedBlends.length === filteredBlends.length,
+    [filteredBlends.length, selectedBlends.length]
+  );
+
   const toggleAll = () => {
-    if (selectedBlends.length === filteredBlends.length) {
+    if (allSelected) {
       setSelectedBlends([]);
     } else {
       setSelectedBlends(filteredBlends.map(b => b.id));
@@ -66,8 +71,6 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
 
     onUpdate(selectedBlends, updateData);
   };
-
-  const allSelected = filteredBlends.length > 0 && selectedBlends.length === filteredBlends.length;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
