@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight } from "lucide-react";
+import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 export default function TobaccoCollectionStats() {
   const [drillDown, setDrillDown] = useState(null);
+  const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
+    return parseFloat(localStorage.getItem('lowInventoryThreshold')) || 2.0;
+  });
+  const [showSettings, setShowSettings] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -57,6 +65,17 @@ export default function TobaccoCollectionStats() {
   const handleDrillDown = (type, data) => {
     setDrillDown({ type, data });
   };
+
+  const handleThresholdSave = () => {
+    localStorage.setItem('lowInventoryThreshold', lowInventoryThreshold.toString());
+    setShowSettings(false);
+  };
+
+  // Check for low inventory blends
+  const lowInventoryBlends = blends.filter(b => {
+    const cellared = b.cellared_amount || 0;
+    return cellared > 0 && cellared <= lowInventoryThreshold;
+  });
 
   return (
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
@@ -290,6 +309,67 @@ export default function TobaccoCollectionStats() {
                 ))}
               </>
             )}
+
+            {drillDown?.type === 'lowInventory' && (
+              <>
+                {drillDown.data.map(blend => (
+                  <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border border-amber-200">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {blend.logo || blend.photo ? (
+                          <img 
+                            src={blend.logo || blend.photo} 
+                            alt="" 
+                            className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                          />
+                        ) : (
+                          <Leaf className="w-6 h-6 text-emerald-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-stone-800 truncate">{blend.name}</p>
+                        <p className="text-sm text-amber-700">
+                          {blend.cellared_amount?.toFixed(2)} oz remaining
+                        </p>
+                      </div>
+                      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Inventory Alert Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Low Inventory Threshold (oz)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.5"
+                value={lowInventoryThreshold}
+                onChange={(e) => setLowInventoryThreshold(parseFloat(e.target.value) || 0)}
+              />
+              <p className="text-xs text-stone-500">
+                You'll be notified when cellared tobacco drops to or below this amount
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setShowSettings(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleThresholdSave} className="flex-1">
+                Save Settings
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

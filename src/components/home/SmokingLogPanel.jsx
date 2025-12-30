@@ -8,13 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useQuery, useMutation, useQueryClient } from "@tantml:react-query";
 import { base44 } from "@/api/base44Client";
-import { Plus, Flame, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Flame, Calendar, Info, CheckCircle } from "lucide-react";
+import { format, differenceInHours } from "date-fns";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const [showAddLog, setShowAddLog] = useState(false);
+  const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [formData, setFormData] = useState({
     pipe_id: '',
     blend_id: '',
@@ -32,10 +34,62 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     enabled: !!user?.email,
   });
 
+  // Calculate tobacco usage based on pipe bowl size
+  const estimateTobaccoUsage = (pipe, bowls) => {
+    if (!pipe) return 0;
+    
+    const chamberVolume = pipe.chamber_volume || 'Medium';
+    const volumeMap = {
+      'Small': 0.5,
+      'Medium': 0.75,
+      'Large': 1.0,
+      'Extra Large': 1.25
+    };
+    
+    const gramsPerBowl = volumeMap[chamberVolume] || 0.75;
+    const totalGrams = gramsPerBowl * bowls;
+    const ozPerGram = 0.035274;
+    
+    return totalGrams * ozPerGram;
+  };
+
+  // Get pipe rest status
+  const getPipeRestStatus = (pipeId) => {
+    const pipeLogs = logs.filter(l => l.pipe_id === pipeId).sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (pipeLogs.length === 0) return { ready: true, message: 'Never smoked - ready to use!' };
+    
+    const lastSmoked = new Date(pipeLogs[0].date);
+    const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
+    const daysRested = Math.floor(hoursSinceSmoke / 24);
+    
+    if (hoursSinceSmoke >= 24) {
+      return { ready: true, message: `Rested ${daysRested} day${daysRested > 1 ? 's' : ''} - ready!` };
+    } else {
+      const hoursLeft = 24 - hoursSinceSmoke;
+      return { ready: false, message: `Needs ${hoursLeft} more hour${hoursLeft > 1 ? 's' : ''} rest` };
+    }
+  };
+
+  const updateBlendMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TobaccoBlend.update(id, data),
+  });
+
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      if (autoReduceInventory && variables.tobaccoUsed > 0) {
+        const blend = blends.find(b => b.id === variables.blend_id);
+        if (blend) {
+          const newCellaredAmount = Math.max(0, (blend.cellared_amount || 0) - variables.tobaccoUsed);
+          await updateBlendMutation.mutateAsync({
+            id: blend.id,
+            data: { cellared_amount: newCellaredAmount }
+          });
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
       setShowAddLog(false);
       setFormData({
         pipe_id: '',
@@ -55,12 +109,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     
     if (!pipe || !blend) return;
 
+    const bowls = parseInt(formData.bowls_smoked) || 1;
+    const tobaccoUsed = estimateTobaccoUsage(pipe, bowls);
+
     createLogMutation.mutate({
       ...formData,
       pipe_name: pipe.name,
       blend_name: blend.name,
       date: new Date(formData.date).toISOString(),
-      bowls_smoked: parseInt(formData.bowls_smoked) || 1,
+      bowls_smoked: bowls,
+      tobaccoUsed,
+      blend_id: formData.blend_id,
     });
   };
 
@@ -144,13 +203,31 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   <SelectValue placeholder="Select pipe" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pipes.map(p => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
+                  {pipes.map(p => {
+                    const restStatus = getPipeRestStatus(p.id);
+                    return (
+                      <SelectItem key={p.id} value={p.id}>
+                        <div className="flex items-center gap-2 w-full">
+                          <span>{p.name}</span>
+                          {restStatus.ready ? (
+                            <CheckCircle className="w-3 h-3 text-green-600 ml-auto" />
+                          ) : (
+                            <Badge variant="outline" className="text-xs ml-auto">Resting</Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+              {formData.pipe_id && (
+                <Alert className="mt-2">
+                  <Info className="w-4 h-4" />
+                  <AlertDescription className="text-xs">
+                    {getPipeRestStatus(formData.pipe_id).message}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -177,6 +254,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 value={formData.bowls_smoked}
                 onChange={(e) => setFormData({ ...formData, bowls_smoked: e.target.value })}
               />
+              {formData.pipe_id && formData.bowls_smoked && (
+                <p className="text-xs text-stone-500">
+                  Est. tobacco usage: ~{estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1).toFixed(2)} oz
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -188,12 +270,22 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={formData.is_break_in}
-                onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
-              />
-              <Label>Part of break-in schedule</Label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={formData.is_break_in}
+                  onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
+                />
+                <Label>Part of break-in schedule</Label>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={autoReduceInventory}
+                  onCheckedChange={setAutoReduceInventory}
+                />
+                <Label>Automatically reduce tobacco inventory</Label>
+              </div>
             </div>
 
             <div className="space-y-2">
