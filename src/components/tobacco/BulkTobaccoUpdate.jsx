@@ -38,23 +38,19 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
     );
   };
 
-  const filteredBlendIds = useMemo(() => 
-    filteredBlends.map(b => b.id),
-    [filteredBlends]
-  );
-
-  const allSelected = useMemo(() => {
-    if (filteredBlendIds.length === 0) return false;
-    return filteredBlendIds.every(id => selectedBlends.includes(id));
-  }, [filteredBlendIds, selectedBlends]);
-
   const toggleAll = () => {
-    if (allSelected) {
+    const currentlyAllSelected = filteredBlends.length > 0 && 
+      filteredBlends.every(blend => selectedBlends.includes(blend.id));
+    
+    if (currentlyAllSelected) {
       setSelectedBlends([]);
     } else {
-      setSelectedBlends(filteredBlendIds);
+      setSelectedBlends(filteredBlends.map(b => b.id));
     }
   };
+
+  const allSelected = filteredBlends.length > 0 && 
+    filteredBlends.every(blend => selectedBlends.includes(blend.id));
 
   const handleSubmit = (e) => {
     e.preventDefault();
