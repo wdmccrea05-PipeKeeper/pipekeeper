@@ -169,29 +169,6 @@ export default function HomePage() {
     staleTime: 5000,
   });
 
-  // Ensure pipes and blends are always arrays
-  const safePipes = Array.isArray(pipes) ? pipes : [];
-  const safeBlends = Array.isArray(blends) ? blends : [];
-  
-  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
-
-  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
-  const favoritePipes = safePipes.filter(p => p?.is_favorite);
-  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
-  const recentPipes = safePipes.slice(0, 4);
-  const recentBlends = safeBlends.slice(0, 4);
-
-  const handleDismissNotice = () => {
-    try {
-      localStorage.setItem('testingNoticeSeen', 'true');
-      setShowTestingNotice(false);
-    } catch (error) {
-      console.error('Error dismissing notice:', error);
-      setShowTestingNotice(false);
-    }
-  };
-
   if (userError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
@@ -237,6 +214,29 @@ export default function HomePage() {
       </div>
     );
   }
+
+  // Process data only after all checks pass - MUST be after loading/error checks
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  
+  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
+
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const favoritePipes = safePipes.filter(p => p?.is_favorite);
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const recentPipes = safePipes.slice(0, 4);
+  const recentBlends = safeBlends.slice(0, 4);
+
+  const handleDismissNotice = () => {
+    try {
+      localStorage.setItem('testingNoticeSeen', 'true');
+      setShowTestingNotice(false);
+    } catch (error) {
+      console.error('Error dismissing notice:', error);
+      setShowTestingNotice(false);
+    }
+  };
 
   return (
     <>
