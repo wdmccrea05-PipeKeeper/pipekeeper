@@ -31,6 +31,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     blend_type: '',
     tobacco_components: [],
     cut: '',
+    packaging_type: '',
     strength: '',
     room_note: '',
     flavor_notes: [],
@@ -604,6 +605,21 @@ Return complete and accurate information based on the blend name or description 
               </SelectTrigger>
               <SelectContent>
                 {CUTS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Packaging Type" 
+            helpText="How the tobacco is packaged for sale."
+          >
+            <Select value={formData.packaging_type} onValueChange={(v) => handleChange('packaging_type', v)}>
+              <SelectTrigger className="border-stone-200">
+                <SelectValue placeholder="Select packaging" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Tin">Tin</SelectItem>
+                <SelectItem value="Bulk">Bulk</SelectItem>
+                <SelectItem value="Pouch">Pouch</SelectItem>
               </SelectContent>
             </Select>
           </FieldWithInfo>
