@@ -47,26 +47,12 @@ export default function HomePage() {
   });
 
   // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
-  // CRITICAL: This must happen AFTER we know user is loaded
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
   const isWithinSevenDayTrial = user?.created_date && 
     new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
   const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
-
-  // Ensure pipes and blends are always arrays - moved here to avoid processing before loading
-  const safePipes = Array.isArray(pipes) ? pipes : [];
-  const safeBlends = Array.isArray(blends) ? blends : [];
-  
-  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
-
-  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
-  const favoritePipes = safePipes.filter(p => p?.is_favorite);
-  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
-  const recentPipes = safePipes.slice(0, 4);
-  const recentBlends = safeBlends.slice(0, 4);
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
@@ -182,6 +168,19 @@ export default function HomePage() {
     retry: 1,
     staleTime: 5000,
   });
+
+  // Ensure pipes and blends are always arrays
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  
+  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
+
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const favoritePipes = safePipes.filter(p => p?.is_favorite);
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const recentPipes = safePipes.slice(0, 4);
+  const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
     try {
