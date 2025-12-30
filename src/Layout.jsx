@@ -93,8 +93,8 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]">
         <div className="max-w-7xl mx-auto px-6 w-full">
-          <div className="flex items-center justify-between h-16">
-            <Link to={createPageUrl('Home')} className="flex items-center gap-3">
+          <div className="flex items-center justify-between h-16 gap-4">
+            <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
               <img 
                 src={PIPEKEEPER_LOGO}
                 alt="PipeKeeper"
@@ -102,7 +102,7 @@ export default function Layout({ children, currentPageName }) {
               />
               <span className="font-bold text-xl text-[#e8d5b7]">PipeKeeper</span>
             </Link>
-            <div className="flex items-center gap-1 flex-1 justify-evenly max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
               {navItems.map(item => (
                 <NavLink key={item.page} item={item} currentPage={currentPageName} hasPaidAccess={hasPaidAccess} />
               ))}
