@@ -45,6 +45,14 @@ export default function HomePage() {
     retry: false,
   });
 
+  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
+  const now = new Date();
+  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
+  const isWithinSevenDayTrial = user?.created_date && 
+    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
+  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
   });
@@ -62,14 +70,6 @@ export default function HomePage() {
       setShowOnboarding(true);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
-
-  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   useEffect(() => {
     if (!user?.email || showOnboarding || onboardingLoading) return;
