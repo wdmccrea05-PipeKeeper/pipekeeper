@@ -81,13 +81,6 @@ export default function Layout({ children, currentPageName }) {
   const hasActiveSubscription = user?.subscription_level === 'paid';
   const hasPaidAccess = hasActiveSubscription || isInTrial;
 
-  // Redirect to Home if on Index page
-  React.useEffect(() => {
-    if (window.location.pathname === '/' || currentPageName === 'Index') {
-      window.location.href = createPageUrl('Home');
-    }
-  }, [currentPageName]);
-
   return (
     <div className="min-h-screen bg-[#1a2c42]">
       {/* Desktop Navigation */}
