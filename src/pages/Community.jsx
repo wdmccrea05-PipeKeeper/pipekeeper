@@ -249,6 +249,10 @@ export default function CommunityPage() {
                   </Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Inbox</span>
+              </TabsTrigger>
               <TabsTrigger value="following" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">Following</span>
@@ -499,16 +503,43 @@ export default function CommunityPage() {
             </Sheet>
           </TabsContent>
 
-          <TabsContent value="friends" className="space-y-6">
-            {/* Messaging Panel */}
-            {userProfile?.enable_messaging && acceptedFriends.length > 0 && (
-              <MessagingPanel 
-                user={user} 
-                friends={acceptedFriends} 
-                publicProfiles={allPublicProfiles}
-              />
+          <TabsContent value="inbox" className="space-y-6">
+            {userProfile?.enable_messaging ? (
+              acceptedFriends.length > 0 ? (
+                <MessagingPanel 
+                  user={user} 
+                  friends={acceptedFriends} 
+                  publicProfiles={allPublicProfiles}
+                />
+              ) : (
+                <Card className="bg-white/95">
+                  <CardContent className="py-12 text-center text-stone-500">
+                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                    <p>No friends to message yet</p>
+                    <p className="text-sm mt-2">Add friends from the Discover tab to start messaging</p>
+                  </CardContent>
+                </Card>
+              )
+            ) : (
+              <Card className="bg-amber-50 border-amber-200">
+                <CardContent className="p-6 text-center">
+                  <Mail className="w-12 h-12 mx-auto mb-4 text-amber-600" />
+                  <h3 className="font-semibold text-amber-900 mb-2">Instant Messaging Disabled</h3>
+                  <p className="text-sm text-amber-800 mb-4">
+                    Enable instant messaging in your Profile settings to chat with friends in real-time.
+                  </p>
+                  <Link to={createPageUrl('Profile')}>
+                    <Button className="bg-amber-700 hover:bg-amber-800">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Go to Profile Settings
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             )}
+          </TabsContent>
 
+          <TabsContent value="friends" className="space-y-6">
             {/* Friends List */}
             {acceptedFriends.length === 0 ? (
               <Card className="bg-white/95">
