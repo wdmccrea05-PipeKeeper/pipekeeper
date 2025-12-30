@@ -5,9 +5,15 @@ import { base44 } from "@/api/base44Client";
 import { BarChart3, Leaf, Package, Star, TrendingUp } from "lucide-react";
 
 export default function TobaccoCollectionStats() {
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: blends = [] } = useQuery({
-    queryKey: ['tobacco-blends'],
-    queryFn: () => base44.entities.TobaccoBlend.list(),
+    queryKey: ['tobacco-blends', user?.email],
+    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
     initialData: [],
   });
 
