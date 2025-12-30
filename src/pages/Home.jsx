@@ -43,21 +43,23 @@ export default function HomePage() {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   useEffect(() => {
-    if (user?.email && isBeforeExtendedTrialEnd) {
+    if (user?.email && isBeforeExtendedTrialEnd && !showOnboarding) {
       const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
       if (!hasSeenNotice) {
         setShowTestingNotice(true);
       }
     }
-  }, [user?.email, isBeforeExtendedTrialEnd]);
+  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding]);
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
+      if (!user?.email) return null;
       const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
       return results[0];
     },
     enabled: !!user?.email,
+    retry: false,
   });
 
   const createOnboardingMutation = useMutation({
@@ -112,12 +114,14 @@ export default function HomePage() {
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
+    retry: false,
   });
 
   const { data: blends = [] } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
+    retry: false,
   });
 
   const totalPipeValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
@@ -142,7 +146,7 @@ export default function HomePage() {
       )}
       
       {/* Testing Notice Popup */}
-      {showTestingNotice && (
+      {showTestingNotice && !showOnboarding && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
