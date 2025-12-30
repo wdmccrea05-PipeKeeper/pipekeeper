@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Edit3 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,6 +14,7 @@ import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 import TobaccoExporter from "@/components/export/TobaccoExporter";
+import BulkTobaccoUpdate from "@/components/tobacco/BulkTobaccoUpdate";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -36,6 +37,7 @@ export default function TobaccoPage() {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showBulkUpdate, setShowBulkUpdate] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -67,6 +69,30 @@ export default function TobaccoPage() {
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ blendIds, updateData }) => {
+      // Update each selected blend
+      const promises = blendIds.map(id => {
+        const blend = blends.find(b => b.id === id);
+        if (!blend) return null;
+        
+        // For quantity_owned, add to existing value
+        const finalData = { ...updateData };
+        if (updateData.quantity_owned !== undefined) {
+          finalData.quantity_owned = (blend.quantity_owned || 0) + updateData.quantity_owned;
+        }
+        
+        return base44.entities.TobaccoBlend.update(id, finalData);
+      });
+      
+      await Promise.all(promises.filter(p => p !== null));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+      setShowBulkUpdate(false);
+    },
+  });
+
   const handleSave = (data) => {
     if (editingBlend) {
       updateMutation.mutate({ id: editingBlend.id, data });
@@ -80,6 +106,10 @@ export default function TobaccoPage() {
     // Open the edit form for the newly added blend
     setEditingBlend(blend);
     setShowForm(true);
+  };
+
+  const handleBulkUpdate = (blendIds, updateData) => {
+    bulkUpdateMutation.mutate({ blendIds, updateData });
   };
 
   const filteredBlends = blends.filter(blend => {
@@ -104,8 +134,18 @@ export default function TobaccoPage() {
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <TobaccoExporter />
+            {blends.length > 0 && (
+              <Button 
+                onClick={() => setShowBulkUpdate(true)}
+                variant="outline"
+                className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                Bulk Update
+              </Button>
+            )}
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
@@ -257,6 +297,23 @@ export default function TobaccoPage() {
           onOpenChange={setShowQuickSearch}
           onAdd={handleQuickSearchAdd}
         />
+
+        {/* Bulk Update Sheet */}
+        <Sheet open={showBulkUpdate} onOpenChange={setShowBulkUpdate}>
+          <SheetContent className="w-full sm:max-w-3xl overflow-hidden flex flex-col">
+            <SheetHeader className="mb-6">
+              <SheetTitle>Bulk Update Blends</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 min-h-0">
+              <BulkTobaccoUpdate
+                blends={blends}
+                onUpdate={handleBulkUpdate}
+                onCancel={() => setShowBulkUpdate(false)}
+                isLoading={bulkUpdateMutation.isPending}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
