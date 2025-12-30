@@ -39,6 +39,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       const sent = await base44.entities.Message.filter({ sender_email: user?.email });
       const received = await base44.entities.Message.filter({ recipient_email: user?.email });
       return [...sent, ...received].sort((a, b) => 
@@ -47,6 +48,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     },
     enabled: !!user?.email,
     refetchInterval: 5000, // Poll every 5 seconds
+    retry: false, // Don't retry on error to prevent infinite loops
   });
 
   const sendMessageMutation = useMutation({
