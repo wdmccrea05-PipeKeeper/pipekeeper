@@ -19,6 +19,7 @@ import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
+import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
@@ -423,6 +424,18 @@ export default function HomePage() {
             className="mb-12"
           >
             <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+          </motion.div>
+        )}
+
+        {/* Tobacco Collection Stats */}
+        {blends.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.77 }}
+            className="mb-12"
+          >
+            <TobaccoCollectionStats />
           </motion.div>
         )}
 
