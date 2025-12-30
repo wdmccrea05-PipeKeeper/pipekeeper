@@ -29,7 +29,7 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
 
-  const { data: user, isError: userError } = useQuery({
+  const { data: user, isError: userError, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     retry: 1,
@@ -119,16 +119,30 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
-  const { data: pipes = [], isError: pipesError } = useQuery({
+  const { data: pipes = [], isError: pipesError, isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date'),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+      } catch (error) {
+        console.error('Error loading pipes:', error);
+        return [];
+      }
+    },
     enabled: !!user?.email,
     retry: 1,
   });
 
-  const { data: blends = [], isError: blendsError } = useQuery({
+  const { data: blends = [], isError: blendsError, isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
+    queryFn: async () => {
+      try {
+        return await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+      } catch (error) {
+        console.error('Error loading blends:', error);
+        return [];
+      }
+    },
     enabled: !!user?.email,
     retry: 1,
   });
@@ -151,11 +165,22 @@ export default function HomePage() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-stone-800 mb-2">Unable to Load</h2>
-            <p className="text-stone-600 mb-4">Please try refreshing the page.</p>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Unable to Load</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Please try refreshing the page.</p>
             <Button onClick={() => window.location.reload()}>Refresh Page</Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (userLoading || (user?.email && (pipesLoading || blendsLoading || onboardingLoading))) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🪈</div>
+          <p className="text-[#e8d5b7]">Loading your collection...</p>
+        </div>
       </div>
     );
   }
@@ -444,7 +469,7 @@ export default function HomePage() {
         )}
 
         {/* Smoking Log Panel */}
-        {pipes.length > 0 && blends.length > 0 && (
+        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -456,7 +481,7 @@ export default function HomePage() {
         )}
 
         {/* Tobacco Collection Stats */}
-        {blends.length > 0 && (
+        {Array.isArray(blends) && blends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -468,7 +493,7 @@ export default function HomePage() {
         )}
 
         {/* Pairing Grid */}
-        {pipes.length > 0 && blends.length > 0 && (
+        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -484,7 +509,7 @@ export default function HomePage() {
 
 
         {/* Expert Tobacconist - Consolidated AI Features */}
-        {pipes.length > 0 && blends.length > 0 && (
+        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
