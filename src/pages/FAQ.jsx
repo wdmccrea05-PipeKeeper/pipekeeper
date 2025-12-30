@@ -513,6 +513,34 @@ export default function FAQPage() {
                   Use the Smoking Log panel on the home page to record each session. Select the pipe and blend used, add notes, and track bowls smoked. This data helps the AI improve pairing recommendations and shows your usage patterns over time.
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="item-11a">
+                <AccordionTrigger>How do I add or change tobacco blend logos?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p><strong>Automatic Logo Assignment:</strong> When you add a new tobacco blend and enter the manufacturer name, PipeKeeper automatically searches our logo library and assigns the matching brand logo if available.</p>
+                  
+                  <p><strong>Manual Logo Selection:</strong> If the automatic logo isn't correct or you want to change it:</p>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Open the tobacco blend detail page</li>
+                    <li>Click "Edit Blend"</li>
+                    <li>In the form, look for the "Browse Logo Library" button</li>
+                    <li>Search or browse the library of tobacco brand logos</li>
+                    <li>Select the logo you want and it will be applied to your blend</li>
+                  </ol>
+
+                  <p className="mt-3"><strong>Custom Logo Upload:</strong> If your brand logo isn't in the library, you can upload your own:</p>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Navigate to the Tobacco page</li>
+                    <li>Look for the "Manage Logo Library" option</li>
+                    <li>Upload a custom logo image for the brand</li>
+                    <li>Once uploaded, it will be available for selection when editing blends</li>
+                  </ol>
+
+                  <p className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+                    <strong>💡 Tip:</strong> Logo images work best when they're square or close to square aspect ratio with transparent backgrounds.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </CardContent>
         </Card>
