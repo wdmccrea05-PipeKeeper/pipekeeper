@@ -16,8 +16,8 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
   const [searchQuery, setSearchQuery] = useState('');
   const [updateFields, setUpdateFields] = useState({
     quantity_owned: '',
-    tin_status: '',
-    is_favorite: null,
+    tin_status: 'none',
+    is_favorite: 'none',
     rating: ''
   });
 
@@ -51,11 +51,11 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
     if (updateFields.quantity_owned !== '') {
       updateData.quantity_owned = Number(updateFields.quantity_owned);
     }
-    if (updateFields.tin_status) {
+    if (updateFields.tin_status && updateFields.tin_status !== 'none') {
       updateData.tin_status = updateFields.tin_status;
     }
-    if (updateFields.is_favorite !== null) {
-      updateData.is_favorite = updateFields.is_favorite;
+    if (updateFields.is_favorite !== 'none') {
+      updateData.is_favorite = updateFields.is_favorite === 'true';
     }
     if (updateFields.rating !== '') {
       updateData.rating = Math.round(Number(updateFields.rating));
@@ -210,11 +210,8 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
           <div className="space-y-2">
             <Label>Mark as Favorite</Label>
             <Select 
-              value={updateFields.is_favorite === null ? 'none' : updateFields.is_favorite.toString()} 
-              onValueChange={(v) => setUpdateFields(prev => ({ 
-                ...prev, 
-                is_favorite: v === 'none' ? null : v === 'true' 
-              }))}
+              value={updateFields.is_favorite} 
+              onValueChange={(v) => setUpdateFields(prev => ({ ...prev, is_favorite: v }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Don't update" />
