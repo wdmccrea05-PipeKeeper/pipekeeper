@@ -14,14 +14,14 @@ import { createPageUrl } from "@/utils";
 
 const PRICING_OPTIONS = [
   { 
-    id: 'plan_Rv4YPft7QPwWVi',
+    id: 'price_1SjqONDycvQWC88PUli0dllA',
     name: 'Monthly',
     price: '$1.99',
     interval: 'month',
     description: 'Billed monthly'
   },
   { 
-    id: 'plan_Rv4Y83IMnP5MRz',
+    id: 'price_1SjqMzDycvQWC88PzxEeD4ov',
     name: 'Yearly',
     price: '$19.99',
     interval: 'year',
