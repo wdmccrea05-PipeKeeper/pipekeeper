@@ -17,6 +17,7 @@ import TobaccoExporter from "@/components/export/TobaccoExporter";
 import BulkTobaccoUpdate from "@/components/tobacco/BulkTobaccoUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
 import QuickEditPanel from "@/components/tobacco/QuickEditPanel";
+import { toast } from "sonner";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -90,11 +91,17 @@ export default function TobaccoPage() {
       });
       
       await Promise.all(promises.filter(p => p !== null));
+      return blendIds.length;
     },
-    onSuccess: () => {
+    onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
-      setShowBulkUpdate(false);
+      toast.success(`Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`);
+      exitQuickEdit();
     },
+    onError: (error) => {
+      toast.error('Failed to update blends. Please try again.');
+      console.error('Bulk update error:', error);
+    }
   });
 
   const handleSave = (data) => {
