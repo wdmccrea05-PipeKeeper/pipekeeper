@@ -85,6 +85,7 @@ export default function FAQPage() {
         { question: 'Can I share my location to find local pipe enthusiasts?', answer: 'Yes! On your Profile page, you can optionally add: City, State/Province, Country, Zip/Postal Code. Check the box "Show my location publicly and allow others to find me by location" to opt-in. Your location will appear on your public profile, and other users can filter the Community directory by country and state to find nearby collectors. Privacy: Location sharing is completely optional. If you don\'t check the box, your location remains private even if you\'ve entered it.' },
         { question: 'What\'s the difference between Friends and Following?', answer: 'Friends: A mutual connection that requires both users to accept. Send a friend request, and if the other user accepts, you both become friends. Friends appear in your "Friends" tab. Following: A one-way connection where you can follow any public profile without their approval. Following lets you keep up with users whose collections interest you, even if they haven\'t added you as a friend. You can have both types of connections with the same user - be friends AND follow them.' },
         { question: 'How do I add friends?', answer: 'Go to the Community page and navigate to the "Discover" tab. Find a user you\'d like to be friends with (use search or location filters). Click "Add Friend" next to their profile. They\'ll receive a friend request in their "Friends" tab. Once they accept, you\'ll both appear in each other\'s friends list. You can view pending requests, accept incoming requests, and manage your friends in the "Friends" tab. A badge shows the number of pending requests waiting for your response.' },
+        { question: 'How does instant messaging work?', answer: 'Instant messaging (Premium only) allows you to chat in real-time with friends. Both you and your friend must enable messaging in your Profile settings. You can see which friends are online (green dot), send instant messages, and if a friend is offline, messages are saved to their inbox. You can save important messages or delete unwanted ones. The system shows unread message counts and notifies you of new messages.' },
       ],
     },
   ];
@@ -830,6 +831,37 @@ export default function FAQPage() {
                     <li>Once they accept, you'll both appear in each other's friends list</li>
                   </ol>
                   <p className="mt-3">You can view pending requests, accept incoming requests, and manage your friends in the "Friends" tab. A badge shows the number of pending requests waiting for your response.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="community-10">
+                <AccordionTrigger className="text-left">
+                  How does instant messaging work?
+                </AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p className="mb-3">Instant messaging (Premium only) allows you to chat in real-time with friends who also have messaging enabled.</p>
+                  
+                  <p className="font-semibold text-stone-800 mb-2">Setting Up:</p>
+                  <ol className="list-decimal pl-5 space-y-1 mb-3">
+                    <li>Go to your Profile page</li>
+                    <li>Check the box "Enable instant messaging with friends"</li>
+                    <li>Save your profile</li>
+                  </ol>
+                  
+                  <p className="font-semibold text-stone-800 mb-2">Using Messaging:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Friends with messaging enabled appear in the Messaging Panel on the Friends tab</li>
+                    <li>Green dot indicates friend is online, gray dot means offline</li>
+                    <li>Click a friend to open chat window</li>
+                    <li>Type and send instant messages</li>
+                    <li>If friend is offline, messages are saved to their inbox</li>
+                    <li>Use the Inbox button to view unread messages and saved messages</li>
+                    <li>Save important messages or delete unwanted ones</li>
+                  </ul>
+                  
+                  <p className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm mt-3">
+                    <strong>💡 Privacy:</strong> Only friends who mutually accept friend requests and both enable messaging can send messages to each other.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

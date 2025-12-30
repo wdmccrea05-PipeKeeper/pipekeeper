@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import MessagingPanel from "@/components/community/MessagingPanel";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -498,6 +500,15 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">
+            {/* Messaging Panel */}
+            {userProfile?.enable_messaging && acceptedFriends.length > 0 && (
+              <MessagingPanel 
+                user={user} 
+                friends={acceptedFriends} 
+                publicProfiles={allPublicProfiles}
+              />
+            )}
+
             {/* Friends List */}
             {acceptedFriends.length === 0 ? (
               <Card className="bg-white/95">

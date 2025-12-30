@@ -303,6 +303,7 @@ export default function SubscriptionPage() {
                   "Automatic inventory tracking & alerts",
                   "Pipe rest tracking with recommendations",
                   "Community: Share & follow collections",
+                  "Instant messaging with friends (real-time chat)",
                   "Unlimited pipes and tobacco blends",
                   "AI web search for auto-fill",
                   "Priority customer support"
