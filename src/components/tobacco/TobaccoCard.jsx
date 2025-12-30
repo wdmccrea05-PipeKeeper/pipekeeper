@@ -93,6 +93,15 @@ export default function TobaccoCard({ blend, onClick }) {
                 {blend.packaging_type}
               </Badge>
             )}
+            {blend.tin_status && (
+              <Badge variant="secondary" className={`text-xs ${
+                blend.tin_status === 'Sealed/Cellared' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' :
+                blend.tin_status === 'Opened' ? 'bg-sky-50 text-sky-700 border-sky-200/50' :
+                'bg-stone-50 text-stone-500 border-stone-200/50'
+              }`}>
+                {blend.tin_status}
+              </Badge>
+            )}
             {blend.strength && (
               <Badge variant="secondary" className="bg-stone-100 text-stone-600 border-stone-200/50 text-xs">
                 {blend.strength}
@@ -104,7 +113,7 @@ export default function TobaccoCard({ blend, onClick }) {
               </Badge>
             )}
             {blend.cellared_date && (
-              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200/50 text-xs">
+              <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-200/50 text-xs">
                 Cellared {new Date(blend.cellared_date).getFullYear()}
               </Badge>
             )}
