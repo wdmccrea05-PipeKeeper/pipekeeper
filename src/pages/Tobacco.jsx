@@ -202,10 +202,15 @@ export default function TobaccoPage() {
 
         {/* Quick Edit Select All */}
         {quickEditMode && (
-          <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+          <div 
+            className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4 cursor-pointer"
+            onClick={toggleSelectAll}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
             <Checkbox
               checked={selectedForEdit.length === filteredBlends.length && filteredBlends.length > 0}
               onCheckedChange={toggleSelectAll}
+              className="touch-none pointer-events-none"
             />
             <span className="font-medium text-amber-900">
               Select All ({selectedForEdit.length} of {filteredBlends.length} selected)
@@ -315,15 +320,28 @@ export default function TobaccoPage() {
                 >
                   {quickEditMode ? (
                     <div 
-                      onClick={() => toggleBlendSelection(blend.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleBlendSelection(blend.id);
+                      }}
                       className={`cursor-pointer transition-all ${
                         selectedForEdit.includes(blend.id) ? 'ring-2 ring-amber-600 rounded-xl' : ''
                       }`}
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
-                      <div className="absolute top-3 left-3 z-10">
+                      <div 
+                        className="absolute top-3 left-3 z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleBlendSelection(blend.id);
+                        }}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                      >
                         <Checkbox
                           checked={selectedForEdit.includes(blend.id)}
-                          className="bg-white border-2"
+                          className="bg-white border-2 touch-none pointer-events-none"
                         />
                       </div>
                       {viewMode === 'grid' ? (
