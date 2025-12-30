@@ -549,7 +549,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.length_mm ? Math.round((formData.length_mm / 25.4) * 100) / 100 : (formData.length_mm || '')}
+              value={
+                formData.length_mm 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.length_mm) / 25.4) * 100) / 100
+                    : Math.round(parseFloat(formData.length_mm) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -568,7 +574,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.weight_grams ? Math.round((formData.weight_grams / 28.35) * 100) / 100 : (formData.weight_grams || '')}
+              value={
+                formData.weight_grams 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.weight_grams) / 28.35) * 100) / 100
+                    : Math.round(parseFloat(formData.weight_grams) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -587,7 +599,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_height_mm ? Math.round((formData.bowl_height_mm / 25.4) * 100) / 100 : (formData.bowl_height_mm || '')}
+              value={
+                formData.bowl_height_mm 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.bowl_height_mm) / 25.4) * 100) / 100
+                    : Math.round(parseFloat(formData.bowl_height_mm) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -606,7 +624,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_width_mm ? Math.round((formData.bowl_width_mm / 25.4) * 100) / 100 : (formData.bowl_width_mm || '')}
+              value={
+                formData.bowl_width_mm 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.bowl_width_mm) / 25.4) * 100) / 100
+                    : Math.round(parseFloat(formData.bowl_width_mm) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -625,7 +649,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_diameter_mm ? Math.round((formData.bowl_diameter_mm / 25.4) * 100) / 100 : (formData.bowl_diameter_mm || '')}
+              value={
+                formData.bowl_diameter_mm 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.bowl_diameter_mm) / 25.4) * 100) / 100
+                    : Math.round(parseFloat(formData.bowl_diameter_mm) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
@@ -644,7 +674,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_depth_mm ? Math.round((formData.bowl_depth_mm / 25.4) * 100) / 100 : (formData.bowl_depth_mm || '')}
+              value={
+                formData.bowl_depth_mm 
+                  ? useImperial 
+                    ? Math.round((parseFloat(formData.bowl_depth_mm) / 25.4) * 100) / 100
+                    : Math.round(parseFloat(formData.bowl_depth_mm) * 100) / 100
+                  : ''
+              }
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
