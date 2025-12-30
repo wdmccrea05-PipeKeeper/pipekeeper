@@ -13,7 +13,6 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MessagingPanel from "@/components/community/MessagingPanel";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');

@@ -43,13 +43,19 @@ export default function HomePage() {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   useEffect(() => {
-    if (user?.email && isBeforeExtendedTrialEnd && !showOnboarding) {
-      const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
-      if (!hasSeenNotice) {
-        setShowTestingNotice(true);
+    if (!user?.email || showOnboarding || onboardingLoading) return;
+    
+    try {
+      if (isBeforeExtendedTrialEnd) {
+        const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
+        if (!hasSeenNotice) {
+          setShowTestingNotice(true);
+        }
       }
+    } catch (error) {
+      console.error('Error showing testing notice:', error);
     }
-  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding]);
+  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -71,9 +77,11 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    if (!onboardingLoading && user?.email && !onboardingStatus) {
+    if (onboardingLoading || !user?.email) return;
+    
+    if (!onboardingStatus) {
       setShowOnboarding(true);
-    } else if (onboardingStatus && !onboardingStatus.completed && !onboardingStatus.skipped) {
+    } else if (!onboardingStatus.completed && !onboardingStatus.skipped) {
       setShowOnboarding(true);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
@@ -135,6 +143,18 @@ export default function HomePage() {
     localStorage.setItem('testingNoticeSeen', 'true');
     setShowTestingNotice(false);
   };
+
+  // Don't render anything while loading user data
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔄</div>
+          <p className="text-[#e8d5b7]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

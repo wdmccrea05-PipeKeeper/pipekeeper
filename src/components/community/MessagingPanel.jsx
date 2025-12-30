@@ -18,6 +18,11 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
+  // Early return if no user
+  if (!user?.email) {
+    return null;
+  }
+
   // Update last seen every 30 seconds
   useEffect(() => {
     if (!user?.email) return;
