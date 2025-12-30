@@ -10,10 +10,10 @@ const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/ob
 
 export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
   return (
-    <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-[#1a2c42] to-[#243548]">
-      <CardHeader>
+    <Card className="border-[#e8d5b7]/30 bg-[#243548]/80 backdrop-blur-sm rounded-2xl shadow-xl">
+      <CardHeader className="border-b border-[#e8d5b7]/20">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-[#8b3a3a] flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg">
             <img 
               src={TOBACCONIST_ICON}
               alt="Expert Tobacconist"
@@ -26,52 +26,52 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="identifier" className="space-y-4">
-          <TabsList className="grid grid-cols-4 bg-[#243548] border border-[#e8d5b7]/20">
+      <CardContent className="pt-6">
+        <Tabs defaultValue="identifier" className="space-y-6">
+          <TabsList className="grid grid-cols-4 bg-[#1a2c42]/60 border border-[#e8d5b7]/30 p-1 rounded-xl shadow-inner">
             <TabsTrigger 
               value="identifier"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] text-[#e8d5b7]/60"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
             >
               <Camera className="w-4 h-4 mr-2" />
               Identify
             </TabsTrigger>
             <TabsTrigger 
               value="pairings"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] text-[#e8d5b7]/60"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Pairings
             </TabsTrigger>
             <TabsTrigger 
               value="optimizer"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] text-[#e8d5b7]/60"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
             >
               <TrendingUp className="w-4 h-4 mr-2" />
               Optimize
             </TabsTrigger>
             <TabsTrigger 
               value="whatif"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] text-[#e8d5b7]/60"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
             >
               <Lightbulb className="w-4 h-4 mr-2" />
               What If
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="identifier" className="space-y-4">
+          <TabsContent value="identifier" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
             <QuickPipeIdentifier pipes={pipes} blends={blends} />
           </TabsContent>
 
-          <TabsContent value="pairings" className="space-y-4">
+          <TabsContent value="pairings" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
             <PairingMatrix pipes={pipes} blends={blends} />
           </TabsContent>
 
-          <TabsContent value="optimizer" className="space-y-4">
+          <TabsContent value="optimizer" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
             <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
           </TabsContent>
 
-          <TabsContent value="whatif" className="space-y-4">
+          <TabsContent value="whatif" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
             <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} />
           </TabsContent>
         </Tabs>
