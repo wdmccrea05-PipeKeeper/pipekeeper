@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { BarChart3, Leaf, Package, Star, TrendingUp } from "lucide-react";
+import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function TobaccoCollectionStats() {
+  const [drillDown, setDrillDown] = useState(null);
+  
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
@@ -20,14 +26,22 @@ export default function TobaccoCollectionStats() {
   // Calculate statistics
   const totalBlends = blends.length;
   const uniqueBrands = [...new Set(blends.map(b => b.manufacturer).filter(Boolean))].length;
-  const favorites = blends.filter(b => b.is_favorite).length;
+  const favoriteBlends = blends.filter(b => b.is_favorite);
   const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
   const totalWeight = blends.reduce((sum, b) => {
     const tins = b.quantity_owned || 0;
     const sizeOz = b.tin_size_oz || 0;
     return sum + (tins * sizeOz);
   }, 0);
-  const opened = blends.filter(b => b.quantity_owned > 0 && b.cellared_amount).length;
+  const openedBlends = blends.filter(b => b.quantity_owned > 0 && b.cellared_amount);
+
+  // Brand breakdown
+  const brandBreakdown = blends.reduce((acc, b) => {
+    const brand = b.manufacturer || 'Unknown';
+    if (!acc[brand]) acc[brand] = [];
+    acc[brand].push(b);
+    return acc;
+  }, {});
 
   // Blend type breakdown
   const blendTypes = blends.reduce((acc, b) => {
@@ -39,6 +53,10 @@ export default function TobaccoCollectionStats() {
   const sortedBlendTypes = Object.entries(blendTypes)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6);
+
+  const handleDrillDown = (type, data) => {
+    setDrillDown({ type, data });
+  };
 
   return (
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
@@ -61,17 +79,29 @@ export default function TobaccoCollectionStats() {
                 <span className="text-stone-600">Total Blends</span>
                 <span className="font-semibold text-emerald-700">{totalBlends}</span>
               </div>
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
+              <button
+                onClick={() => handleDrillDown('brands', brandBreakdown)}
+                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
+              >
                 <span className="text-stone-600">Unique Brands</span>
-                <span className="font-semibold text-emerald-700">{uniqueBrands}</span>
-              </div>
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-emerald-700">{uniqueBrands}</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+                </div>
+              </button>
+              <button
+                onClick={() => handleDrillDown('favorites', favoriteBlends)}
+                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
+              >
                 <span className="text-stone-600 flex items-center gap-1">
                   <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                   Favorites
                 </span>
-                <span className="font-semibold text-emerald-700">{favorites}</span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-emerald-700">{favoriteBlends.length}</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+                </div>
+              </button>
               <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
                 <span className="text-stone-600 flex items-center gap-1">
                   <Package className="w-3 h-3 text-stone-500" />
@@ -83,10 +113,16 @@ export default function TobaccoCollectionStats() {
                 <span className="text-stone-600">Total Weight</span>
                 <span className="font-semibold text-emerald-700">{totalWeight.toFixed(2)} oz</span>
               </div>
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
+              <button
+                onClick={() => handleDrillDown('opened', openedBlends)}
+                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
+              >
                 <span className="text-stone-600">Opened</span>
-                <span className="font-semibold text-emerald-700">{opened}</span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-emerald-700">{openedBlends.length}</span>
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+                </div>
+              </button>
             </div>
           </div>
 
@@ -97,24 +133,166 @@ export default function TobaccoCollectionStats() {
               Blend Type Breakdown
             </h3>
             <div className="space-y-2">
-              {sortedBlendTypes.map(([type, count]) => (
-                <div key={type} className="space-y-1">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-600">{type}</span>
-                    <span className="font-semibold text-emerald-700">{count}</span>
-                  </div>
-                  <div className="w-full bg-stone-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full transition-all"
-                      style={{ width: `${(count / totalBlends) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+              {sortedBlendTypes.map(([type, count]) => {
+                const typeBlends = blends.filter(b => (b.blend_type || 'Unassigned') === type);
+                return (
+                  <button
+                    key={type}
+                    onClick={() => handleDrillDown('blendType', { type, blends: typeBlends })}
+                    className="w-full space-y-1 hover:opacity-80 transition-opacity"
+                  >
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-stone-600">{type}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-emerald-700">{count}</span>
+                        <ChevronRight className="w-4 h-4 text-stone-400" />
+                      </div>
+                    </div>
+                    <div className="w-full bg-stone-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full transition-all"
+                        style={{ width: `${(count / totalBlends) * 100}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       </CardContent>
+
+      {/* Drill-Down Dialog */}
+      <Dialog open={!!drillDown} onOpenChange={() => setDrillDown(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {drillDown?.type === 'brands' && 'Brands Breakdown'}
+              {drillDown?.type === 'favorites' && 'Favorite Blends'}
+              {drillDown?.type === 'opened' && 'Opened Blends'}
+              {drillDown?.type === 'blendType' && `${drillDown.data.type} Blends`}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            {drillDown?.type === 'brands' && (
+              <>
+                {Object.entries(drillDown.data)
+                  .sort(([, a], [, b]) => b.length - a.length)
+                  .map(([brand, brandBlends]) => (
+                    <div key={brand} className="bg-stone-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-stone-800">{brand}</h3>
+                        <Badge className="bg-emerald-100 text-emerald-800">
+                          {brandBlends.length} blend{brandBlends.length > 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {brandBlends.map(blend => (
+                          <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                            <div className="flex items-center justify-between p-2 bg-white rounded hover:bg-stone-100 transition-colors">
+                              <span className="text-sm text-stone-700">{blend.name}</span>
+                              {blend.quantity_owned > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
+                                </Badge>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </>
+            )}
+
+            {drillDown?.type === 'favorites' && (
+              <>
+                {drillDown.data.map(blend => (
+                  <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {blend.logo || blend.photo ? (
+                          <img 
+                            src={blend.logo || blend.photo} 
+                            alt="" 
+                            className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                          />
+                        ) : (
+                          <Leaf className="w-6 h-6 text-emerald-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-stone-800 truncate">{blend.name}</p>
+                        <p className="text-sm text-stone-500 truncate">{blend.manufacturer || blend.blend_type}</p>
+                      </div>
+                      <Star className="w-5 h-5 text-amber-500 fill-amber-500 flex-shrink-0" />
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {drillDown?.type === 'opened' && (
+              <>
+                {drillDown.data.map(blend => (
+                  <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {blend.logo || blend.photo ? (
+                          <img 
+                            src={blend.logo || blend.photo} 
+                            alt="" 
+                            className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                          />
+                        ) : (
+                          <Leaf className="w-6 h-6 text-emerald-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-stone-800 truncate">{blend.name}</p>
+                        <p className="text-sm text-stone-500 truncate">
+                          {blend.manufacturer || blend.blend_type} • {blend.cellared_amount?.toFixed(1)} oz cellared
+                        </p>
+                      </div>
+                      <Badge className="bg-blue-100 text-blue-800">Opened</Badge>
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {drillDown?.type === 'blendType' && (
+              <>
+                {drillDown.data.blends.map(blend => (
+                  <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {blend.logo || blend.photo ? (
+                          <img 
+                            src={blend.logo || blend.photo} 
+                            alt="" 
+                            className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                          />
+                        ) : (
+                          <Leaf className="w-6 h-6 text-emerald-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-stone-800 truncate">{blend.name}</p>
+                        <p className="text-sm text-stone-500 truncate">
+                          {blend.manufacturer}
+                          {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} tin${blend.quantity_owned > 1 ? 's' : ''}`}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
