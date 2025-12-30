@@ -549,13 +549,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.length_mm ? formData.length_mm / 25.4 : (formData.length_mm || '')}
+              value={useImperial && formData.length_mm ? Math.round((formData.length_mm / 25.4) * 100) / 100 : (formData.length_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('length_mm', '');
                 } else {
-                  handleChange('length_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
+                  handleChange('length_mm', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
@@ -567,13 +568,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.weight_grams ? formData.weight_grams / 28.35 : (formData.weight_grams || '')}
+              value={useImperial && formData.weight_grams ? Math.round((formData.weight_grams / 28.35) * 100) / 100 : (formData.weight_grams || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('weight_grams', '');
                 } else {
-                  handleChange('weight_grams', useImperial ? String(parseFloat(val) * 28.35) : val);
+                  const converted = useImperial ? parseFloat(val) * 28.35 : parseFloat(val);
+                  handleChange('weight_grams', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
@@ -585,13 +587,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_height_mm ? formData.bowl_height_mm / 25.4 : (formData.bowl_height_mm || '')}
+              value={useImperial && formData.bowl_height_mm ? Math.round((formData.bowl_height_mm / 25.4) * 100) / 100 : (formData.bowl_height_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('bowl_height_mm', '');
                 } else {
-                  handleChange('bowl_height_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
+                  handleChange('bowl_height_mm', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
@@ -603,13 +606,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_width_mm ? formData.bowl_width_mm / 25.4 : (formData.bowl_width_mm || '')}
+              value={useImperial && formData.bowl_width_mm ? Math.round((formData.bowl_width_mm / 25.4) * 100) / 100 : (formData.bowl_width_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('bowl_width_mm', '');
                 } else {
-                  handleChange('bowl_width_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
+                  handleChange('bowl_width_mm', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
@@ -621,13 +625,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_diameter_mm ? formData.bowl_diameter_mm / 25.4 : (formData.bowl_diameter_mm || '')}
+              value={useImperial && formData.bowl_diameter_mm ? Math.round((formData.bowl_diameter_mm / 25.4) * 100) / 100 : (formData.bowl_diameter_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('bowl_diameter_mm', '');
                 } else {
-                  handleChange('bowl_diameter_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
+                  handleChange('bowl_diameter_mm', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
@@ -639,13 +644,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Input
               type="number"
               step="0.01"
-              value={useImperial && formData.bowl_depth_mm ? formData.bowl_depth_mm / 25.4 : (formData.bowl_depth_mm || '')}
+              value={useImperial && formData.bowl_depth_mm ? Math.round((formData.bowl_depth_mm / 25.4) * 100) / 100 : (formData.bowl_depth_mm || '')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '') {
                   handleChange('bowl_depth_mm', '');
                 } else {
-                  handleChange('bowl_depth_mm', useImperial ? String(parseFloat(val) * 25.4) : val);
+                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
+                  handleChange('bowl_depth_mm', String(Math.round(converted * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
