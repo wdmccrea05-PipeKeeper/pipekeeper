@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,10 +21,13 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
     rating: ''
   });
 
-  const filteredBlends = blends.filter(blend => 
-    !searchQuery || 
-    blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBlends = useMemo(() => 
+    blends.filter(blend => 
+      !searchQuery || 
+      blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [blends, searchQuery]
   );
 
   const toggleBlend = (blendId) => {
