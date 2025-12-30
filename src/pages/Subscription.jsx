@@ -298,6 +298,7 @@ export default function SubscriptionPage() {
                   "Advanced pairing matrix",
                   "Break-in schedule generator",
                   "Bulk CSV import for pipes & tobacco",
+                  "Quick Edit: Update multiple blends at once",
                   "Advanced export & insurance reports (PDF/CSV)",
                   "Automatic inventory tracking & alerts",
                   "Pipe rest tracking with recommendations",

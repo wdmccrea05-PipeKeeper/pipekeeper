@@ -232,6 +232,20 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="border-stone-200 hover:border-purple-300 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Leaf className="w-6 h-6 text-purple-600 shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-stone-900">Quick Edit & Bulk Actions</h4>
+                  <p className="text-sm text-stone-600">
+                    Update multiple tobacco blends at once with Quick Edit mode
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )
     },

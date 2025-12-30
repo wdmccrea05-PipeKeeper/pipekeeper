@@ -19,7 +19,7 @@ const PIPE_TEMPLATE_HEADERS = [
 
 const TOBACCO_TEMPLATE_HEADERS = [
   'name', 'manufacturer', 'blend_type', 'cut', 'strength', 'room_note',
-  'tin_size_oz', 'quantity_owned', 'cellared_date', 'cellared_amount', 
+  'tin_size_oz', 'quantity_owned', 'tin_status', 'cellared_date', 'cellared_amount', 
   'production_status', 'aging_potential', 'rating', 'notes'
 ];
 
@@ -55,7 +55,7 @@ export default function ImportPage() {
 
   const downloadTobaccoTemplate = () => {
     const csvContent = TOBACCO_TEMPLATE_HEADERS.join(',') + '\n' +
-      'Example Blend,Cornell & Diehl,English,Ribbon,Medium,Pleasant,2,3,2025-01-15,10.5,Current Production,Excellent,4.5,Great everyday smoke\n';
+      'Example Blend,Cornell & Diehl,English,Ribbon,Medium,Pleasant,2,3,Sealed/Cellared,2025-01-15,10.5,Current Production,Excellent,4.5,Great everyday smoke\n';
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

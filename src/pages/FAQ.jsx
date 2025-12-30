@@ -53,6 +53,7 @@ export default function FAQPage() {
         { question: 'How do I use the break-in schedule?', answer: 'For new pipes, the break-in schedule feature creates a custom plan to properly cake and season your pipe. It recommends which tobacco blends to use in what order, how many bowls to smoke at each stage, and when to increase or rotate blends. Track your progress directly in the pipe detail page and log sessions as you go.' },
         { question: 'Can I import my existing collection?', answer: 'Yes! Premium users can bulk import pipes and tobacco from CSV files. Download the template from the Import page, fill it with your data, and upload. The system will process and add everything to your collection automatically.' },
         { question: 'How do I track smoking sessions?', answer: 'Use the Smoking Log panel on the home page to record each session. Select the pipe and blend used, add notes, and track bowls smoked. This data helps the AI improve pairing recommendations and shows your usage patterns over time.' },
+        { question: 'How do I bulk edit tobacco blends?', answer: 'On the Tobacco page, click the Quick Edit button to enter selection mode. Check the boxes next to the blends you want to update, or use "Select All" to choose all visible blends (filtered results). Then use the Quick Edit panel at the bottom to add quantity, change tin status, update ratings, or mark favorites for all selected blends at once.' },
       ],
     },
     {
@@ -518,6 +519,36 @@ export default function FAQPage() {
                     <li><strong>Auto Inventory Reduction:</strong> Enable the toggle to automatically reduce your cellared tobacco amount when logging sessions.</li>
                   </ul>
                   <p>This data helps the AI improve pairing recommendations and shows your usage patterns over time.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-11d">
+                <AccordionTrigger>How do I bulk edit tobacco blends?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p>The Quick Edit feature allows you to update multiple tobacco blends at once, saving time when managing your collection.</p>
+                  
+                  <p className="font-semibold text-stone-800">Using Quick Edit:</p>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Go to the Tobacco page</li>
+                    <li>Click the <strong>Quick Edit</strong> button in the top right</li>
+                    <li>Check the boxes next to the blends you want to update</li>
+                    <li>Use <strong>Select All</strong> to choose all visible blends (respects current filters)</li>
+                    <li>The Quick Edit panel appears at the bottom with update options</li>
+                    <li>Set the fields you want to change (leave others blank to skip)</li>
+                    <li>Click <strong>Update X Blends</strong> to apply changes</li>
+                  </ol>
+
+                  <p className="font-semibold text-stone-800 mt-3">What you can update:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li><strong>Add to Quantity:</strong> Adds tins to existing quantity (e.g., enter 3 to add 3 tins)</li>
+                    <li><strong>Tin Status:</strong> Set to Sealed/Cellared, Opened, or Empty</li>
+                    <li><strong>Favorite:</strong> Mark or unmark as favorite</li>
+                    <li><strong>Rating:</strong> Set a rating from 1-5 stars</li>
+                  </ul>
+
+                  <p className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm mt-3">
+                    <strong>💡 Tip:</strong> Use filters first to narrow down blends (by type, strength, manufacturer), then Quick Edit will only apply to the filtered results.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
 
