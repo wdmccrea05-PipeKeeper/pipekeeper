@@ -13,6 +13,7 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import MessagingPanel from "@/components/community/MessagingPanel";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -503,15 +504,39 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="inbox" className="space-y-6">
-            <Card className="bg-amber-50 border-amber-200">
-              <CardContent className="p-6 text-center">
-                <Mail className="w-12 h-12 mx-auto mb-4 text-amber-600" />
-                <h3 className="font-semibold text-amber-900 mb-2">Instant Messaging - Coming Soon</h3>
-                <p className="text-sm text-amber-800 mb-4">
-                  We're working on bringing real-time messaging to PipeKeeper. Check back soon!
-                </p>
-              </CardContent>
-            </Card>
+            {userProfile?.enable_messaging ? (
+              acceptedFriends.length > 0 ? (
+                <MessagingPanel 
+                  user={user} 
+                  friends={acceptedFriends} 
+                  publicProfiles={allPublicProfiles}
+                />
+              ) : (
+                <Card className="bg-white/95">
+                  <CardContent className="py-12 text-center text-stone-500">
+                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                    <p>No friends to message yet</p>
+                    <p className="text-sm mt-2">Add friends from the Discover tab to start messaging</p>
+                  </CardContent>
+                </Card>
+              )
+            ) : (
+              <Card className="bg-amber-50 border-amber-200">
+                <CardContent className="p-6 text-center">
+                  <Mail className="w-12 h-12 mx-auto mb-4 text-amber-600" />
+                  <h3 className="font-semibold text-amber-900 mb-2">Instant Messaging Disabled</h3>
+                  <p className="text-sm text-amber-800 mb-4">
+                    Enable instant messaging in your Profile settings to chat with friends in real-time.
+                  </p>
+                  <Link to={createPageUrl('Profile')}>
+                    <Button className="bg-amber-700 hover:bg-amber-800">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Go to Profile Settings
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">
