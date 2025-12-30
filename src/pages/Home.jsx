@@ -137,7 +137,10 @@ export default function HomePage() {
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        return await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        console.log('Fetching pipes for user:', user?.email);
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        console.log('Pipes loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         console.error('Error loading pipes:', error);
         return [];
@@ -145,13 +148,17 @@ export default function HomePage() {
     },
     enabled: !!user?.email,
     retry: 1,
+    staleTime: 5000,
   });
 
   const { data: blends = [], isError: blendsError, isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
-        return await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+        console.log('Fetching blends for user:', user?.email);
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+        console.log('Blends loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         console.error('Error loading blends:', error);
         return [];
@@ -159,14 +166,21 @@ export default function HomePage() {
     },
     enabled: !!user?.email,
     retry: 1,
+    staleTime: 5000,
   });
 
-  const totalPipeValue = Array.isArray(pipes) ? pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0) : 0;
-  const totalTins = Array.isArray(blends) ? blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0) : 0;
-  const favoritePipes = Array.isArray(pipes) ? pipes.filter(p => p.is_favorite) : [];
-  const favoriteBlends = Array.isArray(blends) ? blends.filter(b => b.is_favorite) : [];
-  const recentPipes = Array.isArray(pipes) ? pipes.slice(0, 4) : [];
-  const recentBlends = Array.isArray(blends) ? blends.slice(0, 4) : [];
+  // Ensure pipes and blends are always arrays
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  
+  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
+
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const favoritePipes = safePipes.filter(p => p?.is_favorite);
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const recentPipes = safePipes.slice(0, 4);
+  const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
     try {
@@ -311,7 +325,7 @@ export default function HomePage() {
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
                   <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain brightness-0 invert" />
-                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{pipes.length}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{safePipes.length}</p>
                   <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Pipes</p>
                 </CardContent>
               </Card>
@@ -339,7 +353,7 @@ export default function HomePage() {
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
                   <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#e8d5b7]" />
-                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{blends.length}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{safeBlends.length}</p>
                   <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Blends</p>
                 </CardContent>
               </Card>
@@ -513,19 +527,19 @@ export default function HomePage() {
         )}
 
         {/* Smoking Log Panel */}
-        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && user && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.75 }}
             className="mb-12"
           >
-            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+            <SmokingLogPanel pipes={safePipes} blends={safeBlends} user={user} />
           </motion.div>
         )}
 
         {/* Tobacco Collection Stats */}
-        {Array.isArray(blends) && blends.length > 0 && (
+        {safeBlends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -537,14 +551,14 @@ export default function HomePage() {
         )}
 
         {/* Pairing Grid */}
-        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && (
+        {safePipes.length > 0 && safeBlends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
             className="mb-12"
           >
-            <PairingGrid pipes={pipes} blends={blends} />
+            <PairingGrid pipes={safePipes} blends={safeBlends} />
           </motion.div>
         )}
 
@@ -553,7 +567,7 @@ export default function HomePage() {
 
 
         {/* Expert Tobacconist - Consolidated AI Features */}
-        {Array.isArray(pipes) && pipes.length > 0 && Array.isArray(blends) && blends.length > 0 && (
+        {safePipes.length > 0 && safeBlends.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -561,7 +575,7 @@ export default function HomePage() {
             className="mb-12"
           >
             {isPaidUser ? (
-              <ExpertTobacconist pipes={pipes} blends={blends} isPaidUser={isPaidUser} />
+              <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
             ) : (
               <UpgradePrompt 
                 featureName="Expert Tobacconist"
@@ -698,7 +712,7 @@ export default function HomePage() {
         </div>
 
         {/* Empty State */}
-        {pipes.length === 0 && blends.length === 0 && (
+        {safePipes.length === 0 && safeBlends.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
