@@ -388,18 +388,7 @@ export default function ProfilePage() {
                       Allow comments on my pipes, tobacco, and logs
                     </Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="enable_messaging"
-                      checked={formData.enable_messaging}
-                      onChange={(e) => setFormData({...formData, enable_messaging: e.target.checked})}
-                      className="w-4 h-4 rounded border-stone-300"
-                    />
-                    <Label htmlFor="enable_messaging" className="text-sm text-stone-700 cursor-pointer">
-                      Enable instant messaging with friends (Premium)
-                    </Label>
-                  </div>
+
 
                   <div className="pt-4 border-t space-y-4">
                     <h4 className="font-semibold text-violet-800">Location (Optional)</h4>
