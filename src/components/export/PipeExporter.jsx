@@ -59,11 +59,34 @@ export default function PipeExporter() {
     window.URL.revokeObjectURL(url);
   };
 
+  const loadImageAsBase64 = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        try {
+          const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(dataURL);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
   const exportInsurancePDF = async () => {
     setLoading(true);
     try {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       
       // Title
       doc.setFontSize(20);
@@ -94,7 +117,7 @@ export default function PipeExporter() {
       y += 8;
       
       for (const [idx, pipe] of pipes.entries()) {
-        if (y > 250) {
+        if (y > pageHeight - 40) {
           doc.addPage();
           y = 20;
         }
@@ -105,6 +128,25 @@ export default function PipeExporter() {
         doc.setFont(undefined, 'normal');
         doc.setFontSize(9);
         y += 6;
+        
+        // Add pipe photos
+        if (pipe.photos && pipe.photos.length > 0) {
+          try {
+            const photoData = await loadImageAsBase64(pipe.photos[0]);
+            const imgWidth = 60;
+            const imgHeight = 60;
+            
+            if (y + imgHeight > pageHeight - 20) {
+              doc.addPage();
+              y = 20;
+            }
+            
+            doc.addImage(photoData, 'JPEG', 25, y, imgWidth, imgHeight);
+            y += imgHeight + 5;
+          } catch (e) {
+            console.error('Failed to load pipe photo:', e);
+          }
+        }
         
         if (pipe.maker) {
           doc.text(`Maker: ${pipe.maker}${pipe.country_of_origin ? ` (${pipe.country_of_origin})` : ''}`, 25, y);
@@ -138,22 +180,45 @@ export default function PipeExporter() {
           y += 5;
         }
         
+        // Add stamping photos
+        if (pipe.stamping_photos && pipe.stamping_photos.length > 0) {
+          doc.setFontSize(8);
+          doc.setFont(undefined, 'bold');
+          doc.text('Stamping Photos:', 25, y);
+          doc.setFont(undefined, 'normal');
+          y += 5;
+          
+          for (const stampPhoto of pipe.stamping_photos.slice(0, 2)) {
+            try {
+              const stampData = await loadImageAsBase64(stampPhoto);
+              const imgWidth = 50;
+              const imgHeight = 50;
+              
+              if (y + imgHeight > pageHeight - 20) {
+                doc.addPage();
+                y = 20;
+              }
+              
+              doc.addImage(stampData, 'JPEG', 25, y, imgWidth, imgHeight);
+              y += imgHeight + 3;
+            } catch (e) {
+              console.error('Failed to load stamping photo:', e);
+            }
+          }
+          doc.setFontSize(9);
+        }
+        
         if (pipe.notes) {
           const notesLines = doc.splitTextToSize(`Notes: ${pipe.notes}`, pageWidth - 50);
+          if (y + notesLines.length * 5 > pageHeight - 20) {
+            doc.addPage();
+            y = 20;
+          }
           doc.text(notesLines, 25, y);
           y += notesLines.length * 5;
         }
         
-        if (pipe.photos && pipe.photos.length > 0) {
-          doc.setFontSize(8);
-          doc.setTextColor(100);
-          doc.text(`Photo URL: ${pipe.photos[0]}`, 25, y);
-          doc.setTextColor(0);
-          doc.setFontSize(9);
-          y += 4;
-        }
-        
-        y += 6;
+        y += 8;
       }
       
       doc.save(`pipe-insurance-report-${new Date().toISOString().split('T')[0]}.pdf`);
