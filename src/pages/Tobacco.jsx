@@ -15,6 +15,8 @@ import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
 import TobaccoExporter from "@/components/export/TobaccoExporter";
 import BulkTobaccoUpdate from "@/components/tobacco/BulkTobaccoUpdate";
+import { Checkbox } from "@/components/ui/checkbox";
+import QuickEditPanel from "@/components/tobacco/QuickEditPanel";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -38,6 +40,8 @@ export default function TobaccoPage() {
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
+  const [quickEditMode, setQuickEditMode] = useState(false);
+  const [selectedForEdit, setSelectedForEdit] = useState([]);
 
   const queryClient = useQueryClient();
 
@@ -123,6 +127,25 @@ export default function TobaccoPage() {
 
   const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
 
+  const toggleBlendSelection = (blendId) => {
+    setSelectedForEdit(prev => 
+      prev.includes(blendId) ? prev.filter(id => id !== blendId) : [...prev, blendId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedForEdit.length === filteredBlends.length && filteredBlends.length > 0) {
+      setSelectedForEdit([]);
+    } else {
+      setSelectedForEdit(filteredBlends.map(b => b.id));
+    }
+  };
+
+  const exitQuickEdit = () => {
+    setQuickEditMode(false);
+    setSelectedForEdit([]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -138,12 +161,18 @@ export default function TobaccoPage() {
             <TobaccoExporter />
             {blends.length > 0 && (
               <Button 
-                onClick={() => setShowBulkUpdate(true)}
-                variant="outline"
-                className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+                onClick={() => {
+                  setQuickEditMode(!quickEditMode);
+                  if (quickEditMode) exitQuickEdit();
+                }}
+                variant={quickEditMode ? "default" : "outline"}
+                className={quickEditMode 
+                  ? "bg-[#8b3a3a] hover:bg-[#6d2e2e]"
+                  : "border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+                }
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                Bulk Update
+                {quickEditMode ? 'Exit Quick Edit' : 'Quick Edit'}
               </Button>
             )}
             <Button 
@@ -163,6 +192,19 @@ export default function TobaccoPage() {
             </Button>
           </div>
         </div>
+
+        {/* Quick Edit Select All */}
+        {quickEditMode && (
+          <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+            <Checkbox
+              checked={selectedForEdit.length === filteredBlends.length && filteredBlends.length > 0}
+              onCheckedChange={toggleSelectAll}
+            />
+            <span className="font-medium text-amber-900">
+              Select All ({selectedForEdit.length} of {filteredBlends.length} selected)
+            </span>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -262,14 +304,36 @@ export default function TobaccoPage() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
+                  className="relative"
                 >
-                  <Link to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
-                    {viewMode === 'grid' ? (
-                      <TobaccoCard blend={blend} onClick={() => {}} />
-                    ) : (
-                      <TobaccoListItem blend={blend} onClick={() => {}} />
-                    )}
-                  </Link>
+                  {quickEditMode ? (
+                    <div 
+                      onClick={() => toggleBlendSelection(blend.id)}
+                      className={`cursor-pointer transition-all ${
+                        selectedForEdit.includes(blend.id) ? 'ring-2 ring-amber-600 rounded-xl' : ''
+                      }`}
+                    >
+                      <div className="absolute top-3 left-3 z-10">
+                        <Checkbox
+                          checked={selectedForEdit.includes(blend.id)}
+                          className="bg-white border-2"
+                        />
+                      </div>
+                      {viewMode === 'grid' ? (
+                        <TobaccoCard blend={blend} onClick={() => {}} />
+                      ) : (
+                        <TobaccoListItem blend={blend} onClick={() => {}} />
+                      )}
+                    </div>
+                  ) : (
+                    <Link to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                      {viewMode === 'grid' ? (
+                        <TobaccoCard blend={blend} onClick={() => {}} />
+                      ) : (
+                        <TobaccoListItem blend={blend} onClick={() => {}} />
+                      )}
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -298,22 +362,16 @@ export default function TobaccoPage() {
           onAdd={handleQuickSearchAdd}
         />
 
-        {/* Bulk Update Sheet */}
-        <Sheet open={showBulkUpdate} onOpenChange={setShowBulkUpdate}>
-          <SheetContent className="w-full sm:max-w-3xl overflow-hidden flex flex-col">
-            <SheetHeader className="mb-6">
-              <SheetTitle>Bulk Update Blends</SheetTitle>
-            </SheetHeader>
-            <div className="flex-1 min-h-0">
-              <BulkTobaccoUpdate
-                blends={blends}
-                onUpdate={handleBulkUpdate}
-                onCancel={() => setShowBulkUpdate(false)}
-                isLoading={bulkUpdateMutation.isPending}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+        {/* Quick Edit Panel */}
+        {quickEditMode && selectedForEdit.length > 0 && (
+          <QuickEditPanel
+            selectedCount={selectedForEdit.length}
+            onUpdate={handleBulkUpdate}
+            onCancel={exitQuickEdit}
+            isLoading={bulkUpdateMutation.isPending}
+            selectedBlends={selectedForEdit}
+          />
+        )}
       </div>
     </div>
   );
