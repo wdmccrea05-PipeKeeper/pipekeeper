@@ -36,6 +36,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     flavor_notes: [],
     tin_size_oz: '',
     quantity_owned: '',
+    tin_status: 'Sealed/Cellared',
     cellared_date: '',
     cellared_amount: '',
     production_status: '',
@@ -722,6 +723,21 @@ Return complete and accurate information based on the blend name or description 
               className="border-stone-200"
             />
           </div>
+          <FieldWithInfo 
+            label="Tin Status" 
+            helpText="Sealed/Cellared: Unopened tins stored for aging. Opened: Currently available to smoke. Empty: Tin is finished."
+          >
+            <Select value={formData.tin_status} onValueChange={(v) => handleChange('tin_status', v)}>
+              <SelectTrigger className="border-stone-200">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sealed/Cellared">Sealed/Cellared</SelectItem>
+                <SelectItem value="Opened">Opened</SelectItem>
+                <SelectItem value="Empty">Empty</SelectItem>
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
           <div className="space-y-2">
             <Label>Cellared Date</Label>
             <Input
