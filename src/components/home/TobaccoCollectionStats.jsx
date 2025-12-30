@@ -41,7 +41,7 @@ export default function TobaccoCollectionStats() {
     const sizeOz = b.tin_size_oz || 0;
     return sum + (tins * sizeOz);
   }, 0);
-  const openedBlends = blends.filter(b => b.quantity_owned > 0 && b.cellared_amount);
+  const openedBlends = blends.filter(b => b.tin_status === 'Opened');
 
   // Brand breakdown
   const brandBreakdown = blends.reduce((acc, b) => {
@@ -271,7 +271,9 @@ export default function TobaccoCollectionStats() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-stone-800 truncate">{blend.name}</p>
                         <p className="text-sm text-stone-500 truncate">
-                          {blend.manufacturer || blend.blend_type} • {blend.cellared_amount?.toFixed(1)} oz cellared
+                          {blend.manufacturer || blend.blend_type}
+                          {blend.cellared_amount && ` • ${blend.cellared_amount.toFixed(1)} oz cellared`}
+                          {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} tin${blend.quantity_owned > 1 ? 's' : ''}`}
                         </p>
                       </div>
                       <Badge className="bg-blue-100 text-blue-800">Opened</Badge>
