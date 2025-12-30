@@ -38,10 +38,10 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
     );
   };
 
-  const allSelected = useMemo(() => 
-    filteredBlends.length > 0 && selectedBlends.length === filteredBlends.length,
-    [filteredBlends.length, selectedBlends.length]
-  );
+  const allSelected = useMemo(() => {
+    if (filteredBlends.length === 0) return false;
+    return filteredBlends.every(blend => selectedBlends.includes(blend.id));
+  }, [filteredBlends, selectedBlends]);
 
   const toggleAll = () => {
     if (allSelected) {
