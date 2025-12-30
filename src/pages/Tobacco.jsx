@@ -43,6 +43,7 @@ export default function TobaccoPage() {
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [selectedForEdit, setSelectedForEdit] = useState([]);
+  const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -151,6 +152,7 @@ export default function TobaccoPage() {
   const exitQuickEdit = () => {
     setQuickEditMode(false);
     setSelectedForEdit([]);
+    setShowQuickEditPanel(false);
   };
 
   return (
@@ -387,12 +389,26 @@ export default function TobaccoPage() {
           onAdd={handleQuickSearchAdd}
         />
 
+        {/* Quick Edit Floating Button */}
+        {quickEditMode && selectedForEdit.length > 0 && !showQuickEditPanel && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <Button
+              onClick={() => setShowQuickEditPanel(true)}
+              className="bg-amber-700 hover:bg-amber-800 shadow-2xl px-6 py-6 text-lg"
+              size="lg"
+            >
+              <Edit3 className="w-5 h-5 mr-2" />
+              Edit {selectedForEdit.length} Selected
+            </Button>
+          </div>
+        )}
+
         {/* Quick Edit Panel */}
-        {quickEditMode && selectedForEdit.length > 0 && (
+        {quickEditMode && showQuickEditPanel && selectedForEdit.length > 0 && (
           <QuickEditPanel
             selectedCount={selectedForEdit.length}
             onUpdate={handleBulkUpdate}
-            onCancel={exitQuickEdit}
+            onCancel={() => setShowQuickEditPanel(false)}
             isLoading={bulkUpdateMutation.isPending}
             selectedBlends={selectedForEdit}
           />
