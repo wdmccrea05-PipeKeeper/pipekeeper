@@ -717,31 +717,20 @@ Return complete and accurate information based on the blend name or description 
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label>Tin Size (oz)</Label>
+            <Label>Quantity (oz)</Label>
             <Input
               type="number"
               step="0.1"
-              value={formData.tin_size_oz}
-              onChange={(e) => handleChange('tin_size_oz', e.target.value)}
-              placeholder="e.g., 1.75"
-              className="border-stone-200"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Quantity Owned</Label>
-            <Input
-              type="number"
               min="0"
-              step="1"
               value={formData.quantity_owned || ''}
               onChange={(e) => handleChange('quantity_owned', e.target.value)}
-              placeholder="e.g., 3"
+              placeholder="e.g., 3.5"
               className="border-stone-200"
             />
           </div>
           <FieldWithInfo 
-            label="Tin Status" 
-            helpText="Sealed/Cellared: Unopened tins stored for aging. Opened: Currently available to smoke. Empty: Tin is finished."
+            label="Status" 
+            helpText="Sealed/Cellared: Unopened stored for aging. Opened: Currently available to smoke. Empty: Finished."
           >
             <Select value={formData.tin_status} onValueChange={(v) => handleChange('tin_status', v)}>
               <SelectTrigger className="border-stone-200">
