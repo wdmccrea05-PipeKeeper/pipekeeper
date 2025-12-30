@@ -39,6 +39,7 @@ export default function ProfilePage() {
     show_location: false,
     is_public: false,
     allow_comments: true,
+    enable_messaging: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
     preferred_blend_types: [],
@@ -88,6 +89,7 @@ export default function ProfilePage() {
         show_location: profile.show_location || false,
         is_public: profile.is_public || false,
         allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
+        enable_messaging: profile.enable_messaging || false,
         clenching_preference: profile.clenching_preference || "Sometimes",
         smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -384,6 +386,18 @@ export default function ProfilePage() {
                     />
                     <Label htmlFor="allow_comments" className="text-sm text-stone-700 cursor-pointer">
                       Allow comments on my pipes, tobacco, and logs
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="enable_messaging"
+                      checked={formData.enable_messaging}
+                      onChange={(e) => setFormData({...formData, enable_messaging: e.target.checked})}
+                      className="w-4 h-4 rounded border-stone-300"
+                    />
+                    <Label htmlFor="enable_messaging" className="text-sm text-stone-700 cursor-pointer">
+                      Enable instant messaging with friends (Premium)
                     </Label>
                   </div>
 
