@@ -169,8 +169,13 @@ export default function HomePage() {
   const recentBlends = Array.isArray(blends) ? blends.slice(0, 4) : [];
 
   const handleDismissNotice = () => {
-    localStorage.setItem('testingNoticeSeen', 'true');
-    setShowTestingNotice(false);
+    try {
+      localStorage.setItem('testingNoticeSeen', 'true');
+      setShowTestingNotice(false);
+    } catch (error) {
+      console.error('Error dismissing notice:', error);
+      setShowTestingNotice(false);
+    }
   };
 
   if (userError) {
@@ -195,6 +200,22 @@ export default function HomePage() {
           <div className="text-4xl mb-4">🪈</div>
           <p className="text-[#e8d5b7]">Loading your collection...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Safety check - if we have errors loading data, show error state
+  if (pipesError || blendsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Error Loading Collection</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">There was a problem loading your data. Please refresh to try again.</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -255,6 +276,11 @@ export default function HomePage() {
 
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Safety wrapper to catch any render errors */}
+        {(() => {
+          try {
+            return (
+              <>
         {/* Hero */}
         <motion.div 
           className="text-center mb-8 sm:mb-12 px-2"
@@ -708,8 +734,24 @@ export default function HomePage() {
         )}
 
 
+        </>
+        );
+        } catch (error) {
+        console.error('Render error:', error);
+        return (
+        <Card className="max-w-md mx-auto mt-12">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Something went wrong</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Please refresh the page to try again.</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </CardContent>
+        </Card>
+        );
+        }
+        })()}
         </div>
-      </div>
-    </>
-  );
-}
+        </div>
+        </>
+        );
+        }
