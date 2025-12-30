@@ -29,9 +29,10 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
 
-  const { data: user } = useQuery({
+  const { data: user, isError: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    retry: 1,
   });
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
@@ -118,31 +119,46 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
-  const { data: pipes = [] } = useQuery({
+  const { data: pipes = [], isError: pipesError } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
-    retry: false,
+    retry: 1,
   });
 
-  const { data: blends = [] } = useQuery({
+  const { data: blends = [], isError: blendsError } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
-    retry: false,
+    retry: 1,
   });
 
-  const totalPipeValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-  const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
-  const favoritePipes = pipes.filter(p => p.is_favorite);
-  const favoriteBlends = blends.filter(b => b.is_favorite);
-  const recentPipes = pipes.slice(0, 4);
-  const recentBlends = blends.slice(0, 4);
+  const totalPipeValue = Array.isArray(pipes) ? pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0) : 0;
+  const totalTins = Array.isArray(blends) ? blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0) : 0;
+  const favoritePipes = Array.isArray(pipes) ? pipes.filter(p => p.is_favorite) : [];
+  const favoriteBlends = Array.isArray(blends) ? blends.filter(b => b.is_favorite) : [];
+  const recentPipes = Array.isArray(pipes) ? pipes.slice(0, 4) : [];
+  const recentBlends = Array.isArray(blends) ? blends.slice(0, 4) : [];
 
   const handleDismissNotice = () => {
     localStorage.setItem('testingNoticeSeen', 'true');
     setShowTestingNotice(false);
   };
+
+  if (userError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-stone-800 mb-2">Unable to Load</h2>
+            <p className="text-stone-600 mb-4">Please try refreshing the page.</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
