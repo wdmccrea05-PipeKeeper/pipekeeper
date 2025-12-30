@@ -34,29 +34,6 @@ export default function HomePage() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
-
-  useEffect(() => {
-    if (!user?.email || showOnboarding || onboardingLoading) return;
-    
-    try {
-      if (isBeforeExtendedTrialEnd) {
-        const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
-        if (!hasSeenNotice) {
-          setShowTestingNotice(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error showing testing notice:', error);
-    }
-  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
-
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
@@ -85,6 +62,29 @@ export default function HomePage() {
       setShowOnboarding(true);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
+
+  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
+  const now = new Date();
+  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
+  const isWithinSevenDayTrial = user?.created_date && 
+    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
+  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+
+  useEffect(() => {
+    if (!user?.email || showOnboarding || onboardingLoading) return;
+    
+    try {
+      if (isBeforeExtendedTrialEnd) {
+        const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
+        if (!hasSeenNotice) {
+          setShowTestingNotice(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error showing testing notice:', error);
+    }
+  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
 
   const handleOnboardingComplete = async () => {
     if (onboardingStatus) {
