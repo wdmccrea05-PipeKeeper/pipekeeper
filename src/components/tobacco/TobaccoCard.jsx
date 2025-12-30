@@ -64,7 +64,7 @@ export default function TobaccoCard({ blend, onClick }) {
           {blend.quantity_owned > 0 && (
             <div className="absolute bottom-3 left-3">
               <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm">
-                {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
+                {blend.quantity_owned} oz
               </Badge>
             </div>
           )}
@@ -88,6 +88,11 @@ export default function TobaccoCard({ blend, onClick }) {
                 {blend.blend_type}
               </Badge>
             )}
+            {blend.packaging_type && (
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200/50 text-xs">
+                {blend.packaging_type}
+              </Badge>
+            )}
             {blend.strength && (
               <Badge variant="secondary" className="bg-stone-100 text-stone-600 border-stone-200/50 text-xs">
                 {blend.strength}
@@ -96,6 +101,11 @@ export default function TobaccoCard({ blend, onClick }) {
             {blend.cut && (
               <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200/50 text-xs">
                 {blend.cut}
+              </Badge>
+            )}
+            {blend.cellared_date && (
+              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200/50 text-xs">
+                Cellared {new Date(blend.cellared_date).getFullYear()}
               </Badge>
             )}
           </div>
