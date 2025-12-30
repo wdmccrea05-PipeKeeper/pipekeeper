@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 26 44 66; /* #1A2C42 */
+    --foreground: 232 213 183; /* #E8D5B7 */
+    
+    --card: 36 53 72; /* #243548 */
+    --card-foreground: 232 213 183;
+    
+    --popover: 36 53 72;
+    --popover-foreground: 232 213 183;
+    
+    --primary: 139 58 58; /* #8B3A3A */
+    --primary-foreground: 232 213 183;
+    
+    --secondary: 36 53 72;
+    --secondary-foreground: 232 213 183;
+    
+    --muted: 36 53 72;
+    --muted-foreground: 232 213 183 / 0.7;
+    
+    --accent: 139 58 58;
+    --accent-foreground: 232 213 183;
+    
+    --destructive: 220 38 38;
+    --destructive-foreground: 232 213 183;
+    
+    --border: 232 213 183 / 0.3;
+    --input: 36 53 72;
+    --ring: 139 58 58;
+    
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-[#243548] rounded-lg;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-[#8b3a3a]/50 rounded-lg hover:bg-[#8b3a3a];
+  }
+  
+  /* Input and textarea styling for better contrast */
+  input, textarea, select {
+    @apply bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40;
+    @apply focus:border-[#8b3a3a] focus:ring-[#8b3a3a]/20;
+    @apply rounded-xl;
+  }
+  
+  /* Card and panel styling */
+  .card, [class*="Card"] {
+    @apply rounded-2xl;
+  }
+  
+  /* Button styling for consistency */
+  button {
+    @apply rounded-xl;
+  }
+  
+  /* Dialog and modal styling */
+  [role="dialog"] {
+    @apply rounded-2xl;
+  }
+}
