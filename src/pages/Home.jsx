@@ -63,19 +63,23 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    if (onboardingLoading || !user?.email) return;
-    
-    if (!onboardingStatus) {
-      setShowOnboarding(true);
-    } else if (!onboardingStatus.completed && !onboardingStatus.skipped) {
-      setShowOnboarding(true);
+    try {
+      if (onboardingLoading || !user?.email) return;
+      
+      if (!onboardingStatus) {
+        setShowOnboarding(true);
+      } else if (!onboardingStatus.completed && !onboardingStatus.skipped) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.error('Onboarding check error:', error);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
 
   useEffect(() => {
-    if (!user?.email || showOnboarding || onboardingLoading) return;
-    
     try {
+      if (!user?.email || showOnboarding || onboardingLoading) return;
+      
       if (isBeforeExtendedTrialEnd) {
         const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
         if (!hasSeenNotice) {
@@ -88,35 +92,45 @@ export default function HomePage() {
   }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
 
   const handleOnboardingComplete = async () => {
-    if (onboardingStatus) {
-      await updateOnboardingMutation.mutateAsync({
-        id: onboardingStatus.id,
-        data: { completed: true, current_step: 5 }
-      });
-    } else if (user?.email) {
-      await createOnboardingMutation.mutateAsync({
-        user_email: user.email,
-        completed: true,
-        current_step: 5
-      });
+    try {
+      if (onboardingStatus) {
+        await updateOnboardingMutation.mutateAsync({
+          id: onboardingStatus.id,
+          data: { completed: true, current_step: 5 }
+        });
+      } else if (user?.email) {
+        await createOnboardingMutation.mutateAsync({
+          user_email: user.email,
+          completed: true,
+          current_step: 5
+        });
+      }
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setShowOnboarding(false);
     }
-    setShowOnboarding(false);
   };
 
   const handleOnboardingSkip = async () => {
-    if (onboardingStatus) {
-      await updateOnboardingMutation.mutateAsync({
-        id: onboardingStatus.id,
-        data: { skipped: true }
-      });
-    } else if (user?.email) {
-      await createOnboardingMutation.mutateAsync({
-        user_email: user.email,
-        skipped: true,
-        current_step: 0
-      });
+    try {
+      if (onboardingStatus) {
+        await updateOnboardingMutation.mutateAsync({
+          id: onboardingStatus.id,
+          data: { skipped: true }
+        });
+      } else if (user?.email) {
+        await createOnboardingMutation.mutateAsync({
+          user_email: user.email,
+          skipped: true,
+          current_step: 0
+        });
+      }
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error skipping onboarding:', error);
+      setShowOnboarding(false);
     }
-    setShowOnboarding(false);
   };
 
   const { data: pipes = [], isError: pipesError, isLoading: pipesLoading } = useQuery({
@@ -187,7 +201,7 @@ export default function HomePage() {
 
   return (
     <>
-      {showOnboarding && (
+      {showOnboarding && user?.email && (
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingSkip}
