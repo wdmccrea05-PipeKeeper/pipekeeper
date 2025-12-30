@@ -121,8 +121,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
                 >
                   <Checkbox
                     checked={selectedBlends.includes(blend.id)}
-                    onCheckedChange={() => toggleBlend(blend.id)}
-                    className="shrink-0"
+                    className="shrink-0 pointer-events-none"
                   />
                   <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
                     {blend.logo || blend.photo ? (
