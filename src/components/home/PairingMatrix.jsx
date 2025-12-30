@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import PairingExporter from "@/components/export/PairingExporter";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -230,7 +231,10 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
               Find the perfect tobacco blend for each pipe in your collection
             </CardDescription>
           </div>
-          {!isCollapsed && <Button
+          {!isCollapsed && (
+            <div className="flex gap-2">
+              <PairingExporter pipes={pipes} blends={blends} />
+              <Button
             onClick={() => {
               if (pairings) {
                 if (confirm('Update pairing analysis? This will regenerate all recommendations based on your current collection and profile.')) {
@@ -257,9 +261,11 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
                 Generate Pairings
-              </>
-            )}
-          </Button>}
+                </>
+                )}
+                </Button>
+                </div>
+                )}
         </div>
       </CardHeader>
       

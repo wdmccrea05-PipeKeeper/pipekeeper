@@ -13,6 +13,7 @@ import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
+import PipeExporter from "@/components/export/PipeExporter";
 
 const SHAPES = ["All Shapes", "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Liverpool", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Other"];
 const MATERIALS = ["All Materials", "Briar", "Meerschaum", "Corn Cob", "Clay", "Morta", "Other"];
@@ -101,6 +102,7 @@ export default function PipesPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <PipeExporter />
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"

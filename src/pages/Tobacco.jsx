@@ -13,6 +13,7 @@ import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import QuickSearchTobacco from "@/components/ai/QuickSearchTobacco";
+import TobaccoExporter from "@/components/export/TobaccoExporter";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -104,6 +105,7 @@ export default function TobaccoPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <TobaccoExporter />
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
