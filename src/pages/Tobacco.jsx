@@ -7,7 +7,6 @@ import { Plus, Search, Grid3X3, List, Sparkles, Edit3 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import TobaccoCard from "@/components/tobacco/TobaccoCard";
 import TobaccoListItem from "@/components/tobacco/TobaccoListItem";
@@ -366,13 +365,13 @@ export default function TobaccoPage() {
                       )}
                     </div>
                   ) : (
-                    <Link to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <a href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
                       {viewMode === 'grid' ? (
                         <TobaccoCard blend={blend} onClick={() => {}} />
                       ) : (
                         <TobaccoListItem blend={blend} onClick={() => {}} />
                       )}
-                    </Link>
+                    </a>
                   )}
                 </motion.div>
               ))}

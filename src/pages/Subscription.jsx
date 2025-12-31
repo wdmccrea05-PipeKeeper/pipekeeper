@@ -9,7 +9,6 @@ import {
   CreditCard, Check, X, Calendar, AlertCircle, Crown, 
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 const PRICING_OPTIONS = [
@@ -133,12 +132,12 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={createPageUrl('Profile')}>
+        <a href={createPageUrl('Profile')}>
           <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Profile
           </Button>
-        </Link>
+        </a>
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">

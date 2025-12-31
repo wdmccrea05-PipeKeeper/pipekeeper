@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 
@@ -248,12 +247,12 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                <Link to={createPageUrl('Subscription')}>
+                <a href={createPageUrl('Subscription')}>
                   <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
                     {hasActiveSubscription ? 'Manage' : 'Upgrade'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                </Link>
+                </a>
               </div>
             </CardContent>
           </Card>
@@ -709,13 +708,13 @@ export default function ProfilePage() {
           <Card className="border-stone-200/60 bg-white/50">
             <CardContent className="p-4">
               <div className="flex flex-wrap items-center justify-center gap-6">
-                <Link to={createPageUrl('TermsOfService')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
+                <a href={createPageUrl('TermsOfService')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
                   Terms of Service
-                </Link>
+                </a>
                 <span className="text-stone-300">•</span>
-                <Link to={createPageUrl('PrivacyPolicy')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
+                <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
                   Privacy Policy
-                </Link>
+                </a>
               </div>
             </CardContent>
           </Card>

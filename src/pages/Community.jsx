@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
@@ -279,11 +278,11 @@ export default function CommunityPage() {
                   <p className="text-sm text-amber-800 mb-2">
                     <strong>Your profile is private.</strong> Enable public visibility in your Profile settings to be discovered by other users.
                   </p>
-                  <Link to={createPageUrl('Profile')}>
+                  <a href={createPageUrl('Profile')}>
                     <Button size="sm" variant="outline" className="border-amber-300 text-amber-700">
                       Update Settings
                     </Button>
-                  </Link>
+                  </a>
                 </CardContent>
               </Card>
             )}
@@ -407,11 +406,11 @@ export default function CommunityPage() {
                     {publicProfiles.filter(p => p.user_email !== user?.email).length} users found
                   </SheetDescription>
                   <div className="flex gap-2 mt-4">
-                    <Link to={createPageUrl('Home')} className="flex-1">
+                    <a href={createPageUrl('Home')} className="flex-1">
                       <Button variant="outline" className="w-full">
                         Return to Home
                       </Button>
-                    </Link>
+                    </a>
                     <Button 
                       variant="outline" 
                       className="flex-1"
@@ -432,11 +431,11 @@ export default function CommunityPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <Link to={createPageUrl(`PublicProfile?email=${profile.user_email}`)}>
+                          <a href={createPageUrl(`PublicProfile?email=${profile.user_email}`)}>
                             <h3 className="font-semibold text-stone-800 hover:text-amber-700 truncate">
                               {profile.display_name || profile.user_email}
                             </h3>
-                          </Link>
+                          </a>
                           {profile.bio && (
                             <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
                           )}
@@ -532,12 +531,12 @@ export default function CommunityPage() {
                   <p className="text-sm text-amber-800 mb-4">
                     Enable instant messaging in your Profile settings to chat with friends in real-time.
                   </p>
-                  <Link to={createPageUrl('Profile')}>
+                  <a href={createPageUrl('Profile')}>
                     <Button className="bg-amber-700 hover:bg-amber-800">
                       <Settings className="w-4 h-4 mr-2" />
                       Go to Profile Settings
                     </Button>
-                  </Link>
+                  </a>
                 </CardContent>
               </Card>
             )}
@@ -575,11 +574,11 @@ export default function CommunityPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <Link to={createPageUrl(`PublicProfile?email=${friendEmail}`)}>
+                              <a href={createPageUrl(`PublicProfile?email=${friendEmail}`)}>
                                 <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                                   {profile?.display_name || friendEmail}
                                 </h3>
-                              </Link>
+                              </a>
                               {profile?.bio && (
                                 <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
                               )}
@@ -641,11 +640,11 @@ export default function CommunityPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <Link to={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
+                              <a href={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
                                 <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                                   {profile?.display_name || request.requester_email}
                                 </h3>
-                              </Link>
+                              </a>
                               <p className="text-xs text-stone-500">Wants to be friends</p>
                             </div>
                             <div className="flex gap-2">
@@ -702,11 +701,11 @@ export default function CommunityPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <Link to={createPageUrl(`PublicProfile?email=${connection.following_email}`)}>
+                          <a href={createPageUrl(`PublicProfile?email=${connection.following_email}`)}>
                             <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                               {profile?.display_name || connection.following_email}
                             </h3>
-                          </Link>
+                          </a>
                           {profile?.bio && (
                             <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
                           )}
@@ -734,12 +733,12 @@ export default function CommunityPage() {
                 <div className="flex items-center justify-between">
                 <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
                 {user?.email && (
-                  <Link to={createPageUrl(`PublicProfile?email=${user.email}${userProfile?.is_public ? '' : '&preview=true'}`)}>
+                  <a href={createPageUrl(`PublicProfile?email=${user.email}${userProfile?.is_public ? '' : '&preview=true'}`)}>
                     <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
                       <Eye className="w-4 h-4 mr-2" />
                       {userProfile?.is_public ? 'View Profile' : 'Preview Profile'}
                     </Button>
-                  </Link>
+                  </a>
                 )}
                 </div>
               </CardHeader>
@@ -765,12 +764,12 @@ export default function CommunityPage() {
                         Comments: <strong>{userProfile.allow_comments ? 'Enabled' : 'Disabled'}</strong>
                       </p>
                     </div>
-                    <Link to={createPageUrl('Profile')}>
+                    <a href={createPageUrl('Profile')}>
                       <Button variant="outline" className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
                         Edit Profile Settings
                       </Button>
-                    </Link>
+                    </a>
                   </>
                 ) : (
                   <>
@@ -779,12 +778,12 @@ export default function CommunityPage() {
                         Your profile is currently private. Enable public visibility to connect with other users.
                       </p>
                     </div>
-                    <Link to={createPageUrl('Profile')}>
+                    <a href={createPageUrl('Profile')}>
                       <Button className="w-full bg-amber-700 hover:bg-amber-800">
                         <Settings className="w-4 h-4 mr-2" />
                         Make Profile Public
                       </Button>
-                    </Link>
+                    </a>
                   </>
                 )}
               </CardContent>
@@ -800,12 +799,12 @@ export default function CommunityPage() {
                 <p className="text-stone-600 mb-4">
                   Know someone who would love PipeKeeper? Invite them to join the community!
                 </p>
-                <Link to={createPageUrl('Invite')}>
+                <a href={createPageUrl('Invite')}>
                   <Button className="bg-amber-700 hover:bg-amber-800">
                     <Mail className="w-4 h-4 mr-2" />
                     Send Invitations
                   </Button>
-                </Link>
+                </a>
               </CardContent>
             </Card>
           </TabsContent>

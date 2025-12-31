@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -118,12 +117,12 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={createPageUrl('Home')}>
+        <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-        </Link>
+        </a>
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">
@@ -874,15 +873,15 @@ export default function FAQPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-stone-600">
-              If you have questions not covered here, visit our <Link to={createPageUrl('Support')} className="text-amber-700 hover:text-amber-800 font-medium">Support page</Link> to contact us directly.
+              If you have questions not covered here, visit our <a href={createPageUrl('Support')} className="text-amber-700 hover:text-amber-800 font-medium">Support page</a> to contact us directly.
             </p>
             <div className="flex gap-3">
-              <Link to={createPageUrl('Support')}>
+              <a href={createPageUrl('Support')}>
                 <Button variant="outline">Contact Support</Button>
-              </Link>
-              <Link to={createPageUrl('Home')}>
+              </a>
+              <a href={createPageUrl('Home')}>
                 <Button className="bg-amber-700 hover:bg-amber-800">Back to Home</Button>
-              </Link>
+              </a>
             </div>
           </CardContent>
         </Card>

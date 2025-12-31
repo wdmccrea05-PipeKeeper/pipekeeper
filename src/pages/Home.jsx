@@ -4,7 +4,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { 
@@ -345,15 +344,15 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Link to={createPageUrl('Pipes')}>
+            <a href={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
                   <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain brightness-0 invert" />
                   <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{safePipes.length}</p>
                   <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Pipes</p>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                  </Card>
+                  </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -372,16 +371,16 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-          >
-            <Link to={createPageUrl('Tobacco')}>
+            >
+            <a href={createPageUrl('Tobacco')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
                   <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#e8d5b7]" />
                   <p className="text-2xl sm:text-3xl font-bold text-[#e8d5b7]">{safeBlends.length}</p>
                   <p className="text-xs sm:text-sm text-[#e8d5b7]/80">Blends</p>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                  </Card>
+                  </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -404,8 +403,8 @@ export default function HomePage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-          >
-            <Link to={createPageUrl('Pipes')}>
+            >
+            <a href={createPageUrl('Pipes')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/70 via-[#6d2e2e]/60 to-[#5a2525]/70 z-10" />
                 <div 
@@ -460,8 +459,8 @@ export default function HomePage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-          >
-            <Link to={createPageUrl('Tobacco')}>
+            >
+            <a href={createPageUrl('Tobacco')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/70 via-[#2d4a3d]/60 to-[#1d3a2d]/70 z-10" />
                 <div 
@@ -531,18 +530,18 @@ export default function HomePage() {
               <CardContent>
                 <div className="flex flex-wrap gap-3">
                   {favoritePipes.map(pipe => (
-                    <Link key={pipe.id} to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                    <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
                       <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 cursor-pointer px-3 py-1.5">
                         🪈 {pipe.name}
                       </Badge>
-                    </Link>
+                    </a>
                   ))}
                   {favoriteBlends.map(blend => (
-                    <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
                       <Badge className="bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-200 cursor-pointer px-3 py-1.5">
                         🍂 {blend.name}
                       </Badge>
-                    </Link>
+                    </a>
                   ))}
                 </div>
               </CardContent>
@@ -761,16 +760,16 @@ export default function HomePage() {
               Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
-              <Link to={createPageUrl('Pipes')} className="w-full sm:w-auto">
+              <a href={createPageUrl('Pipes')} className="w-full sm:w-auto">
                 <Button className="bg-amber-700 hover:bg-amber-800 w-full">
                   Add Your First Pipe
                 </Button>
-              </Link>
-              <Link to={createPageUrl('Tobacco')} className="w-full sm:w-auto">
+              </a>
+              <a href={createPageUrl('Tobacco')} className="w-full sm:w-auto">
                 <Button variant="outline" className="w-full">
                   Add Your First Blend
                 </Button>
-              </Link>
+              </a>
             </div>
           </motion.div>
         )}
