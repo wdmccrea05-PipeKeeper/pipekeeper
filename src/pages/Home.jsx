@@ -28,37 +28,19 @@ const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
-  const [renderError, setRenderError] = useState(null);
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
-    queryFn: async () => {
-      try {
-        console.log('[Mobile] Fetching user');
-        const u = await base44.auth.me();
-        console.log('[Mobile] User:', u?.email || 'none');
-        return u;
-      } catch (err) {
-        console.error('[Mobile] User fetch error:', err);
-        throw err;
-      }
-    },
+    queryFn: () => base44.auth.me(),
     retry: 1,
   });
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
-      try {
-        if (!user?.email) return null;
-        console.log('[Mobile] Fetching onboarding');
-        const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
-        console.log('[Mobile] Onboarding:', results[0]?.completed);
-        return results[0] || null;
-      } catch (err) {
-        console.error('[Mobile] Onboarding error:', err);
-        return null;
-      }
+      if (!user?.email) return null;
+      const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
+      return results[0] || null;
     },
     enabled: !!user?.email,
     retry: 0,
@@ -67,15 +49,8 @@ export default function HomePage() {
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
-      try {
-        console.log('[Mobile] Fetching pipes');
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Mobile] Pipes loaded:', result?.length || 0);
-        return Array.isArray(result) ? result : [];
-      } catch (err) {
-        console.error('[Mobile] Pipes error:', err);
-        return [];
-      }
+      const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+      return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
     retry: 0,
@@ -84,15 +59,8 @@ export default function HomePage() {
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
-      try {
-        console.log('[Mobile] Fetching blends');
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Mobile] Blends loaded:', result?.length || 0);
-        return Array.isArray(result) ? result : [];
-      } catch (err) {
-        console.error('[Mobile] Blends error:', err);
-        return [];
-      }
+      const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+      return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
     retry: 0,
@@ -115,26 +83,16 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    try {
-      if (onboardingLoading || !user?.email) return;
-      if (!onboardingStatus || (!onboardingStatus.completed && !onboardingStatus.skipped)) {
-        console.log('[Mobile] Showing onboarding');
-        setShowOnboarding(true);
-      }
-    } catch (err) {
-      console.error('[Mobile] Onboarding effect error:', err);
+    if (onboardingLoading || !user?.email) return;
+    if (!onboardingStatus || (!onboardingStatus.completed && !onboardingStatus.skipped)) {
+      setShowOnboarding(true);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
 
   useEffect(() => {
-    try {
-      if (!user?.email || showOnboarding || onboardingLoading) return;
-      if (isBeforeExtendedTrialEnd && !localStorage.getItem('testingNoticeSeen')) {
-        console.log('[Mobile] Showing testing notice');
-        setShowTestingNotice(true);
-      }
-    } catch (err) {
-      console.error('[Mobile] Testing notice error:', err);
+    if (!user?.email || showOnboarding || onboardingLoading) return;
+    if (isBeforeExtendedTrialEnd && !localStorage.getItem('testingNoticeSeen')) {
+      setShowTestingNotice(true);
     }
   }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
 
@@ -170,24 +128,7 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
-  if (renderError) {
-    console.error('[Mobile] Render error caught:', renderError);
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Something went wrong</h2>
-            <p className="text-[#e8d5b7]/70 mb-4 text-sm">{renderError.message || 'Please try again'}</p>
-            <Button onClick={() => window.location.reload()}>Refresh</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (userLoading) {
-    console.log('[Mobile] User loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -202,8 +143,7 @@ export default function HomePage() {
     );
   }
 
-  if (userError || !user?.email) {
-    console.error('[Mobile] No user or error:', userError);
+  if (!user?.email) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -217,54 +157,28 @@ export default function HomePage() {
     );
   }
 
-  console.log('[Mobile] Preparing render');
-
-  let safePipes = [];
-  let safeBlends = [];
-  let totalPipeValue = 0;
-  let totalTins = 0;
-  let favoritePipes = [];
-  let favoriteBlends = [];
-  let recentPipes = [];
-  let recentBlends = [];
-
-  try {
-    safePipes = Array.isArray(pipes) ? pipes : [];
-    safeBlends = Array.isArray(blends) ? blends : [];
-    totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-    totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
-    favoritePipes = safePipes.filter(p => p?.is_favorite);
-    favoriteBlends = safeBlends.filter(b => b?.is_favorite);
-    recentPipes = safePipes.slice(0, 4);
-    recentBlends = safeBlends.slice(0, 4);
-    console.log('[Mobile] Data processed - pipes:', safePipes.length, 'blends:', safeBlends.length);
-  } catch (err) {
-    console.error('[Mobile] Data processing error:', err);
-    setRenderError(err);
-    return null;
-  }
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const favoritePipes = safePipes.filter(p => p?.is_favorite);
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const recentPipes = safePipes.slice(0, 4);
+  const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
-    try {
-      localStorage.setItem('testingNoticeSeen', 'true');
-      setShowTestingNotice(false);
-    } catch (err) {
-      console.error('[Mobile] Dismiss error:', err);
-      setShowTestingNotice(false);
-    }
+    localStorage.setItem('testingNoticeSeen', 'true');
+    setShowTestingNotice(false);
   };
 
-  console.log('[Mobile] Starting render');
-
-  try {
-    return (
-      <>
-        {showOnboarding && user?.email && (
-          <OnboardingFlow 
-            onComplete={handleOnboardingComplete}
-            onSkip={handleOnboardingSkip}
-          />
-        )}
+  return (
+    <>
+      {showOnboarding && user?.email && (
+        <OnboardingFlow 
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
       
       {/* Testing Notice Popup */}
       {showTestingNotice && !showOnboarding && (
@@ -770,9 +684,4 @@ export default function HomePage() {
         </div>
         </>
         );
-        } catch (err) {
-        console.error('[Mobile] Render failed:', err);
-        setRenderError(err);
-        return null;
-        }
         }
