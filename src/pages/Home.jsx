@@ -200,15 +200,15 @@ export default function HomePage() {
 
   return (
     <>
-      {showOnboarding && user?.email && (
+      {showOnboarding && user?.email ? (
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingSkip}
         />
-      )}
+      ) : null}
       
       {/* Testing Notice Popup */}
-      {showTestingNotice && !showOnboarding && (
+      {showTestingNotice && !showOnboarding ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -482,63 +482,91 @@ export default function HomePage() {
         )}
 
         {/* Smoking Log Panel */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.75 }}
             className="mb-12"
           >
-            <SmokingLogPanel pipes={safePipes} blends={safeBlends} user={user} />
+            {(() => {
+              try {
+                return <SmokingLogPanel pipes={safePipes} blends={safeBlends} user={user} />;
+              } catch (err) {
+                console.error('SmokingLogPanel error:', err);
+                return null;
+              }
+            })()}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Tobacco Collection Stats */}
-        {safeBlends.length > 0 && (
+        {safeBlends.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.77 }}
             className="mb-12"
           >
-            <TobaccoCollectionStats />
+            {(() => {
+              try {
+                return <TobaccoCollectionStats />;
+              } catch (err) {
+                console.error('TobaccoCollectionStats error:', err);
+                return null;
+              }
+            })()}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Pairing Grid */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
             className="mb-12"
           >
-            <PairingGrid pipes={safePipes} blends={safeBlends} />
+            {(() => {
+              try {
+                return <PairingGrid pipes={safePipes} blends={safeBlends} />;
+              } catch (err) {
+                console.error('PairingGrid error:', err);
+                return null;
+              }
+            })()}
           </motion.div>
-        )}
+        ) : null}
 
 
 
 
 
         {/* Expert Tobacconist - Consolidated AI Features */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.82 }}
             className="mb-12"
           >
-            {isPaidUser ? (
-              <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
-            ) : (
-              <UpgradePrompt 
-                featureName="Expert Tobacconist"
-                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
-              />
-            )}
+            {(() => {
+              try {
+                return isPaidUser ? (
+                  <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
+                ) : (
+                  <UpgradePrompt 
+                    featureName="Expert Tobacconist"
+                    description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
+                  />
+                );
+              } catch (err) {
+                console.error('ExpertTobacconist error:', err);
+                return null;
+              }
+            })()}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Import Link */}
         <motion.div
