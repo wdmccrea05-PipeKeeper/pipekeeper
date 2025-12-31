@@ -25,6 +25,8 @@ export default function PublicProfilePage() {
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
   const { data: profile } = useQuery({

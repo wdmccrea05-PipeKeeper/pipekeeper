@@ -40,8 +40,18 @@ export default function PipesPage() {
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date'),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Pipes load error:', err);
+        return [];
+      }
+    },
     enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const createMutation = useMutation({

@@ -50,12 +50,24 @@ export default function TobaccoPage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, sortBy),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, sortBy);
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Blends load error:', err);
+        return [];
+      }
+    },
     enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const createMutation = useMutation({

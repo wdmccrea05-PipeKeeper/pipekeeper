@@ -61,6 +61,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
   const isPaidUser = user?.subscription_level === 'paid';

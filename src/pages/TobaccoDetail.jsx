@@ -75,12 +75,24 @@ export default function TobaccoDetailPage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Pipes load error:', err);
+        return [];
+      }
+    },
     enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const { data: userProfile } = useQuery({
