@@ -20,25 +20,23 @@ const navItems = [
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
 
-function NavLink({ item, currentPage, onClick, hasPaidAccess }) {
+function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
   const isActive = currentPage === item.page;
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
   return (
     <Link 
       to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium touch-manipulation",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors",
         isActive 
           ? "bg-[#8b3a3a] text-[#e8d5b7]" 
           : isMobile 
-            ? "text-[#1a2c42] active:bg-[#8b3a3a]/10"
+            ? "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
             : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
       )}
       style={{ 
         WebkitTapHighlightColor: 'transparent',
-        cursor: 'pointer'
       }}
     >
       {item.isIconComponent ? (
@@ -154,7 +152,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Navigation */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42] border-b border-[#8b3a3a]">
         <div className="flex items-center justify-between h-14 px-4">
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2">
+          <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <img 
               src={PIPEKEEPER_LOGO}
               alt="PipeKeeper"
@@ -163,44 +161,49 @@ export default function Layout({ children, currentPageName }) {
             <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
           </Link>
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-[#e8d5b7] p-2 -mr-2 touch-manipulation"
-            style={{ 
-              WebkitTapHighlightColor: 'transparent',
-              cursor: 'pointer'
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileOpen(prev => !prev);
             }}
+            className="text-[#e8d5b7] p-2 -mr-2 active:scale-95 transition-transform"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+            aria-label="Toggle menu"
           >
-            <Menu className="w-6 h-6" />
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </nav>
 
       {/* Mobile Menu Overlay */}
-      {mobileOpen && (
-        <>
-          <div 
-            className="md:hidden fixed inset-0 bg-black/50 z-50 touch-manipulation"
-            onClick={() => setMobileOpen(false)}
-            style={{ 
-              top: '56px',
-              cursor: 'pointer'
-            }}
-          />
-          <div className="md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto">
-            <div className="flex flex-col gap-2 p-4">
-              {navItems.map(item => (
-                <NavLink 
-                  key={item.page} 
-                  item={item} 
-                  currentPage={currentPageName}
-                  onClick={() => setMobileOpen(false)}
-                  hasPaidAccess={hasPaidAccess}
-                />
-              ))}
-            </div>
-          </div>
-        </>
-      )}
+      <div 
+        className={cn(
+          "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setMobileOpen(false)}
+        style={{ top: '56px' }}
+      />
+
+      {/* Mobile Menu Panel */}
+      <div 
+        className={cn(
+          "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        )}
+      >
+        <div className="flex flex-col gap-2 p-4">
+          {navItems.map(item => (
+            <NavLink 
+              key={item.page} 
+              item={item} 
+              currentPage={currentPageName}
+              onClick={() => setMobileOpen(false)}
+              hasPaidAccess={hasPaidAccess}
+              isMobile={true}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="pt-16 md:pt-16 pb-20">
