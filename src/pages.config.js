@@ -1,7 +1,6 @@
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
 import FAQ from './pages/FAQ';
-import Home from './pages/Home';
 import Import from './pages/Import';
 import Index from './pages/Index';
 import Invite from './pages/Invite';
@@ -16,6 +15,7 @@ import TermsOfService from './pages/TermsOfService';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -23,7 +23,6 @@ export const PAGES = {
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
     "FAQ": FAQ,
-    "Home": Home,
     "Import": Import,
     "Index": Index,
     "Invite": Invite,
@@ -38,6 +37,7 @@ export const PAGES = {
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
+    "Home": Home,
 }
 
 export const pagesConfig = {

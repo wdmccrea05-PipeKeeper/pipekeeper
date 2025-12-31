@@ -28,10 +28,31 @@ const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
+  const [renderError, setRenderError] = useState(null);
+
+  // Wrap entire component in error boundary
+  React.useEffect(() => {
+    const handleError = (event) => {
+      console.error('Global error caught:', event.error);
+      setRenderError(event.error?.message || 'An error occurred');
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
 
   const { data: user, isError: userError, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        console.log('[Mobile Debug] Fetching user...');
+        const userData = await base44.auth.me();
+        console.log('[Mobile Debug] User fetched:', userData?.email);
+        return userData;
+      } catch (error) {
+        console.error('[Mobile Debug] User fetch error:', error);
+        throw error;
+      }
+    },
     retry: 1,
   });
 
@@ -137,12 +158,12 @@ export default function HomePage() {
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        console.log('Fetching pipes for user:', user?.email);
+        console.log('[Mobile Debug] Fetching pipes for user:', user?.email);
         const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-        console.log('Pipes loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        console.log('[Mobile Debug] Pipes loaded:', Array.isArray(result) ? result.length : 'not an array');
         return Array.isArray(result) ? result : [];
       } catch (error) {
-        console.error('Error loading pipes:', error);
+        console.error('[Mobile Debug] Error loading pipes:', error);
         return [];
       }
     },
@@ -155,12 +176,12 @@ export default function HomePage() {
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
-        console.log('Fetching blends for user:', user?.email);
+        console.log('[Mobile Debug] Fetching blends for user:', user?.email);
         const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-        console.log('Blends loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        console.log('[Mobile Debug] Blends loaded:', Array.isArray(result) ? result.length : 'not an array');
         return Array.isArray(result) ? result : [];
       } catch (error) {
-        console.error('Error loading blends:', error);
+        console.error('[Mobile Debug] Error loading blends:', error);
         return [];
       }
     },
@@ -169,10 +190,27 @@ export default function HomePage() {
     staleTime: 5000,
   });
 
-  if (userError) {
+  // Show render errors
+  if (renderError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
-        <Card className="max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Render Error</h2>
+            <p className="text-[#e8d5b7]/70 mb-4 text-sm">{renderError}</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (userError) {
+    console.error('[Mobile Debug] User error:', userError);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Unable to Load</h2>
@@ -185,8 +223,9 @@ export default function HomePage() {
   }
 
   if (userLoading || (user?.email && (pipesLoading || blendsLoading || onboardingLoading))) {
+    console.log('[Mobile Debug] Loading state - user:', userLoading, 'pipes:', pipesLoading, 'blends:', blendsLoading);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
@@ -201,9 +240,10 @@ export default function HomePage() {
 
   // Safety check - if we have errors loading data, show error state
   if (pipesError || blendsError) {
+    console.error('[Mobile Debug] Data error - pipes:', pipesError, 'blends:', blendsError);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
-        <Card className="max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Error Loading Collection</h2>
@@ -216,17 +256,38 @@ export default function HomePage() {
   }
 
   // Process data only after all checks pass - MUST be after loading/error checks
-  const safePipes = Array.isArray(pipes) ? pipes : [];
-  const safeBlends = Array.isArray(blends) ? blends : [];
+  let safePipes = [];
+  let safeBlends = [];
   
-  console.log('Safe data:', { pipes: safePipes.length, blends: safeBlends.length });
+  try {
+    safePipes = Array.isArray(pipes) ? pipes : [];
+    safeBlends = Array.isArray(blends) ? blends : [];
+    console.log('[Mobile Debug] Safe data processed:', { pipes: safePipes.length, blends: safeBlends.length });
+  } catch (error) {
+    console.error('[Mobile Debug] Error processing data:', error);
+    setRenderError('Error processing collection data');
+    return null;
+  }
 
-  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
-  const favoritePipes = safePipes.filter(p => p?.is_favorite);
-  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
-  const recentPipes = safePipes.slice(0, 4);
-  const recentBlends = safeBlends.slice(0, 4);
+  let totalPipeValue = 0;
+  let totalTins = 0;
+  let favoritePipes = [];
+  let favoriteBlends = [];
+  let recentPipes = [];
+  let recentBlends = [];
+
+  try {
+    totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+    totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+    favoritePipes = safePipes.filter(p => p?.is_favorite) || [];
+    favoriteBlends = safeBlends.filter(b => b?.is_favorite) || [];
+    recentPipes = safePipes.slice(0, 4) || [];
+    recentBlends = safeBlends.slice(0, 4) || [];
+    console.log('[Mobile Debug] Stats calculated successfully');
+  } catch (error) {
+    console.error('[Mobile Debug] Error calculating stats:', error);
+    // Continue with defaults - don't crash
+  }
 
   const handleDismissNotice = () => {
     try {
