@@ -54,6 +54,7 @@ export default function HomePage() {
     },
     retry: 1,
     staleTime: 5000,
+    refetchOnMount: true,
   });
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({

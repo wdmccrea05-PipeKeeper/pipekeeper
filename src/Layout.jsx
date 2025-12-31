@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
@@ -68,6 +68,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess }) {
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -75,6 +76,18 @@ export default function Layout({ children, currentPageName }) {
     staleTime: 5000,
     retry: 1,
   });
+
+  // Clear all caches on mount if user auth changes
+  React.useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'logout') {
+        queryClient.clear();
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [queryClient]);
 
   const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
   const now = new Date();
