@@ -255,6 +255,25 @@ export default function HomePage() {
     }
   };
 
+  // Final safety check before render
+  if (!user?.email) {
+    console.error('[Login] No user email after init complete');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Session Error</h2>
+            <p className="text-[#e8d5b7]/70 mb-4 text-sm">Please log in again.</p>
+            <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  console.log('[Login] Step 5: Rendering homepage');
+
   return (
     <>
       {showOnboarding && user?.email && (
@@ -311,11 +330,6 @@ export default function HomePage() {
 
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Safety wrapper to catch any render errors */}
-        {(() => {
-          try {
-            return (
-              <>
         {/* Hero */}
         <motion.div 
           className="text-center mb-8 sm:mb-12 px-2"
@@ -769,22 +783,6 @@ export default function HomePage() {
         )}
 
 
-        </>
-        );
-        } catch (error) {
-        console.error('Render error:', error);
-        return (
-        <Card className="max-w-md mx-auto mt-12">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Something went wrong</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">Please refresh the page to try again.</p>
-            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-          </CardContent>
-        </Card>
-        );
-        }
-        })()}
         </div>
         </div>
         </>
