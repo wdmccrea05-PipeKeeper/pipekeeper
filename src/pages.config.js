@@ -3,7 +3,6 @@ import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import Home from './pages/Home';
 import Import from './pages/Import';
-import Index from './pages/Index';
 import Invite from './pages/Invite';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
@@ -16,6 +15,7 @@ import TermsOfService from './pages/TermsOfService';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
+import index from './pages/index';
 import __Layout from './Layout.jsx';
 
 
@@ -25,7 +25,6 @@ export const PAGES = {
     "FAQ": FAQ,
     "Home": Home,
     "Import": Import,
-    "Index": Index,
     "Invite": Invite,
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
@@ -38,6 +37,7 @@ export const PAGES = {
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
+    "index": index,
 }
 
 export const pagesConfig = {
