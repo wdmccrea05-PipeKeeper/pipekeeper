@@ -658,7 +658,15 @@ export default function ProfilePage() {
                 <Button
                   variant="outline"
                   className="border-rose-200 text-rose-600 hover:bg-rose-50"
-                  onClick={() => base44.auth.logout()}
+                  onClick={() => {
+                    // Clear all React Query cache before logout
+                    queryClient.clear();
+                    // Signal other tabs to clear cache
+                    localStorage.setItem('logout', Date.now().toString());
+                    localStorage.removeItem('logout');
+                    // Perform logout
+                    base44.auth.logout();
+                  }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
