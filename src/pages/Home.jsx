@@ -40,41 +40,72 @@ export default function HomePage() {
     return () => window.removeEventListener('error', handleError);
   }, []);
 
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        const userData = await base44.auth.me();
+        console.log('[Home] User loaded:', userData?.email);
+        return userData;
+      } catch (err) {
+        console.error('[Home] User load error:', err);
+        throw err;
+      }
+    },
     retry: 1,
+    staleTime: 5000,
   });
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
-      const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
-      return results[0] || null;
+      try {
+        const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
+        console.log('[Home] Onboarding status loaded:', results[0]?.completed);
+        return results[0] || null;
+      } catch (err) {
+        console.error('[Home] Onboarding load error:', err);
+        return null;
+      }
     },
     enabled: !!user?.email,
     retry: 0,
+    staleTime: 5000,
   });
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-      return Array.isArray(result) ? result : [];
+      try {
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        console.log('[Home] Pipes loaded:', result?.length || 0);
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('[Home] Pipes load error:', err);
+        return [];
+      }
     },
     enabled: !!user?.email,
     retry: 0,
+    staleTime: 5000,
   });
 
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-      return Array.isArray(result) ? result : [];
+      try {
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+        console.log('[Home] Blends loaded:', result?.length || 0);
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('[Home] Blends load error:', err);
+        return [];
+      }
     },
     enabled: !!user?.email,
     retry: 0,
+    staleTime: 5000,
   });
 
   // Check if user has paid access
@@ -139,6 +170,9 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
+  console.log('[Home] Loading states - user:', userLoading, 'pipes:', pipesLoading, 'blends:', blendsLoading, 'onboarding:', onboardingLoading);
+  console.log('[Home] User email:', user?.email);
+  
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
@@ -148,8 +182,24 @@ export default function HomePage() {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">Loading...</p>
+          <p className="text-[#e8d5b7]">Loading user...</p>
         </div>
+      </div>
+    );
+  }
+  
+  if (userError) {
+    console.error('[Home] User error:', userError);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Login Required</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Please log in to continue</p>
+            <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
