@@ -13,6 +13,7 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const navigate = useNavigate();
 
   const steps = [
     {
@@ -268,7 +269,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           <div className="grid gap-3 max-w-md mx-auto">
             <Button 
               className="w-full bg-amber-700 hover:bg-amber-800 justify-between group"
-              onClick={() => window.location.href = '/Profile'}
+              onClick={() => { onComplete(); navigate(createPageUrl('Profile')); }}
             >
               <span>Set Up Profile First</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -276,7 +277,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <Button 
               variant="outline"
               className="w-full justify-between group"
-              onClick={() => window.location.href = '/Pipes'}
+              onClick={() => { onComplete(); navigate(createPageUrl('Pipes')); }}
             >
               <span>Add Pipes</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -284,7 +285,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <Button 
               variant="outline"
               className="w-full justify-between group"
-              onClick={() => window.location.href = '/Tobacco'}
+              onClick={() => { onComplete(); navigate(createPageUrl('Tobacco')); }}
             >
               <span>Add Tobacco</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

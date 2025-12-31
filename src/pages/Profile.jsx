@@ -55,8 +55,9 @@ export default function ProfilePage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
   });
 
   // Check if user has paid access
@@ -86,8 +87,8 @@ export default function ProfilePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
+    retry: 2,
+    staleTime: 10000,
   });
 
   useEffect(() => {
@@ -294,10 +295,13 @@ export default function ProfilePage() {
                           size="sm" 
                           className="border-violet-300 text-violet-700 w-full sm:w-auto"
                           onClick={async (e) => {
-                            // Save current form data before preview
                             e.preventDefault();
-                            await saveMutation.mutateAsync(formData);
-                            window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
+                            try {
+                              await saveMutation.mutateAsync(formData);
+                              window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
+                            } catch (err) {
+                              console.error('Failed to save profile before preview:', err);
+                            }
                           }}
                           disabled={saveMutation.isPending}
                         >
