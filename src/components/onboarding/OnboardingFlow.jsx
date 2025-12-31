@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, ArrowLeft, Check, X, Sparkles, 
-  Camera, Search, Star, Users, ChevronRight
+  Camera, Search, Star, Users, ChevronRight, Leaf
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
