@@ -9,7 +9,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { 
   ArrowLeft, Edit, Trash2, Heart, Star, Package
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import {
@@ -45,7 +44,6 @@ const BLEND_COLORS = {
 export default function TobaccoDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const blendId = urlParams.get('id');
-  const navigate = useNavigate();
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -116,7 +114,7 @@ export default function TobaccoDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.TobaccoBlend.delete(blendId),
     onSuccess: () => {
-      navigate(createPageUrl('Tobacco'));
+      window.location.href = createPageUrl('Tobacco');
     },
   });
 
@@ -149,9 +147,9 @@ export default function TobaccoDetailPage() {
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
           <h2 className="text-2xl font-semibold text-stone-800 mb-2">Blend not found</h2>
-          <Link to={createPageUrl('Tobacco')}>
+          <a href={createPageUrl('Tobacco')}>
             <Button variant="outline">Back to Tobacco</Button>
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -163,12 +161,12 @@ export default function TobaccoDetailPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link to={createPageUrl('Tobacco')}>
+        <a href={createPageUrl('Tobacco')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Tobacco
           </Button>
-        </Link>
+        </a>
 
         {/* Top Pipe Matches */}
         {pipes.length > 0 && (

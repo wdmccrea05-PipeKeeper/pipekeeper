@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLeft } from "lucide-react";
@@ -24,9 +23,13 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
   const isActive = currentPage === item.page;
   
   return (
-    <Link 
-      to={createPageUrl(item.page)} 
-      onClick={onClick}
+    <a 
+      href={createPageUrl(item.page)} 
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.href = createPageUrl(item.page);
+        onClick?.();
+      }}
       className={cn(
         "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors",
         isActive 
@@ -65,7 +68,6 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
@@ -156,14 +158,14 @@ export default function Layout({ children, currentPageName }) {
       <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="flex items-center justify-between h-16 gap-4">
-            <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
+            <a href={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
               <img 
                 src={PIPEKEEPER_LOGO}
                 alt="PipeKeeper"
                 className="w-8 h-8 object-contain"
               />
               <span className="font-bold text-xl text-[#e8d5b7]">PipeKeeper</span>
-            </Link>
+            </a>
             <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
               {navItems.map(item => (
                 <NavLink key={item.page} item={item} currentPage={currentPageName} hasPaidAccess={hasPaidAccess} />
@@ -176,14 +178,14 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Navigation */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42] border-b border-[#8b3a3a]">
         <div className="flex items-center justify-between h-14 px-4">
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+          <a href={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <img 
               src={PIPEKEEPER_LOGO}
               alt="PipeKeeper"
               className="w-7 h-7 object-contain"
             />
             <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
-          </Link>
+            </a>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -235,7 +237,7 @@ export default function Layout({ children, currentPageName }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => window.history.back()}
             className="text-[#e8d5b7]/70 hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20 mb-4 mt-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -258,18 +260,18 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm text-[#e8d5b7]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <Link to={createPageUrl('FAQ')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              <a href={createPageUrl('FAQ')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 FAQ
-              </Link>
-              <Link to={createPageUrl('Support')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              </a>
+              <a href={createPageUrl('Support')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 Support
-              </Link>
-              <Link to={createPageUrl('TermsOfService')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              </a>
+              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 Terms of Service
-              </Link>
-              <Link to={createPageUrl('PrivacyPolicy')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              </a>
+              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
                 Privacy Policy
-              </Link>
+              </a>
             </div>
           </div>
         </div>
