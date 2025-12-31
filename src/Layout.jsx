@@ -62,9 +62,9 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       {item.isPremium && !hasPaidAccess && (
         <Crown className="w-3 h-3 text-amber-500" />
       )}
-      </Link>
-      );
-      }
+    </a>
+  );
+}
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
