@@ -424,7 +424,7 @@ export default function HomePage() {
 
                   <div className="flex-1 mb-4 sm:mb-6">
                     <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
-                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{pipes.length}</p>
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safePipes.length}</p>
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
                     </div>
 
@@ -480,7 +480,7 @@ export default function HomePage() {
 
                   <div className="flex-1 mb-4 sm:mb-6">
                     <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
-                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{blends.length}</p>
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
                     </div>
 
