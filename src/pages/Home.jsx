@@ -187,11 +187,11 @@ export default function HomePage() {
       </div>
     );
   }
-  
-  console.log('[Home] Rendering main content - pipes:', safePipes.length, 'blends:', safeBlends.length);
 
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
+  
+  console.log('[Home] Rendering main content - pipes:', safePipes.length, 'blends:', safeBlends.length);
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
   const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
