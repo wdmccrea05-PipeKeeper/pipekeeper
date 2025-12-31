@@ -227,7 +227,7 @@ export default function ProfilePage() {
                         <h3 className="font-semibold text-amber-900">Premium Active</h3>
                         <p className="text-sm text-amber-700">Full access to all features</p>
                       </>
-                    ) : isInTrial ? (
+                    ) : isWithinTrial ? (
                       <>
                         <h3 className="font-semibold text-amber-900">Free Trial Active</h3>
                         <p className="text-sm text-amber-700">{daysLeftInTrial} days remaining</p>
