@@ -36,9 +36,9 @@ export default function CommunityPage() {
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-    refetchOnMount: true,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
   });
 
   // Check if user has paid access

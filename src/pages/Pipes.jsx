@@ -34,8 +34,9 @@ export default function PipesPage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
   });
 
   const { data: pipes = [], isLoading } = useQuery({
@@ -50,8 +51,8 @@ export default function PipesPage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
+    retry: 2,
+    staleTime: 10000,
   });
 
   const createMutation = useMutation({

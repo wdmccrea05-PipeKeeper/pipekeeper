@@ -59,8 +59,9 @@ export default function PipeDetailPage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
   });
 
   const { data: blends = [] } = useQuery({
@@ -75,8 +76,8 @@ export default function PipeDetailPage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
+    retry: 2,
+    staleTime: 10000,
   });
 
   const { data: userProfile } = useQuery({
