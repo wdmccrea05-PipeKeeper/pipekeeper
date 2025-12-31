@@ -675,7 +675,7 @@ export default function HomePage() {
                             </Badge>
                           )}
                         </div>
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 </CardContent>
@@ -725,7 +725,7 @@ export default function HomePage() {
                             </Badge>
                           )}
                         </div>
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 </CardContent>
