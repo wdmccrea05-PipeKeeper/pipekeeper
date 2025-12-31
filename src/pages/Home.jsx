@@ -28,6 +28,17 @@ const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
+  const [hasError, setHasError] = React.useState(false);
+
+  // Error boundary effect
+  React.useEffect(() => {
+    const handleError = (error) => {
+      console.error('[Home Error]', error);
+      setHasError(true);
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
@@ -170,6 +181,22 @@ export default function HomePage() {
     localStorage.setItem('testingNoticeSeen', 'true');
     setShowTestingNotice(false);
   };
+
+  // Error state
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Something went wrong</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Please refresh to try again</p>
+            <Button onClick={() => window.location.reload()}>Refresh</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -479,7 +506,7 @@ export default function HomePage() {
         )}
 
         {/* Pairing Grid */}
-        {safePipes.length > 0 && safeBlends.length > 0 && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -495,7 +522,7 @@ export default function HomePage() {
 
 
         {/* Expert Tobacconist - Consolidated AI Features */}
-        {safePipes.length > 0 && safeBlends.length > 0 && (
+        {safePipes.length > 0 && safeBlends.length > 0 && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
