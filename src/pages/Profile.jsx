@@ -77,10 +77,17 @@ export default function ProfilePage() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user-profile', user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+        return Array.isArray(profiles) ? profiles[0] : null;
+      } catch (err) {
+        console.error('User profile load error:', err);
+        return null;
+      }
     },
     enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
   });
 
   useEffect(() => {

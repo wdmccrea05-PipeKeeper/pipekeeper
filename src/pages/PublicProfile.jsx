@@ -32,28 +32,65 @@ export default function PublicProfilePage() {
   const { data: profile } = useQuery({
     queryKey: ['public-profile', profileEmail],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: profileEmail });
-      return profiles[0];
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: profileEmail });
+        return Array.isArray(profiles) ? profiles[0] : null;
+      } catch (err) {
+        console.error('Profile load error:', err);
+        return null;
+      }
     },
     enabled: !!profileEmail,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['public-pipes', profileEmail],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: profileEmail }),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.Pipe.filter({ created_by: profileEmail });
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Public pipes load error:', err);
+        return [];
+      }
+    },
     enabled: !!profileEmail,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const { data: blends = [] } = useQuery({
     queryKey: ['public-blends', profileEmail],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: profileEmail }),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: profileEmail });
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Public blends load error:', err);
+        return [];
+      }
+    },
     enabled: !!profileEmail,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const { data: logs = [] } = useQuery({
     queryKey: ['public-logs', profileEmail],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: profileEmail }, '-date', 20),
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.SmokingLog.filter({ created_by: profileEmail }, '-date', 20);
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('Public logs load error:', err);
+        return [];
+      }
+    },
     enabled: !!profileEmail,
+    retry: 1,
+    staleTime: 5000,
   });
 
   const makePublicMutation = useMutation({

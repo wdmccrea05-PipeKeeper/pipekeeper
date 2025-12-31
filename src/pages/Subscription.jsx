@@ -45,10 +45,17 @@ export default function SubscriptionPage() {
   const { data: subscription } = useQuery({
     queryKey: ['subscription', user?.email],
     queryFn: async () => {
-      const subs = await base44.entities.Subscription.filter({ user_email: user?.email });
-      return subs[0];
+      try {
+        const subs = await base44.entities.Subscription.filter({ user_email: user?.email });
+        return Array.isArray(subs) ? subs[0] : null;
+      } catch (err) {
+        console.error('Subscription load error:', err);
+        return null;
+      }
     },
     enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
   });
 
   // Check for success/cancel in URL params

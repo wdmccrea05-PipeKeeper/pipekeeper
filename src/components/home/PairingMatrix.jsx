@@ -24,6 +24,8 @@ export default function PairingMatrix({ pipes, blends }) {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
   // Load saved pairings
