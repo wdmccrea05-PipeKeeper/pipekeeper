@@ -23,7 +23,13 @@ import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
-const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
+
+let EXTENDED_TRIAL_END;
+try {
+  EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
+} catch (e) {
+  EXTENDED_TRIAL_END = new Date(2026, 0, 15, 23, 59, 59);
+}
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -49,8 +55,16 @@ export default function HomePage() {
   // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  let isWithinSevenDayTrial = false;
+  try {
+    if (user?.created_date) {
+      const createdTime = new Date(user.created_date).getTime();
+      const nowTime = new Date().getTime();
+      isWithinSevenDayTrial = (nowTime - createdTime) < 7 * 24 * 60 * 60 * 1000;
+    }
+  } catch (dateError) {
+    console.warn('Error parsing trial dates:', dateError);
+  }
   const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
@@ -81,9 +95,13 @@ export default function HomePage() {
       if (!user?.email || showOnboarding || onboardingLoading) return;
       
       if (isBeforeExtendedTrialEnd) {
-        const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
-        if (!hasSeenNotice) {
-          setShowTestingNotice(true);
+        try {
+          const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
+          if (!hasSeenNotice) {
+            setShowTestingNotice(true);
+          }
+        } catch (storageError) {
+          console.warn('localStorage not available:', storageError);
         }
       }
     } catch (error) {
@@ -136,10 +154,9 @@ export default function HomePage() {
   const { data: pipes = [], isError: pipesError, isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
-        console.log('Fetching pipes for user:', user?.email);
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-        console.log('Pipes loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        const result = await base44.entities.Pipe.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (error) {
         console.error('Error loading pipes:', error);
@@ -147,17 +164,17 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
+    retry: 2,
+    retryDelay: 1000,
     staleTime: 5000,
   });
 
   const { data: blends = [], isError: blendsError, isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
-        console.log('Fetching blends for user:', user?.email);
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-        console.log('Blends loaded:', Array.isArray(result) ? result.length : 'not an array', result);
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (error) {
         console.error('Error loading blends:', error);
@@ -165,7 +182,8 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
+    retry: 2,
+    retryDelay: 1000,
     staleTime: 5000,
   });
 
@@ -231,11 +249,10 @@ export default function HomePage() {
   const handleDismissNotice = () => {
     try {
       localStorage.setItem('testingNoticeSeen', 'true');
-      setShowTestingNotice(false);
-    } catch (error) {
-      console.error('Error dismissing notice:', error);
-      setShowTestingNotice(false);
+    } catch (storageError) {
+      console.warn('localStorage not available:', storageError);
     }
+    setShowTestingNotice(false);
   };
 
   return (
