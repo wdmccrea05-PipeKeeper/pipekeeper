@@ -615,7 +615,7 @@ export default function HomePage() {
           transition={{ delay: 0.84 }}
           className="mb-6"
         >
-          <Link to={createPageUrl('Import')}>
+          <a href={createPageUrl('Import')}>
             <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10 hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
