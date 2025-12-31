@@ -10,7 +10,7 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 const PRICING_OPTIONS = [
   { 
