@@ -81,18 +81,23 @@ export default function Layout({ children, currentPageName }) {
         throw err;
       }
     },
-    staleTime: 5000,
-    retry: 1,
-    refetchOnMount: true,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 
-  // Clear all caches on mount if user auth changes
+  // Clear query cache on logout signal, but preserve auth queries briefly
   React.useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'logout') {
-        queryClient.clear();
-        window.location.reload();
+        // Remove all queries except current-user to avoid auth race conditions
+        queryClient.removeQueries({ 
+          predicate: (query) => query.queryKey[0] !== 'current-user' 
+        });
+        // Reload after a brief delay to let auth state settle
+        setTimeout(() => window.location.reload(), 100);
       }
     };
     window.addEventListener('storage', handleStorageChange);

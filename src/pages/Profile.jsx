@@ -666,13 +666,17 @@ export default function ProfilePage() {
                   variant="outline"
                   className="border-rose-200 text-rose-600 hover:bg-rose-50"
                   onClick={() => {
-                    // Clear all React Query cache before logout
-                    queryClient.clear();
                     // Signal other tabs to clear cache
                     localStorage.setItem('logout', Date.now().toString());
-                    localStorage.removeItem('logout');
-                    // Perform logout
-                    base44.auth.logout();
+                    // Remove all queries except auth to prevent race conditions
+                    queryClient.removeQueries({ 
+                      predicate: (query) => query.queryKey[0] !== 'current-user' 
+                    });
+                    // Small delay before logout to ensure cache cleanup
+                    setTimeout(() => {
+                      localStorage.removeItem('logout');
+                      base44.auth.logout();
+                    }, 50);
                   }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
