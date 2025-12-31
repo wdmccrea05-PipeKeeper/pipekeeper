@@ -139,7 +139,10 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
+  console.log('[Home] Render - userLoading:', userLoading, 'user:', user?.email, 'hasError:', hasError);
+
   if (userLoading) {
+    console.log('[Home] Showing loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -153,8 +156,25 @@ export default function HomePage() {
       </div>
     );
   }
+  
+  if (pipesLoading || blendsLoading || onboardingLoading) {
+    console.log('[Home] Showing data loading state');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <p className="text-[#e8d5b7]">Loading your collection...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user?.email) {
+    console.log('[Home] No user email, showing login prompt');
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -167,6 +187,8 @@ export default function HomePage() {
       </div>
     );
   }
+  
+  console.log('[Home] Rendering main content - pipes:', safePipes.length, 'blends:', safeBlends.length);
 
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
@@ -198,14 +220,17 @@ export default function HomePage() {
     );
   }
 
-  return (
-    <>
-      {showOnboarding && user?.email ? (
-        <OnboardingFlow 
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      ) : null}
+  console.log('[Home] About to return JSX');
+  
+  try {
+    return (
+      <>
+        {showOnboarding && user?.email ? (
+          <OnboardingFlow 
+            onComplete={handleOnboardingComplete}
+            onSkip={handleOnboardingSkip}
+          />
+        ) : null}
       
       {/* Testing Notice Popup */}
       {showTestingNotice && !showOnboarding ? (
@@ -737,6 +762,21 @@ export default function HomePage() {
 
         </div>
         </div>
-        </>
-        );
-        }
+      </>
+    );
+  } catch (error) {
+    console.error('[Home] Render error:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Render Error</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Check console for details</p>
+            <Button onClick={() => window.location.reload()}>Refresh</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+}
