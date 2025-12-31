@@ -28,46 +28,78 @@ const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
-  const [renderError, setRenderError] = useState(null);
+  const [initComplete, setInitComplete] = useState(false);
 
-  // Wrap entire component in error boundary
-  React.useEffect(() => {
-    const handleError = (event) => {
-      console.error('Global error caught:', event.error);
-      setRenderError(event.error?.message || 'An error occurred');
-    };
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
-
+  // Step 1: Load user
   const { data: user, isError: userError, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: async () => {
-      try {
-        console.log('[Mobile Debug] Fetching user...');
-        const userData = await base44.auth.me();
-        console.log('[Mobile Debug] User fetched:', userData?.email);
-        return userData;
-      } catch (error) {
-        console.error('[Mobile Debug] User fetch error:', error);
-        throw error;
-      }
+      console.log('[Login] Step 1: Fetching user...');
+      const userData = await base44.auth.me();
+      console.log('[Login] Step 1: User loaded:', userData?.email);
+      return userData;
     },
-    retry: 1,
+    retry: 2,
+    staleTime: 10000,
   });
 
+  // Step 2: Load onboarding status (only after user loads)
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
+      console.log('[Login] Step 2: Checking onboarding...');
       if (!user?.email) return null;
-      const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
-      return results[0];
+      try {
+        const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
+        console.log('[Login] Step 2: Onboarding status:', results[0]?.completed);
+        return results[0] || null;
+      } catch (error) {
+        console.log('[Login] Step 2: Onboarding check failed, continuing...', error);
+        return null;
+      }
     },
-    enabled: !!user?.email,
-    retry: false,
+    enabled: !!user?.email && !userLoading,
+    retry: 1,
   });
 
-  // Check if user has paid access (extended trial until Jan 15, 2026, then 7-day trial)
+  // Step 3: Load collection data (only after onboarding check completes)
+  const shouldLoadData = user?.email && !onboardingLoading;
+  
+  const { data: pipes = [], isError: pipesError, isLoading: pipesLoading } = useQuery({
+    queryKey: ['pipes', user?.email],
+    queryFn: async () => {
+      console.log('[Login] Step 3a: Loading pipes...');
+      try {
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        console.log('[Login] Step 3a: Pipes loaded:', result?.length || 0);
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('[Login] Step 3a: Pipes error:', error);
+        return [];
+      }
+    },
+    enabled: shouldLoadData,
+    retry: 1,
+  });
+
+  const { data: blends = [], isError: blendsError, isLoading: blendsLoading } = useQuery({
+    queryKey: ['blends', user?.email],
+    queryFn: async () => {
+      console.log('[Login] Step 3b: Loading blends...');
+      try {
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+        console.log('[Login] Step 3b: Blends loaded:', result?.length || 0);
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('[Login] Step 3b: Blends error:', error);
+        return [];
+      }
+    },
+    enabled: shouldLoadData,
+    retry: 1,
+  });
+
+  // Check if user has paid access
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
   const isWithinSevenDayTrial = user?.created_date && 
@@ -83,24 +115,33 @@ export default function HomePage() {
     mutationFn: ({ id, data }) => base44.entities.OnboardingStatus.update(id, data),
   });
 
+  // Mark initialization complete once all critical data is loaded
   useEffect(() => {
+    if (user && !onboardingLoading && !pipesLoading && !blendsLoading) {
+      console.log('[Login] Step 4: Initialization complete');
+      setInitComplete(true);
+    }
+  }, [user, onboardingLoading, pipesLoading, blendsLoading]);
+
+  // Handle onboarding flow
+  useEffect(() => {
+    if (!initComplete || !user?.email || showOnboarding) return;
+    
     try {
-      if (onboardingLoading || !user?.email) return;
-      
-      if (!onboardingStatus) {
-        setShowOnboarding(true);
-      } else if (!onboardingStatus.completed && !onboardingStatus.skipped) {
+      if (!onboardingStatus || (!onboardingStatus.completed && !onboardingStatus.skipped)) {
+        console.log('[Login] Showing onboarding');
         setShowOnboarding(true);
       }
     } catch (error) {
-      console.error('Onboarding check error:', error);
+      console.error('[Login] Onboarding check error:', error);
     }
-  }, [user?.email, onboardingStatus, onboardingLoading]);
+  }, [initComplete, user?.email, onboardingStatus, showOnboarding]);
 
+  // Handle testing notice
   useEffect(() => {
+    if (!initComplete || showOnboarding) return;
+    
     try {
-      if (!user?.email || showOnboarding || onboardingLoading) return;
-      
       if (isBeforeExtendedTrialEnd) {
         const hasSeenNotice = localStorage.getItem('testingNoticeSeen');
         if (!hasSeenNotice) {
@@ -108,12 +149,13 @@ export default function HomePage() {
         }
       }
     } catch (error) {
-      console.error('Error showing testing notice:', error);
+      console.error('[Login] Testing notice error:', error);
     }
-  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
+  }, [initComplete, isBeforeExtendedTrialEnd, showOnboarding]);
 
   const handleOnboardingComplete = async () => {
     try {
+      console.log('[Login] Completing onboarding...');
       if (onboardingStatus) {
         await updateOnboardingMutation.mutateAsync({
           id: onboardingStatus.id,
@@ -128,13 +170,14 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('[Login] Error completing onboarding:', error);
       setShowOnboarding(false);
     }
   };
 
   const handleOnboardingSkip = async () => {
     try {
+      console.log('[Login] Skipping onboarding...');
       if (onboardingStatus) {
         await updateOnboardingMutation.mutateAsync({
           id: onboardingStatus.id,
@@ -149,81 +192,35 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (error) {
-      console.error('Error skipping onboarding:', error);
+      console.error('[Login] Error skipping onboarding:', error);
       setShowOnboarding(false);
     }
   };
 
-  const { data: pipes = [], isError: pipesError, isLoading: pipesLoading } = useQuery({
-    queryKey: ['pipes', user?.email],
-    queryFn: async () => {
-      try {
-        console.log('[Mobile Debug] Fetching pipes for user:', user?.email);
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Mobile Debug] Pipes loaded:', Array.isArray(result) ? result.length : 'not an array');
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('[Mobile Debug] Error loading pipes:', error);
-        return [];
-      }
-    },
-    enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
-  });
-
-  const { data: blends = [], isError: blendsError, isLoading: blendsLoading } = useQuery({
-    queryKey: ['blends', user?.email],
-    queryFn: async () => {
-      try {
-        console.log('[Mobile Debug] Fetching blends for user:', user?.email);
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Mobile Debug] Blends loaded:', Array.isArray(result) ? result.length : 'not an array');
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('[Mobile Debug] Error loading blends:', error);
-        return [];
-      }
-    },
-    enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
-  });
-
-  // Show render errors
-  if (renderError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Render Error</h2>
-            <p className="text-[#e8d5b7]/70 mb-4 text-sm">{renderError}</p>
-            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // Step-by-step error handling
   if (userError) {
-    console.error('[Mobile Debug] User error:', userError);
+    console.error('[Login] User load failed:', userError);
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Unable to Load</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">Please try refreshing the page.</p>
-            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Login Error</h2>
+            <p className="text-[#e8d5b7]/70 mb-4 text-sm">Unable to authenticate. Please try again.</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (userLoading || (user?.email && (pipesLoading || blendsLoading || onboardingLoading))) {
-    console.log('[Mobile Debug] Loading state - user:', userLoading, 'pipes:', pipesLoading, 'blends:', blendsLoading);
+  // Show loading screen during initialization
+  if (userLoading || !initComplete) {
+    const loadingMessage = userLoading ? 'Signing in...' : 
+                          onboardingLoading ? 'Loading profile...' :
+                          pipesLoading || blendsLoading ? 'Loading collection...' :
+                          'Almost ready...';
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -232,62 +229,21 @@ export default function HomePage() {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">Loading your collection...</p>
+          <p className="text-[#e8d5b7]">{loadingMessage}</p>
         </div>
       </div>
     );
   }
 
-  // Safety check - if we have errors loading data, show error state
-  if (pipesError || blendsError) {
-    console.error('[Mobile Debug] Data error - pipes:', pipesError, 'blends:', blendsError);
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Error Loading Collection</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">There was a problem loading your data. Please refresh to try again.</p>
-            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Process data only after all checks pass - MUST be after loading/error checks
-  let safePipes = [];
-  let safeBlends = [];
-  
-  try {
-    safePipes = Array.isArray(pipes) ? pipes : [];
-    safeBlends = Array.isArray(blends) ? blends : [];
-    console.log('[Mobile Debug] Safe data processed:', { pipes: safePipes.length, blends: safeBlends.length });
-  } catch (error) {
-    console.error('[Mobile Debug] Error processing data:', error);
-    setRenderError('Error processing collection data');
-    return null;
-  }
-
-  let totalPipeValue = 0;
-  let totalTins = 0;
-  let favoritePipes = [];
-  let favoriteBlends = [];
-  let recentPipes = [];
-  let recentBlends = [];
-
-  try {
-    totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-    totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
-    favoritePipes = safePipes.filter(p => p?.is_favorite) || [];
-    favoriteBlends = safeBlends.filter(b => b?.is_favorite) || [];
-    recentPipes = safePipes.slice(0, 4) || [];
-    recentBlends = safeBlends.slice(0, 4) || [];
-    console.log('[Mobile Debug] Stats calculated successfully');
-  } catch (error) {
-    console.error('[Mobile Debug] Error calculating stats:', error);
-    // Continue with defaults - don't crash
-  }
+  // Process data safely
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const favoritePipes = safePipes.filter(p => p?.is_favorite);
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const recentPipes = safePipes.slice(0, 4);
+  const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
     try {
