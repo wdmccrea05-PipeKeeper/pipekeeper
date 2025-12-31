@@ -9,8 +9,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { 
   ArrowLeft, Edit, Trash2, Heart, Star, Package
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import {
   AlertDialog,

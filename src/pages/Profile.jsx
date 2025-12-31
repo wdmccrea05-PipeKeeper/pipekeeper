@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 
 const BLEND_TYPES = [

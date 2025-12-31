@@ -11,7 +11,7 @@ import {
   Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight 
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import {
   AlertDialog,
