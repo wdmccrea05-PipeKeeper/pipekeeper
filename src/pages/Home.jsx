@@ -52,9 +52,10 @@ export default function HomePage() {
         throw err;
       }
     },
-    retry: 1,
-    staleTime: 5000,
-    refetchOnMount: true,
+    retry: 2,
+    staleTime: 10000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 
@@ -72,8 +73,8 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 0,
-    staleTime: 5000,
+    retry: 1,
+    staleTime: 10000,
   });
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
@@ -89,8 +90,8 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 0,
-    staleTime: 5000,
+    retry: 1,
+    staleTime: 10000,
   });
 
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
@@ -106,8 +107,8 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 0,
-    staleTime: 5000,
+    retry: 1,
+    staleTime: 10000,
   });
 
   // Check if user has paid access
