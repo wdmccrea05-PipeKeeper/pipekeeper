@@ -250,7 +250,7 @@ export default function HomePage() {
             </div>
           </motion.div>
         </div>
-      )}
+      ) : null}
 
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
