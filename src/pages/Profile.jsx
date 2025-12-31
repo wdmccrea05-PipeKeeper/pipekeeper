@@ -63,8 +63,8 @@ export default function ProfilePage() {
   const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinSevenDayTrial = user?.created_date ? 
+    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
   const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const trialEndDate = user?.created_date 
     ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)

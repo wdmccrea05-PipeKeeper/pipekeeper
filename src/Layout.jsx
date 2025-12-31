@@ -70,11 +70,21 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        const userData = await base44.auth.me();
+        return userData;
+      } catch (err) {
+        console.error('[Layout] Auth error:', err);
+        throw err;
+      }
+    },
     staleTime: 5000,
     retry: 1,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   // Clear all caches on mount if user auth changes
@@ -89,11 +99,27 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [queryClient]);
 
+  // Show loading state during authentication
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <p className="text-[#e8d5b7]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinSevenDayTrial = user?.created_date ? 
+    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
   const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const hasPaidAccess = user?.subscription_level === 'paid' || isWithinTrial;
 

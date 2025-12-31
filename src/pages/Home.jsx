@@ -55,6 +55,7 @@ export default function HomePage() {
     retry: 1,
     staleTime: 5000,
     refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
@@ -112,8 +113,8 @@ export default function HomePage() {
   // Check if user has paid access
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date && 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinSevenDayTrial = user?.created_date ? 
+    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
   const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 

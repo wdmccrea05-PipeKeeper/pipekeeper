@@ -33,11 +33,12 @@ export default function CommunityPage() {
   const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     staleTime: 5000,
     retry: 1,
+    refetchOnMount: true,
   });
 
   // Check if user has paid access
