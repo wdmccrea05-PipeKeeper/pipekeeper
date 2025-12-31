@@ -118,6 +118,30 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
+  // Pages that should remain viewable without login
+  const PUBLIC_PAGES = new Set([
+    'FAQ',
+    'Support',
+    'TermsOfService',
+    'PrivacyPolicy',
+    'Invite',
+    'PublicProfile',
+    'Index',
+  ]);
+
+  // If the user is logged out / session expired, do NOT render the app shell for private pages
+  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
+          <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+        </div>
+      </div>
+    );
+  }
+
   const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
   const now = new Date();
   const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
