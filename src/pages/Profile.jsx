@@ -55,15 +55,22 @@ export default function ProfilePage() {
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
   });
 
-  // Check if user has paid access (subscription or 7-day trial)
+  // Check if user has paid access
+  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
+  const now = new Date();
+  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
+  const isWithinSevenDayTrial = user?.created_date && 
+    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
   const trialEndDate = user?.created_date 
     ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
-    : null;
-  const isInTrial = trialEndDate && new Date() < trialEndDate;
-  const daysLeftInTrial = isInTrial 
-    ? Math.ceil((trialEndDate - new Date()) / (1000 * 60 * 60 * 24))
+    : EXTENDED_TRIAL_END;
+  const daysLeftInTrial = isWithinTrial 
+    ? Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24))
     : 0;
   const hasActiveSubscription = user?.subscription_level === 'paid';
 
