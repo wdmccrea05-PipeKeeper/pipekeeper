@@ -61,13 +61,38 @@ export default function TobaccoCard({ blend, onClick }) {
               <Heart className="w-5 h-5 fill-rose-500 text-rose-500 drop-shadow-md" />
             </div>
           )}
-          {blend.quantity_owned > 0 && (
-            <div className="absolute bottom-3 left-3">
-              <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm">
-                {blend.quantity_owned} oz
+          <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1">
+            {blend.tin_total_quantity_oz > 0 && (
+              <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs">
+                Tin: {blend.tin_total_quantity_oz}oz
+                {(blend.tin_tins_open > 0 || blend.tin_tins_cellared > 0) && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ({blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared)
+                  </span>
+                )}
               </Badge>
-            </div>
-          )}
+            )}
+            {blend.bulk_total_quantity_oz > 0 && (
+              <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs">
+                Bulk: {blend.bulk_total_quantity_oz}oz
+                {(blend.bulk_open > 0 || blend.bulk_cellared > 0) && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ({blend.bulk_open || 0} open, {blend.bulk_cellared || 0} cellared)
+                  </span>
+                )}
+              </Badge>
+            )}
+            {blend.pouch_total_quantity_oz > 0 && (
+              <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs">
+                Pouch: {blend.pouch_total_quantity_oz}oz
+                {(blend.pouch_pouches_open > 0 || blend.pouch_pouches_cellared > 0) && (
+                  <span className="ml-1 text-[10px] opacity-80">
+                    ({blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared)
+                  </span>
+                )}
+              </Badge>
+            )}
+          </div>
         </div>
         <CardContent className="p-4 bg-[#f5ead8]/50">
           <div className="flex items-start justify-between gap-2">
@@ -88,20 +113,6 @@ export default function TobaccoCard({ blend, onClick }) {
                 {blend.blend_type}
               </Badge>
             )}
-            {blend.packaging_type && (
-              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200/50 text-xs">
-                {blend.packaging_type}
-              </Badge>
-            )}
-            {blend.tin_status && (
-              <Badge variant="secondary" className={`text-xs ${
-                blend.tin_status === 'Sealed/Cellared' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' :
-                blend.tin_status === 'Opened' ? 'bg-sky-50 text-sky-700 border-sky-200/50' :
-                'bg-stone-50 text-stone-500 border-stone-200/50'
-              }`}>
-                {blend.tin_status}
-              </Badge>
-            )}
             {blend.strength && (
               <Badge variant="secondary" className="bg-stone-100 text-stone-600 border-stone-200/50 text-xs">
                 {blend.strength}
@@ -110,11 +121,6 @@ export default function TobaccoCard({ blend, onClick }) {
             {blend.cut && (
               <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200/50 text-xs">
                 {blend.cut}
-              </Badge>
-            )}
-            {blend.cellared_date && (
-              <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-200/50 text-xs">
-                Cellared {new Date(blend.cellared_date).getFullYear()}
               </Badge>
             )}
           </div>
