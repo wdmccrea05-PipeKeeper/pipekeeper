@@ -109,12 +109,12 @@ export default function PublicProfilePage() {
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-stone-800 mb-2">Profile Not Found</h2>
             <p className="text-stone-600 mb-4">This profile does not exist.</p>
-            <Link to={createPageUrl('Community')}>
+            <a href={createPageUrl('Community')}>
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Community
               </Button>
-            </Link>
+            </a>
           </CardContent>
         </Card>
       </div>
@@ -128,12 +128,12 @@ export default function PublicProfilePage() {
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-stone-800 mb-2">Profile Not Available</h2>
             <p className="text-stone-600 mb-4">This profile is private or does not exist.</p>
-            <Link to={createPageUrl('Community')}>
+            <a href={createPageUrl('Community')}>
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Community
               </Button>
-            </Link>
+            </a>
           </CardContent>
         </Card>
       </div>
