@@ -297,10 +297,10 @@ export default function TobaccoCollectionStats() {
                                 <Badge variant="outline" className="text-xs">
                                   {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
                                 </Badge>
-                              )}
-                            </div>
-                          </Link>
-                        ))}
+                                )}
+                              </div>
+                            </a>
+                          ))}
                       </div>
                     </div>
                   ))}
