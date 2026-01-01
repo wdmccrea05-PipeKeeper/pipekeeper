@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Plus, Flame, Calendar, Info, CheckCircle } from "lucide-react";
+import { Plus, Flame, Calendar, Info, CheckCircle, Crown } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
@@ -284,7 +284,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   checked={autoReduceInventory}
                   onCheckedChange={setAutoReduceInventory}
                 />
-                <Label>Automatically reduce tobacco inventory</Label>
+                <Label className="flex items-center gap-2">
+                  Automatically reduce tobacco inventory
+                  <Badge className="bg-amber-600 text-white text-xs">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Premium
+                  </Badge>
+                </Label>
               </div>
             </div>
 

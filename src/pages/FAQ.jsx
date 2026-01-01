@@ -517,7 +517,7 @@ export default function FAQPage() {
                   <ul className="list-disc ml-5 space-y-1">
                     <li><strong>Pipe Rest Tracking:</strong> The system shows which pipes are ready to smoke and which need rest. Pipes need 24 hours between sessions.</li>
                     <li><strong>Tobacco Usage Estimation:</strong> Based on your pipe's bowl size, the app estimates tobacco consumption per session.</li>
-                    <li><strong>Auto Inventory Reduction:</strong> Enable the toggle to automatically reduce your cellared tobacco amount when logging sessions.</li>
+                    <li><strong>Auto Inventory Reduction (Premium):</strong> Enable the toggle to automatically reduce your cellared tobacco amount when logging sessions. The system calculates usage based on pipe bowl size and updates your inventory accordingly.</li>
                   </ul>
                   <p>This data helps the AI improve pairing recommendations and shows your usage patterns over time.</p>
                 </AccordionContent>
