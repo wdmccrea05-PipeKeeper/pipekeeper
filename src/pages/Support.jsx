@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 
 const SUPPORT_TOPICS = [
@@ -73,12 +72,12 @@ ${formData.message}
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link to={createPageUrl('Home')}>
+          <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
-          </Link>
+          </a>
 
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
             <CardContent className="p-12 text-center">
@@ -100,12 +99,12 @@ ${formData.message}
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={createPageUrl('Home')}>
+        <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-        </Link>
+        </a>
 
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
@@ -197,9 +196,9 @@ ${formData.message}
         </Card>
 
         <div className="mt-6 text-center">
-          <Link to={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline">
+          <a href={createPageUrl('BulkLogoUpload')} className="text-sm text-amber-400 hover:text-amber-300 underline">
             → Bulk Logo Upload Tool
-          </Link>
+          </a>
         </div>
       </div>
     </div>

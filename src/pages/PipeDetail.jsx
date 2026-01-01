@@ -10,7 +10,6 @@ import {
   ArrowLeft, Edit, Trash2, Heart, DollarSign, 
   Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight 
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import {
@@ -37,7 +36,6 @@ import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const pipeId = urlParams.get('id');
-  const navigate = useNavigate();
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -110,7 +108,7 @@ export default function PipeDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Pipe.delete(pipeId),
     onSuccess: () => {
-      navigate(createPageUrl('Pipes'));
+      window.location.href = createPageUrl('Pipes');
     },
   });
 
@@ -155,9 +153,9 @@ export default function PipeDetailPage() {
             className="w-24 h-24 mx-auto mb-4 object-contain opacity-30 mix-blend-multiply"
           />
           <h2 className="text-2xl font-semibold text-stone-800 mb-2">Pipe not found</h2>
-          <Link to={createPageUrl('Pipes')}>
+          <a href={createPageUrl('Pipes')}>
             <Button variant="outline">Back to Pipes</Button>
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -169,12 +167,12 @@ export default function PipeDetailPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link to={createPageUrl('Pipes')}>
+        <a href={createPageUrl('Pipes')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Pipes
           </Button>
-        </Link>
+        </a>
 
         {/* Pipe Specialization */}
         {blends.length > 0 && (
