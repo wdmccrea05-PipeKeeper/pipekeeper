@@ -62,51 +62,51 @@ export default function TobaccoCard({ blend, onClick }) {
             </div>
           )}
           <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1">
-            {blend.tin_total_quantity_oz > 0 && (
+            {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs">
                   Tin: {blend.tin_total_quantity_oz}oz
                 </Badge>
-                {blend.tin_tins_open > 0 && (
+                {(blend.tin_tins_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs">
                     {((blend.tin_tins_open || 0) * (blend.tin_size_oz || 0)).toFixed(1)}oz open
                   </Badge>
                 )}
-                {blend.tin_tins_cellared > 0 && (
+                {(blend.tin_tins_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs">
                     {((blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0)).toFixed(1)}oz cellared
                   </Badge>
                 )}
               </div>
             )}
-            {blend.bulk_total_quantity_oz > 0 && (
+            {(blend.bulk_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs">
                   Bulk: {blend.bulk_total_quantity_oz}oz
                 </Badge>
-                {blend.bulk_open > 0 && (
+                {(blend.bulk_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs">
                     {blend.bulk_open}oz open
                   </Badge>
                 )}
-                {blend.bulk_cellared > 0 && (
+                {(blend.bulk_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs">
                     {blend.bulk_cellared}oz cellared
                   </Badge>
                 )}
               </div>
             )}
-            {blend.pouch_total_quantity_oz > 0 && (
+            {(blend.pouch_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs">
                   Pouch: {blend.pouch_total_quantity_oz}oz
                 </Badge>
-                {blend.pouch_pouches_open > 0 && (
+                {(blend.pouch_pouches_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs">
                     {((blend.pouch_pouches_open || 0) * (blend.pouch_size_oz || 0)).toFixed(1)}oz open
                   </Badge>
                 )}
-                {blend.pouch_pouches_cellared > 0 && (
+                {(blend.pouch_pouches_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs">
                     {((blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0)).toFixed(1)}oz cellared
                   </Badge>
