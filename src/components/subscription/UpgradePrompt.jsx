@@ -17,13 +17,21 @@ export default function UpgradePrompt({ featureName, description }) {
           <p className="font-semibold text-stone-800 mb-1">{featureName}</p>
           <p className="text-sm text-stone-600">{description}</p>
         </div>
-        <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
-          <Crown className="w-4 h-4 mr-2" />
-          Upgrade to Premium
-        </Button>
-        <p className="text-xs text-center text-stone-500">
-          Unlock all AI-powered features and advanced analytics
-        </p>
+        {shouldShowPurchaseUI() ? (
+          <>
+            <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade to Premium
+            </Button>
+            <p className="text-xs text-center text-stone-500">
+              Unlock all AI-powered features and advanced analytics
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-stone-600">
+            {premiumGateMessage()}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
