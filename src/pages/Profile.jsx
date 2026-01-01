@@ -248,12 +248,18 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                <a href={createPageUrl('Subscription')}>
-                  <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
-                    {hasActiveSubscription ? 'Manage' : 'Upgrade'}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </a>
+                {shouldShowPurchaseUI() ? (
+                  <a href={createPageUrl('Subscription')}>
+                    <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
+                      {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
+                ) : (
+                  <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
+                    {subscriptionManagementMessage()}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
