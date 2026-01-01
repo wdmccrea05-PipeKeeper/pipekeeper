@@ -737,7 +737,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Tin Size (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.tin_size_oz || ''}
                     onChange={(e) => {
@@ -770,7 +770,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Total Quantity (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.tin_total_quantity_oz || ''}
                     onChange={(e) => handleChange('tin_total_quantity_oz', e.target.value)}
@@ -820,7 +820,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Total Bulk Quantity (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.bulk_total_quantity_oz || ''}
                     onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
@@ -832,7 +832,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Bulk Open (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.bulk_open || ''}
                     onChange={(e) => handleChange('bulk_open', e.target.value)}
@@ -844,7 +844,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Bulk Cellared (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.bulk_cellared || ''}
                     onChange={(e) => handleChange('bulk_cellared', e.target.value)}
@@ -871,7 +871,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Pouch Size (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.pouch_size_oz || ''}
                     onChange={(e) => {
@@ -904,7 +904,7 @@ Return complete and accurate information based on the blend name or description 
                   <Label>Total Quantity (oz)</Label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     min="0"
                     value={formData.pouch_total_quantity_oz || ''}
                     onChange={(e) => handleChange('pouch_total_quantity_oz', e.target.value)}
