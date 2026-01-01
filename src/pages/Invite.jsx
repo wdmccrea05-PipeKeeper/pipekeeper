@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, UserPlus, CheckCircle, X } from "lucide-react";
 
 export default function InvitePage() {
@@ -85,12 +84,12 @@ The PipeKeeper Team
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link to={createPageUrl('Home')}>
+          <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
-          </Link>
+          </a>
 
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
             <CardContent className="p-12 text-center">
@@ -112,12 +111,12 @@ The PipeKeeper Team
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={createPageUrl('Home')}>
+        <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-        </Link>
+        </a>
 
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>

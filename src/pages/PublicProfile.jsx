@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings } from "lucide-react";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CommentSection from "@/components/community/CommentSection";
@@ -145,19 +144,19 @@ export default function PublicProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isPreview && isOwnProfile ? (
-          <Link to={createPageUrl('Profile')}>
+          <a href={createPageUrl('Profile')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Profile Settings
             </Button>
-          </Link>
+          </a>
         ) : (
-          <Link to={createPageUrl('Community')}>
+          <a href={createPageUrl('Community')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Community
             </Button>
-          </Link>
+          </a>
         )}
 
         {/* Preview Banner */}
@@ -205,12 +204,12 @@ export default function PublicProfilePage() {
                         </>
                       )}
                     </Button>
-                    <Link to={createPageUrl('Profile')}>
+                    <a href={createPageUrl('Profile')}>
                       <Button variant="outline" size="sm" className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
                         Edit Settings
                       </Button>
-                    </Link>
+                    </a>
                   </div>
                 )}
               </div>
