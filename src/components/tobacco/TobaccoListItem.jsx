@@ -89,20 +89,6 @@ export default function TobaccoListItem({ blend, onClick }) {
                   {blend.blend_type}
                 </Badge>
               )}
-              {blend.packaging_type && (
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200/50 text-xs">
-                  {blend.packaging_type}
-                </Badge>
-              )}
-              {blend.tin_status && (
-                <Badge variant="secondary" className={`text-xs ${
-                  blend.tin_status === 'Sealed/Cellared' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50' :
-                  blend.tin_status === 'Opened' ? 'bg-sky-50 text-sky-700 border-sky-200/50' :
-                  'bg-stone-50 text-stone-500 border-stone-200/50'
-                }`}>
-                  {blend.tin_status}
-                </Badge>
-              )}
               {blend.strength && (
                 <Badge variant="secondary" className="bg-stone-100 text-stone-600 border-stone-200/50 text-xs">
                   {blend.strength}
@@ -113,9 +99,19 @@ export default function TobaccoListItem({ blend, onClick }) {
                   {blend.cut}
                 </Badge>
               )}
-              {blend.cellared_date && (
-                <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-200/50 text-xs">
-                  Cellared {new Date(blend.cellared_date).getFullYear()}
+              {(blend.tin_total_quantity_oz || 0) > 0 && (
+                <Badge className="bg-amber-600/90 text-white border-0 text-xs">
+                  Tin: {blend.tin_total_quantity_oz}oz
+                </Badge>
+              )}
+              {(blend.bulk_total_quantity_oz || 0) > 0 && (
+                <Badge className="bg-blue-600/90 text-white border-0 text-xs">
+                  Bulk: {blend.bulk_total_quantity_oz}oz
+                </Badge>
+              )}
+              {(blend.pouch_total_quantity_oz || 0) > 0 && (
+                <Badge className="bg-purple-600/90 text-white border-0 text-xs">
+                  Pouch: {blend.pouch_total_quantity_oz}oz
                 </Badge>
               )}
             </div>
