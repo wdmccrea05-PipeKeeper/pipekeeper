@@ -296,7 +296,7 @@ export default function ProfilePage() {
                           e.preventDefault();
                           try {
                             await saveMutation.mutateAsync(formData);
-                            window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
+                            window.location.href = createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`);
                           } catch (err) {
                             console.error('Failed to save profile before preview:', err);
                           }

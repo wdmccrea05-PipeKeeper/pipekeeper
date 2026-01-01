@@ -431,7 +431,7 @@ export default function CommunityPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <a href={createPageUrl(`PublicProfile?email=${profile.user_email}`)}>
+                          <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(profile.user_email)}`)}>
                             <h3 className="font-semibold text-stone-800 hover:text-amber-700 truncate">
                               {profile.display_name || profile.user_email}
                             </h3>
@@ -574,7 +574,7 @@ export default function CommunityPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <a href={createPageUrl(`PublicProfile?email=${friendEmail}`)}>
+                              <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(friendEmail)}`)}>
                                 <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                                   {profile?.display_name || friendEmail}
                                 </h3>
@@ -640,7 +640,7 @@ export default function CommunityPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <a href={createPageUrl(`PublicProfile?email=${request.requester_email}`)}>
+                              <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(request.requester_email)}`)}>
                                 <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                                   {profile?.display_name || request.requester_email}
                                 </h3>
@@ -701,7 +701,7 @@ export default function CommunityPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <a href={createPageUrl(`PublicProfile?email=${connection.following_email}`)}>
+                          <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(connection.following_email)}`)}>
                             <h3 className="font-semibold text-stone-800 hover:text-amber-700">
                               {profile?.display_name || connection.following_email}
                             </h3>
@@ -733,7 +733,7 @@ export default function CommunityPage() {
                 <div className="flex items-center justify-between">
                 <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
                 {user?.email && (
-                  <a href={createPageUrl(`PublicProfile?email=${user.email}${userProfile?.is_public ? '' : '&preview=true'}`)}>
+                  <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${userProfile?.is_public ? '' : '&preview=true'}`)}>
                     <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
                       <Eye className="w-4 h-4 mr-2" />
                       {userProfile?.is_public ? 'View Profile' : 'Preview Profile'}
