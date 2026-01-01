@@ -36,10 +36,21 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     room_note: '',
     flavor_notes: [],
     tin_size_oz: '',
-    quantity_owned: '',
-    tin_status: 'Sealed/Cellared',
-    cellared_date: '',
-    cellared_amount: '',
+    tin_total_tins: '',
+    tin_total_quantity_oz: '',
+    tin_tins_open: '',
+    tin_tins_cellared: '',
+    tin_cellared_date: '',
+    bulk_total_quantity_oz: '',
+    bulk_open: '',
+    bulk_cellared: '',
+    bulk_cellared_date: '',
+    pouch_size_oz: '',
+    pouch_total_pouches: '',
+    pouch_total_quantity_oz: '',
+    pouch_pouches_open: '',
+    pouch_pouches_cellared: '',
+    pouch_cellared_date: '',
     production_status: '',
     aging_potential: '',
     rating: null,
@@ -248,8 +259,18 @@ Return complete and accurate information based on the blend name or description 
     const cleanedData = {
       ...formData,
       tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
-      quantity_owned: formData.quantity_owned ? Number(formData.quantity_owned) : null,
-      cellared_amount: formData.cellared_amount ? Number(formData.cellared_amount) : null,
+      tin_total_tins: formData.tin_total_tins ? Number(formData.tin_total_tins) : null,
+      tin_total_quantity_oz: formData.tin_total_quantity_oz ? Number(formData.tin_total_quantity_oz) : null,
+      tin_tins_open: formData.tin_tins_open ? Number(formData.tin_tins_open) : null,
+      tin_tins_cellared: formData.tin_tins_cellared ? Number(formData.tin_tins_cellared) : null,
+      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? Number(formData.bulk_total_quantity_oz) : null,
+      bulk_open: formData.bulk_open ? Number(formData.bulk_open) : null,
+      bulk_cellared: formData.bulk_cellared ? Number(formData.bulk_cellared) : null,
+      pouch_size_oz: formData.pouch_size_oz ? Number(formData.pouch_size_oz) : null,
+      pouch_total_pouches: formData.pouch_total_pouches ? Number(formData.pouch_total_pouches) : null,
+      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? Number(formData.pouch_total_quantity_oz) : null,
+      pouch_pouches_open: formData.pouch_pouches_open ? Number(formData.pouch_pouches_open) : null,
+      pouch_pouches_cellared: formData.pouch_pouches_cellared ? Number(formData.pouch_pouches_cellared) : null,
       rating: formData.rating ? Math.round(Number(formData.rating)) : null,
     };
     onSave(cleanedData);
@@ -715,99 +736,282 @@ Return complete and accurate information based on the blend name or description 
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-stone-800">Inventory & Status</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Quantity (oz)</Label>
-            <Input
-              type="number"
-              step="0.1"
-              min="0"
-              value={formData.quantity_owned || ''}
-              onChange={(e) => handleChange('quantity_owned', e.target.value)}
-              placeholder="e.g., 3.5"
-              className="border-stone-200"
-            />
-          </div>
-          <FieldWithInfo 
-            label="Status" 
-            helpText="Sealed/Cellared: Unopened stored for aging. Opened: Currently available to smoke. Empty: Finished."
-          >
-            <Select value={formData.tin_status} onValueChange={(v) => handleChange('tin_status', v)}>
-              <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Sealed/Cellared">Sealed/Cellared</SelectItem>
-                <SelectItem value="Opened">Opened</SelectItem>
-                <SelectItem value="Empty">Empty</SelectItem>
-              </SelectContent>
-            </Select>
-          </FieldWithInfo>
-          <div className="space-y-2">
-            <Label>Cellared Date</Label>
-            <Input
-              type="date"
-              value={formData.cellared_date || ''}
-              onChange={(e) => handleChange('cellared_date', e.target.value)}
-              className="border-stone-200"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Cellared Amount (oz)</Label>
-            <Input
-              type="number"
-              step="0.1"
-              min="0"
-              value={formData.cellared_amount || ''}
-              onChange={(e) => handleChange('cellared_amount', e.target.value)}
-              placeholder="e.g., 10.5"
-              className="border-stone-200"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Production Status</Label>
-            <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
-              <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {PRODUCTION_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Aging Potential</Label>
-            <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
-              <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select potential" />
-              </SelectTrigger>
-              <SelectContent>
-                {AGING_POTENTIAL.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Your Rating (1-5)</Label>
-            <Input
-              type="number"
-              min="1"
-              max="5"
-              step="1"
-              value={formData.rating || ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '' || (Number(val) >= 1 && Number(val) <= 5 && Number.isInteger(Number(val)))) {
-                  handleChange('rating', val);
-                }
-              }}
-              onBlur={(e) => {
-                if (e.target.value && Number(e.target.value)) {
-                  handleChange('rating', Math.round(Number(e.target.value)));
-                }
-              }}
-              placeholder="Optional"
-              className="border-stone-200"
-            />
+        <CardContent className="space-y-6">
+          {/* Tins Section */}
+          {formData.packaging_type === 'Tin' && (
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="font-semibold text-stone-700">Tin Inventory</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Tin Size (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.tin_size_oz || ''}
+                    onChange={(e) => {
+                      handleChange('tin_size_oz', e.target.value);
+                      // Auto-calculate total quantity
+                      if (e.target.value && formData.tin_total_tins) {
+                        handleChange('tin_total_quantity_oz', Number(e.target.value) * Number(formData.tin_total_tins));
+                      }
+                    }}
+                    placeholder="e.g., 1.75"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Tins</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.tin_total_tins || ''}
+                    onChange={(e) => {
+                      handleChange('tin_total_tins', e.target.value);
+                      // Auto-calculate total quantity
+                      if (e.target.value && formData.tin_size_oz) {
+                        handleChange('tin_total_quantity_oz', Number(formData.tin_size_oz) * Number(e.target.value));
+                      }
+                    }}
+                    placeholder="e.g., 5"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Quantity (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.tin_total_quantity_oz || ''}
+                    onChange={(e) => handleChange('tin_total_quantity_oz', e.target.value)}
+                    placeholder="Auto-calculated"
+                    className="border-stone-200 bg-stone-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tins Open</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.tin_tins_open || ''}
+                    onChange={(e) => handleChange('tin_tins_open', e.target.value)}
+                    placeholder="e.g., 1"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tins Cellared</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.tin_tins_cellared || ''}
+                    onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
+                    placeholder="e.g., 4"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date Cellared</Label>
+                  <Input
+                    type="date"
+                    value={formData.tin_cellared_date || ''}
+                    onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
+                    className="border-stone-200"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Section */}
+          {formData.packaging_type === 'Bulk' && (
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="font-semibold text-stone-700">Bulk Inventory</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Total Bulk Quantity (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.bulk_total_quantity_oz || ''}
+                    onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
+                    placeholder="e.g., 16"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bulk Open (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.bulk_open || ''}
+                    onChange={(e) => handleChange('bulk_open', e.target.value)}
+                    placeholder="e.g., 2"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bulk Cellared (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.bulk_cellared || ''}
+                    onChange={(e) => handleChange('bulk_cellared', e.target.value)}
+                    placeholder="e.g., 14"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date Cellared</Label>
+                  <Input
+                    type="date"
+                    value={formData.bulk_cellared_date || ''}
+                    onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
+                    className="border-stone-200"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pouch Section */}
+          {formData.packaging_type === 'Pouch' && (
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="font-semibold text-stone-700">Pouch Inventory</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Pouch Size (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.pouch_size_oz || ''}
+                    onChange={(e) => {
+                      handleChange('pouch_size_oz', e.target.value);
+                      // Auto-calculate total quantity
+                      if (e.target.value && formData.pouch_total_pouches) {
+                        handleChange('pouch_total_quantity_oz', Number(e.target.value) * Number(formData.pouch_total_pouches));
+                      }
+                    }}
+                    placeholder="e.g., 1.5"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Pouches</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.pouch_total_pouches || ''}
+                    onChange={(e) => {
+                      handleChange('pouch_total_pouches', e.target.value);
+                      // Auto-calculate total quantity
+                      if (e.target.value && formData.pouch_size_oz) {
+                        handleChange('pouch_total_quantity_oz', Number(formData.pouch_size_oz) * Number(e.target.value));
+                      }
+                    }}
+                    placeholder="e.g., 3"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Quantity (oz)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.pouch_total_quantity_oz || ''}
+                    onChange={(e) => handleChange('pouch_total_quantity_oz', e.target.value)}
+                    placeholder="Auto-calculated"
+                    className="border-stone-200 bg-stone-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pouches Open</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.pouch_pouches_open || ''}
+                    onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
+                    placeholder="e.g., 1"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pouches Cellared</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.pouch_pouches_cellared || ''}
+                    onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
+                    placeholder="e.g., 2"
+                    className="border-stone-200"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date Cellared</Label>
+                  <Input
+                    type="date"
+                    value={formData.pouch_cellared_date || ''}
+                    onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
+                    className="border-stone-200"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Common fields for all packaging types */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Production Status</Label>
+              <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
+                <SelectTrigger className="border-stone-200">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRODUCTION_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Aging Potential</Label>
+              <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
+                <SelectTrigger className="border-stone-200">
+                  <SelectValue placeholder="Select potential" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AGING_POTENTIAL.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Your Rating (1-5)</Label>
+              <Input
+                type="number"
+                min="1"
+                max="5"
+                step="1"
+                value={formData.rating || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || (Number(val) >= 1 && Number(val) <= 5 && Number.isInteger(Number(val)))) {
+                    handleChange('rating', val);
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value && Number(e.target.value)) {
+                    handleChange('rating', Math.round(Number(e.target.value)));
+                  }
+                }}
+                placeholder="Optional"
+                className="border-stone-200"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
