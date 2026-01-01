@@ -21,7 +21,7 @@ export default function FAQPage() {
       title: 'Getting Started',
       items: [
         { question: 'How do I add my first pipe?', answer: 'Navigate to the Pipes page and click Add Pipe. You have three options: Quick Search & Add - Use AI to search for your pipe by maker and model. The system will auto-fill details. Photo Identification - Upload photos of stampings to identify the pipe automatically (Premium feature). Manual Entry - Fill in the form fields yourself with all the details you know.' },
-        { question: 'How do I add tobacco blends?', answer: 'Go to the Tobacco page and click Add Blend. You can: Search - Type the blend name and let AI fetch all the details from the internet. Manual Entry - Add flavor notes, strength, cut type, and your personal ratings. Logos are automatically pulled from our library when you enter the manufacturer name.' },
+        { question: 'How do I add tobacco blends?', answer: 'Go to the Tobacco page and click Add Blend. You can: Search - Type the blend name and let AI fetch all the details from the internet. Manual Entry - Add flavor notes, strength, cut type, and your personal ratings. Track inventory across Tins, Bulk, and Pouches with separate open/cellared amounts. Logos are automatically pulled from our library when you enter the manufacturer name.' },
         { question: 'What can I do with the onboarding tutorial?', answer: 'The onboarding tutorial walks you through PipeKeeper\'s main features including AI pairing recommendations, photo identification, value lookup, and collection optimization.' },
         { question: 'How do I install PipeKeeper on my phone?', answer: 'PipeKeeper can be installed on your mobile device for an app-like experience. iPhone/iPad (Safari): Open PipeKeeper in Safari, tap the Share button (square with arrow pointing up), select "Add to Home Screen", confirm by tapping "Add". Android (Chrome): Open PipeKeeper in Chrome, tap the three dots menu, select "Install app" or "Add to Home screen", confirm installation. Note: iPhone must use Safari browser, Android works best with Chrome.' },
       ],
@@ -160,6 +160,7 @@ export default function FAQPage() {
                   <ul className="list-disc ml-5 space-y-1">
                     <li><strong>Search:</strong> Type the blend name and let AI fetch all the details from the internet.</li>
                     <li><strong>Manual Entry:</strong> Add flavor notes, strength, cut type, and your personal ratings.</li>
+                    <li><strong>Track Inventory:</strong> Use the Tins, Bulk, and Pouches tabs to track quantities separately with open and cellared amounts for each type.</li>
                   </ul>
                   <p>Logos are automatically pulled from our library when you enter the manufacturer name.</p>
                 </AccordionContent>
@@ -675,6 +676,45 @@ export default function FAQPage() {
                 <AccordionTrigger>What does "aging potential" mean?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   Aging potential indicates how well a tobacco blend improves with storage over time. Blends high in Virginia tobacco typically age excellently, developing deeper flavors over years. Aromatic blends often don't age as well. This helps you decide which blends to cellar long-term.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="item-15a">
+                <AccordionTrigger>How do I track tobacco inventory across Tins, Bulk, and Pouches?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  <p>PipeKeeper now supports tracking tobacco in three separate formats: Tins, Bulk, and Pouches. You can track any combination of these for each blend.</p>
+                  
+                  <p className="font-semibold text-stone-800">In the Tobacco Form:</p>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Go to the "Inventory & Status" section</li>
+                    <li>Use the three tabs (Tins, Bulk, Pouches) to enter quantities for each type</li>
+                    <li>For each type, track: Total quantity, Open amount, Cellared amount, Date cellared</li>
+                  </ol>
+                  
+                  <p className="font-semibold text-stone-800 mt-3">Tins Tab:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Enter individual tin size (oz) and total number of tins</li>
+                    <li>Specify how many tins are open vs. cellared</li>
+                    <li>Total quantity auto-calculates based on tin size × number of tins</li>
+                  </ul>
+                  
+                  <p className="font-semibold text-stone-800 mt-3">Bulk Tab:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Enter total bulk quantity in ounces</li>
+                    <li>Break down by open and cellared amounts</li>
+                    <li>Track date when bulk was cellared</li>
+                  </ul>
+                  
+                  <p className="font-semibold text-stone-800 mt-3">Pouches Tab:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Enter individual pouch size (oz) and total number of pouches</li>
+                    <li>Specify how many pouches are open vs. cellared</li>
+                    <li>Total quantity auto-calculates based on pouch size × number of pouches</li>
+                  </ul>
+                  
+                  <p className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm mt-3">
+                    <strong>💡 On Tobacco Cards:</strong> Each format shows as a separate badge with its total quantity, and badges for open/cellared amounts in different colors (sky blue for open, green for cellared).
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

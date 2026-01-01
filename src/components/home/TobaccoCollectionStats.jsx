@@ -37,13 +37,44 @@ export default function TobaccoCollectionStats() {
   const totalBlends = blends.length;
   const uniqueBrands = [...new Set(blends.map(b => b.manufacturer).filter(Boolean))].length;
   const favoriteBlends = blends.filter(b => b.is_favorite);
-  const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
-  const totalWeight = blends.reduce((sum, b) => {
-    const tins = b.quantity_owned || 0;
-    const sizeOz = b.tin_size_oz || 0;
-    return sum + (tins * sizeOz);
+  
+  // Tin statistics
+  const totalTins = blends.reduce((sum, b) => sum + (b.tin_total_tins || 0), 0);
+  const tinWeightOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0), 0);
+  const tinOpenOz = blends.reduce((sum, b) => {
+    const open = b.tin_tins_open || 0;
+    const size = b.tin_size_oz || 0;
+    return sum + (open * size);
   }, 0);
-  const openedBlends = blends.filter(b => b.tin_status === 'Opened');
+  const tinCellaredOz = blends.reduce((sum, b) => {
+    const cellared = b.tin_tins_cellared || 0;
+    const size = b.tin_size_oz || 0;
+    return sum + (cellared * size);
+  }, 0);
+  
+  // Bulk statistics
+  const bulkWeightOz = blends.reduce((sum, b) => sum + (b.bulk_total_quantity_oz || 0), 0);
+  const bulkOpenOz = blends.reduce((sum, b) => sum + (b.bulk_open || 0), 0);
+  const bulkCellaredOz = blends.reduce((sum, b) => sum + (b.bulk_cellared || 0), 0);
+  
+  // Pouch statistics
+  const totalPouches = blends.reduce((sum, b) => sum + (b.pouch_total_pouches || 0), 0);
+  const pouchWeightOz = blends.reduce((sum, b) => sum + (b.pouch_total_quantity_oz || 0), 0);
+  const pouchOpenOz = blends.reduce((sum, b) => {
+    const open = b.pouch_pouches_open || 0;
+    const size = b.pouch_size_oz || 0;
+    return sum + (open * size);
+  }, 0);
+  const pouchCellaredOz = blends.reduce((sum, b) => {
+    const cellared = b.pouch_pouches_cellared || 0;
+    const size = b.pouch_size_oz || 0;
+    return sum + (cellared * size);
+  }, 0);
+  
+  // Overall totals
+  const totalWeight = tinWeightOz + bulkWeightOz + pouchWeightOz;
+  const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
+  const totalCellaredOz = tinCellaredOz + bulkCellaredOz + pouchCellaredOz;
 
   // Brand breakdown
   const brandBreakdown = blends.reduce((acc, b) => {
@@ -123,27 +154,77 @@ export default function TobaccoCollectionStats() {
                   <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
                 </div>
               </button>
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
-                <span className="text-stone-600 flex items-center gap-1">
-                  <Package className="w-3 h-3 text-stone-500" />
-                  Total Tins
-                </span>
-                <span className="font-semibold text-emerald-700">{totalTins}</span>
-              </div>
-              <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
-                <span className="text-stone-600">Total Weight</span>
-                <span className="font-semibold text-emerald-700">{totalWeight.toFixed(2)} oz</span>
-              </div>
-              <button
-                onClick={() => handleDrillDown('opened', openedBlends)}
-                className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
-              >
-                <span className="text-stone-600">Opened</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-emerald-700">{openedBlends.length}</span>
-                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
+              <div className="space-y-2 bg-amber-50/50 rounded-lg p-2 border border-amber-200/50">
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">Tins</p>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total Tins</span>
+                  <span className="text-xs font-semibold text-emerald-700">{totalTins}</span>
                 </div>
-              </button>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs font-semibold text-emerald-700">{tinWeightOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs font-semibold text-sky-600">{tinOpenOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Cellared</span>
+                  <span className="text-xs font-semibold text-emerald-600">{tinCellaredOz.toFixed(1)} oz</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
+                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Bulk</p>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs font-semibold text-emerald-700">{bulkWeightOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs font-semibold text-sky-600">{bulkOpenOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Cellared</span>
+                  <span className="text-xs font-semibold text-emerald-600">{bulkCellaredOz.toFixed(1)} oz</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
+                <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">Pouches</p>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total Pouches</span>
+                  <span className="text-xs font-semibold text-emerald-700">{totalPouches}</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs font-semibold text-emerald-700">{pouchWeightOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs font-semibold text-sky-600">{pouchOpenOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Cellared</span>
+                  <span className="text-xs font-semibold text-emerald-600">{pouchCellaredOz.toFixed(1)} oz</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2 bg-stone-50 rounded-lg p-2 border border-stone-200">
+                <p className="text-xs font-semibold text-stone-800 uppercase tracking-wide">Overall</p>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total Weight</span>
+                  <span className="text-xs font-bold text-emerald-700">{totalWeight.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total Open</span>
+                  <span className="text-xs font-bold text-sky-600">{totalOpenOz.toFixed(1)} oz</span>
+                </div>
+                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <span className="text-xs text-stone-600">Total Cellared</span>
+                  <span className="text-xs font-bold text-emerald-600">{totalCellaredOz.toFixed(1)} oz</span>
+                </div>
+              </div>
             </div>
           </div>
 
