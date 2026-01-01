@@ -7,7 +7,6 @@ import { Plus, Search, Filter, Grid3X3, List, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeCard from "@/components/pipes/PipeCard";
 import PipeListItem from "@/components/pipes/PipeListItem";
@@ -229,13 +228,13 @@ export default function PipesPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                 >
-                  <Link to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                  <a href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
                     {viewMode === 'grid' ? (
                       <PipeCard pipe={pipe} onClick={() => {}} />
                     ) : (
                       <PipeListItem pipe={pipe} onClick={() => {}} />
                     )}
-                  </Link>
+                  </a>
                 </motion.div>
               ))}
             </AnimatePresence>

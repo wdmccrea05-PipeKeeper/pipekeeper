@@ -6,8 +6,7 @@ import { Camera, Upload, Loader2, CheckCircle2, Sparkles, ArrowRight, TrendingUp
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
-import { createPageUrl } from "@/utils";
-import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const [photos, setPhotos] = useState([]);
@@ -25,7 +24,6 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   const [clarificationNeeded, setClarificationNeeded] = useState(null);
   const [clarificationResponses, setClarificationResponses] = useState({});
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -267,7 +265,7 @@ Provide analysis as JSON:
       await queryClient.invalidateQueries({ queryKey: ['pipes'] });
       
       // Navigate to the new pipe detail page
-      navigate(createPageUrl(`PipeDetail?id=${newPipe.id}`));
+      window.location.href = createPageUrl(`PipeDetail?id=${newPipe.id}`);
     } catch (error) {
       console.error('Failed to add pipe:', error);
       alert('Failed to add pipe to collection. Please try again.');

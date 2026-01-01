@@ -38,6 +38,11 @@ const ROUTES = {
   "/BulkLogoUpload": BulkLogoUpload,
 };
 
+// Create case-insensitive route lookup
+const ROUTES_LOWER = Object.fromEntries(
+  Object.entries(ROUTES).map(([k, v]) => [k.toLowerCase(), v])
+);
+
 export default function Pages() {
   const path = window.location.pathname || "/";
 
@@ -47,11 +52,8 @@ export default function Pages() {
     return null;
   }
 
-  // Tolerate lowercase routes from old links/bookmarks
-  const Comp =
-    ROUTES[path] ||
-    ROUTES["/" + path.replace("/", "").replace(/^\w/, (c) => c.toUpperCase())] ||
-    Home;
+  // Case-insensitive route matching for compatibility
+  const Comp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
 
   return <Comp />;
 }

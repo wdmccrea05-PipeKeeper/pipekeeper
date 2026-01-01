@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Target, Plus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
@@ -168,11 +167,11 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
             <p className="text-xs font-medium text-blue-700 mb-2">Matching Blends in Collection:</p>
             <div className="flex flex-wrap gap-1.5">
               {matchingBlends.slice(0, 5).map(blend => (
-                <Link key={blend.id} to={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
                   <Badge variant="outline" className="cursor-pointer hover:bg-blue-50 border-blue-200 text-blue-700">
                     {blend.name}
                   </Badge>
-                </Link>
+                </a>
               ))}
               {matchingBlends.length > 5 && (
                 <Badge variant="outline" className="border-blue-200 text-blue-600">

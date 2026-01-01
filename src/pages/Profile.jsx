@@ -288,26 +288,24 @@ export default function ProfilePage() {
                       Community Profile
                     </h3>
                     {user?.email && (
-                      <Link to={createPageUrl(`PublicProfile?email=${user.email}&preview=true`)}>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="border-violet-300 text-violet-700 w-full sm:w-auto"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            try {
-                              await saveMutation.mutateAsync(formData);
-                              window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
-                            } catch (err) {
-                              console.error('Failed to save profile before preview:', err);
-                            }
-                          }}
-                          disabled={saveMutation.isPending}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview Profile
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-violet-300 text-violet-700 w-full sm:w-auto"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          try {
+                            await saveMutation.mutateAsync(formData);
+                            window.location.href = createPageUrl(`PublicProfile?email=${user.email}&preview=true`);
+                          } catch (err) {
+                            console.error('Failed to save profile before preview:', err);
+                          }
+                        }}
+                        disabled={saveMutation.isPending}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview Profile
+                      </Button>
                     )}
                   </div>
                   

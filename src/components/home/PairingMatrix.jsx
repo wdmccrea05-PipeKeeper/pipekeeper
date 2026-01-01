@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Trophy, Sparkles, ChevronRight, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import PairingExporter from "@/components/export/PairingExporter";
@@ -302,11 +301,11 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Link to={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
+                              <a href={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
                                 <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
                                   {pipePairing.pipe_name}
                                 </h4>
-                              </Link>
+                              </a>
                             </div>
                             {bestMatch && (
                               <div className="flex items-center gap-2 mt-1">
@@ -367,11 +366,11 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2">
-                                            <Link to={createPageUrl(`TobaccoDetail?id=${blend?.id}`)}>
+                                            <a href={createPageUrl(`TobaccoDetail?id=${blend?.id}`)}>
                                               <p className="font-medium text-stone-800 hover:text-amber-700 transition-colors">
                                                 {match.blend_name}
                                               </p>
-                                            </Link>
+                                            </a>
                                           </div>
                                           <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>
                                         </div>

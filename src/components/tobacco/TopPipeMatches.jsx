@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 export default function TopPipeMatches({ blend, pipes }) {
@@ -139,7 +138,7 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                 if (!pipe) return null;
 
                 return (
-                  <Link key={match.pipe_id} to={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                  <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
                     <div className="flex items-start gap-3 p-3 rounded-lg border border-violet-200 hover:border-violet-300 hover:bg-violet-50/50 transition-all cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
                         {pipe.photos?.[0] ? (
@@ -159,7 +158,7 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                         <p className="text-xs text-stone-600">{match.reasoning}</p>
                       </div>
                     </div>
-                  </Link>
+                  </a>
                 );
               })}
               </div>
