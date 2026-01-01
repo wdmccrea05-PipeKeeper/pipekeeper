@@ -730,7 +730,7 @@ export default function FAQPage() {
               <AccordionItem value="item-16">
                 <AccordionTrigger>What's included in the free trial?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, and bulk import. After the trial, you can subscribe to continue using Premium features.
+                  New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, bulk import, and automatic inventory tracking. After the trial, you can subscribe to continue using Premium features.
                 </AccordionContent>
               </AccordionItem>
 
