@@ -155,74 +155,164 @@ export default function TobaccoCollectionStats() {
               </button>
               <div className="space-y-2 bg-amber-50/50 rounded-lg p-2 border border-amber-200/50">
                 <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">Tins</p>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                <button
+                  onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_tins || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total Tins</span>
-                  <span className="text-xs font-semibold text-emerald-700">{totalTins}</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700">{totalTins}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_quantity_oz || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total</span>
-                  <span className="text-xs font-semibold text-emerald-700">{tinWeightOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700">{tinWeightOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('tinOpen', { blends: blends.filter(b => (b.tin_tins_open || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Open</span>
-                  <span className="text-xs font-semibold text-sky-600">{tinOpenOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-sky-600">{tinOpenOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('tinCellared', { blends: blends.filter(b => (b.tin_tins_cellared || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Cellared</span>
-                  <span className="text-xs font-semibold text-emerald-600">{tinCellaredOz.toFixed(1)} oz</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-600">{tinCellaredOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
+                  </div>
+                </button>
               </div>
               
               <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
                 <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Bulk</p>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                <button
+                  onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total</span>
-                  <span className="text-xs font-semibold text-emerald-700">{bulkWeightOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700">{bulkWeightOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-blue-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('bulkOpen', { blends: blends.filter(b => (b.bulk_open || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Open</span>
-                  <span className="text-xs font-semibold text-sky-600">{bulkOpenOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-sky-600">{bulkOpenOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('bulkCellared', { blends: blends.filter(b => (b.bulk_cellared || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Cellared</span>
-                  <span className="text-xs font-semibold text-emerald-600">{bulkCellaredOz.toFixed(1)} oz</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-600">{bulkCellaredOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
+                  </div>
+                </button>
               </div>
               
               <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
                 <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">Pouches</p>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                <button
+                  onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total Pouches</span>
-                  <span className="text-xs font-semibold text-emerald-700">{totalPouches}</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700">{totalPouches}</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_quantity_oz || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total</span>
-                  <span className="text-xs font-semibold text-emerald-700">{pouchWeightOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700">{pouchWeightOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('pouchOpen', { blends: blends.filter(b => (b.pouch_pouches_open || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Open</span>
-                  <span className="text-xs font-semibold text-sky-600">{pouchOpenOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-sky-600">{pouchOpenOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('pouchCellared', { blends: blends.filter(b => (b.pouch_pouches_cellared || 0) > 0) })}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Cellared</span>
-                  <span className="text-xs font-semibold text-emerald-600">{pouchCellaredOz.toFixed(1)} oz</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-600">{pouchCellaredOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
+                  </div>
+                </button>
               </div>
               
               <div className="space-y-2 bg-stone-50 rounded-lg p-2 border border-stone-200">
                 <p className="text-xs font-semibold text-stone-800 uppercase tracking-wide">Overall</p>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                <button
+                  onClick={() => handleDrillDown('allInventory', { blends: blends.filter(b => 
+                    (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
+                  )})}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-stone-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total Weight</span>
-                  <span className="text-xs font-bold text-emerald-700">{totalWeight.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-700">{totalWeight.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('allOpen', { blends: blends.filter(b => 
+                    (b.tin_tins_open || 0) > 0 || (b.bulk_open || 0) > 0 || (b.pouch_pouches_open || 0) > 0
+                  )})}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total Open</span>
-                  <span className="text-xs font-bold text-sky-600">{totalOpenOz.toFixed(1)} oz</span>
-                </div>
-                <div className="flex justify-between items-center py-1 px-2 bg-white rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-sky-600">{totalOpenOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleDrillDown('allCellared', { blends: blends.filter(b => 
+                    (b.tin_tins_cellared || 0) > 0 || (b.bulk_cellared || 0) > 0 || (b.pouch_pouches_cellared || 0) > 0
+                  )})}
+                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
+                >
                   <span className="text-xs text-stone-600">Total Cellared</span>
-                  <span className="text-xs font-bold text-emerald-600">{totalCellaredOz.toFixed(1)} oz</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-600">{totalCellaredOz.toFixed(1)} oz</span>
+                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -272,6 +362,19 @@ export default function TobaccoCollectionStats() {
               {drillDown?.type === 'favorites' && 'Favorite Blends'}
               {drillDown?.type === 'opened' && 'Opened Blends'}
               {drillDown?.type === 'blendType' && `${drillDown.data.type} Blends`}
+              {drillDown?.type === 'tinInventory' && 'Tin Inventory'}
+              {drillDown?.type === 'tinOpen' && 'Opened Tins'}
+              {drillDown?.type === 'tinCellared' && 'Cellared Tins'}
+              {drillDown?.type === 'bulkInventory' && 'Bulk Inventory'}
+              {drillDown?.type === 'bulkOpen' && 'Opened Bulk'}
+              {drillDown?.type === 'bulkCellared' && 'Cellared Bulk'}
+              {drillDown?.type === 'pouchInventory' && 'Pouch Inventory'}
+              {drillDown?.type === 'pouchOpen' && 'Opened Pouches'}
+              {drillDown?.type === 'pouchCellared' && 'Cellared Pouches'}
+              {drillDown?.type === 'allInventory' && 'All Inventory'}
+              {drillDown?.type === 'allOpen' && 'All Opened Tobacco'}
+              {drillDown?.type === 'allCellared' && 'All Cellared Tobacco'}
+              {drillDown?.type === 'lowInventory' && 'Low Inventory Alert'}
             </DialogTitle>
           </DialogHeader>
 
@@ -391,6 +494,74 @@ export default function TobaccoCollectionStats() {
                     </div>
                   </a>
                 ))}
+              </>
+            )}
+
+            {(drillDown?.type === 'tinInventory' || drillDown?.type === 'tinOpen' || drillDown?.type === 'tinCellared' ||
+              drillDown?.type === 'bulkInventory' || drillDown?.type === 'bulkOpen' || drillDown?.type === 'bulkCellared' ||
+              drillDown?.type === 'pouchInventory' || drillDown?.type === 'pouchOpen' || drillDown?.type === 'pouchCellared' ||
+              drillDown?.type === 'allInventory' || drillDown?.type === 'allOpen' || drillDown?.type === 'allCellared') && (
+              <>
+                {drillDown.data.blends.map(blend => {
+                  let quantityText = '';
+                  if (drillDown.type.startsWith('tin')) {
+                    const tins = blend.tin_total_tins || 0;
+                    const oz = blend.tin_total_quantity_oz || 0;
+                    const open = (blend.tin_tins_open || 0) * (blend.tin_size_oz || 0);
+                    const cellared = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
+                    quantityText = drillDown.type === 'tinOpen' ? `${open.toFixed(2)} oz open` :
+                                   drillDown.type === 'tinCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                                   `${tins} tin${tins > 1 ? 's' : ''} • ${oz.toFixed(2)} oz`;
+                  } else if (drillDown.type.startsWith('bulk')) {
+                    const total = blend.bulk_total_quantity_oz || 0;
+                    const open = blend.bulk_open || 0;
+                    const cellared = blend.bulk_cellared || 0;
+                    quantityText = drillDown.type === 'bulkOpen' ? `${open.toFixed(2)} oz open` :
+                                   drillDown.type === 'bulkCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                                   `${total.toFixed(2)} oz bulk`;
+                  } else if (drillDown.type.startsWith('pouch')) {
+                    const pouches = blend.pouch_total_pouches || 0;
+                    const oz = blend.pouch_total_quantity_oz || 0;
+                    const open = (blend.pouch_pouches_open || 0) * (blend.pouch_size_oz || 0);
+                    const cellared = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
+                    quantityText = drillDown.type === 'pouchOpen' ? `${open.toFixed(2)} oz open` :
+                                   drillDown.type === 'pouchCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                                   `${pouches} pouch${pouches > 1 ? 'es' : ''} • ${oz.toFixed(2)} oz`;
+                  } else {
+                    const tinOz = blend.tin_total_quantity_oz || 0;
+                    const bulkOz = blend.bulk_total_quantity_oz || 0;
+                    const pouchOz = blend.pouch_total_quantity_oz || 0;
+                    const total = tinOz + bulkOz + pouchOz;
+                    quantityText = `${total.toFixed(2)} oz total`;
+                  }
+                  
+                  return (
+                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                      <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+                        <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {blend.logo || blend.photo ? (
+                            <img 
+                              src={blend.logo || blend.photo} 
+                              alt="" 
+                              className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`} 
+                            />
+                          ) : (
+                            <Leaf className="w-6 h-6 text-emerald-600" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-stone-800 truncate">{blend.name}</p>
+                          <p className="text-sm text-stone-500 truncate">
+                            {blend.manufacturer}
+                          </p>
+                        </div>
+                        <Badge className="bg-emerald-100 text-emerald-800 flex-shrink-0">
+                          {quantityText}
+                        </Badge>
+                      </div>
+                    </a>
+                  );
+                })}
               </>
             )}
 
