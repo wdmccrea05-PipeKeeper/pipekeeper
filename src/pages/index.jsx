@@ -1,5 +1,6 @@
 import React from "react";
 
+import Layout from "./Layout";
 import Home from "./Home";
 import Pipes from "./Pipes";
 import PipeDetail from "./PipeDetail";
@@ -55,5 +56,15 @@ export default function Pages() {
   // Case-insensitive route matching for compatibility
   const Comp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
 
-  return <Comp />;
+  // Derive page name for Layout
+  const matchedKey = ROUTES[path] 
+    ? path 
+    : Object.keys(ROUTES).find(k => k.toLowerCase() === path.toLowerCase()) || "/Home";
+  const currentPageName = matchedKey.replace("/", "");
+
+  return (
+    <Layout currentPageName={currentPageName}>
+      <Comp />
+    </Layout>
+  );
 }
