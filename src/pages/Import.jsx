@@ -18,7 +18,9 @@ const PIPE_TEMPLATE_HEADERS = [
 
 const TOBACCO_TEMPLATE_HEADERS = [
   'name', 'manufacturer', 'blend_type', 'cut', 'strength', 'room_note',
-  'tin_size_oz', 'quantity_owned', 'tin_status', 'cellared_date', 'cellared_amount', 
+  'tin_size_oz', 'tin_total_tins', 'tin_tins_open', 'tin_tins_cellared', 'tin_cellared_date',
+  'bulk_total_quantity_oz', 'bulk_open', 'bulk_cellared', 'bulk_cellared_date',
+  'pouch_size_oz', 'pouch_total_pouches', 'pouch_pouches_open', 'pouch_pouches_cellared', 'pouch_cellared_date',
   'production_status', 'aging_potential', 'rating', 'notes'
 ];
 
@@ -60,7 +62,7 @@ export default function ImportPage() {
 
   const downloadTobaccoTemplate = () => {
     const csvContent = TOBACCO_TEMPLATE_HEADERS.join(',') + '\n' +
-      'Example Blend,Cornell & Diehl,English,Ribbon,Medium,Pleasant,2,3,Sealed/Cellared,2025-01-15,10.5,Current Production,Excellent,4.5,Great everyday smoke\n';
+      'Example Blend,Cornell & Diehl,English,Ribbon,Medium,Pleasant,1.75,5,1,4,2025-01-15,16,2,14,2025-01-10,1.5,3,1,2,2025-01-12,Current Production,Excellent,4.5,Great everyday smoke\n';
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -85,7 +87,10 @@ export default function ImportPage() {
           // Convert numeric fields
           if (['length_mm', 'weight_grams', 'bowl_height_mm', 'bowl_width_mm', 
                'bowl_diameter_mm', 'bowl_depth_mm', 'purchase_price', 'estimated_value',
-               'tin_size_oz', 'quantity_owned', 'cellared_amount', 'rating'].includes(header)) {
+               'tin_size_oz', 'tin_total_tins', 'tin_tins_open', 'tin_tins_cellared',
+               'bulk_total_quantity_oz', 'bulk_open', 'bulk_cellared',
+               'pouch_size_oz', 'pouch_total_pouches', 'pouch_pouches_open', 'pouch_pouches_cellared',
+               'rating'].includes(header)) {
             obj[header] = parseFloat(value);
           } else {
             obj[header] = value;
@@ -288,7 +293,13 @@ export default function ImportPage() {
                     <ul className="text-sm text-amber-800 space-y-1">
                       <li>• <strong>name</strong> - Name of the tobacco blend (required)</li>
                     </ul>
-                    <p className="text-xs text-amber-700 mt-2 italic">Note: All other fields are optional but recommended for better tracking.</p>
+                    <p className="text-sm font-semibold text-amber-900 mt-3 mb-1">Inventory Fields (Tins, Bulk, Pouches):</p>
+                    <ul className="text-xs text-amber-800 space-y-1">
+                      <li>• <strong>Tins:</strong> tin_size_oz, tin_total_tins, tin_tins_open, tin_tins_cellared, tin_cellared_date</li>
+                      <li>• <strong>Bulk:</strong> bulk_total_quantity_oz, bulk_open, bulk_cellared, bulk_cellared_date</li>
+                      <li>• <strong>Pouches:</strong> pouch_size_oz, pouch_total_pouches, pouch_pouches_open, pouch_pouches_cellared, pouch_cellared_date</li>
+                    </ul>
+                    <p className="text-xs text-amber-700 mt-2 italic">Note: All inventory fields are optional. Track any combination of tins, bulk, and/or pouches.</p>
                   </div>
                 </div>
 
