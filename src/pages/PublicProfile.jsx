@@ -93,7 +93,7 @@ export default function PublicProfilePage() {
   });
 
   const makePublicMutation = useMutation({
-    mutationFn: () => base44.entities.UserProfile.update(profile.id, { is_public: true }),
+    mutationFn: (profileId) => base44.entities.UserProfile.update(profileId, { is_public: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-profile', profileEmail] });
       queryClient.invalidateQueries({ queryKey: ['user-profile', profileEmail] });
@@ -191,7 +191,7 @@ export default function PublicProfilePage() {
                 {!profile.is_public && (
                   <div className="flex flex-col gap-2">
                     <Button
-                      onClick={() => makePublicMutation.mutate()}
+                      onClick={() => makePublicMutation.mutate(profile.id)}
                       disabled={makePublicMutation.isPending}
                       className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 whitespace-nowrap"
                     >
