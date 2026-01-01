@@ -23,6 +23,16 @@ const BLEND_COLORS = {
 export default function TobaccoCard({ blend, onClick }) {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
   
+  // Debug: log bulk data
+  if (blend.name === "Riverboat Queen") {
+    console.log('[TobaccoCard] Riverboat Queen data:', {
+      bulk_total_quantity_oz: blend.bulk_total_quantity_oz,
+      bulk_open: blend.bulk_open,
+      bulk_cellared: blend.bulk_cellared,
+      fullBlend: blend
+    });
+  }
+  
   return (
     <motion.div
       whileHover={{ y: -4 }}
