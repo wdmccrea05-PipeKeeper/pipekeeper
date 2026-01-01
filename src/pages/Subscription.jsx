@@ -10,6 +10,7 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { shouldShowPurchaseUI, premiumGateMessage } from "@/components/utils/companion";
 
 const PRICING_OPTIONS = [
   { 
@@ -98,6 +99,42 @@ export default function SubscriptionPage() {
 
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
+
+  // iOS companion app: block all purchasing/subscription management UI
+  if (!shouldShowPurchaseUI()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <a href={createPageUrl("Profile")}>
+            <Button variant="ghost" className="mb-6 text-[#e8d5b7]/70 hover:text-[#e8d5b7]">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Profile
+            </Button>
+          </a>
+
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-900">
+                <Crown className="w-5 h-5" />
+                PipeKeeper Premium
+              </CardTitle>
+              <CardDescription className="text-stone-600">
+                {premiumGateMessage()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm text-stone-600 space-y-2">
+              <p>
+                Purchases and subscription management are not available in the iOS companion app.
+              </p>
+              <p>
+                If you already have Premium, sign in and you'll have full access.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubscribe = async () => {
     try {

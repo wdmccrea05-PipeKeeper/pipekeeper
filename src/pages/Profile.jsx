@@ -12,7 +12,7 @@ import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
-import { shouldShowPurchaseUI, subscriptionManagementMessage } from "@/utils/companion";
+import { shouldShowPurchaseUI, subscriptionManagementMessage } from "@/components/utils/companion";
 
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
