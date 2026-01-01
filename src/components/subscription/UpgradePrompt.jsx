@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, Lock } from "lucide-react";
+import { shouldShowPurchaseUI, premiumGateMessage } from "@/components/utils/companion";
 
 export default function UpgradePrompt({ featureName, description }) {
   return (
