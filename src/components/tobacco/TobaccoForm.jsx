@@ -31,7 +31,6 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
     blend_type: '',
     tobacco_components: [],
     cut: '',
-    packaging_type: '',
     strength: '',
     room_note: '',
     flavor_notes: [],
@@ -630,21 +629,6 @@ Return complete and accurate information based on the blend name or description 
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Packaging Type" 
-            helpText="How the tobacco is packaged for sale."
-          >
-            <Select value={formData.packaging_type} onValueChange={(v) => handleChange('packaging_type', v)}>
-              <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select packaging" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tin">Tin</SelectItem>
-                <SelectItem value="Bulk">Bulk</SelectItem>
-                <SelectItem value="Pouch">Pouch</SelectItem>
-              </SelectContent>
-            </Select>
-          </FieldWithInfo>
-          <FieldWithInfo 
             label="Strength" 
             helpText="Nicotine content and body. Mild is gentle, Full is strong. Affects your smoking experience significantly."
           >
@@ -735,12 +719,18 @@ Return complete and accurate information based on the blend name or description 
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-stone-800">Inventory & Status</CardTitle>
+          <p className="text-sm text-stone-500">Track your tobacco across tins, bulk, and pouches</p>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Tins Section */}
-          {formData.packaging_type === 'Tin' && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="font-semibold text-stone-700">Tin Inventory</h3>
+          <Tabs defaultValue="tins" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="tins">Tins</TabsTrigger>
+              <TabsTrigger value="bulk">Bulk</TabsTrigger>
+              <TabsTrigger value="pouches">Pouches</TabsTrigger>
+            </TabsList>
+
+            {/* Tins Tab */}
+            <TabsContent value="tins" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Tin Size (oz)</Label>
@@ -751,7 +741,6 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.tin_size_oz || ''}
                     onChange={(e) => {
                       handleChange('tin_size_oz', e.target.value);
-                      // Auto-calculate total quantity
                       if (e.target.value && formData.tin_total_tins) {
                         handleChange('tin_total_quantity_oz', Number(e.target.value) * Number(formData.tin_total_tins));
                       }
@@ -768,7 +757,6 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.tin_total_tins || ''}
                     onChange={(e) => {
                       handleChange('tin_total_tins', e.target.value);
-                      // Auto-calculate total quantity
                       if (e.target.value && formData.tin_size_oz) {
                         handleChange('tin_total_quantity_oz', Number(formData.tin_size_oz) * Number(e.target.value));
                       }
@@ -787,6 +775,7 @@ Return complete and accurate information based on the blend name or description 
                     onChange={(e) => handleChange('tin_total_quantity_oz', e.target.value)}
                     placeholder="Auto-calculated"
                     className="border-stone-200 bg-stone-50"
+                    readOnly
                   />
                 </div>
                 <div className="space-y-2">
@@ -821,14 +810,11 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
 
-          {/* Bulk Section */}
-          {formData.packaging_type === 'Bulk' && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="font-semibold text-stone-700">Bulk Inventory</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Bulk Tab */}
+            <TabsContent value="bulk" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Total Bulk Quantity (oz)</Label>
                   <Input
@@ -875,13 +861,10 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
 
-          {/* Pouch Section */}
-          {formData.packaging_type === 'Pouch' && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="font-semibold text-stone-700">Pouch Inventory</h3>
+            {/* Pouches Tab */}
+            <TabsContent value="pouches" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Pouch Size (oz)</Label>
@@ -892,7 +875,6 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.pouch_size_oz || ''}
                     onChange={(e) => {
                       handleChange('pouch_size_oz', e.target.value);
-                      // Auto-calculate total quantity
                       if (e.target.value && formData.pouch_total_pouches) {
                         handleChange('pouch_total_quantity_oz', Number(e.target.value) * Number(formData.pouch_total_pouches));
                       }
@@ -909,7 +891,6 @@ Return complete and accurate information based on the blend name or description 
                     value={formData.pouch_total_pouches || ''}
                     onChange={(e) => {
                       handleChange('pouch_total_pouches', e.target.value);
-                      // Auto-calculate total quantity
                       if (e.target.value && formData.pouch_size_oz) {
                         handleChange('pouch_total_quantity_oz', Number(formData.pouch_size_oz) * Number(e.target.value));
                       }
@@ -928,6 +909,7 @@ Return complete and accurate information based on the blend name or description 
                     onChange={(e) => handleChange('pouch_total_quantity_oz', e.target.value)}
                     placeholder="Auto-calculated"
                     className="border-stone-200 bg-stone-50"
+                    readOnly
                   />
                 </div>
                 <div className="space-y-2">
@@ -962,11 +944,11 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
 
-          {/* Common fields for all packaging types */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Common fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
             <div className="space-y-2">
               <Label>Production Status</Label>
               <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
