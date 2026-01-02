@@ -58,6 +58,8 @@ export default function CommunityPage() {
     enabled: !!user?.email,
   });
 
+  const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
+
   const { data: connections = [] } = useQuery({
     queryKey: ['connections', user?.email],
     queryFn: () => base44.entities.UserConnection.filter({ follower_email: user?.email }),
@@ -88,7 +90,7 @@ export default function CommunityPage() {
 
   // Apply filters to profiles
   const publicProfiles = React.useMemo(() => {
-    let filtered = [...allPublicProfiles];
+    let filtered = [...allPublicProfiles].filter(p => !blocked.includes(p.user_email));
     
     // Apply name/email search filter
     if (activeSearchQuery.trim()) {
@@ -123,7 +125,7 @@ export default function CommunityPage() {
     }
     
     return filtered;
-  }, [allPublicProfiles, activeSearchQuery, activeLocationFilters]);
+  }, [allPublicProfiles, activeSearchQuery, activeLocationFilters, blocked]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({

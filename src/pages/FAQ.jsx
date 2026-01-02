@@ -7,9 +7,12 @@ import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone, 
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FAQDownloadButton from "@/components/faq/FAQDownloadButton";
+import { shouldShowPurchaseUI, isCompanionApp } from "@/components/utils/companion";
 
 export default function FAQPage() {
   const queryClient = useQueryClient();
+  const canShowPurchaseUI = shouldShowPurchaseUI();
+  const inCompanion = isCompanionApp();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -29,7 +32,7 @@ export default function FAQPage() {
     {
       title: 'Mobile & Installation',
       items: [
-        { question: 'Is PipeKeeper available in the App Store or Google Play?', answer: 'PipeKeeper is a Progressive Web App (PWA) that works directly in your browser. While it\'s not in the app stores, you can install it on your phone\'s home screen for the same experience as a native app - no downloads from the app store needed!' },
+        { question: 'Is PipeKeeper available in the App Store or Google Play?', answer: inCompanion ? 'Yes — PipeKeeper is available as an iOS companion app. The companion app is a secure web-container that displays the PipeKeeper web experience.' : 'PipeKeeper works as a web app and can also be installed to your home screen (PWA). An iOS companion app is also available for users who prefer a native wrapper.' },
         { question: 'Can I use PipeKeeper offline?', answer: 'Once installed on your device, PipeKeeper caches your data so you can view your collection offline. Some features like AI search and photo identification require an internet connection, but basic browsing and editing work offline.' },
         { question: 'Will my data sync across devices?', answer: 'Yes! Your collection data is stored in the cloud and automatically syncs across all your devices. Log in with the same account on your phone, tablet, or computer to access your pipes and tobacco anywhere.' },
       ],
@@ -376,7 +379,11 @@ export default function FAQPage() {
               <AccordionItem value="item-mobile-1">
                 <AccordionTrigger>Is PipeKeeper available in the App Store or Google Play?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  PipeKeeper is a Progressive Web App (PWA) that works directly in your browser. While it's not in the app stores, you can install it on your phone's home screen for the same experience as a native app - no downloads from the app store needed!
+                  {inCompanion ? (
+                    <p>Yes — PipeKeeper is available as an iOS companion app. The companion app is a secure web-container that displays the PipeKeeper web experience.</p>
+                  ) : (
+                    <p>PipeKeeper works as a web app and can also be installed to your home screen (PWA). An iOS companion app is also available for users who prefer a native wrapper.</p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
 
@@ -730,21 +737,33 @@ export default function FAQPage() {
               <AccordionItem value="item-16">
                 <AccordionTrigger>What's included in the free trial?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, bulk import, and automatic inventory tracking. After the trial, you can subscribe to continue using Premium features.
+                  {canShowPurchaseUI ? (
+                    <p>New users get 7 days of full Premium access to try features like AI pairing, photo identification, value lookup, collection optimization, bulk import, and advanced tools. After the trial, you can subscribe to keep using Premium features.</p>
+                  ) : (
+                    <p>New accounts may include a trial period depending on your subscription status. The iOS companion app does not support purchasing or managing subscriptions. If you already have Premium, it will unlock automatically after you sign in.</p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-17">
                 <AccordionTrigger>How much does Premium cost?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  PipeKeeper Premium is $1.99/month or $19.99/year (save 17% with annual billing). Both plans include all Premium features and automatic renewal until cancelled. You can cancel anytime from your Profile page.
+                  {canShowPurchaseUI ? (
+                    <p>PipeKeeper Premium is $1.99/month or $19.99/year. Plans include Premium features and renew until canceled.</p>
+                  ) : (
+                    <p>Premium pricing is available on our website. The iOS companion app does not support purchasing or managing subscriptions. If you already have Premium, it will unlock automatically after you sign in.</p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-18">
                 <AccordionTrigger>What happens if I cancel my subscription?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  You'll keep Premium access until the end of your billing period. After that, Premium features will be locked but you'll still have access to your collection data and basic features. You can reactivate anytime to regain Premium access.
+                  {canShowPurchaseUI ? (
+                    <p>You'll keep Premium access until the end of your billing period. After that, Premium features lock, but you'll still have access to your collection data and basic features.</p>
+                  ) : (
+                    <p>If your Premium access ends, Premium features lock but your collection data remains available. The iOS companion app does not support subscription management.</p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

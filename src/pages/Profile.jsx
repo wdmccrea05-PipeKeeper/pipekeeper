@@ -13,6 +13,16 @@ import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import { shouldShowPurchaseUI, subscriptionManagementMessage } from "@/components/utils/companion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
@@ -51,6 +61,8 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -133,6 +145,40 @@ export default function ProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate(formData);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.email) return;
+
+    const email = user.email;
+
+    const deleteAll = async (entity, filter) => {
+      try {
+        const rows = await entity.filter(filter);
+        await Promise.all((rows || []).map(r => entity.delete(r.id)));
+      } catch (err) {
+        console.error('Delete error:', err);
+      }
+    };
+
+    await deleteAll(base44.entities.Pipe, { created_by: email });
+    await deleteAll(base44.entities.TobaccoBlend, { created_by: email });
+    await deleteAll(base44.entities.SmokingLog, { created_by: email });
+    await deleteAll(base44.entities.Message, { sender_email: email });
+    await deleteAll(base44.entities.Message, { recipient_email: email });
+    await deleteAll(base44.entities.Friendship, { requester_email: email });
+    await deleteAll(base44.entities.Friendship, { recipient_email: email });
+    await deleteAll(base44.entities.Comment, { commenter_email: email });
+    await deleteAll(base44.entities.UserConnection, { follower_email: email });
+    await deleteAll(base44.entities.UserConnection, { following_email: email });
+
+    await base44.auth.updateMe({
+      deletion_requested: true,
+      deletion_requested_at: new Date().toISOString(),
+    });
+
+    await base44.auth.logout();
+    window.location.href = '/';
   };
 
   const handleAvatarUpload = async (e) => {
@@ -703,11 +749,36 @@ export default function ProfilePage() {
           </Card>
         </motion.div>
 
-        {/* Legal Links */}
+        {/* Delete Account */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
+          className="mt-6"
+        >
+          <Card className="bg-white/95 border-rose-200">
+            <CardHeader>
+              <CardTitle className="text-rose-700">Delete Account</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-stone-600">
+                This will permanently remove your PipeKeeper content (pipes, blends, logs, messages, comments).
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
+                Delete My Account
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Legal Links */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
           className="mt-6"
         >
           <Card className="border-stone-200/60 bg-white/50">
@@ -724,7 +795,29 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </motion.div>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm account deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Type <strong>DELETE</strong> to confirm. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="Type DELETE" />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteConfirm !== 'DELETE'}
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={handleDeleteAccount}
+            >
+              Permanently Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
+        </div>
+        );
+        }

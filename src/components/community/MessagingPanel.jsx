@@ -23,6 +23,18 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return null;
   }
 
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile', user?.email],
+    queryFn: async () => {
+      const rows = await base44.entities.UserProfile.filter({ user_email: user.email });
+      return rows?.[0] || null;
+    },
+    enabled: !!user?.email,
+    retry: 1,
+  });
+
+  const blocked = Array.isArray(myProfile?.blocked_users) ? myProfile.blocked_users : [];
+
   // Update last seen every 30 seconds
   useEffect(() => {
     if (!user?.email) return;
@@ -126,33 +138,40 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   };
 
   const getConversation = (friendEmail) => {
-    return messages.filter(m => 
+    return filteredMessages.filter(m => 
       (m.sender_email === user.email && m.recipient_email === friendEmail) ||
       (m.sender_email === friendEmail && m.recipient_email === user.email)
     );
   };
 
   const getUnreadCount = (friendEmail) => {
-    return messages.filter(m => 
+    return filteredMessages.filter(m => 
       m.sender_email === friendEmail && 
       m.recipient_email === user.email && 
       !m.is_read
     ).length;
   };
 
-  const inboxMessages = messages.filter(m => 
+  const inboxMessages = filteredMessages.filter(m => 
     m.recipient_email === user.email && !m.is_read
   );
 
-  const savedMessages = messages.filter(m => 
+  const savedMessages = filteredMessages.filter(m => 
     m.recipient_email === user.email && m.is_saved
   );
 
+  const isBlocked = (friendEmail) => blocked.includes(friendEmail);
+
   const friendsWithMessaging = friends.filter(f => {
     const friendEmail = f.requester_email === user?.email ? f.recipient_email : f.requester_email;
+    if (blocked.includes(friendEmail)) return false;
     const profile = publicProfiles.find(p => p.user_email === friendEmail);
     return profile?.enable_messaging;
   });
+
+  const filteredMessages = messages.filter(m => 
+    !blocked.includes(m.sender_email) && !blocked.includes(m.recipient_email)
+  );
 
   if (friendsWithMessaging.length === 0) {
     return null;
@@ -320,17 +339,21 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                disabled={!isOnline(selectedFriend)}
+                disabled={!isOnline(selectedFriend) || isBlocked(selectedFriend)}
               />
               <Button 
                 onClick={handleSendMessage}
-                disabled={!messageText.trim() || sendMessageMutation.isPending || !isOnline(selectedFriend)}
+                disabled={!messageText.trim() || sendMessageMutation.isPending || !isOnline(selectedFriend) || isBlocked(selectedFriend)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            {!isOnline(selectedFriend) && (
+            {isBlocked(selectedFriend) ? (
+              <p className="text-xs text-rose-600 mt-2">
+                You have blocked this user.
+              </p>
+            ) : !isOnline(selectedFriend) && (
               <p className="text-xs text-amber-600 mt-2">
                 This user is offline. Messages will be saved to their inbox.
               </p>
