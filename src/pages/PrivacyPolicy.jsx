@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { isIOSCompanionApp } from "@/components/utils/companion";
 
 export default function PrivacyPolicyPage() {
+  const inCompanion = isIOSCompanionApp();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -89,12 +92,18 @@ export default function PrivacyPolicyPage() {
 
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Payment Processing</h2>
-              <p>
-                Premium subscriptions are processed via Stripe. Stripe collects and processes your payment information 
-                securely. We do not store credit card numbers. Billing data (subscription status, amount, renewal dates) 
-                is stored in our system. <strong>Note:</strong> In-app purchases are not supported in the iOS companion app; 
-                subscriptions must be managed via our website.
-              </p>
+              {inCompanion ? (
+                <p>
+                  The iOS companion app does not process purchases. If your account already has an active Premium subscription, 
+                  Premium features will unlock automatically after you sign in.
+                </p>
+              ) : (
+                <p>
+                  Premium subscriptions are processed via Stripe. Stripe collects and processes your payment information 
+                  securely. We do not store credit card numbers. Billing data (subscription status, amount, renewal dates) 
+                  is stored in our system.
+                </p>
+              )}
             </section>
 
             <section>
