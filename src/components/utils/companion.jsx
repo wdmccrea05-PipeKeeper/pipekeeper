@@ -13,6 +13,9 @@ export function isIOSCompanionApp() {
   }
 }
 
+// Alias for convenience
+export const isCompanionApp = isIOSCompanionApp;
+
 export function shouldShowPurchaseUI() {
   // Worldwide companion mode: no purchase/upgrade/manage subscription CTAs in iOS wrapper
   return !isIOSCompanionApp();

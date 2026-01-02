@@ -7,12 +7,12 @@ import { ArrowLeft, HelpCircle, Sparkles, Camera, DollarSign, Leaf, Smartphone, 
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FAQDownloadButton from "@/components/faq/FAQDownloadButton";
-import { shouldShowPurchaseUI, isCompanionApp } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, isIOSCompanionApp } from "@/components/utils/companion";
 
 export default function FAQPage() {
   const queryClient = useQueryClient();
   const canShowPurchaseUI = shouldShowPurchaseUI();
-  const inCompanion = isCompanionApp();
+  const inCompanion = isIOSCompanionApp();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
