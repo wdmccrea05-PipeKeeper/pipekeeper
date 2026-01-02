@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
                 We collect the following types of information:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Account Information:</strong> Email, display name, and authentication data when you create an account or sign in via third-party providers (Google, Microsoft, Facebook, or Apple if available).</li>
+                <li><strong>Account Information:</strong> Email address and profile details you provide for account access and community features.</li>
                 <li><strong>Collection Data:</strong> Information about your pipes, tobacco blends, smoking logs, ratings, notes, and photos you upload.</li>
                 <li><strong>Community & UGC:</strong> Public profile information (display name, bio, avatar, location if enabled), comments you post on other users' collections, friend connections, and messages you send.</li>
                 <li><strong>AI Processing Data:</strong> Content you submit to our AI features (search queries, photos, prompts) is sent to third-party AI providers for processing. <strong>Warning:</strong> Do not submit sensitive personal information through AI features.</li>

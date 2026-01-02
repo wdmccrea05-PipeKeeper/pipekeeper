@@ -5,6 +5,7 @@ import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLef
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isIOSCompanionApp } from "@/components/utils/companion";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
@@ -137,6 +138,11 @@ export default function Layout({ children, currentPageName }) {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
           <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
+          {isIOSCompanionApp() && (
+            <p className="text-[#e8d5b7]/80 text-sm mb-4">
+              In the iOS companion app, please sign in using your email and password.
+            </p>
+          )}
           <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
           <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
         </div>
