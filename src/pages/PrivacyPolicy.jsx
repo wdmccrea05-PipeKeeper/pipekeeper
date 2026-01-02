@@ -18,34 +18,33 @@ export default function PrivacyPolicyPage() {
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
             <CardTitle className="text-3xl text-stone-900">Privacy Policy</CardTitle>
-            <p className="text-stone-600 mt-2">Last updated: December 24, 2025</p>
+            <p className="text-stone-600 mt-2">Last updated: January 2, 2026</p>
           </CardHeader>
           <CardContent className="prose prose-stone max-w-none text-stone-800 space-y-6">
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">1. Information We Collect</h2>
               <p>
-                We collect information you provide directly to us, including:
+                We collect the following types of information:
               </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Account information (name, email address)</li>
-                <li>Pipe and tobacco collection data (names, descriptions, photos, values)</li>
-                <li>User preferences and settings</li>
-                <li>Payment information (processed securely through Stripe)</li>
-                <li>Usage data and analytics</li>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Account Information:</strong> Email, display name, and authentication data when you create an account or sign in via third-party providers (Google, Microsoft, Facebook, or Apple if available).</li>
+                <li><strong>Collection Data:</strong> Information about your pipes, tobacco blends, smoking logs, ratings, notes, and photos you upload.</li>
+                <li><strong>Community & UGC:</strong> Public profile information (display name, bio, avatar, location if enabled), comments you post on other users' collections, friend connections, and messages you send.</li>
+                <li><strong>AI Processing Data:</strong> Content you submit to our AI features (search queries, photos, prompts) is sent to third-party AI providers for processing. <strong>Warning:</strong> Do not submit sensitive personal information through AI features.</li>
+                <li><strong>Payment Information:</strong> Subscription and billing data handled securely by Stripe. We do not store credit card numbers.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">2. How We Use Your Information</h2>
-              <p>
-                We use the information we collect to:
-              </p>
+              <p>We use the information we collect to:</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Provide, maintain, and improve the Service</li>
-                <li>Process transactions and send related information</li>
-                <li>Generate AI-powered recommendations and identifications</li>
-                <li>Send technical notices, updates, and support messages</li>
-                <li>Respond to your comments and questions</li>
+                <li>Provide core collection management features</li>
+                <li>Generate AI-powered pairing recommendations, value lookups, and photo identification</li>
+                <li>Enable community features (profiles, following, comments, messaging)</li>
+                <li>Process subscription payments via Stripe</li>
+                <li>Send service-related notifications</li>
+                <li>Investigate abuse reports and enforce community guidelines</li>
                 <li>Analyze usage patterns to improve user experience</li>
               </ul>
             </section>
@@ -53,65 +52,99 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">3. Information Sharing</h2>
               <p>
-                We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:
+                We do not sell your personal information. Information may be shared in the following ways:
               </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>With service providers who assist in operating our Service (e.g., hosting, payment processing)</li>
-                <li>To comply with legal obligations or respond to lawful requests</li>
-                <li>To protect the rights, property, or safety of PipeKeeper, our users, or others</li>
-                <li>With your consent or at your direction</li>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Third-Party Service Providers:</strong> AI providers (for AI features), Stripe (for payment processing), cloud hosting providers (for data storage).</li>
+                <li><strong>Public Community:</strong> If you make your profile public, your display name, bio, avatar, location (if enabled), pipes, tobacco, and logs are visible to other users.</li>
+                <li><strong>External Web Lookups:</strong> When using AI search features, we fetch content from third-party websites (tobacco reviews, manufacturer info, market data). We do not control these external sources.</li>
+                <li><strong>Legal Compliance:</strong> If required by law or to protect our rights and users' safety.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">4. Data Storage and Security</h2>
               <p>
-                We implement appropriate technical and organizational measures to protect your personal information. 
-                Your data is stored securely on cloud infrastructure with encryption in transit and at rest. 
-                However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
+                We use industry-standard security measures to protect your data, including encrypted connections, 
+                secure cloud storage, and access controls. Your data is stored on cloud infrastructure with encryption 
+                in transit and at rest. However, no system is 100% secure. You are responsible for maintaining the 
+                confidentiality of your account credentials.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Processing</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Processing & External Lookups</h2>
+              <p className="mb-3">
+                <strong>AI Features:</strong> When you use AI-powered features (pairing, photo ID, value lookup, search), 
+                your content (text, images) is sent to third-party AI providers for processing. These providers may retain 
+                data according to their own policies. <strong>Warning:</strong> Do not submit sensitive personal information, 
+                financial data, or confidential content through AI features.
+              </p>
               <p>
-                When you use AI features (photo identification, market valuations, recommendations), your data may be 
-                processed by third-party AI providers. We ensure these providers maintain appropriate data protection standards.
+                <strong>External Web Lookups:</strong> Our AI search features fetch content from third-party websites 
+                (tobacco reviews, manufacturer info, market data). We do not control or endorse these external sources. 
+                Information retrieved may be inaccurate or outdated.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Cookies and Tracking</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Payment Processing</h2>
               <p>
-                We use cookies and similar tracking technologies to track activity on our Service and hold certain information. 
+                Premium subscriptions are processed via Stripe. Stripe collects and processes your payment information 
+                securely. We do not store credit card numbers. Billing data (subscription status, amount, renewal dates) 
+                is stored in our system. <strong>Note:</strong> In-app purchases are not supported in the iOS companion app; 
+                subscriptions must be managed via our website.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Cookies and Tracking</h2>
+              <p>
+                We use cookies and similar technologies to maintain your session, remember preferences, and improve our services. 
                 You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Your Rights</h2>
-              <p>
-                You have the right to:
-              </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Access and receive a copy of your personal data</li>
-                <li>Correct inaccurate or incomplete data</li>
-                <li>Request deletion of your data</li>
-                <li>Object to or restrict certain processing of your data</li>
-                <li>Withdraw consent at any time</li>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Your Rights & Data Retention</h2>
+              <p>You have the right to:</p>
+              <ul className="list-disc pl-6 space-y-1 mb-3">
+                <li>Access and download your data</li>
+                <li>Update or correct your information</li>
+                <li>Delete your account and content (see Account Deletion below)</li>
+                <li>Make your profile public or private</li>
+                <li>Disable comments or messaging</li>
+                <li>Block other users</li>
               </ul>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Children's Privacy</h2>
               <p>
-                Our Service is not intended for children under 13 years of age. We do not knowingly collect 
-                personal information from children under 13.
+                <strong>Account Deletion:</strong> You can initiate account deletion in-app via Profile → Delete Account. 
+                This immediately removes your content (pipes, blends, logs, messages, comments, connections). Your authentication 
+                record is marked for deletion and fully removed within 30 days. Backups may retain data for an additional 90 days 
+                for disaster recovery purposes only.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Age Requirements & Tobacco Disclaimer</h2>
+              <p>
+                PipeKeeper is intended for adults only. By using this service, you confirm that you are of legal age to 
+                purchase and use tobacco products in your jurisdiction. We do not sell tobacco, facilitate tobacco sales, 
+                or verify age for tobacco purchases. This service is solely for collection management and informational purposes.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. User-Generated Content & Moderation</h2>
+              <p>
+                When you post comments, create public profiles, or send messages, you are creating user-generated content (UGC). 
+                We may review UGC to enforce our Terms of Service and community guidelines. You can report inappropriate content 
+                or users via the Report button. Abuse reports are stored and reviewed by administrators. Repeated violations may 
+                result in account suspension or termination.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. Changes to This Policy</h2>
               <p>
                 We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
                 the new Privacy Policy on this page and updating the "Last updated" date.
@@ -119,15 +152,17 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">12. Contact Us</h2>
               <p>
-                If you have questions about this Privacy Policy, please contact us through the app's support channels.
+                If you have questions about this Privacy Policy, privacy concerns, or wish to exercise your rights, 
+                contact us at: <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a> or 
+                email hello@pipekeeper.app
               </p>
             </section>
 
             <div className="mt-8 pt-6 border-t border-stone-200">
               <p className="text-sm text-stone-600">
-                © 2025 PipeKeeper. All rights reserved.
+                © 2026 PipeKeeper. All rights reserved.
               </p>
             </div>
           </CardContent>

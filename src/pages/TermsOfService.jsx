@@ -18,7 +18,7 @@ export default function TermsOfServicePage() {
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
             <CardTitle className="text-3xl text-stone-900">Terms of Service</CardTitle>
-            <p className="text-stone-600 mt-2">Last updated: December 24, 2025</p>
+            <p className="text-stone-600 mt-2">Last updated: January 2, 2026</p>
           </CardHeader>
           <CardContent className="prose prose-stone max-w-none text-stone-800 space-y-6">
             <section>
@@ -32,9 +32,11 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">2. Description of Service</h2>
               <p>
-                PipeKeeper provides a digital platform for managing and tracking pipe and tobacco collections. 
-                The Service includes features such as collection management, AI-powered recommendations, 
-                photo identification, market valuations, and pairing suggestions.
+                PipeKeeper provides digital tools for managing and organizing your pipe and tobacco collection. Features include: 
+                collection management, AI-powered recommendations and identification, community features (profiles, following, 
+                comments, messaging), and premium subscription services. <strong>Important:</strong> We do not sell tobacco products, 
+                facilitate tobacco sales, or verify age for tobacco purchases. This is an informational and collection management 
+                service only.
               </p>
             </section>
 
@@ -47,42 +49,73 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">4. User Content</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">4. User Content & Community Guidelines</h2>
+              <p className="mb-3">
+                You retain ownership of the content you create. By using our service, you grant us a license to store and 
+                display your content as necessary to provide our services.
+              </p>
+              <p className="mb-2"><strong>Prohibited Content:</strong> You may not post content that:</p>
+              <ul className="list-disc pl-6 space-y-1 mb-3">
+                <li>Harasses, threatens, or bullies other users</li>
+                <li>Contains hate speech, discrimination, or violence</li>
+                <li>Infringes on intellectual property rights</li>
+                <li>Contains spam, advertising, or solicitations</li>
+                <li>Is sexually explicit, obscene, or otherwise inappropriate</li>
+                <li>Violates any applicable law</li>
+              </ul>
+              <p className="mb-3">
+                <strong>Reporting & Enforcement:</strong> Users can report inappropriate content or users via the Report button. 
+                All reports are reviewed by administrators. We reserve the right to remove content, hide comments, suspend accounts, 
+                or terminate access for violations. Repeat offenders will have their accounts permanently terminated. For questions 
+                or appeals, contact us via the <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a>.
+              </p>
               <p>
-                You retain ownership of any content you submit to the Service, including photos, descriptions, and notes. 
-                By submitting content, you grant us a license to use, store, and display that content as necessary to 
-                provide the Service to you.
+                <strong>Blocking Users:</strong> You can block other users to prevent them from seeing your profile or messaging you. 
+                Blocked users cannot comment on your content.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Features Disclaimer</h2>
               <p>
-                AI-powered features including pipe identification, market valuations, and pairing suggestions are provided 
-                for informational purposes only. We make no guarantees about the accuracy of AI-generated information. 
-                Users should verify important information independently.
+                AI-powered recommendations, identifications, value estimates, and search results are provided for informational 
+                purposes only. They are not professional advice and may be inaccurate, incomplete, or outdated. We make no guarantees 
+                about AI accuracy. Always verify critical information (especially valuations and identifications) through independent 
+                sources or professional appraisers. You use AI features at your own risk.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Subscription and Payment</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Subscriptions and Billing</h2>
               <p>
-                Premium features require a paid subscription. Subscriptions automatically renew unless canceled. 
-                You may cancel your subscription at any time through your account settings. Refunds are provided 
-                in accordance with our refund policy.
+                Premium features require a paid subscription ($1.99/month or $19.99/year). Subscriptions are processed via Stripe 
+                and renew automatically until canceled. You can cancel anytime; access continues until the end of your billing period. 
+                Refunds are not provided for partial billing periods. <strong>Important for iOS Companion App Users:</strong> In-app 
+                purchases and subscription management are not available within the iOS companion app. You must subscribe and manage 
+                your subscription via our website. If you already have Premium, it will unlock automatically after you sign in to the iOS app.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Prohibited Uses</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Account Deletion</h2>
               <p>
-                You may not use the Service to: (a) violate any laws or regulations; (b) infringe on intellectual property rights; 
-                (c) transmit harmful code or malware; (d) harass or harm others; (e) attempt to gain unauthorized access to the Service.
+                You may request account deletion at any time through Profile → Delete Account. This immediately removes your content 
+                (pipes, blends, logs, messages, comments, connections). Your authentication record is marked for deletion and fully 
+                removed within 30 days. Backups may retain data for up to 90 days for disaster recovery purposes only. For questions 
+                about account deletion, contact us via the <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a>.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Limitation of Liability</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Prohibited Use</h2>
+              <p>
+                You agree not to misuse our services, including attempting to access unauthorized areas, interfering with other users, 
+                posting prohibited content (see Section 4), or violating community guidelines.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Limitation of Liability</h2>
               <p>
                 The Service is provided "as is" without warranties of any kind. We shall not be liable for any indirect, 
                 incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Service.
@@ -90,7 +123,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Changes to Terms</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Changes to Terms</h2>
               <p>
                 We reserve the right to modify these terms at any time. We will notify users of material changes 
                 via email or through the Service. Continued use after changes constitutes acceptance of the new terms.
@@ -98,15 +131,16 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Contact</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. Contact</h2>
               <p>
-                For questions about these Terms of Service, please contact us through the app's support channels.
+                For questions about these Terms, community guidelines, or to report issues, visit our <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a> or 
+                email hello@pipekeeper.app
               </p>
             </section>
 
             <div className="mt-8 pt-6 border-t border-stone-200">
               <p className="text-sm text-stone-600">
-                © 2025 PipeKeeper. All rights reserved.
+                © 2026 PipeKeeper. All rights reserved.
               </p>
             </div>
           </CardContent>
