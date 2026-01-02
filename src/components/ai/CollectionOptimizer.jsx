@@ -56,12 +56,23 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     enabled: !!user?.email,
   });
 
-  // Load saved optimization
+  // Load saved optimization (scoped to current user)
   const { data: savedOptimization } = useQuery({
-    queryKey: ['saved-optimization'],
+    queryKey: ['saved-optimization', user?.email],
+    enabled: !!user?.email,
+    retry: 1,
     queryFn: async () => {
-      const results = await base44.entities.CollectionOptimization.list('-created_date', 1);
-      return results[0];
+      try {
+        const results = await base44.entities.CollectionOptimization.filter(
+          { created_by: user.email },
+          '-created_date',
+          1
+        );
+        return Array.isArray(results) ? results[0] : null;
+      } catch (err) {
+        console.error('Saved optimization load error:', err);
+        return null;
+      }
     },
   });
 
@@ -72,9 +83,13 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   }, [savedOptimization]);
 
   const saveOptimizationMutation = useMutation({
-    mutationFn: (data) => base44.entities.CollectionOptimization.create(data),
+    mutationFn: (data) =>
+      base44.entities.CollectionOptimization.create({
+        ...data,
+        created_by: user?.email,
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-optimization', user?.email] });
     },
   });
 

@@ -90,9 +90,9 @@ export default function TermsOfServicePage() {
               <p>
                 Premium features require a paid subscription ($1.99/month or $19.99/year). Subscriptions are processed via Stripe 
                 and renew automatically until canceled. You can cancel anytime; access continues until the end of your billing period. 
-                Refunds are not provided for partial billing periods. <strong>Important for iOS Companion App Users:</strong> In-app 
-                purchases and subscription management are not available within the iOS companion app. You must subscribe and manage 
-                your subscription via our website. If you already have Premium, it will unlock automatically after you sign in to the iOS app.
+                Refunds are not provided for partial billing periods. <strong>Important for iOS Companion App Users:</strong> Purchases 
+                and subscription management are not available within the iOS companion app. If you already have Premium, it will unlock 
+                automatically after you sign in to the iOS app.
               </p>
             </section>
 

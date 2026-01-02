@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, Lock } from "lucide-react";
 import { shouldShowPurchaseUI, premiumGateMessage } from "@/components/utils/companion";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function UpgradePrompt({ featureName, description }) {
   return (
@@ -20,10 +21,12 @@ export default function UpgradePrompt({ featureName, description }) {
         </div>
         {shouldShowPurchaseUI() ? (
           <>
-            <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
-              <Crown className="w-4 h-4 mr-2" />
-              Upgrade to Premium
-            </Button>
+            <a href={createPageUrl("Subscription")}>
+              <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade to Premium
+              </Button>
+            </a>
             <p className="text-xs text-center text-stone-500">
               Unlock all AI-powered features and advanced analytics
             </p>

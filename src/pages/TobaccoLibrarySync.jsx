@@ -12,9 +12,20 @@ export default function TobaccoLibrarySyncPage() {
   const [results, setResults] = useState(null);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    retry: 1,
+  });
+
   const { data: blends = [] } = useQuery({
-    queryKey: ['blends'],
-    queryFn: () => base44.entities.TobaccoBlend.list(),
+    queryKey: ['blends', user?.email],
+    enabled: !!user?.email,
+    retry: 1,
+    queryFn: async () => {
+      const rows = await base44.entities.TobaccoBlend.filter({ created_by: user.email });
+      return Array.isArray(rows) ? rows : [];
+    },
   });
 
   const blendsNeedingLogos = blends.filter(b => b.manufacturer && !b.logo);

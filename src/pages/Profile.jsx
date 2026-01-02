@@ -171,6 +171,11 @@ export default function ProfilePage() {
     await deleteAll(base44.entities.Comment, { commenter_email: email });
     await deleteAll(base44.entities.UserConnection, { follower_email: email });
     await deleteAll(base44.entities.UserConnection, { following_email: email });
+    await deleteAll(base44.entities.PairingMatrix, { created_by: email });
+    await deleteAll(base44.entities.CollectionOptimization, { created_by: email });
+    await deleteAll(base44.entities.OnboardingStatus, { user_email: email });
+    await deleteAll(base44.entities.Subscription, { user_email: email });
+    await deleteAll(base44.entities.UserProfile, { user_email: email });
 
     await base44.auth.updateMe({
       deletion_requested: true,
