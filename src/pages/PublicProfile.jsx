@@ -6,11 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings } from "lucide-react";
+import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings, Flag, ShieldOff } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -45,6 +57,16 @@ export default function PublicProfilePage() {
     enabled: !!profileEmail,
     retry: 1,
     staleTime: 5000,
+  });
+
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile', currentUser?.email],
+    queryFn: async () => {
+      const rows = await base44.entities.UserProfile.filter({ user_email: currentUser?.email });
+      return rows?.[0] || null;
+    },
+    enabled: !!currentUser?.email,
+    retry: 1,
   });
 
   const { data: pipes = [] } = useQuery({
@@ -93,16 +115,6 @@ export default function PublicProfilePage() {
     enabled: !!profileEmail,
     retry: 1,
     staleTime: 5000,
-  });
-
-  const { data: myProfile } = useQuery({
-    queryKey: ['my-profile', currentUser?.email],
-    queryFn: async () => {
-      const rows = await base44.entities.UserProfile.filter({ user_email: currentUser?.email });
-      return rows?.[0] || null;
-    },
-    enabled: !!currentUser?.email,
-    retry: 1,
   });
 
   const makePublicMutation = useMutation({
