@@ -20,6 +20,9 @@ export default function PublicProfilePage() {
   const isPreview = urlParams.get('preview') === 'true';
   const queryClient = useQueryClient();
   const [expandedImage, setExpandedImage] = React.useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
@@ -92,12 +95,47 @@ export default function PublicProfilePage() {
     staleTime: 5000,
   });
 
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile', currentUser?.email],
+    queryFn: async () => {
+      const rows = await base44.entities.UserProfile.filter({ user_email: currentUser?.email });
+      return rows?.[0] || null;
+    },
+    enabled: !!currentUser?.email,
+    retry: 1,
+  });
+
   const makePublicMutation = useMutation({
     mutationFn: (profileId) => base44.entities.UserProfile.update(profileId, { is_public: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-profile', profileEmail] });
       queryClient.invalidateQueries({ queryKey: ['user-profile', profileEmail] });
     },
+  });
+
+  const reportUserMutation = useMutation({
+    mutationFn: (data) => base44.entities.AbuseReport.create(data),
+    onSuccess: () => {
+      setReportOpen(false);
+      setReportReason('');
+      toast.success('Report submitted. Thank you for helping keep our community safe.');
+    },
+    onError: () => toast.error('Could not submit report'),
+  });
+
+  const blockUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!myProfile?.id || !profileEmail) return;
+      const blocked = Array.isArray(myProfile.blocked_users) ? myProfile.blocked_users : [];
+      const next = Array.from(new Set([...blocked, profileEmail]));
+      await base44.entities.UserProfile.update(myProfile.id, { blocked_users: next });
+    },
+    onSuccess: () => {
+      setBlockOpen(false);
+      toast.success('User blocked');
+      window.location.href = createPageUrl('Community');
+    },
+    onError: () => toast.error('Could not block user'),
   });
 
   const isOwnProfile = currentUser?.email === profileEmail;
@@ -242,7 +280,7 @@ export default function PublicProfilePage() {
                 {profile.bio && (
                   <p className="text-stone-600 mb-4">{profile.bio}</p>
                 )}
-                <div className="flex flex-wrap gap-4 text-sm text-stone-600">
+                <div className="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
                   <div className="flex items-center gap-1">
                     <img src={PIPE_IMAGE} alt="Pipes" className="w-4 h-4 opacity-60" />
                     <span>{pipes.length} Pipes</span>
@@ -254,8 +292,30 @@ export default function PublicProfilePage() {
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>{logs.length} Smoking Sessions</span>
-                    </div>
-                    </div>
+                  </div>
+                </div>
+                {!isOwnProfile && currentUser?.email && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-rose-300 text-rose-700 hover:bg-rose-50"
+                      onClick={() => setReportOpen(true)}
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-stone-300 text-stone-700 hover:bg-stone-50"
+                      onClick={() => setBlockOpen(true)}
+                    >
+                      <ShieldOff className="w-4 h-4 mr-2" />
+                      Block
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -500,6 +560,62 @@ export default function PublicProfilePage() {
         onClose={() => setExpandedImage(null)}
         alt="Profile image"
       />
-      </div>
-      );
-      }
+
+      {/* Report User Dialog */}
+      <AlertDialog open={reportOpen} onOpenChange={setReportOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Report this user</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tell us what happened. Reports are reviewed by administrators.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Describe the issue (harassment, spam, inappropriate content, etc.)"
+            className="min-h-[120px]"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!reportReason.trim() || reportUserMutation.isPending}
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={() =>
+                reportUserMutation.mutate({
+                  reporter_email: currentUser?.email,
+                  reported_user_email: profileEmail,
+                  context_type: 'user_profile',
+                  reason: reportReason.trim(),
+                })
+              }
+            >
+              Submit Report
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Block User Dialog */}
+      <AlertDialog open={blockOpen} onOpenChange={setBlockOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You won't see their profile or messages, and they won't be able to message you.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-stone-800 hover:bg-stone-900"
+              onClick={() => blockUserMutation.mutate()}
+            >
+              Block User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
