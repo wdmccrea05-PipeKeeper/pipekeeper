@@ -503,6 +503,7 @@ Return complete and accurate information based on the blend name or description 
                     <input
                       type="file"
                       accept="image/*"
+                      capture="environment"
                       className="hidden"
                       onChange={handlePhotoUpload}
                       disabled={uploading}
@@ -561,6 +562,7 @@ Return complete and accurate information based on the blend name or description 
                     <input
                       type="file"
                       accept="image/*"
+                      capture="environment"
                       className="hidden"
                       onChange={handleLogoUpload}
                       disabled={uploadingLogo}

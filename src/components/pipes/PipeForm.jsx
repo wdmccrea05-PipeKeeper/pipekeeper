@@ -313,6 +313,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 className="hidden"
                 onChange={(e) => handlePhotoUpload(e, false)}
@@ -364,6 +365,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 className="hidden"
                 onChange={(e) => handlePhotoUpload(e, true)}
