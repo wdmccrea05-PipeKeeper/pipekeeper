@@ -30,6 +30,12 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const queryClient = useQueryClient();
 
+  // Helper for matching schedule items by ID or name
+  const norm = (s) => (s || '').trim().toLowerCase();
+  const scheduleMatches = (item, blendId, blendName) =>
+    (item?.blend_id && blendId && item.blend_id === blendId) ||
+    (item?.blend_name && blendName && norm(item.blend_name) === norm(blendName));
+
   const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
     queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
@@ -95,7 +101,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           const oldPipe = freshOldPipes[0];
           if (oldPipe?.break_in_schedule) {
             const updatedSchedule = oldPipe.break_in_schedule.map(item => {
-              if (item.blend_id === oldLog.blend_id) {
+              if (scheduleMatches(item, oldLog.blend_id, oldLog.blend_name)) {
                 return {
                   ...item,
                   bowls_completed: Math.max(0, (item.bowls_completed || 0) - oldLog.bowls_smoked)
@@ -113,7 +119,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           const newPipe = freshNewPipes[0];
           if (newPipe?.break_in_schedule) {
             const updatedSchedule = newPipe.break_in_schedule.map(item => {
-              if (item.blend_id === newData.blend_id) {
+              if (scheduleMatches(item, newData.blend_id, newData.blend_name)) {
                 return {
                   ...item,
                   bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked
@@ -146,7 +152,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         const pipe = freshPipes[0];
         if (pipe?.break_in_schedule) {
           const updatedSchedule = pipe.break_in_schedule.map(item => {
-            if (item.blend_id === log.blend_id) {
+            if (scheduleMatches(item, log.blend_id, log.blend_name)) {
               return {
                 ...item,
                 bowls_completed: Math.max(0, (item.bowls_completed || 0) - log.bowls_smoked)
@@ -212,7 +218,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
         const pipe = freshPipes[0];
 
-        const norm = (s) => (s || '').trim().toLowerCase();
+        if (!pipe?.id) return;
+
         const bowlsToAdd = Number(variables.bowls_smoked || 1);
 
         // Use existing schedule or start a new one
