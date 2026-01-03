@@ -129,6 +129,10 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     }
   }, [messages, selectedFriend]);
 
+  const filteredMessages = messages.filter(m => 
+    !blocked.includes(m.sender_email) && !blocked.includes(m.recipient_email)
+  );
+
   const isOnline = (friendEmail) => {
     const profile = publicProfiles.find(p => p.user_email === friendEmail);
     if (!profile?.last_seen) return false;
@@ -168,10 +172,6 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     const profile = publicProfiles.find(p => p.user_email === friendEmail);
     return profile?.enable_messaging;
   });
-
-  const filteredMessages = messages.filter(m => 
-    !blocked.includes(m.sender_email) && !blocked.includes(m.recipient_email)
-  );
 
   if (friendsWithMessaging.length === 0) {
     return null;

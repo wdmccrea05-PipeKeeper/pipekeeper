@@ -72,7 +72,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           </TabsContent>
 
           <TabsContent value="whatif" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
-            <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} />
+            <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
           </TabsContent>
         </Tabs>
       </CardContent>

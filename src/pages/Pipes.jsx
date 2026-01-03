@@ -144,7 +144,7 @@ export default function PipesPage() {
               className="pl-10 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/50"
             />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
               <SelectTrigger className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
                 <SelectValue />
@@ -161,7 +161,7 @@ export default function PipesPage() {
                 {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548] col-span-2 sm:col-span-1 w-fit mx-auto sm:mx-0">
+            <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start">
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -169,7 +169,7 @@ export default function PipesPage() {
                   setViewMode('grid');
                   localStorage.setItem('pipesViewMode', 'grid');
                 }}
-                className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </Button>
@@ -180,7 +180,7 @@ export default function PipesPage() {
                   setViewMode('list');
                   localStorage.setItem('pipesViewMode', 'list');
                 }}
-                className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
               >
                 <List className="w-4 h-4" />
               </Button>
