@@ -168,12 +168,7 @@ export default function TobaccoDetailPage() {
           </Button>
         </a>
 
-        {/* Top Pipe Matches */}
-        {pipes.length > 0 && (
-          <div className="mb-6">
-            <TopPipeMatches blend={blend} pipes={pipes} />
-          </div>
-        )}
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Photo */}
@@ -249,6 +244,11 @@ export default function TobaccoDetailPage() {
                 ))}
                 <span className="text-stone-600 ml-2">{blend.rating}/5</span>
               </div>
+            )}
+
+            {/* Top Pipe Matches */}
+            {pipes.length > 0 && (
+              <TopPipeMatches blend={blend} pipes={pipes} />
             )}
 
             {/* Inventory Status */}
