@@ -117,16 +117,41 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         if (newData.is_break_in && newData.pipe_id) {
           const freshNewPipes = await base44.entities.Pipe.filter({ id: newData.pipe_id });
           const newPipe = freshNewPipes[0];
-          if (newPipe?.break_in_schedule) {
-            const updatedSchedule = newPipe.break_in_schedule.map(item => {
-              if (scheduleMatches(item, newData.blend_id, newData.blend_name)) {
-                return {
-                  ...item,
-                  bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked
-                };
-              }
-              return item;
-            });
+          if (newPipe) {
+            const schedule = Array.isArray(newPipe.break_in_schedule) ? newPipe.break_in_schedule : [];
+
+            const resolvedBlendName =
+              newData.blend_name ||
+              blends.find((b) => b.id === newData.blend_id)?.name ||
+              '';
+
+            const idx = schedule.findIndex((item) =>
+              scheduleMatches(item, newData.blend_id, resolvedBlendName)
+            );
+
+            let updatedSchedule;
+
+            if (idx >= 0) {
+              // Update existing item
+              updatedSchedule = schedule.map((item, i) =>
+                i !== idx
+                  ? item
+                  : { ...item, bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked }
+              );
+            } else {
+              // Append new item
+              updatedSchedule = [
+                ...schedule,
+                {
+                  blend_id: newData.blend_id,
+                  blend_name: resolvedBlendName || "Unknown Blend",
+                  suggested_bowls: 5,
+                  bowls_completed: Number(newData.bowls_smoked || 1),
+                  reasoning: "Added automatically from an edited break-in smoking log entry.",
+                },
+              ];
+            }
+
             await base44.entities.Pipe.update(newPipe.id, { break_in_schedule: updatedSchedule });
           }
         }
