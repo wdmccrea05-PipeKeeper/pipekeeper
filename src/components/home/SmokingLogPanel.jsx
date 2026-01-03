@@ -208,24 +208,32 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
       
       // Update break-in schedule if this is a break-in session
-      if (variables.is_break_in && variables.pipe_id && variables.blend_id) {
+      if (variables.is_break_in && variables.pipe_id && (variables.blend_id || variables.blend_name)) {
         // Fetch fresh pipe data to ensure we have the latest break_in_schedule
         const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
         const pipe = freshPipes[0];
-        
+
+        const norm = (s) => (s || '').trim().toLowerCase();
+
         if (pipe?.break_in_schedule && Array.isArray(pipe.break_in_schedule)) {
-          const updatedSchedule = pipe.break_in_schedule.map(item => {
-            if (item.blend_id === variables.blend_id) {
-              return {
-                ...item,
-                bowls_completed: (item.bowls_completed || 0) + variables.bowls_smoked
-              };
-            }
-            return item;
+          const updatedSchedule = pipe.break_in_schedule.map((item) => {
+            const matches =
+              (item.blend_id && variables.blend_id && item.blend_id === variables.blend_id) ||
+              (item.blend_name && variables.blend_name && norm(item.blend_name) === norm(variables.blend_name));
+
+            if (!matches) return item;
+
+            return {
+              ...item,
+              bowls_completed: (item.bowls_completed || 0) + (variables.bowls_smoked || 1),
+            };
           });
-          
+
           await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+
+          // Refresh both the list + the individual pipe (BreakInSchedule lives on PipeDetail with ['pipe', id])
           queryClient.invalidateQueries({ queryKey: ['pipes'] });
+          queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
         }
       }
       

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,11 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
   const [collapsed, setCollapsed] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Keep UI in sync with latest pipe data (e.g., when a smoking log updates break-in progress)
+    setSchedule(Array.isArray(pipe.break_in_schedule) ? pipe.break_in_schedule : []);
+  }, [pipe.id, pipe.break_in_schedule]);
 
   const updatePipeMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.update(pipe.id, data),
@@ -66,7 +71,28 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
       });
 
       if (result?.schedule) {
-        const newSchedule = result.schedule.map(s => ({ ...s, bowls_completed: 0 }));
+        const norm = (s) => (s || '').trim().toLowerCase();
+
+        const resolveBlend = (blendName) => {
+          if (!blendName) return null;
+          const exact = blends.find(b => norm(b.name) === norm(blendName));
+          if (exact) return exact;
+
+          // fallback: partial match (helps with small naming differences)
+          const partial = blends.find(b => norm(b.name).includes(norm(blendName)) || norm(blendName).includes(norm(b.name)));
+          return partial || null;
+        };
+
+        const newSchedule = result.schedule.map((s) => {
+          const matched = resolveBlend(s.blend_name);
+          return {
+            ...s,
+            blend_id: matched?.id || s.blend_id || '',
+            blend_name: matched?.name || s.blend_name,
+            bowls_completed: 0,
+          };
+        });
+
         setSchedule(newSchedule);
         await updatePipeMutation.mutateAsync({ break_in_schedule: newSchedule });
       }
