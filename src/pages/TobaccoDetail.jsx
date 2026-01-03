@@ -251,17 +251,41 @@ export default function TobaccoDetailPage() {
               </div>
             )}
 
-            {/* Quick Info */}
-            {blend.quantity_owned > 0 && (
+            {/* Inventory Status */}
+            {(blend.tin_total_tins > 0 || blend.bulk_total_quantity_oz > 0 || blend.pouch_total_pouches > 0) && (
               <Card className="bg-amber-50 border-amber-200">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <Package className="w-5 h-5 text-amber-600" />
-                  <div>
-                    <p className="text-xs text-amber-600">In Cellar</p>
-                    <p className="font-semibold text-amber-800">
-                      {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
-                      {blend.tin_size_oz && ` (${blend.tin_size_oz}oz each)`}
-                    </p>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="w-5 h-5 text-amber-600" />
+                    <p className="text-xs font-semibold text-amber-600 uppercase">Inventory Status</p>
+                  </div>
+                  <div className="space-y-2">
+                    {blend.tin_total_tins > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-amber-800">Tins:</span>
+                        <span className="font-semibold text-amber-900">
+                          {blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared
+                          {blend.tin_total_quantity_oz > 0 && ` (${blend.tin_total_quantity_oz}oz total)`}
+                        </span>
+                      </div>
+                    )}
+                    {blend.bulk_total_quantity_oz > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-amber-800">Bulk:</span>
+                        <span className="font-semibold text-amber-900">
+                          {blend.bulk_open || 0}oz open, {blend.bulk_cellared || 0}oz cellared
+                        </span>
+                      </div>
+                    )}
+                    {blend.pouch_total_pouches > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-amber-800">Pouches:</span>
+                        <span className="font-semibold text-amber-900">
+                          {blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared
+                          {blend.pouch_total_quantity_oz > 0 && ` (${blend.pouch_total_quantity_oz}oz total)`}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
