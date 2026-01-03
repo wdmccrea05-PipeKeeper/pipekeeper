@@ -299,18 +299,29 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                {shouldShowPurchaseUI() ? (
-                  <a href={createPageUrl('Subscription')}>
-                    <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
-                      {hasActiveSubscription ? 'Manage' : 'Upgrade'}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </a>
-                ) : (
-                  <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
-                    {subscriptionManagementMessage()}
-                  </div>
-                )}
+                <div className="flex flex-col gap-2">
+                  {shouldShowPurchaseUI() ? (
+                    <>
+                      <a href={createPageUrl('Subscription')}>
+                        <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
+                          {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </a>
+                      {hasActiveSubscription && (
+                        <a href="https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00" target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm" className="w-full border-amber-300 text-amber-700">
+                            Manage Billing
+                          </Button>
+                        </a>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
+                      {subscriptionManagementMessage()}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
