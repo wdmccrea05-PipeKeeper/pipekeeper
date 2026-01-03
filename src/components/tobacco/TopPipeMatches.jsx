@@ -60,53 +60,110 @@ export default function TopPipeMatches({ blend, pipes }) {
     }
   }, [savedPairings?.generated_date, collectionOptimization?.generated_date, pipesFocusFingerprint]);
 
+  // Calculate basic compatibility score (same as PairingGrid)
+  const calculateBasicScore = (pipe, blend) => {
+    let score = 5;
+    
+    if (pipe.chamber_volume === 'Small' && blend.strength === 'Mild') score += 1;
+    if (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full')) score += 1;
+    if (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') score += 1;
+    
+    if (pipe.bowl_material === 'Meerschaum' && blend.blend_type === 'Virginia') score += 1;
+    if (pipe.bowl_material === 'Briar') score += 0.5;
+    
+    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') score += 0.5;
+    
+    return Math.max(3, Math.min(7, score));
+  };
+
+  // Get adjusted score (EXACTLY same as PairingGrid)
+  const getAdjustedScore = (pipe, baseScore) => {
+    if (!baseScore) return calculateBasicScore(pipe, blend);
+    
+    // CRITICAL: Aromatic/Non-Aromatic Exclusions
+    const hasNonAromaticFocus = pipe.focus?.some(f => 
+      f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
+    );
+    const hasAromaticFocus = pipe.focus?.some(f => 
+      f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
+    );
+    
+    const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
+    
+    if (hasNonAromaticFocus && isAromaticBlend) return 0;
+    if (hasAromaticFocus && !isAromaticBlend) return 0;
+    
+    let adjustment = 0;
+    
+    // PRIORITY 1: Pipe Focus/Specialization
+    if (pipe.focus && pipe.focus.length > 0) {
+      const focusMatch = pipe.focus.some(f => {
+        const focusLower = f.toLowerCase();
+        const blendTypeLower = blend.blend_type?.toLowerCase() || '';
+        const blendNameLower = blend.name?.toLowerCase() || '';
+        const blendComponents = blend.tobacco_components || [];
+        
+        if (blendTypeLower.includes(focusLower) || focusLower.includes(blendTypeLower)) {
+          return true;
+        }
+        
+        if (blendNameLower.includes(focusLower) || focusLower.includes(blendNameLower)) {
+          return true;
+        }
+        
+        if (blendComponents.some(comp => {
+          const compLower = comp.toLowerCase();
+          return compLower.includes(focusLower) || focusLower.includes(compLower);
+        })) {
+          return true;
+        }
+        
+        return false;
+      });
+      if (focusMatch) {
+        adjustment += 5;
+      } else {
+        adjustment -= 2;
+      }
+    }
+    
+    // PRIORITY 2: User Profile Preferences
+    if (userProfile) {
+      if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
+        adjustment += 2;
+      }
+      if (userProfile.strength_preference !== 'No Preference' && 
+          blend.strength === userProfile.strength_preference) {
+        adjustment += 1.5;
+      }
+      if (userProfile.pipe_size_preference !== 'No Preference' &&
+          pipe.chamber_volume === userProfile.pipe_size_preference) {
+        adjustment += 0.5;
+      }
+    }
+    
+    const adjustedScore = Math.max(0, Math.min(10, baseScore + adjustment));
+    return Math.round(adjustedScore * 10) / 10;
+  };
+
   const updateMatchesFromData = () => {
     if (!savedPairings || !blend) return;
 
     const pipeScores = pipes.map(pipe => {
       const pipePairing = savedPairings.pairings?.find(p => p.pipe_id === pipe.id);
       const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
-      let baseScore = match?.score || 5;
-
-      // Apply adjustments similar to PairingGrid
-      let adjustment = 0;
-
-      // CRITICAL: Aromatic/Non-Aromatic Exclusions
-      const hasNonAromaticFocus = pipe.focus?.some(f => 
-        f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
-      );
-      const hasAromaticFocus = pipe.focus?.some(f => 
-        f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
-      );
-      const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
-
-      if (hasNonAromaticFocus && isAromaticBlend) return { pipe, score: 0, reasoning: 'Pipe designated for non-aromatic blends' };
-      if (hasAromaticFocus && !isAromaticBlend) return { pipe, score: 0, reasoning: 'Pipe designated for aromatic blends' };
-
-      // Pipe Focus/Specialization
-      if (pipe.focus && pipe.focus.length > 0) {
-        const focusMatch = pipe.focus.some(f => {
-          const focusLower = f.toLowerCase();
-          const blendTypeLower = blend.blend_type?.toLowerCase() || '';
-          const blendComponents = blend.tobacco_components || [];
-          return blendTypeLower.includes(focusLower) || 
-                 focusLower.includes(blendTypeLower) ||
-                 blendComponents.some(comp => comp.toLowerCase().includes(focusLower));
-        });
-        adjustment += focusMatch ? 5 : -2;
+      let baseScore = match?.score || 0;
+      
+      if (baseScore === 0) {
+        baseScore = calculateBasicScore(pipe, blend);
       }
+      
+      const adjustedScore = getAdjustedScore(pipe, baseScore);
+      const displayScore = userProfile ? adjustedScore : baseScore;
 
-      // User Profile Preferences
-      if (userProfile) {
-        if (userProfile.preferred_blend_types?.includes(blend.blend_type)) adjustment += 2;
-        if (userProfile.strength_preference !== 'No Preference' && blend.strength === userProfile.strength_preference) adjustment += 1.5;
-        if (userProfile.pipe_size_preference !== 'No Preference' && pipe.chamber_volume === userProfile.pipe_size_preference) adjustment += 0.5;
-      }
-
-      const adjustedScore = Math.max(0, Math.min(10, baseScore + adjustment));
       return {
         pipe,
-        score: Math.round(adjustedScore * 10) / 10,
+        score: displayScore,
         reasoning: match?.reasoning || 'Compatibility based on pipe characteristics'
       };
     }).filter(m => m.score > 0).sort((a, b) => b.score - a.score);
