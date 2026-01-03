@@ -106,26 +106,27 @@ export default function PipesPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-[#e8d5b7]">My Pipes</h1>
             <p className="text-[#e8d5b7]/70 mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <PipeExporter />
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
-              className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+              className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20 flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Quick Search & Add
+              <span className="hidden sm:inline">Quick Search & Add</span>
+              <span className="sm:hidden">Quick Search</span>
             </Button>
             <Button 
               onClick={() => { setEditingPipe(null); setShowForm(true); }}
-              className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
+              className="bg-[#8b3a3a] hover:bg-[#6d2e2e] flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Pipe

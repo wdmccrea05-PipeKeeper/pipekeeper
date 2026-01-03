@@ -496,14 +496,13 @@ Return complete and accurate information based on the blend name or description 
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       <>
-                        <Camera className="w-6 h-6" />
+                        <Upload className="w-6 h-6" />
                         <span className="text-xs">Add Photo</span>
                       </>
                     )}
                     <input
                       type="file"
                       accept="image/*"
-                      capture="environment"
                       className="hidden"
                       onChange={handlePhotoUpload}
                       disabled={uploading}
@@ -562,7 +561,6 @@ Return complete and accurate information based on the blend name or description 
                     <input
                       type="file"
                       accept="image/*"
-                      capture="environment"
                       className="hidden"
                       onChange={handleLogoUpload}
                       disabled={uploadingLogo}

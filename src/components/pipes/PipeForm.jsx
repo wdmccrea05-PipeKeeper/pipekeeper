@@ -306,14 +306,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  <Camera className="w-6 h-6" />
+                  <Upload className="w-6 h-6" />
                   <span className="text-xs">Add Photo</span>
                 </>
               )}
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 multiple
                 className="hidden"
                 onChange={(e) => handlePhotoUpload(e, false)}
