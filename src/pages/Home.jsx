@@ -239,7 +239,7 @@ export default function HomePage() {
   }
   
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  const totalTins = safeBlends.reduce((sum, b) => sum + (b?.quantity_owned || 0), 0);
+  const totalCellaredTins = safeBlends.reduce((sum, b) => sum + (b?.tin_tins_cellared || 0), 0);
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
   const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
   const recentPipes = safePipes.slice(0, 4);
@@ -390,8 +390,8 @@ export default function HomePage() {
             <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
               <CardContent className="p-3 sm:p-6 text-center">
                 <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{totalTins}</p>
-                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Tins</p>
+                <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{totalCellaredTins}</p>
+                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Cellared Tins</p>
               </CardContent>
             </Card>
           </motion.div>
