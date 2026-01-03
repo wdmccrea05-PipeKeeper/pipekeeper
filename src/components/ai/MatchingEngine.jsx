@@ -230,7 +230,7 @@ Provide recommendations in JSON format with:
                     </Badge>
                   ))}
                 </div>
-                <p className="text-stone-600">{recommendations.reasoning}</p>
+                <p className="text-stone-600">{recommendations.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
               </CardContent>
             </Card>
 
@@ -246,27 +246,37 @@ Provide recommendations in JSON format with:
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.from_collection.map((blend, idx) => (
-                      <div 
-                        key={idx} 
-                        className="p-4 rounded-lg bg-emerald-50 border border-emerald-200"
-                      >
-                        <div className="flex items-start gap-3">
-                          <img 
-                            src={getTobaccoLogo(blend.manufacturer, customLogos)} 
-                            alt={blend.manufacturer}
-                            className="w-16 h-8 object-contain rounded shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
-                            <p className="text-sm text-stone-600 mt-1">{blend.reasoning}</p>
-                          </div>
-                          <Badge className="bg-emerald-600 text-white shrink-0">
-                            {blend.score}/10
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+                    {recommendations.from_collection.map((blend, idx) => {
+                     const userBlend = blends.find(b => 
+                       b.manufacturer?.toLowerCase() === blend.manufacturer?.toLowerCase() &&
+                       b.name?.toLowerCase() === blend.name?.toLowerCase()
+                     );
+                     const imageUrl = userBlend?.photo || userBlend?.logo || getTobaccoLogo(blend.manufacturer, customLogos);
+
+                     return (
+                       <div 
+                         key={idx} 
+                         className="p-4 rounded-lg bg-emerald-50 border border-emerald-200"
+                       >
+                         <div className="flex items-start gap-3">
+                           <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                             <img 
+                               src={imageUrl}
+                               alt={blend.manufacturer}
+                               className={userBlend?.photo ? "w-full h-full object-cover" : "w-full h-full object-contain p-1"}
+                             />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
+                             <p className="text-sm text-stone-600 mt-1">{blend.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                           </div>
+                           <Badge className="bg-emerald-600 text-white shrink-0">
+                             {blend.score}/10
+                           </Badge>
+                         </div>
+                       </div>
+                     );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -296,9 +306,9 @@ Provide recommendations in JSON format with:
                             className="w-16 h-8 object-contain rounded shrink-0"
                           />
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-stone-800">{product.manufacturer} - {product.name}</h4>
-                            <p className="text-xs text-stone-500 mt-0.5">{product.blend_type}</p>
-                            <p className="text-sm text-stone-600 mt-2">{product.description}</p>
+                           <h4 className="font-semibold text-stone-800">{product.manufacturer} - {product.name}</h4>
+                           <p className="text-xs text-stone-500 mt-0.5">{product.blend_type}</p>
+                           <p className="text-sm text-stone-600 mt-2">{product.description?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
                           </div>
                           <Badge className="bg-violet-600 text-white shrink-0">
                             {product.score}/10
@@ -317,7 +327,7 @@ Provide recommendations in JSON format with:
                 <CardTitle className="text-lg">Smoking Tips</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-stone-600">{recommendations.smoking_tips}</p>
+                <p className="text-stone-600">{recommendations.smoking_tips?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
               </CardContent>
             </Card>
 
