@@ -326,14 +326,17 @@ export default function CommunityPage() {
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Select
-                        value={locationFilters.country}
-                        onValueChange={(value) => setLocationFilters({...locationFilters, country: value})}
+                        value={locationFilters.country || "__ALL__"}
+                        onValueChange={(value) => setLocationFilters({
+                          ...locationFilters, 
+                          country: value === "__ALL__" ? "" : value
+                        })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select country..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={null}>All Countries</SelectItem>
+                          <SelectItem value="__ALL__">All Countries</SelectItem>
                           <SelectItem value="United States">United States</SelectItem>
                           <SelectItem value="Canada">Canada</SelectItem>
                           <SelectItem value="United Kingdom">United Kingdom</SelectItem>

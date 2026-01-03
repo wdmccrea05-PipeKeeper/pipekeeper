@@ -265,7 +265,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={publicProfiles.find(p => p.user_email === selectedFriend)?.avatar_url} />
                   <AvatarFallback className="bg-amber-200 text-amber-800">
-                    {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name?.[0] || selectedFriend?.[0].toUpperCase()}
+                    {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name?.[0] || selectedFriend?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <Circle 
