@@ -99,8 +99,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         if (oldLog.is_break_in && oldLog.pipe_id) {
           const freshOldPipes = await base44.entities.Pipe.filter({ id: oldLog.pipe_id });
           const oldPipe = freshOldPipes[0];
-          if (oldPipe?.break_in_schedule) {
-            const updatedSchedule = oldPipe.break_in_schedule.map(item => {
+          const oldSchedule = Array.isArray(oldPipe?.break_in_schedule) ? oldPipe.break_in_schedule : [];
+          if (oldSchedule.length > 0) {
+            const updatedSchedule = oldSchedule.map(item => {
               if (scheduleMatches(item, oldLog.blend_id, oldLog.blend_name)) {
                 return {
                   ...item,
@@ -178,8 +179,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       if (log?.is_break_in && log?.pipe_id) {
         const freshPipes = await base44.entities.Pipe.filter({ id: log.pipe_id });
         const pipe = freshPipes[0];
-        if (pipe?.break_in_schedule) {
-          const updatedSchedule = pipe.break_in_schedule.map(item => {
+        const currentSchedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
+        if (currentSchedule.length > 0) {
+          const updatedSchedule = currentSchedule.map(item => {
             if (scheduleMatches(item, log.blend_id, log.blend_name)) {
               return {
                 ...item,
