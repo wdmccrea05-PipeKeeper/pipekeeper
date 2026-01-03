@@ -78,7 +78,54 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const updateLogMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.SmokingLog.update(id, data),
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
+      // Update break-in schedule when log is edited
+      const oldLog = logs.find(l => l.id === variables.id);
+      const newData = variables.data;
+      
+      // If break-in status or bowl count changed, update the pipe's schedule
+      if (oldLog && (oldLog.is_break_in !== newData.is_break_in || 
+                     oldLog.bowls_smoked !== newData.bowls_smoked ||
+                     oldLog.blend_id !== newData.blend_id ||
+                     oldLog.pipe_id !== newData.pipe_id)) {
+        
+        // Remove contribution from old pipe/blend
+        if (oldLog.is_break_in && oldLog.pipe_id) {
+          const oldPipe = pipes.find(p => p.id === oldLog.pipe_id);
+          if (oldPipe?.break_in_schedule) {
+            const updatedSchedule = oldPipe.break_in_schedule.map(item => {
+              if (item.blend_id === oldLog.blend_id) {
+                return {
+                  ...item,
+                  bowls_completed: Math.max(0, (item.bowls_completed || 0) - oldLog.bowls_smoked)
+                };
+              }
+              return item;
+            });
+            await base44.entities.Pipe.update(oldPipe.id, { break_in_schedule: updatedSchedule });
+          }
+        }
+        
+        // Add contribution to new pipe/blend
+        if (newData.is_break_in && newData.pipe_id) {
+          const newPipe = pipes.find(p => p.id === newData.pipe_id);
+          if (newPipe?.break_in_schedule) {
+            const updatedSchedule = newPipe.break_in_schedule.map(item => {
+              if (item.blend_id === newData.blend_id) {
+                return {
+                  ...item,
+                  bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked
+                };
+              }
+              return item;
+            });
+            await base44.entities.Pipe.update(newPipe.id, { break_in_schedule: updatedSchedule });
+          }
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
       setEditingLog(null);
     },
