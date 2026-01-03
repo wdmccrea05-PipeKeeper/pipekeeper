@@ -247,54 +247,49 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
         const pipe = freshPipes[0];
 
-        if (!pipe?.id) return;
+        // If pipe isn't found, skip schedule update but DO NOT abort the onSuccess flow
+        if (pipe?.id) {
+          const bowlsToAdd = Number(variables.bowls_smoked || 1);
 
-        const norm = (s) => (s || '').trim().toLowerCase();
-        const bowlsToAdd = Number(variables.bowls_smoked || 1);
+          const schedule = Array.isArray(pipe.break_in_schedule) ? pipe.break_in_schedule : [];
 
-        // Use existing schedule or start a new one
-        const schedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
-
-        // Try to match by ID first, then fallback to name (in case older schedules have bad IDs)
-        const matchIndex = schedule.findIndex((item) =>
-          (item?.blend_id && item.blend_id === variables.blend_id) ||
-          (item?.blend_name && variables.blend_name && norm(item.blend_name) === norm(variables.blend_name))
-        );
-
-        let updatedSchedule;
-
-        if (matchIndex >= 0) {
-          // Increment bowls_completed on existing item
-          updatedSchedule = schedule.map((item, idx) => {
-            if (idx !== matchIndex) return item;
-            return {
-              ...item,
-              bowls_completed: (item.bowls_completed || 0) + bowlsToAdd,
-            };
-          });
-        } else {
-          // Append a new schedule item for this blend
-          const blendName =
+          // Resolve blend name once so matching works even if variables.blend_name is missing
+          const resolvedBlendName =
             variables.blend_name ||
             blends.find((b) => b.id === variables.blend_id)?.name ||
-            'Unknown Blend';
+            '';
 
-          const newItem = {
-            blend_id: variables.blend_id,
-            blend_name: blendName,
-            suggested_bowls: 5,
-            bowls_completed: bowlsToAdd,
-            reasoning: 'Added automatically from a break-in smoking log entry.',
-          };
+          const matchIndex = schedule.findIndex((item) =>
+            scheduleMatches(item, variables.blend_id, resolvedBlendName)
+          );
 
-          updatedSchedule = [...schedule, newItem];
+          let updatedSchedule;
+
+          if (matchIndex >= 0) {
+            updatedSchedule = schedule.map((item, idx) =>
+              idx !== matchIndex
+                ? item
+                : { ...item, bowls_completed: (item.bowls_completed || 0) + bowlsToAdd }
+            );
+          } else {
+            updatedSchedule = [
+              ...schedule,
+              {
+                blend_id: variables.blend_id,
+                blend_name: resolvedBlendName || 'Unknown Blend',
+                suggested_bowls: 5,
+                bowls_completed: bowlsToAdd,
+                reasoning: 'Added automatically from a break-in smoking log entry.',
+              },
+            ];
+          }
+
+          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+
+          // Refresh list + pipe detail
+          queryClient.invalidateQueries({ queryKey: ['pipes'] });
+          queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
         }
-
-        await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
-
-        // Refresh both list + pipe detail views
-        queryClient.invalidateQueries({ queryKey: ['pipes'] });
-        queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
       }
       
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });

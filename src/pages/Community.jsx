@@ -432,7 +432,7 @@ export default function CommunityPage() {
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile.avatar_url} />
                           <AvatarFallback className="bg-amber-200 text-amber-800">
-                            {profile.display_name?.[0] || profile.user_email[0].toUpperCase()}
+                            {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
@@ -575,7 +575,7 @@ export default function CommunityPage() {
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={profile?.avatar_url} />
                               <AvatarFallback className="bg-amber-200 text-amber-800">
-                                {profile?.display_name?.[0] || friendEmail[0].toUpperCase()}
+                                {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
@@ -641,7 +641,7 @@ export default function CommunityPage() {
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={profile?.avatar_url} />
                               <AvatarFallback className="bg-amber-200 text-amber-800">
-                                {profile?.display_name?.[0] || request.requester_email[0].toUpperCase()}
+                                {profile?.display_name?.[0] || request.requester_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
@@ -702,7 +702,7 @@ export default function CommunityPage() {
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={profile?.avatar_url} />
                           <AvatarFallback className="bg-amber-200 text-amber-800">
-                            {profile?.display_name?.[0] || connection.following_email[0].toUpperCase()}
+                            {profile?.display_name?.[0] || connection.following_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

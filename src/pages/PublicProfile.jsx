@@ -277,7 +277,7 @@ export default function PublicProfilePage() {
               >
                 <AvatarImage src={profile.avatar_url} />
                 <AvatarFallback className="bg-amber-200 text-amber-800 text-2xl">
-                  {profile.display_name?.[0] || profile.user_email[0].toUpperCase()}
+                  {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
