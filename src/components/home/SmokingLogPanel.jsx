@@ -161,14 +161,46 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
     onSuccess: async (createdLog, variables) => {
+      // Reduce tobacco inventory
       if (autoReduceInventory && variables.tobaccoUsed > 0) {
         const blend = blends.find(b => b.id === variables.blend_id);
         if (blend) {
-          const newCellaredAmount = Math.max(0, (blend.cellared_amount || 0) - variables.tobaccoUsed);
-          await updateBlendMutation.mutateAsync({
-            id: blend.id,
-            data: { cellared_amount: newCellaredAmount }
-          });
+          // Reduce from opened inventory first
+          let remaining = variables.tobaccoUsed;
+          const updateData = {};
+          
+          // Try to reduce from open bulk first
+          if (blend.bulk_open > 0 && remaining > 0) {
+            const toReduce = Math.min(blend.bulk_open, remaining);
+            updateData.bulk_open = Math.max(0, blend.bulk_open - toReduce);
+            updateData.bulk_total_quantity_oz = Math.max(0, (blend.bulk_total_quantity_oz || 0) - toReduce);
+            remaining -= toReduce;
+          }
+          
+          // Then open tins (convert to oz and reduce)
+          if (blend.tin_tins_open > 0 && remaining > 0 && blend.tin_size_oz) {
+            const tinCapacity = blend.tin_size_oz;
+            const tinsToReduce = Math.ceil(remaining / tinCapacity);
+            const actualReduction = Math.min(tinsToReduce, blend.tin_tins_open);
+            updateData.tin_tins_open = Math.max(0, blend.tin_tins_open - actualReduction);
+            updateData.tin_total_tins = Math.max(0, (blend.tin_total_tins || 0) - actualReduction);
+            updateData.tin_total_quantity_oz = Math.max(0, (blend.tin_total_quantity_oz || 0) - (actualReduction * tinCapacity));
+            remaining -= (actualReduction * tinCapacity);
+          }
+          
+          // Then open pouches
+          if (blend.pouch_pouches_open > 0 && remaining > 0 && blend.pouch_size_oz) {
+            const pouchCapacity = blend.pouch_size_oz;
+            const pouchesToReduce = Math.ceil(remaining / pouchCapacity);
+            const actualReduction = Math.min(pouchesToReduce, blend.pouch_pouches_open);
+            updateData.pouch_pouches_open = Math.max(0, blend.pouch_pouches_open - actualReduction);
+            updateData.pouch_total_pouches = Math.max(0, (blend.pouch_total_pouches || 0) - actualReduction);
+            updateData.pouch_total_quantity_oz = Math.max(0, (blend.pouch_total_quantity_oz || 0) - (actualReduction * pouchCapacity));
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
+          }
         }
       }
       
