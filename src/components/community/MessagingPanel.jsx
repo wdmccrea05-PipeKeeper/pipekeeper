@@ -226,7 +226,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={profile?.avatar_url} />
                         <AvatarFallback className="bg-amber-200 text-amber-800">
-                          {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase()}
+                          {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <Circle 
@@ -385,7 +385,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={profile?.avatar_url} />
                                 <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
-                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase()}
+                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
@@ -431,7 +431,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={profile?.avatar_url} />
                                 <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
-                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase()}
+                                  {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
