@@ -1,4 +1,5 @@
 import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Layout from "../Layout";
 import Home from "./Home";
@@ -44,6 +45,8 @@ const ROUTES_LOWER = Object.fromEntries(
   Object.entries(ROUTES).map(([k, v]) => [k.toLowerCase(), v])
 );
 
+const queryClient = new QueryClient();
+
 export default function Pages() {
   const path = window.location.pathname || "/";
 
@@ -63,8 +66,10 @@ export default function Pages() {
   const currentPageName = matchedKey.replace("/", "");
 
   return (
-    <Layout currentPageName={currentPageName}>
-      <Comp />
-    </Layout>
+    <QueryClientProvider client={queryClient}>
+      <Layout currentPageName={currentPageName}>
+        <Comp />
+      </Layout>
+    </QueryClientProvider>
   );
 }
