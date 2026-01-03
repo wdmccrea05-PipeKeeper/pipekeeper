@@ -481,8 +481,52 @@ User Feedback: ${feedback}
 - Strength Preference: ${userProfile.strength_preference}`;
       }
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+      // Detect question type first
+      const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about/i.test(whatIfQuery);
+      const isCollectionQuestion = /should i buy|what if i|would adding|pipe should i|blend should i|recommend.*pipe|recommend.*blend|next pipe|improve.*collection/i.test(whatIfQuery);
+
+      if (isAdviceQuestion && !isCollectionQuestion) {
+        // General advice question - no collection impact
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
+
+You are an expert pipe smoking advisor. The user has asked for general advice that doesn't involve purchasing or modifying their collection.
+
+User's Question: ${whatIfQuery}
+
+Provide clear, expert advice covering:
+1. Step-by-step guidance if applicable
+2. Common mistakes to avoid
+3. Best practices from experienced pipe smokers
+4. Any tools or techniques that might help
+
+Be conversational, helpful, and concise. This is NOT about buying new pipes or changing collection focus - just practical smoking advice.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              advice_response: { type: "string" },
+              key_points: {
+                type: "array",
+                items: { type: "string" }
+              },
+              common_mistakes: {
+                type: "array",
+                items: { type: "string" }
+              }
+            }
+          }
+        });
+
+        setWhatIfResult({
+          is_advice_only: true,
+          advice_response: result.advice_response,
+          key_points: result.key_points,
+          common_mistakes: result.common_mistakes
+        });
+      } else {
+        // Collection impact question - full analysis
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
 You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
 
@@ -509,28 +553,29 @@ Provide a detailed "What If" analysis covering:
 5. **DETAILED REASONING**: Explain the impact on collection performance and pairing scores
 
 Be specific about which user-owned blends benefit and by how much.`,
-        file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            impact_score: { type: "number" },
-            trophy_pairings: {
-              type: "array",
-              items: { type: "string" }
-            },
-            redundancy_analysis: { type: "string" },
-            recommendation_category: { type: "string" },
-            detailed_reasoning: { type: "string" },
-            gaps_filled: {
-              type: "array",
-              items: { type: "string" }
-            },
-            score_improvements: { type: "string" }
+          file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              impact_score: { type: "number" },
+              trophy_pairings: {
+                type: "array",
+                items: { type: "string" }
+              },
+              redundancy_analysis: { type: "string" },
+              recommendation_category: { type: "string" },
+              detailed_reasoning: { type: "string" },
+              gaps_filled: {
+                type: "array",
+                items: { type: "string" }
+              },
+              score_improvements: { type: "string" }
+            }
           }
-        }
-      });
+        });
 
-      setWhatIfResult(result);
+        setWhatIfResult(result);
+      }
     } catch (err) {
       console.error('Error analyzing what-if:', err);
       alert('Failed to analyze scenario. Please try again.');
@@ -833,6 +878,46 @@ Provide concrete, actionable steps with specific field values.`,
               animate={{ opacity: 1, y: 0 }}
               className="mt-6 space-y-4"
             >
+              {whatIfResult.is_advice_only ? (
+                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                  <CardContent className="p-4 space-y-4">
+                    <div>
+                      <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
+                        {whatIfResult.advice_response}
+                      </p>
+                    </div>
+
+                    {whatIfResult.key_points?.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-blue-800 mb-2">Key Points:</p>
+                        <ul className="space-y-1">
+                          {whatIfResult.key_points.map((point, idx) => (
+                            <li key={idx} className="text-sm text-stone-600 flex gap-2">
+                              <span className="text-blue-600">•</span>
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {whatIfResult.common_mistakes?.length > 0 && (
+                      <div className="bg-rose-50 rounded-lg p-3 border border-rose-200">
+                        <p className="text-sm font-semibold text-rose-800 mb-2">Common Mistakes to Avoid:</p>
+                        <ul className="space-y-1">
+                          {whatIfResult.common_mistakes.map((mistake, idx) => (
+                            <li key={idx} className="text-sm text-rose-700 flex gap-2">
+                              <span>⚠️</span>
+                              <span>{mistake}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
                 <div>
                   <p className="text-sm font-medium text-indigo-700">Collection Impact Score</p>
@@ -957,8 +1042,10 @@ Provide concrete, actionable steps with specific field values.`,
                   )}
                 </Button>
               </div>
+                </>
+              )}
 
-              {suggestedProducts?.suggestions && (
+              {suggestedProducts?.suggestions && !whatIfResult.is_advice_only && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

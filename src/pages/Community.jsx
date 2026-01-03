@@ -510,11 +510,11 @@ export default function CommunityPage() {
 
           <TabsContent value="inbox" className="space-y-6">
             {userProfile?.enable_messaging ? (
-              acceptedFriends.length > 0 ? (
+              acceptedFriends.length > 0 && user ? (
                 <MessagingPanel 
                   user={user} 
                   friends={acceptedFriends} 
-                  publicProfiles={allPublicProfiles}
+                  publicProfiles={allPublicProfiles || []}
                 />
               ) : (
                 <Card className="bg-white/95">

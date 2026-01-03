@@ -11,11 +11,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Plus, Flame, Calendar, Info, CheckCircle, Crown } from "lucide-react";
+import { Plus, Flame, Calendar, Info, CheckCircle, Crown, Edit } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
+import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const [showAddLog, setShowAddLog] = useState(false);
+  const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [formData, setFormData] = useState({
     pipe_id: '',
@@ -74,9 +76,44 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     mutationFn: ({ id, data }) => base44.entities.TobaccoBlend.update(id, data),
   });
 
+  const updateLogMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.SmokingLog.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+    },
+  });
+
+  const deleteLogMutation = useMutation({
+    mutationFn: (id) => base44.entities.SmokingLog.delete(id),
+    onSuccess: async (_, logId) => {
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+      
+      // Update break-in schedules for affected pipe
+      const log = logs.find(l => l.id === logId);
+      if (log?.is_break_in && log?.pipe_id) {
+        const pipe = pipes.find(p => p.id === log.pipe_id);
+        if (pipe?.break_in_schedule) {
+          const updatedSchedule = pipe.break_in_schedule.map(item => {
+            if (item.blend_id === log.blend_id) {
+              return {
+                ...item,
+                bowls_completed: Math.max(0, (item.bowls_completed || 0) - log.bowls_smoked)
+              };
+            }
+            return item;
+          });
+          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+          queryClient.invalidateQueries({ queryKey: ['pipes'] });
+        }
+      }
+    },
+  });
+
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
-    onSuccess: async (_, variables) => {
+    onSuccess: async (createdLog, variables) => {
       if (autoReduceInventory && variables.tobaccoUsed > 0) {
         const blend = blends.find(b => b.id === variables.blend_id);
         if (blend) {
@@ -85,6 +122,24 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             id: blend.id,
             data: { cellared_amount: newCellaredAmount }
           });
+        }
+      }
+      
+      // Update break-in schedule if this is a break-in session
+      if (variables.is_break_in && variables.pipe_id) {
+        const pipe = pipes.find(p => p.id === variables.pipe_id);
+        if (pipe?.break_in_schedule) {
+          const updatedSchedule = pipe.break_in_schedule.map(item => {
+            if (item.blend_id === variables.blend_id) {
+              return {
+                ...item,
+                bowls_completed: (item.bowls_completed || 0) + variables.bowls_smoked
+              };
+            }
+            return item;
+          });
+          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+          queryClient.invalidateQueries({ queryKey: ['pipes'] });
         }
       }
       
@@ -160,7 +215,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               {logs.map((log) => (
                 <div 
                   key={log.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-white border border-stone-200 hover:border-orange-300 transition-colors"
+                  className="flex items-start justify-between p-3 rounded-lg bg-white border border-stone-200 hover:border-orange-300 transition-colors group"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -178,11 +233,21 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                       <p className="text-xs text-stone-600 mt-1">{log.notes}</p>
                     )}
                   </div>
-                  {log.is_break_in && (
-                    <Badge className="bg-violet-100 text-violet-800 border-violet-200 shrink-0">
-                      Break-In
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {log.is_break_in && (
+                      <Badge className="bg-violet-100 text-violet-800 border-violet-200 shrink-0">
+                        Break-In
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setEditingLog(log)}
+                    >
+                      <Edit className="w-4 h-4 text-stone-600" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -190,7 +255,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         </CardContent>
       </Card>
 
-      <Sheet open={showAddLog} onOpenChange={setShowAddLog}>
+      <Sheet open={showAddLog} onOpenChange={(open) => { setShowAddLog(open); if (!open) setEditingLog(null); }}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle>Log Smoking Session</SheetTitle>
@@ -317,6 +382,31 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               </Button>
             </div>
           </form>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={!!editingLog} onOpenChange={(open) => !open && setEditingLog(null)}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle>Edit Smoking Session</SheetTitle>
+          </SheetHeader>
+          {editingLog && (
+            <SmokingLogEditor
+              log={editingLog}
+              pipes={pipes}
+              blends={blends}
+              onSave={async (data) => {
+                await updateLogMutation.mutateAsync({ id: editingLog.id, data });
+              }}
+              onDelete={async () => {
+                if (window.confirm('Delete this smoking session?')) {
+                  await deleteLogMutation.mutateAsync(editingLog.id);
+                }
+              }}
+              onCancel={() => setEditingLog(null)}
+              isLoading={updateLogMutation.isPending || deleteLogMutation.isPending}
+            />
+          )}
         </SheetContent>
       </Sheet>
     </>

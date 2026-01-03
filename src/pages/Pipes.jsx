@@ -134,8 +134,8 @@ export default function PipesPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#e8d5b7]/60" />
             <Input
               placeholder="Search pipes..."
@@ -144,45 +144,47 @@ export default function PipesPage() {
               className="pl-10 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/50"
             />
           </div>
-          <Select value={shapeFilter} onValueChange={setShapeFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={materialFilter} onValueChange={setMaterialFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548]">
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => {
-                setViewMode('grid');
-                localStorage.setItem('pipesViewMode', 'grid');
-              }}
-              className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => {
-                setViewMode('list');
-                localStorage.setItem('pipesViewMode', 'list');
-              }}
-              className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
-            >
-              <List className="w-4 h-4" />
-            </Button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <Select value={shapeFilter} onValueChange={setShapeFilter}>
+              <SelectTrigger className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={materialFilter} onValueChange={setMaterialFilter}>
+              <SelectTrigger className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548] col-span-2 sm:col-span-1 w-fit mx-auto sm:mx-0">
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => {
+                  setViewMode('grid');
+                  localStorage.setItem('pipesViewMode', 'grid');
+                }}
+                className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => {
+                  setViewMode('list');
+                  localStorage.setItem('pipesViewMode', 'list');
+                }}
+                className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 

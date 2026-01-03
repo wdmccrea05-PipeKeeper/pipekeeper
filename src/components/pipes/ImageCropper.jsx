@@ -426,15 +426,15 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-full sm:max-w-3xl max-h-[95vh] overflow-y-auto p-3 sm:p-6">
         <DialogHeader>
           <DialogTitle>Crop & Adjust Image</DialogTitle>
-          <p className="text-sm text-stone-500">
+          <p className="text-xs sm:text-sm text-stone-500">
             Drag to move • Drag corners to resize • Use sliders to zoom and rotate
           </p>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div 
             ref={containerRef}
             className="relative bg-stone-900 rounded-lg overflow-hidden touch-none"
@@ -448,33 +448,32 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           >
             <canvas
               ref={canvasRef}
-              className="w-full h-auto cursor-move"
-              style={{ maxHeight: '500px' }}
+              className="w-full h-auto cursor-move max-h-[50vh] sm:max-h-[500px]"
             />
           </div>
 
           {/* Preset Ratios */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(16/9)} className="bg-amber-50">
-              16:9 (Default)
+          <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(16/9)} className="bg-amber-50 text-xs sm:text-sm px-2 sm:px-3">
+              16:9
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(4/3)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(4/3)} className="text-xs sm:text-sm px-2 sm:px-3">
               4:3
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(1)}>
-              <span>Square</span>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(1)} className="text-xs sm:text-sm px-2 sm:px-3">
+              Square
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={fitToCanvas}>
+            <Button type="button" variant="outline" size="sm" onClick={fitToCanvas} className="text-xs sm:text-sm px-2 sm:px-3">
               <Maximize2 className="w-3 h-3 mr-1" />
               Max
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={resetCrop}>
+            <Button type="button" variant="outline" size="sm" onClick={resetCrop} className="text-xs sm:text-sm px-2 sm:px-3">
               <RefreshCw className="w-3 h-3 mr-1" />
               Reset
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
@@ -524,15 +523,15 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-4 p-3 bg-stone-50 rounded-lg">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-2 sm:p-3 bg-stone-50 rounded-lg text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <Switch
                 checked={aspectRatioLocked}
                 onCheckedChange={setAspectRatioLocked}
               />
-              <label className="text-sm font-medium flex items-center gap-1 cursor-pointer" onClick={() => setAspectRatioLocked(!aspectRatioLocked)}>
-                {aspectRatioLocked ? <Lock className="w-4 h-4 text-amber-600" /> : <Unlock className="w-4 h-4 text-stone-400" />}
-                Lock Ratio
+              <label className="font-medium flex items-center gap-1 cursor-pointer" onClick={() => setAspectRatioLocked(!aspectRatioLocked)}>
+                {aspectRatioLocked ? <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" /> : <Unlock className="w-3 h-3 sm:w-4 sm:h-4 text-stone-400" />}
+                <span className="hidden sm:inline">Lock Ratio</span>
               </label>
             </div>
             <div className="flex items-center gap-2">
@@ -540,14 +539,14 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
                 checked={showGrid}
                 onCheckedChange={setShowGrid}
               />
-              <label className="text-sm font-medium flex items-center gap-1 cursor-pointer" onClick={() => setShowGrid(!showGrid)}>
-                <Grid3x3 className="w-4 h-4 text-amber-600" />
-                Grid
+              <label className="font-medium flex items-center gap-1 cursor-pointer" onClick={() => setShowGrid(!showGrid)}>
+                <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
+                <span className="hidden sm:inline">Grid</span>
               </label>
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-xs text-stone-500">
+          <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-stone-500">
             <Crop className="w-4 h-4" />
             <span>Drag to move • Drag handles to resize • {aspectRatioLocked ? 'Aspect locked' : 'Free-form'}</span>
           </div>
