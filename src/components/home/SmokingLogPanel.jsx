@@ -208,33 +208,56 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
       
       // Update break-in schedule if this is a break-in session
-      if (variables.is_break_in && variables.pipe_id && (variables.blend_id || variables.blend_name)) {
-        // Fetch fresh pipe data to ensure we have the latest break_in_schedule
+      if (variables.is_break_in && variables.pipe_id && variables.blend_id) {
         const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
         const pipe = freshPipes[0];
 
         const norm = (s) => (s || '').trim().toLowerCase();
+        const bowlsToAdd = Number(variables.bowls_smoked || 1);
 
-        if (pipe?.break_in_schedule && Array.isArray(pipe.break_in_schedule)) {
-          const updatedSchedule = pipe.break_in_schedule.map((item) => {
-            const matches =
-              (item.blend_id && variables.blend_id && item.blend_id === variables.blend_id) ||
-              (item.blend_name && variables.blend_name && norm(item.blend_name) === norm(variables.blend_name));
+        // Use existing schedule or start a new one
+        const schedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
 
-            if (!matches) return item;
+        // Try to match by ID first, then fallback to name (in case older schedules have bad IDs)
+        const matchIndex = schedule.findIndex((item) =>
+          (item?.blend_id && item.blend_id === variables.blend_id) ||
+          (item?.blend_name && variables.blend_name && norm(item.blend_name) === norm(variables.blend_name))
+        );
 
+        let updatedSchedule;
+
+        if (matchIndex >= 0) {
+          // Increment bowls_completed on existing item
+          updatedSchedule = schedule.map((item, idx) => {
+            if (idx !== matchIndex) return item;
             return {
               ...item,
-              bowls_completed: (item.bowls_completed || 0) + (variables.bowls_smoked || 1),
+              bowls_completed: (item.bowls_completed || 0) + bowlsToAdd,
             };
           });
+        } else {
+          // Append a new schedule item for this blend
+          const blendName =
+            variables.blend_name ||
+            blends.find((b) => b.id === variables.blend_id)?.name ||
+            'Unknown Blend';
 
-          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+          const newItem = {
+            blend_id: variables.blend_id,
+            blend_name: blendName,
+            suggested_bowls: 5,
+            bowls_completed: bowlsToAdd,
+            reasoning: 'Added automatically from a break-in smoking log entry.',
+          };
 
-          // Refresh both the list + the individual pipe (BreakInSchedule lives on PipeDetail with ['pipe', id])
-          queryClient.invalidateQueries({ queryKey: ['pipes'] });
-          queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
+          updatedSchedule = [...schedule, newItem];
         }
+
+        await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+
+        // Refresh both list + pipe detail views
+        queryClient.invalidateQueries({ queryKey: ['pipes'] });
+        queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
       }
       
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
