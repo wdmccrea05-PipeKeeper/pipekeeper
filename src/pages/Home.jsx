@@ -635,33 +635,6 @@ export default function HomePage() {
           </motion.div>
         ) : null}
 
-        {/* Import Link */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.84 }}
-          className="mb-6"
-        >
-          <a href={createPageUrl('Import')}>
-            <Card className="border-[#e8d5b7]/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10 hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-[#d4a574]" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
-                      <p className="text-xs text-[#e8d5b7]/70">Import pipes & tobacco from CSV</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
-                </div>
-              </CardContent>
-              </Card>
-              </a>
-        </motion.div>
-
         {/* Recently Added */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
           {recentPipes.length > 0 && (
