@@ -9,6 +9,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import PairingExporter from "@/components/export/PairingExporter";
+import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -57,6 +58,11 @@ export default function PairingMatrix({ pipes, blends }) {
       return profiles[0];
     },
     enabled: !!user?.email,
+  });
+
+  const { data: customLogos = [] } = useQuery({
+    queryKey: ['custom-tobacco-logos'],
+    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
   });
 
   const generatePairings = async () => {
@@ -353,16 +359,26 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                                           <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
                                         )}
                                         <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
-                                          {blend?.logo || blend?.photo ? (
-                                            <img 
-                                              src={blend.logo || blend.photo} 
-                                              alt="" 
-                                              className={`w-full h-full ${blend.logo ? 'object-contain p-1' : 'object-cover'}`}
-                                              onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
-                                            />
-                                          ) : (
-                                            <span className="text-lg">🍂</span>
-                                          )}
+                                         {(() => {
+                                           const logoUrl = blend?.logo || getTobaccoLogo(blend?.manufacturer, customLogos);
+                                           return logoUrl ? (
+                                             <img 
+                                               src={logoUrl} 
+                                               alt="" 
+                                               className="w-full h-full object-contain p-1"
+                                               onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
+                                             />
+                                           ) : blend?.photo ? (
+                                             <img 
+                                               src={blend.photo} 
+                                               alt="" 
+                                               className="w-full h-full object-cover"
+                                               onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
+                                             />
+                                           ) : (
+                                             <span className="text-lg">🍂</span>
+                                           );
+                                         })()}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2">

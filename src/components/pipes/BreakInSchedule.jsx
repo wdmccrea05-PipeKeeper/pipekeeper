@@ -99,6 +99,9 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
     if (itemIndex >= 0) {
       await updateBowlsCompleted(itemIndex, (schedule[itemIndex].bowls_completed || 0) + 1);
     }
+    
+    // Invalidate smoking logs to show new entry
+    queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
   };
 
   const totalBowls = schedule.reduce((sum, s) => sum + s.suggested_bowls, 0);
