@@ -200,9 +200,19 @@ For each of the 3 NEW blend recommendations, provide:
               <div key={idx} className="p-3 rounded-lg bg-white border border-violet-200">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center shrink-0">
-                      <span className="text-lg">🍂</span>
-                    </div>
+                   <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shrink-0 p-1">
+                     {(() => {
+                       const blend = blends.find(b => 
+                         b.manufacturer?.toLowerCase() === match.manufacturer?.toLowerCase() &&
+                         b.name?.toLowerCase() === match.blend_name?.toLowerCase()
+                       );
+                       return blend?.logo ? (
+                         <img src={blend.logo} alt="" className="w-full h-full object-contain" />
+                       ) : (
+                         <span className="text-lg">🍂</span>
+                       );
+                     })()}
+                   </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-stone-800">{match.manufacturer} - {match.blend_name}</p>
                       <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>

@@ -13,7 +13,7 @@ import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false }) {
+export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   const [loading, setLoading] = useState(false);
   const [optimization, setOptimization] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -481,11 +481,11 @@ User Feedback: ${feedback}
 - Strength Preference: ${userProfile.strength_preference}`;
       }
 
-      // Detect question type first
-      const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about/i.test(whatIfQuery);
-      const isCollectionQuestion = /should i buy|what if i|would adding|pipe should i|blend should i|recommend.*pipe|recommend.*blend|next pipe|improve.*collection/i.test(whatIfQuery);
+      // Detect question type first (improved detection)
+      const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
+      const isCollectionQuestion = /should i buy|what if i (buy|add|get)|would adding|pipe should i|blend should i|recommend.*pipe|recommend.*blend|next pipe|improve.*collection|what pipe|which pipe|add.*pipe|purchase|acquire/i.test(whatIfQuery);
 
-      if (isAdviceQuestion && !isCollectionQuestion) {
+      if (improvedWhatIf && isAdviceQuestion && !isCollectionQuestion) {
         // General advice question - no collection impact
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
@@ -800,7 +800,9 @@ Provide concrete, actionable steps with specific field values.`,
               Your Question or Scenario
             </label>
             <Textarea
-              placeholder="e.g., 'Should I buy a Peterson System pipe for English blends?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"
+              placeholder={improvedWhatIf 
+                ? "e.g., 'How do I clean my pipe?' or 'What pipe should I add for English blends?'" 
+                : "e.g., 'Should I buy a Peterson System pipe for English blends?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"}
               value={whatIfQuery}
               onChange={(e) => setWhatIfQuery(e.target.value)}
               className="min-h-[80px]"
