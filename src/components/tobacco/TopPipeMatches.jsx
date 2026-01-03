@@ -272,7 +272,7 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-[#8b3a3a] text-lg">#{idx + 1}</span>
+                          <span className="font-bold text-[#e8d5b7] text-lg">#{idx + 1}</span>
                           <span className="font-semibold text-[#e8d5b7]">{match.pipe_name}</span>
                           <Badge className={getScoreColor(match.match_score)}>
                             {match.match_score}/10
