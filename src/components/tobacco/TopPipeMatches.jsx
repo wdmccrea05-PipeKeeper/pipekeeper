@@ -199,13 +199,13 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
   if (pipes.length === 0) return null;
 
   return (
-    <Card className="border-[#e8d5b7]/30 bg-white/80">
+    <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
       <CardContent className="p-4">
         {!matches || matches.length === 0 ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#8b3a3a]" />
-              <span className="text-sm text-[#e8d5b7]">Find best pipe matches for this blend</span>
+              <span className="text-sm text-[#e8d5b7]/90 font-medium">Find best pipe matches for this blend</span>
             </div>
             <Button
               size="sm"
@@ -231,14 +231,14 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#8b3a3a]" />
-                <span className="font-semibold text-[#e8d5b7]">Top Pipe Matches</span>
+                <span className="font-bold text-[#e8d5b7] text-base">Top Pipe Matches</span>
               </div>
               <div className="flex gap-2">
                 <Button 
                   size="sm" 
                   variant="ghost"
                   onClick={() => setCollapsed(!collapsed)}
-                  className="text-[#e8d5b7] hover:text-[#e8d5b7]/80"
+                  className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
                 >
                   {collapsed ? 'Show' : 'Hide'}
                 </Button>
@@ -247,7 +247,7 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                   variant="ghost" 
                   onClick={findMatches}
                   disabled={loading}
-                  className="text-[#e8d5b7] hover:text-[#e8d5b7]/80"
+                  className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Refresh'}
                 </Button>
@@ -262,8 +262,8 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
 
                 return (
                   <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
-                    <div className="flex items-start gap-3 p-3 rounded-lg border border-[#e8d5b7]/30 hover:border-[#8b3a3a]/50 hover:bg-[#8b3a3a]/10 transition-all cursor-pointer">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-[#8b3a3a]/30 hover:border-[#8b3a3a] hover:bg-[#8b3a3a]/15 transition-all cursor-pointer">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1a2c42] to-[#243548] border border-[#8b3a3a]/20 overflow-hidden flex items-center justify-center shrink-0">
                         {pipe.photos?.[0] ? (
                           <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -272,13 +272,13 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-semibold text-[#e8d5b7]">#{idx + 1}</span>
-                          <span className="font-medium text-[#e8d5b7]">{match.pipe_name}</span>
+                          <span className="font-bold text-[#8b3a3a] text-lg">#{idx + 1}</span>
+                          <span className="font-semibold text-[#e8d5b7]">{match.pipe_name}</span>
                           <Badge className={getScoreColor(match.match_score)}>
                             {match.match_score}/10
                           </Badge>
                         </div>
-                        <p className="text-xs text-[#e8d5b7]/70">{match.reasoning}</p>
+                        <p className="text-xs text-[#e8d5b7]/80 leading-relaxed">{match.reasoning}</p>
                       </div>
                     </div>
                   </a>
