@@ -245,6 +245,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
         if (!pipe?.id) return;
 
+        const norm = (s) => (s || '').trim().toLowerCase();
         const bowlsToAdd = Number(variables.bowls_smoked || 1);
 
         // Use existing schedule or start a new one
