@@ -158,6 +158,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         
         queryClient.invalidateQueries({ queryKey: ['pipes'] });
       }
+
+      if (oldLog?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', oldLog.pipe_id] });
+      if (newData?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', newData.pipe_id] });
       
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
       setEditingLog(null);
@@ -187,6 +190,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           });
           await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
           queryClient.invalidateQueries({ queryKey: ['pipes'] });
+          queryClient.invalidateQueries({ queryKey: ['pipe', log.pipe_id] });
         }
       }
     },
