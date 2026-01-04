@@ -555,5 +555,6 @@ export default function PairingGrid({ pipes, blends }) {
         }
       `}</style>
     </Card>
+    </>
   );
 }

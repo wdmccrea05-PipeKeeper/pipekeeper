@@ -418,5 +418,6 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
         </CardContent>
       )}
     </Card>
+    </>
   );
 }
