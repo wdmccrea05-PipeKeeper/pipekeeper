@@ -50,6 +50,7 @@ export default function ProfilePage() {
     is_public: false,
     allow_comments: true,
     enable_messaging: false,
+    allow_web_lookups: true,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
     preferred_blend_types: [],
@@ -117,6 +118,7 @@ export default function ProfilePage() {
         is_public: profile.is_public || false,
         allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
         enable_messaging: profile.enable_messaging || false,
+        allow_web_lookups: profile.allow_web_lookups !== false,
         clenching_preference: profile.clenching_preference || "Sometimes",
         smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -485,6 +487,19 @@ export default function ProfilePage() {
                       Enable instant messaging with friends (Premium)
                     </Label>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="allow_web_lookups"
+                      checked={formData.allow_web_lookups !== false}
+                      onChange={(e) => setFormData({...formData, allow_web_lookups: e.target.checked})}
+                      className="w-4 h-4 rounded border-stone-300"
+                    />
+                    <Label htmlFor="allow_web_lookups" className="text-sm text-stone-700 cursor-pointer flex items-center gap-1">
+                      <Globe className="w-3 h-3" />
+                      Allow AI to use external web lookups for enrichment
+                    </Label>
+                  </div>
 
 
                   <div className="pt-4 border-t space-y-4">
@@ -719,11 +734,67 @@ export default function ProfilePage() {
           </Card>
         </motion.div>
 
-        {/* Logout Section */}
+        {/* Data Management Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="mt-6"
+        >
+          <Card className="border-blue-200 bg-white">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-blue-600" />
+                <CardTitle className="text-lg text-stone-800">Data Management</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-stone-600 mb-3">
+                Clear old AI-generated versions (pairings, schedules, optimizations)
+              </p>
+              <Button
+                variant="outline"
+                className="w-full justify-start border-blue-200 text-blue-700 hover:bg-blue-50"
+                onClick={async () => {
+                  if (!confirm('Delete all AI artifact history? Current versions will be kept. This cannot be undone.')) return;
+                  
+                  try {
+                    const pairings = await base44.entities.PairingMatrix.filter({ created_by: user?.email });
+                    for (const p of pairings) {
+                      if (!p.is_active) await base44.entities.PairingMatrix.delete(p.id);
+                    }
+                    
+                    const opts = await base44.entities.CollectionOptimization.filter({ created_by: user?.email });
+                    for (const o of opts) {
+                      if (!o.is_active) await base44.entities.CollectionOptimization.delete(o.id);
+                    }
+                    
+                    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+                    for (const pipe of pipes) {
+                      if (pipe.break_in_schedule_history?.length > 0) {
+                        await base44.entities.Pipe.update(pipe.id, { break_in_schedule_history: [] });
+                      }
+                    }
+                    
+                    queryClient.invalidateQueries();
+                    alert('AI history cleared successfully');
+                  } catch (err) {
+                    alert('Error: ' + err.message);
+                  }
+                }}
+              >
+                <Database className="w-4 h-4 mr-2" />
+                Delete Old AI Versions
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Logout Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
           className="mt-6"
         >
           <Card className="border-rose-200 bg-white">
@@ -770,7 +841,7 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.3 }}
           className="mt-6"
         >
           <Card className="bg-white/95 border-rose-200">
@@ -795,7 +866,7 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
           className="mt-6"
         >
           <Card className="border-stone-200/60 bg-white/50">
