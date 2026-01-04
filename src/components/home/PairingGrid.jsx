@@ -564,11 +564,8 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
           </div>
         </CardContent>
       )}
-    </Card>
-  );
-}
 
-/* Removed closing tags - added above */
+      <style jsx global>{`
         @media print {
           body * {
             visibility: hidden;
@@ -592,6 +589,5 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
         }
       `}</style>
     </Card>
-    </>
   );
 }
