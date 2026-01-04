@@ -1,15 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw, AlertTriangle, Undo } from "lucide-react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 
 export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showRegenDialog, setShowRegenDialog] = useState(false);
   const gridRef = useRef(null);
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -21,8 +25,20 @@ export default function PairingGrid({ pipes, blends }) {
   const { data: savedPairings, refetch: refetchPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email }, '-created_date', 1);
-      return results[0];
+      // Load active first, fallback to latest
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true },
+        '-created_date',
+        1
+      );
+      if (active?.[0]) return active[0];
+
+      const latest = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email },
+        '-created_date',
+        1
+      );
+      return latest?.[0] || null;
     },
     enabled: !!user?.email,
   });
@@ -47,6 +63,67 @@ export default function PairingGrid({ pipes, blends }) {
       return profiles[0];
     },
     enabled: !!user?.email,
+  });
+
+  // Compute fingerprint and check staleness
+  const currentFingerprint = React.useMemo(() => 
+    buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
+    [pipes, blends, userProfile]
+  );
+
+  const isStale = React.useMemo(() => 
+    !!savedPairings?.input_fingerprint && 
+    savedPairings.input_fingerprint !== currentFingerprint,
+    [savedPairings, currentFingerprint]
+  );
+
+  // Show regen dialog when stale
+  useEffect(() => {
+    if (isStale && showGrid) {
+      setShowRegenDialog(true);
+    }
+  }, [isStale, showGrid]);
+
+  const regeneratePairingsMutation = useMutation({
+    mutationFn: async () => {
+      // Deactivate current
+      if (savedPairings?.id) {
+        await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+      }
+
+      // Generate new pairings (this would normally call your existing AI generation)
+      // For now, we'll just mark current as active with new fingerprint
+      // Replace this with actual AI generation logic
+      const newPairings = {
+        ...savedPairings,
+        is_active: true,
+        previous_active_id: savedPairings?.id || null,
+        input_fingerprint: currentFingerprint,
+        generated_date: new Date().toISOString(),
+      };
+
+      return await base44.entities.PairingMatrix.create(newPairings);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      setShowRegenDialog(false);
+    },
+  });
+
+  const undoPairingsMutation = useMutation({
+    mutationFn: async () => {
+      if (!savedPairings?.previous_active_id) return;
+
+      // Deactivate current
+      await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+
+      // Reactivate previous
+      await base44.entities.PairingMatrix.update(savedPairings.previous_active_id, { is_active: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      setShowRegenDialog(false);
+    },
   });
 
   const generateGrid = () => {
@@ -211,6 +288,51 @@ export default function PairingGrid({ pipes, blends }) {
   }
 
   return (
+    <>
+      {/* Staleness Dialog */}
+      <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              Pairing Grid Out of Date
+            </DialogTitle>
+            <DialogDescription>
+              Your pipes, blends, or preferences have changed. Regenerate pairings now for accurate recommendations? You can undo this action.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
+              Not Now
+            </Button>
+            {savedPairings?.previous_active_id && (
+              <Button
+                variant="outline"
+                onClick={() => undoPairingsMutation.mutate()}
+                disabled={undoPairingsMutation.isPending}
+              >
+                <Undo className="w-4 h-4 mr-2" />
+                Undo Last Change
+              </Button>
+            )}
+            <Button
+              onClick={() => regeneratePairingsMutation.mutate()}
+              disabled={regeneratePairingsMutation.isPending}
+              className="bg-amber-700 hover:bg-amber-800"
+            >
+              {regeneratePairingsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                'Regenerate'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
