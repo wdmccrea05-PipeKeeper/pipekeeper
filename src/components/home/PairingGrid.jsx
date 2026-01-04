@@ -565,29 +565,6 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
         </CardContent>
       )}
 
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print\\:block {
-            display: block !important;
-          }
-          table, table * {
-            visibility: visible;
-          }
-          table {
-            position: absolute;
-            left: 0;
-            top: 0;
-            page-break-inside: auto;
-          }
-          tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-          }
-        }
-      `}</style>
     </Card>
   );
 }
