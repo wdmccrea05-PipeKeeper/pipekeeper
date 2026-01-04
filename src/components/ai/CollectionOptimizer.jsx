@@ -119,12 +119,17 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
         await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });
       }
 
+      // Create clean payload with only intended fields
       return base44.entities.CollectionOptimization.create({
-        ...data,
         created_by: user?.email,
         is_active: true,
         previous_active_id: savedOptimization?.id || null,
         input_fingerprint: currentFingerprint,
+        pipe_specializations: data.pipe_specializations,
+        collection_gaps: data.collection_gaps,
+        priority_focus_changes: data.priority_focus_changes,
+        next_pipe_recommendations: data.next_pipe_recommendations,
+        generated_date: data.generated_date,
       });
     },
     onSuccess: () => {
@@ -134,7 +139,9 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 
   const undoOptimizationMutation = useMutation({
     mutationFn: async () => {
-      if (!savedOptimization?.previous_active_id) return;
+      if (!savedOptimization?.previous_active_id) {
+        throw new Error('No previous version to undo to');
+      }
 
       // Deactivate current
       await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });

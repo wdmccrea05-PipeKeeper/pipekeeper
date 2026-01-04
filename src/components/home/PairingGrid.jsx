@@ -218,7 +218,9 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
 
   const undoPairingsMutation = useMutation({
     mutationFn: async () => {
-      if (!savedPairings?.previous_active_id) return;
+      if (!savedPairings?.previous_active_id) {
+        throw new Error('No previous version to undo to');
+      }
 
       // Deactivate current
       await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
