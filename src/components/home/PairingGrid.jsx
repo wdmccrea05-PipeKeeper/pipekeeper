@@ -564,8 +564,11 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
           </div>
         </CardContent>
       )}
+    </Card>
+  );
+}
 
-      <style jsx global>{`
+/* Removed closing tags - added above */
         @media print {
           body * {
             visibility: hidden;
