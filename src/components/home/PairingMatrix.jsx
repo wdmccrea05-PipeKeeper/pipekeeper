@@ -71,8 +71,7 @@ export default function PairingMatrix({ pipes, blends }) {
   );
 
   const isStale = React.useMemo(() => 
-    !!savedPairings?.input_fingerprint && 
-    savedPairings.input_fingerprint !== currentFingerprint,
+    !!savedPairings && (!savedPairings.input_fingerprint || savedPairings.input_fingerprint !== currentFingerprint),
     [savedPairings, currentFingerprint]
   );
 
