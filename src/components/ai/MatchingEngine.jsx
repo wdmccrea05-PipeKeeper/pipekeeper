@@ -29,9 +29,18 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
     mutationFn: async () => {
       if (!recommendations?.ideal_blend_types?.length) return;
       
+      // Update pipe focus
       await base44.entities.Pipe.update(pipe.id, {
         focus: recommendations.ideal_blend_types
       });
+      
+      // Mark existing pairing matrices as stale by clearing is_active
+      const existingPairings = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true }
+      );
+      for (const pairing of existingPairings) {
+        await base44.entities.PairingMatrix.update(pairing.id, { is_active: false });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipe', pipe.id] });
