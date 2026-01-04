@@ -94,8 +94,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   );
 
   const isStale = React.useMemo(() => 
-    !!savedOptimization?.input_fingerprint && 
-    savedOptimization.input_fingerprint !== currentFingerprint,
+    !!savedOptimization && (!savedOptimization.input_fingerprint || savedOptimization.input_fingerprint !== currentFingerprint),
     [savedOptimization, currentFingerprint]
   );
 

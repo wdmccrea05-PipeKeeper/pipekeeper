@@ -43,8 +43,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   );
 
   const isStale = React.useMemo(() => 
-    !!pipe?.break_in_schedule_input_fingerprint && 
-    pipe.break_in_schedule_input_fingerprint !== currentFingerprint,
+    !!pipe?.break_in_schedule?.length && (!pipe.break_in_schedule_input_fingerprint || pipe.break_in_schedule_input_fingerprint !== currentFingerprint),
     [pipe, currentFingerprint]
   );
 
@@ -70,7 +69,11 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
       if (userProfile) {
         profileContext = `\n\nUser Smoking Preferences:
 - Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-- Strength Preference: ${userProfile.strength_preference}
+- Preferred Shapes: ${userProfile.preferred_shapes?.join(', ') || 'None'}
+- Strength Preference: ${userProfile.strength_preference || 'Not specified'}
+- Pipe Size Preference: ${userProfile.pipe_size_preference || 'Not specified'}
+- Clenching Preference: ${userProfile.clenching_preference || 'Not specified'}
+- Smoke Duration Preference: ${userProfile.smoke_duration_preference || 'Not specified'}
 - Additional Notes: ${userProfile.notes || 'None'}`;
       }
 
