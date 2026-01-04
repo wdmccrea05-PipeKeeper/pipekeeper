@@ -47,12 +47,14 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
     [pipe, currentFingerprint]
   );
 
-  // Show regen dialog when stale
+  // Only show regen dialog when user hasn't already dismissed it for this fingerprint
+  const [dismissedFingerprint, setDismissedFingerprint] = useState(null);
+
   useEffect(() => {
-    if (isStale && schedule.length > 0) {
+    if (isStale && schedule.length > 0 && currentFingerprint !== dismissedFingerprint) {
       setShowRegenDialog(true);
     }
-  }, [isStale, schedule.length]);
+  }, [isStale, schedule.length, currentFingerprint, dismissedFingerprint]);
 
   const updatePipeMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.update(pipe.id, data),
@@ -167,6 +169,8 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
           break_in_schedule_history: nextHistory,
           break_in_schedule_input_fingerprint: currentFingerprint,
         });
+        setShowRegenDialog(false);
+        setDismissedFingerprint(null);
       }
     } catch (err) {
       console.error('Error generating schedule:', err);
@@ -261,7 +265,10 @@ Return a schedule that totals 15-25 bowls for proper break-in.`,
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowRegenDialog(false);
+              setDismissedFingerprint(currentFingerprint);
+            }}>
               Not Now
             </Button>
             {pipe?.break_in_schedule_history?.[0] && (
