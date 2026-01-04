@@ -300,11 +300,13 @@ Provide recommendations in JSON format with:
                         className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
                       >
                         <div className="flex items-start gap-3">
-                          <img 
-                            src={getTobaccoLogo(product.manufacturer, customLogos)} 
-                            alt={product.manufacturer}
-                            className="w-16 h-8 object-contain rounded shrink-0"
-                          />
+                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                           <img 
+                             src={getTobaccoLogo(product.manufacturer, customLogos)} 
+                             alt={product.manufacturer}
+                             className="w-full h-full object-contain p-1"
+                           />
+                         </div>
                           <div className="flex-1 min-w-0">
                            <h4 className="font-semibold text-stone-800">{product.manufacturer} - {product.name}</h4>
                            <p className="text-xs text-stone-500 mt-0.5">{product.blend_type}</p>
