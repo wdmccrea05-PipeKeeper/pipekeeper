@@ -41,18 +41,8 @@ export default function PairingGrid({ pipes, blends }) {
     enabled: !!user?.email,
   });
 
-  // Track pipes focus changes for auto-refresh
-  const pipesFingerprint = React.useMemo(() => 
-    JSON.stringify(pipes.map(p => ({ id: p.id, focus: p.focus }))),
-    [pipes]
-  );
-
-  // Auto-refresh when pipes or blends change
-  React.useEffect(() => {
-    if (showGrid && user?.email) {
-      refetchPairings();
-    }
-  }, [pipesFingerprint, blends.length, showGrid, user?.email, refetchPairings]);
+  // Don't auto-refresh on mount or navigation - only when user explicitly requests it
+  // The staleness indicator is enough to prompt users when changes have been made
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],

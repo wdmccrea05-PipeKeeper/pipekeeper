@@ -16,7 +16,11 @@ export function hashString(str) {
 }
 
 function pickUpdated(x) {
-  return x?.updated_timestamp ?? x?.updated_date ?? x?.updated_at ?? x?.modified_date ?? null;
+  // Only use date portion to avoid false staleness from time-of-day changes
+  const timestamp = x?.updated_timestamp ?? x?.updated_date ?? x?.updated_at ?? x?.modified_date;
+  if (!timestamp) return null;
+  // Convert to date-only string to ignore time component
+  return new Date(timestamp).toISOString().split('T')[0];
 }
 
 export function buildArtifactFingerprint({ pipes = [], blends = [], profile = null }) {
