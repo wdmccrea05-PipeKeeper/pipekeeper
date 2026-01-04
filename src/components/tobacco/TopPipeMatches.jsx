@@ -23,8 +23,20 @@ export default function TopPipeMatches({ blend, pipes }) {
   const { data: savedPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email }, '-created_date', 1);
-      return results[0];
+      // Load active first, fallback to latest (same as PairingGrid)
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true },
+        '-created_date',
+        1
+      );
+      if (active?.[0]) return active[0];
+
+      const latest = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email },
+        '-created_date',
+        1
+      );
+      return latest?.[0] || null;
     },
     enabled: !!user?.email,
   });
