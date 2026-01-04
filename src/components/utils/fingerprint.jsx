@@ -44,8 +44,12 @@ export function buildArtifactFingerprint({ pipes = [], blends = [], profile = nu
           u: pickUpdated(profile),
           prefs: {
             preferred_blend_types: profile.preferred_blend_types || [],
+            preferred_shapes: profile.preferred_shapes || [],
             strength_preference: profile.strength_preference || null,
-            notes: profile.preferences_notes || null,
+            pipe_size_preference: profile.pipe_size_preference || null,
+            clenching_preference: profile.clenching_preference || null,
+            smoke_duration_preference: profile.smoke_duration_preference || null,
+            notes: profile.notes || null,
           },
         }
       : null,
