@@ -71,6 +71,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const [dataSource, setDataSource] = useState(null);
+
   const handleSearchSelect = (searchData) => {
     setFormData(prev => {
       // Merge search data, but preserve any existing photos
@@ -80,6 +82,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         ...rest
       };
     });
+    setDataSource('Web Search');
   };
 
   const handlePhotoIdentify = (identifiedData) => {
@@ -91,6 +94,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         ...rest
       };
     });
+    setDataSource('AI Photo Identification');
   };
 
 
@@ -457,7 +461,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Physical Characteristics */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg text-stone-800">Physical Characteristics</CardTitle>
+          <div>
+            <CardTitle className="text-lg text-stone-800">Physical Characteristics</CardTitle>
+            {dataSource && (
+              <p className="text-xs text-stone-500 mt-1">Data source: {dataSource}</p>
+            )}
+          </div>
           <Button
             type="button"
             variant="outline"
