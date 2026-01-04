@@ -101,7 +101,7 @@ export default function PairingMatrix({ pipes, blends }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
       setShowRegenDialog(false);
     },
   });
@@ -119,7 +119,7 @@ export default function PairingMatrix({ pipes, blends }) {
       await base44.entities.PairingMatrix.update(savedPairings.previous_active_id, { is_active: true });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
       setShowRegenDialog(false);
     },
   });
