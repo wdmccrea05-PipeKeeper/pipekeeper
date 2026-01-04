@@ -382,7 +382,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 onClick={handleNext}
                 className="bg-amber-700 hover:bg-amber-800"
                 size="sm"
-                className="sm:size-default"
               >
                 {currentStep === steps.length - 1 ? (
                   <>

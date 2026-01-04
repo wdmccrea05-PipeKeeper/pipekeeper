@@ -32,41 +32,7 @@ export default function UserReport() {
     retry: false,
   });
 
-  if (user?.role !== 'admin') {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6">
-            <p className="text-rose-800">Admin access required to view this page.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="p-6">
-            <p className="text-rose-800">Error loading report: {error.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Filter and search logic
+  // Filter and search logic - moved before early returns to avoid hook rule violation
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
 
@@ -106,6 +72,40 @@ export default function UserReport() {
 
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="p-6">
+            <p className="text-rose-800">Admin access required to view this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="p-6">
+            <p className="text-rose-800">Error loading report: {error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleSort = (column) => {
     if (sortColumn === column) {
