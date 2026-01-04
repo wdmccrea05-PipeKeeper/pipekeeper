@@ -56,6 +56,15 @@ export default function PairingMatrix({ pipes, blends }) {
     }
   }, [savedPairings]);
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
+  });
+
   const currentFingerprint = React.useMemo(
     () => buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
     [pipes, blends, userProfile]
@@ -81,15 +90,6 @@ export default function PairingMatrix({ pipes, blends }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
     },
-  });
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.email],
-    queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
-    },
-    enabled: !!user?.email,
   });
 
   const { data: customLogos = [] } = useQuery({
