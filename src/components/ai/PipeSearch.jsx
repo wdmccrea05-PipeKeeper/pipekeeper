@@ -43,6 +43,13 @@ IMPORTANT PRICING GUIDELINES - Use realistic market values:
 
 Base prices on actual current market data from estate dealers and auction results.
 
+CRITICAL DIMENSION RULES:
+- Only provide dimensions (length_mm, weight_grams, bowl_height_mm, bowl_width_mm, bowl_depth_mm, bowl_diameter_mm) if explicitly stated in manufacturer specifications or reputable retailer listings for the same model/shape
+- Do NOT estimate or infer dimensions
+- If dimensions are not found in listings, return null for each dimension field
+- Include dimensions_source (string) describing where dimensions were found
+- Include dimensions_found (boolean) indicating if any dimensions were sourced
+
 CRITICAL: Do NOT include any URLs, links, sources, citations, or website names in your response. Provide only descriptions and analysis.
 
 Return an array of relevant pipe matches with detailed information.`,
@@ -64,7 +71,15 @@ Return an array of relevant pipe matches with detailed information.`,
                   era: { type: "string" },
                   price_range_low: { type: "number" },
                   price_range_high: { type: "number" },
-                  description: { type: "string" }
+                  description: { type: "string" },
+                  length_mm: { type: ["number", "null"] },
+                  weight_grams: { type: ["number", "null"] },
+                  bowl_height_mm: { type: ["number", "null"] },
+                  bowl_width_mm: { type: ["number", "null"] },
+                  bowl_diameter_mm: { type: ["number", "null"] },
+                  bowl_depth_mm: { type: ["number", "null"] },
+                  dimensions_source: { type: ["string", "null"] },
+                  dimensions_found: { type: "boolean" }
                 }
               }
             }
@@ -83,6 +98,7 @@ Return an array of relevant pipe matches with detailed information.`,
   const handleSelectPipe = (pipe, e) => {
     e.preventDefault();
     e.stopPropagation();
+    
     // Convert the search result to form data
     const formData = {
       name: pipe.name || '',
@@ -95,6 +111,22 @@ Return an array of relevant pipe matches with detailed information.`,
       estimated_value: pipe.price_range_low || null,
       notes: pipe.description || ''
     };
+
+    // Only add dimensions if they were explicitly found
+    const dimFields = ['length_mm', 'weight_grams', 'bowl_height_mm', 'bowl_width_mm', 'bowl_diameter_mm', 'bowl_depth_mm'];
+    for (const field of dimFields) {
+      if (pipe[field] != null) {
+        formData[field] = pipe[field];
+      }
+    }
+
+    // Add dimensions source to notes if found
+    if (pipe.dimensions_source) {
+      formData.notes = [formData.notes, `Dimensions source: ${pipe.dimensions_source}`]
+        .filter(Boolean)
+        .join('\n\n');
+    }
+
     onSelect(formData);
     setResults([]);
     setQuery('');
