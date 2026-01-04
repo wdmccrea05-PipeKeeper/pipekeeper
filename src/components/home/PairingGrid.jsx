@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw, AlertTriangle, Undo } from "lucide-react";
+import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw } from "lucide-react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 
@@ -11,7 +10,6 @@ export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [showRegenDialog, setShowRegenDialog] = useState(false);
   const gridRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -75,13 +73,6 @@ export default function PairingGrid({ pipes, blends }) {
     !!savedPairings && (!savedPairings.input_fingerprint || savedPairings.input_fingerprint !== currentFingerprint),
     [savedPairings, currentFingerprint]
   );
-
-  // Show regen dialog when stale
-  useEffect(() => {
-    if (isStale) {
-      setShowRegenDialog(true);
-    }
-  }, [isStale]);
 
   const regeneratePairingsMutation = useMutation({
     mutationFn: async () => {
@@ -211,25 +202,6 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
-      setShowRegenDialog(false);
-    },
-  });
-
-  const undoPairingsMutation = useMutation({
-    mutationFn: async () => {
-      if (!savedPairings?.previous_active_id) {
-        throw new Error('No previous version to undo to');
-      }
-
-      // Deactivate current
-      await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
-
-      // Reactivate previous
-      await base44.entities.PairingMatrix.update(savedPairings.previous_active_id, { is_active: true });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
-      setShowRegenDialog(false);
     },
   });
 
@@ -395,51 +367,6 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
   }
 
   return (
-    <>
-      {/* Staleness Dialog */}
-      <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Pairing Grid Out of Date
-            </DialogTitle>
-            <DialogDescription>
-              Your pipes, blends, or preferences have changed. Regenerate pairings now for accurate recommendations? You can undo this action.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
-              Not Now
-            </Button>
-            {savedPairings?.previous_active_id && (
-              <Button
-                variant="outline"
-                onClick={() => undoPairingsMutation.mutate()}
-                disabled={undoPairingsMutation.isPending}
-              >
-                <Undo className="w-4 h-4 mr-2" />
-                Undo Last Change
-              </Button>
-            )}
-            <Button
-              onClick={() => regeneratePairingsMutation.mutate()}
-              disabled={regeneratePairingsMutation.isPending}
-              className="bg-amber-700 hover:bg-amber-800"
-            >
-              {regeneratePairingsMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Regenerating...
-                </>
-              ) : (
-                'Regenerate'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
