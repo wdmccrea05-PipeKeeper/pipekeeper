@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb, CheckCheck, Star } from "lucide-react";
+import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb, CheckCheck, Star, AlertTriangle, Undo } from "lucide-react";
+import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [acceptingAll, setAcceptingAll] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedChanges, setSelectedChanges] = useState({});
+  const [showRegenDialog, setShowRegenDialog] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -56,25 +58,53 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     enabled: !!user?.email,
   });
 
-  // Load saved optimization (scoped to current user)
+  // Load saved optimization (scoped to current user) - active first, then latest
   const { data: savedOptimization } = useQuery({
     queryKey: ['saved-optimization', user?.email],
     enabled: !!user?.email,
     retry: 1,
     queryFn: async () => {
       try {
-        const results = await base44.entities.CollectionOptimization.filter(
+        // Load active first
+        const active = await base44.entities.CollectionOptimization.filter(
+          { created_by: user.email, is_active: true },
+          '-created_date',
+          1
+        );
+        if (active?.[0]) return active[0];
+
+        // Fallback to latest
+        const latest = await base44.entities.CollectionOptimization.filter(
           { created_by: user.email },
           '-created_date',
           1
         );
-        return Array.isArray(results) ? results[0] : null;
+        return Array.isArray(latest) ? latest[0] : null;
       } catch (err) {
         console.error('Saved optimization load error:', err);
         return null;
       }
     },
   });
+
+  // Compute fingerprint and staleness
+  const currentFingerprint = React.useMemo(() => 
+    buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
+    [pipes, blends, userProfile]
+  );
+
+  const isStale = React.useMemo(() => 
+    !!savedOptimization?.input_fingerprint && 
+    savedOptimization.input_fingerprint !== currentFingerprint,
+    [savedOptimization, currentFingerprint]
+  );
+
+  // Show regen dialog when stale
+  useEffect(() => {
+    if (isStale && optimization) {
+      setShowRegenDialog(true);
+    }
+  }, [isStale, optimization]);
 
   useEffect(() => {
     if (savedOptimization && !optimization) {
@@ -83,13 +113,38 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   }, [savedOptimization]);
 
   const saveOptimizationMutation = useMutation({
-    mutationFn: (data) =>
-      base44.entities.CollectionOptimization.create({
+    mutationFn: async (data) => {
+      // Deactivate current active optimization
+      if (savedOptimization?.id) {
+        await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });
+      }
+
+      return base44.entities.CollectionOptimization.create({
         ...data,
         created_by: user?.email,
-      }),
+        is_active: true,
+        previous_active_id: savedOptimization?.id || null,
+        input_fingerprint: currentFingerprint,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-optimization', user?.email] });
+    },
+  });
+
+  const undoOptimizationMutation = useMutation({
+    mutationFn: async () => {
+      if (!savedOptimization?.previous_active_id) return;
+
+      // Deactivate current
+      await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });
+
+      // Reactivate previous
+      await base44.entities.CollectionOptimization.update(savedOptimization.previous_active_id, { is_active: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+      setShowRegenDialog(false);
     },
   });
 
@@ -299,10 +354,10 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
 
       setOptimization(result);
       
-      // Save optimization to database
+      // Save optimization to database (with fingerprint)
       await saveOptimizationMutation.mutateAsync({
         ...result,
-        generated_date: new Date().toISOString()
+        generated_date: new Date().toISOString(),
       });
 
       // Clear feedback after successful re-analysis and show confirmation
@@ -1109,6 +1164,53 @@ Provide concrete, actionable steps with specific field values.`,
 
   return (
     <>
+    {/* Staleness Dialog */}
+    <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+            Collection Optimization Out of Date
+          </DialogTitle>
+          <DialogDescription>
+            Your pipes, blends, or preferences have changed. Regenerate optimization now for accurate recommendations? You can undo this action.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
+            Not Now
+          </Button>
+          {savedOptimization?.previous_active_id && (
+            <Button
+              variant="outline"
+              onClick={() => undoOptimizationMutation.mutate()}
+              disabled={undoOptimizationMutation.isPending}
+            >
+              <Undo className="w-4 h-4 mr-2" />
+              Undo Last Change
+            </Button>
+          )}
+          <Button
+            onClick={() => {
+              setShowRegenDialog(false);
+              analyzeCollection();
+            }}
+            disabled={loading}
+            className="bg-amber-700 hover:bg-amber-800"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Regenerating...
+              </>
+            ) : (
+              'Regenerate'
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     {/* Confirmation Modal */}
     <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
