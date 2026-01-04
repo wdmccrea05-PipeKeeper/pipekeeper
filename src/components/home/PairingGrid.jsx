@@ -79,10 +79,10 @@ export default function PairingGrid({ pipes, blends }) {
 
   // Show regen dialog when stale
   useEffect(() => {
-    if (isStale && showGrid) {
+    if (isStale) {
       setShowRegenDialog(true);
     }
-  }, [isStale, showGrid]);
+  }, [isStale]);
 
   const regeneratePairingsMutation = useMutation({
     mutationFn: async () => {
