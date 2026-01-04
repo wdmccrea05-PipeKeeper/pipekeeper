@@ -7,16 +7,38 @@ import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: customLogos = [] } = useQuery({
     queryKey: ['tobacco-logos'],
     queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const confirmRecommendationMutation = useMutation({
+    mutationFn: async () => {
+      if (!recommendations?.ideal_blend_types?.length) return;
+      
+      await base44.entities.Pipe.update(pipe.id, {
+        focus: recommendations.ideal_blend_types
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pipe', pipe.id] });
+      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+    },
   });
 
   const getRecommendations = async () => {
@@ -222,8 +244,8 @@ Provide recommendations in JSON format with:
                   Ideal Blend Types
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2 mb-4">
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
                   {recommendations.ideal_blend_types?.map((type, idx) => (
                     <Badge key={idx} className="bg-amber-600 text-white border-0 px-3 py-1">
                       {type}
@@ -231,6 +253,23 @@ Provide recommendations in JSON format with:
                   ))}
                 </div>
                 <p className="text-stone-600">{recommendations.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                <Button
+                  onClick={() => confirmRecommendationMutation.mutate()}
+                  disabled={confirmRecommendationMutation.isPending}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {confirmRecommendationMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Star className="w-4 h-4 mr-2" />
+                      Confirm & Apply to Pipe
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
 
