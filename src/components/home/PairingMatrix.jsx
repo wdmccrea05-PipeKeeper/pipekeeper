@@ -10,6 +10,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import PairingExporter from "@/components/export/PairingExporter";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -28,12 +29,23 @@ export default function PairingMatrix({ pipes, blends }) {
     retry: 1,
   });
 
-  // Load saved pairings
+  // Load saved pairings - active first, then latest
   const { data: savedPairings } = useQuery({
     queryKey: ['saved-pairings', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email }, '-created_date', 1);
-      return results[0];
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true },
+        '-created_date',
+        1
+      );
+      if (active?.[0]) return active[0];
+
+      const latest = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email },
+        '-created_date',
+        1
+      );
+      return latest?.[0] || null;
     },
     enabled: !!user?.email,
   });
@@ -44,8 +56,28 @@ export default function PairingMatrix({ pipes, blends }) {
     }
   }, [savedPairings]);
 
+  const currentFingerprint = React.useMemo(
+    () => buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
+    [pipes, blends, userProfile]
+  );
+
   const savePairingsMutation = useMutation({
-    mutationFn: (data) => base44.entities.PairingMatrix.create(data),
+    mutationFn: async (data) => {
+      // Deactivate current active (if any)
+      if (savedPairings?.id) {
+        await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+      }
+
+      // Create clean new active record
+      return base44.entities.PairingMatrix.create({
+        created_by: user?.email,
+        is_active: true,
+        previous_active_id: savedPairings?.id ?? null,
+        input_fingerprint: currentFingerprint,
+        pairings: data.pairings,
+        generated_date: data.generated_date,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-pairings', user?.email] });
     },
