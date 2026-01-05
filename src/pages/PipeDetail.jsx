@@ -46,8 +46,18 @@ export default function PipeDetailPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: pipe, isLoading, error } = useQuery({
-    queryKey: ['pipe', pipeId],
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
+  });
+
+  const { data: pipe, isLoading: pipeLoading, error: pipeError } = useQuery({
+    queryKey: ['pipe', pipeId, user?.email],
+    enabled: !!pipeId && !!user?.email && !userLoading,
+    retry: false,
     queryFn: async () => {
       if (!pipeId) throw new Error('Missing pipe ID');
 
@@ -72,9 +82,9 @@ export default function PipeDetailPage() {
         }
       }
 
-      // 3) Fallback: filter by id (some Base44 setups behave better here)
+      // 3) Fallback: filter by id with ownership check
       try {
-        const byString = await base44.entities.Pipe.filter({ id: pipeId });
+        const byString = await base44.entities.Pipe.filter({ id: pipeId, created_by: user.email });
         if (Array.isArray(byString) && byString.length) return byString[0];
       } catch (e) {
         console.warn("Pipe.filter({id: string}) failed", { pipeId, e });
@@ -82,7 +92,7 @@ export default function PipeDetailPage() {
 
       if (numericId !== null) {
         try {
-          const byNum = await base44.entities.Pipe.filter({ id: numericId });
+          const byNum = await base44.entities.Pipe.filter({ id: numericId, created_by: user.email });
           if (Array.isArray(byNum) && byNum.length) return byNum[0];
         } catch (e) {
           console.warn("Pipe.filter({id: number}) failed", { numericId, e });
@@ -91,17 +101,10 @@ export default function PipeDetailPage() {
 
       throw new Error('Pipe not found');
     },
-    enabled: !!pipeId,
-    retry: false,
   });
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const isLoading = userLoading || pipeLoading;
+  const error = userError || pipeError;
 
   const { data: blends = [] } = useQuery({
     queryKey: ['blends', user?.email],
