@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateProfileQueries } from "@/components/utils/cacheInvalidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -118,10 +120,9 @@ export default function PublicProfilePage() {
   });
 
   const makePublicMutation = useMutation({
-    mutationFn: (profileId) => base44.entities.UserProfile.update(profileId, { is_public: true }),
+    mutationFn: (profileId) => safeUpdate('UserProfile', profileId, { is_public: true }, currentUser?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['public-profile', profileEmail] });
-      queryClient.invalidateQueries({ queryKey: ['user-profile', profileEmail] });
+      invalidateProfileQueries(queryClient, profileEmail);
     },
   });
 
@@ -140,7 +141,7 @@ export default function PublicProfilePage() {
       if (!myProfile?.id || !profileEmail) return;
       const blocked = Array.isArray(myProfile.blocked_users) ? myProfile.blocked_users : [];
       const next = Array.from(new Set([...blocked, profileEmail]));
-      await base44.entities.UserProfile.update(myProfile.id, { blocked_users: next });
+      await safeUpdate('UserProfile', myProfile.id, { blocked_users: next }, currentUser?.email);
     },
     onSuccess: () => {
       setBlockOpen(false);
