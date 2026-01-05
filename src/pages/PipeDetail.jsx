@@ -46,13 +46,17 @@ export default function PipeDetailPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: pipe, isLoading } = useQuery({
+  const { data: pipe, isLoading, error } = useQuery({
     queryKey: ['pipe', pipeId],
     queryFn: async () => {
       const pipes = await base44.entities.Pipe.filter({ id: pipeId });
+      if (!pipes || pipes.length === 0) {
+        throw new Error('Pipe not found');
+      }
       return pipes[0];
     },
     enabled: !!pipeId,
+    retry: false,
   });
 
   const { data: user } = useQuery({
@@ -144,18 +148,19 @@ export default function PipeDetailPage() {
     );
   }
 
-  if (!pipe) {
+  if (!pipe || error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
             alt="Pipe not found"
-            className="w-24 h-24 mx-auto mb-4 object-contain opacity-30 mix-blend-multiply"
+            className="w-24 h-24 mx-auto mb-4 object-contain opacity-50"
+            style={{ filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)' }}
           />
-          <h2 className="text-2xl font-semibold text-stone-800 mb-2">Pipe not found</h2>
+          <h2 className="text-2xl font-semibold text-[#e8d5b7] mb-2">Pipe not found</h2>
           <a href={createPageUrl('Pipes')}>
-            <Button variant="outline">Back to Pipes</Button>
+            <Button variant="outline" className="border-[#e8d5b7]/30 text-[#e8d5b7]">Back to Pipes</Button>
           </a>
         </div>
       </div>
