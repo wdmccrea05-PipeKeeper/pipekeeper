@@ -392,28 +392,42 @@ Provide recommendations in JSON format with:
                     {recommendations.from_collection.map((blend, idx) => {
                      const userBlend = findBestUserBlend(blends, blend);
                      const imageUrl = userBlend?.photo || userBlend?.logo || (userBlend?.manufacturer ? getTobaccoLogo(userBlend.manufacturer, customLogos) : getTobaccoLogo(blend.manufacturer, customLogos));
+                     const hasValidId = userBlend?.id;
 
-                     return (
+                     const CardContent = (
+                       <div className="flex items-start gap-3">
+                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
+                           <img 
+                             src={imageUrl}
+                             alt={blend.manufacturer}
+                             className={userBlend?.photo ? "w-full h-full object-cover" : "w-full h-full object-contain p-1"}
+                           />
+                         </div>
+                         <div className="flex-1 min-w-0">
+                           <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
+                           <p className="text-sm text-stone-600 mt-1">{blend.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                         </div>
+                         <Badge className="bg-emerald-600 text-white shrink-0">
+                           {blend.score}/10
+                         </Badge>
+                       </div>
+                     );
+
+                     return hasValidId ? (
+                       <a 
+                         key={idx}
+                         href={`/TobaccoDetail?id=${encodeURIComponent(userBlend.id)}`}
+                         className="block p-4 rounded-lg bg-emerald-50 border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100 transition-colors cursor-pointer"
+                       >
+                         {CardContent}
+                       </a>
+                     ) : (
                        <div 
                          key={idx} 
-                         className="p-4 rounded-lg bg-emerald-50 border border-emerald-200"
+                         className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 opacity-70"
+                         title="Blend not found in your collection"
                        >
-                         <div className="flex items-start gap-3">
-                           <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex items-center justify-center shrink-0">
-                             <img 
-                               src={imageUrl}
-                               alt={blend.manufacturer}
-                               className={userBlend?.photo ? "w-full h-full object-cover" : "w-full h-full object-contain p-1"}
-                             />
-                           </div>
-                           <div className="flex-1 min-w-0">
-                             <h4 className="font-semibold text-stone-800">{blend.manufacturer} - {blend.name}</h4>
-                             <p className="text-sm text-stone-600 mt-1">{blend.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
-                           </div>
-                           <Badge className="bg-emerald-600 text-white shrink-0">
-                             {blend.score}/10
-                           </Badge>
-                         </div>
+                         {CardContent}
                        </div>
                      );
                     })}
