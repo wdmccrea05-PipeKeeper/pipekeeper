@@ -383,7 +383,6 @@ export default function PipeDetailPage() {
                       </p>
                     </div>
                   )}
-                </div>
                   {pipe.country_of_origin && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-stone-400" />
