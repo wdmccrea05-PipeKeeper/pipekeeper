@@ -19,6 +19,7 @@ import TermsOfService from "./TermsOfService";
 import PrivacyPolicy from "./PrivacyPolicy";
 import TobaccoLibrarySync from "./TobaccoLibrarySync";
 import BulkLogoUpload from "./BulkLogoUpload";
+import AIUpdates from "./AIUpdates";
 
 const ROUTES = {
   "/Home": Home,
