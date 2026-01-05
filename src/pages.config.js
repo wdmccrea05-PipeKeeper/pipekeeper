@@ -1,3 +1,4 @@
+import AIUpdates from './pages/AIUpdates';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
 import FAQ from './pages/FAQ';
@@ -17,11 +18,11 @@ import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import UserReport from './pages/UserReport';
 import index from './pages/index';
-import AIUpdates from './pages/AIUpdates';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIUpdates": AIUpdates,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
     "FAQ": FAQ,
@@ -41,7 +42,6 @@ export const PAGES = {
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "UserReport": UserReport,
     "index": index,
-    "AIUpdates": AIUpdates,
 }
 
 export const pagesConfig = {

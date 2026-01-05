@@ -62,7 +62,9 @@ export default function PipeDetailPage() {
   const { data: pipe, isLoading, error } = useQuery({
     queryKey: ['pipe', pipeId],
     queryFn: async () => {
+      console.log('[PipeDetail] Querying pipe with ID:', pipeId, 'Type:', typeof pipeId);
       const pipes = await base44.entities.Pipe.filter({ id: pipeId });
+      console.log('[PipeDetail] Query result:', pipes);
       if (!pipes || pipes.length === 0) {
         throw new Error('Pipe not found');
       }
