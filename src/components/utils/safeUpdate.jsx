@@ -12,15 +12,31 @@ import { base44 } from "@/api/base44Client";
  */
 export async function safeUpdate(entityName, id, updates, userEmail = null) {
   try {
-    // Fetch current entity
-    const current = await base44.entities[entityName].get(id);
+    // Try to fetch entity with both string and number ID types
+    const idStr = String(id);
+    const isNumeric = /^\d+$/.test(idStr);
+    const idNum = isNumeric ? Number(idStr) : null;
+    
+    let current = null;
+    try {
+      current = await base44.entities[entityName].get(idStr);
+    } catch (e) {
+      // Try numeric ID if string failed
+      if (idNum !== null) {
+        try {
+          current = await base44.entities[entityName].get(idNum);
+        } catch (e2) {
+          // Both failed
+        }
+      }
+    }
     
     if (!current) {
       throw new Error(`${entityName} with id ${id} not found`);
     }
     
-    // Verify ownership if userEmail provided
-    if (userEmail && current.created_by !== userEmail) {
+    // Verify ownership if userEmail provided (allow missing created_by for legacy data)
+    if (userEmail && current.created_by && current.created_by !== userEmail) {
       throw new Error(`Permission denied: ${entityName} belongs to another user`);
     }
     

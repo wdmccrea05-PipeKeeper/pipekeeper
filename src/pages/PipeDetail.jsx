@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,10 +167,9 @@ export default function PipeDetailPage() {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
+    mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipe', pipeId, user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+      invalidatePipeQueries(queryClient, user?.email);
       setShowEdit(false);
     },
   });

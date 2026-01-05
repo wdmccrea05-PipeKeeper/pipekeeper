@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { getTobaccoLogo, GENERIC_TOBACCO_ICON } from "@/components/tobacco/TobaccoLogoLibrary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
