@@ -260,6 +260,7 @@ export default function PairingGrid({ pipes, blends }) {
   }
 
   return (
+    <>
     <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
