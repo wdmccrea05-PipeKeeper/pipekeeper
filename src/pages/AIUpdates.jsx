@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function AIUpdates() {
   const queryClient = useQueryClient();
@@ -71,7 +73,7 @@ export default function AIUpdates() {
       const { pairings } = await generatePairingsAI({ pipes, blends, profile });
 
       if (activePairings?.id) {
-        await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
+        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.PairingMatrix.create({
@@ -87,7 +89,7 @@ export default function AIUpdates() {
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings regenerated successfully");
     },
     onError: () => {
@@ -99,12 +101,12 @@ export default function AIUpdates() {
   const undoPairings = useMutation({
     mutationFn: async () => {
       if (!activePairings?.previous_active_id) return;
-      await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
-      await base44.entities.PairingMatrix.update(activePairings.previous_active_id, { is_active: true });
+      await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
+      await safeUpdate('PairingMatrix', activePairings.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings reverted to previous version");
     },
     onError: () => toast.error("Failed to undo pairings"),
@@ -116,7 +118,7 @@ export default function AIUpdates() {
       const result = await generateOptimizationAI({ pipes, blends, profile, whatIfText: "" });
 
       if (activeOpt?.id) {
-        await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
+        await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.CollectionOptimization.create({
@@ -133,7 +135,7 @@ export default function AIUpdates() {
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization regenerated successfully");
     },
     onError: () => {
@@ -145,12 +147,12 @@ export default function AIUpdates() {
   const undoOpt = useMutation({
     mutationFn: async () => {
       if (!activeOpt?.previous_active_id) return;
-      await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
-      await base44.entities.CollectionOptimization.update(activeOpt.previous_active_id, { is_active: true });
+      await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
+      await safeUpdate('CollectionOptimization', activeOpt.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization reverted to previous version");
     },
     onError: () => toast.error("Failed to undo optimization"),

@@ -105,11 +105,8 @@ export default function TobaccoDetailPage() {
     if (blend && blend.manufacturer && !blend.logo && !updateMutation.isPending && user?.email) {
       const libraryLogo = getTobaccoLogo(blend.manufacturer);
       if (libraryLogo && libraryLogo !== GENERIC_TOBACCO_ICON) {
-        const { id, created_date, updated_date, ...rest } = blend;
         updateMutation.mutate({
-          ...rest,
           logo: libraryLogo,
-          created_by: blend.created_by || user.email,
         });
       }
     }
@@ -141,17 +138,9 @@ export default function TobaccoDetailPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => {
-      const { id, created_date, updated_date, ...rest } = blend;
-      return base44.entities.TobaccoBlend.update(blendId, {
-        ...rest,
-        ...data,
-        created_by: blend.created_by || user?.email,
-      });
-    },
+    mutationFn: (data) => safeUpdate('TobaccoBlend', blendId, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blend', blendId, user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+      invalidateBlendQueries(queryClient, user?.email);
       setShowEdit(false);
     },
   });
@@ -164,11 +153,8 @@ export default function TobaccoDetailPage() {
   });
 
   const toggleFavorite = () => {
-    const { id, created_date, updated_date, ...rest } = blend;
     updateMutation.mutate({
-      ...rest,
       is_favorite: !blend.is_favorite,
-      created_by: blend.created_by || user?.email,
     });
   };
 

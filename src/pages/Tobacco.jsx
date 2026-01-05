@@ -17,6 +17,8 @@ import BulkTobaccoUpdate from "@/components/tobacco/BulkTobaccoUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
 import QuickEditPanel from "@/components/tobacco/QuickEditPanel";
 import { toast } from "sonner";
+import { safeUpdate, safeBatchUpdate } from "@/components/utils/safeUpdate";
+import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 
 const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -73,15 +75,15 @@ export default function TobaccoPage() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.TobaccoBlend.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+      invalidateBlendQueries(queryClient, user?.email);
       setShowForm(false);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TobaccoBlend.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+      invalidateBlendQueries(queryClient, user?.email);
       setShowForm(false);
       setEditingBlend(null);
     },
@@ -89,25 +91,28 @@ export default function TobaccoPage() {
 
   const bulkUpdateMutation = useMutation({
     mutationFn: async ({ blendIds, updateData }) => {
-      // Update each selected blend
-      const promises = blendIds.map(id => {
-        const blend = blends.find(b => b.id === id);
-        if (!blend) return null;
-        
-        // For quantity_owned, add to existing value
-        const finalData = { ...updateData };
-        if (updateData.quantity_owned !== undefined) {
-          finalData.quantity_owned = (blend.quantity_owned || 0) + updateData.quantity_owned;
-        }
-        
-        return base44.entities.TobaccoBlend.update(id, finalData);
-      });
-      
-      await Promise.all(promises.filter(p => p !== null));
-      return blendIds.length;
+      const updates = blendIds
+        .map(id => {
+          const blend = blends.find(b => b.id === id);
+          if (!blend) return null;
+          
+          // For quantity_owned, add to existing value
+          const finalData = { ...updateData };
+          if (updateData.quantity_owned !== undefined) {
+            finalData.quantity_owned = (blend.quantity_owned || 0) + updateData.quantity_owned;
+          }
+          
+          return { id, data: finalData };
+        })
+        .filter(Boolean);
+
+      const results = await safeBatchUpdate('TobaccoBlend', updates, user?.email);
+      const failures = results.filter(r => !r.success);
+      if (failures.length) throw new Error(failures[0].error || 'Bulk update failed');
+      return updates.length;
     },
     onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+      invalidateBlendQueries(queryClient, user?.email);
       toast.success(`Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`);
       exitQuickEdit();
     },
@@ -365,7 +370,7 @@ export default function TobaccoPage() {
                       )}
                     </div>
                   ) : (
-                    <a href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                       {viewMode === 'grid' ? (
                         <TobaccoCard blend={blend} onClick={() => {}} />
                       ) : (

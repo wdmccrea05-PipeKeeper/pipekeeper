@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 function MessageBubble({ message }) {
   const isUser = message.role === 'user';
@@ -128,7 +130,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       const { pairings } = await generatePairingsAI({ pipes, blends, profile: userProfile });
 
       if (activePairings?.id) {
-        await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
+        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.PairingMatrix.create({
@@ -144,7 +146,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings regenerated successfully");
     },
     onError: () => {
@@ -156,12 +158,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   const undoPairings = useMutation({
     mutationFn: async () => {
       if (!activePairings?.previous_active_id) return;
-      await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
-      await base44.entities.PairingMatrix.update(activePairings.previous_active_id, { is_active: true });
+      await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
+      await safeUpdate('PairingMatrix', activePairings.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings reverted to previous version");
     },
     onError: () => toast.error("Failed to undo pairings"),
@@ -173,7 +175,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       const result = await generateOptimizationAI({ pipes, blends, profile: userProfile, whatIfText: "" });
 
       if (activeOpt?.id) {
-        await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
+        await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.CollectionOptimization.create({
@@ -190,7 +192,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization regenerated successfully");
     },
     onError: () => {
@@ -202,12 +204,12 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   const undoOpt = useMutation({
     mutationFn: async () => {
       if (!activeOpt?.previous_active_id) return;
-      await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
-      await base44.entities.CollectionOptimization.update(activeOpt.previous_active_id, { is_active: true });
+      await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
+      await safeUpdate('CollectionOptimization', activeOpt.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization reverted to previous version");
     },
     onError: () => toast.error("Failed to undo optimization"),

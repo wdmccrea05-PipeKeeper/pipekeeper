@@ -8,6 +8,8 @@ import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI } from "@/components/utils/aiGenerators";
 import PairingCard from "@/components/home/PairingCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -73,7 +75,7 @@ export default function PairingGrid({ pipes, blends }) {
     mutationFn: async () => {
       // Deactivate current
       if (savedPairings?.id) {
-        await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+        await safeUpdate('PairingMatrix', savedPairings.id, { is_active: false }, user?.email);
       }
 
       // Generate fresh pairings using shared generator
@@ -94,7 +96,7 @@ export default function PairingGrid({ pipes, blends }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      invalidateAIQueries(queryClient, user?.email);
     },
   });
 
