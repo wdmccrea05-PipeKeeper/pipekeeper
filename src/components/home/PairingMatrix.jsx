@@ -321,7 +321,7 @@ export default function PairingMatrix({ pipes, blends }) {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <a href={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
+                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
                                 <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
                                   {pipePairing.pipe_name}
                                 </h4>
@@ -396,7 +396,7 @@ export default function PairingMatrix({ pipes, blends }) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2">
-                                            <a href={createPageUrl(`TobaccoDetail?id=${blend?.id}`)}>
+                                            <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend?.id)}`)}>
                                               <p className="font-medium text-stone-800 hover:text-amber-700 transition-colors">
                                                 {match.blend_name}
                                               </p>

@@ -1504,7 +1504,7 @@ Provide concrete, actionable steps with specific field values.`,
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <a href={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
+                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
                                 <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
                                   {displaySpec.pipe_name}
                                 </h4>
@@ -1577,7 +1577,7 @@ Provide concrete, actionable steps with specific field values.`,
                                       Apply Suggested
                                     </Button>
                                   )}
-                                  <a href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                                  <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -1732,7 +1732,7 @@ Provide concrete, actionable steps with specific field values.`,
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
-                              <a href={createPageUrl(`PipeDetail?id=${pipe?.id}`)}>
+                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
                                 <h4 className="font-semibold text-stone-800 hover:text-violet-700 transition-colors">
                                   {change.pipe_name}
                                 </h4>
