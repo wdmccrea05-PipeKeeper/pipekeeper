@@ -498,6 +498,55 @@ User Feedback: ${feedback}
     });
   };
 
+  // Apply optimization changes with undo support
+  async function applyOptimizationChangesWithUndo(applyableChanges) {
+    if (!Array.isArray(applyableChanges) || applyableChanges.length === 0) return;
+
+    const pipeMap = new Map((pipes || []).map((p) => [p.id, p]));
+    const pipe_changes = applyableChanges
+      .map((c) => {
+        const p = pipeMap.get(c.pipe_id);
+        if (!p) return null;
+        return {
+          pipe_id: c.pipe_id,
+          before: { focus: Array.isArray(p.focus) ? p.focus : [] },
+          after: { focus: Array.isArray(c.recommended_blend_types) ? c.recommended_blend_types : [] },
+          rationale: c.reasoning || "",
+        };
+      })
+      .filter(Boolean);
+
+    if (pipe_changes.length === 0) return;
+
+    const batch = await base44.entities.OptimizationApplyBatch.create({
+      created_by: user?.email,
+      pipe_changes,
+    });
+
+    for (const ch of pipe_changes) {
+      await base44.entities.Pipe.update(ch.pipe_id, { focus: ch.after.focus });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["pipes"] });
+    queryClient.invalidateQueries({ queryKey: ["collection-optimization"] });
+
+    return batch;
+  }
+
+  async function undoOptimizationApply(batchId) {
+    if (!batchId) return;
+    const batches = await base44.entities.OptimizationApplyBatch.filter({ id: batchId });
+    const batch = batches?.[0];
+    if (!batch?.pipe_changes) return;
+
+    for (const ch of batch.pipe_changes) {
+      await base44.entities.Pipe.update(ch.pipe_id, { focus: ch.before.focus });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["pipes"] });
+    queryClient.invalidateQueries({ queryKey: ["collection-optimization"] });
+  }
+
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
     const uploadedUrls = [];

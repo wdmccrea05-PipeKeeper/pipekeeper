@@ -2,14 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw } from "lucide-react";
+import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw, Share2 } from "lucide-react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
+import { generatePairingsAI } from "@/components/utils/aiGenerators";
+import PairingCard from "@/components/home/PairingCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function PairingGrid({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedPairing, setSelectedPairing] = useState(null);
   const gridRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -385,18 +390,23 @@ export default function PairingGrid({ pipes, blends }) {
                         });
                         const bestScore = Math.max(...allScoresForBlend);
                         const isBestPipe = displayScore === bestScore && displayScore >= 8.5;
-                        
+
                         return (
                           <td 
                             key={blend.id}
                             className={`border border-stone-300 p-2 text-center font-semibold ${
                               getScoreClass(displayScore)
-                            }`}
+                            } cursor-pointer hover:opacity-80`}
                             title={match?.reasoning || 'Basic compatibility score'}
+                            onClick={() => {
+                              setSelectedPairing({ pipe, blend, score: displayScore, reasoning: match?.reasoning || 'Compatibility based on pipe characteristics' });
+                              setShareDialogOpen(true);
+                            }}
                           >
                             <div className="flex items-center justify-center gap-1">
                               {isBestPipe && <Trophy className="w-3 h-3 text-amber-600" />}
                               <span>{displayScore.toFixed(1)}</span>
+                              <Share2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                           </td>
                         );
@@ -454,5 +464,26 @@ export default function PairingGrid({ pipes, blends }) {
       )}
 
     </Card>
+
+    {/* Share Pairing Dialog */}
+    <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Share2 className="w-5 h-5" />
+            Share Pairing
+          </DialogTitle>
+        </DialogHeader>
+        {selectedPairing && (
+          <PairingCard
+            pipe={selectedPairing.pipe}
+            blend={selectedPairing.blend}
+            score={selectedPairing.score}
+            reasoning={selectedPairing.reasoning}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

@@ -292,20 +292,22 @@ export default function PublicProfilePage() {
                 {profile.bio && (
                   <p className="text-stone-600 mb-4">{profile.bio}</p>
                 )}
-                <div className="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
-                  <div className="flex items-center gap-1">
-                    <img src={PIPE_IMAGE} alt="Pipes" className="w-4 h-4 opacity-60" />
-                    <span>{pipes.length} Pipes</span>
+                {!profile.privacy_hide_collection_counts && (
+                  <div className="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
+                    <div className="flex items-center gap-1">
+                      <img src={PIPE_IMAGE} alt="Pipes" className="w-4 h-4 opacity-60" />
+                      <span>{pipes.length} Pipes</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Leaf className="w-4 h-4" />
+                      <span>{blends.length} Blends</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{logs.length} Smoking Sessions</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Leaf className="w-4 h-4" />
-                    <span>{blends.length} Blends</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{logs.length} Smoking Sessions</span>
-                  </div>
-                </div>
+                )}
                 {!isOwnProfile && currentUser?.email && (
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -366,11 +368,18 @@ export default function PublicProfilePage() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-stone-800 mb-1">{pipe.name}</h3>
                           {pipe.maker && <p className="text-sm text-stone-600 mb-2">{pipe.maker}</p>}
-                          {pipe.shape && (
-                            <Badge variant="outline" className="text-xs">
-                              {pipe.shape}
-                            </Badge>
-                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {pipe.shape && (
+                              <Badge variant="outline" className="text-xs">
+                                {pipe.shape}
+                              </Badge>
+                            )}
+                            {!profile.privacy_hide_values && pipe.estimated_value && (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
+                                ${pipe.estimated_value.toLocaleString()}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                       {pipe.photos?.length > 1 && (
@@ -448,7 +457,7 @@ export default function PublicProfilePage() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-stone-800 mb-1">{blend.name}</h3>
                           {blend.manufacturer && <p className="text-sm text-stone-600 mb-2">{blend.manufacturer}</p>}
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             {blend.blend_type && (
                               <Badge variant="outline" className="text-xs">
                                 {blend.blend_type}
@@ -458,6 +467,20 @@ export default function PublicProfilePage() {
                               <Badge variant="outline" className="text-xs">
                                 {blend.strength}
                               </Badge>
+                            )}
+                            {!profile.privacy_hide_inventory && (
+                              <>
+                                {(blend.tin_total_quantity_oz || 0) > 0 && (
+                                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                                    {blend.tin_total_quantity_oz}oz tins
+                                  </Badge>
+                                )}
+                                {(blend.bulk_total_quantity_oz || 0) > 0 && (
+                                  <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+                                    {blend.bulk_total_quantity_oz}oz bulk
+                                  </Badge>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
