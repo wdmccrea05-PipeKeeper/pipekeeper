@@ -40,6 +40,7 @@ const PIPE_SHAPES = [
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     display_name: "",
     bio: "",
@@ -375,7 +376,7 @@ export default function ProfilePage() {
                           e.preventDefault();
                           try {
                             await saveMutation.mutateAsync(formData);
-                            window.location.href = createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`);
+                            navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
                           } catch (err) {
                             console.error('Failed to save profile before preview:', err);
                           }

@@ -34,6 +34,7 @@ export default function PublicProfilePage() {
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [expandedImage, setExpandedImage] = React.useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -147,7 +148,7 @@ export default function PublicProfilePage() {
     onSuccess: () => {
       setBlockOpen(false);
       toast.success('User blocked');
-      window.location.href = createPageUrl('Community');
+      navigate(createPageUrl('Community'));
     },
     onError: () => toast.error('Could not block user'),
   });
