@@ -49,8 +49,8 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
       created_by: current.created_by,
     };
     
-    // Perform update
-    return await base44.entities[entityName].update(id, merged);
+    // Perform update using the ID that actually worked (current.id)
+    return await base44.entities[entityName].update(current.id, merged);
   } catch (error) {
     console.error(`safeUpdate failed for ${entityName}:`, error);
     throw error;
