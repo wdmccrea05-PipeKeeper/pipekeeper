@@ -13,6 +13,8 @@ import PairingExporter from "@/components/export/PairingExporter";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI } from "@/components/utils/aiGenerators";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function PairingMatrix({ pipes, blends }) {
   const [loading, setLoading] = useState(false);
@@ -87,7 +89,7 @@ export default function PairingMatrix({ pipes, blends }) {
     mutationFn: async (data) => {
       // Deactivate current active (if any)
       if (savedPairings?.id) {
-        await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+        await safeUpdate('PairingMatrix', savedPairings.id, { is_active: false }, user?.email);
       }
 
       // Create clean new active record
@@ -101,7 +103,7 @@ export default function PairingMatrix({ pipes, blends }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      invalidateAIQueries(queryClient, user?.email);
       setShowRegenDialog(false);
     },
   });
@@ -113,13 +115,13 @@ export default function PairingMatrix({ pipes, blends }) {
       }
 
       // Deactivate current
-      await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
+      await safeUpdate('PairingMatrix', savedPairings.id, { is_active: false }, user?.email);
 
       // Reactivate previous
-      await base44.entities.PairingMatrix.update(savedPairings.previous_active_id, { is_active: true });
+      await safeUpdate('PairingMatrix', savedPairings.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      invalidateAIQueries(queryClient, user?.email);
       setShowRegenDialog(false);
     },
   });

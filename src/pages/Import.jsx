@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,7 +129,7 @@ export default function ImportPage() {
       }
 
       setPipeResults({ success, failed, total: pipes.length });
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      invalidatePipeQueries(queryClient, user?.email);
     } catch (error) {
       alert('Failed to parse CSV file. Please check the format.');
     } finally {
@@ -161,7 +162,7 @@ export default function ImportPage() {
       }
 
       setTobaccoResults({ success, failed, total: blends.length });
-      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      invalidateBlendQueries(queryClient, user?.email);
     } catch (error) {
       alert('Failed to parse CSV file. Please check the format.');
     } finally {

@@ -177,7 +177,7 @@ export default function PipeDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Pipe.delete(pipeId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      invalidatePipeQueries(queryClient, user?.email);
       window.location.href = createPageUrl('Pipes');
     },
   });

@@ -95,7 +95,11 @@ export function invalidateAIQueries(queryClient, userEmail = null) {
   const aiKeys = [
     'pairing-matrix',
     'collection-optimization',
-    'optimization-batch'
+    'optimization-batch',
+    'saved-pairings',
+    'activePairings',
+    'saved-optimization',
+    'activeOptimization'
   ];
   
   aiKeys.forEach(key => {

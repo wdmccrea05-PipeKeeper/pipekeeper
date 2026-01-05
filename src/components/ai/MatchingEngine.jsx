@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
@@ -30,23 +32,21 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       if (!recommendations?.ideal_blend_types?.length) return;
       
       // Update pipe focus
-      await base44.entities.Pipe.update(pipe.id, {
+      await safeUpdate('Pipe', pipe.id, {
         focus: recommendations.ideal_blend_types
-      });
+      }, user?.email);
       
       // Mark existing pairing matrices as stale by clearing is_active
       const existingPairings = await base44.entities.PairingMatrix.filter(
         { created_by: user?.email, is_active: true }
       );
       for (const pairing of existingPairings) {
-        await base44.entities.PairingMatrix.update(pairing.id, { is_active: false });
+        await safeUpdate('PairingMatrix', pairing.id, { is_active: false }, user?.email);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipe', pipe.id] });
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
-      queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
-      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+      invalidatePipeQueries(queryClient, user?.email);
+      invalidateAIQueries(queryClient, user?.email);
     },
   });
 

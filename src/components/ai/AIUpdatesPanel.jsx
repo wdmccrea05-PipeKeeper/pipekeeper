@@ -6,6 +6,8 @@ import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/a
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2, Ruler } from "lucide-react";
 import { toast } from "sonner";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const queryClient = useQueryClient();
@@ -49,7 +51,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       const { pairings } = await generatePairingsAI({ pipes, blends, profile });
 
       if (activePairings?.id) {
-        await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
+        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.PairingMatrix.create({
@@ -65,7 +67,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings regenerated successfully");
     },
     onError: () => {
@@ -77,12 +79,12 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const undoPairings = useMutation({
     mutationFn: async () => {
       if (!activePairings?.previous_active_id) return;
-      await base44.entities.PairingMatrix.update(activePairings.id, { is_active: false });
-      await base44.entities.PairingMatrix.update(activePairings.previous_active_id, { is_active: true });
+      await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
+      await safeUpdate('PairingMatrix', activePairings.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchPairings();
-      queryClient.invalidateQueries({ queryKey: ["saved-pairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings reverted to previous version");
     },
     onError: () => toast.error("Failed to undo pairings"),
@@ -94,7 +96,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       const result = await generateOptimizationAI({ pipes, blends, profile, whatIfText: "" });
 
       if (activeOpt?.id) {
-        await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
+        await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.CollectionOptimization.create({
@@ -111,7 +113,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization regenerated successfully");
     },
     onError: () => {
@@ -123,12 +125,12 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const undoOpt = useMutation({
     mutationFn: async () => {
       if (!activeOpt?.previous_active_id) return;
-      await base44.entities.CollectionOptimization.update(activeOpt.id, { is_active: false });
-      await base44.entities.CollectionOptimization.update(activeOpt.previous_active_id, { is_active: true });
+      await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
+      await safeUpdate('CollectionOptimization', activeOpt.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchOpt();
-      queryClient.invalidateQueries({ queryKey: ["collection-optimization", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
       toast.success("Optimization reverted to previous version");
     },
     onError: () => toast.error("Failed to undo optimization"),
@@ -185,12 +187,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             });
 
             if (foundAny) {
-              const { id, created_date, updated_date, ...rest } = pipe;
-              await base44.entities.Pipe.update(pipe.id, {
-                ...rest,
-                ...updates,
-                created_by: pipe.created_by || user.email,
-              });
+              await safeUpdate('Pipe', pipe.id, updates, user?.email);
               updatedCount++;
             }
           } catch (error) {
@@ -203,8 +200,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       return updatedCount;
     },
     onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
-      queryClient.invalidateQueries({ queryKey: ["pipes"] });
+      invalidatePipeQueries(queryClient, user?.email);
       if (count > 0) {
         toast.success(`Updated ${count} pipe(s) with verified measurements`);
       } else {
