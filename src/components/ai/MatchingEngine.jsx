@@ -10,8 +10,6 @@ import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
