@@ -35,21 +35,8 @@ import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator";
 
 export default function PipeDetailPage() {
-  // Base44 environments can be path-based (window.location.search) or hash-based
-  // (query string appears after '#'). Support both so the detail page always finds its id.
-  const rawQuery =
-    window.location.search ||
-    (window.location.hash && window.location.hash.includes("?")
-      ? window.location.hash.slice(window.location.hash.indexOf("?"))
-      : "");
-
-  const urlParams = new URLSearchParams(rawQuery);
-  const pipeIdRaw = urlParams.get("id");
-  const pipeIdStr = typeof pipeIdRaw === "string" ? pipeIdRaw.trim() : pipeIdRaw;
-
-  // Base44 IDs are often strings, but some environments may use numeric ids.
-  // If the id looks numeric, cast it so filter({ id }) matches correctly.
-  const pipeId = pipeIdStr && /^\d+$/.test(pipeIdStr) ? Number(pipeIdStr) : pipeIdStr;
+  const urlParams = new URLSearchParams(window.location.search);
+  const pipeId = urlParams.get("id")?.trim();
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -62,13 +49,13 @@ export default function PipeDetailPage() {
   const { data: pipe, isLoading, error } = useQuery({
     queryKey: ['pipe', pipeId],
     queryFn: async () => {
-      console.log('[PipeDetail] Querying pipe with ID:', pipeId, 'Type:', typeof pipeId);
-      const pipes = await base44.entities.Pipe.filter({ id: pipeId });
-      console.log('[PipeDetail] Query result:', pipes);
-      if (!pipes || pipes.length === 0) {
+      if (!pipeId) throw new Error('Missing pipe ID');
+      try {
+        return await base44.entities.Pipe.get(pipeId);
+      } catch (err) {
+        console.error('Pipe fetch failed:', err);
         throw new Error('Pipe not found');
       }
-      return pipes[0];
     },
     enabled: !!pipeId,
     retry: false,
@@ -117,24 +104,18 @@ export default function PipeDetailPage() {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => {
-      console.log('[PipeDetail] Updating pipe with ID:', pipeId, 'Data:', data);
-      return base44.entities.Pipe.update(pipeId, data);
-    },
-    onSuccess: (result) => {
-      console.log('[PipeDetail] Update successful, result:', result);
+    mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipe', pipeId] });
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowEdit(false);
-    },
-    onError: (error) => {
-      console.error('[PipeDetail] Update failed:', error);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Pipe.delete(pipeId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pipes'] });
       window.location.href = createPageUrl('Pipes');
     },
   });
