@@ -50,12 +50,46 @@ export default function PipeDetailPage() {
     queryKey: ['pipe', pipeId],
     queryFn: async () => {
       if (!pipeId) throw new Error('Missing pipe ID');
+
+      const isNumeric = /^\d+$/.test(pipeId);
+      const numericId = isNumeric ? Number(pipeId) : null;
+
+      // 1) Try get() with the raw string id
       try {
-        return await base44.entities.Pipe.get(pipeId);
-      } catch (err) {
-        console.error('Pipe fetch failed:', err);
-        throw new Error('Pipe not found');
+        const p = await base44.entities.Pipe.get(pipeId);
+        if (p) return p;
+      } catch (e) {
+        console.warn("Pipe.get(string) failed", { pipeId, e });
       }
+
+      // 2) If it looks numeric, try get() with a number id
+      if (numericId !== null) {
+        try {
+          const p = await base44.entities.Pipe.get(numericId);
+          if (p) return p;
+        } catch (e) {
+          console.warn("Pipe.get(number) failed", { numericId, e });
+        }
+      }
+
+      // 3) Fallback: filter by id (some Base44 setups behave better here)
+      try {
+        const byString = await base44.entities.Pipe.filter({ id: pipeId });
+        if (Array.isArray(byString) && byString.length) return byString[0];
+      } catch (e) {
+        console.warn("Pipe.filter({id: string}) failed", { pipeId, e });
+      }
+
+      if (numericId !== null) {
+        try {
+          const byNum = await base44.entities.Pipe.filter({ id: numericId });
+          if (Array.isArray(byNum) && byNum.length) return byNum[0];
+        } catch (e) {
+          console.warn("Pipe.filter({id: number}) failed", { numericId, e });
+        }
+      }
+
+      throw new Error('Pipe not found');
     },
     enabled: !!pipeId,
     retry: false,
