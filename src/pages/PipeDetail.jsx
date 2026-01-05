@@ -35,8 +35,21 @@ import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator";
 
 export default function PipeDetailPage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const pipeId = urlParams.get('id');
+  // Base44 environments can be path-based (window.location.search) or hash-based
+  // (query string appears after '#'). Support both so the detail page always finds its id.
+  const rawQuery =
+    window.location.search ||
+    (window.location.hash && window.location.hash.includes("?")
+      ? window.location.hash.slice(window.location.hash.indexOf("?"))
+      : "");
+
+  const urlParams = new URLSearchParams(rawQuery);
+  const pipeIdRaw = urlParams.get("id");
+  const pipeIdStr = typeof pipeIdRaw === "string" ? pipeIdRaw.trim() : pipeIdRaw;
+
+  // Base44 IDs are often strings, but some environments may use numeric ids.
+  // If the id looks numeric, cast it so filter({ id }) matches correctly.
+  const pipeId = pipeIdStr && /^\d+$/.test(pipeIdStr) ? Number(pipeIdStr) : pipeIdStr;
 
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
