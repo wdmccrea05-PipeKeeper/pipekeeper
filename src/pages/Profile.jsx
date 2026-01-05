@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -140,7 +141,7 @@ export default function ProfilePage() {
     mutationFn: async (data) => {
       const profileData = { ...data, user_email: user?.email };
       if (profile) {
-        return base44.entities.UserProfile.update(profile.id, profileData);
+        return safeUpdate('UserProfile', profile.id, profileData, user?.email);
       } else {
         return base44.entities.UserProfile.create(profileData);
       }
@@ -817,7 +818,7 @@ export default function ProfilePage() {
                     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
                     for (const pipe of pipes) {
                       if (pipe.break_in_schedule_history?.length > 0) {
-                        await base44.entities.Pipe.update(pipe.id, { break_in_schedule_history: [] });
+                        await safeUpdate('Pipe', pipe.id, { break_in_schedule_history: [] }, user?.email);
                       }
                     }
                     

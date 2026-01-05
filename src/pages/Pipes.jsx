@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter, Grid3X3, List, Sparkles } from "lucide-react";
@@ -63,9 +65,9 @@ export default function PipesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Pipe.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('Pipe', id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+      invalidatePipeQueries(queryClient, user?.email);
       setShowForm(false);
       setEditingPipe(null);
     },

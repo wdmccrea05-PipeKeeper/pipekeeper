@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +40,7 @@ export default function TobaccoLibrarySyncPage() {
     for (const blend of blendsNeedingLogos) {
       try {
         const libraryLogo = getTobaccoLogo(blend.manufacturer);
-        await base44.entities.TobaccoBlend.update(blend.id, { logo: libraryLogo });
+        await safeUpdate('TobaccoBlend', blend.id, { logo: libraryLogo }, user?.email);
         updated.push(blend.name);
       } catch (err) {
         failed.push(blend.name);
@@ -46,7 +48,7 @@ export default function TobaccoLibrarySyncPage() {
     }
 
     setResults({ updated, failed });
-    queryClient.invalidateQueries({ queryKey: ['blends'] });
+    invalidateBlendQueries(queryClient, user?.email);
     setSyncing(false);
   };
 
