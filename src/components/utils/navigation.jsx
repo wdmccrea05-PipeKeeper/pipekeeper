@@ -8,9 +8,14 @@ import { createPageUrl } from './createPageUrl';
 /**
  * Navigate to a page programmatically without full reload
  * @param {string} pageName - Page name with optional query params
+ * @param {object} navigate - React Router navigate function (optional, falls back to location.href)
  */
-export function navigateTo(pageName) {
-  window.location.href = createPageUrl(pageName);
+export function navigateTo(pageName, navigate = null) {
+  if (navigate) {
+    navigate(createPageUrl(pageName));
+  } else {
+    window.location.href = createPageUrl(pageName);
+  }
 }
 
 /**
@@ -33,9 +38,14 @@ export function createDetailUrl(pageName, id, additionalParams = {}) {
  * Navigate to a detail page with safe ID encoding
  * @param {string} pageName - Page name
  * @param {string|number} id - Entity ID
+ * @param {object} navigate - React Router navigate function (optional, falls back to location.href)
  */
-export function navigateToDetail(pageName, id) {
-  window.location.href = createDetailUrl(pageName, id);
+export function navigateToDetail(pageName, id, navigate = null) {
+  if (navigate) {
+    navigate(createDetailUrl(pageName, id));
+  } else {
+    window.location.href = createDetailUrl(pageName, id);
+  }
 }
 
 /**

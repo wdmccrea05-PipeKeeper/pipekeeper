@@ -9,9 +9,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FAQDownloadButton from "@/components/faq/FAQDownloadButton";
 import { shouldShowPurchaseUI, isIOSCompanionApp } from "@/components/utils/companion";
 import { safeUpdate } from "@/components/utils/safeUpdate";
+import { useNavigate } from "react-router-dom";
 
 export default function FAQPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const canShowPurchaseUI = shouldShowPurchaseUI();
   const inCompanion = isIOSCompanionApp();
 
@@ -107,7 +109,7 @@ export default function FAQPage() {
     mutationFn: ({ id, data }) => safeUpdate('OnboardingStatus', id, data, user?.email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-status', user?.email] });
-      window.location.href = createPageUrl('Home');
+      navigate(createPageUrl('Home'));
     },
   });
 

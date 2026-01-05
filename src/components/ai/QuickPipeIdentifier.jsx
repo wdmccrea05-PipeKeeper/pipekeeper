@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   const [clarificationNeeded, setClarificationNeeded] = useState(null);
   const [clarificationResponses, setClarificationResponses] = useState({});
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -266,7 +268,7 @@ Provide analysis as JSON:
       invalidatePipeQueries(queryClient);
       
       // Navigate to the new pipe detail page
-      window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(newPipe.id)}`);
+      navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(newPipe.id)}`));
     } catch (error) {
       console.error('Failed to add pipe:', error);
       alert('Failed to add pipe to collection. Please try again.');

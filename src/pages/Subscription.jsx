@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -33,6 +34,7 @@ const PRICING_OPTIONS = [
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
 
@@ -69,10 +71,10 @@ export default function SubscriptionPage() {
         queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
         queryClient.invalidateQueries({ queryKey: ['current-user'] });
         setCheckingSession(false);
-        window.history.replaceState({}, '', createPageUrl('Subscription'));
+        navigate(createPageUrl('Subscription'), { replace: true });
       }, 2000);
     }
-  }, [queryClient, user?.email]);
+  }, [queryClient, user?.email, navigate]);
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('Subscription', id, data, user?.email),
