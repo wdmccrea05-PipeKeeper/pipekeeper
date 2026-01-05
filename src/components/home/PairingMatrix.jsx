@@ -321,11 +321,20 @@ export default function PairingMatrix({ pipes, blends }) {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
-                                <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
+                              {pipe?.id ? (
+                                <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                                  <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
+                                    {pipePairing.pipe_name}
+                                  </h4>
+                                </a>
+                              ) : (
+                                <h4
+                                  className="font-semibold text-stone-500"
+                                  title="This pipe is missing from your collection (deleted or not loaded yet)."
+                                >
                                   {pipePairing.pipe_name}
                                 </h4>
-                              </a>
+                              )}
                             </div>
                             {bestMatch && (
                               <div className="flex items-center gap-2 mt-1">
@@ -396,11 +405,20 @@ export default function PairingMatrix({ pipes, blends }) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2">
-                                            <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend?.id)}`)}>
-                                              <p className="font-medium text-stone-800 hover:text-amber-700 transition-colors">
+                                            {blend?.id ? (
+                                              <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
+                                                <p className="font-medium text-stone-800 hover:text-amber-700 transition-colors">
+                                                  {match.blend_name}
+                                                </p>
+                                              </a>
+                                            ) : (
+                                              <p
+                                                className="font-medium text-stone-500"
+                                                title="This blend is missing from your collection (deleted or not loaded yet)."
+                                              >
                                                 {match.blend_name}
                                               </p>
-                                            </a>
+                                            )}
                                           </div>
                                           <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>
                                         </div>
