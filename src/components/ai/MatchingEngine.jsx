@@ -10,6 +10,7 @@ import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
@@ -416,7 +417,7 @@ Provide recommendations in JSON format with:
                      return hasValidId ? (
                        <a 
                          key={idx}
-                         href={`/TobaccoDetail?id=${encodeURIComponent(userBlend.id)}`}
+                         href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(userBlend.id)}`)}
                          className="block p-4 rounded-lg bg-emerald-50 border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100 transition-colors cursor-pointer"
                        >
                          {CardContent}
