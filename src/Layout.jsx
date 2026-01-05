@@ -15,7 +15,6 @@ const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
-  { name: 'AI Updates', page: 'AIUpdates', icon: Sparkles, isIconComponent: true },
   { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },

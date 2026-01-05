@@ -32,6 +32,7 @@ import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
+import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -510,7 +511,12 @@ export default function PipeDetailPage() {
             <Card className="border-stone-200">
               <CardContent className="p-6">
                 {isPaidUser ? (
-                  <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
+                  <>
+                    <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
+                    <div className="mt-6 pt-6 border-t border-stone-200">
+                      <PipeMeasurementCalculator pipe={pipe} onUpdate={handlePipeUpdate} />
+                    </div>
+                  </>
                 ) : (
                   <UpgradePrompt 
                     featureName="AI Pipe Identification"
