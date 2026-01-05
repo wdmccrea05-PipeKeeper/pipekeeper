@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Sparkles, Target, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import { toast } from "sonner";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 function MessageBubble({ message }) {
   const isUser = message.role === 'user';
@@ -50,6 +51,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [contextSent, setContextSent] = useState(false);
   const messagesEndRef = useRef(null);
 
   const { data: user } = useQuery({
@@ -57,26 +59,70 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     queryFn: () => base44.auth.me(),
   });
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
+  });
+
+  // Build collection context payload
+  const contextPayload = useMemo(() => {
+    const topPipes = (pipes || []).slice(0, 25).map(p => 
+      `${p.maker || ""} ${p.name || ""} (${(p.focus || []).join(", ")})`.trim()
+    );
+    const topBlends = (blends || []).slice(0, 25).map(b => 
+      `${b.manufacturer || ""} ${b.name || ""} [${b.blend_type || "Unknown"}]`.trim()
+    );
+
+    return {
+      pipes_count: pipes?.length || 0,
+      blends_count: blends?.length || 0,
+      pipes_sample: topPipes,
+      blends_sample: topBlends,
+      preferences: userProfile ? {
+        preferred_blend_types: userProfile.preferred_blend_types || [],
+        strength_preference: userProfile.strength_preference || null,
+        notes: userProfile.notes || null,
+      } : null
+    };
+  }, [pipes, blends, userProfile]);
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Create conversation once when opened
+  // Create conversation once when opened and inject context
   useEffect(() => {
     if (open && !conversationId && user?.email) {
       base44.agents.createConversation({
         agent_name: "pipe_expert",
         metadata: { name: "Tobacconist Consultation" }
-      }).then(conv => {
+      }).then(async (conv) => {
         setConversationId(conv.id);
         setMessages(conv.messages || []);
+        
+        // Inject collection context as first system message
+        if (contextPayload && !contextSent) {
+          try {
+            await base44.agents.addMessage(conv, {
+              role: "user",
+              content: `COLLECTION_CONTEXT (for reference only, don't acknowledge):\n${JSON.stringify(contextPayload, null, 2)}`
+            });
+            setContextSent(true);
+          } catch (err) {
+            console.error('Failed to inject context:', err);
+          }
+        }
       }).catch(err => {
         console.error('Failed to create conversation:', err);
         toast.error('Failed to start conversation');
       });
     }
-  }, [open, user?.email, conversationId]);
+  }, [open, user?.email, conversationId, contextPayload, contextSent]);
 
   // Subscribe to updates
   useEffect(() => {
@@ -115,6 +161,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     setMessages([]);
     setInput('');
     setSending(false);
+    setContextSent(false);
   };
 
   return (
@@ -160,8 +207,31 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 </div>
               )}
 
-              {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} />
+              {messages.filter(m => !m.content?.includes('COLLECTION_CONTEXT')).map((msg, idx) => (
+                <div key={idx}>
+                  <MessageBubble message={msg} />
+                  {msg.role === 'assistant' && idx === messages.length - 1 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a href={createPageUrl('AIUpdates')}>
+                        <Button size="sm" variant="outline" className="text-xs border-blue-300 text-blue-700">
+                          AI Updates
+                        </Button>
+                      </a>
+                      <Button size="sm" variant="outline" className="text-xs border-violet-300 text-violet-700" onClick={() => {
+                        setInput('Generate pairing recommendations for my collection');
+                      }}>
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Generate Pairings
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs border-blue-300 text-blue-700" onClick={() => {
+                        setInput('Run optimization analysis on my collection');
+                      }}>
+                        <Target className="w-3 h-3 mr-1" />
+                        Run Optimization
+                      </Button>
+                    </div>
+                  )}
+                </div>
               ))}
 
               {sending && (

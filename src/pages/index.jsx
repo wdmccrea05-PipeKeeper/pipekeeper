@@ -38,6 +38,7 @@ const ROUTES = {
   "/PrivacyPolicy": PrivacyPolicy,
   "/TobaccoLibrarySync": TobaccoLibrarySync,
   "/BulkLogoUpload": BulkLogoUpload,
+  "/AIUpdates": AIUpdates,
 };
 
 // Create case-insensitive route lookup
