@@ -143,7 +143,7 @@ export default function PipeDetailPage() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipe', pipeId] });
+      queryClient.invalidateQueries({ queryKey: ['pipe', pipeId, user?.email] });
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowEdit(false);
     },
