@@ -656,7 +656,7 @@ export default function HomePage() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-2 sm:space-y-3">
                     {recentPipes.map(pipe => (
-                      <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                      <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                             {pipe.photos?.[0] ? (
