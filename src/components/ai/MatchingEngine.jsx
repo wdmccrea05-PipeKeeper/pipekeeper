@@ -17,6 +17,95 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [collapsed, setCollapsed] = useState(false);
   const queryClient = useQueryClient();
 
+  // Normalization and fuzzy matching helpers
+  function norm(s) {
+    return (s || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function stripDupManufacturer(mfr) {
+    // Handles cases like "Cornell & Diehl - Cornell & Diehl"
+    const parts = (mfr || "").split(" - ").map(p => p.trim()).filter(Boolean);
+    if (parts.length >= 2 && norm(parts[0]) === norm(parts[1])) return parts[0];
+    return mfr;
+  }
+
+  function extractManufacturerAndName(recManufacturer, recName) {
+    let m = (recManufacturer || "").trim();
+    let n = (recName || "").trim();
+
+    // Sometimes the LLM stuffs "Mfr - Name" into manufacturer or name
+    const mParts = m.split(" - ").map(p => p.trim()).filter(Boolean);
+    const nParts = n.split(" - ").map(p => p.trim()).filter(Boolean);
+
+    if (!n && mParts.length >= 2) {
+      // manufacturer field looks like "Mfr - Blend Name"
+      m = mParts[0];
+      n = mParts.slice(1).join(" - ");
+    } else if (nParts.length >= 2 && !m) {
+      // name field looks like "Mfr - Blend Name"
+      m = nParts[0];
+      n = nParts.slice(1).join(" - ");
+    }
+
+    m = stripDupManufacturer(m);
+
+    // If name starts with manufacturer, trim it
+    const nm = norm(m);
+    const nn = norm(n);
+    if (nm && nn.startsWith(nm + " ")) {
+      n = n.slice(n.toLowerCase().indexOf(m.toLowerCase()) + m.length).trim();
+    }
+
+    return { manufacturer: m, name: n };
+  }
+
+  function findBestUserBlend(blends, rec) {
+    const { manufacturer: rm, name: rn } = extractManufacturerAndName(rec.manufacturer, rec.name);
+
+    const rmN = norm(rm);
+    const rnN = norm(rn);
+
+    // 1) Exact normalized match on manufacturer+name
+    let hit = blends.find(b => norm(b.manufacturer) === rmN && norm(b.name) === rnN);
+    if (hit) return hit;
+
+    // 2) Match by full string containment
+    const targetFull = norm(`${rm} ${rn}`);
+    hit = blends.find(b => {
+      const full = norm(`${b.manufacturer} ${b.name}`);
+      return full === targetFull || full.includes(targetFull) || targetFull.includes(full);
+    });
+    if (hit) return hit;
+
+    // 3) Fallback: best similarity by overlapping tokens
+    const targetTokens = new Set(targetFull.split(" ").filter(Boolean));
+    let best = null;
+    let bestScore = 0;
+
+    for (const b of blends) {
+      const full = norm(`${b.manufacturer} ${b.name}`);
+      const tokens = full.split(" ").filter(Boolean);
+      if (!tokens.length) continue;
+
+      let overlap = 0;
+      for (const t of tokens) if (targetTokens.has(t)) overlap++;
+
+      const score = overlap / Math.max(tokens.length, targetTokens.size);
+      if (score > bestScore) {
+        bestScore = score;
+        best = b;
+      }
+    }
+
+    // Require a reasonable overlap so we don't pick the wrong blend
+    return bestScore >= 0.45 ? best : null;
+  }
+
   const { data: customLogos = [] } = useQuery({
     queryKey: ['tobacco-logos'],
     queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
@@ -114,6 +203,12 @@ Consider:
 5. If pipe has a focus, prioritize matching blends but explain how the physical characteristics support that focus
 
 CRITICAL: Do NOT include any URLs, links, sources, or citations in your response.
+
+IMPORTANT FORMATTING RULES:
+- manufacturer must be ONLY the brand/manufacturer name (e.g., "Cornell & Diehl", not "Cornell & Diehl - Cornell & Diehl")
+- name must be ONLY the blend name (e.g., "Star of the East", not "Cornell & Diehl - Star of the East")
+- Never combine manufacturer and name into a single field
+- No dashes, no duplication, no combined strings
 
 Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
@@ -295,11 +390,8 @@ Provide recommendations in JSON format with:
                 <CardContent>
                   <div className="grid gap-3">
                     {recommendations.from_collection.map((blend, idx) => {
-                     const userBlend = blends.find(b => 
-                       b.manufacturer?.toLowerCase() === blend.manufacturer?.toLowerCase() &&
-                       b.name?.toLowerCase() === blend.name?.toLowerCase()
-                     );
-                     const imageUrl = userBlend?.photo || userBlend?.logo || getTobaccoLogo(blend.manufacturer, customLogos);
+                     const userBlend = findBestUserBlend(blends, blend);
+                     const imageUrl = userBlend?.photo || userBlend?.logo || (userBlend?.manufacturer ? getTobaccoLogo(userBlend.manufacturer, customLogos) : getTobaccoLogo(blend.manufacturer, customLogos));
 
                      return (
                        <div 
