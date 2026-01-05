@@ -471,7 +471,7 @@ export default function TobaccoCollectionStats() {
             {drillDown?.type === 'blendType' && (
               <>
                 {drillDown.data.blends.map(blend => (
-                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
                       <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
@@ -536,7 +536,7 @@ export default function TobaccoCollectionStats() {
                   }
                   
                   return (
-                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                       <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
                         <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                           {blend.logo || blend.photo ? (
