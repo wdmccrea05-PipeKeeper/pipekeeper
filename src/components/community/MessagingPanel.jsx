@@ -339,11 +339,11 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                disabled={!isOnline(selectedFriend) || isBlocked(selectedFriend)}
+                disabled={isBlocked(selectedFriend)}
               />
               <Button 
                 onClick={handleSendMessage}
-                disabled={!messageText.trim() || sendMessageMutation.isPending || !isOnline(selectedFriend) || isBlocked(selectedFriend)}
+                disabled={!messageText.trim() || sendMessageMutation.isPending || isBlocked(selectedFriend)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Send className="w-4 h-4" />
@@ -354,8 +354,8 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 You have blocked this user.
               </p>
             ) : !isOnline(selectedFriend) && (
-              <p className="text-xs text-amber-600 mt-2">
-                This user is offline. Messages will be saved to their inbox.
+              <p className="text-xs text-emerald-600 mt-2">
+                This user is offline. Your message will be saved to their inbox.
               </p>
             )}
           </div>
