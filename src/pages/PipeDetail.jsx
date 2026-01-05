@@ -117,11 +117,18 @@ export default function PipeDetailPage() {
   const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Pipe.update(pipeId, data),
-    onSuccess: () => {
+    mutationFn: (data) => {
+      console.log('[PipeDetail] Updating pipe with ID:', pipeId, 'Data:', data);
+      return base44.entities.Pipe.update(pipeId, data);
+    },
+    onSuccess: (result) => {
+      console.log('[PipeDetail] Update successful, result:', result);
       queryClient.invalidateQueries({ queryKey: ['pipe', pipeId] });
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowEdit(false);
+    },
+    onError: (error) => {
+      console.error('[PipeDetail] Update failed:', error);
     },
   });
 
