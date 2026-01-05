@@ -1,6 +1,5 @@
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
-import FAQ from './pages/FAQ';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -18,13 +17,13 @@ import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import index from './pages/index';
 import TobaccoDetail from './pages/TobaccoDetail';
+import FAQ from './pages/FAQ';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
-    "FAQ": FAQ,
     "Import": Import,
     "Invite": Invite,
     "PrivacyPolicy": PrivacyPolicy,
@@ -42,6 +41,7 @@ export const PAGES = {
     "PublicProfile": PublicProfile,
     "index": index,
     "TobaccoDetail": TobaccoDetail,
+    "FAQ": FAQ,
 }
 
 export const pagesConfig = {
