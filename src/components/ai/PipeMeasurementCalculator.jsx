@@ -70,6 +70,25 @@ Return JSON with ONLY the missing measurements you found verified data for. Incl
         }
       });
 
+      // Calculate chamber volume if we have the necessary dimensions
+      const finalBowlDiameter = updates.bowl_diameter_mm || pipe.bowl_diameter_mm;
+      const finalBowlDepth = updates.bowl_depth_mm || pipe.bowl_depth_mm;
+      
+      if (finalBowlDiameter && finalBowlDepth && !updates.chamber_volume && !pipe.chamber_volume) {
+        const radius = finalBowlDiameter / 2;
+        const volumeCm3 = Math.PI * Math.pow(radius / 10, 2) * (finalBowlDepth / 10);
+        
+        if (volumeCm3 < 1.5) {
+          updates.chamber_volume = "Small";
+        } else if (volumeCm3 < 2.5) {
+          updates.chamber_volume = "Medium";
+        } else if (volumeCm3 < 3.5) {
+          updates.chamber_volume = "Large";
+        } else {
+          updates.chamber_volume = "Extra Large";
+        }
+      }
+
       if (foundAny) {
         await onUpdate(updates);
         toast.success(`Found ${Object.keys(updates).filter(k => k !== 'dimensions_found' && k !== 'dimensions_source' && k !== 'notes').length} verified measurements`);
