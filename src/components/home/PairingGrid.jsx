@@ -71,114 +71,12 @@ export default function PairingGrid({ pipes, blends }) {
         await base44.entities.PairingMatrix.update(savedPairings.id, { is_active: false });
       }
 
-      // Generate fresh pairings using same LLM logic
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        focus: p.focus
-      }));
-
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        manufacturer: b.manufacturer,
-        blend_type: b.blend_type,
-        strength: b.strength,
-        cut: b.cut,
-        flavor_notes: b.flavor_notes
-      }));
-
-      let profileContext = "";
-      if (userProfile) {
-        profileContext = `\n\nUser Smoking Preferences:
-- Clenching: ${userProfile.clenching_preference}
-- Smoke Duration: ${userProfile.smoke_duration_preference}
-- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-- Pipe Size Preference: ${userProfile.pipe_size_preference}
-- Strength Preference: ${userProfile.strength_preference}
-- Additional Notes: ${userProfile.notes || 'None'}
-
-Weight these preferences heavily when scoring pairings. Prioritize blends that match their preferred types and strength.`;
-      }
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Analyze these pipes and tobacco blends to create optimal pairings.
-
-Pipes:
-${JSON.stringify(pipesData, null, 2)}
-
-Tobacco Blends:
-${JSON.stringify(blendsData, null, 2)}${profileContext}
-
-For each pipe, evaluate which tobacco blends would pair well.
-
-CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
-
-1. **PIPE SPECIALIZATION/FOCUS** (HIGHEST PRIORITY - Weight: 40%):
-   - If a pipe has "Non-Aromatic" or "Non Aromatic" in focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
-   - If a pipe has "Aromatic" in focus: COMPLETELY EXCLUDE all non-aromatic blends (score = 0)
-   - If a pipe HAS ANY focus field set (non-empty array): Give 9-10 scores ONLY to blends matching that focus
-   - Blends NOT matching the pipe's focus should receive maximum 5/10 score
-   - A dedicated pipe should excel at its specialization - reward this heavily
-
-2. **USER SMOKING PREFERENCES** (SECOND PRIORITY - Weight: 30%):
-   - User's preferred blend types should receive +2 bonus points
-   - User's preferred strength should receive +1 bonus point
-   - User's pipe size preference should influence recommendations
-   - If user prefers certain shapes, highlight how those pipes work with their preferred blends
-   - Tailor ALL recommendations to align with stated preferences
-
-3. **PHYSICAL PIPE CHARACTERISTICS** (THIRD PRIORITY - Weight: 30%):
-   - Bowl diameter: <18mm for milder tobaccos, 18-22mm versatile, >22mm for fuller blends
-   - Chamber volume: Small for aromatics/milds, Large for full/English blends
-   - Material: Meerschaum excellent for Virginias, Briar versatile
-   - Shape: Affects smoke temperature and moisture retention
-
-RATING SCALE:
-- 10 = Perfect match (specialization + user preference aligned)
-- 9 = Excellent (strong specialization or preference match)
-- 7-8 = Very good (partial matches)
-- 5-6 = Acceptable (no conflicts but not optimal)
-- 3-4 = Suboptimal (conflicts with focus or preferences)
-- 0-2 = Poor/Incompatible (violates focus rules or strong conflicts)
-
-CRITICAL: Prioritize pipe specialization above all else. A pipe designated for English blends should score 9-10 for English blends and much lower for others, regardless of physical characteristics.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            pairings: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  pipe_id: { type: "string" },
-                  pipe_name: { type: "string" },
-                  blend_matches: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        blend_id: { type: "string" },
-                        blend_name: { type: "string" },
-                        score: { type: "number" },
-                        reasoning: { type: "string" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+      // Generate fresh pairings using shared generator
+      const { pairings: generatedPairings } = await generatePairingsAI({ 
+        pipes, 
+        blends, 
+        profile: userProfile 
       });
-
-      const generatedPairings = result?.pairings || [];
 
       // Create clean new active record
       return await base44.entities.PairingMatrix.create({
