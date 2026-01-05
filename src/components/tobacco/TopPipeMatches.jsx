@@ -330,7 +330,7 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                 if (!pipe) return null;
 
                 return (
-                  <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                  <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                     <div className="flex items-start gap-3 p-3 rounded-lg border border-[#8b3a3a]/30 hover:border-[#8b3a3a] hover:bg-[#8b3a3a]/15 transition-all cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1a2c42] to-[#243548] border border-[#8b3a3a]/20 overflow-hidden flex items-center justify-center shrink-0">
                         {pipe.photos?.[0] ? (

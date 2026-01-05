@@ -393,7 +393,7 @@ export default function TobaccoCollectionStats() {
                       </div>
                       <div className="space-y-2">
                         {brandBlends.map(blend => (
-                          <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                         <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                             <div className="flex items-center justify-between p-2 bg-white rounded hover:bg-stone-100 transition-colors">
                               <span className="text-sm text-stone-700">{blend.name}</span>
                               {blend.quantity_owned > 0 && (
@@ -413,7 +413,7 @@ export default function TobaccoCollectionStats() {
             {drillDown?.type === 'favorites' && (
               <>
                 {drillDown.data.map(blend => (
-                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
                       <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
@@ -440,7 +440,7 @@ export default function TobaccoCollectionStats() {
             {drillDown?.type === 'opened' && (
               <>
                 {drillDown.data.map(blend => (
-                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
                       <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (
@@ -568,7 +568,7 @@ export default function TobaccoCollectionStats() {
             {drillDown?.type === 'lowInventory' && (
               <>
                 {drillDown.data.map(blend => (
-                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                  <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border border-amber-200">
                       <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                         {blend.logo || blend.photo ? (

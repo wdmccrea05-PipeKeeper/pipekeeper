@@ -50,6 +50,7 @@ export function invalidateBlendQueries(queryClient, userEmail = null) {
   invalidateEntityQueries(queryClient, 'blends', userEmail);
   invalidateEntityQueries(queryClient, 'tobacco', userEmail);
   invalidateEntityQueries(queryClient, 'tobacco-blend', userEmail);
+  invalidateEntityQueries(queryClient, 'tobacco-blends', userEmail);
   
   // Invalidate related queries
   queryClient.invalidateQueries({ 

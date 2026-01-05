@@ -167,7 +167,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
             <p className="text-xs font-medium text-blue-700 mb-2">Matching Blends in Collection:</p>
             <div className="flex flex-wrap gap-1.5">
               {matchingBlends.slice(0, 5).map(blend => (
-                <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                   <Badge variant="outline" className="cursor-pointer hover:bg-blue-50 border-blue-200 text-blue-700">
                     {blend.name}
                   </Badge>

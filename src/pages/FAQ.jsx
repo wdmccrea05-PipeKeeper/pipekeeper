@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FAQDownloadButton from "@/components/faq/FAQDownloadButton";
 import { shouldShowPurchaseUI, isIOSCompanionApp } from "@/components/utils/companion";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 
 export default function FAQPage() {
   const queryClient = useQueryClient();
@@ -103,9 +104,9 @@ export default function FAQPage() {
   });
 
   const updateOnboardingMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.OnboardingStatus.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('OnboardingStatus', id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['onboarding-status'] });
+      queryClient.invalidateQueries({ queryKey: ['onboarding-status', user?.email] });
       window.location.href = createPageUrl('Home');
     },
   });

@@ -106,7 +106,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   });
 
   const updateLogMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.SmokingLog.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
     onSuccess: async (_, variables) => {
       // Update break-in schedule when log is edited
       const oldLog = logs.find(l => l.id === variables.id);
@@ -340,7 +340,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
       
       queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
-      queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
+      invalidateBlendQueries(queryClient, user?.email);
       setShowAddLog(false);
       setFormData({
         pipe_id: '',

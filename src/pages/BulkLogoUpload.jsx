@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 
 export default function BulkLogoUploadPage() {
   const [files, setFiles] = useState([]);
@@ -53,7 +54,7 @@ export default function BulkLogoUploadPage() {
 
         if (existing.length > 0) {
           // Update existing entry
-          await base44.entities.TobaccoLogoLibrary.update(existing[0].id, {
+          await safeUpdate('TobaccoLogoLibrary', existing[0].id, {
             logo_url: file_url
           });
           uploadResults.push({

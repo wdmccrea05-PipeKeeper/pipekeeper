@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -119,7 +120,7 @@ export default function HomePage() {
   });
 
   const updateOnboardingMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.OnboardingStatus.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('OnboardingStatus', id, data, user?.email),
   });
 
   useEffect(() => {
@@ -696,7 +697,7 @@ export default function HomePage() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-2 sm:space-y-3">
                     {recentBlends.map(blend => (
-                      <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                      <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
                             {blend.logo || blend.photo ? (

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const [photos, setPhotos] = useState([]);
@@ -262,10 +263,10 @@ Provide analysis as JSON:
       };
 
       const newPipe = await base44.entities.Pipe.create(pipeData);
-      await queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      invalidatePipeQueries(queryClient);
       
       // Navigate to the new pipe detail page
-      window.location.href = createPageUrl(`PipeDetail?id=${newPipe.id}`);
+      window.location.href = createPageUrl(`PipeDetail?id=${encodeURIComponent(newPipe.id)}`);
     } catch (error) {
       console.error('Failed to add pipe:', error);
       alert('Failed to add pipe to collection. Please try again.');
