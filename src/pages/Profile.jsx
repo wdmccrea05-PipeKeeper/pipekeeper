@@ -51,6 +51,9 @@ export default function ProfilePage() {
     allow_comments: true,
     enable_messaging: false,
     allow_web_lookups: true,
+    privacy_hide_values: false,
+    privacy_hide_inventory: false,
+    privacy_hide_collection_counts: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
     preferred_blend_types: [],
@@ -119,6 +122,9 @@ export default function ProfilePage() {
         allow_comments: profile.allow_comments !== undefined ? profile.allow_comments : true,
         enable_messaging: profile.enable_messaging || false,
         allow_web_lookups: profile.allow_web_lookups !== false,
+        privacy_hide_values: profile.privacy_hide_values || false,
+        privacy_hide_inventory: profile.privacy_hide_inventory || false,
+        privacy_hide_collection_counts: profile.privacy_hide_collection_counts || false,
         clenching_preference: profile.clenching_preference || "Sometimes",
         smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -499,6 +505,45 @@ export default function ProfilePage() {
                       <Globe className="w-3 h-3" />
                       Allow AI to use external web lookups for enrichment
                     </Label>
+                  </div>
+                  <div className="space-y-2 pt-2 border-t">
+                    <h4 className="text-sm font-semibold text-stone-700">Public Profile Privacy</h4>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="privacy_hide_values"
+                        checked={formData.privacy_hide_values || false}
+                        onChange={(e) => setFormData({...formData, privacy_hide_values: e.target.checked})}
+                        className="w-4 h-4 rounded border-stone-300"
+                      />
+                      <Label htmlFor="privacy_hide_values" className="text-sm text-stone-700 cursor-pointer">
+                        Hide pipe values in public profile
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="privacy_hide_inventory"
+                        checked={formData.privacy_hide_inventory || false}
+                        onChange={(e) => setFormData({...formData, privacy_hide_inventory: e.target.checked})}
+                        className="w-4 h-4 rounded border-stone-300"
+                      />
+                      <Label htmlFor="privacy_hide_inventory" className="text-sm text-stone-700 cursor-pointer">
+                        Hide tobacco inventory quantities
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="privacy_hide_collection_counts"
+                        checked={formData.privacy_hide_collection_counts || false}
+                        onChange={(e) => setFormData({...formData, privacy_hide_collection_counts: e.target.checked})}
+                        className="w-4 h-4 rounded border-stone-300"
+                      />
+                      <Label htmlFor="privacy_hide_collection_counts" className="text-sm text-stone-700 cursor-pointer">
+                        Hide collection counts
+                      </Label>
+                    </div>
                   </div>
 
 
