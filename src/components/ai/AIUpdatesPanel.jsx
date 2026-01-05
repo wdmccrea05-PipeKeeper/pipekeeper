@@ -185,7 +185,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             });
 
             if (foundAny) {
-              await base44.entities.Pipe.update(pipe.id, updates);
+              const { id, created_date, updated_date, ...rest } = pipe;
+              await base44.entities.Pipe.update(pipe.id, {
+                ...rest,
+                ...updates,
+                created_by: pipe.created_by || user.email,
+              });
               updatedCount++;
             }
           } catch (error) {
@@ -198,6 +203,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       return updatedCount;
     },
     onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
       queryClient.invalidateQueries({ queryKey: ["pipes"] });
       if (count > 0) {
         toast.success(`Updated ${count} pipe(s) with verified measurements`);

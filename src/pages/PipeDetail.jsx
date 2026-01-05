@@ -69,7 +69,13 @@ export default function PipeDetailPage() {
         const p = await base44.entities.Pipe.get(pipeId);
         if (p) return p;
       } catch (e) {
-        console.warn("Pipe.get(string) failed", { pipeId, e });
+        console.warn("Pipe.get(string) failed", {
+          pipeId,
+          message: e?.message,
+          status: e?.status,
+          response: e?.response,
+          e
+        });
       }
 
       // 2) If it looks numeric, try get() with a number id
@@ -78,7 +84,13 @@ export default function PipeDetailPage() {
           const p = await base44.entities.Pipe.get(numericId);
           if (p) return p;
         } catch (e) {
-          console.warn("Pipe.get(number) failed", { numericId, e });
+          console.warn("Pipe.get(number) failed", {
+            numericId,
+            message: e?.message,
+            status: e?.status,
+            response: e?.response,
+            e
+          });
         }
       }
 
@@ -87,7 +99,13 @@ export default function PipeDetailPage() {
         const byString = await base44.entities.Pipe.filter({ id: pipeId, created_by: user.email });
         if (Array.isArray(byString) && byString.length) return byString[0];
       } catch (e) {
-        console.warn("Pipe.filter({id: string}) failed", { pipeId, e });
+        console.warn("Pipe.filter({id: string}) failed", {
+          pipeId,
+          message: e?.message,
+          status: e?.status,
+          response: e?.response,
+          e
+        });
       }
 
       if (numericId !== null) {
@@ -95,7 +113,13 @@ export default function PipeDetailPage() {
           const byNum = await base44.entities.Pipe.filter({ id: numericId, created_by: user.email });
           if (Array.isArray(byNum) && byNum.length) return byNum[0];
         } catch (e) {
-          console.warn("Pipe.filter({id: number}) failed", { numericId, e });
+          console.warn("Pipe.filter({id: number}) failed", {
+            numericId,
+            message: e?.message,
+            status: e?.status,
+            response: e?.response,
+            e
+          });
         }
       }
 
@@ -166,7 +190,12 @@ export default function PipeDetailPage() {
   };
 
   const handlePipeUpdate = (updates) => {
-    updateMutation.mutate(updates);
+    const { id, created_date, updated_date, ...rest } = pipe;
+    updateMutation.mutate({
+      ...rest,
+      ...updates,
+      created_by: pipe.created_by || user?.email,
+    });
   };
 
   if (isLoading) {
