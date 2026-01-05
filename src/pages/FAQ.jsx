@@ -26,25 +26,25 @@ export default function FAQPage() {
         { question: 'How do I add my first pipe?', answer: 'Navigate to the Pipes page and click Add Pipe. You have three options: Quick Search & Add - Use AI to search for your pipe by maker and model. The system will auto-fill details. Photo Identification - Upload photos of stampings to identify the pipe automatically (Premium feature). Manual Entry - Fill in the form fields yourself with all the details you know.' },
         { question: 'How do I add tobacco blends?', answer: 'Go to the Tobacco page and click Add Blend. You can: Search - Type the blend name and let AI fetch all the details from the internet. Manual Entry - Add flavor notes, strength, cut type, and your personal ratings. Track inventory across Tins, Bulk, and Pouches with separate open/cellared amounts. Logos are automatically pulled from our library when you enter the manufacturer name.' },
         { question: 'What can I do with the onboarding tutorial?', answer: 'The onboarding tutorial walks you through PipeKeeper\'s main features including AI pairing recommendations, photo identification, value lookup, and collection optimization.' },
-        { question: 'How do I install PipeKeeper on my phone?', answer: 'PipeKeeper can be installed on your mobile device for an app-like experience. iPhone/iPad (Safari): Open PipeKeeper in Safari, tap the Share button (square with arrow pointing up), select "Add to Home Screen", confirm by tapping "Add". Android (Chrome): Open PipeKeeper in Chrome, tap the three dots menu, select "Install app" or "Add to Home screen", confirm installation. Note: iPhone must use Safari browser, Android works best with Chrome.' },
       ],
     },
     {
       title: 'Mobile & Installation',
       items: [
+        { question: 'How do I install PipeKeeper on my phone?', answer: 'PipeKeeper can be installed on your mobile device for an app-like experience. iPhone/iPad (Safari): Open PipeKeeper in Safari, tap the Share button (square with arrow pointing up), select "Add to Home Screen", confirm by tapping "Add". Android (Chrome): Open PipeKeeper in Chrome, tap the three dots menu, select "Install app" or "Add to Home screen", confirm installation. Note: iPhone must use Safari browser, Android works best with Chrome.' },
         { question: 'Is PipeKeeper available in the App Store or Google Play?', answer: inCompanion ? 'Yes — PipeKeeper is available as an iOS companion app. The companion app is a secure web-container that displays the PipeKeeper web experience.' : 'PipeKeeper works as a web app and can also be installed to your home screen (PWA). An iOS companion app is also available for users who prefer a native wrapper.' },
         { question: 'Can I use PipeKeeper offline?', answer: 'Once installed on your device, PipeKeeper caches your data so you can view your collection offline. Some features like AI search and photo identification require an internet connection, but basic browsing and editing work offline.' },
         { question: 'Will my data sync across devices?', answer: 'Yes! Your collection data is stored in the cloud and automatically syncs across all your devices. Log in with the same account on your phone, tablet, or computer to access your pipes and tobacco anywhere.' },
       ],
     },
     {
-      title: 'AI Features',
+      title: 'AI Features (Premium)',
       items: [
-        { question: 'How does tobacco pairing work?', answer: 'PipeKeeper uses AI to match your pipes with your tobacco blends based on pipe characteristics (shape, chamber size, material, smoking traits), blend properties (type, strength, cut, flavor profile), and your preferences saved in your profile for personalized recommendations. The pairing matrix on the home page shows your best matches with scores and reasoning.' },
+        { question: 'How does tobacco pairing work?', answer: 'PipeKeeper uses AI to match your pipes with your tobacco blends based on pipe characteristics (shape, chamber size, material, smoking traits), blend properties (type, strength, cut, flavor profile), and your preferences saved in your profile for personalized recommendations. The pairing matrix on the home page shows your best matches with scores and reasoning. This is a Premium feature.' },
         { question: 'What is photo identification?', answer: 'Upload clear photos of your pipe\'s stampings, logos, or unique markings. Our AI will analyze them to identify the maker, model, approximate era, and provide market value estimates. This is a Premium feature available with a subscription.' },
-        { question: 'How accurate is the value lookup?', answer: 'Value estimates are based on current market data, recent sales, condition, maker reputation, and rarity. They provide a good baseline but actual values may vary depending on buyer interest, specific features, and market conditions. Always verify with current listings or professional appraisers for important valuations.' },
+        { question: 'How accurate is the value lookup?', answer: 'Value estimates are based on current market data, recent sales, condition, maker reputation, and rarity. They provide a good baseline but actual values may vary depending on buyer interest, specific features, and market conditions. Always verify with current listings or professional appraisers for important valuations. This is a Premium feature.' },
         { question: 'What is collection optimization?', answer: 'Collection Optimization analyzes your entire collection to suggest which blends each pipe should be specialized for, identify gaps or redundancies in your collection, recommend your next pipe purchase based on what you already have, and run "what-if" scenarios to see how a new pipe would fit. This Premium feature helps you build a well-rounded collection.' },
-        { question: 'Can I dispute or modify optimization recommendations?', answer: 'Yes! Each pipe recommendation has a "Dispute / Add Info" button that lets you provide feedback. You can disagree with a suggested specialization and explain why, share additional context about how a pipe actually smokes, or provide your personal preferences for that specific pipe. After submitting feedback, the AI will re-analyze your collection taking your input into account and adjust its recommendations accordingly.' },
+        { question: 'Can I dispute or modify optimization recommendations?', answer: 'Yes! Each pipe recommendation has a "Dispute / Add Info" button that lets you provide feedback. You can disagree with a suggested specialization and explain why, share additional context about how a pipe actually smokes, or provide your personal preferences for that specific pipe. After submitting feedback, the AI will re-analyze your collection taking your input into account and adjust its recommendations accordingly. This is a Premium feature.' },
         { question: 'What does "Specialized" vs "Versatility" mean for pipes?', answer: 'When you designate a pipe for specific blend types (its "focus"), it becomes Specialized and will show a "Specialized" badge instead of a versatility score. Specialized pipes are dedicated to specific tobacco types (like English blends or Virginias) and achieve much higher pairing scores (9-10) with those blends. Versatile pipes (rated on a 1-10 scale) can handle multiple blend types but won\'t achieve the same peak performance as a specialized pipe. The optimization system recommends specialization for maximum pairing scores - versatile pipes are good for variety, but specialized pipes are better for excellence.' },
       ],
     },
@@ -73,6 +73,7 @@ export default function FAQPage() {
         { question: 'What\'s included in the free trial?', answer: 'New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, bulk import, advanced reporting, insurance PDF generation, and automatic inventory tracking. After the trial, you can subscribe to continue using Premium features.' },
         { question: 'How much does Premium cost?', answer: 'PipeKeeper Premium is $1.99/month or $19.99/year (save 17% with annual billing). Both plans include all Premium features and automatic renewal until cancelled. You can cancel anytime from your Profile page.' },
         { question: 'What happens if I cancel my subscription?', answer: 'You\'ll keep Premium access until the end of your billing period. After that, Premium features will be locked but you\'ll still have access to your collection data and basic features. You can reactivate anytime to regain Premium access.' },
+        { question: 'How do I cancel or manage my subscription?', answer: 'You can manage your subscription directly through the Stripe billing portal. Go to your Profile page, look for the Subscription section, and click Manage Subscription to open the Stripe portal. There you can cancel your subscription, update payment method, view billing history and invoices, or change subscription plan. If you cancel, you\'ll retain Premium access until the end of your current billing period.' },
       ],
     },
     {
@@ -187,7 +188,7 @@ export default function FAQPage() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-3a">
+              <AccordionItem value="item-4">
                 <AccordionTrigger>How do I install PipeKeeper on my phone?</AccordionTrigger>
                 <AccordionContent className="text-stone-600 space-y-6">
                   <p className="font-medium">PipeKeeper can be installed on your mobile device for an app-like experience. Follow the step-by-step guide below for your device:</p>
@@ -377,6 +378,183 @@ export default function FAQPage() {
           <CardContent>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-mobile-1">
+                <AccordionTrigger>How do I install PipeKeeper on my phone?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-6">
+                  <p className="font-medium">PipeKeeper can be installed on your mobile device for an app-like experience. Follow the step-by-step guide below for your device:</p>
+                  
+                  {/* iPhone Installation Guide */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg p-4 border-2 border-blue-200">
+                    <h4 className="font-bold text-blue-900 text-lg mb-4 flex items-center gap-2">
+                      📱 iPhone / iPad Installation (Safari)
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open PipeKeeper in Safari</p>
+                          <p className="text-sm text-stone-600 mb-2">Make sure you're using Safari browser (not Chrome or others)</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <img 
+                              src="https://developer.apple.com/assets/elements/icons/safari/safari-96x96_2x.png"
+                              alt="Safari browser icon"
+                              className="w-16 h-16"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Tap the Share Button</p>
+                          <p className="text-sm text-stone-600 mb-2">Look at the bottom of Safari for the share icon (square with arrow pointing up)</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <svg className="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Select "Add to Home Screen"</p>
+                          <p className="text-sm text-stone-600 mb-2">Scroll down in the menu and tap this option</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="flex items-center gap-2 bg-blue-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">➕</span>
+                              <span className="font-medium text-blue-900">Add to Home Screen</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">4</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Confirm Installation</p>
+                          <p className="text-sm text-stone-600 mb-2">Tap "Add" in the top right corner</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="bg-green-100 rounded-lg px-6 py-2 w-fit">
+                              <span className="font-semibold text-green-900">Add</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span className="text-xl">✅</span>
+                          Done! PipeKeeper will appear on your home screen
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Android Installation Guide */}
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-lg p-4 border-2 border-green-200">
+                    <h4 className="font-bold text-green-900 text-lg mb-4 flex items-center gap-2">
+                      🤖 Android Installation (Chrome)
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">1</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open PipeKeeper in Chrome</p>
+                          <p className="text-sm text-stone-600 mb-2">Chrome browser works best for Android installation</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <img 
+                              src="https://www.gstatic.com/images/branding/product/1x/chrome_96dp.png"
+                              alt="Chrome browser icon"
+                              className="w-16 h-16"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">2</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Open the Menu</p>
+                          <p className="text-sm text-stone-600 mb-2">Tap the three dots (⋮) in the top right corner</p>
+                          <div className="bg-white/70 rounded-lg p-3 flex items-center justify-center">
+                            <span className="text-6xl text-green-700 font-light">⋮</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">3</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Select "Install app" or "Add to Home screen"</p>
+                          <p className="text-sm text-stone-600 mb-3">You'll see one of these options in the menu</p>
+                          <div className="bg-white/70 rounded-lg p-3 space-y-2">
+                            <div className="flex items-center gap-2 bg-green-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">📥</span>
+                              <span className="font-medium text-green-900">Install app</span>
+                            </div>
+                            <p className="text-xs text-stone-500 text-center">or</p>
+                            <div className="flex items-center gap-2 bg-green-100 rounded-lg px-4 py-3 w-fit">
+                              <span className="text-2xl">➕</span>
+                              <span className="font-medium text-green-900">Add to Home screen</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">4</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-stone-800 mb-2">Confirm Installation</p>
+                          <p className="text-sm text-stone-600 mb-2">A popup will appear - tap "Install" or "Add"</p>
+                          <div className="bg-white/70 rounded-lg p-3">
+                            <div className="bg-green-100 rounded-lg px-6 py-2 w-fit">
+                              <span className="font-semibold text-green-900">Install</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span className="text-xl">✅</span>
+                          Done! PipeKeeper icon will appear on your home screen
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Troubleshooting Tips */}
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                    <h5 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                      💡 Troubleshooting Tips
+                    </h5>
+                    <ul className="space-y-2 text-sm text-amber-900">
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span><strong>iPhone:</strong> Must use Safari browser - other browsers don't support PWA installation on iOS</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span><strong>Android:</strong> Chrome works best, but Firefox and Edge also support installation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>If you don't see the install option, try refreshing the page first</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>Once installed, the app works offline and loads faster than the browser version</span>
+                      </li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-mobile-2">
                 <AccordionTrigger>Is PipeKeeper available in the App Store or Google Play?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   {inCompanion ? (
@@ -387,14 +565,14 @@ export default function FAQPage() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-mobile-2">
+              <AccordionItem value="item-mobile-3">
                 <AccordionTrigger>Can I use PipeKeeper offline?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   Once installed on your device, PipeKeeper caches your data so you can view your collection offline. Some features like AI search and photo identification require an internet connection, but basic browsing and editing work offline.
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-mobile-3">
+              <AccordionItem value="item-mobile-4">
                 <AccordionTrigger>Will my data sync across devices?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   Yes! Your collection data is stored in the cloud and automatically syncs across all your devices. Log in with the same account on your phone, tablet, or computer to access your pipes and tobacco anywhere.
@@ -408,12 +586,12 @@ export default function FAQPage() {
           <CardHeader>
             <CardTitle className="text-stone-800 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-600" />
-              AI Features
+              AI Features (Premium)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="item-4">
+              <AccordionItem value="item-5">
                 <AccordionTrigger>How does tobacco pairing work?</AccordionTrigger>
                 <AccordionContent className="text-stone-600 space-y-2">
                   <p>PipeKeeper uses AI to match your pipes with your tobacco blends based on:</p>
@@ -423,24 +601,27 @@ export default function FAQPage() {
                     <li><strong>Your preferences:</strong> Saved in your profile for personalized recommendations</li>
                   </ul>
                   <p>The pairing matrix on the home page shows your best matches with scores and reasoning.</p>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-5">
-                <AccordionTrigger>What is photo identification?</AccordionTrigger>
-                <AccordionContent className="text-stone-600">
-                  Upload clear photos of your pipe's stampings, logos, or unique markings. Our AI will analyze them to identify the maker, model, approximate era, and provide market value estimates. This is a Premium feature available with a subscription.
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-6">
-                <AccordionTrigger>How accurate is the value lookup?</AccordionTrigger>
+                <AccordionTrigger>What is photo identification?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  Value estimates are based on current market data, recent sales, condition, maker reputation, and rarity. They provide a good baseline but actual values may vary depending on buyer interest, specific features, and market conditions. Always verify with current listings or professional appraisers for important valuations.
+                  <p>Upload clear photos of your pipe's stampings, logos, or unique markings. Our AI will analyze them to identify the maker, model, approximate era, and provide market value estimates.</p>
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-7">
+                <AccordionTrigger>How accurate is the value lookup?</AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p>Value estimates are based on current market data, recent sales, condition, maker reputation, and rarity. They provide a good baseline but actual values may vary depending on buyer interest, specific features, and market conditions. Always verify with current listings or professional appraisers for important valuations.</p>
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-8">
                 <AccordionTrigger>What is collection optimization?</AccordionTrigger>
                 <AccordionContent className="text-stone-600 space-y-2">
                   <p>Collection Optimization analyzes your entire collection to:</p>
@@ -450,11 +631,11 @@ export default function FAQPage() {
                     <li>Recommend your next pipe purchase based on what you already have</li>
                     <li>Run "what-if" scenarios to see how a new pipe would fit</li>
                   </ul>
-                  <p>This Premium feature helps you build a well-rounded collection.</p>
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-7a">
+              <AccordionItem value="item-8a">
                 <AccordionTrigger>Can I dispute or modify optimization recommendations?</AccordionTrigger>
                 <AccordionContent className="text-stone-600 space-y-2">
                   <p>Yes! Each pipe recommendation has a "Dispute / Add Info" button that lets you provide feedback. You can:</p>
@@ -464,10 +645,11 @@ export default function FAQPage() {
                     <li>Provide your personal preferences for that specific pipe</li>
                   </ul>
                   <p>After submitting feedback, the AI will re-analyze your collection taking your input into account and adjust its recommendations accordingly.</p>
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-7b">
+              <AccordionItem value="item-8b">
                 <AccordionTrigger>What does "Specialized" vs "Versatility" mean for pipes?</AccordionTrigger>
                 <AccordionContent className="text-stone-600 space-y-2">
                   <p>When you designate a pipe for specific blend types (its "focus"), it becomes <strong>Specialized</strong> and will show a "Specialized" badge instead of a versatility score.</p>
@@ -766,6 +948,34 @@ export default function FAQPage() {
                   )}
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="item-19">
+                <AccordionTrigger>How do I cancel or manage my subscription?</AccordionTrigger>
+                <AccordionContent className="text-stone-600 space-y-3">
+                  {canShowPurchaseUI ? (
+                    <>
+                      <p>You can manage your subscription directly through the Stripe billing portal:</p>
+                      <ol className="list-decimal pl-5 space-y-2">
+                        <li>Go to your Profile page</li>
+                        <li>Look for the "Subscription" section</li>
+                        <li>Click "Manage Subscription" to open the Stripe billing portal</li>
+                      </ol>
+                      <p className="mt-3">In the Stripe portal, you can:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Cancel your subscription</li>
+                        <li>Update payment method</li>
+                        <li>View billing history and invoices</li>
+                        <li>Change subscription plan</li>
+                      </ul>
+                      <p className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm mt-3">
+                        <strong>💡 Note:</strong> If you cancel, you'll retain Premium access until the end of your current billing period.
+                      </p>
+                    </>
+                  ) : (
+                    <p>Subscription management is not available in the iOS companion app. Please visit the PipeKeeper website to manage your subscription through the Stripe billing portal.</p>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </CardContent>
         </Card>
@@ -897,7 +1107,7 @@ export default function FAQPage() {
                   How does instant messaging work?
                 </AccordionTrigger>
                 <AccordionContent className="text-stone-600">
-                  <p className="mb-3">Instant messaging (Premium only) allows you to chat in real-time with friends who also have messaging enabled.</p>
+                  <p className="mb-3">Instant messaging allows you to chat in real-time with friends who also have messaging enabled.</p>
                   
                   <p className="font-semibold text-stone-800 mb-2">Setting Up:</p>
                   <ol className="list-decimal pl-5 space-y-1 mb-3">
@@ -920,6 +1130,7 @@ export default function FAQPage() {
                   <p className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm mt-3">
                     <strong>💡 Privacy:</strong> Only friends who mutually accept friend requests and both enable messaging can send messages to each other.
                   </p>
+                  <p className="mt-2 text-amber-700 font-medium">🌟 This is a Premium feature</p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
