@@ -525,14 +525,14 @@ export default function HomePage() {
               <CardContent>
                 <div className="flex flex-wrap gap-3">
                   {favoritePipes.map(pipe => (
-                    <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${pipe.id}`)}>
+                    <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                       <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 cursor-pointer px-3 py-1.5">
                         🪈 {pipe.name}
                       </Badge>
                     </a>
                   ))}
                   {favoriteBlends.map(blend => (
-                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${blend.id}`)}>
+                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                       <Badge className="bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-200 cursor-pointer px-3 py-1.5">
                         🍂 {blend.name}
                       </Badge>
