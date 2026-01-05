@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,9 +43,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     const updateLastSeen = async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
       if (profiles[0]) {
-        await base44.entities.UserProfile.update(profiles[0].id, {
+        await safeUpdate('UserProfile', profiles[0].id, {
           last_seen: new Date().toISOString()
-        });
+        }, user.email);
       }
     };
 
@@ -78,14 +79,14 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId) => base44.entities.Message.update(messageId, { is_read: true }),
+    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
   });
 
   const toggleSaveMutation = useMutation({
-    mutationFn: ({ messageId, saved }) => base44.entities.Message.update(messageId, { is_saved: saved }),
+    mutationFn: ({ messageId, saved }) => safeUpdate('Message', messageId, { is_saved: saved }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
