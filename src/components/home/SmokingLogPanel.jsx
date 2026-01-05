@@ -213,7 +213,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             }
             return item;
           });
-          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
           invalidatePipeQueries(queryClient, user?.email);
           queryClient.invalidateQueries({ queryKey: ['pipe', log.pipe_id] });
         }
@@ -331,7 +331,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             ];
           }
 
-          await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
+          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
 
           // Refresh list + pipe detail
           invalidatePipeQueries(queryClient, user?.email);
