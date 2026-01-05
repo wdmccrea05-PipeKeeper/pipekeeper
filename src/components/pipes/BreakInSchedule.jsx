@@ -10,6 +10,8 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 
 export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [generating, setGenerating] = useState(false);
@@ -58,10 +60,9 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   }, [isStale, schedule.length, currentFingerprint, dismissedFingerprint]);
 
   const updatePipeMutation = useMutation({
-    mutationFn: (data) => base44.entities.Pipe.update(pipe.id, data),
+    mutationFn: (data) => safeUpdate('Pipe', pipe.id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipe', pipe.id] });
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      invalidatePipeQueries(queryClient, user?.email);
     },
   });
 
@@ -160,15 +161,14 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
       const last = history[0];
       if (!last?.schedule) return;
 
-      return await base44.entities.Pipe.update(pipe.id, {
+      return await safeUpdate('Pipe', pipe.id, {
         break_in_schedule: last.schedule,
         break_in_schedule_history: history.slice(1),
         break_in_schedule_input_fingerprint: null,
-      });
+      }, user?.email);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipe', pipe.id] });
-      queryClient.invalidateQueries({ queryKey: ['pipes'] });
+      invalidatePipeQueries(queryClient, user?.email);
       setShowRegenDialog(false);
     },
   });

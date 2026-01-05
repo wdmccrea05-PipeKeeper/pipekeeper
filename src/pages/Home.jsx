@@ -44,7 +44,6 @@ export default function HomePage() {
     queryFn: async () => {
       try {
         const userData = await base44.auth.me();
-        console.log('[Home] User loaded:', userData?.email);
         return userData;
       } catch (err) {
         console.error('[Home] User load error:', err);
@@ -64,7 +63,6 @@ export default function HomePage() {
       if (!user?.email) return null;
       try {
         const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
-        console.log('[Home] Onboarding status loaded:', results[0]?.completed);
         return Array.isArray(results) ? results[0] || null : null;
       } catch (err) {
         console.error('[Home] Onboarding load error:', err);
@@ -81,7 +79,6 @@ export default function HomePage() {
     queryFn: async () => {
       try {
         const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Home] Pipes loaded:', result?.length || 0);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err);
@@ -98,7 +95,6 @@ export default function HomePage() {
     queryFn: async () => {
       try {
         const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
-        console.log('[Home] Blends loaded:', result?.length || 0);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Blends load error:', err);
@@ -172,9 +168,7 @@ export default function HomePage() {
     setShowOnboarding(false);
   };
 
-  console.log('[Home] Loading states - user:', userLoading, 'pipes:', pipesLoading, 'blends:', blendsLoading, 'onboarding:', onboardingLoading);
-  console.log('[Home] User email:', user?.email);
-  
+
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">

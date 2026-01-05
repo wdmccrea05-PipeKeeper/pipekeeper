@@ -14,6 +14,8 @@ import { base44 } from "@/api/base44Client";
 import { Plus, Flame, Calendar, Info, CheckCircle, Crown, Edit } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const [showAddLog, setShowAddLog] = useState(false);
@@ -34,12 +36,18 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", user?.email, formData?.blend_id],
     enabled: !!user?.email && !!formData?.blend_id,
-    queryFn: async () =>
-      (await base44.entities.TobaccoContainer.filter(
-        { user_email: user.email, blend_id: formData.blend_id },
-        "-updated_date",
-        50
-      )) || [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.TobaccoContainer.filter(
+          { user_email: user.email, blend_id: formData.blend_id },
+          "-updated_date",
+          50
+        ) || [];
+      } catch (err) {
+        console.error('Failed to load containers:', err);
+        return [];
+      }
+    },
   });
 
   // Helper for matching schedule items by ID or name
@@ -91,7 +99,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   };
 
   const updateBlendMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TobaccoBlend.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
+    onSuccess: () => {
+      invalidateBlendQueries(queryClient, user?.email);
+    },
   });
 
   const updateLogMutation = useMutation({
@@ -122,7 +133,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               }
               return item;
             });
-            await base44.entities.Pipe.update(oldPipe.id, { break_in_schedule: updatedSchedule });
+            await safeUpdate('Pipe', oldPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
           }
         }
         
@@ -165,11 +176,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               ];
             }
 
-            await base44.entities.Pipe.update(newPipe.id, { break_in_schedule: updatedSchedule });
+            await safeUpdate('Pipe', newPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
           }
         }
         
-        queryClient.invalidateQueries({ queryKey: ['pipes'] });
+        invalidatePipeQueries(queryClient, user?.email);
       }
 
       if (oldLog?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', oldLog.pipe_id] });
@@ -203,7 +214,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             return item;
           });
           await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
-          queryClient.invalidateQueries({ queryKey: ['pipes'] });
+          invalidatePipeQueries(queryClient, user?.email);
           queryClient.invalidateQueries({ queryKey: ['pipe', log.pipe_id] });
         }
       }
@@ -215,15 +226,19 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     onSuccess: async (createdLog, variables) => {
       // Decrement container if chosen
       if (variables.container_id) {
-        const containerRes = await base44.entities.TobaccoContainer.filter({ id: variables.container_id });
-        const container = containerRes?.[0];
-        if (container?.id) {
-          const gramsUsed = variables.tobaccoUsed * 28.35; // Convert oz to grams
-          await base44.entities.TobaccoContainer.update(container.id, {
-            quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
-            updated_date: new Date().toISOString(),
-          });
-          queryClient.invalidateQueries({ queryKey: ["containers", user?.email, variables.blend_id] });
+        try {
+          const containerRes = await base44.entities.TobaccoContainer.filter({ id: variables.container_id });
+          const container = containerRes?.[0];
+          if (container?.id) {
+            const gramsUsed = variables.tobaccoUsed * 28.35; // Convert oz to grams
+            await safeUpdate('TobaccoContainer', container.id, {
+              quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
+              updated_date: new Date().toISOString(),
+            }, user?.email);
+            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, variables.blend_id] });
+          }
+        } catch (err) {
+          console.error('Failed to update container:', err);
         }
       }
 
@@ -265,7 +280,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           }
           
           if (Object.keys(updateData).length > 0) {
-            await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
+            try {
+              await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
+            } catch (err) {
+              console.error('Failed to update blend inventory:', err);
+            }
           }
         }
       }
@@ -315,7 +334,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           await base44.entities.Pipe.update(pipe.id, { break_in_schedule: updatedSchedule });
 
           // Refresh list + pipe detail
-          queryClient.invalidateQueries({ queryKey: ['pipes'] });
+          invalidatePipeQueries(queryClient, user?.email);
           queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
         }
       }

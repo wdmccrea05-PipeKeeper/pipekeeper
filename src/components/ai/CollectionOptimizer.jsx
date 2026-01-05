@@ -14,6 +14,8 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   const [loading, setLoading] = useState(false);
@@ -114,7 +116,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     mutationFn: async (data) => {
       // Deactivate current active optimization
       if (savedOptimization?.id) {
-        await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });
+        await safeUpdate('CollectionOptimization', savedOptimization.id, { is_active: false }, user?.email);
       }
 
       // Create clean payload with only intended fields
@@ -142,21 +144,21 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
       }
 
       // Deactivate current
-      await base44.entities.CollectionOptimization.update(savedOptimization.id, { is_active: false });
+      await safeUpdate('CollectionOptimization', savedOptimization.id, { is_active: false }, user?.email);
 
       // Reactivate previous
-      await base44.entities.CollectionOptimization.update(savedOptimization.previous_active_id, { is_active: true });
+      await safeUpdate('CollectionOptimization', savedOptimization.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-optimization'] });
+      invalidateAIQueries(queryClient, user?.email);
       setShowRegenDialog(false);
     },
   });
 
   const updatePipeMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Pipe.update(id, data),
+    mutationFn: ({ id, data }) => safeUpdate('Pipe', id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+      invalidatePipeQueries(queryClient, user?.email);
     },
   });
 
@@ -459,8 +461,8 @@ User Feedback: ${feedback}
       await Promise.all(updatePromises);
       
       // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['pipes'] });
-      await queryClient.invalidateQueries({ queryKey: ['saved-pairings'] });
+      invalidatePipeQueries(queryClient, user?.email);
+      invalidateAIQueries(queryClient, user?.email);
       
       setShowConfirmation(false);
       setShowAcceptAll(false);
@@ -524,11 +526,11 @@ User Feedback: ${feedback}
     });
 
     for (const ch of pipe_changes) {
-      await base44.entities.Pipe.update(ch.pipe_id, { focus: ch.after.focus });
+      await safeUpdate('Pipe', ch.pipe_id, { focus: ch.after.focus }, user?.email);
     }
 
-    queryClient.invalidateQueries({ queryKey: ["pipes"] });
-    queryClient.invalidateQueries({ queryKey: ["collection-optimization"] });
+    invalidatePipeQueries(queryClient, user?.email);
+    invalidateAIQueries(queryClient, user?.email);
 
     return batch;
   }
@@ -540,11 +542,11 @@ User Feedback: ${feedback}
     if (!batch?.pipe_changes) return;
 
     for (const ch of batch.pipe_changes) {
-      await base44.entities.Pipe.update(ch.pipe_id, { focus: ch.before.focus });
+      await safeUpdate('Pipe', ch.pipe_id, { focus: ch.before.focus }, user?.email);
     }
 
-    queryClient.invalidateQueries({ queryKey: ["pipes"] });
-    queryClient.invalidateQueries({ queryKey: ["collection-optimization"] });
+    invalidatePipeQueries(queryClient, user?.email);
+    invalidateAIQueries(queryClient, user?.email);
   }
 
   const handlePhotoUpload = async (e) => {

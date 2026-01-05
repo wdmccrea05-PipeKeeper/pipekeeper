@@ -157,7 +157,7 @@ export default function CommunityPage() {
   });
 
   const acceptFriendRequestMutation = useMutation({
-    mutationFn: (friendshipId) => base44.entities.Friendship.update(friendshipId, { status: 'accepted' }),
+    mutationFn: (friendshipId) => safeUpdate('Friendship', friendshipId, { status: 'accepted' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendships'] });
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
@@ -165,7 +165,7 @@ export default function CommunityPage() {
   });
 
   const declineFriendRequestMutation = useMutation({
-    mutationFn: (friendshipId) => base44.entities.Friendship.update(friendshipId, { status: 'declined' }),
+    mutationFn: (friendshipId) => safeUpdate('Friendship', friendshipId, { status: 'declined' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
     },
