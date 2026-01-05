@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
+import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
 
 export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [generating, setGenerating] = useState(false);
@@ -67,63 +68,8 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const generateSchedule = async () => {
     setGenerating(true);
     try {
-      let profileContext = "";
-      if (userProfile) {
-        profileContext = `\n\nUser Smoking Preferences:
-- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-- Preferred Shapes: ${userProfile.preferred_shapes?.join(', ') || 'None'}
-- Strength Preference: ${userProfile.strength_preference || 'Not specified'}
-- Pipe Size Preference: ${userProfile.pipe_size_preference || 'Not specified'}
-- Clenching Preference: ${userProfile.clenching_preference || 'Not specified'}
-- Smoke Duration Preference: ${userProfile.smoke_duration_preference || 'Not specified'}
-- Additional Notes: ${userProfile.notes || 'None'}`;
-      }
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create a break-in schedule for this pipe based on its characteristics, the user's available tobacco blends, and their preferences.
-
-Pipe Details:
-- Name: ${pipe.name}
-- Shape: ${pipe.shape || 'Unknown'}
-- Bowl Material: ${pipe.bowl_material || 'Unknown'}
-- Chamber Volume: ${pipe.chamber_volume || 'Unknown'}
-- Focus: ${pipe.focus?.join(', ') || 'None specified'}
-- Condition: ${pipe.condition || 'Unknown'}
-
-Available Tobacco Blends:
-${blends.map(b => `- ${b.name} (${b.manufacturer || 'Unknown'}) - ${b.blend_type || 'Unknown'} - Strength: ${b.strength || 'Unknown'}`).join('\n')}${profileContext}
-
-IMPORTANT BREAK-IN GUIDELINES:
-- Stage 1 may include "conditioning bowls" outside the pipe's final focus (e.g., mild Virginias for conditioning)
-- Stages 2+ should trend toward the pipe's intended specialization
-- If user has preferences, prioritize blends matching those preferences in later stages
-- Start mild, progress to stronger/more complex blends gradually
-
-Create a break-in schedule with 3-5 stages that gradually introduces the pipe to smoking. For estate or new pipes, start with milder blends and progressively move to the pipe's intended focus. Each stage should specify:
-1. Which blend to use (from available blends)
-2. How many bowls to smoke
-3. Brief reasoning
-
-Return a schedule that totals 15-25 bowls for proper break-in.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            schedule: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  blend_id: { type: "string" },
-                  blend_name: { type: "string" },
-                  suggested_bowls: { type: "number" },
-                  bowls_completed: { type: "number" },
-                  reasoning: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      });
+      // Use shared AI generator
+      const result = await generateBreakInScheduleAI({ pipe, blends, profile: userProfile });
 
       if (result?.schedule) {
         const norm = (s) => (s || '').trim().toLowerCase();

@@ -165,54 +165,62 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 
     setLoading(true);
     try {
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        stem_material: p.stem_material,
-        finish: p.finish,
-        focus: p.focus
-      }));
-
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        manufacturer: b.manufacturer,
-        blend_type: b.blend_type,
-        strength: b.strength,
-        cut: b.cut,
-        flavor_notes: b.flavor_notes
-      }));
-
-      let profileContext = "";
-      if (userProfile) {
-        profileContext = `\n\nUser Smoking Preferences:
-- Clenching: ${userProfile.clenching_preference}
-- Smoke Duration: ${userProfile.smoke_duration_preference}
-- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-- Pipe Size Preference: ${userProfile.pipe_size_preference}
-- Preferred Shapes: ${userProfile.preferred_shapes?.join(', ') || 'None'}
-- Strength Preference: ${userProfile.strength_preference}
-- Additional Notes: ${userProfile.notes || 'None'}
-
-Tailor all recommendations to match user preferences. Suggest specializations and future pipes that align with their smoking style.`;
-      }
-
       let feedbackContext = "";
       if (withFeedback && userFeedbackHistory) {
-        feedbackContext = `\n\n=== USER FEEDBACK ON PREVIOUS RECOMMENDATIONS ===
-${userFeedbackHistory}
-
-CRITICAL: Take this feedback seriously and adjust your analysis accordingly. If the user disagrees with a recommendation, explain why you're changing it or provide better reasoning for keeping it. Address each piece of feedback directly in your new recommendations.
-===`;
+        feedbackContext = userFeedbackHistory;
       }
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await generateOptimizationAI({
+        pipes,
+        blends,
+        profile: userProfile,
+        whatIfText: feedbackContext
+      });
+
+      // Transform result to match existing format
+      const transformedResult = {
+        pipe_specializations: result.applyable_changes?.map(change => {
+          const pipe = pipes.find(p => p.id === change.pipe_id);
+          return {
+            pipe_id: change.pipe_id,
+            pipe_name: pipe?.name || 'Unknown',
+            recommended_blend_types: change.after_focus || [],
+            reasoning: change.rationale || '',
+            usage_pattern: `Specialized for: ${(change.after_focus || []).join(', ')}`,
+            versatility_score: (change.after_focus || []).length === 1 ? 3 : 5,
+            score_improvement: `Expected improvement for ${(change.after_focus || []).join(', ')}`,
+            trophy_blends: []
+          };
+        }) || [],
+        collection_gaps: {
+          missing_coverage: result.collection_gaps || [],
+          redundancies: [],
+          overall_assessment: result.summary || ''
+        },
+        priority_focus_changes: (result.applyable_changes || []).slice(0, 3).map((change, idx) => ({
+          pipe_id: change.pipe_id,
+          pipe_name: pipes.find(p => p.id === change.pipe_id)?.name || 'Unknown',
+          current_focus: change.before_focus || [],
+          recommended_focus: change.after_focus || [],
+          score_improvement: `Priority #${idx + 1} change`,
+          trophy_blends_gained: [],
+          reasoning: change.rationale || ''
+        })),
+        next_pipe_recommendations: (result.next_additions || []).slice(0, 3).map((rec, idx) => ({
+          priority_rank: idx + 1,
+          shape: 'Recommended',
+          material: 'Briar',
+          chamber_specs: rec,
+          gap_filled: rec,
+          budget_range: 'Varies',
+          reasoning: rec,
+          trophy_blends: [],
+          score_improvement: 'Expected improvement'
+        }))
+      };
+
+      const oldResult = result;
+      const result2 = await base44.integrations.Core.InvokeLLM({
         prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
 You are an expert pipe tobacco consultant specializing in collection optimization for MAXIMUM PAIRING SCORES. Your goal is to help achieve 9-10 "trophy winning" pairings for every blend type the user enjoys.

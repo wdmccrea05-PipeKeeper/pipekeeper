@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   ArrowLeft, Edit, Trash2, Heart, DollarSign, 
-  Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight 
+  Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight, CheckCircle2 
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
@@ -383,6 +383,18 @@ export default function PipeDetailPage() {
                       </p>
                     </div>
                   )}
+                </div>
+                {(pipe?.dimensions_found || pipe?.dimensions_source) && (
+                  <div className="mt-4 pt-4 border-t border-stone-200">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="font-medium text-emerald-800">Verified measurements</span>
+                      {pipe?.dimensions_source && (
+                        <span className="text-emerald-700">Source: {pipe.dimensions_source}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
                   {pipe.country_of_origin && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-stone-400" />

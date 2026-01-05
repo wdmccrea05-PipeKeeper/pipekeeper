@@ -22,6 +22,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const [formData, setFormData] = useState({
     pipe_id: '',
     blend_id: '',
+    container_id: '',
     bowls_smoked: 1,
     is_break_in: false,
     date: new Date().toISOString().split('T')[0],
@@ -29,6 +30,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   });
 
   const queryClient = useQueryClient();
+
+  const { data: containers = [] } = useQuery({
+    queryKey: ["containers", user?.email, formData?.blend_id],
+    enabled: !!user?.email && !!formData?.blend_id,
+    queryFn: async () =>
+      (await base44.entities.TobaccoContainer.filter(
+        { user_email: user.email, blend_id: formData.blend_id },
+        "-updated_date",
+        50
+      )) || [],
+  });
 
   // Helper for matching schedule items by ID or name
   const norm = (s) => (s || '').trim().toLowerCase();
@@ -201,6 +213,20 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
     onSuccess: async (createdLog, variables) => {
+      // Decrement container if chosen
+      if (variables.container_id) {
+        const containerRes = await base44.entities.TobaccoContainer.filter({ id: variables.container_id });
+        const container = containerRes?.[0];
+        if (container?.id) {
+          const gramsUsed = variables.tobaccoUsed * 28.35; // Convert oz to grams
+          await base44.entities.TobaccoContainer.update(container.id, {
+            quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
+            updated_date: new Date().toISOString(),
+          });
+          queryClient.invalidateQueries({ queryKey: ["containers", user?.email, variables.blend_id] });
+        }
+      }
+
       // Reduce tobacco inventory
       if (autoReduceInventory && variables.tobaccoUsed > 0) {
         const blend = blends.find(b => b.id === variables.blend_id);
@@ -300,6 +326,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       setFormData({
         pipe_id: '',
         blend_id: '',
+        container_id: '',
         bowls_smoked: 1,
         is_break_in: false,
         date: new Date().toISOString().split('T')[0],
@@ -326,6 +353,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       bowls_smoked: bowls,
       tobaccoUsed,
       blend_id: formData.blend_id,
+      container_id: formData.container_id || null,
     });
   };
 
@@ -448,7 +476,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
             <div className="space-y-2">
               <Label>Tobacco Blend</Label>
-              <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v })}>
+              <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: '' })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select blend" />
                 </SelectTrigger>
@@ -461,6 +489,25 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.blend_id && containers.length > 0 && (
+              <div className="space-y-2">
+                <Label>Container (Optional)</Label>
+                <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Auto / None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Auto / None</SelectItem>
+                    {containers.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.container_name} — {c.quantity_grams ?? 0}g
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Number of Bowls</Label>
