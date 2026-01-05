@@ -51,31 +51,67 @@ export default function TobaccoDetailPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: blend, isLoading } = useQuery({
-    queryKey: ['blend', blendId],
-    queryFn: async () => {
-      const blends = await base44.entities.TobaccoBlend.filter({ id: blendId });
-      return blends[0];
-    },
-    enabled: !!blendId,
-  });
-
-  // Auto-populate logo from library if missing
-  useEffect(() => {
-    if (blend && blend.manufacturer && !blend.logo && !updateMutation.isPending) {
-      const libraryLogo = getTobaccoLogo(blend.manufacturer);
-      if (libraryLogo && libraryLogo !== GENERIC_TOBACCO_ICON) {
-        updateMutation.mutate({ logo: libraryLogo });
-      }
-    }
-  }, [blend?.id]);
-
   const { data: user } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
   });
+
+  const { data: blend, isLoading: blendLoading, error: blendError } = useQuery({
+    queryKey: ['blend', blendId, user?.email],
+    enabled: !!blendId && !!user?.email,
+    retry: false,
+    queryFn: async () => {
+      if (!blendId) throw new Error('Missing blend ID');
+
+      try {
+        const p = await base44.entities.TobaccoBlend.get(blendId);
+        if (p) return p;
+      } catch (e) {
+        console.warn("TobaccoBlend.get failed", {
+          blendId,
+          message: e?.message,
+          status: e?.status,
+          response: e?.response,
+          e
+        });
+      }
+
+      try {
+        const arr = await base44.entities.TobaccoBlend.filter({ id: blendId, created_by: user.email });
+        if (Array.isArray(arr) && arr.length) return arr[0];
+      } catch (e) {
+        console.warn("TobaccoBlend.filter failed", {
+          blendId,
+          message: e?.message,
+          status: e?.status,
+          response: e?.response,
+          e
+        });
+      }
+
+      throw new Error('Blend not found');
+    },
+  });
+
+  const isLoading = blendLoading;
+
+  // Auto-populate logo from library if missing
+  useEffect(() => {
+    if (blend && blend.manufacturer && !blend.logo && !updateMutation.isPending && user?.email) {
+      const libraryLogo = getTobaccoLogo(blend.manufacturer);
+      if (libraryLogo && libraryLogo !== GENERIC_TOBACCO_ICON) {
+        const { id, created_date, updated_date, ...rest } = blend;
+        updateMutation.mutate({
+          ...rest,
+          logo: libraryLogo,
+          created_by: blend.created_by || user.email,
+        });
+      }
+    }
+  }, [blend?.id, user?.email]);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -103,9 +139,16 @@ export default function TobaccoDetailPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.TobaccoBlend.update(blendId, data),
+    mutationFn: (data) => {
+      const { id, created_date, updated_date, ...rest } = blend;
+      return base44.entities.TobaccoBlend.update(blendId, {
+        ...rest,
+        ...data,
+        created_by: blend.created_by || user?.email,
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blend', blendId] });
+      queryClient.invalidateQueries({ queryKey: ['blend', blendId, user?.email] });
       queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
       setShowEdit(false);
     },
@@ -119,7 +162,12 @@ export default function TobaccoDetailPage() {
   });
 
   const toggleFavorite = () => {
-    updateMutation.mutate({ is_favorite: !blend.is_favorite });
+    const { id, created_date, updated_date, ...rest } = blend;
+    updateMutation.mutate({
+      ...rest,
+      is_favorite: !blend.is_favorite,
+      created_by: blend.created_by || user?.email,
+    });
   };
 
   if (isLoading) {
