@@ -430,7 +430,7 @@ export default function SubscriptionPage() {
                   </Button>
 
                   <p className="text-xs text-center text-stone-500">
-                    Secure payment powered by Stripe. Cancel anytime.
+                    Secure payment processing. Cancel anytime.
                   </p>
                 </div>
               )}
