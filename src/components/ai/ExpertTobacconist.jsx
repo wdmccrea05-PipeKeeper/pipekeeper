@@ -48,38 +48,38 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           <TabsList className="grid grid-cols-5 bg-[#1a2c42]/60 border border-[#e8d5b7]/30 p-1 rounded-xl shadow-inner">
             <TabsTrigger 
               value="identifier"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
-              <Camera className="w-4 h-4 mr-2" />
-              Identify
+              <Camera className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Identify</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pairings"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Pairings
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Pairings</span>
             </TabsTrigger>
             <TabsTrigger 
               value="optimizer"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Optimize
+              <TrendingUp className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Optimize</span>
             </TabsTrigger>
             <TabsTrigger 
               value="whatif"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
-              <Lightbulb className="w-4 h-4 mr-2" />
-              What If
+              <Lightbulb className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">What If</span>
             </TabsTrigger>
             <TabsTrigger 
               value="updates"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all"
+              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              AI Updates
+              <RefreshCw className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">AI Updates</span>
             </TabsTrigger>
           </TabsList>
 
