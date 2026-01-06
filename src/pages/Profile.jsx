@@ -14,7 +14,7 @@ import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
-import { shouldShowPurchaseUI, subscriptionManagementMessage } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getSubscriptionManagementMessage } from "@/components/utils/companion";
 import {
   AlertDialog,
   AlertDialogAction,
