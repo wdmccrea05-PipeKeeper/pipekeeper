@@ -112,8 +112,9 @@ export default function TobaccoCollectionStats() {
   });
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+    <>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="w-full">
             <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
@@ -360,8 +361,8 @@ export default function TobaccoCollectionStats() {
         </div>
           </CardContent>
         </CollapsibleContent>
-      </Card>
-    </Collapsible>
+        </Card>
+      </Collapsible>
 
       {/* Drill-Down Dialog */}
       <Dialog open={!!drillDown} onOpenChange={() => setDrillDown(null)}>
@@ -638,5 +639,6 @@ export default function TobaccoCollectionStats() {
           </div>
         </DialogContent>
       </Dialog>
+    </>
   );
 }
