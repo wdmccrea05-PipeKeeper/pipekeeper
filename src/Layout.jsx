@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isIOSCompanionApp } from "@/components/utils/companion";
 import AgeGate from "@/pages/AgeGate";
+import DocumentTitle from "@/components/DocumentTitle";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
@@ -178,7 +179,9 @@ export default function Layout({ children, currentPageName }) {
   const hasPaidAccess = user?.subscription_level === 'paid' || isWithinTrial;
 
   return (
-    <div className="min-h-screen bg-[#1a2c42]">
+    <>
+      <DocumentTitle title="PipeKeeper" />
+      <div className="min-h-screen bg-[#1a2c42]">
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]">
         <div className="max-w-7xl mx-auto px-6 w-full">
@@ -301,6 +304,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
-    </div>
-  );
-}
+      </div>
+      </>
+      );
+      }
