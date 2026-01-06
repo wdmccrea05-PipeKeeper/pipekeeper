@@ -78,9 +78,24 @@ export default function FAQPage() {
     {
       title: 'Account & Subscription',
       items: [
-        { question: 'What\'s included in the free trial?', answer: 'New users get 7 days of full Premium access to try all features including AI pairing, photo identification, value lookup, collection optimization, bulk import, advanced reporting, insurance PDF generation, and automatic inventory tracking. After the trial, you can subscribe to continue using Premium features.' },
-        { question: 'How much does Premium cost?', answer: 'PipeKeeper Premium is $1.99/month or $19.99/year (save 17% with annual billing). Both plans include all Premium features and automatic renewal until cancelled. You can cancel anytime from your Profile page.' },
-        { question: 'What happens if I cancel my subscription?', answer: 'You\'ll keep Premium access until the end of your billing period. After that, Premium features will be locked but you\'ll still have access to your collection data and basic features. You can reactivate anytime to regain Premium access.' },
+        {
+          question: "What's included in the free trial?",
+          answer: canShowPurchaseUI
+            ? "New users get 7 days of full Premium access to try all features. After the trial, you can subscribe to continue using Premium features."
+            : "Trial availability may vary by account. Premium upgrades aren't available in the companion app. If you already have Premium, sign in with the same account to access your features."
+        },
+        {
+          question: "How much does Premium cost?",
+          answer: canShowPurchaseUI
+            ? "PipeKeeper Premium is $1.99/month or $19.99/year. Plans include Premium features and renew until canceled."
+            : "Premium upgrades aren't available in the companion app. If you already have Premium, sign in with the same account and your features will unlock automatically."
+        },
+        {
+          question: "What happens if I cancel my subscription?",
+          answer: canShowPurchaseUI
+            ? "You'll keep Premium access until the end of your billing period. After that, Premium features lock, but your collection data remains available."
+            : "If your Premium access ends, Premium features lock but your collection data remains available. Subscription management isn't available in the companion app."
+        },
         {
           question: 'How do I cancel or manage my subscription?',
           answer: canShowPurchaseUI

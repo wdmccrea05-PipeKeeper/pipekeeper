@@ -47,8 +47,7 @@ export function isCompanionApp() {
 /**
  * Controls whether we show ANY external purchase UI (Stripe checkout, web purchase links, etc.).
  * - Web browser: true
- * - iOS companion: false (must use IAP; we are a companion wrapper)
- * - Android companion: false (Play Billing required; we are a companion wrapper)
+ * - Companion builds: do not show external purchase UI inside the wrapper.
  */
 export function shouldShowPurchaseUI() {
   return !isCompanionApp();
