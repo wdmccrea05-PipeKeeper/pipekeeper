@@ -11,6 +11,7 @@ import {
   ArrowRight, Heart, DollarSign, 
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
+import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
