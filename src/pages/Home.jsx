@@ -340,11 +340,11 @@ export default function HomePage() {
             transition={{ delay: 0.1 }}
           >
             <a href={createPageUrl('Pipes')}>
-              <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{filter: 'brightness(0) saturate(100%) invert(12%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%)'}} />
-                  <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{safePipes.length}</p>
-                  <p className="text-xs sm:text-sm text-[#1a2c42]/80">Pipes</p>
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain brightness-0 invert" />
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
+                  <p className="text-xs sm:text-sm text-white/80">Pipes</p>
                   </CardContent>
                   </Card>
                   </a>
@@ -354,11 +354,11 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
+            <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30">
               <CardContent className="p-3 sm:p-6 text-center">
-                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
-                <p className="text-xl sm:text-3xl font-bold text-[#1a2c42] break-words">${totalPipeValue.toLocaleString()}</p>
-                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Value</p>
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                <p className="text-xl sm:text-3xl font-bold text-white break-words">${totalPipeValue.toLocaleString()}</p>
+                <p className="text-xs sm:text-sm text-white/80">Value</p>
               </CardContent>
             </Card>
           </motion.div>
