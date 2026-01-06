@@ -77,7 +77,7 @@ export default function TobaccoListItem({ blend, onClick }) {
                 )}
                 {blend.quantity_owned > 0 && (
                   <Badge className="bg-amber-600/90 text-white border-0">
-                    {blend.quantity_owned} oz
+                    {Number(blend.quantity_owned).toFixed(2)} oz
                   </Badge>
                 )}
               </div>
@@ -101,17 +101,17 @@ export default function TobaccoListItem({ blend, onClick }) {
               )}
               {(blend.tin_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-amber-600/90 text-white border-0 text-xs">
-                  Tin: {blend.tin_total_quantity_oz}oz
+                  Tin: {Number(blend.tin_total_quantity_oz).toFixed(2)}oz
                 </Badge>
               )}
               {(blend.bulk_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-blue-600/90 text-white border-0 text-xs">
-                  Bulk: {blend.bulk_total_quantity_oz}oz
+                  Bulk: {Number(blend.bulk_total_quantity_oz).toFixed(2)}oz
                 </Badge>
               )}
               {(blend.pouch_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-purple-600/90 text-white border-0 text-xs">
-                  Pouch: {blend.pouch_total_quantity_oz}oz
+                  Pouch: {Number(blend.pouch_total_quantity_oz).toFixed(2)}oz
                 </Badge>
               )}
             </div>
