@@ -429,9 +429,7 @@ export default function SubscriptionPage() {
                     Continue to Checkout
                   </Button>
 
-                  <p className="text-xs text-center text-stone-500">
-                    Secure payment. Cancel anytime.
-                  </p>
+
                 </div>
               )}
             </CardContent>
