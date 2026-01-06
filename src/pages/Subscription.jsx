@@ -338,7 +338,7 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="space-y-3">
                 {[
-                  "AI Tobacconist chat for expert advice",
+                  "AI Tobacconist chat for collection insights",
                   "AI-powered tobacco pairing recommendations",
                   "Photo identification for pipes and tobacco",
                   "Market value lookup and tracking",

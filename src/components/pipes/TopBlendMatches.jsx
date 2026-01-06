@@ -67,12 +67,12 @@ Use these preferences to personalize recommendations. Prioritize blends that mat
       const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier recommending NEW tobacco blends for purchase.
+        prompt: `You are an expert pipe tobacco advisor helping an adult user manage their personal collection.
 
 CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
 ${existingBlendsText}
 
-Your task: Recommend 3 COMPLETELY DIFFERENT tobacco blends (NOT in the list above) that would pair well with this pipe and that the user should BUY.
+Your task: Recommend 3 OPTIONAL tobacco blends the user could consider as future collection additions (do NOT mention buying, pricing, retailers, or purchase steps).
 
 Pipe Details:
 ${JSON.stringify(pipeData, null, 2)}${profileContext}
@@ -85,13 +85,13 @@ Requirements for recommendations:
 3. MUST match the pipe's characteristics and focus
 4. SHOULD align with user preferences if provided
 
-CRITICAL: Do NOT include any URLs, links, sources, or citations in your response. Provide only product names and descriptions.
+CRITICAL: Do NOT include any URLs, links, sources, or citations in your response.
 
-For each of the 3 NEW blend recommendations, provide:
+For each of the 3 recommendations, provide:
 - manufacturer (the brand/company name)
 - blend_name (the specific product name)
 - score (1-10, compatibility with this pipe)
-- reasoning (why this NEW blend would pair well with this pipe, no sources or links)`,
+- reasoning (why this blend pairs well with this pipe; no sources or links)`,
         response_json_schema: {
           type: "object",
           properties: {
