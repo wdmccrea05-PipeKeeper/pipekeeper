@@ -22,7 +22,8 @@ import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
-const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
+// End of Jan 15, 2026 in America/Indiana/Indianapolis (UTC-5) = Jan 16, 2026 05:00:00 UTC
+const TRIAL_END_UTC = Date.parse("2026-01-16T05:00:00Z");
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -107,12 +108,10 @@ export default function HomePage() {
   });
 
   // Check if user has paid access
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date ? 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+  const now = Date.now();
+  const isTrialWindow = now < TRIAL_END_UTC; // For banner display only
+  const hasPaidAccess = user?.subscription_level === 'paid';
+  const isPaidUser = hasPaidAccess || isTrialWindow; // Premium features available during trial
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
@@ -131,10 +130,10 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user?.email || showOnboarding || onboardingLoading) return;
-    if (isBeforeExtendedTrialEnd && !localStorage.getItem('testingNoticeSeen')) {
+    if (isTrialWindow && !localStorage.getItem('testingNoticeSeen')) {
       setShowTestingNotice(true);
     }
-  }, [user?.email, isBeforeExtendedTrialEnd, showOnboarding, onboardingLoading]);
+  }, [user?.email, isTrialWindow, showOnboarding, onboardingLoading]);
 
   const handleOnboardingComplete = async () => {
     if (onboardingStatus) {
