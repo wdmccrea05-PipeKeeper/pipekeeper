@@ -301,7 +301,7 @@ export default function TobaccoDetailPage() {
                         <span className="text-amber-800">Tins:</span>
                         <span className="font-semibold text-amber-900">
                           {blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared
-                          {blend.tin_total_quantity_oz > 0 && ` (${blend.tin_total_quantity_oz}oz total)`}
+                          {blend.tin_total_quantity_oz > 0 && ` (${Number(blend.tin_total_quantity_oz).toFixed(2)}oz total)`}
                         </span>
                       </div>
                     )}
@@ -309,7 +309,7 @@ export default function TobaccoDetailPage() {
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-amber-800">Bulk:</span>
                         <span className="font-semibold text-amber-900">
-                          {blend.bulk_open || 0}oz open, {blend.bulk_cellared || 0}oz cellared
+                          {Number(blend.bulk_open || 0).toFixed(2)}oz open, {Number(blend.bulk_cellared || 0).toFixed(2)}oz cellared
                         </span>
                       </div>
                     )}
@@ -318,7 +318,7 @@ export default function TobaccoDetailPage() {
                         <span className="text-amber-800">Pouches:</span>
                         <span className="font-semibold text-amber-900">
                           {blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared
-                          {blend.pouch_total_quantity_oz > 0 && ` (${blend.pouch_total_quantity_oz}oz total)`}
+                          {blend.pouch_total_quantity_oz > 0 && ` (${Number(blend.pouch_total_quantity_oz).toFixed(2)}oz total)`}
                         </span>
                       </div>
                     )}
