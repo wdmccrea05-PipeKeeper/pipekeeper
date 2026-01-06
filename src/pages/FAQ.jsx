@@ -833,8 +833,8 @@ export default function FAQPage() {
                 <AccordionTrigger>How do subscriptions work on iOS and Android?</AccordionTrigger>
                 <AccordionContent className="text-stone-600">
                   <p>
-                    Subscription availability and billing methods vary by platform. In companion apps, purchase flows may be unavailable.
-                    If you already have a subscription, sign in to access premium features.
+                    The iOS and Android apps are companion apps and do not support subscription purchases or billing management.
+                    If you already have Premium, sign in with the same account to access premium features.
                   </p>
                 </AccordionContent>
               </AccordionItem>
