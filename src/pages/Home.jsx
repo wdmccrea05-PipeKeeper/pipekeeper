@@ -17,9 +17,8 @@ import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
-import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
+import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
@@ -571,7 +570,7 @@ export default function HomePage() {
               </a>
         </motion.div>
 
-        {/* Smoking Log Panel */}
+        {/* Collection Insights - Combined Panel */}
         {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -579,31 +578,7 @@ export default function HomePage() {
             transition={{ delay: 0.75 }}
             className="mb-12"
           >
-            <SmokingLogPanel pipes={safePipes} blends={safeBlends} user={user} />
-          </motion.div>
-        ) : null}
-
-        {/* Tobacco Collection Stats */}
-        {safeBlends.length > 0 && !blendsLoading ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.77 }}
-            className="mb-12"
-          >
-            <TobaccoCollectionStats />
-          </motion.div>
-        ) : null}
-
-        {/* Pairing Grid */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mb-12"
-          >
-            <PairingGrid pipes={safePipes} blends={safeBlends} />
+            <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
           </motion.div>
         ) : null}
 
