@@ -108,10 +108,7 @@ export default function HomePage() {
   });
 
   // Check if user has paid access
-  const now = Date.now();
-  const isTrialWindow = now < TRIAL_END_UTC; // For banner display only
-  const hasPaidAccess = user?.subscription_level === 'paid';
-  const isPaidUser = hasPaidAccess || isTrialWindow; // Premium features available during trial
+  const isPaidUser = hasPremiumAccess(user);
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
@@ -130,10 +127,10 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user?.email || showOnboarding || onboardingLoading) return;
-    if (isTrialWindow && !localStorage.getItem('testingNoticeSeen')) {
+    if (isTrialWindowNow() && !localStorage.getItem('testingNoticeSeen')) {
       setShowTestingNotice(true);
     }
-  }, [user?.email, isTrialWindow, showOnboarding, onboardingLoading]);
+  }, [user?.email, showOnboarding, onboardingLoading]);
 
   const handleOnboardingComplete = async () => {
     if (onboardingStatus) {

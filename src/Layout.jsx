@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { hasPremiumAccess } from "@/components/utils/access";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
 import AgeGate from "@/pages/AgeGate";
@@ -172,11 +173,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // End of Jan 15, 2026 in America/Indiana/Indianapolis (UTC-5) = Jan 16, 2026 05:00:00 UTC
-  const TRIAL_END_UTC = Date.parse("2026-01-16T05:00:00Z");
-  const now = Date.now();
-  const isTrialWindow = now < TRIAL_END_UTC;
-  const hasPaidAccess = user?.subscription_level === 'paid' || isTrialWindow;
+  const hasPaidAccess = hasPremiumAccess(user);
 
   return (
     <>

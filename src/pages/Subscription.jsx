@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
+import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
 
 const PRICING_OPTIONS = [
   { 
@@ -83,25 +84,17 @@ export default function SubscriptionPage() {
     },
   });
 
-  // Calculate trial status - extended until Jan 15, 2026
-  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  
-  const trialEndDate = isBeforeExtendedTrialEnd 
-    ? EXTENDED_TRIAL_END 
-    : user?.created_date 
-      ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
-      : null;
-  
-  const isInTrial = trialEndDate && new Date() < trialEndDate;
-  const trialExpired = trialEndDate && new Date() >= trialEndDate;
+  // Calculate trial status using centralized helper
+  const isInTrial = isTrialWindowNow();
+  const trialExpired = !isTrialWindowNow() && !checkPaidAccess(user);
   const daysLeftInTrial = isInTrial 
-    ? Math.ceil((trialEndDate - new Date()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil((TRIAL_END_UTC - Date.now()) / (1000 * 60 * 60 * 24))
     : 0;
+  const trialEndDate = new Date(TRIAL_END_UTC);
 
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
+  const userHasPaidAccess = checkPaidAccess(user);
 
   // iOS companion app: block all purchasing/subscription management UI
   if (!shouldShowPurchaseUI()) {
@@ -191,7 +184,7 @@ export default function SubscriptionPage() {
         <Card className="mb-8 border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {hasActiveSubscription ? (
+              {userHasPaidAccess ? (
                 <>
                   <Check className="w-5 h-5 text-emerald-600" />
                   <span className="text-emerald-800">Active Subscription</span>
@@ -214,17 +207,8 @@ export default function SubscriptionPage() {
               <Alert className="bg-amber-50 border-amber-200">
                 <Sparkles className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  {isBeforeExtendedTrialEnd ? (
-                    <>
-                      <strong>Testing Period:</strong> No charges until after January 15, 2026. 
-                      All premium features are free during testing.
-                    </>
-                  ) : (
-                    <>
-                      <strong>{daysLeftInTrial} days left</strong> in your free trial. 
-                      Subscribe now to continue enjoying premium features after {new Date(trialEndDate).toLocaleDateString()}.
-                    </>
-                  )}
+                  <strong>Testing Period:</strong> No charges until after January 15, 2026. 
+                  All premium features are free during testing. ({daysLeftInTrial} days remaining)
                 </AlertDescription>
               </Alert>
             )}
@@ -368,7 +352,7 @@ export default function SubscriptionPage() {
         </div>
 
         {/* Payment Form */}
-        {!hasActiveSubscription && (
+        {!userHasPaidAccess && (
           <Card>
             <CardHeader>
               <CardTitle>Subscribe to Premium</CardTitle>
