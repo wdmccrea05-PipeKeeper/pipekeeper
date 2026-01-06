@@ -6,7 +6,7 @@ import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLef
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isIOSCompanionApp } from "@/components/utils/companion";
+import { isCompanionApp } from "@/components/utils/companion";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 
@@ -58,13 +58,15 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
           }}
         />
       )}
-      {item.name}
+
+      <span>{item.name}</span>
+
       {item.isPremium && !hasPaidAccess && (
         <Crown className="w-3 h-3 text-amber-500" />
       )}
-      </Link>
-      );
-      }
+    </Link>
+  );
+}
 
 const AGE_GATE_KEY = "pk_age_confirmed";
 
@@ -158,9 +160,9 @@ export default function Layout({ children, currentPageName }) {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
           <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
-          {isIOSCompanionApp() && (
+          {isCompanionApp() && (
             <p className="text-[#e8d5b7]/80 text-sm mb-4">
-              In the iOS companion app, please sign in using your email and password.
+              In the companion app, please sign in using your email and password.
             </p>
           )}
           <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
@@ -304,7 +306,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
-      </div>
-      </>
-      );
-      }
+    </div>
+    </>
+  );
+}
