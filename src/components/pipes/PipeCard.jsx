@@ -40,7 +40,7 @@ export default function PipeCard({ pipe, onClick }) {
           {pipe.estimated_value && (
             <div className="absolute bottom-3 left-3">
               <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm">
-                ${pipe.estimated_value}
+                ${Number(pipe.estimated_value).toFixed(2)}
               </Badge>
             </div>
           )}
