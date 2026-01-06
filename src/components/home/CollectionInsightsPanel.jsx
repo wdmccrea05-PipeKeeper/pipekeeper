@@ -7,16 +7,20 @@ import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
-  const [activeTab, setActiveTab] = useState('reference');
+  const [activeTab, setActiveTab] = useState('log');
 
   return (
     <Card className="border-[#e8d5b7]/30">
       <CardHeader className="pb-3">
-        <CardTitle className="text-[#e8d5b7]">Collection Insights</CardTitle>
+        <CardTitle className="text-[#1a2c42]">Collection Insights</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="log" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Log</span>
+            </TabsTrigger>
             <TabsTrigger value="reference" className="flex items-center gap-2">
               <Grid3x3 className="w-4 h-4" />
               <span className="hidden sm:inline">Reference</span>
@@ -25,11 +29,11 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="log" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Log</span>
-            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="log" className="mt-0">
+            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+          </TabsContent>
 
           <TabsContent value="reference" className="mt-0">
             <PairingGrid pipes={pipes} blends={blends} />
@@ -37,10 +41,6 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
 
           <TabsContent value="stats" className="mt-0">
             <TobaccoCollectionStats />
-          </TabsContent>
-
-          <TabsContent value="log" className="mt-0">
-            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
           </TabsContent>
         </Tabs>
       </CardContent>
