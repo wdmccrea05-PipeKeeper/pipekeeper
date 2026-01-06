@@ -4,14 +4,20 @@
 export function isIOSCompanionApp() {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
-    // common patterns used by wrappers:
-    // - a custom UA token (recommended)
-    // - iOS WebView markers
-    const hasCustomToken = ua.includes("pipekeeper") && (ua.includes("ios") || ua.includes("companion"));
-    const isIOSWebView = /iphone|ipad|ipod/.test(ua) && (ua.includes("wv") || ua.includes("webkit"));
+
+    // Strong signals (best): wrapper sets a custom UA token or a URL param
+    const hasCustomToken =
+      ua.includes("pipekeeper") && (ua.includes("ios") || ua.includes("companion"));
+
     const url = new URL(window.location.href);
     const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
-    return hasCustomToken || isIOSWebView || platformParam === "ios";
+
+    // Heuristic signal: iOS WebViews often omit "safari" in the UA string.
+    // Mobile Safari and most iOS browsers include "safari".
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isLikelyIOSWebView = isIOS && !ua.includes("safari");
+
+    return hasCustomToken || platformParam === "ios" || isLikelyIOSWebView;
   } catch {
     return false;
   }
