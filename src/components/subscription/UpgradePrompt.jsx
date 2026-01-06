@@ -33,7 +33,7 @@ export default function UpgradePrompt({ featureName, description }) {
           </>
         ) : (
           <p className="text-sm text-stone-600">
-            {premiumGateMessage()}
+            {getPremiumGateMessage()}
           </p>
         )}
       </CardContent>
