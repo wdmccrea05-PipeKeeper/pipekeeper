@@ -323,7 +323,7 @@ export default function ProfilePage() {
                     </>
                   ) : (
                     <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
-                      {subscriptionManagementMessage()}
+                      {getSubscriptionManagementMessage()}
                     </div>
                   )}
                 </div>
