@@ -12,7 +12,7 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { shouldShowPurchaseUI, premiumGateMessage } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
 
 const PRICING_OPTIONS = [
   { 
@@ -122,7 +122,7 @@ export default function SubscriptionPage() {
                 PipeKeeper Premium
               </CardTitle>
               <CardDescription className="text-stone-600">
-                {premiumGateMessage()}
+                {getPremiumGateMessage()}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-stone-600 space-y-2">
