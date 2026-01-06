@@ -57,20 +57,24 @@ export function getPurchaseBlockedMessage() {
 
 /**
  * Premium gate messaging for users inside/outside companion apps
+ * IMPORTANT: In iOS/Android companion builds, keep this neutral:
+ * - Do NOT mention Stripe
+ * - Do NOT link out or instruct users to buy on the web
  */
 export function getPremiumGateMessage() {
   if (isCompanionApp()) {
-    return "This feature requires Premium. If you already have a subscription, sign in to access it.";
+    return "This feature requires Premium. If you already have Premium, sign in with the same account to access it.";
   }
-  return "This feature requires Premium. Upgrade to unlock.";
+  return "This feature requires Premium.";
 }
 
 /**
  * Subscription management messaging
+ * IMPORTANT: No purchase/management flows inside companion builds.
  */
 export function getSubscriptionManagementMessage() {
   if (isCompanionApp()) {
-    return "Subscription management is not available in this companion app.";
+    return "Subscription purchases and management are not available in this companion app.";
   }
   return null;
 }

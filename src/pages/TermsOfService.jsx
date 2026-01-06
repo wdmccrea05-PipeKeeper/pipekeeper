@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { isCompanionApp } from "@/components/utils/companion";
 
 export default function TermsOfServicePage() {
+  const inCompanion = isCompanionApp();
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -87,14 +89,23 @@ export default function TermsOfServicePage() {
 
             <section>
               <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Subscriptions and Billing</h2>
-              <p className="mb-3">
-                Premium features require a paid subscription ($1.99/month or $19.99/year). Subscriptions renew automatically until canceled. 
-                You can cancel anytime; access continues until the end of your billing period. Refunds are not provided for partial billing periods.
-              </p>
-              <p>
-                <strong>Subscriptions:</strong> Subscription availability and billing methods may vary by platform. In companion apps,
-                purchase flows may be unavailable. If you already have an active subscription, sign in to access premium features.
-              </p>
+              {inCompanion ? (
+                <p>
+                  Premium features require an active subscription associated with your account. The iOS and Android companion applications do not
+                  provide in-app purchasing or subscription management. If you already have an active subscription, sign in with the same account to
+                  access premium features.
+                </p>
+              ) : (
+                <>
+                  <p className="mb-3">
+                    Premium features require a paid subscription ($1.99/month or $19.99/year). Subscriptions renew automatically until canceled.
+                    You can cancel anytime; access continues until the end of your billing period. Refunds are not provided for partial billing periods.
+                  </p>
+                  <p>
+                    <strong>Subscriptions:</strong> Subscription availability and billing methods may vary by platform.
+                  </p>
+                </>
+              )}
             </section>
 
             <section>

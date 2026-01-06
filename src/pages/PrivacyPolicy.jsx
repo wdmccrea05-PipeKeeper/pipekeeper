@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { isIOSCompanionApp } from "@/components/utils/companion";
+import { isCompanionApp } from "@/components/utils/companion";
 
 export default function PrivacyPolicyPage() {
-  const inCompanion = isIOSCompanionApp();
+  const inCompanion = isCompanionApp();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
@@ -134,7 +134,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Age Requirements & Tobacco Disclaimer</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Age Requirements & Tobacco Disclaimer</h2>
               <p>
                 PipeKeeper is intended for adults only. By using this service, you confirm that you are of legal age to 
                 purchase and use tobacco products in your jurisdiction. We do not sell tobacco, facilitate tobacco sales, 
@@ -143,7 +143,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. User-Generated Content & Moderation</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. User-Generated Content & Moderation</h2>
               <p>
                 When you post comments, create public profiles, or send messages, you are creating user-generated content (UGC). 
                 We may review UGC to enforce our Terms of Service and community guidelines. You can report inappropriate content 
@@ -153,7 +153,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">12. Changes to This Policy</h2>
               <p>
                 We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
                 the new Privacy Policy on this page and updating the "Last updated" date.
@@ -161,7 +161,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">12. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">13. Contact Us</h2>
               <p>
                 If you have questions about this Privacy Policy, privacy concerns, or wish to exercise your rights, 
                 contact us at: <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a> or 

@@ -127,10 +127,10 @@ export default function SubscriptionPage() {
             </CardHeader>
             <CardContent className="text-sm text-stone-600 space-y-2">
               <p>
-                Purchases and subscription management are not available in the iOS companion app.
+                Premium upgrades, purchases, and subscription management are not available in this companion app.
               </p>
               <p>
-                If you already have Premium, sign in and you'll have full access.
+                If you already have Premium, sign in with the same account and your features will unlock automatically.
               </p>
             </CardContent>
           </Card>
