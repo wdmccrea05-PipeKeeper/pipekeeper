@@ -1843,7 +1843,7 @@ Provide concrete, actionable steps with specific field values.`,
             <div>
               <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-emerald-600" />
-                Top 3 Pipes to Buy Next
+                Top 3 Collection Changes To Do Next
               </h3>
               <div className="space-y-3">
                 {optimization.next_pipe_recommendations.map((rec, idx) => (
