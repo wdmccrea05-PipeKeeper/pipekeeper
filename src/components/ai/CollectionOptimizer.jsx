@@ -1510,11 +1510,17 @@ Provide concrete, actionable steps with specific field values.`,
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
-                                <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
+                              {pipe?.id ? (
+                                <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                                  <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
+                                    {displaySpec.pipe_name}
+                                  </h4>
+                                </a>
+                              ) : (
+                                <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
                                   {displaySpec.pipe_name}
                                 </h4>
-                              </a>
+                              )}
                               {pipe?.focus && pipe.focus.length > 0 ? (
                                 <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
                                   <Star className="w-3 h-3 mr-1" />
@@ -1738,11 +1744,17 @@ Provide concrete, actionable steps with specific field values.`,
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
-                              <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe?.id)}`)}>
-                                <h4 className="font-semibold text-stone-800 hover:text-violet-700 transition-colors">
+                              {pipe?.id ? (
+                                <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                                  <h4 className="font-semibold text-stone-800 hover:text-violet-700 transition-colors">
+                                    {change.pipe_name}
+                                  </h4>
+                                </a>
+                              ) : (
+                                <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
                                   {change.pipe_name}
                                 </h4>
-                              </a>
+                              )}
                               <Badge className="bg-violet-600 text-white">
                                 Quick Win #{idx + 1}
                               </Badge>
