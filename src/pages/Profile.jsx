@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage } from "@/components/utils/companion";
+import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -93,6 +94,22 @@ export default function ProfilePage() {
     ? Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24))
     : 0;
   const hasActiveSubscription = user?.subscription_level === 'paid';
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', user?.email],
+    queryFn: async () => {
+      try {
+        const subs = await base44.entities.Subscription.filter({ user_email: user?.email });
+        return Array.isArray(subs) ? subs[0] : null;
+      } catch (err) {
+        console.error('Subscription load error:', err);
+        return null;
+      }
+    },
+    enabled: !!user?.email,
+    retry: 1,
+    staleTime: 5000,
+  });
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user-profile', user?.email],
@@ -313,13 +330,28 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-2">
                   {shouldShowPurchaseUI() ? (
                     <>
-                      <a href={createPageUrl('Subscription')}>
-                        <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
-                          {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+                      {shouldShowManageSubscription(subscription) ? (
+                        <Button 
+                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
+                          onClick={async () => {
+                            try {
+                              await openManageSubscription();
+                            } catch (e) {
+                              alert(e?.message || 'Unable to open subscription management.');
+                            }
+                          }}
+                        >
+                          {getManageSubscriptionLabel()}
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
-                      </a>
-
+                      ) : (
+                        <a href={createPageUrl('Subscription')}>
+                          <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
+                            Upgrade
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </a>
+                      )}
                     </>
                   ) : (
                     <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
