@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLoading, selectedBlends }) {
   const [updateFields, setUpdateFields] = useState({
     quantity_owned: '',
+    packaging_type: 'none',
     tin_status: 'none',
     is_favorite: 'none',
     rating: ''
@@ -18,9 +19,23 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
     e.preventDefault();
     
     const updateData = {};
+    const packagingType = updateFields.packaging_type !== 'none' ? updateFields.packaging_type : null;
+    
     if (updateFields.quantity_owned !== '') {
-      updateData.quantity_owned = Number(updateFields.quantity_owned);
+      const quantityToAdd = Number(updateFields.quantity_owned);
+      
+      if (packagingType) {
+        // Update specific packaging type
+        if (packagingType === 'tin') {
+          updateData.tin_total_tins = quantityToAdd;
+        } else if (packagingType === 'bulk') {
+          updateData.bulk_total_quantity_oz = quantityToAdd;
+        } else if (packagingType === 'pouch') {
+          updateData.pouch_total_pouches = quantityToAdd;
+        }
+      }
     }
+    
     if (updateFields.tin_status && updateFields.tin_status !== 'none') {
       updateData.tin_status = updateFields.tin_status;
     }
@@ -52,7 +67,7 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div className="space-y-2">
               <Label className="text-xs">Add to Quantity</Label>
               <Input
@@ -64,6 +79,24 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
                 placeholder="e.g., 3"
                 className="h-9"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">Packaging Type</Label>
+              <Select 
+                value={updateFields.packaging_type} 
+                onValueChange={(v) => setUpdateFields(prev => ({ ...prev, packaging_type: v }))}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Don't update" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Don't update</SelectItem>
+                  <SelectItem value="tin">Tin</SelectItem>
+                  <SelectItem value="bulk">Bulk</SelectItem>
+                  <SelectItem value="pouch">Pouch</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">
