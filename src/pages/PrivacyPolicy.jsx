@@ -115,7 +115,15 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Your Rights & Data Retention</h2>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. WebView Usage</h2>
+              <p>
+                The PipeKeeper mobile applications may display content from pipekeeper.app using a secure WebView. The applications do not inject
+                or modify third-party web content.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Your Rights & Data Retention</h2>
               <p>You have the right to:</p>
               <ul className="list-disc pl-6 space-y-1 mb-3">
                 <li>Access and download your data</li>
