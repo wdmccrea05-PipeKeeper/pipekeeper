@@ -172,13 +172,11 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date ? 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const hasPaidAccess = user?.subscription_level === 'paid' || isWithinTrial;
+  // End of Jan 15, 2026 in America/Indiana/Indianapolis (UTC-5) = Jan 16, 2026 05:00:00 UTC
+  const TRIAL_END_UTC = Date.parse("2026-01-16T05:00:00Z");
+  const now = Date.now();
+  const isTrialWindow = now < TRIAL_END_UTC;
+  const hasPaidAccess = user?.subscription_level === 'paid' || isTrialWindow;
 
   return (
     <>
