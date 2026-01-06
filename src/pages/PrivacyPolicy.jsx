@@ -34,7 +34,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Collection Data:</strong> Information about your pipes, tobacco blends, smoking logs, ratings, notes, and photos you upload.</li>
                 <li><strong>Community & UGC:</strong> Public profile information (display name, bio, avatar, location if enabled), comments you post on other users' collections, friend connections, and messages you send.</li>
                 <li><strong>AI Processing Data:</strong> Content you submit to our AI features (search queries, photos, prompts) is sent to third-party AI providers for processing. <strong>Warning:</strong> Do not submit sensitive personal information through AI features.</li>
-                <li><strong>Payment Information:</strong> Subscription and billing data handled securely by Stripe. We do not store credit card numbers.</li>
+                <li><strong>Payment Information:</strong> Subscription and billing data is handled by third-party payment processors and/or the app store provider (Apple App Store / Google Play, where applicable). We do not store full credit card numbers.</li>
               </ul>
             </section>
 
@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
                 <li>Provide core collection management features</li>
                 <li>Generate AI-powered pairing recommendations, value lookups, and photo identification</li>
                 <li>Enable community features (profiles, following, comments, messaging)</li>
-                <li>Process subscription payments via Stripe</li>
+                <li>Process subscription payments via third-party payment processors and/or app store billing providers (where applicable)</li>
                 <li>Send service-related notifications</li>
                 <li>Investigate abuse reports and enforce community guidelines</li>
                 <li>Analyze usage patterns to improve user experience</li>
@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
                 We do not sell your personal information. Information may be shared in the following ways:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Third-Party Service Providers:</strong> AI providers (for AI features), Stripe (for payment processing), cloud hosting providers (for data storage).</li>
+                <li><strong>Third-Party Service Providers:</strong> AI providers (for AI features), payment processors/app store billing providers (for subscription processing where applicable), and cloud hosting providers (for data storage).</li>
                 <li><strong>Public Community:</strong> If you make your profile public, your display name, bio, avatar, location (if enabled), pipes, tobacco, and logs are visible to other users.</li>
                 <li><strong>External Web Lookups:</strong> When using AI search features, we fetch content from third-party websites (tobacco reviews, manufacturer info, market data). We do not control these external sources.</li>
                 <li><strong>Legal Compliance:</strong> If required by law or to protect our rights and users' safety.</li>
@@ -94,14 +94,14 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Payment Processing</h2>
               {inCompanion ? (
                 <p>
-                  The iOS companion app does not process purchases. If your account already has an active Premium subscription, 
+                  Companion apps do not process purchases. If your account already has an active Premium subscription, 
                   Premium features will unlock automatically after you sign in.
                 </p>
               ) : (
                 <p>
-                  Premium subscriptions are processed via Stripe. Stripe collects and processes your payment information 
-                  securely. We do not store credit card numbers. Billing data (subscription status, amount, renewal dates) 
-                  is stored in our system.
+                  Premium subscriptions, where offered, are processed by third-party payment processors and/or app store billing providers.
+                  These providers collect and process payment information according to their own policies. PipeKeeper does not store full
+                  payment card details. Billing data (subscription status, amount, renewal dates) is stored in our system.
                 </p>
               )}
             </section>

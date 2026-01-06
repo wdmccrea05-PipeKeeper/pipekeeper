@@ -781,13 +781,13 @@ export default function FAQPage() {
                 <AccordionContent className="text-stone-600 space-y-3">
                   {canShowPurchaseUI ? (
                     <>
-                      <p>You can manage your subscription directly through the Stripe billing portal:</p>
+                      <p>You can manage your subscription directly through the billing portal:</p>
                       <ol className="list-decimal pl-5 space-y-2">
                         <li>Go to your Profile page</li>
                         <li>Look for the "Subscription" section</li>
-                        <li>Click "Manage Subscription" to open the Stripe billing portal</li>
+                        <li>Click "Manage Subscription" to open the billing portal</li>
                       </ol>
-                      <p className="mt-3">In the Stripe portal, you can:</p>
+                      <p className="mt-3">In the billing portal, you can:</p>
                       <ul className="list-disc pl-5 space-y-1">
                         <li>Cancel your subscription</li>
                         <li>Update payment method</li>
@@ -799,8 +799,18 @@ export default function FAQPage() {
                       </p>
                     </>
                   ) : (
-                    <p>Subscription management is not available in the iOS companion app. Please visit the PipeKeeper website to manage your subscription through the Stripe billing portal.</p>
+                    <p>Subscription management is not available in companion apps. If you already have a subscription, sign in to access premium features.</p>
                   )}
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-19a">
+                <AccordionTrigger>How do subscriptions work on iOS and Android?</AccordionTrigger>
+                <AccordionContent className="text-stone-600">
+                  <p>
+                    Subscription availability and billing methods vary by platform. In companion apps, purchase flows may be unavailable.
+                    If you already have a subscription, sign in to access premium features.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

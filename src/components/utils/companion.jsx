@@ -1,33 +1,76 @@
-// Detect the iOS companion wrapper (UA flag and/or ?platform=ios)
-// and provide helpers to hide purchase flows in-app.
+// Detect whether we are running inside the iOS/Android native wrapper (WebView)
+// so we can enforce App Store / Play Store compliance (no external checkout UI).
 
 export function isIOSCompanionApp() {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
-    const hasUAFlag = ua.includes("pipekeeperios"); // set by iOS wrapper user agent suffix
+    // common patterns used by wrappers:
+    // - a custom UA token (recommended)
+    // - iOS WebView markers
+    const hasCustomToken = ua.includes("pipekeeper") && (ua.includes("ios") || ua.includes("companion"));
+    const isIOSWebView = /iphone|ipad|ipod/.test(ua) && (ua.includes("wv") || ua.includes("webkit"));
     const url = new URL(window.location.href);
-    const platformFlag = (url.searchParams.get("platform") || "").toLowerCase() === "ios";
-    return hasUAFlag || platformFlag;
+    const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
+    return hasCustomToken || isIOSWebView || platformParam === "ios";
   } catch {
     return false;
   }
 }
 
-// Alias for convenience
-export const isCompanionApp = isIOSCompanionApp;
+export function isAndroidCompanionApp() {
+  try {
+    const ua = (navigator.userAgent || "").toLowerCase();
+    // Android WebView commonly includes "; wv" in UA and "version/x.x"
+    const isAndroid = ua.includes("android");
+    const isWebView = ua.includes(" wv") || ua.includes("; wv") || ua.includes("version/");
+    const hasCustomToken = ua.includes("pipekeeper") && (ua.includes("android") || ua.includes("companion"));
 
+    const url = new URL(window.location.href);
+    const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
+
+    return (isAndroid && isWebView) || hasCustomToken || platformParam === "android";
+  } catch {
+    return false;
+  }
+}
+
+export function isCompanionApp() {
+  return isIOSCompanionApp() || isAndroidCompanionApp();
+}
+
+/**
+ * Controls whether we show ANY external purchase UI (Stripe checkout, web purchase links, etc.).
+ * - Web browser: true
+ * - iOS companion: false (must use IAP; we are a companion wrapper)
+ * - Android companion: false (Play Billing required; we are a companion wrapper)
+ */
 export function shouldShowPurchaseUI() {
-  // Worldwide companion mode: no purchase/upgrade/manage subscription CTAs in iOS wrapper
-  return !isIOSCompanionApp();
+  return !isCompanionApp();
 }
 
-export function premiumGateMessage() {
-  // Keep this neutral (avoid "go to website to buy" inside iOS)
-  return isIOSCompanionApp()
-    ? "Premium feature. Available for Premium accounts."
-    : "Premium feature. Upgrade to PipeKeeper Premium to unlock this feature.";
+/**
+ * A neutral message for store reviewers: no mention of web checkout, no links out.
+ */
+export function getPurchaseBlockedMessage() {
+  return "Purchases are not available in this companion app. If you already have a subscription, sign in to access premium features.";
 }
 
-export function subscriptionManagementMessage() {
-  return "Subscription management isn't available in the iOS companion app.";
+/**
+ * Premium gate messaging for users inside/outside companion apps
+ */
+export function getPremiumGateMessage() {
+  if (isCompanionApp()) {
+    return "This feature requires Premium. If you already have a subscription, sign in to access it.";
+  }
+  return "This feature requires Premium. Upgrade to unlock.";
+}
+
+/**
+ * Subscription management messaging
+ */
+export function getSubscriptionManagementMessage() {
+  if (isCompanionApp()) {
+    return "Subscription management is not available in this companion app.";
+  }
+  return null;
 }
