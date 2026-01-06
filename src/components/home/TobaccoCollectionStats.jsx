@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings } from "lucide-react";
+import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function TobaccoCollectionStats() {
@@ -17,6 +18,7 @@ export default function TobaccoCollectionStats() {
     return parseFloat(localStorage.getItem('lowInventoryThreshold')) || 2.0;
   });
   const [showSettings, setShowSettings] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -110,14 +112,19 @@ export default function TobaccoCollectionStats() {
   });
 
   return (
-    <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl text-emerald-800 flex items-center gap-2">
-          <BarChart3 className="w-6 h-6" />
-          Tobacco Collection Stats
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+        <CardHeader className="pb-3">
+          <CollapsibleTrigger className="w-full">
+            <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
+              <BarChart3 className="w-6 h-6" />
+              Tobacco Collection Stats
+              <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </CardTitle>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Quick Stats */}
           <div className="space-y-3">
@@ -351,7 +358,10 @@ export default function TobaccoCollectionStats() {
             </div>
           </div>
         </div>
-      </CardContent>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
 
       {/* Drill-Down Dialog */}
       <Dialog open={!!drillDown} onOpenChange={() => setDrillDown(null)}>
@@ -628,6 +638,5 @@ export default function TobaccoCollectionStats() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
   );
 }

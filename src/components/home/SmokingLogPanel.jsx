@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Plus, Flame, Calendar, Info, CheckCircle, Crown, Edit } from "lucide-react";
+import { Plus, Flame, Calendar, Info, CheckCircle, Crown, Edit, ChevronDown } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -21,6 +22,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
     pipe_id: '',
     blend_id: '',
@@ -381,29 +383,34 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   return (
     <>
-      <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-orange-800">
-                <Flame className="w-5 h-5" />
-                Smoking Log
-              </CardTitle>
-              <p className="text-sm text-stone-600 mt-1">
-                {totalBowls} total bowls ({breakInBowls} break-in)
-              </p>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-orange-800">
+                    <Flame className="w-5 h-5" />
+                    Smoking Log
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </CardTitle>
+                  <p className="text-sm text-stone-600 mt-1">
+                    {totalBowls} total bowls ({breakInBowls} break-in)
+                  </p>
+                </div>
+              </CollapsibleTrigger>
+              <Button
+                onClick={() => setShowAddLog(true)}
+                size="sm"
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Log Session
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowAddLog(true)}
-              size="sm"
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Log Session
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
           {logs.length === 0 ? (
             <p className="text-sm text-stone-500 text-center py-8">
               No smoking sessions logged yet. Start tracking your sessions!
@@ -450,8 +457,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       <Sheet open={showAddLog} onOpenChange={(open) => { setShowAddLog(open); if (!open) setEditingLog(null); }}>
         <SheetContent className="overflow-y-auto">
