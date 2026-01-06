@@ -186,9 +186,12 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco sommelier. Based on the following pipe characteristics, provide TWO SETS of recommendations:
-1. Blends from the user's collection that pair well
-2. New blends the user should consider buying
+        prompt: `You are an expert pipe tobacco advisor helping an adult user manage their personal collection.
+
+CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
+${existingBlendsText}
+
+Your task: Provide blend recommendations for this pipe including matches from their collection and optional future additions (do NOT mention buying, pricing, retailers, or purchase steps).
 
 ${pipeDescription}
 
@@ -215,7 +218,7 @@ Provide recommendations in JSON format with:
 - ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
 - reasoning: why these types work well with this pipe
 - from_collection: array of 3-5 objects with {name, manufacturer, score (1-10), reasoning} for blends from user's collection that match well
-- to_buy: array of 3-5 objects with {name, manufacturer, blend_type, score (1-10), description} for NEW products to buy (NOT from user's collection)
+- future_additions: array of 3-5 objects with {name, manufacturer, blend_type, score (1-10), description} for optional future collection additions (NOT from user's collection)
 - smoking_tips: specific tips for smoking these blend types in this pipe`,
         add_context_from_internet: true,
         response_json_schema: {
@@ -235,7 +238,7 @@ Provide recommendations in JSON format with:
                 }
               } 
             },
-            to_buy: { 
+            future_additions: { 
               type: "array", 
               items: { 
                 type: "object",
@@ -253,9 +256,9 @@ Provide recommendations in JSON format with:
         }
       });
 
-      // Filter to_buy recommendations to exclude user's collection
-      if (result.to_buy) {
-        result.to_buy = result.to_buy.filter(product => {
+      // Filter future_additions recommendations to exclude user's collection
+      if (result.future_additions) {
+        result.future_additions = result.future_additions.filter(product => {
           const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase().trim();
           const productName = product.name?.toLowerCase().trim() || '';
           const productMfr = product.manufacturer?.toLowerCase().trim() || '';
@@ -437,19 +440,19 @@ Provide recommendations in JSON format with:
               </Card>
             )}
 
-            {/* Recommended to Buy */}
-            {recommendations.to_buy?.length > 0 && (
+            {/* Optional Future Additions */}
+            {recommendations.future_additions?.length > 0 && (
               <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-violet-600" />
-                    Recommended to Buy
+                    Optional Future Collection Additions
                   </CardTitle>
-                  <CardDescription>New blends to try that aren't in your collection</CardDescription>
+                  <CardDescription>Blends to consider that aren't in your collection</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.to_buy.map((product, idx) => (
+                    {recommendations.future_additions.map((product, idx) => (
                       <div 
                         key={idx} 
                         className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
