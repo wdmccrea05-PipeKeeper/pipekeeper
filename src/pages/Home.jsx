@@ -368,11 +368,11 @@ export default function HomePage() {
             transition={{ delay: 0.3 }}
             >
             <a href={createPageUrl('Tobacco')}>
-              <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
+              <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
-                  <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{safeBlends.length}</p>
-                  <p className="text-xs sm:text-sm text-[#1a2c42]/80">Blends</p>
+                  <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{safeBlends.length}</p>
+                  <p className="text-xs sm:text-sm text-white/80">Blends</p>
                   </CardContent>
                   </Card>
                   </a>
@@ -382,11 +382,11 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="bg-gradient-to-br from-[#d4a574] to-[#b8935f] border-[#e8d5b7]/30">
+            <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30">
               <CardContent className="p-3 sm:p-6 text-center">
-                <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-[#1a2c42]" />
-                <p className="text-2xl sm:text-3xl font-bold text-[#1a2c42]">{totalCellaredTins}</p>
-                <p className="text-xs sm:text-sm text-[#1a2c42]/80">Cellared Tins</p>
+                <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredTins}</p>
+                <p className="text-xs sm:text-sm text-white/80">Cellared Tins</p>
               </CardContent>
             </Card>
           </motion.div>
