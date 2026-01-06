@@ -56,7 +56,7 @@ PipeKeeper helps you:
 • Identify pipes and estimate values
 • Optimize your collection
 
-Join now: https://base44.com/invite?ref=pipekeeper
+Invitation link: https://base44.com/invite?ref=pipekeeper
 
 Happy piping!
 The PipeKeeper Team

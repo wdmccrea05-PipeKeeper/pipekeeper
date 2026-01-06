@@ -927,7 +927,7 @@ Provide concrete, actionable steps with specific field values.`,
             <Textarea
               placeholder={improvedWhatIf 
                 ? "e.g., 'How do I clean my pipe?' or 'What pipe should I add for English blends?'" 
-                : "e.g., 'Should I buy a Peterson System pipe for English blends?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"}
+                : "e.g., 'What collection changes should I do next if I want better English blend matches?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"}
               value={whatIfQuery}
               onChange={(e) => setWhatIfQuery(e.target.value)}
               className="min-h-[80px]"
@@ -1920,7 +1920,7 @@ Provide concrete, actionable steps with specific field values.`,
                       Your Question or Scenario
                     </label>
                     <Textarea
-                      placeholder="e.g., 'Should I buy a Peterson System pipe for English blends?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"
+                      placeholder="e.g., 'What collection changes should I do next if I want better English blend matches?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"
                       value={whatIfQuery}
                       onChange={(e) => setWhatIfQuery(e.target.value)}
                       className="min-h-[80px]"

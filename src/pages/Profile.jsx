@@ -319,13 +319,7 @@ export default function ProfilePage() {
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       </a>
-                      {hasActiveSubscription && (
-                        <a href="https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00" target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm" className="w-full border-amber-300 text-amber-700">
-                            Manage Billing
-                          </Button>
-                        </a>
-                      )}
+
                     </>
                   ) : (
                     <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
