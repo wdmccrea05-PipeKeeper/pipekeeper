@@ -264,12 +264,13 @@ Analysis Requirements:
    - Prioritize changes that target user's preferred blend types
    - Calculate total trophy pairings gained from these 3 changes
 
-4. NEXT PIPE ACQUISITIONS - "TROPHY PIPE" RECOMMENDATIONS:
-   - Suggest TOP 3 pipes to buy next, ranked by impact
-   - Each pipe should target different gaps in user's preferred blend types
-   - Exact specifications optimized for specific blend types the user loves
+4. WHAT COLLECTION CHANGES TO DO NEXT ("TROPHY IMPACT" RECOMMENDATIONS):
+   - Suggest TOP 3 collection changes, ranked by impact
+   - Examples: re-specialize an existing pipe, adjust pairing rules, reduce overlap, fill a functional gap
+   - If suggesting a new pipe type/category, do NOT mention buying or retailers; frame as "optional future addition"
+   - Each recommendation should target different gaps in the user's preferred blend types
    - State explicitly: "This will achieve 9-10 scores with [list specific user-owned blends]"
-   - Expected score improvements: "Currently these blends score 6/10, this pipe will make them 9-10"
+   - Expected score improvements: "Currently these blends score 6/10, this change can make them 9-10"
    - Budget range and priority ranking (1 = highest priority)
    - Show cumulative impact: how many new trophy pairings all 3 pipes would create
 
@@ -602,9 +603,14 @@ User Feedback: ${feedback}
 
       // Detect question type first (improved detection)
       const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
-      const isCollectionQuestion = /should i buy|what if i (buy|add|get)|would adding|pipe should i|blend should i|recommend.*pipe|recommend.*blend|next pipe|improve.*collection|what pipe|which pipe|add.*pipe|purchase|acquire/i.test(whatIfQuery);
+      const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match/i.test(whatIfQuery);
+      
+      // Treat "buy/purchase" as collection-change intent, not shopping intent
+      const mentionsBuying = /should i buy|buy|purchase|acquire|next pipe/i.test(whatIfQuery);
+      
+      const treatAsCollectionChanges = isCollectionQuestion || mentionsBuying;
 
-      if (improvedWhatIf && isAdviceQuestion && !isCollectionQuestion) {
+      if (improvedWhatIf && isAdviceQuestion && !treatAsCollectionChanges) {
         // General advice question - no collection impact
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.

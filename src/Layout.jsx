@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isIOSCompanionApp } from "@/components/utils/companion";
+import AgeGate from "@/pages/AgeGate";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
@@ -64,8 +65,16 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       );
       }
 
+const AGE_GATE_KEY = "pk_age_confirmed";
+
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(AGE_GATE_KEY) === "true";
+    }
+    return false;
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -102,6 +111,18 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [queryClient]);
+
+  // Show age gate before authentication
+  if (!ageConfirmed) {
+    return (
+      <AgeGate 
+        onConfirm={() => {
+          localStorage.setItem(AGE_GATE_KEY, "true");
+          setAgeConfirmed(true);
+        }} 
+      />
+    );
+  }
 
   // Show loading state during authentication
   if (userLoading) {

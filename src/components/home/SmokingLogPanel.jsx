@@ -84,7 +84,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   // Get pipe rest status
   const getPipeRestStatus = (pipeId) => {
     const pipeLogs = logs.filter(l => l.pipe_id === pipeId).sort((a, b) => new Date(b.date) - new Date(a.date));
-    if (pipeLogs.length === 0) return { ready: true, message: 'Never smoked - ready to use!' };
+    if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
     
     const lastSmoked = new Date(pipeLogs[0].date);
     const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
