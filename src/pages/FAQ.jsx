@@ -55,6 +55,28 @@ export default function FAQ() {
       </Section>
 
       <Section title="Getting Started">
+        <Q id="how-install" q="How do I install PipeKeeper on my phone?">
+          PipeKeeper is available as a web app and through companion apps. To use on your phone:
+          <ul className="mt-2 space-y-1">
+            <li><b>Web:</b> Visit pipekeeper.app in your mobile browser and add to home screen</li>
+            <li><b>iOS:</b> Download the PipeKeeper companion app from the Apple App Store</li>
+            <li><b>Android:</b> Download the PipeKeeper companion app from Google Play</li>
+          </ul>
+          Note: Subscriptions are managed through the web version, not through app stores.
+        </Q>
+
+        <Q id="tutorial" q="Is there a tutorial or walkthrough?">
+          Yes! When you first create your account, PipeKeeper offers a guided onboarding flow that walks you through:
+          <ul className="mt-2 space-y-1">
+            <li>Setting up your smoking profile preferences</li>
+            <li>Adding your first pipe to your collection</li>
+            <li>Adding your first tobacco blend</li>
+            <li>Logging your first smoking session</li>
+            <li>Accessing AI-powered features</li>
+          </ul>
+          You can skip this tutorial if you prefer to explore on your own, or restart it anytime from your Profile settings.
+        </Q>
+
         <Q id="how-add-pipe" q="How do I add a pipe to my collection?">
           Go to the <b>Pipes</b> tab and tap the <b>+</b> button. Fill in as much or as little detail as you want—only the pipe name is required. You can use the AI identification tool to help fill in details from photos.
         </Q>
@@ -147,6 +169,11 @@ export default function FAQ() {
       </Section>
 
       <Section title="Premium Feature Definitions">
+        <Q id="premium-included" q="What is included in Premium?">
+          Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
+          and other upgraded capabilities. See below for detailed feature descriptions.
+        </Q>
+
         <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
           The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
         </Q>
@@ -189,11 +216,6 @@ export default function FAQ() {
       </Section>
 
       <Section title="Premium, Trials & Subscriptions">
-        <Q id="premium-included" q="What is included in Premium?">
-          Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
-          and other upgraded capabilities shown on the Subscription screen.
-        </Q>
-
         <Q id="free-trial" q="Is there a free trial?">
           PipeKeeper may offer a limited trial window that temporarily enables Premium features. If a trial is active for
           your account, the app will display the remaining time in the Subscription area.
