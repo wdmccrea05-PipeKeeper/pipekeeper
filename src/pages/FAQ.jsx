@@ -81,23 +81,26 @@ export default function FAQ() {
         </Q>
 
         <Q id="manage-subscription" q="How do I manage, change, or cancel my subscription?">
-          <div className="mb-2">
-            Management depends on where you originally subscribed:
+          <div style={{ marginBottom: 8 }}>
+            PipeKeeper subscriptions are managed through our secure billing portal (web-based).
           </div>
-          <ul className="mt-0 mb-3 space-y-2">
+
+          <ul style={{ marginTop: 0, marginBottom: 10 }}>
             <li>
-              <b className="text-[#e8d5b7]">Apple App Store purchase:</b> Manage in iOS: <i>Settings → Apple ID → Subscriptions</i>.
+              Go to <b>Profile</b> in the app and tap <b>Manage subscription</b> (or <b>Billing portal</b>).
             </li>
             <li>
-              <b className="text-[#e8d5b7]">Google Play purchase:</b> Manage in Play Store: <i>Payments &amp; subscriptions → Subscriptions</i>.
+              If you don't see the button, it usually means your account hasn't created a subscription customer record yet.
+              Start a subscription once, then the portal link will appear.
             </li>
             <li>
-              <b className="text-[#e8d5b7]">Web purchase:</b> Use the in-app subscription management link from your <b>Profile</b> (it opens your
-              customer portal).
+              If you still can't access the portal, contact support and we'll help you locate your billing link.
             </li>
           </ul>
-          If you don't see a management link in the app, you can also contact support and we'll help point you to the
-          correct place based on your account.
+
+          <div style={{ opacity: 0.9 }}>
+            Note: Subscriptions are not managed through Apple App Store or Google Play.
+          </div>
         </Q>
 
         <Q id="premium-activate" q="I already paid—when do Premium features activate?">
@@ -107,12 +110,8 @@ export default function FAQ() {
         </Q>
 
         <Q id="refunds" q="Refunds and billing questions">
-          Refund eligibility and timing depend on where you purchased your subscription:
-          <ul className="mt-2 space-y-1">
-            <li>App Store purchases follow Apple's refund policies.</li>
-            <li>Google Play purchases follow Google's refund policies.</li>
-            <li>Web purchases are handled through our payment processor and support team per the Terms of Service.</li>
-          </ul>
+          For web subscriptions, billing is handled through our third-party payment processor. Please contact support for billing
+          questions, refunds (where applicable), or account access issues.
         </Q>
       </Section>
 
