@@ -36,8 +36,11 @@ export function isAndroidCompanionApp() {
 }
 
 export function isIOSCompanionApp() {
-  const platform = getPlatformParam();
-  return platform === "ios" && isIOSWebView();
+  if (!isBrowser) return false;
+  const ua = (navigator.userAgent || '').toLowerCase();
+  // Only treat as iOS companion if the embedded app sets a custom UA flag
+  // This prevents accidentally hiding subscription UI on the normal web app.
+  return ua.includes('pipekeeperios');
 }
 
 export function isCompanionApp() {
