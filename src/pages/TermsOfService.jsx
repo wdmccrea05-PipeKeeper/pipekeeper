@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function TermsOfService() {
-  const P = ({ children }) => <p style={{ lineHeight: 1.7, margin: "10px 0" }}>{children}</p>;
-  const H2 = ({ children }) => <h2 style={{ marginTop: 22 }}>{children}</h2>;
+  const P = ({ children }) => <p className="text-[#e8d5b7]/90 leading-relaxed my-3">{children}</p>;
+  const H2 = ({ children }) => <h2 className="text-2xl font-semibold text-[#e8d5b7] mt-6 mb-3">{children}</h2>;
 
   return (
-    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
-      <h1 style={{ margin: "0 0 6px 0" }}>PipeKeeper Terms of Service</h1>
-      <div style={{ opacity: 0.8, marginBottom: 18 }}>Last updated: January 2026</div>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Terms of Service</h1>
+        <div className="text-[#e8d5b7]/70 mb-8">Last updated: January 2026</div>
 
       <P>
         These Terms of Service ("Terms") govern your access to and use of PipeKeeper (the "Service"). By using the
@@ -84,15 +85,16 @@ export default function TermsOfService() {
       <H2>11. Contact</H2>
       <P>
         Policy links:
-        <ul style={{ marginTop: 8 }}>
+        <ul className="mt-2 space-y-1">
           <li>
-            <Link to={createPageUrl('PrivacyPolicy')}>Privacy Policy</Link>
+            <Link to={createPageUrl('PrivacyPolicy')} className="text-[#8b3a3a] hover:text-[#a94747] underline">Privacy Policy</Link>
           </li>
           <li>
-            <Link to={createPageUrl('FAQ')}>FAQ</Link>
+            <Link to={createPageUrl('FAQ')} className="text-[#8b3a3a] hover:text-[#a94747] underline">FAQ</Link>
           </li>
         </ul>
       </P>
+      </div>
     </div>
   );
 }
