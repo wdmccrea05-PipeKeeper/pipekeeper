@@ -41,7 +41,7 @@ export default function TermsOfService() {
         of Premium features and any trial timing will be displayed in the app.
       </P>
       <P>
-        <b>Subscriptions are purchased on the web.</b> PipeKeeper uses a third-party payment processor for subscription billing.
+        <b>Subscriptions are purchased on the web.</b> Subscriptions are processed by a third-party payment processor.
         Subscription management (upgrade, cancel, invoices, and payment method updates) is handled through a secure customer
         portal accessible from the app's Profile area.
       </P>
