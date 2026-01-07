@@ -19,18 +19,18 @@ export default function FAQ() {
   );
 
   const Q = ({ id, q, children }) => (
-    <Card className="bg-[#243548] border-[#8b3a3a]/30 overflow-hidden">
+    <Card className="bg-white border-[#8b3a3a]/30 overflow-hidden">
       <button
         onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-[#8b3a3a]/10 transition-colors"
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-[#1a2c42]/5 transition-colors"
       >
-        <span className="font-semibold text-[#e8d5b7] pr-4">{q}</span>
+        <span className="font-semibold text-[#1a2c42] pr-4">{q}</span>
         <ChevronDown 
-          className={`w-5 h-5 text-[#e8d5b7]/70 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-[#1a2c42]/70 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
         />
       </button>
       {openItems[id] && (
-        <CardContent className="px-4 pb-4 pt-0 text-[#e8d5b7]/80 leading-relaxed">
+        <CardContent className="px-4 pb-4 pt-0 text-[#1a2c42]/80 leading-relaxed">
           {children}
         </CardContent>
       )}
