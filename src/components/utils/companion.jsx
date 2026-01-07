@@ -1,17 +1,15 @@
-// Companion detection: rely on explicit UA flags set by the native wrapper.
-// This prevents accidental gating on the normal web app.
+// Companion detection: rely ONLY on explicit UA flags set by the native wrappers.
+// Do NOT use URL query params (like ?platform=ios) because that breaks the web UI.
 
 export function isCompanionApp() {
-  try {
-    const ua = (navigator.userAgent || "").toLowerCase();
-    return ua.includes("pipekeeperios") || ua.includes("pipekeeperandroid");
-  } catch {
-    return false;
-  }
+  if (typeof window === "undefined") return false;
+
+  const ua = (navigator.userAgent || "").toLowerCase();
+  return ua.includes("pipekeeperios") || ua.includes("pipekeeperandroid");
 }
 
 export function shouldShowPurchaseUI() {
-  // Hide any purchase/upgrade/billing portal CTAs in native companion wrappers
+  // Hide any purchase/upgrade/billing portal UI in iOS + Android companion wrappers
   return !isCompanionApp();
 }
 
