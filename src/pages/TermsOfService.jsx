@@ -1,163 +1,107 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { isCompanionApp } from "@/components/utils/companion";
 
-export default function TermsOfServicePage() {
-  const inCompanion = isCompanionApp();
+export default function TermsOfService() {
+  const P = ({ children }) => <p style={{ lineHeight: 1.7, margin: "10px 0" }}>{children}</p>;
+  const H2 = ({ children }) => <h2 style={{ marginTop: 22 }}>{children}</h2>;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <a href={createPageUrl('Home')}>
-          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </a>
+    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
+      <h1 style={{ margin: "0 0 6px 0" }}>PipeKeeper Terms of Service</h1>
+      <div style={{ opacity: 0.8, marginBottom: 18 }}>Last updated: January 2026</div>
 
-        <Card className="border-[#e8d5b7]/30">
-          <CardHeader>
-            <CardTitle className="text-3xl text-stone-900">Terms of Service</CardTitle>
-            <p className="text-stone-600 mt-2">Last updated: January 2, 2026</p>
-          </CardHeader>
-          <CardContent className="prose prose-stone max-w-none text-stone-800 space-y-6">
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">1. Acceptance of Terms</h2>
-              <p>
-                By accessing and using PipeKeeper ("the Service"), you accept and agree to be bound by these Terms of Service. 
-                If you do not agree to these terms, please do not use the Service.
-              </p>
-            </section>
+      <P>
+        These Terms of Service ("Terms") govern your access to and use of PipeKeeper (the "Service"). By using the
+        Service, you agree to these Terms.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">2. Description of Service</h2>
-              <p>
-                PipeKeeper provides digital tools for managing and organizing your pipe and tobacco collection. Features include: 
-                collection management, AI-powered recommendations and identification, community features (profiles, following, 
-                comments, messaging), and premium subscription services. <strong>Important:</strong> We do not sell tobacco products, 
-                facilitate tobacco sales, or verify age for tobacco purchases. This is an informational and collection management 
-                service only.
-              </p>
-            </section>
+      <H2>1. The Service</H2>
+      <P>
+        PipeKeeper is a collection-management and informational app for tracking pipes, tobacco blends, and related
+        hobby/collection data. PipeKeeper does not sell tobacco products and does not process tobacco orders.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">3. User Accounts</h2>
-              <p>
-                You are responsible for maintaining the confidentiality of your account credentials and for all activities 
-                that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
-              </p>
-            </section>
+      <H2>2. Eligibility</H2>
+      <P>
+        You must be legally able to form a binding contract in your jurisdiction to use the Service. You are responsible
+        for complying with all applicable laws where you live.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">4. User Content & Community Guidelines</h2>
-              <p className="mb-3">
-                You retain ownership of the content you create. By using our service, you grant us a license to store and 
-                display your content as necessary to provide our services.
-              </p>
-              <p className="mb-2"><strong>Prohibited Content:</strong> You may not post content that:</p>
-              <ul className="list-disc pl-6 space-y-1 mb-3">
-                <li>Harasses, threatens, or bullies other users</li>
-                <li>Contains hate speech, discrimination, or violence</li>
-                <li>Infringes on intellectual property rights</li>
-                <li>Contains spam, advertising, or solicitations</li>
-                <li>Is sexually explicit, obscene, or otherwise inappropriate</li>
-                <li>Violates any applicable law</li>
-              </ul>
-              <p className="mb-3">
-                <strong>Reporting & Enforcement:</strong> Users can report inappropriate content or users via the Report button. 
-                All reports are reviewed by administrators. We reserve the right to remove content, hide comments, suspend accounts, 
-                or terminate access for violations. Repeat offenders will have their accounts permanently terminated. For questions 
-                or appeals, contact us via the <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a>.
-              </p>
-              <p>
-                <strong>Blocking Users:</strong> You can block other users to prevent them from seeing your profile or messaging you. 
-                Blocked users cannot comment on your content.
-              </p>
-            </section>
+      <H2>3. Accounts</H2>
+      <P>
+        You are responsible for maintaining the confidentiality of your account and for all activity under your account.
+        You agree to provide accurate information and to keep your account information updated.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Features Disclaimer</h2>
-              <p>
-                AI-powered recommendations, identifications, value estimates, and search results are provided for informational 
-                purposes only. They are not professional advice and may be inaccurate, incomplete, or outdated. We make no guarantees 
-                about AI accuracy. Always verify critical information (especially valuations and identifications) through independent 
-                sources or professional appraisers. You use AI features at your own risk.
-              </p>
-            </section>
+      <H2>4. Subscriptions, Premium Features, and Trials</H2>
+      <P>
+        PipeKeeper may offer Premium features via subscription. We may also offer limited trial access. The availability
+        of Premium features and any trial timing will be displayed in the app.
+      </P>
+      <P>
+        <b>Where you purchase matters.</b> Subscriptions may be purchased through platform storefronts (e.g., Apple App
+        Store / Google Play) and/or on the web depending on how you installed PipeKeeper.
+      </P>
+      <P>
+        <b>Managing or canceling.</b> If you subscribed through Apple or Google, you manage/cancel through that platform.
+        If you subscribed on the web, you manage/cancel through your customer portal accessible from the app's Profile
+        area.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Subscriptions and Billing</h2>
-              {inCompanion ? (
-                <p>
-                  Premium features require an active subscription associated with your account. The iOS and Android companion applications do not
-                  provide in-app purchasing or subscription management. If you already have an active subscription, sign in with the same account to
-                  access premium features.
-                </p>
-              ) : (
-                <>
-                  <p className="mb-3">
-                    Premium features require a paid subscription ($1.99/month or $19.99/year). Subscriptions renew automatically until canceled.
-                    You can cancel anytime; access continues until the end of your billing period. Refunds are not provided for partial billing periods.
-                  </p>
-                  <p>
-                    <strong>Subscriptions:</strong> Subscription availability and billing methods may vary by platform.
-                  </p>
-                </>
-              )}
-            </section>
+      <H2>5. Billing and Refunds</H2>
+      <P>
+        Billing rules and refunds depend on the purchase channel:
+        <ul style={{ marginTop: 8 }}>
+          <li>App Store purchases follow Apple's billing and refund policies.</li>
+          <li>Google Play purchases follow Google's refund policies.</li>
+          <li>Web purchases are handled through our third-party payment processor and support team.</li>
+        </ul>
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Account Deletion</h2>
-              <p>
-                You may request account deletion at any time through Profile → Delete Account. This immediately removes your content 
-                (pipes, blends, logs, messages, comments, connections). Your authentication record is marked for deletion and fully 
-                removed within 30 days. Backups may retain data for up to 90 days for disaster recovery purposes only. For questions 
-                about account deletion, contact us via the <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a>.
-              </p>
-            </section>
+      <H2>6. Acceptable Use</H2>
+      <P>
+        You agree not to misuse the Service, including attempting to access accounts you do not own, reverse engineer or
+        disrupt the Service, scrape the Service at scale, or use the Service for illegal activities.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. Prohibited Use</h2>
-              <p>
-                You agree not to misuse our services, including attempting to access unauthorized areas, interfering with other users, 
-                posting prohibited content (see Section 4), or violating community guidelines.
-              </p>
-            </section>
+      <H2>7. Content and User Data</H2>
+      <P>
+        You retain ownership of your content and collection data you submit to the Service. You grant us the limited
+        rights needed to operate the Service (e.g., hosting, processing, and displaying your data to you).
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Limitation of Liability</h2>
-              <p>
-                The Service is provided "as is" without warranties of any kind. We shall not be liable for any indirect, 
-                incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Service.
-              </p>
-            </section>
+      <H2>8. Disclaimers</H2>
+      <P>
+        The Service is provided "as is" and "as available." PipeKeeper may include AI-based features that provide
+        best-effort suggestions and may be inaccurate. PipeKeeper is not responsible for decisions you make based on the
+        Service.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Changes to Terms</h2>
-              <p>
-                We reserve the right to modify these terms at any time. We will notify users of material changes 
-                via email or through the Service. Continued use after changes constitutes acceptance of the new terms.
-              </p>
-            </section>
+      <H2>9. Limitation of Liability</H2>
+      <P>
+        To the fullest extent permitted by law, PipeKeeper and its affiliates will not be liable for indirect,
+        incidental, special, consequential, or punitive damages, or any loss of data, profits, or revenue.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. Contact</h2>
-              <p>
-                For questions about these Terms, community guidelines, or to report issues, visit our <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a> or 
-                email hello@pipekeeper.app
-              </p>
-            </section>
+      <H2>10. Changes</H2>
+      <P>
+        We may update these Terms from time to time. If changes are material, we will take reasonable steps to notify you
+        (for example, by posting within the Service). Continued use means you accept the updated Terms.
+      </P>
 
-            <div className="mt-8 pt-6 border-t border-stone-200">
-              <p className="text-sm text-stone-600">
-                © 2026 PipeKeeper. All rights reserved.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <H2>11. Contact</H2>
+      <P>
+        Policy links:
+        <ul style={{ marginTop: 8 }}>
+          <li>
+            <Link to={createPageUrl('PrivacyPolicy')}>Privacy Policy</Link>
+          </li>
+          <li>
+            <Link to={createPageUrl('FAQ')}>FAQ</Link>
+          </li>
+        </ul>
+      </P>
     </div>
   );
 }

@@ -1,190 +1,108 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { isCompanionApp } from "@/components/utils/companion";
 
-export default function PrivacyPolicyPage() {
-  const inCompanion = isCompanionApp();
+export default function PrivacyPolicy() {
+  const P = ({ children }) => <p style={{ lineHeight: 1.7, margin: "10px 0" }}>{children}</p>;
+  const H2 = ({ children }) => <h2 style={{ marginTop: 22 }}>{children}</h2>;
+  const LI = ({ children }) => <li style={{ marginBottom: 6 }}>{children}</li>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <a href={createPageUrl('Home')}>
-          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </a>
+    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
+      <h1 style={{ margin: "0 0 6px 0" }}>PipeKeeper Privacy Policy</h1>
+      <div style={{ opacity: 0.8, marginBottom: 18 }}>Last updated: January 2026</div>
 
-        <Card className="border-[#e8d5b7]/30">
-          <CardHeader>
-            <CardTitle className="text-3xl text-stone-900">Privacy Policy</CardTitle>
-            <p className="text-stone-600 mt-2">Last updated: January 2, 2026</p>
-          </CardHeader>
-          <CardContent className="prose prose-stone max-w-none text-stone-800 space-y-6">
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">1. Information We Collect</h2>
-              <p>
-                We collect the following types of information:
-              </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Account Information:</strong> Email address and profile details you provide for account access and community features.</li>
-                <li><strong>Collection Data:</strong> Information about your pipes, tobacco blends, smoking logs, ratings, notes, and photos you upload.</li>
-                <li><strong>Community & UGC:</strong> Public profile information (display name, bio, avatar, location if enabled), comments you post on other users' collections, friend connections, and messages you send.</li>
-                <li><strong>AI Processing Data:</strong> Content you submit to our AI features (search queries, photos, prompts) is sent to third-party AI providers for processing. <strong>Warning:</strong> Do not submit sensitive personal information through AI features.</li>
-                <li><strong>Payment Information:</strong> Subscription and billing data is handled by third-party payment processors and/or the app store provider (Apple App Store / Google Play, where applicable). We do not store full credit card numbers.</li>
-              </ul>
-            </section>
+      <P>
+        This Privacy Policy explains how PipeKeeper ("we," "us") collects, uses, and shares information when you use the
+        PipeKeeper app and related services (the "Service").
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">2. How We Use Your Information</h2>
-              <p>We use the information we collect to:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Provide core collection management features</li>
-                <li>Generate AI-powered pairing recommendations, value lookups, and photo identification</li>
-                <li>Enable community features (profiles, following, comments, messaging)</li>
-                <li>Process subscription payments via third-party payment processors and/or app store billing providers (where applicable)</li>
-                <li>Send service-related notifications</li>
-                <li>Investigate abuse reports and enforce community guidelines</li>
-                <li>Analyze usage patterns to improve user experience</li>
-              </ul>
-            </section>
+      <H2>1. Information We Collect</H2>
+      <ul style={{ marginTop: 8 }}>
+        <LI>
+          <b>Account information:</b> such as email address and basic profile details needed to operate your account.
+        </LI>
+        <LI>
+          <b>Collection data you provide:</b> pipes, tobaccos, notes, photos you upload, and usage logs.
+        </LI>
+        <LI>
+          <b>Device/usage data:</b> basic analytics or diagnostic information (e.g., crash logs) to maintain and improve
+          the Service.
+        </LI>
+      </ul>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">3. Information Sharing</h2>
-              <p>
-                We do not sell your personal information. Information may be shared in the following ways:
-              </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Third-Party Service Providers:</strong> AI providers (for AI features), payment processors/app store billing providers (for subscription processing where applicable), and cloud hosting providers (for data storage).</li>
-                <li><strong>Public Community:</strong> If you make your profile public, your display name, bio, avatar, location (if enabled), pipes, tobacco, and logs are visible to other users.</li>
-                <li><strong>External Web Lookups:</strong> When using AI search features, we fetch content from third-party websites (tobacco reviews, manufacturer info, market data). We do not control these external sources.</li>
-                <li><strong>Legal Compliance:</strong> If required by law or to protect our rights and users' safety.</li>
-              </ul>
-            </section>
+      <H2>2. Payments and Subscription Data</H2>
+      <P>
+        If you purchase a subscription on the web, payments are processed by a third-party payment processor. We do not
+        store full payment card numbers. We may store limited billing identifiers (for example, a customer ID or
+        subscription ID) to confirm subscription status and provide account support.
+      </P>
+      <P>
+        If you purchase through Apple App Store or Google Play, billing is handled by that platform. We may receive or
+        store limited entitlement/status signals needed to enable Premium features.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">4. Data Storage and Security</h2>
-              <p>
-                We use industry-standard security measures to protect your data, including encrypted connections, 
-                secure cloud storage, and access controls. Your data is stored on cloud infrastructure with encryption 
-                in transit and at rest. However, no system is 100% secure. You are responsible for maintaining the 
-                confidentiality of your account credentials.
-              </p>
-            </section>
+      <H2>3. How We Use Information</H2>
+      <ul style={{ marginTop: 8 }}>
+        <LI>Provide and operate the Service (account access, syncing, core features).</LI>
+        <LI>Enable Premium features and verify subscription status.</LI>
+        <LI>Maintain, troubleshoot, and improve performance and security.</LI>
+        <LI>Respond to support requests and communicate about updates.</LI>
+      </ul>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">5. AI Processing & External Lookups</h2>
-              <p className="mb-3">
-                <strong>AI Features:</strong> When you use AI-powered features (pairing, photo ID, value lookup, search), 
-                your content (text, images) is sent to third-party AI providers for processing. These providers may retain 
-                data according to their own policies. <strong>Warning:</strong> Do not submit sensitive personal information, 
-                financial data, or confidential content through AI features.
-              </p>
-              <p>
-                <strong>External Web Lookups:</strong> Our AI search features fetch content from third-party websites 
-                (tobacco reviews, manufacturer info, market data). We do not control or endorse these external sources. 
-                Information retrieved may be inaccurate or outdated.
-              </p>
-            </section>
+      <H2>4. How We Share Information</H2>
+      <P>We may share information in limited circumstances:</P>
+      <ul style={{ marginTop: 8 }}>
+        <LI>
+          <b>Service providers:</b> vendors that help us run the Service (hosting, analytics, payment processing).
+        </LI>
+        <LI>
+          <b>Legal and safety:</b> if required to comply with law or to protect rights, safety, and security.
+        </LI>
+        <LI>
+          <b>Business changes:</b> if the Service is involved in a merger, acquisition, or asset sale.
+        </LI>
+      </ul>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">6. Payment Processing</h2>
-              {inCompanion ? (
-                <p>
-                  Companion apps do not process purchases. If your account already has an active Premium subscription, 
-                  Premium features will unlock automatically after you sign in.
-                </p>
-              ) : (
-                <p>
-                  Premium subscriptions, where offered, are processed by third-party payment processors and/or app store billing providers.
-                  These providers collect and process payment information according to their own policies. PipeKeeper does not store full
-                  payment card details. Billing data (subscription status, amount, renewal dates) is stored in our system.
-                </p>
-              )}
-            </section>
+      <H2>5. Data Retention</H2>
+      <P>
+        We retain information as long as needed to provide the Service and for legitimate business purposes (e.g.,
+        compliance, dispute resolution). You may request deletion subject to legal and operational limits.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">7. Cookies and Tracking</h2>
-              <p>
-                We use cookies and similar technologies to maintain your session, remember preferences, and improve our services. 
-                You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
-              </p>
-            </section>
+      <H2>6. Security</H2>
+      <P>
+        We use reasonable safeguards designed to protect information, but no system is 100% secure. You are responsible
+        for maintaining the security of your account credentials.
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">8. WebView Usage</h2>
-              <p>
-                The PipeKeeper mobile applications may display content from pipekeeper.app using a secure WebView. The applications do not inject
-                or modify third-party web content.
-              </p>
-            </section>
+      <H2>7. Your Choices</H2>
+      <ul style={{ marginTop: 8 }}>
+        <LI>Access and update your account information within the app where available.</LI>
+        <LI>Request deletion of your account and associated data via support, subject to applicable requirements.</LI>
+      </ul>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">9. Your Rights & Data Retention</h2>
-              <p>You have the right to:</p>
-              <ul className="list-disc pl-6 space-y-1 mb-3">
-                <li>Access and download your data</li>
-                <li>Update or correct your information</li>
-                <li>Delete your account and content (see Account Deletion below)</li>
-                <li>Make your profile public or private</li>
-                <li>Disable comments or messaging</li>
-                <li>Block other users</li>
-              </ul>
-              <p>
-                <strong>Account Deletion:</strong> You can initiate account deletion in-app via Profile → Delete Account. 
-                This immediately removes your content (pipes, blends, logs, messages, comments, connections). Your authentication 
-                record is marked for deletion and fully removed within 30 days. Backups may retain data for an additional 90 days 
-                for disaster recovery purposes only.
-              </p>
-            </section>
+      <H2>8. Children</H2>
+      <P>The Service is not directed to children. Do not use the Service if you are under the age required by law.</P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">10. Age Requirements & Tobacco Disclaimer</h2>
-              <p>
-                PipeKeeper is intended for adults only. By using this service, you confirm that you are of legal age to 
-                purchase and use tobacco products in your jurisdiction. We do not sell tobacco, facilitate tobacco sales, 
-                or verify age for tobacco purchases. This service is solely for collection management and informational purposes.
-              </p>
-            </section>
+      <H2>9. Changes</H2>
+      <P>
+        We may update this Privacy Policy. If changes are material, we will take reasonable steps to notify you (for
+        example, by posting within the Service).
+      </P>
 
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">11. User-Generated Content & Moderation</h2>
-              <p>
-                When you post comments, create public profiles, or send messages, you are creating user-generated content (UGC). 
-                We may review UGC to enforce our Terms of Service and community guidelines. You can report inappropriate content 
-                or users via the Report button. Abuse reports are stored and reviewed by administrators. Repeated violations may 
-                result in account suspension or termination.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">12. Changes to This Policy</h2>
-              <p>
-                We may update this Privacy Policy from time to time. We will notify you of any changes by posting 
-                the new Privacy Policy on this page and updating the "Last updated" date.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-stone-900 mb-3">13. Contact Us</h2>
-              <p>
-                If you have questions about this Privacy Policy, privacy concerns, or wish to exercise your rights, 
-                contact us at: <a href={createPageUrl('Support')} className="text-amber-600 hover:text-amber-700">Support Page</a> or 
-                email hello@pipekeeper.app
-              </p>
-            </section>
-
-            <div className="mt-8 pt-6 border-t border-stone-200">
-              <p className="text-sm text-stone-600">
-                © 2026 PipeKeeper. All rights reserved.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <H2>10. Contact</H2>
+      <P>
+        Related documents:
+        <ul style={{ marginTop: 8 }}>
+          <li>
+            <Link to={createPageUrl('TermsOfService')}>Terms of Service</Link>
+          </li>
+          <li>
+            <Link to={createPageUrl('FAQ')}>FAQ</Link>
+          </li>
+        </ul>
+      </P>
     </div>
   );
 }
