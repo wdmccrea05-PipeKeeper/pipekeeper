@@ -117,33 +117,34 @@ export default function FAQ() {
       </Section>
 
       <Section title="AI Features & Accuracy">
-        <Q q="Are AI recommendations guaranteed to be correct?">
+        <Q id="ai-accuracy" q="Are AI recommendations guaranteed to be correct?">
           No. AI features provide best-effort suggestions and may be incomplete or inaccurate. You should use your own
           judgment and verify important information from reliable sources.
         </Q>
 
-        <Q q="Does PipeKeeper provide medical or professional advice?">
+        <Q id="medical-advice" q="Does PipeKeeper provide medical or professional advice?">
           No. PipeKeeper provides informational tools for hobby and collection management only.
         </Q>
       </Section>
 
       <Section title="Support">
-        <Q q="How do I contact support?">
+        <Q id="contact-support" q="How do I contact support?">
           Use the support link inside the app or visit{" "}
-          <a href="https://pipekeeper.app" target="_blank" rel="noreferrer">
+          <a href="https://pipekeeper.app" target="_blank" rel="noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
             pipekeeper.app
           </a>
           . You can also review our policies here:
-          <ul style={{ marginTop: 8 }}>
+          <ul className="mt-2 space-y-1">
             <li>
-              <Link to={createPageUrl('TermsOfService')}>Terms of Service</Link>
+              <Link to={createPageUrl('TermsOfService')} className="text-[#8b3a3a] hover:text-[#a94747] underline">Terms of Service</Link>
             </li>
             <li>
-              <Link to={createPageUrl('PrivacyPolicy')}>Privacy Policy</Link>
+              <Link to={createPageUrl('PrivacyPolicy')} className="text-[#8b3a3a] hover:text-[#a94747] underline">Privacy Policy</Link>
             </li>
           </ul>
         </Q>
       </Section>
+      </div>
     </div>
   );
 }
