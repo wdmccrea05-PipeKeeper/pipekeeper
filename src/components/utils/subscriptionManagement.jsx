@@ -5,7 +5,7 @@ export async function openManageSubscription() {
   try {
     const response = await base44.functions.invoke('createBillingPortalSession', {});
     if (response.data?.url) {
-      window.open(response.data.url, '_blank', 'noopener,noreferrer');
+      window.location.href = response.data.url;
     } else {
       throw new Error('No portal URL returned');
     }

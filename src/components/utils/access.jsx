@@ -23,10 +23,13 @@ export function hasPaidAccess(user) {
  * - After trial: only paid users have premium access
  */
 export function hasPremiumAccess(user) {
-  // Primary paid indicator
-  if (user?.subscription_level === 'paid') return true;
+  // No user? No premium access (prevents accidental unlock during loading/logged-out states)
+  if (!user?.email) return false;
 
-  // Temporary premium access during trial window
+  // Primary paid indicator
+  if ((user?.subscription_level || "").toLowerCase() === "paid") return true;
+
+  // Trial window grants premium only to signed-in users
   return isTrialWindow();
 }
 

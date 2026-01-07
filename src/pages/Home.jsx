@@ -23,8 +23,6 @@ import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
-// End of Jan 15, 2026 in America/Indiana/Indianapolis (UTC-5) = Jan 16, 2026 05:00:00 UTC
-const TRIAL_END_UTC = Date.parse("2026-01-16T05:00:00Z");
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
