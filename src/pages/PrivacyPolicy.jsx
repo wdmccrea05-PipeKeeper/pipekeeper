@@ -34,7 +34,7 @@ export default function PrivacyPolicy() {
 
       <H2>2. Payments and Subscription Data</H2>
       <P>
-        PipeKeeper subscriptions are processed by a third-party payment processor. We do not store full payment card numbers.
+        Payment processing is handled by a third-party payment processor. We do not store full card numbers.
         We may store limited billing identifiers (for example, a customer ID or subscription ID) to confirm subscription status
         and provide account support.
       </P>
