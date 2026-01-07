@@ -1,43 +1,43 @@
 // Detect whether we are running inside the iOS/Android native wrapper (WebView)
 // so we can enforce App Store / Play Store compliance (no external checkout UI).
 
-export function isIOSCompanionApp() {
+const isBrowser = typeof window !== "undefined";
+
+function getPlatformParam() {
+  if (!isBrowser) return null;
   try {
-    const ua = (navigator.userAgent || "").toLowerCase();
-
-    // Strong signals (best): wrapper sets a custom UA token or a URL param
-    const hasCustomToken =
-      ua.includes("pipekeeper") && (ua.includes("ios") || ua.includes("companion"));
-
-    const url = new URL(window.location.href);
-    const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
-
-    // Heuristic signal: iOS WebViews often omit "safari" in the UA string.
-    // Mobile Safari and most iOS browsers include "safari".
-    const isIOS = /iphone|ipad|ipod/.test(ua);
-    const isLikelyIOSWebView = isIOS && !ua.includes("safari");
-
-    return hasCustomToken || platformParam === "ios" || isLikelyIOSWebView;
+    return new URLSearchParams(window.location.search).get("platform");
   } catch {
-    return false;
+    return null;
   }
 }
 
+function isAndroidWebView() {
+  if (!isBrowser) return false;
+  const ua = navigator.userAgent || "";
+  // Common Android WebView markers: "; wv" or " wv)" and not Chrome Custom Tab
+  return ua.includes("; wv") || ua.includes(" wv)");
+}
+
+function isIOSWebView() {
+  if (!isBrowser) return false;
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isSafari = /Safari/i.test(ua);
+  const isWebKit = /AppleWebKit/i.test(ua);
+  // iOS WKWebView typically: iOS + WebKit + NOT Safari
+  return isIOS && isWebKit && !isSafari;
+}
+
+// Only treat platform param as "companion" if you're actually in a WebView.
 export function isAndroidCompanionApp() {
-  try {
-    const ua = (navigator.userAgent || "").toLowerCase();
-    // Android WebView commonly includes "; wv" in UA and "version/x.x"
-    const isAndroid = ua.includes("android");
-    const isWebView = ua.includes(" wv") || ua.includes("; wv") || ua.includes("version/");
-    const hasCustomToken = ua.includes("pipekeeper") && (ua.includes("android") || ua.includes("companion"));
+  const platform = getPlatformParam();
+  return platform === "android" && isAndroidWebView();
+}
 
-    const url = new URL(window.location.href);
-    const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
-
-    return (isAndroid && isWebView) || hasCustomToken || platformParam === "android";
-  } catch {
-    return false;
-  }
+export function isIOSCompanionApp() {
+  const platform = getPlatformParam();
+  return platform === "ios" && isIOSWebView();
 }
 
 export function isCompanionApp() {
