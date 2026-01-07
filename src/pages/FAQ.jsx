@@ -200,40 +200,6 @@ export default function FAQ() {
       </Section>
 
       <Section title="Accounts & Data">
-        <Q id="pipe-shape" q="What is pipe shape?">
-          The shape classification describes the overall form of the pipe (Billiard, Dublin, Bent, etc.). PipeKeeper includes 30+ common shapes. Shape affects smoking characteristics like clenching comfort and smoke coolness.
-        </Q>
-
-        <Q id="chamber-volume" q="What is chamber volume?">
-          Chamber volume (Small/Medium/Large/Extra Large) indicates bowl capacity and smoke duration. Small chambers are good for 15-30 minute smokes, while Extra Large can provide 90+ minutes.
-        </Q>
-
-        <Q id="stem-material" q="What are the stem material options?">
-          Common stem materials include Vulcanite (traditional, soft bite), Acrylic/Lucite (durable, harder), Cumberland (marbled appearance), and specialty materials like Amber or Horn.
-        </Q>
-
-        <Q id="bowl-material" q="What are bowl materials?">
-          Most pipes are Briar (heat-resistant wood), but other materials include Meerschaum (mineral, colors with use), Corn Cob (affordable, disposable), Morta (bog oak), and various other woods.
-        </Q>
-
-        <Q id="finish-types" q="What are finish types?">
-          Finish refers to the bowl surface treatment: Smooth (polished, shows grain), Sandblasted (textured, hides fills), Rusticated (carved texture), or Natural (unfinished). Finish is largely aesthetic but can affect grip.
-        </Q>
-
-        <Q id="blend-type" q="What are tobacco blend types?">
-          Blend types categorize tobacco by primary leaf composition: Virginia (sweet, grassy), English (with Latakia, smoky), Aromatic (added flavoring), Burley (nutty), VaPer (Virginia/Perique), etc. Each has distinct flavor profiles and smoking characteristics.
-        </Q>
-
-        <Q id="tobacco-cut" q="What are tobacco cut types?">
-          Cut describes how tobacco is prepared: Ribbon (thin strips, easy to pack), Flake (pressed sheets, needs rubbing), Plug (solid block), Coin (sliced plug), Shag (very fine), etc. Cut affects packing method and burn rate.
-        </Q>
-
-        <Q id="tobacco-strength" q="What is tobacco strength?">
-          Strength refers to nicotine content ranging from Mild to Full. Beginners typically start with Mild-Medium blends. Full-strength blends can cause nicotine sickness if you're not accustomed to them.
-        </Q>
-      </Section>
-
-      <Section title="Accounts & Data">
         <Q id="need-account" q="Do I need an account?">
           Yes. Creating an account allows your collection and settings to be saved and synced across devices.
         </Q>
@@ -244,53 +210,6 @@ export default function FAQ() {
 
         <Q id="bulk-import" q="Can I import data in bulk?">
           Yes. Go to the Import page from the Home screen. You can paste CSV data or upload a file to quickly add multiple pipes or tobacco blends at once.
-        </Q>
-      </Section>
-
-      <Section title="Premium Feature Definitions">
-        <Q id="premium-included" q="What is included in Premium?">
-          Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
-          and other upgraded capabilities. See below for detailed feature descriptions.
-        </Q>
-
-        <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
-          The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
-        </Q>
-
-        <Q id="premium-collection-optimizer" q="Premium: Collection Optimization">
-          This AI feature analyzes your collection to identify gaps, redundancies, and specialization opportunities. It suggests dedicating specific pipes to certain blend types, recommends what pipe to buy next based on your collection needs, and helps you make the most of what you own.
-        </Q>
-
-        <Q id="premium-break-in" q="Premium: AI Break-in Schedules">
-          Generate customized break-in schedules for new pipes. The AI recommends specific tobaccos from your cellar and a progression of bowl counts designed to build proper cake without risking burnout. It adapts to your pipe's characteristics and your smoking preferences.
-        </Q>
-
-        <Q id="premium-pipe-specialization" q="Premium: Pipe Specialization">
-          The system can recommend which pipes to dedicate to specific tobacco types (Virginias, Latakia blends, Aromatics, etc.) based on each pipe's smoking characteristics and your collection composition.
-        </Q>
-
-        <Q id="premium-community" q="Premium: Community Features">
-          Access the full Community section to make your profile public, follow other collectors, view and comment on their collections, and send direct messages to friends. Find collectors near you or with similar interests.
-        </Q>
-
-        <Q id="premium-advanced-exports" q="Premium: Advanced Export & Reporting">
-          Generate comprehensive PDF reports of your collection with photos, detailed analytics, valuation summaries, and pairing guides. Export your data in multiple formats for insurance documentation or personal records.
-        </Q>
-
-        <Q id="premium-ai-updates" q="Premium: AI Updates & Recommendations">
-          Receive ongoing AI-powered recommendations as your collection grows. The system learns from your smoking logs and preferences to continuously improve pairing suggestions and collection insights.
-        </Q>
-
-        <Q id="premium-bulk-operations" q="Premium: Bulk Operations">
-          Perform bulk updates on multiple pipes or tobacco entries at once. Quickly update quantities, apply tags, or modify settings across your entire collection efficiently.
-        </Q>
-
-        <Q id="premium-value-tracking" q="Premium: Enhanced Value Tracking">
-          Track estimated market values for your collection over time, receive alerts on market trends for rare pipes or tobaccos you own, and generate valuation reports for insurance purposes.
-        </Q>
-
-        <Q id="premium-messaging" q="Premium: Direct Messaging">
-          Send and receive instant messages with friends in the PipeKeeper community. Share photos, discuss blends, coordinate trades, and connect with fellow enthusiasts privately.
         </Q>
       </Section>
 
