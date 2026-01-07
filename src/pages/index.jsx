@@ -1,7 +1,7 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import Layout from "../Layout.js";
+import Layout from "./Layout";
 import Home from "./Home";
 import Pipes from "./Pipes";
 import PipeDetail from "./PipeDetail";
