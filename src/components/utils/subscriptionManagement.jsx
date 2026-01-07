@@ -1,5 +1,5 @@
 import { base44 } from "@/api/base44Client";
-import { isCompanionApp } from "./companion";
+import { shouldShowPurchaseUI } from "./companion";
 
 export async function openManageSubscription() {
   try {
@@ -16,6 +16,9 @@ export async function openManageSubscription() {
 }
 
 export function shouldShowManageSubscription(subscription, user) {
+  // If this is a companion app (iOS/Android), NEVER show manage link (compliance requirement)
+  if (!shouldShowPurchaseUI()) return false;
+
   // Show manage if we can reasonably open the Stripe portal:
   // - user is paid OR Stripe subscription status looks valid
   // - AND we have a Stripe customer id somewhere
@@ -35,5 +38,5 @@ export function shouldShowManageSubscription(subscription, user) {
 }
 
 export function getManageSubscriptionLabel() {
-  return isCompanionApp() ? "Manage subscription" : "Manage subscription";
+  return "Manage subscription";
 }
