@@ -16,14 +16,22 @@ export async function openManageSubscription() {
 }
 
 export function shouldShowManageSubscription(subscription, user) {
+  // Show manage if we can reasonably open the Stripe portal:
+  // - user is paid OR Stripe subscription status looks valid
+  // - AND we have a Stripe customer id somewhere
+  const status = subscription?.status;
+
   const hasCustomerId =
-    (user && user.stripe_customer_id) ||
-    (subscription && subscription.stripe_customer_id);
+    !!user?.stripe_customer_id || !!subscription?.stripe_customer_id;
 
-  const isPaid = user && user.subscription_level === 'paid';
+  const looksSubscribed =
+    user?.subscription_level === "paid" ||
+    status === "active" ||
+    status === "trialing" ||
+    status === "past_due" ||
+    status === "unpaid";
 
-  // show if paid + we have portal access
-  return !!(isPaid && hasCustomerId);
+  return hasCustomerId && looksSubscribed;
 }
 
 export function getManageSubscriptionLabel() {

@@ -319,7 +319,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {shouldShowPurchaseUI() && shouldShowManageSubscription(subscription, user) && (
+                  {/* Manage button should NOT be gated behind shouldShowPurchaseUI() */}
+                  {shouldShowManageSubscription(subscription, user) ? (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
@@ -338,7 +339,8 @@ export default function ProfilePage() {
                       {getManageSubscriptionLabel()}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
-                  )}
+                  ) : null}
+                  {/* Upgrade/Purchase UI stays gated */}
                   {shouldShowPurchaseUI() && !hasActiveSubscription && (
                     <a href={createPageUrl("Subscription")}>
                       <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
