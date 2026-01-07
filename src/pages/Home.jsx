@@ -22,7 +22,7 @@ import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/daef51235_image.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/a9f7753dd_image.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -712,9 +712,6 @@ export default function HomePage() {
                 src={PIPE_ICON}
                 alt="Pipe"
                 className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-                style={{
-                  filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)'
-                }}
               />
               <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
             </div>
