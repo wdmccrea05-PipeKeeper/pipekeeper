@@ -16,6 +16,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage } from "@/components/utils/companion";
 import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
+import { isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,18 +82,8 @@ export default function ProfilePage() {
   });
 
   // Check if user has paid access
-  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date ? 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const trialEndDate = user?.created_date 
-    ? new Date(new Date(user.created_date).getTime() + 7 * 24 * 60 * 60 * 1000)
-    : EXTENDED_TRIAL_END;
-  const daysLeftInTrial = isWithinTrial 
-    ? Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24))
-    : 0;
+  const isWithinTrial = isTrialWindow();
+  const daysLeftInTrial = getTrialDaysRemaining();
   const hasActiveSubscription = user?.subscription_level === 'paid';
 
   const { data: subscription } = useQuery({
@@ -328,31 +319,27 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {shouldShowPurchaseUI() ? (
-                    <>
-                      {shouldShowManageSubscription(subscription) ? (
-                        <Button 
-                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
-                          onClick={async () => {
-                            try {
-                              await openManageSubscription();
-                            } catch (e) {
-                              alert(e?.message || 'Unable to open subscription management.');
-                            }
-                          }}
-                        >
-                          {getManageSubscriptionLabel()}
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      ) : (
-                        <a href={createPageUrl('Subscription')}>
-                          <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
-                            Upgrade
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </a>
-                      )}
-                    </>
+                  {shouldShowManageSubscription(subscription) ? (
+                    <Button
+                      className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
+                      onClick={async () => {
+                        try {
+                          await openManageSubscription();
+                        } catch (e) {
+                          alert(e?.message || "Unable to open subscription management.");
+                        }
+                      }}
+                    >
+                      {getManageSubscriptionLabel()}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : shouldShowPurchaseUI() ? (
+                    <a href={createPageUrl("Subscription")}>
+                      <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
+                        Upgrade
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </a>
                   ) : (
                     <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
                       {getSubscriptionManagementMessage()}
