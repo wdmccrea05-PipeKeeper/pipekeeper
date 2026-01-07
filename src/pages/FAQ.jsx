@@ -54,13 +54,95 @@ export default function FAQ() {
         </Q>
       </Section>
 
+      <Section title="Getting Started">
+        <Q id="how-add-pipe" q="How do I add a pipe to my collection?">
+          Go to the <b>Pipes</b> tab and tap the <b>+</b> button. Fill in as much or as little detail as you want—only the pipe name is required. You can use the AI identification tool to help fill in details from photos.
+        </Q>
+
+        <Q id="how-add-tobacco" q="How do I add tobacco to my collection?">
+          Go to the <b>Tobacco</b> tab and tap the <b>+</b> button. Enter the blend name and any other details you want to track (manufacturer, blend type, quantities, etc.). The AI can help identify blends from photos or labels.
+        </Q>
+
+        <Q id="what-cellaring" q="What is cellaring?">
+          Cellaring refers to storing sealed tins or bulk tobacco for aging. PipeKeeper tracks how many tins/containers you have cellared vs. opened, and when you cellared them.
+        </Q>
+
+        <Q id="smoking-log" q="What is the smoking log?">
+          The smoking log tracks which pipes you've smoked with which tobaccos. It helps you remember what works well together and contributes to AI pairing recommendations.
+        </Q>
+      </Section>
+
+      <Section title="Features & Tools">
+        <Q id="pairing-matrix" q="What is the Pairing Matrix?">
+          The AI-powered Pairing Matrix suggests which tobacco blends work best with each pipe in your collection based on pipe characteristics, blend profiles, and your preferences. It helps optimize your smoking experience.
+        </Q>
+
+        <Q id="collection-optimizer" q="What is Collection Optimization?">
+          This Premium feature analyzes your entire collection and suggests which pipes to dedicate to specific blend types. It identifies gaps in your collection and recommends what pipe to buy next based on your smoking habits.
+        </Q>
+
+        <Q id="break-in-schedule" q="What is a break-in schedule?">
+          A break-in schedule is an AI-generated plan for properly breaking in a new pipe. It suggests specific tobaccos and number of bowls to smoke in a sequence that builds up a good cake without risking burnout.
+        </Q>
+
+        <Q id="pipe-identification" q="How does pipe identification work?">
+          Upload photos of your pipe and the AI will analyze markings, shape, and other visual characteristics to identify the maker, model, and approximate value. You can also manually search a database of known pipe makers.
+        </Q>
+
+        <Q id="value-lookup" q="Can PipeKeeper estimate pipe values?">
+          Yes. The AI can provide estimated market values based on maker, condition, and current market trends. These are estimates only and should not be relied upon for insurance or sales purposes.
+        </Q>
+
+        <Q id="community-features" q="What are the Community features?">
+          Premium users can make their profiles public, follow other collectors, view their collections, leave comments, and send messages to friends. You can find collectors near you or with similar interests.
+        </Q>
+      </Section>
+
+      <Section title="Field Definitions">
+        <Q id="pipe-shape" q="What is pipe shape?">
+          The shape classification describes the overall form of the pipe (Billiard, Dublin, Bent, etc.). PipeKeeper includes 30+ common shapes. Shape affects smoking characteristics like clenching comfort and smoke coolness.
+        </Q>
+
+        <Q id="chamber-volume" q="What is chamber volume?">
+          Chamber volume (Small/Medium/Large/Extra Large) indicates bowl capacity and smoke duration. Small chambers are good for 15-30 minute smokes, while Extra Large can provide 90+ minutes.
+        </Q>
+
+        <Q id="stem-material" q="What are the stem material options?">
+          Common stem materials include Vulcanite (traditional, soft bite), Acrylic/Lucite (durable, harder), Cumberland (marbled appearance), and specialty materials like Amber or Horn.
+        </Q>
+
+        <Q id="bowl-material" q="What are bowl materials?">
+          Most pipes are Briar (heat-resistant wood), but other materials include Meerschaum (mineral, colors with use), Corn Cob (affordable, disposable), Morta (bog oak), and various other woods.
+        </Q>
+
+        <Q id="finish-types" q="What are finish types?">
+          Finish refers to the bowl surface treatment: Smooth (polished, shows grain), Sandblasted (textured, hides fills), Rusticated (carved texture), or Natural (unfinished). Finish is largely aesthetic but can affect grip.
+        </Q>
+
+        <Q id="blend-type" q="What are tobacco blend types?">
+          Blend types categorize tobacco by primary leaf composition: Virginia (sweet, grassy), English (with Latakia, smoky), Aromatic (added flavoring), Burley (nutty), VaPer (Virginia/Perique), etc. Each has distinct flavor profiles and smoking characteristics.
+        </Q>
+
+        <Q id="tobacco-cut" q="What are tobacco cut types?">
+          Cut describes how tobacco is prepared: Ribbon (thin strips, easy to pack), Flake (pressed sheets, needs rubbing), Plug (solid block), Coin (sliced plug), Shag (very fine), etc. Cut affects packing method and burn rate.
+        </Q>
+
+        <Q id="tobacco-strength" q="What is tobacco strength?">
+          Strength refers to nicotine content ranging from Mild to Full. Beginners typically start with Mild-Medium blends. Full-strength blends can cause nicotine sickness if you're not accustomed to them.
+        </Q>
+      </Section>
+
       <Section title="Accounts & Data">
         <Q id="need-account" q="Do I need an account?">
           Yes. Creating an account allows your collection and settings to be saved and synced across devices.
         </Q>
 
         <Q id="export-data" q="Can I export my data?">
-          Yes. If export tools are enabled for your account, you can generate CSV/PDF reports from the app.
+          Yes. Export tools allow you to generate CSV/PDF reports of your pipes, tobacco inventory, and smoking logs. Look for export buttons on the Pipes and Tobacco pages.
+        </Q>
+
+        <Q id="bulk-import" q="Can I import data in bulk?">
+          Yes. Go to the Import page from the Home screen. You can paste CSV data or upload a file to quickly add multiple pipes or tobacco blends at once.
         </Q>
       </Section>
 
