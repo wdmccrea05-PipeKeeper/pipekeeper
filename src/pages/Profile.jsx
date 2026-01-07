@@ -319,7 +319,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {shouldShowPurchaseUI() && subscription?.stripe_customer_id && (
+                  {shouldShowPurchaseUI() && shouldShowManageSubscription(hasActiveSubscription, subscription) && (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
@@ -335,7 +335,7 @@ export default function ProfilePage() {
                         }
                       }}
                     >
-                      Manage Subscription
+                      {getManageSubscriptionLabel()}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   )}
