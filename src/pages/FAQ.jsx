@@ -65,34 +65,34 @@ export default function FAQ() {
       </Section>
 
       <Section title="Premium, Trials & Subscriptions">
-        <Q q="What is included in Premium?">
+        <Q id="premium-included" q="What is included in Premium?">
           Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
           and other upgraded capabilities shown on the Subscription screen.
         </Q>
 
-        <Q q="Is there a free trial?">
+        <Q id="free-trial" q="Is there a free trial?">
           PipeKeeper may offer a limited trial window that temporarily enables Premium features. If a trial is active for
           your account, the app will display the remaining time in the Subscription area.
         </Q>
 
-        <Q q="How do I subscribe?">
+        <Q id="how-subscribe" q="How do I subscribe?">
           Subscriptions can be purchased on the web (through the in-app checkout flow) and/or through platform storefronts
           depending on how you installed PipeKeeper.
         </Q>
 
-        <Q q="How do I manage, change, or cancel my subscription?">
-          <div style={{ marginBottom: 8 }}>
+        <Q id="manage-subscription" q="How do I manage, change, or cancel my subscription?">
+          <div className="mb-2">
             Management depends on where you originally subscribed:
           </div>
-          <ul style={{ marginTop: 0, marginBottom: 10 }}>
+          <ul className="mt-0 mb-3 space-y-2">
             <li>
-              <b>Apple App Store purchase:</b> Manage in iOS: <i>Settings → Apple ID → Subscriptions</i>.
+              <b className="text-[#e8d5b7]">Apple App Store purchase:</b> Manage in iOS: <i>Settings → Apple ID → Subscriptions</i>.
             </li>
             <li>
-              <b>Google Play purchase:</b> Manage in Play Store: <i>Payments &amp; subscriptions → Subscriptions</i>.
+              <b className="text-[#e8d5b7]">Google Play purchase:</b> Manage in Play Store: <i>Payments &amp; subscriptions → Subscriptions</i>.
             </li>
             <li>
-              <b>Web purchase:</b> Use the in-app subscription management link from your <b>Profile</b> (it opens your
+              <b className="text-[#e8d5b7]">Web purchase:</b> Use the in-app subscription management link from your <b>Profile</b> (it opens your
               customer portal).
             </li>
           </ul>
@@ -100,15 +100,15 @@ export default function FAQ() {
           correct place based on your account.
         </Q>
 
-        <Q q="I already paid—when do Premium features activate?">
-          If your account shows <b>Paid</b> status (for example, your account subscription level is marked as paid),
+        <Q id="premium-activate" q="I already paid—when do Premium features activate?">
+          If your account shows <b className="text-[#e8d5b7]">Paid</b> status (for example, your account subscription level is marked as paid),
           Premium features are available immediately unless the app is currently in a time-limited testing window. If a
           testing window is active, the app will display the timing and your access level in the Subscription screen.
         </Q>
 
-        <Q q="Refunds and billing questions">
+        <Q id="refunds" q="Refunds and billing questions">
           Refund eligibility and timing depend on where you purchased your subscription:
-          <ul style={{ marginTop: 8 }}>
+          <ul className="mt-2 space-y-1">
             <li>App Store purchases follow Apple's refund policies.</li>
             <li>Google Play purchases follow Google's refund policies.</li>
             <li>Web purchases are handled through our payment processor and support team per the Terms of Service.</li>
