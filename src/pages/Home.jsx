@@ -22,7 +22,7 @@ import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/a9f7753dd_image.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/3e419d881_image.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -336,7 +336,7 @@ export default function HomePage() {
             <a href={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain brightness-0 invert" />
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(1.1) sepia(0.2) hue-rotate(20deg) saturate(0.7)' }} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <p className="text-xs sm:text-sm text-white/80">Pipes</p>
                   </CardContent>
@@ -409,7 +409,7 @@ export default function HomePage() {
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain brightness-0 invert" />
+                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(1.2) sepia(0.15) hue-rotate(15deg) saturate(0.6)' }} />
                     </div>
                   </div>
 
@@ -712,6 +712,7 @@ export default function HomePage() {
                 src={PIPE_ICON}
                 alt="Pipe"
                 className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                style={{ filter: 'brightness(0.95) sepia(0.3) hue-rotate(20deg) saturate(0.8)' }}
               />
               <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
             </div>

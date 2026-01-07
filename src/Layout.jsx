@@ -13,7 +13,7 @@ import DocumentTitle from "@/components/DocumentTitle";
 
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/a9f7753dd_image.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/3e419d881_image.png';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
@@ -52,10 +52,10 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
           className="w-10 h-10 object-contain"
           style={{
             filter: isActive 
-              ? 'none'
+              ? 'brightness(0.95) sepia(0.3) hue-rotate(20deg) saturate(0.8)'
               : isMobile
-                ? 'brightness(0.7) saturate(1.2)'
-                : 'opacity(0.7)'
+                ? 'brightness(0.85) sepia(0.3) hue-rotate(20deg) saturate(0.8)'
+                : 'brightness(0.85) sepia(0.3) hue-rotate(20deg) saturate(0.8) opacity(0.7)'
           }}
         />
       )}
