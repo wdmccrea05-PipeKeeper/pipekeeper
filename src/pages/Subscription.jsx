@@ -97,10 +97,12 @@ export default function SubscriptionPage() {
   // Calculate trial status using centralized helper
   const isInTrial = trialActive;
   const trialExpired = !trialActive && !checkPaidAccess(user);
-  const daysLeftInTrial = isInTrial 
-    ? Math.ceil((TRIAL_END_UTC - Date.now()) / (1000 * 60 * 60 * 24))
+  const trialEndMs = Date.parse(TRIAL_END_UTC);
+  const daysLeftInTrial = isInTrial
+    ? Math.max(0, Math.ceil((trialEndMs - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
-  const trialEndDate = new Date(TRIAL_END_UTC);
+
+  const trialEndDate = new Date(trialEndMs);
 
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
