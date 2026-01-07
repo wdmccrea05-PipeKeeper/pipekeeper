@@ -1,25 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { ChevronDown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function FAQ() {
+  const [openItems, setOpenItems] = useState({});
+
+  const toggleItem = (id) => {
+    setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const Section = ({ title, children }) => (
-    <div style={{ marginBottom: 24 }}>
-      <h2 style={{ margin: "0 0 10px 0" }}>{title}</h2>
-      <div style={{ lineHeight: 1.6 }}>{children}</div>
+    <div style={{ marginBottom: 32 }}>
+      <h2 className="text-2xl font-bold text-[#e8d5b7] mb-4">{title}</h2>
+      <div className="space-y-3">{children}</div>
     </div>
   );
 
-  const Q = ({ q, children }) => (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>{q}</div>
-      <div>{children}</div>
-    </div>
+  const Q = ({ id, q, children }) => (
+    <Card className="bg-[#243548] border-[#8b3a3a]/30 overflow-hidden">
+      <button
+        onClick={() => toggleItem(id)}
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-[#8b3a3a]/10 transition-colors"
+      >
+        <span className="font-semibold text-[#e8d5b7] pr-4">{q}</span>
+        <ChevronDown 
+          className={`w-5 h-5 text-[#e8d5b7]/70 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {openItems[id] && (
+        <CardContent className="px-4 pb-4 pt-0 text-[#e8d5b7]/80 leading-relaxed">
+          {children}
+        </CardContent>
+      )}
+    </Card>
   );
 
   return (
-    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
-      <h1 style={{ margin: "0 0 16px 0" }}>PipeKeeper FAQ</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
+        <h1 className="text-4xl font-bold text-[#e8d5b7] mb-8">PipeKeeper FAQ</h1>
 
       <Section title="General">
         <Q q="What is PipeKeeper?">
