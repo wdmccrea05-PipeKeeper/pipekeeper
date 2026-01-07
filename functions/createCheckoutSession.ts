@@ -11,11 +11,15 @@ const ALLOWED_PRICE_IDS = (Deno.env.get('ALLOWED_PRICE_IDS') || '')
   .filter(Boolean);
 
 function isAllowedPrice(priceId) {
-  if (!ALLOWED_PRICE_IDS.length) return true; // if not configured, allow all (not ideal, but safe default)
+  if (!ALLOWED_PRICE_IDS.length) return false; // fail closed - require explicit allowlist
   return ALLOWED_PRICE_IDS.includes(priceId);
 }
 
 Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -72,9 +76,8 @@ Deno.serve(async (req) => {
     const price = await stripe.prices.retrieve(priceId);
     const mode = price && price.type === 'recurring' ? 'subscription' : 'payment';
 
-    // Prefer APP_URL; origin is optional as a fallback
-    const origin = req.headers.get('origin');
-    const appUrl = origin && origin.startsWith('http') ? origin : APP_URL;
+    // Use APP_URL only (secure + consistent across all environments)
+    const appUrl = APP_URL.replace(/\/$/, '');
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -87,10 +90,17 @@ Deno.serve(async (req) => {
         user_email: user.email,
         user_id: user.id,
       },
-      // Optional, but recommended for subscriptions:
-      // allow_promotion_codes: true,
-      // billing_address_collection: 'auto',
-      // customer_update: { address: 'auto', name: 'auto' },
+      // Durable identity for subscription webhook events
+      ...(mode === 'subscription'
+        ? {
+            subscription_data: {
+              metadata: {
+                user_email: user.email,
+                user_id: user.id,
+              },
+            },
+          }
+        : {}),
     });
 
     return Response.json({ url: session.url });
