@@ -51,10 +51,10 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
           alt={item.name} 
           className="w-10 h-10 object-contain"
           style={{
-            filter: isActive 
-              ? 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)'
-              : isMobile
-                ? 'brightness(0)'
+            filter: isMobile
+              ? 'brightness(0)'
+              : isActive 
+                ? 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)'
                 : 'brightness(0.9) sepia(0.5) hue-rotate(10deg) saturate(0.4) opacity(0.7)'
           }}
         />
