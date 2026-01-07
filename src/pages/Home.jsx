@@ -336,7 +336,7 @@ export default function HomePage() {
             <a href={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(1.2) sepia(0.6) hue-rotate(10deg) saturate(0.4)' }} />
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <p className="text-xs sm:text-sm text-white/80">Pipes</p>
                   </CardContent>
