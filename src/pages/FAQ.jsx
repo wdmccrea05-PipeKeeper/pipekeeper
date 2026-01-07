@@ -55,11 +55,11 @@ export default function FAQ() {
       </Section>
 
       <Section title="Accounts & Data">
-        <Q q="Do I need an account?">
+        <Q id="need-account" q="Do I need an account?">
           Yes. Creating an account allows your collection and settings to be saved and synced across devices.
         </Q>
 
-        <Q q="Can I export my data?">
+        <Q id="export-data" q="Can I export my data?">
           Yes. If export tools are enabled for your account, you can generate CSV/PDF reports from the app.
         </Q>
       </Section>
