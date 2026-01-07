@@ -43,12 +43,12 @@ export default function FAQ() {
         <h1 className="text-4xl font-bold text-[#e8d5b7] mb-8">PipeKeeper FAQ</h1>
 
       <Section title="General">
-        <Q q="What is PipeKeeper?">
+        <Q id="what-is" q="What is PipeKeeper?">
           PipeKeeper helps you track your pipes, tobaccos, cellared tins, and smoking sessions—plus optional tools like
           pairing suggestions, collection insights, and reports.
         </Q>
 
-        <Q q="Does PipeKeeper sell tobacco or facilitate tobacco sales?">
+        <Q id="tobacco-sales" q="Does PipeKeeper sell tobacco or facilitate tobacco sales?">
           No. PipeKeeper is a tracking and informational app. We do not sell tobacco products, process tobacco orders, or
           arrange shipments.
         </Q>
