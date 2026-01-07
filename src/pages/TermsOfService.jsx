@@ -40,23 +40,14 @@ export default function TermsOfService() {
         of Premium features and any trial timing will be displayed in the app.
       </P>
       <P>
-        <b>Where you purchase matters.</b> Subscriptions may be purchased through platform storefronts (e.g., Apple App
-        Store / Google Play) and/or on the web depending on how you installed PipeKeeper.
-      </P>
-      <P>
-        <b>Managing or canceling.</b> If you subscribed through Apple or Google, you manage/cancel through that platform.
-        If you subscribed on the web, you manage/cancel through your customer portal accessible from the app's Profile
-        area.
+        <b>Subscriptions are purchased on the web.</b> PipeKeeper uses a third-party payment processor for subscription billing.
+        Subscription management (upgrade, cancel, invoices, and payment method updates) is handled through a secure customer
+        portal accessible from the app's Profile area.
       </P>
 
       <H2>5. Billing and Refunds</H2>
       <P>
-        Billing rules and refunds depend on the purchase channel:
-        <ul style={{ marginTop: 8 }}>
-          <li>App Store purchases follow Apple's billing and refund policies.</li>
-          <li>Google Play purchases follow Google's refund policies.</li>
-          <li>Web purchases are handled through our third-party payment processor and support team.</li>
-        </ul>
+        Web subscriptions are handled through our third-party payment processor and support team. Refund eligibility is outlined during checkout and may vary. For billing questions or refund requests, contact support.
       </P>
 
       <H2>6. Acceptable Use</H2>
