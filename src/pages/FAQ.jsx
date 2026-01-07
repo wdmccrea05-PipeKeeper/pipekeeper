@@ -144,7 +144,7 @@ export default function FAQ() {
           </ul>
         </Q>
       </Section>
-      </div>
+    </div>
     </div>
   );
 }
