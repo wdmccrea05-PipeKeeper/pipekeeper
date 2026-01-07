@@ -319,7 +319,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {shouldShowManageSubscription(subscription, user) ? (
+                  {hasActiveSubscription ? (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
@@ -329,6 +329,8 @@ export default function ProfilePage() {
                           alert(e?.message || "Unable to open subscription management.");
                         }
                       }}
+                      disabled={!shouldShowManageSubscription(subscription, user)}
+                      style={{ opacity: shouldShowManageSubscription(subscription, user) ? 1 : 0.6 }}
                     >
                       {getManageSubscriptionLabel()}
                       <ArrowRight className="w-4 h-4 ml-2" />

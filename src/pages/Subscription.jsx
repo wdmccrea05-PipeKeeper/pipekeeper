@@ -14,6 +14,7 @@ import {
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
 import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
+import { isIOSCompanionApp } from "@/components/utils/companion";
 
 const PRICING_OPTIONS = [
   { 
@@ -38,6 +39,15 @@ export default function SubscriptionPage() {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
+  const [trialActive, setTrialActive] = useState(isTrialWindowNow());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrialActive(isTrialWindowNow());
+    }, 60 * 1000); // recheck every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -85,8 +95,8 @@ export default function SubscriptionPage() {
   });
 
   // Calculate trial status using centralized helper
-  const isInTrial = isTrialWindowNow();
-  const trialExpired = !isTrialWindowNow() && !checkPaidAccess(user);
+  const isInTrial = trialActive;
+  const trialExpired = !trialActive && !checkPaidAccess(user);
   const daysLeftInTrial = isInTrial 
     ? Math.ceil((TRIAL_END_UTC - Date.now()) / (1000 * 60 * 60 * 24))
     : 0;
@@ -133,6 +143,11 @@ export default function SubscriptionPage() {
   }
 
   const handleSubscribe = async () => {
+    if (isIOSCompanionApp()) {
+      alert('Subscriptions must be managed on the web.');
+      return;
+    }
+
     try {
       const response = await base44.functions.invoke('createCheckoutSession', { priceId: selectedPlan });
       if (response.data?.url) {
