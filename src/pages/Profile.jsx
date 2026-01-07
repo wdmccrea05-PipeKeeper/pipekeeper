@@ -319,30 +319,35 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {hasActiveSubscription ? (
+                  {shouldShowPurchaseUI() && subscription?.stripe_customer_id && (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
                         try {
                           await openManageSubscription();
                         } catch (e) {
-                          alert(e?.message || "Unable to open subscription management.");
+                          if (e?.message?.includes('No customer')) {
+                            alert("Please complete a subscription checkout first. The billing portal link will appear after your first subscription.");
+                            navigate(createPageUrl("Subscription"));
+                          } else {
+                            alert(e?.message || "Unable to open subscription management.");
+                          }
                         }
                       }}
-                      disabled={!shouldShowManageSubscription(subscription, user)}
-                      style={{ opacity: shouldShowManageSubscription(subscription, user) ? 1 : 0.6 }}
                     >
-                      {getManageSubscriptionLabel()}
+                      Manage Subscription
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
-                  ) : shouldShowPurchaseUI() ? (
+                  )}
+                  {shouldShowPurchaseUI() && !hasActiveSubscription && (
                     <a href={createPageUrl("Subscription")}>
                       <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
-                        Upgrade
+                        {subscription?.stripe_customer_id ? 'View Subscription' : 'Upgrade'}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </a>
-                  ) : (
+                  )}
+                  {!shouldShowPurchaseUI() && (
                     <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
                       {getSubscriptionManagementMessage()}
                     </div>
