@@ -9,253 +9,164 @@ function isoFromUnixSeconds(sec) {
   return new Date(sec * 1000).toISOString();
 }
 
-async function resolveUserEmailFromStripe(opts) {
-  const metadataEmail = opts && opts.metadataEmail ? opts.metadataEmail : null;
-  const customerId = opts && opts.customerId ? opts.customerId : null;
-  const invoiceCustomerEmail = opts && opts.invoiceCustomerEmail ? opts.invoiceCustomerEmail : null;
-  const invoiceEmail = opts && opts.invoiceEmail ? opts.invoiceEmail : null;
-
-  if (metadataEmail) return metadataEmail;
-  if (invoiceCustomerEmail) return invoiceCustomerEmail;
-  if (invoiceEmail) return invoiceEmail;
-
-  if (customerId) {
-    try {
-      const customer = await stripe.customers.retrieve(customerId);
-      // customer can be a deleted customer object
-      const email = customer && customer.email ? customer.email : null;
-      if (email) return email;
-    } catch (_e) {
-      // ignore
-    }
+async function upsertSubscription(base44, where, data) {
+  const existing = await base44.asServiceRole.entities.Subscription.filter(where);
+  if (existing && existing.length > 0) {
+    await base44.asServiceRole.entities.Subscription.update(existing[0].id, data);
+    return existing[0];
   }
-
-  return null;
+  return await base44.asServiceRole.entities.Subscription.create(data);
 }
 
-async function upsertSubscriptionByEmail(base44, userEmail, data) {
-  const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
-    user_email: userEmail,
-  });
-
-  if (existingSubs && existingSubs.length > 0) {
-    await base44.asServiceRole.entities.Subscription.update(existingSubs[0].id, data);
-    return existingSubs[0].id;
-  } else {
-    const created = await base44.asServiceRole.entities.Subscription.create(data);
-    return created && created.id ? created.id : null;
-  }
-}
-
-async function upsertSubscriptionByStripeSubscriptionId(base44, stripeSubscriptionId, data) {
-  const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
-    stripe_subscription_id: stripeSubscriptionId,
-  });
-
-  if (existingSubs && existingSubs.length > 0) {
-    await base44.asServiceRole.entities.Subscription.update(existingSubs[0].id, data);
-    return existingSubs[0].id;
-  } else {
-    const created = await base44.asServiceRole.entities.Subscription.create(data);
-    return created && created.id ? created.id : null;
-  }
+async function setUserFields(base44, email, fields) {
+  if (!email) return;
+  await base44.asServiceRole.auth.updateUser(email, fields);
 }
 
 Deno.serve(async (req) => {
   try {
-    if (!webhookSecret) {
-      return Response.json({ error: 'Missing STRIPE_WEBHOOK_SECRET' }, { status: 500 });
-    }
-
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');
 
     if (!signature) {
       return Response.json({ error: 'No stripe-signature header' }, { status: 400 });
     }
+    if (!webhookSecret) {
+      return Response.json({ error: 'Missing STRIPE_WEBHOOK_SECRET' }, { status: 500 });
+    }
 
-    // Verify webhook signature
     const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-
     const base44 = createClientFromRequest(req);
 
     switch (event.type) {
-      // =========================
-      // CHECKOUT COMPLETED
-      // =========================
       case 'checkout.session.completed': {
         const session = event.data.object;
 
+        // We rely on your Checkout Session metadata.
+        const userEmail = session.metadata && session.metadata.user_email ? session.metadata.user_email : null;
+
+        // Only care about subscription checkouts
         if (session.mode !== 'subscription') break;
 
         const customerId = session.customer || null;
         const subscriptionId = session.subscription || null;
 
-        const userEmail = await resolveUserEmailFromStripe({
-          metadataEmail: session.metadata && session.metadata.user_email ? session.metadata.user_email : null,
-          customerId,
-        });
-
-        if (!userEmail) {
-          console.warn('checkout.session.completed: could not resolve user email');
-          break;
+        // Persist customer on user if possible
+        if (userEmail && customerId) {
+          await setUserFields(base44, userEmail, { stripe_customer_id: customerId });
         }
 
-        const subData = {
-          user_email: userEmail,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscriptionId,
-          status: 'active',
-          // Checkout doesn't always provide real period dates; subscription/invoice events will overwrite later
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          cancel_at_period_end: false,
-        };
+        if (subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
 
-        await upsertSubscriptionByEmail(base44, userEmail, subData);
+          const subRow = {
+            user_email: userEmail,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: sub.id,
+            status: sub.status,
+            current_period_start: isoFromUnixSeconds(sub.current_period_start),
+            current_period_end: isoFromUnixSeconds(sub.current_period_end),
+            cancel_at_period_end: !!sub.cancel_at_period_end,
+          };
 
-        await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'paid' });
+          await upsertSubscription(
+            base44,
+            { stripe_subscription_id: sub.id },
+            subRow
+          );
+
+          // Mark paid if active or trialing (you can tighten this if you only want active)
+          if (userEmail && (sub.status === 'active' || sub.status === 'trialing')) {
+            await setUserFields(base44, userEmail, { subscription_level: 'paid' });
+          }
+        }
 
         break;
       }
 
-      // =========================
-      // SUBSCRIPTION CREATED / UPDATED
-      // =========================
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer || null;
+        const sub = event.data.object;
+        const customerId = sub.customer;
 
-        const userEmail = await resolveUserEmailFromStripe({ customerId });
-        if (!userEmail) {
-          console.warn(event.type + ': could not resolve user email', { customerId });
-          break;
+        // Retrieve customer to get email (works as long as customer has email set)
+        const customer = await stripe.customers.retrieve(customerId);
+        const userEmail = customer && customer.email ? customer.email : null;
+
+        if (userEmail && customerId) {
+          await setUserFields(base44, userEmail, { stripe_customer_id: customerId });
         }
 
-        const status = subscription.status;
-
-        const subData = {
+        const subRow = {
           user_email: userEmail,
           stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id,
-          status: status,
-          current_period_start: isoFromUnixSeconds(subscription.current_period_start) || new Date().toISOString(),
-          current_period_end:
-            isoFromUnixSeconds(subscription.current_period_end) ||
-            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          cancel_at_period_end: !!subscription.cancel_at_period_end,
+          stripe_subscription_id: sub.id,
+          status: sub.status,
+          current_period_start: isoFromUnixSeconds(sub.current_period_start),
+          current_period_end: isoFromUnixSeconds(sub.current_period_end),
+          cancel_at_period_end: !!sub.cancel_at_period_end,
         };
 
-        await upsertSubscriptionByStripeSubscriptionId(base44, subscription.id, subData);
+        await upsertSubscription(base44, { stripe_subscription_id: sub.id }, subRow);
 
-        if (status === 'active' || status === 'trialing') {
-          await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'paid' });
-        } else {
-          // strict enforcement
-          await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'free' });
+        // Paid if active or trialing, otherwise free
+        if (userEmail) {
+          const paid = sub.status === 'active' || sub.status === 'trialing';
+          await setUserFields(base44, userEmail, { subscription_level: paid ? 'paid' : 'free' });
         }
 
         break;
       }
 
-      // =========================
-      // SUBSCRIPTION DELETED
-      // =========================
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer || null;
+        const sub = event.data.object;
+        const customer = await stripe.customers.retrieve(sub.customer);
+        const userEmail = customer && customer.email ? customer.email : null;
 
-        const userEmail = await resolveUserEmailFromStripe({ customerId });
-        if (!userEmail) {
-          console.warn('customer.subscription.deleted: could not resolve user email', { customerId });
-          break;
+        await upsertSubscription(
+          base44,
+          { stripe_subscription_id: sub.id },
+          { status: 'canceled', cancel_at_period_end: true }
+        );
+
+        if (userEmail) {
+          await setUserFields(base44, userEmail, { subscription_level: 'free' });
         }
-
-        await upsertSubscriptionByStripeSubscriptionId(base44, subscription.id, {
-          status: 'canceled',
-          cancel_at_period_end: true,
-        });
-
-        await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'free' });
 
         break;
       }
 
-      // =========================
-      // INVOICE PAID (RENEWALS SAFETY NET)
-      // =========================
+      // ✅ IMPORTANT for "paid vs delinquent"
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
-        const customerId = invoice.customer || null;
+        const customer = await stripe.customers.retrieve(invoice.customer);
+        const userEmail = customer && customer.email ? customer.email : null;
 
-        const userEmail = await resolveUserEmailFromStripe({
-          customerId,
-          invoiceCustomerEmail: invoice.customer_email || null,
-          invoiceEmail: invoice.email || null,
-        });
-
-        if (!userEmail) {
-          console.warn('invoice.payment_succeeded: could not resolve user email', { customerId });
-          break;
+        if (userEmail) {
+          await setUserFields(base44, userEmail, { subscription_level: 'paid' });
         }
-
-        const subscriptionId = invoice.subscription || null;
-        if (subscriptionId) {
-          await upsertSubscriptionByStripeSubscriptionId(base44, subscriptionId, {
-            user_email: userEmail,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            status: 'active',
-          });
-        }
-
-        await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'paid' });
-
         break;
       }
 
-      // =========================
-      // INVOICE FAILED
-      // =========================
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
-        const customerId = invoice.customer || null;
+        const customer = await stripe.customers.retrieve(invoice.customer);
+        const userEmail = customer && customer.email ? customer.email : null;
 
-        const userEmail = await resolveUserEmailFromStripe({
-          customerId,
-          invoiceCustomerEmail: invoice.customer_email || null,
-          invoiceEmail: invoice.email || null,
-        });
-
-        if (!userEmail) {
-          console.warn('invoice.payment_failed: could not resolve user email', { customerId });
-          break;
-        }
-
-        const subscriptionId = invoice.subscription || null;
-        if (subscriptionId) {
-          await upsertSubscriptionByStripeSubscriptionId(base44, subscriptionId, {
-            user_email: userEmail,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            status: 'past_due',
-          });
-        }
-
-        // strict enforcement
-        await base44.asServiceRole.auth.updateUser(userEmail, { subscription_level: 'free' });
+        // Choose one behavior:
+        // (A) Keep access until Stripe marks subscription past_due/unpaid via subscription.updated
+        // (B) Immediately downgrade on failed payment
+        // I recommend (A) for user experience; so we do nothing here except optionally log.
+        // If you WANT (B), uncomment:
+        // if (userEmail) await setUserFields(base44, userEmail, { subscription_level: 'free' });
 
         break;
       }
-
-      default:
-        break;
     }
 
     return Response.json({ received: true });
-  } catch (error) {
-    console.error('Webhook error:', error);
-    return Response.json({ error: error && error.message ? error.message : 'Webhook error' }, { status: 400 });
+  } catch (err) {
+    console.error('stripeWebhook error:', err);
+    return Response.json({ error: err && err.message ? err.message : 'Webhook error' }, { status: 400 });
   }
 });
