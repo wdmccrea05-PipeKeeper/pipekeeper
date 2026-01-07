@@ -409,7 +409,7 @@ export default function HomePage() {
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(1.2) sepia(0.6) hue-rotate(10deg) saturate(0.4)' }} />
+                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                     </div>
                   </div>
 
