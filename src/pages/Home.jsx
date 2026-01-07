@@ -22,7 +22,7 @@ import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
 
-const PIPE_ICON = '/pipe_no_bg.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/71018535d_image.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
