@@ -15,9 +15,15 @@ export async function openManageSubscription() {
   }
 }
 
-export function shouldShowManageSubscription(subscription) {
-  // Show only if the user actually has a Stripe customer record
-  return Boolean(subscription?.stripe_customer_id);
+export function shouldShowManageSubscription(subscription, user) {
+  const hasCustomerId =
+    (user && user.stripe_customer_id) ||
+    (subscription && subscription.stripe_customer_id);
+
+  const isPaid = user && user.subscription_level === 'paid';
+
+  // show if paid + we have portal access
+  return !!(isPaid && hasCustomerId);
 }
 
 export function getManageSubscriptionLabel() {

@@ -319,7 +319,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {shouldShowManageSubscription(subscription) ? (
+                  {shouldShowManageSubscription(subscription, user) ? (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
