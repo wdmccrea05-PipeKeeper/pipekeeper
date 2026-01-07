@@ -12,9 +12,8 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp } from "@/components/utils/companion";
 import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
-import { isIOSCompanionApp } from "@/components/utils/companion";
 
 const PRICING_OPTIONS = [
   { 
@@ -145,7 +144,7 @@ export default function SubscriptionPage() {
   }
 
   const handleSubscribe = async () => {
-    if (isIOSCompanionApp()) {
+    if (isCompanionApp()) {
       alert('Subscriptions must be managed on the web.');
       return;
     }
