@@ -75,9 +75,12 @@ Deno.serve(async (req) => {
             subRow
           );
 
-          // Mark paid if active or trialing (you can tighten this if you only want active)
-          if (userEmail && (sub.status === 'active' || sub.status === 'trialing')) {
-            await setUserFields(base44, userEmail, { subscription_level: 'paid' });
+          if (userEmail) {
+            const paid = sub.status === 'active' || sub.status === 'trialing';
+            await setUserFields(base44, userEmail, {
+              subscription_level: paid ? 'paid' : 'free',
+              stripe_customer_id: sub.customer,
+            });
           }
         }
 
@@ -91,7 +94,9 @@ Deno.serve(async (req) => {
 
         // Retrieve customer to get email (works as long as customer has email set)
         const customer = await stripe.customers.retrieve(customerId);
-        const userEmail = customer && customer.email ? customer.email : null;
+        const userEmail =
+          (sub.metadata && sub.metadata.user_email) ||
+          (customer && customer.email ? customer.email : null);
 
         if (userEmail && customerId) {
           await setUserFields(base44, userEmail, { stripe_customer_id: customerId });
@@ -121,7 +126,9 @@ Deno.serve(async (req) => {
       case 'customer.subscription.deleted': {
         const sub = event.data.object;
         const customer = await stripe.customers.retrieve(sub.customer);
-        const userEmail = customer && customer.email ? customer.email : null;
+        const userEmail =
+          (sub.metadata && sub.metadata.user_email) ||
+          (customer && customer.email ? customer.email : null);
 
         await upsertSubscription(
           base44,
@@ -139,26 +146,71 @@ Deno.serve(async (req) => {
       // ✅ IMPORTANT for "paid vs delinquent"
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
+
+        // Only treat as premium entitlement if tied to a subscription
+        if (!invoice.subscription) break;
+
         const customer = await stripe.customers.retrieve(invoice.customer);
         const userEmail = customer && customer.email ? customer.email : null;
 
-        if (userEmail) {
-          await setUserFields(base44, userEmail, { subscription_level: 'paid' });
-        }
+        if (!userEmail) break;
+
+        // Refresh the subscription status from Stripe (authoritative)
+        const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+
+        // Update subscription entity (keeps dates/status current)
+        const subRow = {
+          user_email: userEmail,
+          stripe_customer_id: sub.customer,
+          stripe_subscription_id: sub.id,
+          status: sub.status,
+          current_period_start: isoFromUnixSeconds(sub.current_period_start),
+          current_period_end: isoFromUnixSeconds(sub.current_period_end),
+          cancel_at_period_end: !!sub.cancel_at_period_end,
+        };
+
+        await upsertSubscription(base44, { stripe_subscription_id: sub.id }, subRow);
+
+        // Only paid when active/trialing
+        const paid = sub.status === 'active' || sub.status === 'trialing';
+        await setUserFields(base44, userEmail, {
+          subscription_level: paid ? 'paid' : 'free',
+          stripe_customer_id: sub.customer,
+        });
+
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
-        const customer = await stripe.customers.retrieve(invoice.customer);
+
+        // If no subscription, nothing to do
+        if (!invoice.subscription) break;
+
+        const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+        const customer = await stripe.customers.retrieve(sub.customer);
         const userEmail = customer && customer.email ? customer.email : null;
 
-        // Choose one behavior:
-        // (A) Keep access until Stripe marks subscription past_due/unpaid via subscription.updated
-        // (B) Immediately downgrade on failed payment
-        // I recommend (A) for user experience; so we do nothing here except optionally log.
-        // If you WANT (B), uncomment:
-        // if (userEmail) await setUserFields(base44, userEmail, { subscription_level: 'free' });
+        // Always update your Subscription entity to reflect delinquency
+        await upsertSubscription(
+          base44,
+          { stripe_subscription_id: sub.id },
+          {
+            status: sub.status,
+            current_period_start: isoFromUnixSeconds(sub.current_period_start),
+            current_period_end: isoFromUnixSeconds(sub.current_period_end),
+            cancel_at_period_end: !!sub.cancel_at_period_end,
+          }
+        );
+
+        // If we can resolve the user, enforce entitlement based on subscription status
+        if (userEmail) {
+          const paid = sub.status === 'active' || sub.status === 'trialing';
+          await setUserFields(base44, userEmail, {
+            subscription_level: paid ? 'paid' : 'free',
+            stripe_customer_id: sub.customer,
+          });
+        }
 
         break;
       }
