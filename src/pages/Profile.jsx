@@ -325,25 +325,9 @@ export default function ProfilePage() {
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
                         try {
-                          const res = await fetch("/functions/createBillingPortalSession", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({}),
-                          });
-
-                          const data = await res.json().catch(() => ({}));
-
-                          if (!res.ok) {
-                            throw new Error(data?.error || `Request failed (${res.status})`);
-                          }
-
-                          if (!data?.url) {
-                            throw new Error("No portal URL returned.");
-                          }
-
-                          window.open(data.url, "_blank", "noopener,noreferrer");
+                          await openManageSubscription();
                         } catch (e) {
-                          alert(e?.message || "Could not open subscription management.");
+                          alert(e?.message || "Unable to open subscription management.");
                         }
                       }}
                     >

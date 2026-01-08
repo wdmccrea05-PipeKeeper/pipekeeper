@@ -12,7 +12,9 @@ export async function openManageSubscription() {
     }
   } catch (error) {
     console.error('Failed to open billing portal:', error);
-    throw error;
+    // Extract the actual error message from the response
+    const errorMessage = error?.response?.data?.error || error?.message || 'Failed to open billing portal';
+    throw new Error(errorMessage);
   }
 }
 
