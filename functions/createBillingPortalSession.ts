@@ -1,14 +1,26 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Stripe from 'npm:stripe@17.4.0';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import Stripe from "npm:stripe@17.4.0";
 
-const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-const APP_URL = Deno.env.get('APP_URL') || 'https://pipekeeper.app';
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "");
+const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
-if (!STRIPE_SECRET_KEY) {
-  console.error('Missing STRIPE_SECRET_KEY env var');
+async function findCustomerIdByEmail(email) {
+  if (!email) return null;
+
+  // Stripe Search API (best option)
+  try {
+    const result = await stripe.customers.search({
+      query: `email:"${email.replace(/"/g, '\\"')}"`,
+      limit: 1,
+    });
+    const customer = result?.data?.[0];
+    return customer?.id || null;
+  } catch (_e) {
+    // Fallback to list if search isn't available on your account
+    const list = await stripe.customers.list({ email, limit: 1 });
+    return list?.data?.[0]?.id || null;
+  }
 }
-
-const stripe = new Stripe(STRIPE_SECRET_KEY || '');
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -32,12 +44,12 @@ Deno.serve(async (req) => {
     });
   }
 
-  if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+  if (req.method !== "POST") {
+    return json({ error: "Method not allowed" }, 405);
   }
 
   try {
-    if (!STRIPE_SECRET_KEY) {
+    if (!Deno.env.get("STRIPE_SECRET_KEY")) {
       return json({ error: 'Server is missing STRIPE_SECRET_KEY' }, 500);
     }
 
@@ -45,36 +57,43 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user || !user.email) {
-      return json({ error: 'Unauthorized' }, 401);
+      return json({ error: "Unauthorized" }, 401);
     }
 
     // 1) Prefer user field
     let customerId = user.stripe_customer_id || null;
 
-    // 2) Service-role fallback: look up Subscription row by user_email
+    // 2) Service-role fallback: Subscription row
     if (!customerId) {
-      const subs = await base44.asServiceRole.entities.Subscription.filter({ user_email: user.email });
-      if (subs && subs.length) {
-        const withCustomer = subs.find(s => s?.stripe_customer_id);
-        customerId = withCustomer?.stripe_customer_id || null;
-      }
-
-      // Persist customer id to user for future calls
-      if (customerId) {
-        await base44.asServiceRole.auth.updateUser(user.email, { stripe_customer_id: customerId });
-      }
+      const subs = await base44.asServiceRole.entities.Subscription.filter({
+        user_email: user.email,
+      });
+      const withCustomer = subs?.find((s) => s?.stripe_customer_id);
+      customerId = withCustomer?.stripe_customer_id || null;
     }
 
-    // 3) If still missing, they likely haven't started checkout yet
+    // 3) Stripe fallback: search customer by email (fixes paid users created before webhook/user field existed)
     if (!customerId) {
+      customerId = await findCustomerIdByEmail(user.email);
+    }
+
+    // Persist it for next time
+    if (customerId) {
+      await base44.asServiceRole.auth.updateUser(user.email, {
+        stripe_customer_id: customerId,
+      });
+    } else {
       return json(
-        { error: 'No subscription customer exists for this account yet. Please start a subscription first.' },
+        {
+          error:
+            "No Stripe customer found for this account yet. Please start a subscription from the Subscription page first.",
+        },
         400
       );
     }
 
-    const origin = req.headers.get('origin');
-    const appUrl = origin && origin.startsWith('http') ? origin : APP_URL;
+    const origin = req.headers.get("origin");
+    const appUrl = origin && origin.startsWith("http") ? origin : APP_URL;
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
@@ -83,9 +102,9 @@ Deno.serve(async (req) => {
 
     return json({ url: portalSession.url });
   } catch (error) {
-    console.error('createBillingPortalSession error:', error);
+    console.error("createBillingPortalSession error:", error);
     return json(
-      { error: error && error.message ? String(error.message) : 'Failed to create portal session' },
+      { error: error?.message || "Failed to create portal session" },
       500
     );
   }
