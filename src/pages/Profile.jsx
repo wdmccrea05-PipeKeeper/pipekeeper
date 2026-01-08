@@ -196,10 +196,14 @@ export default function ProfilePage() {
     await deleteAll(base44.entities.Subscription, { user_email: email });
     await deleteAll(base44.entities.UserProfile, { user_email: email });
 
-    await base44.auth.updateMe({
-      deletion_requested: true,
-      deletion_requested_at: new Date().toISOString(),
-    });
+    try {
+      await base44.auth.updateMe({
+        deletion_requested: true,
+        deletion_requested_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to mark deletion:', err);
+    }
 
     await base44.auth.logout();
     window.location.href = '/';
@@ -320,21 +324,23 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {/* Manage button should NOT be gated behind shouldShowPurchaseUI() */}
-                  {shouldShowManageSubscription(subscription, user) ? (
+                  {shouldShowManageSubscription(subscription, user) && (
                     <Button
                       className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                       onClick={async () => {
                         try {
                           await openManageSubscription();
                         } catch (e) {
-                          alert(e?.message || "Unable to open subscription management.");
+                          const message = e?.message || "Unable to open subscription management portal";
+                          console.error('[Profile] Manage subscription error:', message);
+                          alert(message);
                         }
                       }}
                     >
                       {getManageSubscriptionLabel()}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
-                  ) : null}
+                  )}
                   {/* Upgrade/Purchase UI stays gated */}
                   {shouldShowPurchaseUI() && !hasActiveSubscription && (
                     <a href={createPageUrl("Subscription")}>

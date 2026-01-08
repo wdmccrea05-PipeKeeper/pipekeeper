@@ -5,15 +5,17 @@ import { isTrialWindow } from "./access";
 export async function openManageSubscription() {
   try {
     const response = await base44.functions.invoke('createBillingPortalSession', {});
-    if (response.data?.url) {
-      window.location.href = response.data.url;
-    } else {
+    const url = response?.data?.url;
+    
+    if (!url) {
       throw new Error('No portal URL returned');
     }
+    
+    window.location.href = url;
   } catch (error) {
-    console.error('Failed to open billing portal:', error);
-    // Extract the actual error message from the response
-    const errorMessage = error?.response?.data?.error || error?.message || 'Failed to open billing portal';
+    console.error('[openManageSubscription] Error:', error);
+    // Extract the actual error message from the backend
+    const errorMessage = error?.response?.data?.error || error?.message || 'Unable to open subscription management portal';
     throw new Error(errorMessage);
   }
 }

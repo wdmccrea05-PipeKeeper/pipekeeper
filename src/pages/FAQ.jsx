@@ -235,9 +235,12 @@ export default function FAQ() {
         </Q>
 
         <Q id="manage-subscription" q="How do I manage, change, or cancel my subscription?">
-          All subscription management is handled through the <b>Manage Subscription</b> link in your Profile.
+          PipeKeeper subscriptions are purchased on the web and managed securely through our payment provider's customer portal.
           <div className="mt-2">
-            From there, you can:
+            To manage your subscription (update payment method, view invoices, or cancel), go to <b>Profile → Manage subscription</b>.
+          </div>
+          <div className="mt-2">
+            From the customer portal, you can:
             <ul className="mt-2 space-y-1 list-disc list-inside">
               <li>Cancel or restart your subscription</li>
               <li>Update your payment method</li>
@@ -245,7 +248,7 @@ export default function FAQ() {
             </ul>
           </div>
           <div className="mt-2">
-            If you do not see the subscription management option, contact support and we'll help.
+            If you don't see the <b>Manage subscription</b> option, contact support and we'll help you access your subscription portal.
           </div>
         </Q>
 
