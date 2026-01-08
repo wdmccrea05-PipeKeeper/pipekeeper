@@ -44,13 +44,18 @@ export default function FAQ() {
 
       <Section title="General">
         <Q id="what-is" q="What is PipeKeeper?">
-          PipeKeeper helps you track your pipes, tobaccos, cellared tins, and smoking sessions—plus optional tools like
-          pairing suggestions, collection insights, and reports.
+          PipeKeeper is a collection-management and informational app designed for pipe-smoking enthusiasts. It helps you track pipes, tobacco blends, cellared tins, and related notes, and provides optional AI-assisted insights and valuation estimates.
+          <div className="mt-2 font-semibold">
+            PipeKeeper does not sell tobacco products and does not facilitate tobacco purchases.
+          </div>
         </Q>
 
-        <Q id="tobacco-sales" q="Does PipeKeeper sell tobacco or facilitate tobacco sales?">
-          No. PipeKeeper is a tracking and informational app. We do not sell tobacco products, process tobacco orders, or
-          arrange shipments.
+        <Q id="tobacco-sales" q="Is PipeKeeper selling or promoting tobacco?">
+          No. PipeKeeper is a hobby and collection-tracking app only. It does not sell, advertise, or facilitate the purchase of tobacco products.
+        </Q>
+
+        <Q id="data-privacy" q="Is my data private?">
+          Yes. Your collection data belongs to you. PipeKeeper uses your data only to operate the app and provide features. We do not sell personal data.
         </Q>
       </Section>
 
@@ -213,38 +218,39 @@ export default function FAQ() {
         </Q>
       </Section>
 
-      <Section title="Premium, Trials & Subscriptions">
+      <Section title="Subscriptions & Premium">
         <Q id="free-trial" q="Is there a free trial?">
           PipeKeeper may offer a limited trial window that temporarily enables Premium features. If a trial is active for
           your account, the app will display the remaining time in the Subscription area.
         </Q>
 
-        <Q id="how-subscribe" q="How do I subscribe?">
-          Subscriptions can be purchased on the web (through the in-app checkout flow) and/or through platform storefronts
-          depending on how you installed PipeKeeper.
+        <Q id="how-subscribe" q="How do subscriptions work?">
+          PipeKeeper offers optional Premium features through a paid subscription. Subscription pricing and trial availability are displayed in the app.
+          <div className="mt-2">
+            Subscriptions are purchased on the web and managed through a secure customer portal accessible from the app's Profile section.
+          </div>
+          <div className="mt-2 font-semibold">
+            PipeKeeper does not use Apple App Store or Google Play billing systems for subscriptions.
+          </div>
         </Q>
 
         <Q id="manage-subscription" q="How do I manage, change, or cancel my subscription?">
-          <div style={{ marginBottom: 8 }}>
-            PipeKeeper subscriptions are managed through our secure billing portal (web-based).
+          All subscription management is handled through the <b>Manage Subscription</b> link in your Profile.
+          <div className="mt-2">
+            From there, you can:
+            <ul className="mt-2 space-y-1 list-disc list-inside">
+              <li>Cancel or restart your subscription</li>
+              <li>Update your payment method</li>
+              <li>View invoices and billing history</li>
+            </ul>
           </div>
-
-          <ul style={{ marginTop: 0, marginBottom: 10 }}>
-            <li>
-              Go to <b>Profile</b> in the app and tap <b>Manage subscription</b> (or <b>Billing portal</b>).
-            </li>
-            <li>
-              If you don't see the button, it usually means your account hasn't created a subscription customer record yet.
-              Start a subscription once, then the portal link will appear.
-            </li>
-            <li>
-              If you still can't access the portal, contact support and we'll help you locate your billing link.
-            </li>
-          </ul>
-
-          <div style={{ opacity: 0.9 }}>
-            Note: Subscriptions are not managed through Apple App Store or Google Play.
+          <div className="mt-2">
+            If you do not see the subscription management option, contact support and we'll help.
           </div>
+        </Q>
+
+        <Q id="continue-trial" q="How do I continue my subscription after a free trial?">
+          If your account includes a free trial, you will be prompted to subscribe before the trial ends to continue Premium access. Subscription status and renewal options are always available from your Profile page.
         </Q>
 
         <Q id="premium-activate" q="I already paid—when do Premium features activate?">
@@ -256,6 +262,29 @@ export default function FAQ() {
         <Q id="refunds" q="Refunds and billing questions">
           For web subscriptions, billing is handled through our third-party payment processor. Please contact support for billing
           questions, refunds (where applicable), or account access issues.
+        </Q>
+      </Section>
+
+      <Section title="Community & Content">
+        <Q id="user-content" q="Does PipeKeeper include user-generated content?">
+          Yes. PipeKeeper allows users to create and manage content such as notes, reviews, descriptions, images, and collection details.
+        </Q>
+
+        <Q id="content-rules" q="What content is not allowed?">
+          PipeKeeper has zero tolerance for objectionable or abusive content. Prohibited content includes:
+          <ul className="mt-2 space-y-1 list-disc list-inside">
+            <li>Harassment, hate speech, or threats</li>
+            <li>Sexually explicit or pornographic material</li>
+            <li>Violence or promotion of illegal activities</li>
+            <li>Spam, impersonation, or misleading content</li>
+          </ul>
+          <div className="mt-2">
+            Accounts or content violating these rules may be restricted or removed.
+          </div>
+        </Q>
+
+        <Q id="report-abuse" q="How do I report objectionable content or abuse?">
+          You can report objectionable content or abusive behavior by contacting PipeKeeper support. Reports are reviewed promptly, and appropriate action is taken.
         </Q>
       </Section>
 

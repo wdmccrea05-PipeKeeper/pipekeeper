@@ -32,22 +32,37 @@ export default function PrivacyPolicy() {
         </LI>
       </ul>
 
-      <H2>2. Payments and Subscription Data</H2>
+      <H2>2. User-Generated Content and Moderation</H2>
       <P>
-        Payment processing is handled by a third-party payment processor. We do not store full card numbers.
-        We may store limited billing identifiers (for example, a customer ID or subscription ID) to confirm subscription status
-        and provide account support.
+        PipeKeeper allows users to create, upload, and manage content such as notes, descriptions, images, reviews, and collection data ("User-Generated Content").
+      </P>
+      <P>
+        PipeKeeper does not permit objectionable, abusive, or harmful content. We reserve the right to review, moderate, restrict, remove, or delete User-Generated Content or user accounts that violate our Terms of Service, applicable laws, or community standards.
+      </P>
+      <P>
+        Users may report objectionable content or abusive behavior by contacting PipeKeeper support. Reported content is reviewed and handled in accordance with our moderation policies.
       </P>
 
-      <H2>3. How We Use Information</H2>
-      <ul style={{ marginTop: 8 }}>
-        <LI>Provide and operate the Service (account access, syncing, core features).</LI>
-        <LI>Enable Premium features and verify subscription status.</LI>
-        <LI>Maintain, troubleshoot, and improve performance and security.</LI>
-        <LI>Respond to support requests and communicate about updates.</LI>
-      </ul>
+      <H2>3. Payments and Billing Information</H2>
+      <P>
+        PipeKeeper does not store or process payment card details. Subscription payments are handled securely by a third-party payment processor. PipeKeeper only stores limited identifiers required to manage subscription status and access.
+      </P>
 
-      <H2>4. How We Share Information</H2>
+      <H2>4. How We Use Your Information</H2>
+      <P>We use your information to:</P>
+      <ul style={{ marginTop: 8 }}>
+        <LI>Operate and maintain the Service</LI>
+        <LI>Display your collection data to you</LI>
+        <LI>Provide Premium features and subscription access</LI>
+        <LI>Improve functionality, performance, and reliability</LI>
+        <LI>Enforce our Terms of Service and community standards</LI>
+        <LI>Respond to support inquiries and abuse reports</LI>
+      </ul>
+      <P>
+        PipeKeeper does not sell personal data.
+      </P>
+
+      <H2>5. How We Share Information</H2>
       <P>We may share information in limited circumstances:</P>
       <ul style={{ marginTop: 8 }}>
         <LI>
@@ -61,34 +76,36 @@ export default function PrivacyPolicy() {
         </LI>
       </ul>
 
-      <H2>5. Data Retention</H2>
+      <H2>6. Data Retention and Account Termination</H2>
       <P>
-        We retain information as long as needed to provide the Service and for legitimate business purposes (e.g.,
-        compliance, dispute resolution). You may request deletion subject to legal and operational limits.
+        You may delete your account at any time. Upon account deletion, your personal data and User-Generated Content will be removed or anonymized in accordance with applicable law, except where retention is required for legal or security purposes.
       </P>
 
-      <H2>6. Security</H2>
+      <H2>7. Security</H2>
       <P>
         We use reasonable safeguards designed to protect information, but no system is 100% secure. You are responsible
         for maintaining the security of your account credentials.
       </P>
 
-      <H2>7. Your Choices</H2>
+      <H2>8. Your Choices</H2>
       <ul style={{ marginTop: 8 }}>
         <LI>Access and update your account information within the app where available.</LI>
         <LI>Request deletion of your account and associated data via support, subject to applicable requirements.</LI>
       </ul>
 
-      <H2>8. Children</H2>
+      <H2>9. Children</H2>
       <P>The Service is not directed to children. Do not use the Service if you are under the age required by law.</P>
 
-      <H2>9. Changes</H2>
+      <H2>10. Changes</H2>
       <P>
         We may update this Privacy Policy. If changes are material, we will take reasonable steps to notify you (for
         example, by posting within the Service).
       </P>
 
-      <H2>10. Contact</H2>
+      <H2>11. Contact and Reporting</H2>
+      <P>
+        If you have questions about this Privacy Policy, wish to report objectionable content, or need assistance with your account, please contact PipeKeeper support.
+      </P>
       <P>
         Related documents:
         <ul className="mt-2 space-y-1">
