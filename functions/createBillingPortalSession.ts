@@ -48,34 +48,37 @@ Deno.serve(async (req) => {
       return json({ error: 'Unauthorized' }, 401);
     }
 
-    // Prefer user.stripe_customer_id first (canonical source)
+    // 1) Prefer user field
     let customerId = user.stripe_customer_id || null;
 
-    // Fall back to Subscription entity if not on user
+    // 2) Service-role fallback: look up Subscription row by user_email
     if (!customerId) {
-      const subscriptions = await base44.entities.Subscription.filter({ user_email: user.email });
-      if (Array.isArray(subscriptions) && subscriptions.length) {
-        const withCustomer = subscriptions.find((s) => s && s.stripe_customer_id);
-        customerId = withCustomer ? withCustomer.stripe_customer_id : null;
+      const subs = await base44.asServiceRole.entities.Subscription.filter({ user_email: user.email });
+      if (subs && subs.length) {
+        const withCustomer = subs.find(s => s?.stripe_customer_id);
+        customerId = withCustomer?.stripe_customer_id || null;
+      }
+
+      // Persist customer id to user for future calls
+      if (customerId) {
+        await base44.asServiceRole.auth.updateUser(user.email, { stripe_customer_id: customerId });
       }
     }
 
+    // 3) If still missing, they likely haven't started checkout yet
     if (!customerId) {
       return json(
-        {
-          error:
-            'No Stripe customer found for this account yet. Please start a subscription first.',
-        },
+        { error: 'No subscription customer exists for this account yet. Please start a subscription first.' },
         400
       );
     }
 
-    // Always use canonical APP_URL for return URL (safer + consistent)
-    const return_url = `${APP_URL.replace(/\/$/, '')}/Profile`;
+    const origin = req.headers.get('origin');
+    const appUrl = origin && origin.startsWith('http') ? origin : APP_URL;
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url,
+      return_url: `${appUrl}/Profile`,
     });
 
     return json({ url: portalSession.url });

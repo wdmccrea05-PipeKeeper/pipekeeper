@@ -1,5 +1,6 @@
 import { base44 } from "@/api/base44Client";
 import { shouldShowPurchaseUI } from "./companion";
+import { isTrialWindow } from "./access";
 
 export async function openManageSubscription() {
   try {
@@ -19,22 +20,15 @@ export function shouldShowManageSubscription(subscription, user) {
   // If this is a companion app (iOS/Android), NEVER show manage link (compliance requirement)
   if (!shouldShowPurchaseUI()) return false;
 
-  // Show manage if we can reasonably open the Stripe portal:
-  // - user is paid OR Stripe subscription status looks valid
-  // - AND we have a Stripe customer id somewhere
-  const status = subscription?.status;
+  const isPaid = user?.subscription_level === "paid";
+  const inTrial = isTrialWindow?.() === true;
 
-  const hasCustomerId =
-    !!user?.stripe_customer_id || !!subscription?.stripe_customer_id;
+  // If the client can see customerId, great, but don't require it to show the button
+  const hasCustomerId = !!(user?.stripe_customer_id || subscription?.stripe_customer_id);
 
-  const looksSubscribed =
-    user?.subscription_level === "paid" ||
-    status === "active" ||
-    status === "trialing" ||
-    status === "past_due" ||
-    status === "unpaid";
-
-  return hasCustomerId && looksSubscribed;
+  // If user has premium access (paid OR trial), show button so they can subscribe/manage.
+  // Also show if we have a customerId (legacy / edge cases).
+  return isPaid || inTrial || hasCustomerId;
 }
 
 export function getManageSubscriptionLabel() {
