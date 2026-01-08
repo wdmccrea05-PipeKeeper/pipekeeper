@@ -91,7 +91,7 @@ export default function ProfilePage() {
     queryFn: async () => {
       try {
         const subs = await base44.entities.Subscription.filter({ user_email: user?.email });
-        return Array.isArray(subs) ? subs[0] : null;
+        return Array.isArray(subs) ? (subs[0] || null) : null;
       } catch (err) {
         console.error('Subscription load error:', err);
         return null;
