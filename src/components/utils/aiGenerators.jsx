@@ -41,13 +41,15 @@ Weight these preferences heavily when scoring pairings. Prioritize blends that m
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are an expert pipe tobacco sommelier. Analyze these pipes and tobacco blends to create optimal pairings.
 
+CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection listed below. DO NOT suggest blends that are not in this list.
+
 Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
-Tobacco Blends:
+Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe, evaluate which tobacco blends would pair well.
+For each pipe, evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well.
 
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
@@ -99,7 +101,8 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                     blend_name: { type: "string" },
                     score: { type: "number" },
                     reasoning: { type: "string" }
-                  }
+                  },
+                  required: ["blend_id", "blend_name", "score", "reasoning"]
                 }
               }
             }

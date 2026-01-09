@@ -143,11 +143,20 @@ export default function PairingMatrix({ pipes, blends }) {
         profile: userProfile
       });
 
-      setPairings(generatedPairings);
+      // Filter pairings to only include blends that exist in user's collection
+      const validBlendIds = new Set(blends.map(b => b.id));
+      const filteredPairings = generatedPairings.map(pipePairing => ({
+        ...pipePairing,
+        blend_matches: (pipePairing.blend_matches || []).filter(match => 
+          validBlendIds.has(match.blend_id)
+        )
+      }));
+
+      setPairings(filteredPairings);
       
       // Save pairings to database
       await savePairingsMutation.mutateAsync({
-        pairings: generatedPairings,
+        pairings: filteredPairings,
         generated_date: new Date().toISOString()
       });
     } catch (err) {
