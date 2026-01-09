@@ -119,7 +119,16 @@ export default function HomePage() {
 
   useEffect(() => {
     if (onboardingLoading || !user?.email) return;
-    if (!onboardingStatus || (!onboardingStatus.completed && !onboardingStatus.skipped)) {
+    
+    // Check if restart tutorial was requested via URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const restartTutorial = urlParams.get('restart_tutorial') === 'true';
+    
+    if (restartTutorial) {
+      setShowOnboarding(true);
+      // Clear URL parameter
+      window.history.replaceState({}, '', createPageUrl('Home'));
+    } else if (!onboardingStatus || (!onboardingStatus.completed && !onboardingStatus.skipped)) {
       setShowOnboarding(true);
     }
   }, [user?.email, onboardingStatus, onboardingLoading]);
