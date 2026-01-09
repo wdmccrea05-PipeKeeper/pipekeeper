@@ -869,8 +869,37 @@ export default function ProfilePage() {
           className="mt-6"
         >
           <Card className="border-rose-200 bg-white">
-            <CardContent className="p-6">
+            <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-stone-800">Restart Tutorial</h3>
+                  <p className="text-sm text-stone-600">See the welcome guide again</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-violet-200 text-violet-600 hover:bg-violet-50"
+                  onClick={async () => {
+                    try {
+                      const onboarding = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
+                      if (onboarding?.[0]) {
+                        await safeUpdate('OnboardingStatus', onboarding[0].id, { 
+                          completed: false, 
+                          skipped: false,
+                          current_step: 0 
+                        }, user?.email);
+                      }
+                      window.location.href = createPageUrl('Home');
+                    } catch (err) {
+                      console.error('Error resetting tutorial:', err);
+                    }
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Restart
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between border-t pt-4">
                 <div>
                   <h3 className="font-semibold text-stone-800">Sign Out</h3>
                   <p className="text-sm text-stone-600">Log out of your PipeKeeper account</p>
