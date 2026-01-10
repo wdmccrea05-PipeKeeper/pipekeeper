@@ -57,25 +57,25 @@ function applyPipeKeeperTheme() {
   const root = document.documentElement;
   root.classList.add("dark");
 
-  // Warmer + brighter foreground, higher-contrast cards for readability
+  // Dark background with light cards
   const vars = {
-    "--background": "214 53% 9%",           // #0b1624
-    "--foreground": "38 80% 92%",           // brighter warm cream
-    "--card": "214 38% 22%",                // brightened for contrast
-    "--card-foreground": "38 80% 92%",
-    "--popover": "214 38% 22%",
-    "--popover-foreground": "38 80% 92%",
-    "--primary": "8 55% 44%",               // richer cigar/copper
-    "--primary-foreground": "38 80% 92%",
-    "--secondary": "212 30% 26%",           // brightened for distinction
-    "--secondary-foreground": "38 80% 92%",
-    "--accent": "37 55% 82%",               // warm parchment highlight
-    "--accent-foreground": "214 53% 9%",
-    "--muted": "213 35% 28%",               // brighter for contrast
-    "--muted-foreground": "38 65% 85%",     // significantly brighter muted text
-    "--border": "37 32% 50%",               // much brighter border
-    "--input": "37 32% 50%",
-    "--ring": "37 55% 82%",
+    "--background": "214 53% 9%",           // #0b1624 - dark background
+    "--foreground": "213 25% 25%",          // dark blue/slate text
+    "--card": "0 0% 97%",                   // #f7f7f7 - off-white cards
+    "--card-foreground": "213 25% 25%",     // dark blue text on cards
+    "--popover": "0 0% 97%",
+    "--popover-foreground": "213 25% 25%",
+    "--primary": "213 25% 25%",             // dark blue primary
+    "--primary-foreground": "0 0% 100%",    // white foreground
+    "--secondary": "0 0% 92%",              // light grey secondary
+    "--secondary-foreground": "213 25% 25%",
+    "--accent": "37 55% 82%",               // warm parchment accent
+    "--accent-foreground": "213 25% 25%",
+    "--muted": "0 0% 85%",                  // light grey muted
+    "--muted-foreground": "0 0% 0%",        // black muted text
+    "--border": "0 0% 88%",                 // light grey borders
+    "--input": "0 0% 97%",                  // light background for inputs
+    "--ring": "213 25% 25%",
     "--radius": "1rem",
   };
 
