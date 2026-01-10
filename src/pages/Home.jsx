@@ -633,8 +633,8 @@ export default function HomePage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground truncate text-sm sm:text-base">{pipe.name}</p>
-                              <p className="text-xs sm:text-sm text-foreground/60 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
+                              <p className="font-medium text-primary truncate text-sm sm:text-base">{pipe.name}</p>
+                              <p className="text-xs sm:text-sm text-primary/60 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
                             </div>
                             {pipe.estimated_value ? (
                               <Badge className="bg-primary/15 text-primary border-primary/25 text-xs sm:text-sm flex-shrink-0">
