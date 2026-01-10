@@ -683,8 +683,8 @@ export default function HomePage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground truncate text-sm sm:text-base">{blend.name}</p>
-                              <p className="text-xs sm:text-sm text-foreground/60 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
+                              <p className="font-medium text-primary truncate text-sm sm:text-base">{blend.name}</p>
+                              <p className="text-xs sm:text-sm text-primary/60 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
                             </div>
                             {blend.quantity_owned > 0 ? (
                               <Badge className="bg-primary/15 text-primary border-primary/25 text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
