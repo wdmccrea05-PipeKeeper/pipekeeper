@@ -369,9 +369,9 @@ export default function HomePage() {
               <a href={createPageUrl('Tobacco')}>
                 <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-border/60 cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-3 sm:p-6 text-center">
-                    <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" strokeWidth={2.0} />
-                    <p className="text-2xl sm:text-3xl font-bold text-foreground">{safeBlends.length}</p>
-                    <p className="text-xs sm:text-sm text-foreground/70">Blends</p>
+                    <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-primary" strokeWidth={2.0} />
+                    <p className="text-2xl sm:text-3xl font-bold text-primary">{safeBlends.length}</p>
+                    <p className="text-xs sm:text-sm text-primary/70">Blends</p>
                   </CardContent>
                 </Card>
               </a>
@@ -384,9 +384,9 @@ export default function HomePage() {
             >
               <Card className="bg-gradient-to-br from-muted to-secondary/80 border-border/60">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" />
-                  <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalCellaredTins}</p>
-                  <p className="text-xs sm:text-sm text-foreground/70">Cellared Tins</p>
+                  <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-primary" />
+                  <p className="text-2xl sm:text-3xl font-bold text-primary">{totalCellaredTins}</p>
+                  <p className="text-xs sm:text-sm text-primary/70">Cellared Tins</p>
                 </CardContent>
               </Card>
             </motion.div>
