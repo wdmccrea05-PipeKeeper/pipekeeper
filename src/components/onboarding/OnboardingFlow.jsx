@@ -11,7 +11,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
