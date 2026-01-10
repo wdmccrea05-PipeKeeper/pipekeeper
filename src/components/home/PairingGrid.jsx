@@ -108,10 +108,11 @@ export default function PairingGrid({ pipes, blends }) {
     setShowGrid(true);
   };
 
-  // Calculate compatibility score following priority hierarchy
+  // Calculate compatibility score with Trophy Pipe philosophy
+  // Goal: Every blend should have a trophy pipe (9-10 score) in the collection
   const calculateScore = (pipe, blend) => {
-    // Base score: 4.0 (any pipe-blend combo has basic usability)
-    let score = 4.0;
+    // Base score: 3.0 (usable but not optimal)
+    let score = 3.0;
     
     // CRITICAL: Aromatic/Non-Aromatic Exclusions
     const focusList = pipe.focus || [];
@@ -126,95 +127,119 @@ export default function PairingGrid({ pipes, blends }) {
     if (hasNonAromaticFocus && isAromaticBlend) return 0;
     if (hasOnlyAromaticFocus && !isAromaticBlend) return 0;
     
-    // PRIORITY 1: User Preferences (0-3 points)
+    // PRIORITY 1: User Preferences (0-2.5 points)
+    let prefScore = 0;
     if (userProfile) {
-      // Preferred blend types (0-1.5 points)
       if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
-        score += 1.5;
+        prefScore += 1.5;
       }
-      
-      // Strength preference (0-1 point)
       if (userProfile.strength_preference !== 'No Preference' && 
           blend.strength === userProfile.strength_preference) {
-        score += 1;
+        prefScore += 0.75;
       }
-      
-      // Pipe size preference (0-0.5 points)
       if (userProfile.pipe_size_preference !== 'No Preference' &&
           pipe.chamber_volume === userProfile.pipe_size_preference) {
-        score += 0.5;
+        prefScore += 0.25;
       }
     }
+    score += prefScore;
     
-    // PRIORITY 2: Pipe Focus/Specialization (0-2.5 points)
+    // PRIORITY 2: Pipe Focus/Specialization (TROPHY FACTOR: -2 to +4 points)
+    // This is the key differentiator for trophy pipes
+    let focusScore = 0;
     if (focusList.length > 0) {
       const focusLower = focusList.map(f => f.toLowerCase());
       const blendTypeLower = blend.blend_type?.toLowerCase() || '';
       const blendComponents = blend.tobacco_components || [];
       
       // Check for exact blend type match
-      const exactMatch = focusLower.some(f => {
-        // Direct type match
-        if (f === blendTypeLower || blendTypeLower.includes(f) || f.includes(blendTypeLower)) {
-          return true;
-        }
-        // Component match
-        if (blendComponents.some(comp => {
+      const exactTypeMatch = focusLower.some(f => 
+        f === blendTypeLower || blendTypeLower.includes(f) || f.includes(blendTypeLower)
+      );
+      
+      // Check for component match
+      const componentMatch = focusList.some(f => {
+        const focusLower = f.toLowerCase();
+        return blendComponents.some(comp => {
           const compLower = comp.toLowerCase();
-          return compLower === f || compLower.includes(f) || f.includes(compLower);
-        })) {
-          return true;
-        }
-        return false;
+          return compLower === focusLower || compLower.includes(focusLower) || focusLower.includes(compLower);
+        });
       });
       
-      if (exactMatch) {
-        // Exact match: inversely proportional to focus count
-        // More specialized = higher bonus for matching
-        if (focusList.length === 1) score += 2.5;
-        else if (focusList.length === 2) score += 2;
-        else if (focusList.length === 3) score += 1.5;
-        else score += 1; // 4+ focuses = very versatile, smaller bonus
+      if (exactTypeMatch) {
+        // TROPHY MATCH: Specialized pipe perfectly matched to blend type
+        // More specialized = higher trophy bonus
+        if (focusList.length === 1) focusScore = 4.0; // Single focus = ultimate trophy
+        else if (focusList.length === 2) focusScore = 3.5; // Dual focus = strong trophy
+        else if (focusList.length === 3) focusScore = 2.5; // Triple focus = good match
+        else focusScore = 1.5; // 4+ focuses = versatile, lower bonus
+      } else if (componentMatch) {
+        // Partial match on tobacco components
+        focusScore = 1.5;
       } else {
-        // No match on specialized pipe = penalty
-        if (focusList.length <= 2) {
-          score -= 1; // Specialized pipe, wrong blend type
-        }
+        // NO MATCH on specialized pipe = significant penalty
+        // This creates differentiation and encourages optimization
+        if (focusList.length === 1) focusScore = -2.0; // Wrong blend for specialist
+        else if (focusList.length === 2) focusScore = -1.5;
+        else if (focusList.length === 3) focusScore = -1.0;
+        else focusScore = -0.5;
       }
     } else {
-      // No focus = versatile pipe, works with anything
-      score += 0.5;
+      // No focus = jack-of-all-trades, decent with everything
+      focusScore = 1.0;
     }
+    score += focusScore;
     
-    // PRIORITY 3: Dimensions and Measurements (0-1.5 points)
-    // Bowl capacity and shape matching blend characteristics
+    // PRIORITY 3: Dimensions and Measurements (0-2 points)
+    // Physical compatibility enhances trophy status
+    let dimensionScore = 0;
     
-    // Chamber size vs blend strength (0-1 point)
+    // Chamber size vs blend strength (0-1.5 points)
     if (pipe.chamber_volume && blend.strength) {
       if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild') ||
           (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') ||
           (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full'))) {
-        score += 1;
+        dimensionScore += 1.5;
       } else if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild-Medium') ||
                  (pipe.chamber_volume === 'Medium' && (blend.strength === 'Mild-Medium' || blend.strength === 'Medium-Full')) ||
                  (pipe.chamber_volume === 'Large' && blend.strength === 'Medium')) {
-        score += 0.5;
+        dimensionScore += 0.75;
+      } else {
+        dimensionScore += 0.25; // Some compatibility
       }
     }
     
     // Bowl shape (0-0.5 points)
-    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') score += 0.5;
-    else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') score += 0.25;
+    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') dimensionScore += 0.5;
+    else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') dimensionScore += 0.25;
     
-    // PRIORITY 4: Tobacco Components (0-1 point)
-    // Material compatibility with blend characteristics
-    if (pipe.bowl_material === 'Meerschaum' && blend.blend_type === 'Virginia') {
-      score += 1; // Cool smoke ideal for Virginias
+    score += dimensionScore;
+    
+    // PRIORITY 4: Tobacco Components & Material (0-1.5 points)
+    // How blend burns/smokes in this specific pipe material
+    let materialScore = 0;
+    const blendComponents = blend.tobacco_components || [];
+    
+    // Material-blend synergy
+    if (pipe.bowl_material === 'Meerschaum') {
+      if (blend.blend_type === 'Virginia' || blendComponents.includes('Virginia')) {
+        materialScore += 1.5; // Cool smoke perfect for Virginias
+      } else {
+        materialScore += 0.75;
+      }
     } else if (pipe.bowl_material === 'Briar') {
-      score += 0.5; // Briar works with everything
-    } else if (pipe.bowl_material === 'Corn Cob' && blend.blend_type === 'Aromatic') {
-      score += 0.75;
+      materialScore += 1.0; // Briar is versatile
+    } else if (pipe.bowl_material === 'Corn Cob') {
+      if (blend.blend_type === 'Aromatic') {
+        materialScore += 1.25;
+      } else {
+        materialScore += 0.5;
+      }
+    } else {
+      materialScore += 0.5;
     }
+    
+    score += materialScore;
     
     return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
   };
