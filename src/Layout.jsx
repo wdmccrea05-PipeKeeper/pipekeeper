@@ -57,8 +57,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
             filter: isMobile
               ? 'brightness(0)'
               : isActive 
-                ? 'brightness(1.2) sepia(0.8) hue-rotate(25deg) saturate(0.6)'
-                : 'brightness(0.8) sepia(0.7) hue-rotate(25deg) saturate(0.5) opacity(0.7)'
+                ? 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)'
+                : 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)'
           }}
         />
       )}
