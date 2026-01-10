@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb, CheckCheck, Star, AlertTriangle, Undo } from "lucide-react";
+import { toast } from "sonner";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { motion, AnimatePresence } from "framer-motion";
@@ -469,9 +470,12 @@ User Feedback: ${feedback}
       setShowAcceptAll(false);
       setSelectedChanges({});
       setUserFeedbackHistory('');
+      toast.success('Optimization applied', {
+        description: 'Regenerate pairings to see updated recommendations'
+      });
     } catch (err) {
       console.error('Error accepting recommendations:', err);
-      alert('Failed to apply recommendations. Please try again.');
+      toast.error('Failed to apply recommendations. Please try again.');
     } finally {
       setAcceptingAll(false);
     }
@@ -501,6 +505,9 @@ User Feedback: ${feedback}
     });
     // Invalidate AI queries to refresh pairings
     invalidateAIQueries(queryClient, user?.email);
+    toast.success('Pipe focus updated', {
+      description: 'Regenerate pairings to see updated recommendations'
+    });
   };
 
   // Apply optimization changes with undo support

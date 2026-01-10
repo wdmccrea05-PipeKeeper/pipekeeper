@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
@@ -73,6 +74,7 @@ export default function ProfilePage() {
   const [imageToCrop, setImageToCrop] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleteAIOpen, setDeleteAIOpen] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -159,6 +161,7 @@ export default function ProfilePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile', user?.email] });
+      toast.success('Profile saved successfully');
     },
   });
 
@@ -228,9 +231,10 @@ export default function ProfilePage() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       setFormData({ ...formData, avatar_url: file_url });
+      toast.success('Avatar uploaded successfully');
     } catch (err) {
       console.error('Error uploading avatar:', err);
-      alert('Failed to upload image. Please try again.');
+      toast.error('Failed to upload image. Please try again.');
     } finally {
       setUploadingAvatar(false);
       setImageToCrop(null);
@@ -612,37 +616,35 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-stone-700 font-medium">Country</Label>
-                        <Select
+                        <Input
+                          list="countries"
                           value={formData.country}
-                          onValueChange={(value) => setFormData({ ...formData, country: value })}
-                        >
-                          <SelectTrigger className="mt-2">
-                            <SelectValue placeholder="Select country..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="United States">United States</SelectItem>
-                            <SelectItem value="Canada">Canada</SelectItem>
-                            <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                            <SelectItem value="Ireland">Ireland</SelectItem>
-                            <SelectItem value="Australia">Australia</SelectItem>
-                            <SelectItem value="New Zealand">New Zealand</SelectItem>
-                            <SelectItem value="Germany">Germany</SelectItem>
-                            <SelectItem value="France">France</SelectItem>
-                            <SelectItem value="Italy">Italy</SelectItem>
-                            <SelectItem value="Spain">Spain</SelectItem>
-                            <SelectItem value="Netherlands">Netherlands</SelectItem>
-                            <SelectItem value="Belgium">Belgium</SelectItem>
-                            <SelectItem value="Switzerland">Switzerland</SelectItem>
-                            <SelectItem value="Austria">Austria</SelectItem>
-                            <SelectItem value="Denmark">Denmark</SelectItem>
-                            <SelectItem value="Sweden">Sweden</SelectItem>
-                            <SelectItem value="Norway">Norway</SelectItem>
-                            <SelectItem value="Finland">Finland</SelectItem>
-                            <SelectItem value="Japan">Japan</SelectItem>
-                            <SelectItem value="South Korea">South Korea</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                          placeholder="Type or select country..."
+                          className="mt-2"
+                        />
+                        <datalist id="countries">
+                          <option value="United States" />
+                          <option value="Canada" />
+                          <option value="United Kingdom" />
+                          <option value="Ireland" />
+                          <option value="Australia" />
+                          <option value="New Zealand" />
+                          <option value="Germany" />
+                          <option value="France" />
+                          <option value="Italy" />
+                          <option value="Spain" />
+                          <option value="Netherlands" />
+                          <option value="Belgium" />
+                          <option value="Switzerland" />
+                          <option value="Austria" />
+                          <option value="Denmark" />
+                          <option value="Sweden" />
+                          <option value="Norway" />
+                          <option value="Finland" />
+                          <option value="Japan" />
+                          <option value="South Korea" />
+                        </datalist>
                       </div>
                       <div>
                         <Label className="text-stone-700 font-medium">Zip/Postal Code</Label>
@@ -837,33 +839,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 className="w-full justify-start border-blue-200 text-blue-700 hover:bg-blue-50"
-                onClick={async () => {
-                  if (!confirm('Delete all AI artifact history? Current versions will be kept. This cannot be undone.')) return;
-                  
-                  try {
-                    const pairings = await base44.entities.PairingMatrix.filter({ created_by: user?.email });
-                    for (const p of pairings) {
-                      if (!p.is_active) await base44.entities.PairingMatrix.delete(p.id);
-                    }
-                    
-                    const opts = await base44.entities.CollectionOptimization.filter({ created_by: user?.email });
-                    for (const o of opts) {
-                      if (!o.is_active) await base44.entities.CollectionOptimization.delete(o.id);
-                    }
-                    
-                    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
-                    for (const pipe of pipes) {
-                      if (pipe.break_in_schedule_history?.length > 0) {
-                        await safeUpdate('Pipe', pipe.id, { break_in_schedule_history: [] }, user?.email);
-                      }
-                    }
-                    
-                    queryClient.invalidateQueries();
-                    alert('AI history cleared successfully');
-                  } catch (err) {
-                    alert('Error: ' + err.message);
-                  }
-                }}
+                onClick={() => setDeleteAIOpen(true)}
               >
                 <Database className="w-4 h-4 mr-2" />
                 Delete Old AI Versions
@@ -899,9 +875,11 @@ export default function ProfilePage() {
                           current_step: 0 
                         }, user?.email);
                       }
+                      toast.success('Tutorial reset successfully');
                       window.location.href = createPageUrl('Home');
                     } catch (err) {
                       console.error('Error resetting tutorial:', err);
+                      toast.error('Failed to reset tutorial');
                     }
                   }}
                 >
@@ -1013,6 +991,51 @@ export default function ProfilePage() {
               onClick={handleDeleteAccount}
             >
               Permanently Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={deleteAIOpen} onOpenChange={setDeleteAIOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete AI History</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will delete all old AI-generated versions (pairings, optimizations, schedules). Current active versions will be kept. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={async () => {
+                try {
+                  const pairings = await base44.entities.PairingMatrix.filter({ created_by: user?.email });
+                  for (const p of pairings) {
+                    if (!p.is_active) await base44.entities.PairingMatrix.delete(p.id);
+                  }
+
+                  const opts = await base44.entities.CollectionOptimization.filter({ created_by: user?.email });
+                  for (const o of opts) {
+                    if (!o.is_active) await base44.entities.CollectionOptimization.delete(o.id);
+                  }
+
+                  const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+                  for (const pipe of pipes) {
+                    if (pipe.break_in_schedule_history?.length > 0) {
+                      await safeUpdate('Pipe', pipe.id, { break_in_schedule_history: [] }, user?.email);
+                    }
+                  }
+
+                  queryClient.invalidateQueries();
+                  setDeleteAIOpen(false);
+                  toast.success('AI history cleared successfully');
+                } catch (err) {
+                  toast.error('Error: ' + err.message);
+                }
+              }}
+            >
+              Delete History
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

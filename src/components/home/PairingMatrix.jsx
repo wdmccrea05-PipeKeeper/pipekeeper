@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Trophy, Sparkles, ChevronRight, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, Undo } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -159,8 +160,10 @@ export default function PairingMatrix({ pipes, blends }) {
         pairings: filteredPairings,
         generated_date: new Date().toISOString()
       });
+      toast.success('Pairings generated successfully');
     } catch (err) {
       console.error('Error generating pairings:', err);
+      toast.error('Failed to generate pairings. Please try again.');
     } finally {
       setLoading(false);
     }

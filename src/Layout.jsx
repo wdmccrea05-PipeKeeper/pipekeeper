@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, ArrowLeft, Sparkles } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
@@ -260,17 +260,6 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className="pt-16 md:pt-16 pb-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="text-[#e8d5b7]/70 hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20 mb-4 mt-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
         {children}
       </main>
 

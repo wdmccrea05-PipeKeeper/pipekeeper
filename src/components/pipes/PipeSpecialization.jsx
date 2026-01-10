@@ -9,6 +9,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const queryClient = useQueryClient();
@@ -36,6 +37,9 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
       onUpdate({ focus: updated });
       // Invalidate AI queries when focus changes
       invalidateAIQueries(queryClient, pipe.created_by);
+      toast.success('Focus updated - AI recommendations will refresh', {
+        description: 'Regenerate pairings and optimizations to see updated scores'
+      });
     }
   };
 
@@ -45,6 +49,9 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
     onUpdate({ focus: updated });
     // Invalidate AI queries when focus changes
     invalidateAIQueries(queryClient, pipe.created_by);
+    toast.success('Focus updated - AI recommendations will refresh', {
+      description: 'Regenerate pairings and optimizations to see updated scores'
+    });
   };
 
   // Find matching blends based on designations
