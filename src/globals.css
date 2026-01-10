@@ -4,80 +4,86 @@
 
 @layer base {
   :root {
-    /* PipeKeeper Heritage Palette */
-    
-    /* Backgrounds */
-    --pk-bg-primary: 15 26 36; /* #0F1A24 - Deep Navy Slate */
-    --pk-bg-secondary: 27 42 54; /* #1B2A36 - Slate Blue */
-    --pk-surface: 35 55 70; /* #233746 - Muted Steel Blue */
-    
-    /* Heritage Accents */
-    --pk-gold: 201 164 92; /* #C9A45C - Warm Antique Gold */
-    --pk-brown: 122 74 46; /* #7A4A2E - Tobacco Brown */
-    
-    /* CTAs & Status */
-    --pk-cta-primary: 184 92 56; /* #B85C38 - Burnt Copper */
-    --pk-cta-primary-hover: 158 78 47; /* #9E4E2F */
-    --pk-success: 78 138 100; /* #4E8A64 - Muted Emerald */
-    --pk-warning: 214 162 74; /* #D6A24A - Aged Amber */
-    --pk-error: 179 58 58; /* #B33A3A - Muted Crimson */
-    
-    /* Typography */
-    --pk-text-primary: 242 244 246; /* #F2F4F6 - Off-White */
-    --pk-text-secondary: 183 192 199; /* #B7C0C7 - Cool Gray */
-    --pk-text-muted: 138 150 160; /* #8A96A0 */
-    
-    /* Borders */
-    --pk-border-subtle: 255 255 255 / 0.08;
-    --pk-border-strong: 201 164 92 / 0.35;
-    
-    /* Shadcn compatibility layer */
-    --background: var(--pk-bg-primary);
-    --foreground: var(--pk-text-primary);
-    
-    --card: var(--pk-surface);
-    --card-foreground: var(--pk-text-primary);
-    
-    --popover: var(--pk-surface);
-    --popover-foreground: var(--pk-text-primary);
-    
-    --primary: var(--pk-cta-primary);
-    --primary-foreground: var(--pk-text-primary);
-    
-    --secondary: var(--pk-bg-secondary);
-    --secondary-foreground: var(--pk-text-primary);
-    
-    --muted: var(--pk-bg-secondary);
-    --muted-foreground: var(--pk-text-muted);
-    
-    --accent: var(--pk-gold);
-    --accent-foreground: var(--pk-bg-primary);
-    
-    --success: var(--pk-success);
-    --success-foreground: var(--pk-text-primary);
-    
-    --warning: var(--pk-warning);
-    --warning-foreground: var(--pk-bg-primary);
-    
-    --destructive: var(--pk-error);
-    --destructive-foreground: var(--pk-text-primary);
-    
-    --border: var(--pk-border-subtle);
-    --input: var(--pk-surface);
-    --ring: var(--pk-gold);
-    
-    --radius: 0.75rem;
-  }
-}
+    /* ----- PipeKeeper Brand Tokens (HEX) ----- */
+    --pk-bg-primary: #0b1e2d;      /* deep navy */
+    --pk-bg-secondary: #10283a;    /* slightly lighter navy */
+    --pk-surface: #132c3f;         /* card / panel */
+    --pk-surface-2: #173449;       /* elevated surface */
+    --pk-border-strong: #2c4a60;   /* borders */
+    --pk-text-primary: #f3e7d3;    /* warm cream */
+    --pk-text-secondary: #d9ccb5;  /* softer cream */
+    --pk-text-muted: #b7aa95;      /* muted */
+    --pk-gold: #d6b06b;            /* gold accent */
+    --pk-cta-primary: #8c2f2f;     /* burgundy CTA */
+    --pk-cta-primary-hover: #7a2828;
+    --pk-success: #2f4b3f;         /* sage green */
+    --pk-warning: #d6b06b;
+    --pk-error: #b42318;
 
-@layer base {
+    /* ----- Shadcn/Tailwind CSS variables (HSL) ----- */
+    /* NOTE: these drive bg-background, text-foreground, etc. */
+    --background: 206 61% 11%;
+    --foreground: 38 55% 89%;
+
+    --card: 206 52% 16%;
+    --card-foreground: 38 55% 89%;
+
+    --popover: 206 52% 16%;
+    --popover-foreground: 38 55% 89%;
+
+    --primary: 38 60% 63%;              /* gold */
+    --primary-foreground: 206 61% 11%;
+
+    --secondary: 151 23% 24%;           /* sage */
+    --secondary-foreground: 38 55% 89%;
+
+    --muted: 206 46% 21%;
+    --muted-foreground: 33 19% 66%;
+
+    --accent: 0 49% 36%;                /* burgundy */
+    --accent-foreground: 38 55% 89%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 38 55% 89%;
+
+    --border: 206 37% 27%;
+    --input: 206 37% 27%;
+    --ring: 38 60% 63%;
+
+    --radius: 0.9rem;
+  }
+
+  .dark {
+    /* Keep dark == brand for this app */
+    --background: 206 61% 11%;
+    --foreground: 38 55% 89%;
+    --card: 206 52% 16%;
+    --card-foreground: 38 55% 89%;
+    --popover: 206 52% 16%;
+    --popover-foreground: 38 55% 89%;
+    --primary: 38 60% 63%;
+    --primary-foreground: 206 61% 11%;
+    --secondary: 151 23% 24%;
+    --secondary-foreground: 38 55% 89%;
+    --muted: 206 46% 21%;
+    --muted-foreground: 33 19% 66%;
+    --accent: 0 49% 36%;
+    --accent-foreground: 38 55% 89%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 38 55% 89%;
+    --border: 206 37% 27%;
+    --input: 206 37% 27%;
+    --ring: 38 60% 63%;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Custom scrollbar styling */
   ::-webkit-scrollbar {
     width: 10px;
@@ -85,44 +91,44 @@
   }
   
   ::-webkit-scrollbar-track {
-    background: rgb(var(--pk-bg-secondary));
+    background: var(--pk-bg-secondary);
     border-radius: 0.5rem;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgb(var(--pk-gold) / 0.4);
+    background: color-mix(in srgb, var(--pk-gold) 40%, transparent);
     border-radius: 0.5rem;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--pk-gold) / 0.6);
+    background: color-mix(in srgb, var(--pk-gold) 60%, transparent);
   }
-  
+
   /* Input and textarea styling for better contrast */
   input, textarea, select {
-    background: rgb(var(--pk-surface));
-    border-color: rgb(var(--pk-border-strong));
-    color: rgb(var(--pk-text-primary));
+    background: var(--pk-surface);
+    border-color: var(--pk-border-strong);
+    color: var(--pk-text-primary);
     border-radius: 0.75rem;
     transition: all 200ms ease-in-out;
   }
   
   input::placeholder, textarea::placeholder, select::placeholder {
-    color: rgb(var(--pk-text-muted));
+    color: var(--pk-text-muted);
   }
   
   input:focus, textarea:focus, select:focus {
     outline: none;
-    border-color: rgb(var(--pk-gold));
-    ring: 2px;
-    ring-color: rgb(var(--pk-gold) / 0.2);
+    border-color: var(--pk-gold);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pk-gold) 20%, transparent);
   }
-  
+
   /* Card and panel styling */
   .card, [class*="Card"] {
-    @apply rounded-2xl transition-shadow duration-200;
+    border-radius: 1rem;
+    transition: shadow 200ms ease-in-out;
   }
-  
+
   /* Button styling for consistency */
   button {
     border-radius: 0.75rem;
@@ -131,31 +137,29 @@
   
   button:focus-visible {
     outline: none;
-    ring: 2px;
-    ring-color: rgb(var(--pk-gold));
-    ring-offset: 2px;
+    box-shadow: 0 0 0 2px var(--pk-gold);
+    outline-offset: 2px;
   }
   
   button:active {
     transform: scale(0.98);
   }
-  
+
   /* Dialog and modal styling */
   [role="dialog"] {
-    @apply rounded-2xl;
+    border-radius: 1rem;
   }
-  
+
   /* Link styling */
   a:focus-visible {
     outline: none;
-    ring: 2px;
-    ring-color: rgb(var(--pk-gold));
-    ring-offset: 2px;
+    box-shadow: 0 0 0 2px var(--pk-gold);
+    outline-offset: 2px;
     border-radius: 0.25rem;
   }
-  
+
   /* Smooth transitions for interactive elements */
   button, a, input, select, textarea {
-    @apply transition-all duration-200 ease-in-out;
+    transition: all 200ms ease-in-out;
   }
 }
