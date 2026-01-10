@@ -352,11 +352,11 @@ export default function HomePage() {
             >
               <Card className="bg-gradient-to-br from-accent to-accent/80 border-border/60">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-black" />
-                  <p className="text-xl sm:text-3xl font-bold text-black break-words">
+                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-primary" />
+                  <p className="text-xl sm:text-3xl font-bold text-primary break-words">
                     ${totalPipeValue.toLocaleString()}
                   </p>
-                  <p className="text-xs sm:text-sm text-black/70">Value</p>
+                  <p className="text-xs sm:text-sm text-primary/70">Value</p>
                 </CardContent>
               </Card>
             </motion.div>
