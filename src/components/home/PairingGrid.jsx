@@ -190,30 +190,29 @@ export default function PairingGrid({ pipes, blends }) {
       }
     }
     
-    // PRIORITY 3: Pipe Dimensions (1-3 points)
-    // Bowl shape, capacity, and physical characteristics
-    let dimensionScore = 1.0; // Base dimension score
+    // CATEGORY 3: Pipe Dimensions (0-10 scale, weight 0.15)
+    let dimensionScore = 5.0; // Base dimension score
     
-    // Chamber size vs blend strength (0-1.5 points)
+    // Chamber size vs blend strength
     if (pipe.chamber_volume && blend.strength) {
       if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild') ||
           (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') ||
           (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full'))) {
-        dimensionScore += 1.5; // Perfect match
+        dimensionScore += 5.0; // Perfect match
       } else if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild-Medium') ||
                  (pipe.chamber_volume === 'Medium' && (blend.strength === 'Mild-Medium' || blend.strength === 'Medium-Full')) ||
                  (pipe.chamber_volume === 'Large' && blend.strength === 'Medium')) {
-        dimensionScore += 1.0; // Good match
+        dimensionScore += 3.0; // Good match
       } else {
-        dimensionScore += 0.5; // Acceptable
+        dimensionScore += 1.0; // Acceptable
       }
     }
     
-    // Bowl shape and cut compatibility (0-0.5 points)
-    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') dimensionScore += 0.5;
-    else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') dimensionScore += 0.25;
+    // Bowl shape and cut compatibility
+    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') dimensionScore += 1.0;
+    else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') dimensionScore += 0.5;
     
-    score += Math.min(3.0, dimensionScore);
+    dimensionScore = Math.min(10, dimensionScore);
     
     // PRIORITY 4: Tobacco Characteristics (2-4 points)
     // How blend burns/smokes based on components and material synergy
