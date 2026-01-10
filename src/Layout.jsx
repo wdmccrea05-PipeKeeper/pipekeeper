@@ -213,9 +213,9 @@ export default function Layout({ children, currentPageName }) {
           background: hsl(var(--background)) !important;
           color: hsl(var(--foreground)) !important;
           background-image:
-            radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
-            radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.14), transparent 55%),
-            radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.35), transparent 55%) !important;
+            radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.10), transparent 55%),
+            radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.12), transparent 55%),
+            radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.40), transparent 55%) !important;
           background-attachment: fixed;
         }
 
@@ -223,41 +223,96 @@ export default function Layout({ children, currentPageName }) {
         .pk-page { min-height: 100vh; }
         .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
 
-        /* Core card language: used across Home + AI Tobacconist + lists */
+        /* Core card language */
         .pk-card {
           border-radius: 1rem;
-          border: 1px solid hsl(var(--border) / 0.65);
-          background: hsl(var(--card) / 0.70);
+          border: 1px solid hsl(var(--border) / 0.70);
+          background: hsl(var(--card) / 0.78);
           backdrop-filter: blur(10px);
           box-shadow: 0 18px 60px -40px rgba(0, 0, 0, 0.90);
         }
 
         .pk-panel {
           border-radius: 1rem;
-          border: 1px solid hsl(var(--border) / 0.60);
-          background: hsl(var(--card) / 0.55);
+          border: 1px solid hsl(var(--border) / 0.65);
+          background: hsl(var(--card) / 0.62);
           backdrop-filter: blur(10px);
         }
 
-        /* Tabs: makes all AI Tobacconist tabs consistent */
+        /* Tabs: consistent across AI Tobacconist */
         .pk-tabsList {
           border-radius: 0.9rem;
-          border: 1px solid hsl(var(--border) / 0.60);
-          background: hsl(var(--secondary) / 0.60);
+          border: 1px solid hsl(var(--border) / 0.65);
+          background: hsl(var(--secondary) / 0.62);
           padding: 0.25rem;
           box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
         .pk-tab {
           border-radius: 0.75rem;
-          color: hsl(var(--foreground) / 0.72);
+          color: hsl(var(--foreground) / 0.78);
           transition: background 160ms ease, color 160ms ease, transform 160ms ease;
         }
         .pk-tab:hover { color: hsl(var(--foreground)); background: hsl(var(--accent) / 0.10); }
         .pk-tab[data-state="active"] {
           background: hsl(var(--primary));
           color: hsl(var(--primary-foreground));
-          box-shadow: 0 8px 28px -18px rgba(0,0,0,0.80);
+          box-shadow: 0 10px 34px -22px rgba(0,0,0,0.90);
+        }
+
+        /* ------------------------------------------------------------------
+           READABILITY LAYER (fixes white panels + light inputs across screens)
+           ------------------------------------------------------------------ */
+
+        /* Common "white card" patterns (AI pairing panel, community search panel, etc.) */
+        .pk-page .bg-white,
+        .pk-page .bg-slate-50,
+        .pk-page .bg-neutral-50,
+        .pk-page .bg-gray-50 {
+          background: hsl(var(--card) / 0.80) !important;
+          color: hsl(var(--foreground)) !important;
+        }
+
+        /* Borders that disappear on dark */
+        .pk-page .border,
+        .pk-page .border-slate-200,
+        .pk-page .border-gray-200,
+        .pk-page .border-neutral-200 {
+          border-color: hsl(var(--border) / 0.70) !important;
+        }
+
+        /* Muted text becomes actually readable */
+        .pk-page .text-muted-foreground,
+        .pk-page .text-slate-500,
+        .pk-page .text-gray-500,
+        .pk-page .text-neutral-500 {
+          color: hsl(var(--muted-foreground)) !important;
+        }
+
+        /* Inputs/selects/textareas: consistent dark look + readable placeholders */
+        .pk-page input,
+        .pk-page textarea,
+        .pk-page select {
+          background: hsl(var(--card) / 0.70) !important;
+          color: hsl(var(--foreground)) !important;
+          border-color: hsl(var(--border) / 0.75) !important;
+        }
+        .pk-page input::placeholder,
+        .pk-page textarea::placeholder {
+          color: hsl(var(--foreground) / 0.55) !important;
+        }
+
+        /* Buttons: make "secondary" buttons not disappear */
+        .pk-page .bg-secondary {
+          background: hsl(var(--secondary)) !important;
+          color: hsl(var(--secondary-foreground)) !important;
+        }
+
+        /* Purple "action" buttons can stay, but ensure text contrast */
+        .pk-page .bg-purple-600,
+        .pk-page .bg-violet-600,
+        .pk-page .bg-indigo-600 {
+          color: #fff !important;
         }
       `}</style>
 
