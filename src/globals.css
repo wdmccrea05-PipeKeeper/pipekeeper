@@ -86,7 +86,7 @@
   color: hsl(var(--foreground));
 }
 
-/* Extra safety: if any page uses hard-coded light utilities, force them dark */
+/* Force light card backgrounds */
 .pk-page .bg-white,
 .pk-page .bg-slate-50,
 .pk-page .bg-gray-50,
@@ -102,8 +102,8 @@
 .pk-page .bg-amber-50,
 .pk-page .bg-orange-50,
 .pk-page .bg-red-50 {
-  background: hsl(var(--card) / 0.82) !important;
-  color: hsl(var(--foreground)) !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
 }
 
 .pk-page .text-black,
