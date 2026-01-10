@@ -195,58 +195,73 @@ export default function PairingGrid({ pipes, blends }) {
     }
     score += focusScore;
     
-    // PRIORITY 3: Dimensions and Measurements (0-2 points)
-    // Physical compatibility enhances trophy status
-    let dimensionScore = 0;
+    // PRIORITY 3: Pipe Dimensions (1-3 points)
+    // Bowl shape, capacity, and physical characteristics
+    let dimensionScore = 1.0; // Base dimension score
     
     // Chamber size vs blend strength (0-1.5 points)
     if (pipe.chamber_volume && blend.strength) {
       if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild') ||
           (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') ||
           (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full'))) {
-        dimensionScore += 1.5;
+        dimensionScore += 1.5; // Perfect match
       } else if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild-Medium') ||
                  (pipe.chamber_volume === 'Medium' && (blend.strength === 'Mild-Medium' || blend.strength === 'Medium-Full')) ||
                  (pipe.chamber_volume === 'Large' && blend.strength === 'Medium')) {
-        dimensionScore += 0.75;
+        dimensionScore += 1.0; // Good match
       } else {
-        dimensionScore += 0.25; // Some compatibility
+        dimensionScore += 0.5; // Acceptable
       }
     }
     
-    // Bowl shape (0-0.5 points)
+    // Bowl shape and cut compatibility (0-0.5 points)
     if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') dimensionScore += 0.5;
     else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') dimensionScore += 0.25;
     
-    score += dimensionScore;
+    score += Math.min(3.0, dimensionScore);
     
-    // PRIORITY 4: Tobacco Components & Material (0-1.5 points)
-    // How blend burns/smokes in this specific pipe material
-    let materialScore = 0;
+    // PRIORITY 4: Tobacco Characteristics (2-4 points)
+    // How blend burns/smokes based on components and material synergy
+    let tobaccoScore = 2.0; // Base tobacco score
     const blendComponents = blend.tobacco_components || [];
     
-    // Material-blend synergy
+    // Material-blend synergy based on burn characteristics
     if (pipe.bowl_material === 'Meerschaum') {
       if (blend.blend_type === 'Virginia' || blendComponents.includes('Virginia')) {
-        materialScore += 1.5; // Cool smoke perfect for Virginias
+        tobaccoScore += 2.0; // Cool smoke ideal for delicate Virginias
+      } else if (blend.blend_type === 'Aromatic') {
+        tobaccoScore += 1.5; // Good for aromatics
       } else {
-        materialScore += 0.75;
+        tobaccoScore += 1.0; // Works with most blends
       }
     } else if (pipe.bowl_material === 'Briar') {
-      materialScore += 1.0; // Briar is versatile
+      // Briar is versatile - bonus depends on blend characteristics
+      if (blend.blend_type === 'English' || blend.blend_type === 'Balkan' || 
+          blendComponents.includes('Latakia')) {
+        tobaccoScore += 1.5; // Excellent for Latakia blends
+      } else {
+        tobaccoScore += 1.0; // Good universal material
+      }
     } else if (pipe.bowl_material === 'Corn Cob') {
       if (blend.blend_type === 'Aromatic') {
-        materialScore += 1.25;
+        tobaccoScore += 2.0; // Perfect pairing
+      } else if (blend.blend_type === 'Burley') {
+        tobaccoScore += 1.5; // Traditional combo
       } else {
-        materialScore += 0.5;
+        tobaccoScore += 0.5;
       }
     } else {
-      materialScore += 0.5;
+      tobaccoScore += 0.5;
     }
     
-    score += materialScore;
+    // Cut compatibility affects burning
+    if (blend.cut === 'Flake' && pipe.bowl_depth_mm && pipe.bowl_depth_mm > 35) {
+      tobaccoScore += 0.5; // Deep bowls better for flakes
+    }
     
-    return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
+    score += Math.min(4.0, tobaccoScore);
+    
+    return Math.max(0, Math.min(10, Math.round(score * 2) / 2)); // Allow half points
   };
 
   // Get the final score for display - always recalculates based on current pipe data
