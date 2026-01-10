@@ -266,7 +266,7 @@ export default function PairingGrid({ pipes, blends }) {
     tobaccoScore = Math.min(10, tobaccoScore);
     
     // CALCULATE FINAL WEIGHTED SCORE
-    const finalScore = (prefScore * 0.4) + (focusScore * 0.25) + (dimensionScore * 0.15) + (tobaccoScore * 0.2);
+    const finalScore = (prefScore * 0.4) + (focusScore * 0.25) + (dimensionScore * 0.15) + (tobaccoScore * 0.2) + trophyBonus;
     
     return Math.max(0, Math.min(10, Math.round(finalScore * 2) / 2)); // Allow half points
   };
