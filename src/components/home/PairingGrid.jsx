@@ -108,11 +108,9 @@ export default function PairingGrid({ pipes, blends }) {
     setShowGrid(true);
   };
 
-  // Calculate compatibility score with Trophy Pipe philosophy
-  // Scoring System: Preferences (2-4pts) + Focus (2-3pts) + Dimensions (1-3pts) + Tobacco (2-4pts) = /10
+  // Calculate compatibility score with weighted formula
+  // Formula: (Preference *.4) + (Focus *.25) + (Dimensions *.15) + (Tobacco *.2) = Grid Score
   const calculateScore = (pipe, blend) => {
-    let score = 0;
-    
     // CRITICAL: Aromatic/Non-Aromatic Exclusions
     const focusList = pipe.focus || [];
     const hasNonAromaticFocus = focusList.some(f => 
@@ -126,18 +124,18 @@ export default function PairingGrid({ pipes, blends }) {
     if (hasNonAromaticFocus && isAromaticBlend) return 0;
     if (hasOnlyAromaticFocus && !isAromaticBlend) return 0;
     
-    // PRIORITY 1: User Preferences (2-4 points)
-    let prefScore = 2.0; // Base compatibility score
+    // CATEGORY 1: User Preferences (0-10 scale, weight 0.4)
+    let prefScore = 5.0; // Base compatibility
     if (userProfile) {
       if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
-        prefScore += 1.5;
+        prefScore += 4.0; // Strong preference match
       }
       if (userProfile.strength_preference !== 'No Preference' && 
           blend.strength === userProfile.strength_preference) {
-        prefScore += 0.5;
+        prefScore += 1.0;
       }
     }
-    score += Math.min(4.0, prefScore);
+    prefScore = Math.min(10, prefScore);
     
     // PRIORITY 2: Pipe Focus/Specialization (2-3 points, TROPHY FACTOR)
     let focusScore = 2.0; // Base focus score
