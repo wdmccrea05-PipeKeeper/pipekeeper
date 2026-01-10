@@ -1,43 +1,75 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* PipeKeeper — Dark Tobacco Lounge Theme
-   Base44 uses globals.css as the style entry point.
-*/
-
 @layer base {
-  :root,
-  .dark {
-    --background: 214 53% 9%;          /* #0b1624 */
-    --foreground: 40 75% 87%;          /* #f7e7c6 */
+  :root {
+    /* (App runs dark; keep root sane anyway) */
+    --background: 214 53% 9%;
+    --foreground: 210 20% 96%;
 
-    --card: 214 47% 14%;               /* #132235 */
-    --card-foreground: 40 75% 87%;
+    --card: 38 40% 88%;              /* parchment-like surface */
+    --card-foreground: 215 26% 16%;  /* dark ink on parchment */
 
-    --popover: 214 47% 14%;
-    --popover-foreground: 40 75% 87%;
+    --popover: 38 40% 88%;
+    --popover-foreground: 215 26% 16%;
 
-    --primary: 0 41% 39%;              /* #8b3a3a */
-    --primary-foreground: 40 75% 87%;
+    --primary: 214 45% 18%;          /* deep navy */
+    --primary-foreground: 210 20% 96%;
 
-    --secondary: 212 33% 21%;          /* #243548 */
-    --secondary-foreground: 40 75% 87%;
+    --secondary: 214 35% 14%;        /* deeper navy */
+    --secondary-foreground: 210 20% 96%;
 
-    --accent: 37 52% 81%;              /* #e8d5b7 */
-    --accent-foreground: 214 53% 9%;
+    --muted: 220 10% 85%;
+    --muted-foreground: 213 15% 75%;
 
-    --muted: 213 43% 18%;              /* #1a2c42 */
-    --muted-foreground: 39 45% 78%;
+    /* For text on light cards (used by layout.js override) */
+    --muted-foreground-card: 215 12% 38%;
 
-    --destructive: 0 72% 54%;
-    --destructive-foreground: 40 75% 87%;
+    --accent: 38 44% 82%;            /* warm sand */
+    --accent-foreground: 215 26% 16%;
 
-    --border: 37 20% 30%;
-    --input: 37 20% 30%;
-    --ring: 37 52% 81%;
+    --border: 214 22% 22%;
+    --input: 214 22% 22%;
+    --ring: 38 44% 82%;
+
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 210 20% 96%;
 
     --radius: 1rem;
+  }
+
+  /* Force dark mode tokens for Base44 previews that rely on .dark */
+  .dark {
+    --background: 214 53% 9%;
+    --foreground: 210 20% 96%;
+
+    --card: 38 40% 88%;
+    --card-foreground: 215 26% 16%;
+
+    --popover: 38 40% 88%;
+    --popover-foreground: 215 26% 16%;
+
+    --primary: 214 45% 18%;
+    --primary-foreground: 210 20% 96%;
+
+    --secondary: 214 35% 14%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 220 10% 85%;
+    --muted-foreground: 213 15% 75%;
+    --muted-foreground-card: 215 12% 38%;
+
+    --accent: 38 44% 82%;
+    --accent-foreground: 215 26% 16%;
+
+    --border: 214 22% 22%;
+    --input: 214 22% 22%;
+    --ring: 38 44% 82%;
+
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 210 20% 96%;
   }
 
   * {
@@ -45,34 +77,19 @@
   }
 
   body {
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-
-    /* subtle lounge glow */
-    background-image:
-      radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
-      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.14), transparent 55%),
-      radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.35), transparent 55%);
-    background-attachment: fixed;
+    @apply bg-background text-foreground;
   }
 }
 
 @layer components {
-  .pk-page { @apply min-h-screen; }
-  .pk-shell { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
-
+  /* Standard card helper used throughout your app */
   .pk-card {
-    @apply rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm;
-    box-shadow: 0 18px 60px -40px rgba(0, 0, 0, 0.9);
+    @apply rounded-2xl border border-border shadow-sm;
   }
 
-  .pk-panel { @apply rounded-2xl border border-border/60 bg-card/55 backdrop-blur-sm; }
-
-  .pk-tabsList { @apply bg-secondary/60 border border-border/60 p-1 rounded-xl shadow-inner; }
-
-  .pk-tab {
-    @apply rounded-lg text-foreground/70 hover:text-foreground transition;
-    @apply data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow;
+  /* Optional: make "chips/badges" more consistent on dark pages */
+  .pk-chip {
+    @apply inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-1 text-xs font-medium text-foreground;
   }
 }
 
@@ -80,160 +97,4 @@
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.pk-page {
-  color: hsl(var(--foreground));
-}
-
-/* Force light card backgrounds */
-.pk-page .bg-white,
-.pk-page .bg-slate-50,
-.pk-page .bg-gray-50,
-.pk-page .bg-neutral-50,
-.pk-page .bg-zinc-50,
-.pk-page .bg-stone-50,
-.pk-page .bg-emerald-50,
-.pk-page .bg-green-50,
-.pk-page .bg-blue-50,
-.pk-page .bg-indigo-50,
-.pk-page .bg-purple-50,
-.pk-page .bg-violet-50,
-.pk-page .bg-amber-50,
-.pk-page .bg-orange-50,
-.pk-page .bg-red-50 {
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--card-foreground)) !important;
-}
-
-.pk-page .text-black,
-.pk-page .text-slate-900,
-.pk-page .text-gray-900,
-.pk-page .text-neutral-900,
-.pk-page .text-zinc-900,
-.pk-page .text-stone-900,
-.pk-page .text-slate-800,
-.pk-page .text-gray-800,
-.pk-page .text-neutral-800 {
-  color: hsl(var(--card-foreground)) !important;
-}
-
-.pk-page .text-slate-500,
-.pk-page .text-gray-500,
-.pk-page .text-neutral-500,
-.pk-page .text-zinc-500,
-.pk-page .text-muted-foreground {
-  color: hsl(var(--muted-foreground)) !important;
-}
-
-/* Text color overrides for light cards */
-.pk-page {
-  color: hsl(var(--card-foreground)) !important;
-}
-
-.pk-page h1,
-.pk-page h2,
-.pk-page h3,
-.pk-page h4,
-.pk-page h5,
-.pk-page h6 {
-  color: hsl(var(--foreground)) !important;
-}
-
-.pk-page p {
-  color: hsl(var(--card-foreground)) !important;
-}
-
-.pk-page a {
-  color: hsl(var(--primary)) !important;
-}
-
-/* Navigation and toolbar contrast */
-nav {
-  color: hsl(var(--foreground)) !important;
-}
-
-nav a,
-nav button,
-nav [role="button"] {
-  color: hsl(var(--foreground)) !important;
-}
-
-/* Page titles on dark backgrounds */
-.pk-page > div > div > h1,
-.pk-page > div > h1 {
-  color: hsl(var(--foreground)) !important;
-}
-
-/* Button contrast */
-.pk-page button,
-.pk-page [role="button"] {
-  color: hsl(var(--foreground)) !important;
-}
-
-.pk-page button:hover,
-.pk-page [role="button"]:hover {
-  opacity: 0.9;
-  background-color: hsl(var(--primary) / 0.15) !important;
-}
-
-/* Footer text contrast */
-footer {
-  color: hsl(var(--foreground)) !important;
-}
-
-footer a {
-  color: hsl(var(--foreground)) !important;
-}
-
-footer a:hover {
-  color: hsl(var(--foreground)) !important;
-  opacity: 0.8;
-}
-
-.pk-page .border,
-.pk-page .border-slate-200,
-.pk-page .border-gray-200,
-.pk-page .border-neutral-200,
-.pk-page .border-zinc-200 {
-  border-color: hsl(var(--border) / 0.75) !important;
-}
-
-/* High contrast text on dark background panels */
-.pk-page .bg-slate-700,
-.pk-page .bg-slate-600,
-.pk-page .bg-gray-700,
-.pk-page .bg-gray-600,
-.pk-page .bg-neutral-700,
-.pk-page .bg-neutral-600,
-.pk-page .bg-zinc-700,
-.pk-page .bg-zinc-600,
-.pk-page .bg-stone-700,
-.pk-page .bg-stone-600,
-.pk-page .bg-secondary/60,
-.pk-page .bg-secondary/70,
-.pk-page .bg-secondary/80,
-.pk-page .bg-muted/60,
-.pk-page .bg-muted/70,
-.pk-page .bg-muted/80 {
-  color: hsl(var(--foreground)) !important;
-}
-
-.pk-page .bg-slate-700 *,
-.pk-page .bg-slate-600 *,
-.pk-page .bg-gray-700 *,
-.pk-page .bg-gray-600 *,
-.pk-page .bg-neutral-700 *,
-.pk-page .bg-neutral-600 *,
-.pk-page .bg-zinc-700 *,
-.pk-page .bg-zinc-600 *,
-.pk-page .bg-stone-700 *,
-.pk-page .bg-stone-600 *,
-.pk-page .bg-secondary/60 *,
-.pk-page .bg-secondary/70 *,
-.pk-page .bg-secondary/80 *,
-.pk-page .bg-muted/60 *,
-.pk-page .bg-muted/70 *,
-.pk-page .bg-muted/80 * {
-  color: hsl(var(--foreground)) !important;
 }
