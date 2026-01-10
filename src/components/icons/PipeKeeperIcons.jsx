@@ -15,29 +15,31 @@ function Svg({ children, className = "", viewBox = "0 0 24 24" }) {
 }
 
 /**
- * Pipe icon — simplified classic pipe to match the Home "Pipes" tile style:
- * bowl on left, stem to right, clean silhouette outline.
+ * Pipe icon — matches the Home tile reference:
+ * - rounded bowl with top opening
+ * - classic curved stem
+ * - clean outline silhouette
  */
-export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.2 }) {
+export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.25 }) {
   return (
     <Svg className={className} viewBox="0 0 24 24">
       {/* Bowl */}
       <path
-        d="M6.25 10.25c0-1.8 1.45-3.25 3.25-3.25h2.8c1.8 0 3.25 1.45 3.25 3.25v4.2c0 2.8-2.27 5.05-5.05 5.05S6.25 17.25 6.25 14.45v-4.2Z"
+        d="M6.6 10.2c0-1.55 1.25-2.8 2.8-2.8h3.2c1.55 0 2.8 1.25 2.8 2.8v4.6c0 2.95-2.39 5.34-5.34 5.34S6.6 17.75 6.6 14.8v-4.6Z"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinejoin="round"
       />
-      {/* Rim */}
+      {/* Bowl opening (top) */}
       <path
-        d="M8.2 7h5.9"
+        d="M9 7.35c.25-.55.8-.9 1.42-.9h1.96c.62 0 1.17.35 1.42.9"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
-      {/* Shank + Stem */}
+      {/* Stem / shank curve */}
       <path
-        d="M15.55 11.7h3.35c1.65 0 2.85 1.15 2.85 2.65v.45c0 1.35-1.05 2.45-2.45 2.45h-3.75"
+        d="M16.9 11.4h1.7c2.15 0 3.4 1.25 3.4 2.85 0 1.55-1.2 2.8-2.95 2.8h-2.8"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
@@ -45,7 +47,7 @@ export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.2 }) {
       />
       {/* Bit */}
       <path
-        d="M21.35 17.25H22"
+        d="M21.55 17.05H22.4"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
@@ -55,21 +57,24 @@ export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.2 }) {
 }
 
 /**
- * Tobacco leaf icon — simple leaf like the "Blends" tile (clean outline + midrib).
+ * Tobacco leaf icon — matches the Home "Blends" tile reference:
+ * - simple outline
+ * - single midrib vein
+ * - gentle tilt/shape
  */
-export function TobaccoLeafIcon({ className = "h-5 w-5", strokeWidth = 2.0 }) {
+export function TobaccoLeafIcon({ className = "h-5 w-5", strokeWidth = 2.25 }) {
   return (
     <Svg className={className} viewBox="0 0 24 24">
       {/* Leaf outline */}
       <path
-        d="M20 4.8c-5.8.3-10.3 2.9-12.8 6.3C4.9 14.2 5.4 18.9 5.4 18.9s4.7.5 7.8-1.8C16.6 14.6 19.7 10.6 20 4.8Z"
+        d="M19.6 4.7c-6.3.4-11.1 3.6-13.4 8.1-1.2 2.4-1.3 5.7-1.3 5.7s3.3-.1 5.7-1.3c4.5-2.3 7.7-7.1 9-12.5Z"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinejoin="round"
       />
       {/* Midrib */}
       <path
-        d="M7.4 16.4c2.4-2.4 6.4-5.2 10.7-7"
+        d="M7 16.9c3.1-3 7.8-6.3 12-8.1"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
