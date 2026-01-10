@@ -2,8 +2,9 @@ import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
+import { Home, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PipeIcon, TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,8 +19,8 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
-  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
-  { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
+  { name: 'Pipes', page: 'Pipes', icon: PipeIcon, isIconComponent: true },
+  { name: 'Tobacco', page: 'Tobacco', icon: TobaccoLeafIcon, isIconComponent: true },
   { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },

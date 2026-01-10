@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
+import { AITobacconistIcon } from "@/components/icons/PipeKeeperIcons";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
@@ -30,12 +31,15 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
     <Card className="border-[#e8d5b7]/30 bg-[#243548]/80 backdrop-blur-sm rounded-2xl shadow-xl">
       <CardHeader className="border-b border-[#e8d5b7]/20">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg">
-            <img 
-              src={TOBACCONIST_ICON}
-              alt="Expert Tobacconist"
-              className="w-full h-full object-cover scale-110"
-            />
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-xl border"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.04)",
+              borderColor: "var(--pk-border-strong)",
+              color: "var(--pk-gold)",
+            }}
+          >
+            <AITobacconistIcon className="h-8 w-8" />
           </div>
           <div>
             <CardTitle className="text-2xl text-[#e8d5b7]">Expert Tobacconist</CardTitle>
