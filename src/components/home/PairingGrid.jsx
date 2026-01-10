@@ -214,48 +214,50 @@ export default function PairingGrid({ pipes, blends }) {
     
     dimensionScore = Math.min(10, dimensionScore);
     
-    // PRIORITY 4: Tobacco Characteristics (2-4 points)
-    // How blend burns/smokes based on components and material synergy
-    let tobaccoScore = 2.0; // Base tobacco score
+    // CATEGORY 4: Tobacco Characteristics (0-10 scale, weight 0.2)
+    let tobaccoScore = 5.0; // Base tobacco score
     const blendComponents = blend.tobacco_components || [];
     
     // Material-blend synergy based on burn characteristics
     if (pipe.bowl_material === 'Meerschaum') {
       if (blend.blend_type === 'Virginia' || blendComponents.includes('Virginia')) {
-        tobaccoScore += 2.0; // Cool smoke ideal for delicate Virginias
+        tobaccoScore += 5.0; // Cool smoke ideal for delicate Virginias
       } else if (blend.blend_type === 'Aromatic') {
-        tobaccoScore += 1.5; // Good for aromatics
+        tobaccoScore += 3.0; // Good for aromatics
       } else {
-        tobaccoScore += 1.0; // Works with most blends
+        tobaccoScore += 2.0; // Works with most blends
       }
     } else if (pipe.bowl_material === 'Briar') {
       // Briar is versatile - bonus depends on blend characteristics
       if (blend.blend_type === 'English' || blend.blend_type === 'Balkan' || 
           blendComponents.includes('Latakia')) {
-        tobaccoScore += 1.5; // Excellent for Latakia blends
+        tobaccoScore += 4.0; // Excellent for Latakia blends
       } else {
-        tobaccoScore += 1.0; // Good universal material
+        tobaccoScore += 2.0; // Good universal material
       }
     } else if (pipe.bowl_material === 'Corn Cob') {
       if (blend.blend_type === 'Aromatic') {
-        tobaccoScore += 2.0; // Perfect pairing
+        tobaccoScore += 5.0; // Perfect pairing
       } else if (blend.blend_type === 'Burley') {
-        tobaccoScore += 1.5; // Traditional combo
+        tobaccoScore += 3.0; // Traditional combo
       } else {
-        tobaccoScore += 0.5;
+        tobaccoScore += 1.0;
       }
     } else {
-      tobaccoScore += 0.5;
+      tobaccoScore += 1.0;
     }
     
     // Cut compatibility affects burning
     if (blend.cut === 'Flake' && pipe.bowl_depth_mm && pipe.bowl_depth_mm > 35) {
-      tobaccoScore += 0.5; // Deep bowls better for flakes
+      tobaccoScore += 1.0; // Deep bowls better for flakes
     }
     
-    score += Math.min(4.0, tobaccoScore);
+    tobaccoScore = Math.min(10, tobaccoScore);
     
-    return Math.max(0, Math.min(10, Math.round(score * 2) / 2)); // Allow half points
+    // CALCULATE FINAL WEIGHTED SCORE
+    const finalScore = (prefScore * 0.4) + (focusScore * 0.25) + (dimensionScore * 0.15) + (tobaccoScore * 0.2);
+    
+    return Math.max(0, Math.min(10, Math.round(finalScore * 2) / 2)); // Allow half points
   };
 
   // Get the final score for display - always recalculates based on current pipe data
