@@ -4,7 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { Home, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
+import { TobaccoLeafIcon, AITobacconistIcon } from "@/components/icons/PipeKeeperIcons";
 import { PipeIcon } from "@/components/icons/PipeIcon";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";

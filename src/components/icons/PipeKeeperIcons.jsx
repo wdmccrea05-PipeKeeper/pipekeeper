@@ -44,28 +44,28 @@ export function PipeIcon({ className = "h-5 w-5", strokeWidth = 1.8 }) {
 }
 
 /** Tobacco leaf icon (more "tobacco leaf" than generic leaf) */
-export function TobaccoLeafIcon({ className = "h-5 w-5", strokeWidth = 1.8 }) {
+export function TobaccoLeafIcon({ className = "h-5 w-5", title = "Tobacco Leaf" }) {
   return (
-    <Svg className={className}>
+    <svg viewBox="0 0 64 64" className={className} role="img" aria-label={title}>
       <path
-        d="M20.5 4.8c-6.2.2-11 3.1-13.6 6.9C4.5 15.3 5 19.2 5 19.2s3.9.5 7.5-1.9c3.8-2.6 6.7-7.4 6.9-13.6Z"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
+        d="M50 12C38 14 28 22 22 34c-4 8-5 15-5 18 0 0 8-1 16-5 12-6 20-16 22-28 1-4 0-7-5-7z"
+        fill="currentColor"
       />
       <path
-        d="M7.5 16.6c2.6-2.7 6.6-5.5 10.7-7.2"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
+        d="M18 52c10-12 20-20 33-28"
+        fill="none"
+        stroke="rgba(0,0,0,0.25)"
+        strokeWidth="3"
         strokeLinecap="round"
       />
       <path
-        d="M12.2 18.3c-.6-2.6-1-6.7.1-11"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
+        d="M26 44c4-5 10-11 18-16"
+        fill="none"
+        stroke="rgba(0,0,0,0.20)"
+        strokeWidth="2"
         strokeLinecap="round"
       />
-    </Svg>
+    </svg>
   );
 }
 

@@ -11,7 +11,7 @@ import {
   ArrowRight, Heart, DollarSign, 
   Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
-import { TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
+import { TobaccoLeafIcon, AITobacconistIcon } from "@/components/icons/PipeKeeperIcons";
 import { PipeIcon } from "@/components/icons/PipeIcon";
 import { TinJarIcon } from "@/components/icons/TinJarIcon";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
