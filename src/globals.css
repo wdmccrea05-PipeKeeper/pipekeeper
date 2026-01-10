@@ -3,34 +3,33 @@ css
 @tailwind components;
 @tailwind utilities;
 
-/* PipeKeeper — Dark Tobacco Lounge theme
-   Replace the default Shadcn light tokens. */
+/* PipeKeeper — Dark Tobacco Lounge theme */
 
 @layer base {
   :root,
   .dark {
     /* Surfaces */
-    --background: 214 53% 9%;          /* #0b1624 */
-    --foreground: 40 75% 87%;          /* #f7e7c6 */
+    --background: 214 53% 9%;
+    --foreground: 40 75% 87%;
 
-    --card: 214 47% 14%;               /* #132235 */
+    --card: 214 47% 14%;
     --card-foreground: 40 75% 87%;
 
     --popover: 214 47% 14%;
     --popover-foreground: 40 75% 87%;
 
     /* Brand */
-    --primary: 0 41% 39%;              /* #8b3a3a */
+    --primary: 0 41% 39%;
     --primary-foreground: 40 75% 87%;
 
-    --secondary: 212 33% 21%;          /* #243548 */
+    --secondary: 212 33% 21%;
     --secondary-foreground: 40 75% 87%;
 
-    --accent: 37 52% 81%;              /* #e8d5b7 */
+    --accent: 37 52% 81%;
     --accent-foreground: 214 53% 9%;
 
     /* Utility */
-    --muted: 213 43% 18%;              /* #1a2c42 */
+    --muted: 213 43% 18%;
     --muted-foreground: 39 45% 78%;
 
     --destructive: 0 72% 54%;
@@ -41,16 +40,6 @@ css
     --ring: 37 52% 81%;
 
     --radius: 1rem;
-
-    /* Sidebar (if used) */
-    --sidebar-background: 214 53% 9%;
-    --sidebar-foreground: 40 75% 87%;
-    --sidebar-primary: 0 41% 39%;
-    --sidebar-primary-foreground: 40 75% 87%;
-    --sidebar-accent: 212 33% 21%;
-    --sidebar-accent-foreground: 40 75% 87%;
-    --sidebar-border: 37 20% 30%;
-    --sidebar-ring: 37 52% 81%;
   }
 
   * {
@@ -58,14 +47,8 @@ css
   }
 
   body {
-    @apply bg-background text-foreground;
-
-    /* subtle lounge glow */
-    background-image:
-      radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
-      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.14), transparent 55%),
-      radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.35), transparent 55%);
-    background-attachment: fixed;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
