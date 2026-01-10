@@ -109,10 +109,9 @@ export default function PairingGrid({ pipes, blends }) {
   };
 
   // Calculate compatibility score with Trophy Pipe philosophy
-  // Goal: Every blend should have a trophy pipe (9-10 score) in the collection
+  // Scoring System: Preferences (2-4pts) + Focus (2-3pts) + Dimensions (1-3pts) + Tobacco (2-4pts) = /10
   const calculateScore = (pipe, blend) => {
-    // Base score: 3.0 (usable but not optimal)
-    let score = 3.0;
+    let score = 0;
     
     // CRITICAL: Aromatic/Non-Aromatic Exclusions
     const focusList = pipe.focus || [];
@@ -127,22 +126,18 @@ export default function PairingGrid({ pipes, blends }) {
     if (hasNonAromaticFocus && isAromaticBlend) return 0;
     if (hasOnlyAromaticFocus && !isAromaticBlend) return 0;
     
-    // PRIORITY 1: User Preferences (0-2.5 points)
-    let prefScore = 0;
+    // PRIORITY 1: User Preferences (2-4 points)
+    let prefScore = 2.0; // Base compatibility score
     if (userProfile) {
       if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
         prefScore += 1.5;
       }
       if (userProfile.strength_preference !== 'No Preference' && 
           blend.strength === userProfile.strength_preference) {
-        prefScore += 0.75;
-      }
-      if (userProfile.pipe_size_preference !== 'No Preference' &&
-          pipe.chamber_volume === userProfile.pipe_size_preference) {
-        prefScore += 0.25;
+        prefScore += 0.5;
       }
     }
-    score += prefScore;
+    score += Math.min(4.0, prefScore);
     
     // PRIORITY 2: Pipe Focus/Specialization (TROPHY FACTOR: -2 to +4 points)
     // This is the key differentiator for trophy pipes
