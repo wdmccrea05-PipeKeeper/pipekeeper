@@ -133,3 +133,42 @@
 .pk-page .border-zinc-200 {
   border-color: hsl(var(--border) / 0.75) !important;
 }
+
+/* High contrast text on dark background panels */
+.pk-page .bg-slate-700,
+.pk-page .bg-slate-600,
+.pk-page .bg-gray-700,
+.pk-page .bg-gray-600,
+.pk-page .bg-neutral-700,
+.pk-page .bg-neutral-600,
+.pk-page .bg-zinc-700,
+.pk-page .bg-zinc-600,
+.pk-page .bg-stone-700,
+.pk-page .bg-stone-600,
+.pk-page .bg-secondary/60,
+.pk-page .bg-secondary/70,
+.pk-page .bg-secondary/80,
+.pk-page .bg-muted/60,
+.pk-page .bg-muted/70,
+.pk-page .bg-muted/80 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.pk-page .bg-slate-700 *,
+.pk-page .bg-slate-600 *,
+.pk-page .bg-gray-700 *,
+.pk-page .bg-gray-600 *,
+.pk-page .bg-neutral-700 *,
+.pk-page .bg-neutral-600 *,
+.pk-page .bg-zinc-700 *,
+.pk-page .bg-zinc-600 *,
+.pk-page .bg-stone-700 *,
+.pk-page .bg-stone-600 *,
+.pk-page .bg-secondary/60 *,
+.pk-page .bg-secondary/70 *,
+.pk-page .bg-secondary/80 *,
+.pk-page .bg-muted/60 *,
+.pk-page .bg-muted/70 *,
+.pk-page .bg-muted/80 * {
+  color: hsl(var(--foreground)) !important;
+}
