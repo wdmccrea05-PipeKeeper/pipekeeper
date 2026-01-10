@@ -115,19 +115,24 @@ export default function PairingGrid({ pipes, blends }) {
     let score = 5; // Start with neutral base
     
     // CRITICAL: Aromatic/Non-Aromatic Exclusions (HIGHEST PRIORITY)
-    const hasNonAromaticFocus = pipe.focus?.some(f => 
+    // Only enforce strict exclusions if the pipe is EXCLUSIVELY focused on one type
+    const focusList = pipe.focus || [];
+    const hasNonAromaticFocus = focusList.some(f => 
       f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
     );
-    const hasAromaticFocus = pipe.focus?.some(f => 
-      f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
-    );
+    
+    // Only treat as "aromatic-only" if it has JUST "aromatic" and nothing else
+    const hasOnlyAromaticFocus = 
+      focusList.length === 1 && 
+      focusList[0].toLowerCase() === 'aromatic';
+    
     const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
     
-    // If pipe has non-aromatic focus and blend is aromatic, incompatible
+    // If pipe explicitly excludes aromatics, return 0 for aromatic blends
     if (hasNonAromaticFocus && isAromaticBlend) return 0;
     
-    // If pipe has aromatic focus and blend is not aromatic, incompatible
-    if (hasAromaticFocus && !isAromaticBlend) return 0;
+    // If pipe is ONLY for aromatics (no other blend types), return 0 for non-aromatics
+    if (hasOnlyAromaticFocus && !isAromaticBlend) return 0;
     
     // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight)
     if (pipe.focus && pipe.focus.length > 0) {
