@@ -137,7 +137,7 @@
 .pk-page h4,
 .pk-page h5,
 .pk-page h6 {
-  color: hsl(var(--card-foreground)) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 .pk-page p {
@@ -146,6 +146,49 @@
 
 .pk-page a {
   color: hsl(var(--primary)) !important;
+}
+
+/* Navigation and toolbar contrast */
+nav {
+  color: hsl(var(--foreground)) !important;
+}
+
+nav a,
+nav button,
+nav [role="button"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Page titles on dark backgrounds */
+.pk-page > div > div > h1,
+.pk-page > div > h1 {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Button contrast */
+.pk-page button,
+.pk-page [role="button"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.pk-page button:hover,
+.pk-page [role="button"]:hover {
+  opacity: 0.9;
+  background-color: hsl(var(--primary) / 0.15) !important;
+}
+
+/* Footer text contrast */
+footer {
+  color: hsl(var(--foreground)) !important;
+}
+
+footer a {
+  color: hsl(var(--foreground)) !important;
+}
+
+footer a:hover {
+  color: hsl(var(--foreground)) !important;
+  opacity: 0.8;
 }
 
 .pk-page .border,
