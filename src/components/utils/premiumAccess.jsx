@@ -1,4 +1,4 @@
-import { isIOSCompanion } from "./companion";
+import { isIOSCompanion } from "./companion.jsx";
 import { isTrialWindow } from "./access";
 
 /**
