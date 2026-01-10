@@ -52,7 +52,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         <img 
           src={item.icon} 
           alt={item.name} 
-          className="w-5 h-5 object-contain"
+          className="w-6 h-6 object-contain"
           style={{
             filter: isMobile
               ? 'brightness(0)'
