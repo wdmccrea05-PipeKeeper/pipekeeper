@@ -9,7 +9,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Heart, DollarSign,
-  Leaf, Package, Sparkles, X, AlertCircle
+  Package, Sparkles, X, AlertCircle
 } from "lucide-react";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
@@ -17,7 +17,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
-import { PipeIcon as PipeKeeperPipeIcon } from "@/components/icons/PipeKeeperIcons";
+import { PipeIcon as PipeKeeperPipeIcon, TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -335,11 +335,11 @@ export default function HomePage() {
               transition={{ delay: 0.08 }}
             >
               <a href={createPageUrl('Pipes')}>
-                <Card className="bg-gradient-to-br from-accent to-accent/80 border-primary/25 cursor-pointer hover:shadow-lg transition-shadow">
+                <Card className="bg-gradient-to-br from-primary to-primary/80 border-border/60 cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-3 sm:p-6 text-center">
-                    <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 sm:mb-2 text-white" strokeWidth={2.2} />
-                    <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
-                    <p className="text-xs sm:text-sm text-white/85">Pipes</p>
+                    <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 sm:mb-2 text-accent" strokeWidth={2.2} />
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground">{safePipes.length}</p>
+                    <p className="text-xs sm:text-sm text-foreground/70">Pipes</p>
                   </CardContent>
                 </Card>
               </a>
@@ -350,13 +350,13 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.16 }}
             >
-              <Card className="bg-gradient-to-br from-accent to-accent/80 border-primary/25">
+              <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-border/60">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                  <p className="text-xl sm:text-3xl font-bold text-white break-words">
+                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" />
+                  <p className="text-xl sm:text-3xl font-bold text-foreground break-words">
                     ${totalPipeValue.toLocaleString()}
                   </p>
-                  <p className="text-xs sm:text-sm text-white/85">Value</p>
+                  <p className="text-xs sm:text-sm text-foreground/70">Value</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -367,11 +367,11 @@ export default function HomePage() {
               transition={{ delay: 0.24 }}
             >
               <a href={createPageUrl('Tobacco')}>
-                <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-primary/25 cursor-pointer hover:shadow-lg transition-shadow">
+                <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-border/60 cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-3 sm:p-6 text-center">
-                    <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                    <p className="text-2xl sm:text-3xl font-bold text-white">{safeBlends.length}</p>
-                    <p className="text-xs sm:text-sm text-white/85">Blends</p>
+                    <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" strokeWidth={2.0} />
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground">{safeBlends.length}</p>
+                    <p className="text-xs sm:text-sm text-foreground/70">Blends</p>
                   </CardContent>
                 </Card>
               </a>
@@ -382,11 +382,11 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.32 }}
             >
-              <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-primary/25">
+              <Card className="bg-gradient-to-br from-muted to-secondary/80 border-border/60">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                  <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredTins}</p>
-                  <p className="text-xs sm:text-sm text-white/85">Cellared Tins</p>
+                  <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" />
+                  <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalCellaredTins}</p>
+                  <p className="text-xs sm:text-sm text-foreground/70">Cellared Tins</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -471,7 +471,7 @@ export default function HomePage() {
                         <p className="text-primary text-sm sm:text-base">Manage your blends</p>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                        <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                        <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" strokeWidth={2.0} />
                       </div>
                     </div>
 
@@ -711,7 +711,7 @@ export default function HomePage() {
             >
               <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <PipeKeeperPipeIcon className="w-12 h-12 sm:w-16 sm:h-16 text-primary" strokeWidth={2.1} />
-                <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
+                <TobaccoLeafIcon className="w-12 h-12 sm:w-16 sm:h-16 text-primary" strokeWidth={2.0} />
               </div>
               <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-2">
                 Welcome to Your Collection

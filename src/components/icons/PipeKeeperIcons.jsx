@@ -13,40 +13,42 @@ function Svg({ children, className = "", viewBox = "0 0 24 24" }) {
   );
 }
 
-export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2 }) {
+export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.1 }) {
   return (
-    <Svg className={className} viewBox="0 0 26 24">
+    <Svg className={className} viewBox="0 0 24 24">
+      {/* Classic bent briar pipe (clear silhouette at small sizes) */}
       {/* Bowl */}
       <path
-        d="M6 10.3c0-2.3 1.9-4.2 4.2-4.2h3.2c2.3 0 4.2 1.9 4.2 4.2v6.2c0 3.4-2.8 6.2-6.2 6.2S6 19.9 6 16.5v-6.2Z"
+        d="M5.6 10.6c0-2.2 1.8-4 4-4h3c2.2 0 4 1.8 4 4v4.9c0 3.2-2.6 5.8-5.8 5.8S5.6 18.7 5.6 15.5v-4.9Z"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinejoin="round"
       />
       {/* Rim */}
       <path
-        d="M8.4 6.7h6.8"
+        d="M7.9 6.6h6.4"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
-      {/* Shank + stem (bent) */}
+      {/* Shank */}
       <path
-        d="M17.6 12.6h3.8c1.9 0 3.4 1.5 3.4 3.4v.5c0 1.3-1 2.4-2.4 2.4h-4.8"
+        d="M16.6 12.1h3.2c1.8 0 3.2 1.4 3.2 3.2v.4c0 1.4-1.1 2.5-2.5 2.5h-4.1"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* Bent stem curve */}
       <path
-        d="M17.6 12.6c.5-3 3-5.1 6.1-5.1H25"
+        d="M16.6 12.1c.35-2.55 2.45-4.4 5.05-4.4H23"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
       {/* Bit */}
       <path
-        d="M24.2 18.9h.8"
+        d="M22.1 18.2h.9"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
@@ -113,19 +115,13 @@ export function AITobacconistIcon({ className = "h-6 w-6", strokeWidth = 1.7 }) 
         strokeLinecap="round"
       />
       <path
-        d="M12.1 16.2h.9M19 16.2h.9"
+        d="M13 12c.4-1.6 1.5-2.6 3-2.6s2.6 1 3 2.6"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
       <path
-        d="M18.2 18.4c-.7.9-1.5 1.3-2.2 1.3s-1.5-.4-2.2-1.3"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-      <path
-        d="M18.8 20.2h2.2c.6 0 1 .4 1 1v.9c0 .6-.4 1-1 1h-1.8"
+        d="M16 6.5v1.8"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
