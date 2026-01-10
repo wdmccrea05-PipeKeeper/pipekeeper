@@ -319,7 +319,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-1))] via-[rgb(var(--pk-bg-0))] to-[rgb(var(--pk-bg-1))] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
         <motion.div 
@@ -355,16 +355,16 @@ export default function HomePage() {
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "var(--pk-cta-primary)" }}
+                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-cta-primary))" }}
                   >
                     <PipeIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "var(--pk-text-primary)" }}>
+                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
                     {safePipes.length}
                   </div>
-                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "var(--pk-text-secondary)" }}>
+                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
                     Pipes
                   </div>
                 </div>
@@ -387,16 +387,16 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-2">
                 <div
                   className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "var(--pk-cta-primary)" }}
+                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-cta-primary))" }}
                 >
                   <DollarSign className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
               <div>
-                <div className="text-xl sm:text-3xl font-bold break-words" style={{ color: "var(--pk-text-primary)" }}>
+                <div className="text-xl sm:text-3xl font-bold break-words" style={{ color: "rgb(var(--pk-text-primary))" }}>
                   ${totalPipeValue.toLocaleString()}
                 </div>
-                <div className="mt-1 text-xs sm:text-sm" style={{ color: "var(--pk-text-secondary)" }}>
+                <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
                   Value
                 </div>
               </div>
@@ -419,16 +419,16 @@ export default function HomePage() {
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "var(--pk-success)" }}
+                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-success))" }}
                   >
                     <TobaccoLeafIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "var(--pk-text-primary)" }}>
+                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
                     {safeBlends.length}
                   </div>
-                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "var(--pk-text-secondary)" }}>
+                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
                     Blends
                   </div>
                 </div>
@@ -451,16 +451,16 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-2">
                 <div
                   className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "var(--pk-success)" }}
+                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-success))" }}
                 >
                   <CellarJarIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold" style={{ color: "var(--pk-text-primary)" }}>
+                <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
                   {totalCellaredTins}
                 </div>
-                <div className="mt-1 text-xs sm:text-sm" style={{ color: "var(--pk-text-secondary)" }}>
+                <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
                   Cellared Tins
                 </div>
               </div>
