@@ -57,24 +57,24 @@ function applyPipeKeeperTheme() {
   const root = document.documentElement;
   root.classList.add("dark");
 
-  // Warmer + brighter foreground, slightly more opaque cards for readability
+  // Warmer + brighter foreground, higher-contrast cards for readability
   const vars = {
     "--background": "214 53% 9%",           // #0b1624
     "--foreground": "38 80% 92%",           // brighter warm cream
-    "--card": "214 47% 14%",                // #132235
+    "--card": "214 38% 22%",                // brightened for contrast
     "--card-foreground": "38 80% 92%",
-    "--popover": "214 47% 14%",
+    "--popover": "214 38% 22%",
     "--popover-foreground": "38 80% 92%",
     "--primary": "8 55% 44%",               // richer cigar/copper
     "--primary-foreground": "38 80% 92%",
-    "--secondary": "212 33% 21%",           // #243548
+    "--secondary": "212 30% 26%",           // brightened for distinction
     "--secondary-foreground": "38 80% 92%",
     "--accent": "37 55% 82%",               // warm parchment highlight
     "--accent-foreground": "214 53% 9%",
-    "--muted": "213 43% 18%",
-    "--muted-foreground": "38 45% 82%",     // brighter muted text
-    "--border": "37 26% 40%",               // brighter border
-    "--input": "37 26% 40%",
+    "--muted": "213 35% 28%",               // brighter for contrast
+    "--muted-foreground": "38 65% 85%",     // significantly brighter muted text
+    "--border": "37 32% 50%",               // much brighter border
+    "--input": "37 32% 50%",
     "--ring": "37 55% 82%",
     "--radius": "1rem",
   };
