@@ -84,6 +84,33 @@
     @apply bg-background text-foreground;
   }
 
+  /* ================================
+     PipeKeeper Brand Theme Variables
+     (Required for rgb(var(--pk-*)))
+     ================================ */
+
+  :root {
+    /* Backgrounds (deep navy) */
+    --pk-bg-0: 10 23 43;       /* page background */
+    --pk-bg-1: 18 34 58;       /* gradient mid */
+    --pk-surface: 20 36 60;    /* panels */
+    --pk-surface-2: 26 46 72;  /* elevated cards */
+    --pk-border: 120 140 165;  /* subtle borders */
+
+    /* Text (warm parchment) */
+    --pk-text-primary: 245 232 208;
+    --pk-text-secondary: 245 232 208; /* use opacity in UI */
+    --pk-text-muted: 215 200 170;
+
+    /* Accents */
+    --pk-cta-primary: 186 86 60;  /* warm rust/orange */
+    --pk-success: 74 128 98;      /* cellar green */
+    --pk-warning: 214 171 104;    /* gold */
+
+    /* Optional: shadows/glow helpers */
+    --pk-glow: 0 0 0;
+  }
+
   /* Custom scrollbar styling */
   ::-webkit-scrollbar {
     width: 10px;
