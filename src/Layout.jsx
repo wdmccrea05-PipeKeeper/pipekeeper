@@ -158,54 +158,73 @@ export default function Layout({ children, currentPageName }) {
   return (
     <>
       {/* Theme background + FIXED readability rules (no more “wash-out” text on light cards) */}
-      <style>{`
-        body {
-          background: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-          background-image:
-            radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.10), transparent 55%),
-            radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.16), transparent 55%),
-            radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.45), transparent 55%) !important;
-          background-attachment: fixed;
-        }
+<style>{`
+  body {
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+    background-image:
+      radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
+      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.22), transparent 55%),
+      radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.55), transparent 55%) !important;
+    background-attachment: fixed;
+  }
 
-        .pk-page { min-height: 100vh; }
-        .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
+  .pk-page { min-height: 100vh; }
+  .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
 
-        /**
-         * IMPORTANT:
-         * Light “card” surfaces must render DARK text.
-         * This fixes the low-contrast issues without rewriting every component.
-         */
-        .pk-page .bg-card,
-        .pk-page .pk-card,
-        .pk-page .bg-popover {
-          color: hsl(var(--card-foreground)) !important;
-        }
+  /* ----------------------------
+     SAFE “LIGHT UI LEAK” FIXES
+     These fix Community (and any other page) that hard-codes light utility classes.
+     ---------------------------- */
 
-        .pk-page .bg-card .text-foreground,
-        .pk-page .pk-card .text-foreground,
-        .pk-page .bg-popover .text-foreground {
-          color: hsl(var(--card-foreground)) !important;
-        }
+  /* Backgrounds that should respect the theme */
+  .pk-page .bg-white,
+  .pk-page .bg-gray-50,
+  .pk-page .bg-slate-50,
+  .pk-page .bg-neutral-50,
+  .pk-page .bg-zinc-50 {
+    background: hsl(var(--card)) !important;
+  }
 
-        .pk-page .bg-card .text-muted-foreground,
-        .pk-page .pk-card .text-muted-foreground,
-        .pk-page .bg-popover .text-muted-foreground {
-          color: hsl(var(--muted-foreground-card)) !important;
-        }
+  /* Text colors that should respect the theme */
+  .pk-page .text-black,
+  .pk-page .text-gray-900,
+  .pk-page .text-slate-900,
+  .pk-page .text-neutral-900,
+  .pk-page .text-zinc-900 {
+    color: hsl(var(--foreground)) !important;
+  }
 
-        .pk-page .bg-card input,
-        .pk-page .bg-card textarea,
-        .pk-page .bg-card select,
-        .pk-page .pk-card input,
-        .pk-page .pk-card textarea,
-        .pk-page .pk-card select {
-          background: hsl(var(--card)) !important;
-          color: hsl(var(--card-foreground)) !important;
-          border-color: hsl(var(--border) / 0.65) !important;
-        }
-      `}</style>
+  .pk-page .text-gray-700,
+  .pk-page .text-slate-700,
+  .pk-page .text-neutral-700,
+  .pk-page .text-zinc-700 {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* Borders that look too “light app” */
+  .pk-page .border-gray-200,
+  .pk-page .border-gray-300,
+  .pk-page .border-slate-200,
+  .pk-page .border-neutral-200,
+  .pk-page .border-zinc-200 {
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Inputs inside those light cards */
+  .pk-page input,
+  .pk-page textarea,
+  .pk-page select {
+    background: hsl(var(--secondary)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  .pk-page input::placeholder,
+  .pk-page textarea::placeholder {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+`}</style>
 
       <DocumentTitle title="PipeKeeper" />
       <TermsGate user={user}>
