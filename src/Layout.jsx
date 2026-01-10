@@ -57,10 +57,10 @@ function applyPipeKeeperTheme() {
   const root = document.documentElement;
   root.classList.add("dark");
 
-  // Dark background with light cards
+  // Dark background with light cards and high-contrast UI
   const vars = {
     "--background": "214 53% 9%",           // #0b1624 - dark background
-    "--foreground": "213 25% 25%",          // dark blue/slate text
+    "--foreground": "0 0% 95%",             // light text for dark backgrounds
     "--card": "0 0% 97%",                   // #f7f7f7 - off-white cards
     "--card-foreground": "213 25% 25%",     // dark blue text on cards
     "--popover": "0 0% 97%",
