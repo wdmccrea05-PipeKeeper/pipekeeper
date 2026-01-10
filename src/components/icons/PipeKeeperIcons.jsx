@@ -1,84 +1,52 @@
 import React from "react";
 
-function Svg({ children, className = "", viewBox = "0 0 24 24" }) {
+/**
+ * PipeKeeper Icons (Source of Truth)
+ * - Inline SVG
+ * - currentColor (themeable)
+ * - Designed to read clearly at 16–32px (nav + stat tiles)
+ */
+
+export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.25 }) {
   return (
     <svg
-      viewBox={viewBox}
-      className={className}
+      viewBox="0 0 24 24"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
       aria-hidden="true"
     >
-      {children}
+      {/* Bowl */}
+      <path d="M6.4 10.4c0-1.7 1.35-3.05 3.05-3.05h3.15c1.7 0 3.05 1.35 3.05 3.05v4.1c0 3.05-2.47 5.52-5.52 5.52S6.4 17.6 6.4 14.55v-4.1Z" />
+      {/* Bowl opening / rim */}
+      <path d="M8.9 7.35h4.2" />
+      {/* Shank / stem */}
+      <path d="M15.65 12.1h3.1c2.05 0 3.25 1.25 3.25 2.8 0 1.5-1.15 2.7-2.7 2.7h-3.65" />
+      {/* Bit */}
+      <path d="M21.7 17.55h.7" />
     </svg>
   );
 }
 
-/**
- * Pipe icon — matches the Home tile reference:
- * - rounded bowl with top opening
- * - classic curved stem
- * - clean outline silhouette
- */
-export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2.25 }) {
-  return (
-    <Svg className={className} viewBox="0 0 24 24">
-      {/* Bowl */}
-      <path
-        d="M6.6 10.2c0-1.55 1.25-2.8 2.8-2.8h3.2c1.55 0 2.8 1.25 2.8 2.8v4.6c0 2.95-2.39 5.34-5.34 5.34S6.6 17.75 6.6 14.8v-4.6Z"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
-      />
-      {/* Bowl opening (top) */}
-      <path
-        d="M9 7.35c.25-.55.8-.9 1.42-.9h1.96c.62 0 1.17.35 1.42.9"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-      {/* Stem / shank curve */}
-      <path
-        d="M16.9 11.4h1.7c2.15 0 3.4 1.25 3.4 2.85 0 1.55-1.2 2.8-2.95 2.8h-2.8"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Bit */}
-      <path
-        d="M21.55 17.05H22.4"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-/**
- * Tobacco leaf icon — matches the Home "Blends" tile reference:
- * - simple outline
- * - single midrib vein
- * - gentle tilt/shape
- */
 export function TobaccoLeafIcon({ className = "h-5 w-5", strokeWidth = 2.25 }) {
   return (
-    <Svg className={className} viewBox="0 0 24 24">
-      {/* Leaf outline */}
-      <path
-        d="M19.6 4.7c-6.3.4-11.1 3.6-13.4 8.1-1.2 2.4-1.3 5.7-1.3 5.7s3.3-.1 5.7-1.3c4.5-2.3 7.7-7.1 9-12.5Z"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
-      />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      {/* Leaf outline — simple, "Blends tile" style */}
+      <path d="M19.6 4.6C13.0 5.0 7.7 8.6 5.7 13.5c-1.1 2.7-1.1 5.9-1.1 5.9s3.2 0 5.9-1.1c4.9-2 8.5-7.3 9.1-13.7Z" />
       {/* Midrib */}
-      <path
-        d="M7 16.9c3.1-3 7.8-6.3 12-8.1"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-    </Svg>
+      <path d="M7.2 16.9c3.0-3.0 7.7-6.1 11.9-8.0" />
+    </svg>
   );
 }
