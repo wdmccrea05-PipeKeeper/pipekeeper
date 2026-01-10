@@ -203,6 +203,7 @@ export default function PipesPage() {
                 <List className="w-4 h-4" />
               </Button>
             </div>
+          </div>
         </motion.div>
 
         {/* Pipes Grid */}
