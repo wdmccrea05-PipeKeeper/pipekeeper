@@ -350,13 +350,13 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.16 }}
             >
-              <Card className="bg-gradient-to-br from-secondary to-secondary/80 border-border/60">
+              <Card className="bg-gradient-to-br from-accent to-accent/80 border-border/60">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-accent" />
-                  <p className="text-xl sm:text-3xl font-bold text-foreground break-words">
+                  <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-black" />
+                  <p className="text-xl sm:text-3xl font-bold text-black break-words">
                     ${totalPipeValue.toLocaleString()}
                   </p>
-                  <p className="text-xs sm:text-sm text-foreground/70">Value</p>
+                  <p className="text-xs sm:text-sm text-black/70">Value</p>
                 </CardContent>
               </Card>
             </motion.div>
