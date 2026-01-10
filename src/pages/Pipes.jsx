@@ -5,7 +5,8 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter, Grid3X3, List, Sparkles } from "lucide-react";
+import { Plus, Search, Filter, Grid3X3, List, Sparkles, Package } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
@@ -105,22 +106,26 @@ export default function PipesPage() {
   const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-4 mb-8"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-[#e8d5b7]">My Pipes</h1>
-            <p className="text-[#e8d5b7]/70 mt-1">
+            <h1 className="text-3xl font-bold text-[#E0D8C8]">My Pipes</h1>
+            <p className="text-[#E0D8C8]/70 mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <PipeExporter />
             <Button 
-              onClick={() => setShowQuickSearch(true)}
-              variant="outline"
-              className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20 flex-shrink-0"
+            onClick={() => setShowQuickSearch(true)}
+            variant="outline"
+            className="border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#7D90A5]/20 flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Quick Search & Add</span>
@@ -128,28 +133,34 @@ export default function PipesPage() {
             </Button>
             <Button 
               onClick={() => { setEditingPipe(null); setShowForm(true); }}
-              className="bg-[#8b3a3a] hover:bg-[#6d2e2e] flex-shrink-0"
+              className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-md hover:shadow-lg flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Pipe
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
         <div className="flex flex-col gap-3 mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#e8d5b7]/60" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
-              placeholder="Search pipes..."
+              placeholder="Search by name, maker, or shape..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/50"
+              className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
+              aria-label="Search pipes"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
-              <SelectTrigger className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by shape">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -157,14 +168,14 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
-              <SelectTrigger className="bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by material">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start">
+            <div className="flex border border-[#E0D8C8]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start" role="group" aria-label="View mode">
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -172,7 +183,9 @@ export default function PipesPage() {
                   setViewMode('grid');
                   localStorage.setItem('pipesViewMode', 'grid');
                 }}
-                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'grid'}
               >
                 <Grid3X3 className="w-4 h-4" />
               </Button>
@@ -183,13 +196,15 @@ export default function PipesPage() {
                   setViewMode('list');
                   localStorage.setItem('pipesViewMode', 'list');
                 }}
-                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
               >
                 <List className="w-4 h-4" />
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Pipes Grid */}
         {isLoading ? (
@@ -199,23 +214,21 @@ export default function PipesPage() {
             ))}
           </div>
         ) : filteredPipes.length === 0 ? (
-          <div className="text-center py-16">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
-              alt="No pipes"
-              className="w-24 h-24 mx-auto mb-4 object-contain opacity-30 mix-blend-multiply"
-            />
-            <h3 className="text-xl font-semibold text-[#e8d5b7] mb-2">No pipes found</h3>
-            <p className="text-[#e8d5b7]/70 mb-6">
-              {pipes.length === 0 ? "Add your first pipe to start building your collection" : "Try adjusting your filters"}
-            </p>
-            {pipes.length === 0 && (
-              <Button onClick={() => setShowForm(true)} className="bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Pipe
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            icon={Package}
+            title={pipes.length === 0 ? "Start Your Collection" : "No Pipes Found"}
+            description={
+              pipes.length === 0 
+                ? "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place."
+                : searchQuery 
+                  ? `No pipes match "${searchQuery}". Try adjusting your search or filters.`
+                  : "No pipes match your current filters. Try adjusting your selections."
+            }
+            actionLabel={pipes.length === 0 ? "Add Your First Pipe" : null}
+            onAction={pipes.length === 0 ? () => setShowForm(true) : null}
+            secondaryActionLabel={pipes.length === 0 ? "Quick Search & Add" : searchQuery || shapeFilter !== 'All Shapes' || materialFilter !== 'All Materials' ? "Clear Filters" : null}
+            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter('All Shapes'); setMaterialFilter('All Materials'); }}
+          />
         ) : (
           <motion.div 
             className={viewMode === 'grid' 

@@ -4,33 +4,39 @@
 
 @layer base {
   :root {
-    --background: 26 44 66; /* #1A2C42 */
-    --foreground: 232 213 183; /* #E8D5B7 */
+    --background: 26 43 58; /* #1A2B3A - Deep Slate Blue */
+    --foreground: 224 216 200; /* #E0D8C8 - Warm Off-White */
     
     --card: 36 53 72; /* #243548 */
-    --card-foreground: 232 213 183;
+    --card-foreground: 224 216 200;
     
     --popover: 36 53 72;
-    --popover-foreground: 232 213 183;
+    --popover-foreground: 224 216 200;
     
-    --primary: 139 58 58; /* #8B3A3A */
-    --primary-foreground: 232 213 183;
+    --primary: 163 92 92; /* #A35C5C - Muted Rose Red */
+    --primary-foreground: 224 216 200;
     
-    --secondary: 36 53 72;
-    --secondary-foreground: 232 213 183;
+    --secondary: 125 144 165; /* #7D90A5 - Soft Steel Blue */
+    --secondary-foreground: 224 216 200;
     
     --muted: 36 53 72;
-    --muted-foreground: 232 213 183 / 0.7;
+    --muted-foreground: 224 216 200 / 0.7;
     
-    --accent: 139 58 58;
-    --accent-foreground: 232 213 183;
+    --accent: 125 144 165; /* #7D90A5 - Soft Steel Blue */
+    --accent-foreground: 224 216 200;
+    
+    --success: 90 153 119; /* #5A9977 - Deep Emerald */
+    --success-foreground: 224 216 200;
+    
+    --warning: 199 136 79; /* #C7884F - Rich Amber */
+    --warning-foreground: 224 216 200;
     
     --destructive: 220 38 38;
-    --destructive-foreground: 232 213 183;
+    --destructive-foreground: 224 216 200;
     
-    --border: 232 213 183 / 0.3;
+    --border: 224 216 200 / 0.3;
     --input: 36 53 72;
-    --ring: 139 58 58;
+    --ring: 163 92 92;
     
     --radius: 0.75rem;
   }
@@ -55,28 +61,47 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-[#8b3a3a]/50 rounded-lg hover:bg-[#8b3a3a];
+    @apply bg-[#A35C5C]/50 rounded-lg hover:bg-[#A35C5C];
   }
   
   /* Input and textarea styling for better contrast */
   input, textarea, select {
-    @apply bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/40;
-    @apply focus:border-[#8b3a3a] focus:ring-[#8b3a3a]/20;
-    @apply rounded-xl;
+    @apply bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40;
+    @apply focus:border-[#A35C5C] focus:ring-[#A35C5C]/20;
+    @apply rounded-xl transition-all duration-200;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-2 ring-[#A35C5C]/20;
   }
   
   /* Card and panel styling */
   .card, [class*="Card"] {
-    @apply rounded-2xl;
+    @apply rounded-2xl transition-shadow duration-200;
   }
   
   /* Button styling for consistency */
   button {
-    @apply rounded-xl;
+    @apply rounded-xl transition-all duration-200;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A35C5C] focus-visible:ring-offset-2;
+  }
+  
+  button:active {
+    @apply scale-[0.98];
   }
   
   /* Dialog and modal styling */
   [role="dialog"] {
     @apply rounded-2xl;
+  }
+  
+  /* Link styling */
+  a {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A35C5C] focus-visible:ring-offset-2 rounded;
+  }
+  
+  /* Smooth transitions for interactive elements */
+  button, a, input, select, textarea {
+    @apply transition-all duration-200 ease-in-out;
   }
 }

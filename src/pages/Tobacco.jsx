@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Grid3X3, List, Sparkles, Edit3 } from "lucide-react";
+import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
@@ -173,13 +174,17 @@ export default function TobaccoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-[#e8d5b7]">My Tobacco</h1>
-            <p className="text-[#e8d5b7]/70 mt-1">
+            <h1 className="text-3xl font-bold text-[#E0D8C8]">My Tobacco</h1>
+            <p className="text-[#E0D8C8]/70 mt-1">
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
             </p>
           </div>
@@ -217,7 +222,7 @@ export default function TobaccoPage() {
               Add Blend
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Quick Edit Select All */}
         {quickEditMode && (
@@ -238,14 +243,20 @@ export default function TobaccoPage() {
         )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex flex-col sm:flex-row gap-3 mb-6"
+        >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#e8d5b7]/60" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
-              placeholder="Search blends..."
+              placeholder="Search by name, manufacturer, or blend type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7] placeholder:text-[#e8d5b7]/50"
+              className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
+              aria-label="Search tobacco blends"
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -296,7 +307,7 @@ export default function TobaccoPage() {
               <List className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Blends Grid */}
         {isLoading ? (
@@ -306,19 +317,21 @@ export default function TobaccoPage() {
             ))}
           </div>
         ) : filteredBlends.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🍂</div>
-            <h3 className="text-xl font-semibold text-[#e8d5b7] mb-2">No blends found</h3>
-            <p className="text-[#e8d5b7]/70 mb-6">
-              {blends.length === 0 ? "Add your first tobacco blend to start your cellar" : "Try adjusting your filters"}
-            </p>
-            {blends.length === 0 && (
-              <Button onClick={() => setShowForm(true)} className="bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Blend
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            icon={Leaf}
+            title={blends.length === 0 ? "Build Your Cellar" : "No Blends Found"}
+            description={
+              blends.length === 0 
+                ? "Start your tobacco cellar by adding your first blend. Track inventory, aging dates, and tasting notes."
+                : searchQuery 
+                  ? `No blends match "${searchQuery}". Try adjusting your search or filters.`
+                  : "No blends match your current filters. Try adjusting your selections."
+            }
+            actionLabel={blends.length === 0 ? "Add Your First Blend" : null}
+            onAction={blends.length === 0 ? () => setShowForm(true) : null}
+            secondaryActionLabel={blends.length === 0 ? "Quick Search & Add" : searchQuery || typeFilter !== 'All Types' || strengthFilter !== 'All Strengths' ? "Clear Filters" : null}
+            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter('All Types'); setStrengthFilter('All Strengths'); }}
+          />
         ) : (
           <motion.div 
             className={viewMode === 'grid' 

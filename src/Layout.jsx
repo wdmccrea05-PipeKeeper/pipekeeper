@@ -33,16 +33,18 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors",
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 transform hover:scale-105",
         isActive 
-          ? "bg-[#8b3a3a] text-[#e8d5b7]" 
+          ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md" 
           : isMobile 
-            ? "text-[#1a2c42] hover:bg-[#8b3a3a]/10"
-            : "text-[#e8d5b7]/70 hover:bg-[#8b3a3a]/50 hover:text-[#e8d5b7]"
+            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
       style={{ 
         WebkitTapHighlightColor: 'transparent',
       }}
+      aria-current={isActive ? 'page' : undefined}
+      role="link"
     >
       {item.isIconComponent ? (
         <item.icon className="w-5 h-5" />
@@ -180,9 +182,9 @@ export default function Layout({ children, currentPageName }) {
     <>
       <DocumentTitle title="PipeKeeper" />
       <TermsGate user={user}>
-      <div className="min-h-screen bg-[#1a2c42]">
+      <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1a2c42]/95 backdrop-blur-lg border-b border-[#8b3a3a]">
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="flex items-center justify-between h-16 gap-4">
             <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
@@ -191,7 +193,7 @@ export default function Layout({ children, currentPageName }) {
                 alt="PipeKeeper"
                 className="w-8 h-8 object-contain"
               />
-              <span className="font-bold text-xl text-[#e8d5b7]">PipeKeeper</span>
+              <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
             </Link>
             <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
               {navItems.map(item => (
@@ -203,7 +205,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a2c42] border-b border-[#8b3a3a]">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
         <div className="flex items-center justify-between h-14 px-4">
           <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <img 
@@ -211,14 +213,14 @@ export default function Layout({ children, currentPageName }) {
               alt="PipeKeeper"
               className="w-7 h-7 object-contain"
             />
-            <span className="font-bold text-lg text-[#e8d5b7]">PipeKeeper</span>
+            <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
             </Link>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setMobileOpen(prev => !prev);
             }}
-            className="text-[#e8d5b7] p-2 -mr-2 active:scale-95 transition-transform"
+            className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
             style={{ WebkitTapHighlightColor: 'transparent' }}
             aria-label="Toggle menu"
           >
@@ -264,7 +266,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#1a2c42]/95 border-t border-[#8b3a3a] mt-auto">
+      <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -273,19 +275,19 @@ export default function Layout({ children, currentPageName }) {
                 alt="PipeKeeper"
                 className="w-5 h-5 object-contain"
               />
-              <span className="text-sm text-[#e8d5b7]/70">© 2025 PipeKeeper. All rights reserved.</span>
+              <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <a href={createPageUrl('FAQ')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              <a href={createPageUrl('FAQ')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 FAQ
               </a>
-              <a href={createPageUrl('Support')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              <a href={createPageUrl('Support')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Support
               </a>
-              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Terms of Service
               </a>
-              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#e8d5b7]/70 hover:text-[#e8d5b7] transition-colors">
+              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Privacy Policy
               </a>
             </div>

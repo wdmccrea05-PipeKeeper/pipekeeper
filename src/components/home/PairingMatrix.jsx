@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Trophy, Sparkles, ChevronRight, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, Undo } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
