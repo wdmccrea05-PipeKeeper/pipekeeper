@@ -139,9 +139,8 @@ export default function PairingGrid({ pipes, blends }) {
     }
     score += Math.min(4.0, prefScore);
     
-    // PRIORITY 2: Pipe Focus/Specialization (TROPHY FACTOR: -2 to +4 points)
-    // This is the key differentiator for trophy pipes
-    let focusScore = 0;
+    // PRIORITY 2: Pipe Focus/Specialization (2-3 points, TROPHY FACTOR)
+    let focusScore = 2.0; // Base focus score
     if (focusList.length > 0) {
       const focusLower = focusList.map(f => f.toLowerCase());
       const blendTypeLower = blend.blend_type?.toLowerCase() || '';
@@ -151,11 +150,9 @@ export default function PairingGrid({ pipes, blends }) {
       
       // Check for exact blend name match (HIGHEST priority - specific blend assignment)
       const exactNameMatch = focusLower.some(f => {
-        // Direct name match
         if (f === blendNameLower || blendNameLower.includes(f) || f.includes(blendNameLower)) {
           return true;
         }
-        // Manufacturer + name combo
         const fullName = `${blendManufacturerLower} ${blendNameLower}`.trim();
         if (f === fullName || fullName.includes(f) || f.includes(fullName)) {
           return true;
@@ -179,29 +176,22 @@ export default function PairingGrid({ pipes, blends }) {
       
       if (exactNameMatch) {
         // PERFECT TROPHY MATCH: Pipe specifically assigned to this exact blend
-        if (focusList.length === 1) focusScore = 4.5; // Single focus = ultimate trophy
-        else if (focusList.length === 2) focusScore = 4.0; // Dual focus = strong trophy
-        else if (focusList.length === 3) focusScore = 3.5; // Triple focus = good match
-        else focusScore = 2.5; // 4+ focuses = versatile, lower bonus
+        focusScore = 3.0; // Maximum focus score
       } else if (exactTypeMatch) {
-        // TROPHY MATCH: Specialized pipe matched to blend type
-        if (focusList.length === 1) focusScore = 3.5;
-        else if (focusList.length === 2) focusScore = 3.0;
-        else if (focusList.length === 3) focusScore = 2.0;
-        else focusScore = 1.5;
+        // Strong match on blend type
+        if (focusList.length === 1) focusScore = 3.0; // Specialist = trophy
+        else if (focusList.length === 2) focusScore = 2.5;
+        else focusScore = 2.0;
       } else if (componentMatch) {
         // Partial match on tobacco components
-        focusScore = 1.5;
+        focusScore = 2.0;
       } else {
-        // NO MATCH on specialized pipe = significant penalty
-        if (focusList.length === 1) focusScore = -2.0; // Wrong blend for specialist
-        else if (focusList.length === 2) focusScore = -1.5;
-        else if (focusList.length === 3) focusScore = -1.0;
-        else focusScore = -0.5;
+        // NO MATCH on specialized pipe = no bonus, stays at base
+        focusScore = 2.0;
       }
     } else {
-      // No focus = jack-of-all-trades, decent with everything
-      focusScore = 1.0;
+      // No focus = versatile pipe
+      focusScore = 2.0;
     }
     score += focusScore;
     
