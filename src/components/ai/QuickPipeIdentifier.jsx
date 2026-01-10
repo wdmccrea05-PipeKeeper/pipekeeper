@@ -414,25 +414,25 @@ Provide analysis as JSON:
                   placeholder="Name/Description"
                   value={hints.name}
                   onChange={(e) => setHints({...hints, name: e.target.value})}
-                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-primary/40 text-sm h-9"
                 />
                 <Input
                   placeholder="Brand/Maker"
                   value={hints.maker}
                   onChange={(e) => setHints({...hints, maker: e.target.value})}
-                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-primary/40 text-sm h-9"
                 />
                 <Input
                   placeholder="Shape"
                   value={hints.shape}
                   onChange={(e) => setHints({...hints, shape: e.target.value})}
-                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-primary/40 text-sm h-9"
                 />
                 <Input
                   placeholder="Stampings"
                   value={hints.stamping}
                   onChange={(e) => setHints({...hints, stamping: e.target.value})}
-                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-[#e8d5b7]/40 text-sm h-9"
+                  className="bg-[#243548] border-[#e8d5b7]/30 text-primary placeholder:text-primary/40 text-sm h-9"
                 />
               </div>
             </div>
