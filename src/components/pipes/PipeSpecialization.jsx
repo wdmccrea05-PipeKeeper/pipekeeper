@@ -7,8 +7,11 @@ import { Target, Plus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
+  const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [newDesignation, setNewDesignation] = useState('');
   const [designations, setDesignations] = useState(pipe.focus || []);
@@ -31,6 +34,8 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
       setDesignations(updated);
       setNewDesignation('');
       onUpdate({ focus: updated });
+      // Invalidate AI queries when focus changes
+      invalidateAIQueries(queryClient, pipe.created_by);
     }
   };
 
@@ -38,6 +43,8 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
     const updated = designations.filter((_, i) => i !== index);
     setDesignations(updated);
     onUpdate({ focus: updated });
+    // Invalidate AI queries when focus changes
+    invalidateAIQueries(queryClient, pipe.created_by);
   };
 
   // Find matching blends based on designations

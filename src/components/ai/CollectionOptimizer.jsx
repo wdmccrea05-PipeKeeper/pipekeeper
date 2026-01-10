@@ -499,6 +499,8 @@ User Feedback: ${feedback}
       id: pipeId,
       data: { focus }
     });
+    // Invalidate AI queries to refresh pairings
+    invalidateAIQueries(queryClient, user?.email);
   };
 
   // Apply optimization changes with undo support
