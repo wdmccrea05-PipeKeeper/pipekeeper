@@ -108,52 +108,28 @@ export default function PairingGrid({ pipes, blends }) {
     setShowGrid(true);
   };
 
-  // Calculate adjusted scores with priority order:
-  // 1. User profile preferences (highest weight)
-  // 2. Pipe focus (with aromatic/non-aromatic exclusions)
-  // 3. Pipe shape/characteristics
-  // 4. Tobacco blend characteristics (already in base score)
-  // Calculate basic compatibility score based on pipe and blend characteristics
-  const calculateBasicScore = (pipe, blend) => {
-    let score = 5; // Start with neutral score
+  // Calculate compatibility score that respects current pipe focus and characteristics
+  // This is used when AI-generated scores are missing OR when we need to recalculate
+  // based on updated pipe data (like new focus values from optimization)
+  const calculateScore = (pipe, blend) => {
+    let score = 5; // Start with neutral base
     
-    // Chamber size vs blend strength
-    if (pipe.chamber_volume === 'Small' && blend.strength === 'Mild') score += 1;
-    if (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full')) score += 1;
-    if (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') score += 1;
-    
-    // Bowl material compatibility
-    if (pipe.bowl_material === 'Meerschaum' && blend.blend_type === 'Virginia') score += 1;
-    if (pipe.bowl_material === 'Briar') score += 0.5;
-    
-    // Shape considerations
-    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') score += 0.5;
-    
-    return Math.max(3, Math.min(7, score)); // Clamp between 3-7 for basic scores
-  };
-
-  const getAdjustedScore = (pipe, blend, baseScore) => {
-    if (!baseScore) return calculateBasicScore(pipe, blend);
-    
-    // CRITICAL: Aromatic/Non-Aromatic Exclusions
+    // CRITICAL: Aromatic/Non-Aromatic Exclusions (HIGHEST PRIORITY)
     const hasNonAromaticFocus = pipe.focus?.some(f => 
       f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
     );
     const hasAromaticFocus = pipe.focus?.some(f => 
       f.toLowerCase() === 'aromatic' && !f.toLowerCase().includes('non')
     );
-    
     const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
     
-    // If pipe has non-aromatic focus and blend is aromatic, return 0
+    // If pipe has non-aromatic focus and blend is aromatic, incompatible
     if (hasNonAromaticFocus && isAromaticBlend) return 0;
     
-    // If pipe has aromatic focus and blend is not aromatic, return 0
+    // If pipe has aromatic focus and blend is not aromatic, incompatible
     if (hasAromaticFocus && !isAromaticBlend) return 0;
     
-    let adjustment = 0;
-    
-    // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight: +5 points for exact match)
+    // PRIORITY 1: Pipe Focus/Specialization (HIGHEST weight)
     if (pipe.focus && pipe.focus.length > 0) {
       const focusMatch = pipe.focus.some(f => {
         const focusLower = f.toLowerCase();
@@ -181,34 +157,52 @@ export default function PairingGrid({ pipes, blends }) {
         
         return false;
       });
+      
       if (focusMatch) {
-        adjustment += 5; // Strong bonus for specialized pipes matching their focus
+        score += 4; // Strong bonus for specialized pipes matching their focus
       } else {
         // Penalize non-matching blends for specialized pipes
-        adjustment -= 2;
+        score -= 2;
       }
     }
     
-    // PRIORITY 2: User Profile Preferences (second highest: +2.5 points total)
+    // PRIORITY 2: User Profile Preferences
     if (userProfile) {
       if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
-        adjustment += 2;
+        score += 2;
       }
       if (userProfile.strength_preference !== 'No Preference' && 
           blend.strength === userProfile.strength_preference) {
-        adjustment += 1.5; // Increased from 1
+        score += 1.5;
       }
       if (userProfile.pipe_size_preference !== 'No Preference' &&
           pipe.chamber_volume === userProfile.pipe_size_preference) {
-        adjustment += 0.5;
+        score += 0.5;
       }
     }
     
-    // PRIORITY 3: Pipe shape/characteristics already factored into baseScore
-    // No additional adjustment needed here as AI analysis handles this
+    // PRIORITY 3: Physical Compatibility
+    // Chamber size vs blend strength
+    if (pipe.chamber_volume === 'Small' && blend.strength === 'Mild') score += 1;
+    if (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full')) score += 1;
+    if (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') score += 1;
     
-    const adjustedScore = Math.max(0, Math.min(10, baseScore + adjustment));
-    return Math.round(adjustedScore * 10) / 10;
+    // Bowl material compatibility
+    if (pipe.bowl_material === 'Meerschaum' && blend.blend_type === 'Virginia') score += 1;
+    if (pipe.bowl_material === 'Briar') score += 0.5;
+    
+    // Shape considerations
+    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') score += 0.5;
+    
+    return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
+  };
+
+  // Get the final score for display - always recalculates based on current pipe data
+  // This ensures scores update when pipes are modified (e.g., focus changes from optimization)
+  const getDisplayScore = (pipe, blend) => {
+    // Always calculate fresh score based on current pipe data
+    // This ensures the grid reflects any changes to pipe focus, profile preferences, etc.
+    return calculateScore(pipe, blend);
   };
 
   const handlePrint = () => {
@@ -371,28 +365,17 @@ export default function PairingGrid({ pipes, blends }) {
                         )}
                       </td>
                       {blends.map(blend => {
-                        const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
-                        let baseScore = match?.score || 0;
+                        // Always calculate score based on CURRENT pipe data
+                        // This ensures the grid reflects optimization changes, focus updates, etc.
+                        const displayScore = getDisplayScore(pipe, blend);
                         
-                        // If no score exists, calculate a basic compatibility score
-                        if (baseScore === 0) {
-                          baseScore = calculateBasicScore(pipe, blend);
-                        }
-                        
-                        const adjustedScore = getAdjustedScore(pipe, blend, baseScore);
-                        const displayScore = userProfile ? adjustedScore : baseScore;
-                        
-                        // Find best score for this blend across all pipes
-                        const allScoresForBlend = pipes.map(p => {
-                          const pPairing = savedPairings.pairings.find(pp => pp.pipe_id === p.id);
-                          const m = pPairing?.blend_matches?.find(mm => mm.blend_id === blend.id);
-                          let bs = m?.score || 0;
-                          if (bs === 0) bs = calculateBasicScore(p, blend);
-                          const as = getAdjustedScore(p, blend, bs);
-                          return userProfile ? as : bs;
-                        });
+                        // Find best score for this blend across all pipes (using current data)
+                        const allScoresForBlend = pipes.map(p => getDisplayScore(p, blend));
                         const bestScore = Math.max(...allScoresForBlend);
                         const isBestPipe = displayScore === bestScore && displayScore >= 8.5;
+                        
+                        // Try to get AI reasoning if available
+                        const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
 
                         return (
                           <td 
@@ -400,9 +383,23 @@ export default function PairingGrid({ pipes, blends }) {
                             className={`border border-stone-300 p-2 text-center font-semibold ${
                               getScoreClass(displayScore)
                             } cursor-pointer hover:opacity-80`}
-                            title={match?.reasoning || 'Basic compatibility score'}
+                            title={match?.reasoning || 'Compatibility based on current pipe characteristics and focus'}
                             onClick={() => {
-                              setSelectedPairing({ pipe, blend, score: displayScore, reasoning: match?.reasoning || 'Compatibility based on pipe characteristics' });
+                              // Build reasoning that reflects current calculation
+                              let reasoning = match?.reasoning || '';
+                              if (!reasoning) {
+                                reasoning = 'Score based on: ';
+                                const reasons = [];
+                                if (pipe.focus?.length > 0) {
+                                  reasons.push(`pipe focus (${pipe.focus.join(', ')})`);
+                                }
+                                if (userProfile?.preferred_blend_types?.includes(blend.blend_type)) {
+                                  reasons.push('user blend preference');
+                                }
+                                reasons.push('physical compatibility');
+                                reasoning += reasons.join(', ');
+                              }
+                              setSelectedPairing({ pipe, blend, score: displayScore, reasoning });
                               setShareDialogOpen(true);
                             }}
                           >
