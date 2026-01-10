@@ -115,7 +115,7 @@
 .pk-page .text-slate-800,
 .pk-page .text-gray-800,
 .pk-page .text-neutral-800 {
-  color: hsl(var(--foreground)) !important;
+  color: hsl(var(--card-foreground)) !important;
 }
 
 .pk-page .text-slate-500,
