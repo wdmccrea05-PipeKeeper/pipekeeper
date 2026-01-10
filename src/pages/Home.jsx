@@ -11,7 +11,9 @@ import {
   ArrowRight, Heart, DollarSign, 
   Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
-import { PipeIcon, TobaccoLeafIcon, CellarJarIcon } from "@/components/icons/PipeKeeperIcons";
+import { TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
+import { PipeIcon } from "@/components/icons/PipeIcon";
+import { TinJarIcon } from "@/components/icons/TinJarIcon";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -453,7 +455,7 @@ export default function HomePage() {
                   className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
                   style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-success))" }}
                 >
-                  <CellarJarIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <TinJarIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
               <div>

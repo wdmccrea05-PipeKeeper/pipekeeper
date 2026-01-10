@@ -1,188 +1,106 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* PipeKeeper theme tokens (ShadCN-compatible) */
 @layer base {
   :root {
-    /* ----- PipeKeeper Brand Tokens (HEX) ----- */
-    --pk-bg-primary: #0b1e2d;      /* deep navy */
-    --pk-bg-secondary: #10283a;    /* slightly lighter navy */
-    --pk-surface: #132c3f;         /* card / panel */
-    --pk-surface-2: #173449;       /* elevated surface */
-    --pk-border-strong: #2c4a60;   /* borders */
-    --pk-text-primary: #f3e7d3;    /* warm cream */
-    --pk-text-secondary: #d9ccb5;  /* softer cream */
-    --pk-text-muted: #b7aa95;      /* muted */
-    --pk-gold: #d6b06b;            /* gold accent */
-    --pk-cta-primary: #8c2f2f;     /* burgundy CTA */
-    --pk-cta-primary-hover: #7a2828;
-    --pk-success: #2f4b3f;         /* sage green */
-    --pk-warning: #d6b06b;
-    --pk-error: #b42318;
+    /* Dark-first default */
+    --background: 215 35% 10%;      /* deep navy */
+    --foreground: 35 35% 92%;       /* warm cream */
 
-    /* ----- Shadcn/Tailwind CSS variables (HSL) ----- */
-    /* NOTE: these drive bg-background, text-foreground, etc. */
-    --background: 206 61% 11%;
-    --foreground: 38 55% 89%;
+    --card: 215 30% 14%;
+    --card-foreground: 35 35% 92%;
 
-    --card: 206 52% 16%;
-    --card-foreground: 38 55% 89%;
+    --popover: 215 30% 14%;
+    --popover-foreground: 35 35% 92%;
 
-    --popover: 206 52% 16%;
-    --popover-foreground: 38 55% 89%;
+    --primary: 18 70% 42%;          /* ember/burgundy */
+    --primary-foreground: 35 35% 96%;
 
-    --primary: 38 60% 63%;              /* gold */
-    --primary-foreground: 206 61% 11%;
+    --secondary: 150 22% 24%;       /* cellar green */
+    --secondary-foreground: 35 35% 92%;
 
-    --secondary: 151 23% 24%;           /* sage */
-    --secondary-foreground: 38 55% 89%;
+    --muted: 215 18% 20%;
+    --muted-foreground: 35 14% 72%;
 
-    --muted: 206 46% 21%;
-    --muted-foreground: 33 19% 66%;
+    --accent: 40 55% 55%;           /* brass/gold */
+    --accent-foreground: 215 35% 10%;
 
-    --accent: 0 49% 36%;                /* burgundy */
-    --accent-foreground: 38 55% 89%;
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 35 35% 96%;
 
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 38 55% 89%;
+    --border: 215 18% 25%;
+    --input: 215 18% 25%;
+    --ring: 40 55% 55%;
 
-    --border: 206 37% 27%;
-    --input: 206 37% 27%;
-    --ring: 38 60% 63%;
+    --radius: 14px;
 
-    --radius: 0.9rem;
+    /* PipeKeeper custom variables */
+    --pk-bg-0: 10 23 43;
+    --pk-bg-1: 18 34 58;
+    --pk-surface: 20 36 60;
+    --pk-surface-2: 26 46 72;
+    --pk-border: 120 140 165;
+    --pk-text-primary: 245 232 208;
+    --pk-text-secondary: 245 232 208;
+    --pk-text-muted: 215 200 170;
+    --pk-cta-primary: 186 86 60;
+    --pk-success: 74 128 98;
+    --pk-warning: 214 171 104;
+    --pk-glow: 0 0 0;
   }
 
+  /* Keep .dark for compatibility (same values) */
   .dark {
-    /* Keep dark == brand for this app */
-    --background: 206 61% 11%;
-    --foreground: 38 55% 89%;
-    --card: 206 52% 16%;
-    --card-foreground: 38 55% 89%;
-    --popover: 206 52% 16%;
-    --popover-foreground: 38 55% 89%;
-    --primary: 38 60% 63%;
-    --primary-foreground: 206 61% 11%;
-    --secondary: 151 23% 24%;
-    --secondary-foreground: 38 55% 89%;
-    --muted: 206 46% 21%;
-    --muted-foreground: 33 19% 66%;
-    --accent: 0 49% 36%;
-    --accent-foreground: 38 55% 89%;
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 38 55% 89%;
-    --border: 206 37% 27%;
-    --input: 206 37% 27%;
-    --ring: 38 60% 63%;
+    --background: 215 35% 10%;
+    --foreground: 35 35% 92%;
+    --card: 215 30% 14%;
+    --card-foreground: 35 35% 92%;
+    --popover: 215 30% 14%;
+    --popover-foreground: 35 35% 92%;
+    --primary: 18 70% 42%;
+    --primary-foreground: 35 35% 96%;
+    --secondary: 150 22% 24%;
+    --secondary-foreground: 35 35% 92%;
+    --muted: 215 18% 20%;
+    --muted-foreground: 35 14% 72%;
+    --accent: 40 55% 55%;
+    --accent-foreground: 215 35% 10%;
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 35 35% 96%;
+    --border: 215 18% 25%;
+    --input: 215 18% 25%;
+    --ring: 40 55% 55%;
   }
 
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground;
   }
 
-  /* ================================
-     PipeKeeper Brand Theme Variables
-     (Required for rgb(var(--pk-*)))
-     ================================ */
-
-  :root {
-    /* Backgrounds (deep navy) */
-    --pk-bg-0: 10 23 43;       /* page background */
-    --pk-bg-1: 18 34 58;       /* gradient mid */
-    --pk-surface: 20 36 60;    /* panels */
-    --pk-surface-2: 26 46 72;  /* elevated cards */
-    --pk-border: 120 140 165;  /* subtle borders */
-
-    /* Text (warm parchment) */
-    --pk-text-primary: 245 232 208;
-    --pk-text-secondary: 245 232 208; /* use opacity in UI */
-    --pk-text-muted: 215 200 170;
-
-    /* Accents */
-    --pk-cta-primary: 186 86 60;  /* warm rust/orange */
-    --pk-success: 74 128 98;      /* cellar green */
-    --pk-warning: 214 171 104;    /* gold */
-
-    /* Optional: shadows/glow helpers */
-    --pk-glow: 0 0 0;
-  }
-
   /* Custom scrollbar styling */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
-    background: var(--pk-bg-secondary);
-    border-radius: 0.5rem;
+    background: hsl(var(--muted));
+    border-radius: 4px;
   }
-  
+
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--pk-gold) 40%, transparent);
-    border-radius: 0.5rem;
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--pk-gold) 60%, transparent);
-  }
-
-  /* Input and textarea styling for better contrast */
-  input, textarea, select {
-    background: var(--pk-surface);
-    border-color: var(--pk-border-strong);
-    color: var(--pk-text-primary);
-    border-radius: 0.75rem;
-    transition: all 200ms ease-in-out;
-  }
-  
-  input::placeholder, textarea::placeholder, select::placeholder {
-    color: var(--pk-text-muted);
-  }
-  
-  input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: var(--pk-gold);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pk-gold) 20%, transparent);
-  }
-
-  /* Card and panel styling */
-  .card, [class*="Card"] {
-    border-radius: 1rem;
-    transition: shadow 200ms ease-in-out;
-  }
-
-  /* Button styling for consistency */
-  button {
-    border-radius: 0.75rem;
-    transition: all 200ms ease-in-out;
-  }
-  
-  button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--pk-gold);
-    outline-offset: 2px;
-  }
-  
-  button:active {
-    transform: scale(0.98);
-  }
-
-  /* Dialog and modal styling */
-  [role="dialog"] {
-    border-radius: 1rem;
-  }
-
-  /* Link styling */
-  a:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--pk-gold);
-    outline-offset: 2px;
-    border-radius: 0.25rem;
+    background: hsl(var(--accent));
   }
 
   /* Smooth transitions for interactive elements */

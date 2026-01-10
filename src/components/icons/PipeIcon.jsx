@@ -1,28 +1,36 @@
-import React from 'react';
+import React from "react";
 
-export default function PipeIcon({ className = "w-5 h-5" }) {
+export function PipeIcon({ className = "h-5 w-5", title = "Pipe" }) {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
+    <svg
+      viewBox="0 0 64 64"
       className={className}
+      role="img"
+      aria-label={title}
     >
-      {/* Bowl - cylindrical billiard shape */}
-      <ellipse cx="5.5" cy="10" rx="2" ry="1.5" />
-      <path d="M3.5 10v4c0 1.1.9 2 2 2s2-.9 2-2v-4" />
-      
+      {/* Bowl */}
+      <path
+        d="M14 26c0-2.8 2.2-5 5-5h10c4.4 0 8 3.6 8 8v10c0 7.2-5.8 13-13 13h-4c-3.3 0-6-2.7-6-6V26z"
+        fill="currentColor"
+        opacity="0.95"
+      />
       {/* Shank */}
-      <path d="M7.5 12h6" />
-      
-      {/* Stem - bent upward */}
-      <path d="M13.5 12c1 0 2 .5 3 1.5s1.5 2.5 2 3.5" />
-      
-      {/* Bit end */}
-      <circle cx="18.5" cy="17" r="0.8" fill="currentColor" />
+      <path
+        d="M37 34h11c5.5 0 10 4.5 10 10v2H37V34z"
+        fill="currentColor"
+        opacity="0.95"
+      />
+      {/* Stem */}
+      <path
+        d="M58 46c0 2.2-1.8 4-4 4H37v-4h21z"
+        fill="currentColor"
+        opacity="0.95"
+      />
+      {/* Negative cut for bowl rim */}
+      <path
+        d="M20 24h10c3.3 0 6 2.7 6 6v2H20v-8z"
+        fill="rgba(0,0,0,0.18)"
+      />
     </svg>
   );
 }
