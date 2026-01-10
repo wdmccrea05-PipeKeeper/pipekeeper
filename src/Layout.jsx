@@ -52,13 +52,13 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         <img 
           src={item.icon} 
           alt={item.name} 
-          className="w-10 h-10 object-contain"
+          className="w-5 h-5 object-contain"
           style={{
             filter: isMobile
               ? 'brightness(0)'
               : isActive 
-                ? 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)'
-                : 'brightness(0.9) sepia(0.5) hue-rotate(10deg) saturate(0.4) opacity(0.7)'
+                ? 'brightness(1.2) sepia(0.8) hue-rotate(25deg) saturate(0.6)'
+                : 'brightness(0.8) sepia(0.7) hue-rotate(25deg) saturate(0.5) opacity(0.7)'
           }}
         />
       )}
