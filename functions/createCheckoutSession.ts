@@ -15,7 +15,20 @@ function isAllowedPrice(priceId) {
   return ALLOWED_PRICE_IDS.includes(priceId);
 }
 
+function isIOSCompanionRequest(req) {
+  const url = new URL(req.url);
+  const platform = (url.searchParams.get("platform") || "").toLowerCase();
+  return platform === "ios";
+}
+
 Deno.serve(async (req) => {
+  // iOS compliance: Block checkout for iOS companion
+  if (isIOSCompanionRequest(req)) {
+    return Response.json(
+      { error: "Not available in iOS companion app." },
+      { status: 403 }
+    );
+  }
   if (req.method !== 'POST') {
     return Response.json({ error: 'Method not allowed' }, { status: 405 });
   }

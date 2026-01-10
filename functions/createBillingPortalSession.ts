@@ -4,7 +4,21 @@ import Stripe from 'npm:stripe@17.4.0';
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '');
 const APP_URL = Deno.env.get('APP_URL') || 'https://pipekeeper.app';
 
+function isIOSCompanionRequest(req) {
+  const url = new URL(req.url);
+  const platform = (url.searchParams.get("platform") || "").toLowerCase();
+  return platform === "ios";
+}
+
 Deno.serve(async (req) => {
+  // iOS compliance: Block portal for iOS companion
+  if (isIOSCompanionRequest(req)) {
+    return Response.json(
+      { error: "Not available in iOS companion app." },
+      { status: 403 }
+    );
+  }
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

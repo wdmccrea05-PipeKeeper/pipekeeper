@@ -12,8 +12,9 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 
 const PRICING_OPTIONS = [
   { 
@@ -107,7 +108,39 @@ export default function SubscriptionPage() {
   const subscriptionCanceled = subscription?.cancel_at_period_end;
   const userHasPaidAccess = checkPaidAccess(user);
 
-  // iOS companion app: block all purchasing/subscription management UI
+  // iOS compliance: Block entire subscription page
+  if (isIOSCompanion()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-6">
+        <div className="max-w-2xl mx-auto mt-12">
+          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#e8d5b7]">Premium on Web</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-[#e8d5b7]/80 leading-relaxed">
+                Premium subscriptions are available on the web. The iOS companion app does not sell or unlock paid digital features.
+              </p>
+              <p className="text-[#e8d5b7]/80 leading-relaxed">
+                Visit{" "}
+                <a 
+                  href="https://pipekeeper.app/Subscription" 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="text-amber-400 underline hover:text-amber-300"
+                >
+                  pipekeeper.app
+                </a>{" "}
+                to subscribe or manage billing.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Android/other companion: show restricted UI
   if (!shouldShowPurchaseUI()) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
