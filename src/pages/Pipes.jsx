@@ -146,8 +146,8 @@ export default function PipesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="flex flex-col gap-3 mb-6"
         >
-        <div className="flex flex-col gap-3 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
@@ -203,7 +203,6 @@ export default function PipesPage() {
                 <List className="w-4 h-4" />
               </Button>
             </div>
-          </div>
         </motion.div>
 
         {/* Pipes Grid */}
