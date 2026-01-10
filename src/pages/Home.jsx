@@ -335,11 +335,11 @@ export default function HomePage() {
               transition={{ delay: 0.08 }}
             >
               <a href={createPageUrl('Pipes')}>
-                <Card className="bg-gradient-to-br from-primary to-primary/80 border-border/60 cursor-pointer hover:shadow-lg transition-shadow">
+                <Card className="bg-gradient-to-br from-accent to-accent/80 border-border/60 cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-3 sm:p-6 text-center">
-                    <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 sm:mb-2 text-accent" strokeWidth={2.2} />
-                    <p className="text-2xl sm:text-3xl font-bold text-foreground">{safePipes.length}</p>
-                    <p className="text-xs sm:text-sm text-foreground/70">Pipes</p>
+                    <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 sm:mb-2 text-black" strokeWidth={2.2} />
+                    <p className="text-2xl sm:text-3xl font-bold text-black">{safePipes.length}</p>
+                    <p className="text-xs sm:text-sm text-black/70">Pipes</p>
                   </CardContent>
                 </Card>
               </a>
