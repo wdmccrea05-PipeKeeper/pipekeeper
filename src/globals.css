@@ -1,110 +1,161 @@
-css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* PipeKeeper theme tokens (ShadCN-compatible) */
 @layer base {
   :root {
-    /* Dark-first default */
-    --background: 215 35% 10%;      /* deep navy */
-    --foreground: 35 35% 92%;       /* warm cream */
-
-    --card: 215 30% 14%;
-    --card-foreground: 35 35% 92%;
-
-    --popover: 215 30% 14%;
-    --popover-foreground: 35 35% 92%;
-
-    --primary: 18 70% 42%;          /* ember/burgundy */
-    --primary-foreground: 35 35% 96%;
-
-    --secondary: 150 22% 24%;       /* cellar green */
-    --secondary-foreground: 35 35% 92%;
-
-    --muted: 215 18% 20%;
-    --muted-foreground: 35 14% 72%;
-
-    --accent: 40 55% 55%;           /* brass/gold */
-    --accent-foreground: 215 35% 10%;
-
-    --destructive: 0 75% 50%;
-    --destructive-foreground: 35 35% 96%;
-
-    --border: 215 18% 25%;
-    --input: 215 18% 25%;
-    --ring: 40 55% 55%;
-
-    --radius: 14px;
-
-    /* PipeKeeper custom variables */
-    --pk-bg-0: 10 23 43;
-    --pk-bg-1: 18 34 58;
-    --pk-surface: 20 36 60;
-    --pk-surface-2: 26 46 72;
-    --pk-border: 120 140 165;
-    --pk-text-primary: 245 232 208;
-    --pk-text-secondary: 245 232 208;
-    --pk-text-muted: 215 200 170;
-    --pk-cta-primary: 186 86 60;
-    --pk-success: 74 128 98;
-    --pk-warning: 214 171 104;
-    --pk-glow: 0 0 0;
+    /* PipeKeeper Heritage Palette */
+    
+    /* Backgrounds */
+    --pk-bg-primary: 15 26 36; /* #0F1A24 - Deep Navy Slate */
+    --pk-bg-secondary: 27 42 54; /* #1B2A36 - Slate Blue */
+    --pk-surface: 35 55 70; /* #233746 - Muted Steel Blue */
+    
+    /* Heritage Accents */
+    --pk-gold: 201 164 92; /* #C9A45C - Warm Antique Gold */
+    --pk-brown: 122 74 46; /* #7A4A2E - Tobacco Brown */
+    
+    /* CTAs & Status */
+    --pk-cta-primary: 184 92 56; /* #B85C38 - Burnt Copper */
+    --pk-cta-primary-hover: 158 78 47; /* #9E4E2F */
+    --pk-success: 78 138 100; /* #4E8A64 - Muted Emerald */
+    --pk-warning: 214 162 74; /* #D6A24A - Aged Amber */
+    --pk-error: 179 58 58; /* #B33A3A - Muted Crimson */
+    
+    /* Typography */
+    --pk-text-primary: 242 244 246; /* #F2F4F6 - Off-White */
+    --pk-text-secondary: 183 192 199; /* #B7C0C7 - Cool Gray */
+    --pk-text-muted: 138 150 160; /* #8A96A0 */
+    
+    /* Borders */
+    --pk-border-subtle: 255 255 255 / 0.08;
+    --pk-border-strong: 201 164 92 / 0.35;
+    
+    /* Shadcn compatibility layer */
+    --background: var(--pk-bg-primary);
+    --foreground: var(--pk-text-primary);
+    
+    --card: var(--pk-surface);
+    --card-foreground: var(--pk-text-primary);
+    
+    --popover: var(--pk-surface);
+    --popover-foreground: var(--pk-text-primary);
+    
+    --primary: var(--pk-cta-primary);
+    --primary-foreground: var(--pk-text-primary);
+    
+    --secondary: var(--pk-bg-secondary);
+    --secondary-foreground: var(--pk-text-primary);
+    
+    --muted: var(--pk-bg-secondary);
+    --muted-foreground: var(--pk-text-muted);
+    
+    --accent: var(--pk-gold);
+    --accent-foreground: var(--pk-bg-primary);
+    
+    --success: var(--pk-success);
+    --success-foreground: var(--pk-text-primary);
+    
+    --warning: var(--pk-warning);
+    --warning-foreground: var(--pk-bg-primary);
+    
+    --destructive: var(--pk-error);
+    --destructive-foreground: var(--pk-text-primary);
+    
+    --border: var(--pk-border-subtle);
+    --input: var(--pk-surface);
+    --ring: var(--pk-gold);
+    
+    --radius: 0.75rem;
   }
+}
 
-  /* Keep .dark for compatibility (same values) */
-  .dark {
-    --background: 215 35% 10%;
-    --foreground: 35 35% 92%;
-    --card: 215 30% 14%;
-    --card-foreground: 35 35% 92%;
-    --popover: 215 30% 14%;
-    --popover-foreground: 35 35% 92%;
-    --primary: 18 70% 42%;
-    --primary-foreground: 35 35% 96%;
-    --secondary: 150 22% 24%;
-    --secondary-foreground: 35 35% 92%;
-    --muted: 215 18% 20%;
-    --muted-foreground: 35 14% 72%;
-    --accent: 40 55% 55%;
-    --accent-foreground: 215 35% 10%;
-    --destructive: 0 75% 50%;
-    --destructive-foreground: 35 35% 96%;
-    --border: 215 18% 25%;
-    --input: 215 18% 25%;
-    --ring: 40 55% 55%;
-  }
-
+@layer base {
   * {
     @apply border-border;
   }
-  
   body {
     @apply bg-background text-foreground;
   }
-
+  
   /* Custom scrollbar styling */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
-
+  
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 4px;
+    background: rgb(var(--pk-bg-secondary));
+    border-radius: 0.5rem;
   }
-
+  
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground));
-    border-radius: 4px;
+    background: rgb(var(--pk-gold) / 0.4);
+    border-radius: 0.5rem;
   }
-
+  
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--accent));
+    background: rgb(var(--pk-gold) / 0.6);
   }
-
+  
+  /* Input and textarea styling for better contrast */
+  input, textarea, select {
+    background: rgb(var(--pk-surface));
+    border-color: rgb(var(--pk-border-strong));
+    color: rgb(var(--pk-text-primary));
+    border-radius: 0.75rem;
+    transition: all 200ms ease-in-out;
+  }
+  
+  input::placeholder, textarea::placeholder, select::placeholder {
+    color: rgb(var(--pk-text-muted));
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: rgb(var(--pk-gold));
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold) / 0.2);
+  }
+  
+  /* Card and panel styling */
+  .card, [class*="Card"] {
+    @apply rounded-2xl transition-shadow duration-200;
+  }
+  
+  /* Button styling for consistency */
+  button {
+    border-radius: 0.75rem;
+    transition: all 200ms ease-in-out;
+  }
+  
+  button:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold));
+    ring-offset: 2px;
+  }
+  
+  button:active {
+    transform: scale(0.98);
+  }
+  
+  /* Dialog and modal styling */
+  [role="dialog"] {
+    @apply rounded-2xl;
+  }
+  
+  /* Link styling */
+  a:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold));
+    ring-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
   /* Smooth transitions for interactive elements */
   button, a, input, select, textarea {
-    transition: all 200ms ease-in-out;
+    @apply transition-all duration-200 ease-in-out;
   }
 }

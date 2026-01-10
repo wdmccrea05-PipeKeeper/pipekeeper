@@ -106,7 +106,7 @@ export default function PipesPage() {
   const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-primary))] via-[rgb(var(--pk-bg-secondary))] to-[rgb(var(--pk-bg-primary))]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
@@ -115,8 +115,8 @@ export default function PipesPage() {
           className="flex flex-col gap-4 mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold text-[rgb(var(--pk-text-primary))]">My Pipes</h1>
-            <p className="text-[rgb(var(--pk-text-secondary))] mt-1">
+            <h1 className="text-3xl font-bold text-[#E0D8C8]">My Pipes</h1>
+            <p className="text-[#E0D8C8]/70 mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
@@ -125,7 +125,7 @@ export default function PipesPage() {
             <Button 
               onClick={() => setShowQuickSearch(true)}
               variant="outline"
-              className="border-[rgb(var(--pk-border-strong))] text-[rgb(var(--pk-text-primary))] hover:bg-[rgb(var(--pk-gold))]/20 flex-shrink-0"
+              className="border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#7D90A5]/20 flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Quick Search & Add</span>
@@ -133,7 +133,7 @@ export default function PipesPage() {
             </Button>
             <Button 
               onClick={() => { setEditingPipe(null); setShowForm(true); }}
-              className="bg-gradient-to-r from-[rgb(var(--pk-cta-primary))] to-[rgb(var(--pk-cta-primary-hover))] hover:from-[rgb(var(--pk-cta-primary-hover))] hover:to-[rgb(var(--pk-cta-primary))] shadow-md hover:shadow-lg flex-shrink-0"
+              className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-md hover:shadow-lg flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Pipe
@@ -149,18 +149,18 @@ export default function PipesPage() {
           className="flex flex-col gap-3 mb-6"
         >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgb(var(--pk-text-muted))]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
               placeholder="Search by name, maker, or shape..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-[rgb(var(--pk-surface))] border-[rgb(var(--pk-border-strong))] text-[rgb(var(--pk-text-primary))] placeholder:text-[rgb(var(--pk-text-muted))]"
+              className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
               aria-label="Search pipes"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
-              <SelectTrigger className="bg-[rgb(var(--pk-surface))] border-[rgb(var(--pk-border-strong))] text-[rgb(var(--pk-text-primary))]" aria-label="Filter by shape">
+              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by shape">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -168,14 +168,14 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
-              <SelectTrigger className="bg-[rgb(var(--pk-surface))] border-[rgb(var(--pk-border-strong))] text-[rgb(var(--pk-text-primary))]" aria-label="Filter by material">
+              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by material">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="flex border border-[rgb(var(--pk-border-strong))] rounded-lg bg-[rgb(var(--pk-surface))] w-full sm:w-fit justify-center sm:justify-start" role="group" aria-label="View mode">
+            <div className="flex border border-[#E0D8C8]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start" role="group" aria-label="View mode">
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -183,7 +183,7 @@ export default function PipesPage() {
                   setViewMode('grid');
                   localStorage.setItem('pipesViewMode', 'grid');
                 }}
-                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-gradient-to-r from-[rgb(var(--pk-cta-primary))] to-[rgb(var(--pk-cta-primary-hover))] text-[rgb(var(--pk-text-primary))]' : 'text-[rgb(var(--pk-text-primary))] hover:bg-[rgb(var(--pk-gold))]/20'}`}
+                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
                 aria-label="Grid view"
                 aria-pressed={viewMode === 'grid'}
               >
@@ -196,7 +196,7 @@ export default function PipesPage() {
                   setViewMode('list');
                   localStorage.setItem('pipesViewMode', 'list');
                 }}
-                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-gradient-to-r from-[rgb(var(--pk-cta-primary))] to-[rgb(var(--pk-cta-primary-hover))] text-[rgb(var(--pk-text-primary))]' : 'text-[rgb(var(--pk-text-primary))] hover:bg-[rgb(var(--pk-gold))]/20'}`}
+                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
                 aria-label="List view"
                 aria-pressed={viewMode === 'list'}
               >

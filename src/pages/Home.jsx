@@ -9,11 +9,8 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Heart, DollarSign, 
-  Star, Sparkles, Search, Camera, X, AlertCircle
+  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
-import { TobaccoLeafIcon, AITobacconistIcon } from "@/components/icons/PipeKeeperIcons";
-import { PipeIcon } from "@/components/icons/PipeIcon";
-import { TinJarIcon } from "@/components/icons/TinJarIcon";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -321,7 +318,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-1))] via-[rgb(var(--pk-bg-0))] to-[rgb(var(--pk-bg-1))] overflow-x-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
         <motion.div 
@@ -346,127 +343,55 @@ export default function HomePage() {
             transition={{ delay: 0.1 }}
           >
             <a href={createPageUrl('Pipes')}>
-              <div
-                className="rounded-2xl border p-3 sm:p-6 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                  borderColor: "var(--pk-border-strong)",
-                  backgroundColor: "var(--pk-surface)",
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div
-                    className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-cta-primary))" }}
-                  >
-                    <PipeIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
-                    {safePipes.length}
-                  </div>
-                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
-                    Pipes
-                  </div>
-                </div>
-              </div>
-            </a>
+              <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
+                  <p className="text-xs sm:text-sm text-white/80">Pipes</p>
+                  </CardContent>
+                  </Card>
+                  </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div
-              className="rounded-2xl border p-3 sm:p-6 shadow-sm"
-              style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                borderColor: "var(--pk-border-strong)",
-                backgroundColor: "var(--pk-surface)",
-              }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div
-                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-cta-primary))" }}
-                >
-                  <DollarSign className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-3xl font-bold break-words" style={{ color: "rgb(var(--pk-text-primary))" }}>
-                  ${totalPipeValue.toLocaleString()}
-                </div>
-                <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
-                  Value
-                </div>
-              </div>
-            </div>
+            <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30">
+              <CardContent className="p-3 sm:p-6 text-center">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                <p className="text-xl sm:text-3xl font-bold text-white break-words">${totalPipeValue.toLocaleString()}</p>
+                <p className="text-xs sm:text-sm text-white/80">Value</p>
+              </CardContent>
+            </Card>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-          >
+            >
             <a href={createPageUrl('Tobacco')}>
-              <div
-                className="rounded-2xl border p-3 sm:p-6 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                  borderColor: "var(--pk-border-strong)",
-                  backgroundColor: "var(--pk-surface)",
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div
-                    className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-success))" }}
-                  >
-                    <TobaccoLeafIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
-                    {safeBlends.length}
-                  </div>
-                  <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
-                    Blends
-                  </div>
-                </div>
-              </div>
-            </a>
+              <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{safeBlends.length}</p>
+                  <p className="text-xs sm:text-sm text-white/80">Blends</p>
+                  </CardContent>
+                  </Card>
+                  </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div
-              className="rounded-2xl border p-3 sm:p-6 shadow-sm"
-              style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-                borderColor: "var(--pk-border-strong)",
-                backgroundColor: "var(--pk-surface)",
-              }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div
-                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)", color: "rgb(var(--pk-success))" }}
-                >
-                  <TinJarIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-bold" style={{ color: "rgb(var(--pk-text-primary))" }}>
-                  {totalCellaredTins}
-                </div>
-                <div className="mt-1 text-xs sm:text-sm" style={{ color: "rgb(var(--pk-text-secondary))", opacity: 0.8 }}>
-                  Cellared Tins
-                </div>
-              </div>
-            </div>
+            <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30">
+              <CardContent className="p-3 sm:p-6 text-center">
+                <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
+                <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredTins}</p>
+                <p className="text-xs sm:text-sm text-white/80">Cellared Tins</p>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
 
@@ -493,7 +418,7 @@ export default function HomePage() {
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <PipeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                     </div>
                   </div>
 
@@ -549,7 +474,7 @@ export default function HomePage() {
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Manage your blends</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                      <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                   </div>
 
@@ -792,8 +717,13 @@ export default function HomePage() {
             className="text-center py-8 sm:py-12 px-4"
           >
             <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <PipeIcon className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" strokeWidth={1.5} />
-              <TobaccoLeafIcon className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" strokeWidth={1.5} />
+              <img 
+                src={PIPE_ICON}
+                alt="Pipe"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                style={{ filter: 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)' }}
+              />
+              <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
               Welcome to Your Collection

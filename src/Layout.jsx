@@ -2,10 +2,8 @@ import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TobaccoLeafIcon, AITobacconistIcon } from "@/components/icons/PipeKeeperIcons";
-import { PipeIcon } from "@/components/icons/PipeIcon";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,8 +18,8 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
-  { name: 'Pipes', page: 'Pipes', icon: PipeIcon, isIconComponent: true },
-  { name: 'Tobacco', page: 'Tobacco', icon: TobaccoLeafIcon, isIconComponent: true },
+  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
+  { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
   { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
@@ -37,10 +35,10 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       className={cn(
         "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 transform hover:scale-105",
         isActive 
-          ? "bg-gradient-to-r from-[rgb(var(--pk-cta-primary))] to-[rgb(var(--pk-cta-primary-hover))] text-[rgb(var(--pk-text-primary))] shadow-md" 
+          ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md" 
           : isMobile 
-            ? "text-[rgb(var(--pk-bg-primary))] hover:bg-[rgb(var(--pk-gold))]/10"
-            : "text-[rgb(var(--pk-text-secondary))] hover:bg-[rgb(var(--pk-gold))]/30 hover:text-[rgb(var(--pk-text-primary))]"
+            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
       style={{ 
         WebkitTapHighlightColor: 'transparent',
@@ -136,14 +134,14 @@ export default function Layout({ children, currentPageName }) {
   // Show loading state during authentication
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-primary))] via-[rgb(var(--pk-bg-secondary))] to-[rgb(var(--pk-bg-primary))] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[rgb(var(--pk-text-primary))]">Loading...</p>
+          <p className="text-[#e8d5b7]">Loading...</p>
         </div>
       </div>
     );
@@ -163,15 +161,15 @@ export default function Layout({ children, currentPageName }) {
   // If the user is logged out / session expired, do NOT render the app shell for private pages
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-primary))] via-[rgb(var(--pk-bg-secondary))] to-[rgb(var(--pk-bg-primary))] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[rgb(var(--pk-bg-secondary))]/60 border border-[rgb(var(--pk-error))]/60 rounded-2xl p-8 text-center">
-          <p className="text-[rgb(var(--pk-text-primary))] text-lg font-semibold mb-2">Login required</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
           {isCompanionApp() && (
-            <p className="text-[rgb(var(--pk-text-secondary))] text-sm mb-4">
+            <p className="text-[#e8d5b7]/80 text-sm mb-4">
               In the companion app, please sign in using your email and password.
             </p>
           )}
-          <p className="text-[rgb(var(--pk-text-secondary))] mb-6">Your session may have expired. Please log in again.</p>
+          <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
           <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
         </div>
       </div>
@@ -184,9 +182,9 @@ export default function Layout({ children, currentPageName }) {
     <>
       <DocumentTitle title="PipeKeeper" />
       <TermsGate user={user}>
-      <div className="min-h-screen bg-gradient-to-br from-[rgb(var(--pk-bg-primary))] via-[rgb(var(--pk-bg-secondary))] to-[rgb(var(--pk-bg-primary))]">
+      <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[rgb(var(--pk-bg-primary))]/95 backdrop-blur-lg border-b border-[rgb(var(--pk-gold))]/50 shadow-lg">
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="flex items-center justify-between h-16 gap-4">
             <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
@@ -195,7 +193,7 @@ export default function Layout({ children, currentPageName }) {
                 alt="PipeKeeper"
                 className="w-8 h-8 object-contain"
               />
-              <span className="font-bold text-xl text-[rgb(var(--pk-text-primary))]">PipeKeeper</span>
+              <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
             </Link>
             <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
               {navItems.map(item => (
@@ -207,7 +205,7 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[rgb(var(--pk-bg-primary))]/95 backdrop-blur-lg border-b border-[rgb(var(--pk-gold))]/50 shadow-lg">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
         <div className="flex items-center justify-between h-14 px-4">
           <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <img 
@@ -215,14 +213,14 @@ export default function Layout({ children, currentPageName }) {
               alt="PipeKeeper"
               className="w-7 h-7 object-contain"
             />
-            <span className="font-bold text-lg text-[rgb(var(--pk-text-primary))]">PipeKeeper</span>
+            <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
             </Link>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setMobileOpen(prev => !prev);
             }}
-            className="text-[rgb(var(--pk-text-primary))] p-2 -mr-2 hover:bg-[rgb(var(--pk-gold))]/20 rounded-lg active:scale-95 transition-all duration-200"
+            className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
             style={{ WebkitTapHighlightColor: 'transparent' }}
             aria-label="Toggle menu"
           >
@@ -268,7 +266,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[rgb(var(--pk-bg-primary))]/95 border-t border-[rgb(var(--pk-gold))]/50 mt-auto">
+      <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -277,19 +275,19 @@ export default function Layout({ children, currentPageName }) {
                 alt="PipeKeeper"
                 className="w-5 h-5 object-contain"
               />
-              <span className="text-sm text-[rgb(var(--pk-text-secondary))]">© 2025 PipeKeeper. All rights reserved.</span>
+              <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <a href={createPageUrl('FAQ')} className="text-sm text-[rgb(var(--pk-text-secondary))] hover:text-[rgb(var(--pk-text-primary))] transition-all duration-200 hover:underline">
+              <a href={createPageUrl('FAQ')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 FAQ
               </a>
-              <a href={createPageUrl('Support')} className="text-sm text-[rgb(var(--pk-text-secondary))] hover:text-[rgb(var(--pk-text-primary))] transition-all duration-200 hover:underline">
+              <a href={createPageUrl('Support')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Support
               </a>
-              <a href={createPageUrl('TermsOfService')} className="text-sm text-[rgb(var(--pk-text-secondary))] hover:text-[rgb(var(--pk-text-primary))] transition-all duration-200 hover:underline">
+              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Terms of Service
               </a>
-              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[rgb(var(--pk-text-secondary))] hover:text-[rgb(var(--pk-text-primary))] transition-all duration-200 hover:underline">
+              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                 Privacy Policy
               </a>
             </div>
