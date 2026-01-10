@@ -15,22 +15,38 @@ function Svg({ children, className = "", viewBox = "0 0 24 24" }) {
 
 export function PipeIcon({ className = "h-5 w-5", strokeWidth = 2 }) {
   return (
-    <Svg className={className}>
+    <Svg className={className} viewBox="0 0 26 24">
+      {/* Bowl */}
       <path
-        d="M5.5 13.7c0-1.9 1.5-3.4 3.4-3.4h1.9c1.9 0 3.4 1.5 3.4 3.4v1.1c0 1.9-1.5 3.4-3.4 3.4H8.9c-1.9 0-3.4-1.5-3.4-3.4v-1.1Z"
+        d="M6 10.3c0-2.3 1.9-4.2 4.2-4.2h3.2c2.3 0 4.2 1.9 4.2 4.2v6.2c0 3.4-2.8 6.2-6.2 6.2S6 19.9 6 16.5v-6.2Z"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinejoin="round"
       />
+      {/* Rim */}
       <path
-        d="M14.2 13.2h2.8c1.4 0 2.5 1.1 2.5 2.5v.4c0 1-.8 1.8-1.8 1.8h-3.5"
+        d="M8.4 6.7h6.8"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+      {/* Shank + stem (bent) */}
+      <path
+        d="M17.6 12.6h3.8c1.9 0 3.4 1.5 3.4 3.4v.5c0 1.3-1 2.4-2.4 2.4h-4.8"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M14.2 13.2c.2-2.1 1.8-3.6 4.1-3.6h.6"
+        d="M17.6 12.6c.5-3 3-5.1 6.1-5.1H25"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+      {/* Bit */}
+      <path
+        d="M24.2 18.9h.8"
         stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
