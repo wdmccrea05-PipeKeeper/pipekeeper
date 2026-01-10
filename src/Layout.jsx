@@ -13,8 +13,7 @@ import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 import { PipeIcon as PipeKeeperPipeIcon, TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
 
-const PIPEKEEPER_LOGO =
-  'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
+const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
@@ -46,88 +45,60 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
     >
       <item.icon className={cn("w-5 h-5", item.page === "Pipes" && "w-6 h-6")} />
       <span>{item.name}</span>
-      {item.isPremium && !hasPaidAccess && <Crown className="w-3 h-3 text-amber-500" />}
+
+      {item.isPremium && !hasPaidAccess && (
+        <Crown className="w-3 h-3 text-amber-500" />
+      )}
     </Link>
   );
 }
 
 const AGE_GATE_KEY = "pk_age_confirmed";
 
-function applyPipeKeeperTheme() {
-  const root = document.documentElement;
-  root.classList.add("dark");
-
-  // Dark background with light cards and high-contrast UI
-  const vars = {
-    "--background": "214 53% 9%",           // #0b1624 - dark background
-    "--foreground": "0 0% 95%",             // light text for dark backgrounds
-    "--card": "0 0% 97%",                   // #f7f7f7 - off-white cards
-    "--card-foreground": "213 25% 25%",     // dark blue text on cards
-    "--popover": "0 0% 97%",
-    "--popover-foreground": "213 25% 25%",
-    "--primary": "213 25% 25%",             // dark blue primary
-    "--primary-foreground": "0 0% 100%",    // white foreground
-    "--secondary": "0 0% 92%",              // light grey secondary
-    "--secondary-foreground": "213 25% 25%",
-    "--accent": "37 55% 82%",               // warm parchment accent
-    "--accent-foreground": "213 25% 25%",
-    "--muted": "0 0% 85%",                  // light grey muted
-    "--muted-foreground": "0 0% 0%",        // black muted text
-    "--border": "0 0% 88%",                 // light grey borders
-    "--input": "0 0% 97%",                  // light background for inputs
-    "--ring": "213 25% 25%",
-    "--radius": "1rem",
-  };
-
-  Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-
-  document.body.style.background = `hsl(${vars["--background"]})`;
-  document.body.style.color = `hsl(${vars["--foreground"]})`;
-  document.body.style.minHeight = "100vh";
-}
-
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem(AGE_GATE_KEY) === "true";
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(AGE_GATE_KEY) === "true";
+    }
     return false;
   });
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Ensure our theme class is present (Base44 previews sometimes reset html/body)
   React.useEffect(() => {
-    applyPipeKeeperTheme();
-
-    const obs = new MutationObserver(() => {
-      const bg = getComputedStyle(document.body).backgroundColor;
-      if (bg && bg.includes("255, 255, 255")) applyPipeKeeperTheme();
-    });
-
-    obs.observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
-    return () => obs.disconnect();
+    try {
+      document.documentElement.classList.add("dark");
+    } catch {}
   }, []);
-
-  React.useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'logout') {
-        queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== 'current-user' });
-        setTimeout(() => window.location.reload(), 100);
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [queryClient]);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
-    queryFn: async () => base44.auth.me(),
+    queryFn: async () => {
+      const userData = await base44.auth.me();
+      return userData;
+    },
     staleTime: 10000,
     retry: 2,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
+
+  React.useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'logout') {
+        queryClient.removeQueries({
+          predicate: (query) => query.queryKey[0] !== 'current-user'
+        });
+        setTimeout(() => window.location.reload(), 100);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [queryClient]);
 
   if (!ageConfirmed) {
     return (
@@ -156,13 +127,19 @@ export default function Layout({ children, currentPageName }) {
   }
 
   const PUBLIC_PAGES = new Set([
-    'FAQ', 'Support', 'TermsOfService', 'PrivacyPolicy', 'Invite', 'PublicProfile', 'Index',
+    'FAQ',
+    'Support',
+    'TermsOfService',
+    'PrivacyPolicy',
+    'Invite',
+    'PublicProfile',
+    'Index',
   ]);
 
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
       <div className="pk-page flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card/80 border border-border rounded-2xl p-8 text-center">
+        <div className="max-w-md w-full bg-card/70 border border-border rounded-2xl p-8 text-center">
           <p className="text-foreground text-lg font-semibold mb-2">Login required</p>
           {isCompanionApp() && (
             <p className="text-foreground/80 text-sm mb-4">
@@ -180,78 +157,53 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <>
+      {/* Theme background + FIXED readability rules (no more “wash-out” text on light cards) */}
       <style>{`
         body {
           background: hsl(var(--background)) !important;
           color: hsl(var(--foreground)) !important;
           background-image:
             radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.10), transparent 55%),
-            radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.12), transparent 55%),
-            radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.42), transparent 55%) !important;
+            radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.16), transparent 55%),
+            radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.45), transparent 55%) !important;
           background-attachment: fixed;
         }
 
         .pk-page { min-height: 100vh; }
         .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
 
-        /* Readability layer — force light components to behave on dark */
-        .pk-page .bg-white,
-        .pk-page .bg-slate-50,
-        .pk-page .bg-neutral-50,
-        .pk-page .bg-gray-50,
-        .pk-page .bg-zinc-50,
-        .pk-page .bg-stone-50,
-        .pk-page .bg-emerald-50,
-        .pk-page .bg-green-50,
-        .pk-page .bg-blue-50,
-        .pk-page .bg-indigo-50,
-        .pk-page .bg-purple-50,
-        .pk-page .bg-violet-50,
-        .pk-page .bg-amber-50,
-        .pk-page .bg-orange-50,
-        .pk-page .bg-red-50 {
-          background: hsl(var(--card) / 0.82) !important;
-          color: hsl(var(--foreground)) !important;
+        /**
+         * IMPORTANT:
+         * Light “card” surfaces must render DARK text.
+         * This fixes the low-contrast issues without rewriting every component.
+         */
+        .pk-page .bg-card,
+        .pk-page .pk-card,
+        .pk-page .bg-popover {
+          color: hsl(var(--card-foreground)) !important;
         }
 
-        .pk-page .text-black,
-        .pk-page .text-slate-900,
-        .pk-page .text-gray-900,
-        .pk-page .text-neutral-900,
-        .pk-page .text-zinc-900,
-        .pk-page .text-stone-900,
-        .pk-page .text-slate-800,
-        .pk-page .text-gray-800,
-        .pk-page .text-neutral-800 {
-          color: hsl(var(--foreground)) !important;
+        .pk-page .bg-card .text-foreground,
+        .pk-page .pk-card .text-foreground,
+        .pk-page .bg-popover .text-foreground {
+          color: hsl(var(--card-foreground)) !important;
         }
 
-        .pk-page .text-muted-foreground,
-        .pk-page .text-slate-500,
-        .pk-page .text-gray-500,
-        .pk-page .text-neutral-500,
-        .pk-page .text-zinc-500 {
-          color: hsl(var(--muted-foreground)) !important;
+        .pk-page .bg-card .text-muted-foreground,
+        .pk-page .pk-card .text-muted-foreground,
+        .pk-page .bg-popover .text-muted-foreground {
+          color: hsl(var(--muted-foreground-card)) !important;
         }
 
-        .pk-page .border,
-        .pk-page .border-slate-200,
-        .pk-page .border-gray-200,
-        .pk-page .border-neutral-200,
-        .pk-page .border-zinc-200 {
-          border-color: hsl(var(--border) / 0.75) !important;
-        }
-
-        .pk-page input,
-        .pk-page textarea,
-        .pk-page select {
-          background: hsl(var(--card) / 0.72) !important;
-          color: hsl(var(--foreground)) !important;
-          border-color: hsl(var(--border) / 0.78) !important;
-        }
-        .pk-page input::placeholder,
-        .pk-page textarea::placeholder {
-          color: hsl(var(--foreground) / 0.60) !important;
+        .pk-page .bg-card input,
+        .pk-page .bg-card textarea,
+        .pk-page .bg-card select,
+        .pk-page .pk-card input,
+        .pk-page .pk-card textarea,
+        .pk-page .pk-card select {
+          background: hsl(var(--card)) !important;
+          color: hsl(var(--card-foreground)) !important;
+          border-color: hsl(var(--border) / 0.65) !important;
         }
       `}</style>
 
@@ -268,7 +220,12 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
                 <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
                   {navItems.map(item => (
-                    <NavLink key={item.page} item={item} currentPage={currentPageName} hasPaidAccess={hasPaidAccess} />
+                    <NavLink
+                      key={item.page}
+                      item={item}
+                      currentPage={currentPageName}
+                      hasPaidAccess={hasPaidAccess}
+                    />
                   ))}
                 </div>
               </div>
@@ -341,16 +298,16 @@ export default function Layout({ children, currentPageName }) {
                   <span className="text-sm text-foreground/70">© 2025 PipeKeeper. All rights reserved.</span>
                 </div>
                 <div className="flex gap-6">
-                  <a href={createPageUrl('FAQ')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
+                  <a href__={createPageUrl('FAQ')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
                     FAQ
                   </a>
-                  <a href={createPageUrl('Support')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
+                  <a href__={createPageUrl('Support')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
                     Support
                   </a>
-                  <a href={createPageUrl('TermsOfService')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
+                  <a href__={createPageUrl('TermsOfService')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
                     Terms of Service
                   </a>
-                  <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
+                  <a href__={createPageUrl('PrivacyPolicy')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
                     Privacy Policy
                   </a>
                 </div>
