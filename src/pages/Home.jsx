@@ -659,9 +659,9 @@ export default function HomePage() {
               >
                 <Card className="pk-card w-full bg-card/70">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-foreground text-lg">Recent Tobacco</CardTitle>
+                    <CardTitle className="text-primary text-lg">Recent Tobacco</CardTitle>
                     <a href={createPageUrl('Tobacco')}>
-                      <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground">
+                      <Button variant="ghost" size="sm" className="text-primary/80 hover:text-primary">
                         View All <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
