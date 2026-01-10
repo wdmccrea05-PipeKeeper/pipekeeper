@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
+import { Home, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
@@ -11,7 +11,7 @@ import { isCompanionApp } from "@/components/utils/companion";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-
+import { PipeIcon as PipeKeeperPipeIcon, TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
 
