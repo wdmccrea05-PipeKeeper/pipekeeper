@@ -11,6 +11,7 @@ import {
   ArrowRight, Heart, DollarSign, 
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
+import { PipeIcon as PipeKeeperPipeIcon } from "@/components/icons/PipeKeeperIcons";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import PairingMatrix from "@/components/home/PairingMatrix";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -21,8 +22,6 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 
-
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d11a7b2f7_UpdatedPipeIcon.png';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -345,12 +344,12 @@ export default function HomePage() {
             <a href={createPageUrl('Pipes')}>
               <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+                  <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 sm:mb-2 text-white" strokeWidth={2.2} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <p className="text-xs sm:text-sm text-white/80">Pipes</p>
-                  </CardContent>
-                  </Card>
-                  </a>
+                </CardContent>
+              </Card>
+            </a>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -418,7 +417,7 @@ export default function HomePage() {
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+                      <PipeKeeperPipeIcon className="w-7 h-7 sm:w-9 sm:h-9 text-white" strokeWidth={2.2} />
                     </div>
                   </div>
 
@@ -717,12 +716,7 @@ export default function HomePage() {
             className="text-center py-8 sm:py-12 px-4"
           >
             <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <img 
-                src={PIPE_ICON}
-                alt="Pipe"
-                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-                style={{ filter: 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)' }}
-              />
+              <PipeKeeperPipeIcon className="w-12 h-12 sm:w-16 sm:h-16 text-primary" strokeWidth={2.1} />
               <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
