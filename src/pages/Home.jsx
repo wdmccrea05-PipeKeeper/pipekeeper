@@ -319,7 +319,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary mb-3 sm:mb-4 leading-tight">
-              Pipe & Tobacco Collection — TEST
+              Pipe & Tobacco Collection
             </h1>
             <p className="text-base sm:text-lg text-foreground/70 max-w-2xl mx-auto px-2">
               Manage your pipes and tobacco blends with AI-powered search, photo identification,
