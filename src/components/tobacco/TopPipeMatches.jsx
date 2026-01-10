@@ -378,25 +378,14 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
                 <Sparkles className="w-5 h-5 text-[#8b3a3a]" />
                 <span className="font-bold text-[#e8d5b7] text-base">Top Pipe Matches</span>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={() => setCollapsed(!collapsed)}
-                  className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
-                >
-                  {collapsed ? 'Show' : 'Hide'}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={findMatches}
-                  disabled={loading}
-                  className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Refresh'}
-                </Button>
-              </div>
+              <Button 
+                size="sm" 
+                variant="ghost"
+                onClick={() => setCollapsed(!collapsed)}
+                className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
+              >
+                {collapsed ? 'Show' : 'Hide'}
+              </Button>
             </div>
 
             {!collapsed && (
