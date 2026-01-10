@@ -545,18 +545,21 @@ export default function PipeDetailPage() {
 
         {/* AI Features Tabs */}
         <Tabs defaultValue="match" className="space-y-6">
-          <TabsList className="bg-white border border-stone-200 p-1">
-            <TabsTrigger value="match" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800">
+          <TabsList className="bg-white border border-stone-200 p-1 overflow-x-auto flex-nowrap w-full">
+            <TabsTrigger value="match" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
-              Tobacco Matching
+              <span className="hidden sm:inline">Tobacco Matching</span>
+              <span className="sm:hidden">Matching</span>
             </TabsTrigger>
-            <TabsTrigger value="value" className="data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800">
+            <TabsTrigger value="value" className="data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800 shrink-0">
               <DollarSign className="w-4 h-4 mr-2" />
-              Value Lookup
+              <span className="hidden sm:inline">Value Lookup</span>
+              <span className="sm:hidden">Value</span>
             </TabsTrigger>
-            <TabsTrigger value="identify" className="data-[state=active]:bg-violet-100 data-[state=active]:text-violet-800">
+            <TabsTrigger value="identify" className="data-[state=active]:bg-violet-100 data-[state=active]:text-violet-800 shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
-              Identify Pipe
+              <span className="hidden sm:inline">Identify Pipe</span>
+              <span className="sm:hidden">Identify</span>
             </TabsTrigger>
           </TabsList>
 
