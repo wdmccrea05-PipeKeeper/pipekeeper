@@ -137,8 +137,8 @@ export default function PairingGrid({ pipes, blends }) {
     }
     prefScore = Math.min(10, prefScore);
     
-    // PRIORITY 2: Pipe Focus/Specialization (2-3 points, TROPHY FACTOR)
-    let focusScore = 2.0; // Base focus score
+    // CATEGORY 2: Pipe Focus/Specialization (0-10 scale, weight 0.25, TROPHY FACTOR)
+    let focusScore = 5.0; // Base versatility score
     if (focusList.length > 0) {
       const focusLower = focusList.map(f => f.toLowerCase());
       const blendTypeLower = blend.blend_type?.toLowerCase() || '';
@@ -174,24 +174,21 @@ export default function PairingGrid({ pipes, blends }) {
       
       if (exactNameMatch) {
         // PERFECT TROPHY MATCH: Pipe specifically assigned to this exact blend
-        focusScore = 3.0; // Maximum focus score
+        focusScore = 10.0; // Maximum focus score
       } else if (exactTypeMatch) {
         // Strong match on blend type
-        if (focusList.length === 1) focusScore = 3.0; // Specialist = trophy
-        else if (focusList.length === 2) focusScore = 2.5;
-        else focusScore = 2.0;
+        if (focusList.length === 1) focusScore = 10.0; // Single specialist = trophy
+        else if (focusList.length === 2) focusScore = 8.5;
+        else focusScore = 7.0;
       } else if (componentMatch) {
         // Partial match on tobacco components
-        focusScore = 2.0;
+        focusScore = 6.0;
       } else {
-        // NO MATCH on specialized pipe = no bonus, stays at base
-        focusScore = 2.0;
+        // NO MATCH on specialized pipe = lower score
+        if (focusList.length === 1) focusScore = 2.0; // Wrong blend for specialist
+        else focusScore = 4.0; // More versatile pipes fare better
       }
-    } else {
-      // No focus = versatile pipe
-      focusScore = 2.0;
     }
-    score += focusScore;
     
     // PRIORITY 3: Pipe Dimensions (1-3 points)
     // Bowl shape, capacity, and physical characteristics
