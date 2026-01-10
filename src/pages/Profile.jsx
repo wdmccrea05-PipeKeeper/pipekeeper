@@ -14,8 +14,9 @@ import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
-import { shouldShowPurchaseUI, getSubscriptionManagementMessage } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
 import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
 import {
   AlertDialog,
@@ -84,7 +85,7 @@ export default function ProfilePage() {
   // Check if user has paid access
   const isWithinTrial = isTrialWindow();
   const daysLeftInTrial = getTrialDaysRemaining();
-  const hasActiveSubscription = user?.subscription_level === 'paid';
+  const hasActiveSubscription = hasPremiumAccess(user);
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription', user?.email],
@@ -323,36 +324,46 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {/* Manage button should NOT be gated behind shouldShowPurchaseUI() */}
-                  {shouldShowManageSubscription(subscription, user) && (
-                    <Button
-                      className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
-                      onClick={async () => {
-                        try {
-                          await openManageSubscription();
-                        } catch (e) {
-                          const message = e?.message || "Unable to open subscription management portal";
-                          console.error('[Profile] Manage subscription error:', message);
-                          alert(message);
-                        }
-                      }}
-                    >
-                      {getManageSubscriptionLabel()}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  )}
-                  {/* Upgrade/Purchase UI stays gated */}
-                  {shouldShowPurchaseUI() && !hasActiveSubscription && (
-                    <a href={createPageUrl("Subscription")}>
-                      <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
-                        {subscription?.stripe_customer_id ? 'View Subscription' : 'Upgrade'}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </a>
-                  )}
-                  {!shouldShowPurchaseUI() && (
-                    <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
-                      {getSubscriptionManagementMessage()}
+                  {/* iOS compliance: Hide all subscription management */}
+                  {!isIOSCompanion() ? (
+                    <>
+                      {shouldShowManageSubscription(subscription, user) && (
+                        <Button
+                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
+                          onClick={async () => {
+                            try {
+                              await openManageSubscription();
+                            } catch (e) {
+                              const message = e?.message || "Unable to open subscription management portal";
+                              console.error('[Profile] Manage subscription error:', message);
+                              alert(message);
+                            }
+                          }}
+                        >
+                          {getManageSubscriptionLabel()}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      )}
+                      {shouldShowPurchaseUI() && !hasActiveSubscription && (
+                        <a href={createPageUrl("Subscription")}>
+                          <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
+                            {subscription?.stripe_customer_id ? 'View Subscription' : 'Upgrade'}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </a>
+                      )}
+                      {!shouldShowPurchaseUI() && (
+                        <div className="text-xs text-amber-800/80 text-right max-w-[220px]">
+                          {getSubscriptionManagementMessage()}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
+                      Premium subscriptions are available on the web. To manage billing or subscribe, visit{" "}
+                      <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
+                        pipekeeper.app
+                      </a>.
                     </div>
                   )}
                 </div>
