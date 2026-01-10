@@ -467,17 +467,17 @@ export default function HomePage() {
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">Tobacco Cellar</h3>
                         <p className="text-primary text-sm sm:text-base">Manage your blends</p>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                        <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" strokeWidth={2.0} />
+                        <TobaccoLeafIcon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" strokeWidth={2.0} />
                       </div>
                     </div>
 
                     <div className="flex-1 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
-                        <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
+                        <p className="text-3xl sm:text-4xl font-bold text-primary mb-1">{safeBlends.length}</p>
                         <p className="text-primary text-sm sm:text-base">Tobacco Blends</p>
                       </div>
 
@@ -497,7 +497,7 @@ export default function HomePage() {
                       </ul>
                     </div>
 
-                    <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
+                    <div className="flex items-center justify-between text-primary group-hover:translate-x-1 transition-transform text-sm sm:text-base">
                       <span className="font-semibold">View Cellar</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
