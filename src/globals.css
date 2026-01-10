@@ -126,6 +126,28 @@
   color: hsl(var(--muted-foreground)) !important;
 }
 
+/* Text color overrides for light cards */
+.pk-page {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.pk-page h1,
+.pk-page h2,
+.pk-page h3,
+.pk-page h4,
+.pk-page h5,
+.pk-page h6 {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.pk-page p {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.pk-page a {
+  color: hsl(var(--primary)) !important;
+}
+
 .pk-page .border,
 .pk-page .border-slate-200,
 .pk-page .border-gray-200,
