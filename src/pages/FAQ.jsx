@@ -205,6 +205,10 @@ export default function FAQ() {
           The smoking log helps you maintain your pipes properly, track your preferences, and provides valuable data for AI-powered pairing and optimization features.
         </Q>
 
+        <Q id="premium-cellaring-log" q="Premium: Cellaring Log System">
+          Track detailed cellaring transactions with the dedicated cellaring log. Record when tobacco is added to or removed from your cellar with precise amounts in ounces, container types (tin, jar, bulk, pouch), dates, and notes. View net cellared amounts for each blend and drill down into cellar inventory from the home page.
+        </Q>
+
         <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
           The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
         </Q>
@@ -243,10 +247,6 @@ export default function FAQ() {
 
         <Q id="premium-messaging" q="Premium: Direct Messaging">
           Send and receive instant messages with friends in the PipeKeeper community. Share photos, discuss blends, coordinate trades, and connect with fellow enthusiasts privately. Edit or delete sent messages as needed.
-        </Q>
-
-        <Q id="premium-cellaring-log" q="Premium: Cellaring Log System">
-          Track detailed cellaring transactions with the dedicated cellaring log. Record when tobacco is added to or removed from your cellar with precise amounts in ounces, container types (tin, jar, bulk, pouch), dates, and notes. View net cellared amounts for each blend and drill down into cellar inventory from the home page.
         </Q>
       </Section>
 
