@@ -328,6 +328,9 @@ export default function TobaccoDetailPage() {
               </Card>
             )}
 
+            {/* Cellaring Log */}
+            <CellarLog blend={blend} />
+
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               {blend.blend_type && (
@@ -413,11 +416,6 @@ export default function TobaccoDetailPage() {
               </Card>
             )}
           </div>
-        </div>
-
-        {/* Cellaring Log */}
-        <div className="mt-8">
-          <CellarLog blend={blend} />
         </div>
 
         {/* Comments Section */}
