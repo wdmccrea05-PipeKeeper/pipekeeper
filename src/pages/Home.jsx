@@ -106,6 +106,22 @@ export default function HomePage() {
     staleTime: 10000,
   });
 
+  const { data: cellarLogs = [] } = useQuery({
+    queryKey: ['cellar-logs-all', user?.email],
+    queryFn: async () => {
+      try {
+        const result = await base44.entities.CellarLog.filter({ created_by: user?.email });
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        console.error('[Home] Cellar logs load error:', err);
+        return [];
+      }
+    },
+    enabled: !!user?.email,
+    retry: 1,
+    staleTime: 10000,
+  });
+
   // Check if user has paid access
   const isPaidUser = hasPremiumAccess(user);
 
@@ -220,6 +236,7 @@ export default function HomePage() {
 
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
+  const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
   
   if (pipesLoading || blendsLoading || onboardingLoading) {
     return (
@@ -237,7 +254,17 @@ export default function HomePage() {
   }
   
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  const totalCellaredTins = safeBlends.reduce((sum, b) => sum + (b?.tin_tins_cellared || 0), 0);
+  
+  // Calculate net cellared amount from cellar logs
+  const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
+    if (log.transaction_type === 'added') {
+      return sum + (log.amount_oz || 0);
+    } else if (log.transaction_type === 'removed') {
+      return sum - (log.amount_oz || 0);
+    }
+    return sum;
+  }, 0);
+  
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
   const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
   const recentPipes = safePipes.slice(0, 4);
