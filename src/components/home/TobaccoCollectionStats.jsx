@@ -34,10 +34,27 @@ export default function TobaccoCollectionStats() {
     initialData: [],
   });
 
+  const { data: cellarLogs = [] } = useQuery({
+    queryKey: ['cellar-logs-all', user?.email],
+    queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
+    initialData: [],
+  });
+
   // Calculate statistics
   const totalBlends = blends.length;
   const uniqueBrands = [...new Set(blends.map(b => b.manufacturer).filter(Boolean))].length;
   const favoriteBlends = blends.filter(b => b.is_favorite);
+  
+  // Calculate net cellared amount from cellar logs
+  const totalCellaredOz = cellarLogs.reduce((sum, log) => {
+    if (log.transaction_type === 'added') {
+      return sum + (log.amount_oz || 0);
+    } else if (log.transaction_type === 'removed') {
+      return sum - (log.amount_oz || 0);
+    }
+    return sum;
+  }, 0);
   
   // Tin statistics
   const totalTins = blends.reduce((sum, b) => sum + (b.tin_total_tins || 0), 0);
@@ -47,16 +64,10 @@ export default function TobaccoCollectionStats() {
     const size = b.tin_size_oz || 0;
     return sum + (open * size);
   }, 0);
-  const tinCellaredOz = blends.reduce((sum, b) => {
-    const cellared = b.tin_tins_cellared || 0;
-    const size = b.tin_size_oz || 0;
-    return sum + (cellared * size);
-  }, 0);
   
   // Bulk statistics
   const bulkWeightOz = blends.reduce((sum, b) => sum + (b.bulk_total_quantity_oz || 0), 0);
   const bulkOpenOz = blends.reduce((sum, b) => sum + (b.bulk_open || 0), 0);
-  const bulkCellaredOz = blends.reduce((sum, b) => sum + (b.bulk_cellared || 0), 0);
   
   // Pouch statistics
   const totalPouches = blends.reduce((sum, b) => sum + (b.pouch_total_pouches || 0), 0);
@@ -66,16 +77,10 @@ export default function TobaccoCollectionStats() {
     const size = b.pouch_size_oz || 0;
     return sum + (open * size);
   }, 0);
-  const pouchCellaredOz = blends.reduce((sum, b) => {
-    const cellared = b.pouch_pouches_cellared || 0;
-    const size = b.pouch_size_oz || 0;
-    return sum + (cellared * size);
-  }, 0);
   
   // Overall totals
   const totalWeight = tinWeightOz + bulkWeightOz + pouchWeightOz;
   const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
-  const totalCellaredOz = tinCellaredOz + bulkCellaredOz + pouchCellaredOz;
 
   // Brand breakdown
   const brandBreakdown = blends.reduce((acc, b) => {
@@ -193,16 +198,7 @@ export default function TobaccoCollectionStats() {
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
-                <button
-                  onClick={() => handleDrillDown('tinCellared', { blends: blends.filter(b => (b.tin_tins_cellared || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
-                >
-                  <span className="text-xs text-stone-600">Cellared</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-emerald-600">{tinCellaredOz.toFixed(1)} oz</span>
-                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
-                  </div>
-                </button>
+
               </div>
               
               <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
@@ -227,16 +223,7 @@ export default function TobaccoCollectionStats() {
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
-                <button
-                  onClick={() => handleDrillDown('bulkCellared', { blends: blends.filter(b => (b.bulk_cellared || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
-                >
-                  <span className="text-xs text-stone-600">Cellared</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-emerald-600">{bulkCellaredOz.toFixed(1)} oz</span>
-                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
-                  </div>
-                </button>
+
               </div>
               
               <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
@@ -271,16 +258,7 @@ export default function TobaccoCollectionStats() {
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
-                <button
-                  onClick={() => handleDrillDown('pouchCellared', { blends: blends.filter(b => (b.pouch_pouches_cellared || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
-                >
-                  <span className="text-xs text-stone-600">Cellared</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-emerald-600">{pouchCellaredOz.toFixed(1)} oz</span>
-                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
-                  </div>
-                </button>
+
               </div>
               
               <div className="space-y-2 bg-stone-50 rounded-lg p-2 border border-stone-200">
@@ -309,18 +287,12 @@ export default function TobaccoCollectionStats() {
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
-                <button
-                  onClick={() => handleDrillDown('allCellared', { blends: blends.filter(b => 
-                    (b.tin_tins_cellared || 0) > 0 || (b.bulk_cellared || 0) > 0 || (b.pouch_pouches_cellared || 0) > 0
-                  )})}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-emerald-50 transition-colors group"
-                >
-                  <span className="text-xs text-stone-600">Total Cellared</span>
+                <div className="w-full flex justify-between items-center py-1 px-2 bg-emerald-50 rounded border border-emerald-200">
+                  <span className="text-xs text-stone-600 font-medium">Total Cellared</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-emerald-600">{totalCellaredOz.toFixed(1)} oz</span>
-                    <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-emerald-600" />
+                    <span className="text-xs font-bold text-emerald-700">{totalCellaredOz.toFixed(1)} oz</span>
                   </div>
-                </button>
+                </div>
               </div>
             </div>
           </div>

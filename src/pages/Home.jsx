@@ -5,6 +5,7 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { 
@@ -27,6 +28,7 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
+  const [showCellarDialog, setShowCellarDialog] = useState(false);
   const [hasError, setHasError] = React.useState(false);
 
   // Error boundary effect
