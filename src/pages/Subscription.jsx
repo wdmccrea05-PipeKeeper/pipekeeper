@@ -336,9 +336,10 @@ export default function SubscriptionPage() {
                 {[
                   "Manual pipe and tobacco entry",
                   "Organize and browse your collection",
-                  "Track basic pipe and tobacco details",
-                  "Log smoking sessions manually",
-                  "View recent pipes and tobacco",
+                  "Track dimensions, materials, and basic details",
+                  "Manual cellar log for inventory tracking",
+                  "Rate and favorite your pipes and tobacco",
+                  "View recent additions",
                   "Basic collection statistics",
                   "7-day free trial of Premium features"
                 ].map((feature, idx) => (
@@ -371,23 +372,24 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="space-y-3">
                 {[
-                  "AI Tobacconist for collection insights",
-                  "AI-powered tobacco pairing recommendations",
-                  "Photo identification for pipes and tobacco",
-                  "Market value lookup and tracking",
-                  "Collection optimization suggestions",
-                  "Advanced pairing matrix",
-                  "Break-in schedule generator",
-                  "Bulk CSV import for pipes & tobacco",
-                  "Quick Edit: Update multiple blends at once",
-                  "Advanced export & insurance reports (PDF/CSV)",
-                  "Auto inventory reduction with smoking logs",
-                  "Low inventory alerts & thresholds",
-                  "Pipe rest tracking with recommendations",
-                  "Community: Share & follow collections",
+                  "AI Expert Tobacconist chat for personalized recommendations",
+                  "AI-powered pipe-tobacco pairing matrix with scoring",
+                  "Photo identification for pipes (stamps, shapes, makers)",
+                  "Market value lookup and automated tracking",
+                  "Collection optimizer with gap analysis",
+                  "AI break-in schedule generator for new pipes",
+                  "Bulk CSV import/export for pipes & tobacco",
+                  "Quick Edit: Batch update multiple blends at once",
+                  "Advanced PDF exports for insurance documentation",
+                  "Smoking log with auto inventory reduction",
+                  "Pipe rest status tracking with recommendations",
+                  "Cellar log with transaction history",
+                  "Community: Public profiles, search, follow collections",
+                  "Comments on pipes, tobacco, and smoking logs",
                   "Instant messaging with friends (real-time chat)",
+                  "AI web search for auto-filling pipe & tobacco details",
+                  "Brand logo library with custom uploads",
                   "Unlimited pipes and tobacco blends",
-                  "AI web search for auto-fill",
                   "Priority customer support"
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
