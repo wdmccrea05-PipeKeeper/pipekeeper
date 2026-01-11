@@ -158,6 +158,39 @@ export default function FAQ() {
       </Section>
 
       <Section title="Premium Feature Definitions">
+        <Q id="free-vs-premium" q="What's the difference between Free and Premium?">
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-[#1a2c42] mb-2">Free Features:</h4>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>Pipe and Tobacco Collection Management (unlimited entries)</li>
+                <li>Basic AI-Powered Pairing Suggestions</li>
+                <li>Smoking Log (track which pipes you use with which tobacco)</li>
+                <li>Basic Export Tools (CSV downloads)</li>
+                <li>User Profile Management</li>
+                <li>View Public Profiles and Comments</li>
+                <li>Tutorial and Onboarding</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>Cellaring Log System (detailed transaction tracking)</li>
+                <li>Advanced Pairing Matrix (AI compatibility scores)</li>
+                <li>Collection Optimization (gap analysis, recommendations)</li>
+                <li>AI Break-in Schedules for new pipes</li>
+                <li>Pipe Specialization recommendations</li>
+                <li>Full Community Features (public profile, messaging, follow users)</li>
+                <li>Advanced PDF Reports and Analytics</li>
+                <li>Bulk Operations (edit multiple items at once)</li>
+                <li>Enhanced Value Tracking and market alerts</li>
+                <li>Pipe Photo Identification (AI maker/model identification)</li>
+                <li>AI Value Lookup for market estimates</li>
+              </ul>
+            </div>
+          </div>
+        </Q>
+
         <Q id="premium-included" q="What is included in Premium?">
           Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
           and other upgraded capabilities. See below for detailed feature descriptions.
