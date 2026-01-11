@@ -240,23 +240,6 @@ export default function HomePage() {
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
   
-  if (pipesLoading || blendsLoading || onboardingLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-        <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
-            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-          />
-          <p className="text-[#e8d5b7]">Loading your collection...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
-  
   // Calculate net cellared amount from cellar logs
   const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
     if (log.transaction_type === 'added') {
@@ -268,7 +251,7 @@ export default function HomePage() {
   }, 0);
 
   // Calculate cellar breakdown by blend
-  const cellarBreakdown = React.useMemo(() => {
+  const getCellarBreakdown = () => {
     const byBlend = {};
     safeCellarLogs.forEach(log => {
       if (!byBlend[log.blend_id]) {
@@ -287,7 +270,25 @@ export default function HomePage() {
     return Object.values(byBlend)
       .filter(b => b.totalOz > 0)
       .sort((a, b) => b.totalOz - a.totalOz);
-  }, [safeCellarLogs]);
+  };
+
+  if (pipesLoading || blendsLoading || onboardingLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <p className="text-[#e8d5b7]">Loading your collection...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
+  const cellarBreakdown = getCellarBreakdown();
   
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
   const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
