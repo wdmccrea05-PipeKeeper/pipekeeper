@@ -27,6 +27,7 @@ import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
+import CellarLog from "@/components/tobacco/CellarLog";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -412,6 +413,11 @@ export default function TobaccoDetailPage() {
               </Card>
             )}
           </div>
+        </div>
+
+        {/* Cellaring Log */}
+        <div className="mt-8">
+          <CellarLog blend={blend} />
         </div>
 
         {/* Comments Section */}
