@@ -17,8 +17,20 @@ import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
+  const hasPaidAccess = hasPremiumAccess(user);
+
+  if (!hasPaidAccess) {
+    return (
+      <UpgradePrompt 
+        featureName="Smoking Log"
+        description="Track your smoking sessions, monitor pipe rest periods, manage break-in schedules, and automatically reduce tobacco inventory. Build a detailed history to power AI recommendations."
+      />
+    );
+  }
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);

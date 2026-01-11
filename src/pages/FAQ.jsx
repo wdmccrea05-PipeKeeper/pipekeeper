@@ -191,6 +191,20 @@ export default function FAQ() {
           </div>
         </Q>
 
+        <Q id="premium-smoking-log" q="Premium: Smoking Log">
+          Track your smoking sessions with detailed logging capabilities:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Log each session with pipe, blend, date, and notes</li>
+            <li>Track number of bowls smoked and estimated tobacco usage</li>
+            <li>Monitor pipe rest periods (24-hour recommended rest)</li>
+            <li>Mark sessions as part of break-in schedules</li>
+            <li>Automatically reduce tobacco inventory after each session</li>
+            <li>Build a detailed smoking history to power AI recommendations</li>
+            <li>View session statistics and patterns over time</li>
+          </ul>
+          The smoking log helps you maintain your pipes properly, track your preferences, and provides valuable data for AI-powered pairing and optimization features.
+        </Q>
+
         <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
           The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
         </Q>
