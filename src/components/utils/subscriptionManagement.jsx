@@ -1,6 +1,7 @@
 import { base44 } from "@/api/base44Client";
 import { shouldShowPurchaseUI } from "./companion";
 import { isTrialWindow } from "./access";
+import { createPageUrl } from "./createPageUrl";
 
 export async function openManageSubscription() {
   try {
@@ -14,9 +15,18 @@ export async function openManageSubscription() {
     window.location.href = url;
   } catch (error) {
     console.error('[openManageSubscription] Error:', error);
-    // Extract the actual error message from the backend
-    const errorMessage = error?.response?.data?.error || error?.message || 'Unable to open subscription management portal';
-    throw new Error(errorMessage);
+    
+    // Check if the error is about no Stripe customer found
+    const errorMessage = error?.response?.data?.error || error?.message || '';
+    
+    if (errorMessage.includes('No Stripe customer') || errorMessage.includes('Please start a subscription')) {
+      // Redirect to subscription page where they can create a subscription
+      window.location.href = createPageUrl('Subscription');
+      return;
+    }
+    
+    // For other errors, throw them
+    throw new Error(errorMessage || 'Unable to open subscription management portal');
   }
 }
 
