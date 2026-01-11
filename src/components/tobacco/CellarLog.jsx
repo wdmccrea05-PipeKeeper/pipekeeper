@@ -47,6 +47,8 @@ export default function CellarLog({ blend }) {
     mutationFn: (data) => base44.entities.CellarLog.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cellar-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
       setDialogOpen(false);
       setFormData({
         transaction_type: 'added',
@@ -62,6 +64,8 @@ export default function CellarLog({ blend }) {
     mutationFn: (id) => base44.entities.CellarLog.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cellar-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['blends'] });
+      queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
     },
   });
 
