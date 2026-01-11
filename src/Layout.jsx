@@ -157,14 +157,14 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <>
-      {/* Theme background + FIXED readability rules (no more “wash-out” text on light cards) */}
+      {/* GLOBAL THEME ENFORCEMENT (prevents “light UI leaks”) */}
 <style>{`
   body {
     background: hsl(var(--background)) !important;
     color: hsl(var(--foreground)) !important;
     background-image:
       radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
-      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.22), transparent 55%),
+      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.18), transparent 55%),
       radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.55), transparent 55%) !important;
     background-attachment: fixed;
   }
@@ -172,13 +172,10 @@ export default function Layout({ children, currentPageName }) {
   .pk-page { min-height: 100vh; }
   .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
 
-  /* ----------------------------
-     SAFE “LIGHT UI LEAK” FIXES
-     These fix Community (and any other page) that hard-codes light utility classes.
-     ---------------------------- */
-
-  /* Backgrounds that should respect the theme */
+  /* Backgrounds that should respect the theme (Community + many others) */
   .pk-page .bg-white,
+  .pk-page .bg-white\\/95,
+  .pk-page .bg-white\\/90,
   .pk-page .bg-gray-50,
   .pk-page .bg-slate-50,
   .pk-page .bg-neutral-50,
@@ -207,11 +204,12 @@ export default function Layout({ children, currentPageName }) {
   .pk-page .border-gray-300,
   .pk-page .border-slate-200,
   .pk-page .border-neutral-200,
-  .pk-page .border-zinc-200 {
+  .pk-page .border-zinc-200,
+  .pk-page .border-stone-200 {
     border-color: hsl(var(--border)) !important;
   }
 
-  /* Inputs inside those light cards */
+  /* Inputs */
   .pk-page input,
   .pk-page textarea,
   .pk-page select {
