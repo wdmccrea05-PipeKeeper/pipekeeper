@@ -34,7 +34,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     pipe_id: '',
     blend_id: '',
