@@ -5,72 +5,59 @@ css
 
 @layer base {
   :root {
-    /* Home page look: dark lounge */
-    --background: 220 22% 7%;
-    --foreground: 210 20% 98%;
+    /* PipeKeeper Dark Lounge Theme */
+    --background: 215 36% 9%;          /* deep navy */
+    --foreground: 0 0% 98%;            /* near-white */
 
-    /* Dark cards (fixes Community + other pages using bg-card) */
-    --card: 220 18% 12%;
-    --card-foreground: 210 20% 98%;
+    --card: 216 30% 13%;               /* card surface */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 216 30% 13%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 220 22% 14%;
-    --primary-foreground: 210 20% 98%;
+    --primary: 25 55% 55%;             /* warm tobacco/amber */
+    --primary-foreground: 215 36% 9%;
 
-    --secondary: 220 18% 16%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 216 22% 18%;          /* elevated surface */
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 14% 18%;
-    --muted-foreground: 215 12% 70%;
+    --muted: 216 20% 16%;
+    --muted-foreground: 215 10% 72%;   /* readable gray */
 
-    /* No longer needed: --muted-foreground-card */
+    --accent: 35 55% 72%;              /* parchment highlight */
+    --accent-foreground: 215 36% 9%;
 
-    /* Warm accent (buttons/highlights like Home) */
-    --accent: 35 85% 45%;
-    --accent-foreground: 220 22% 7%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 14% 22%;
-    --input: 220 14% 22%;
-    --ring: 35 85% 45%;
+    --border: 216 18% 24%;
+    --input: 216 18% 24%;
+    --ring: 35 55% 72%;
 
-    --destructive: 0 72% 52%;
-    --destructive-foreground: 210 20% 98%;
-
-    --radius: 1rem;
+    --radius: 14px;
   }
 
-  /* Base44 sometimes relies on .dark; keep it aligned */
+  /* If your app uses a .dark class anywhere, keep it aligned */
   .dark {
-    --background: 220 22% 7%;
-    --foreground: 210 20% 98%;
-
-    --card: 220 18% 12%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 220 18% 12%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 220 22% 14%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 18% 16%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 220 14% 18%;
-    --muted-foreground: 215 12% 70%;
-    /* No longer needed: --muted-foreground-card */
-
-    --accent: 35 85% 45%;
-    --accent-foreground: 220 22% 7%;
-
-    --border: 220 14% 22%;
-    --input: 220 14% 22%;
-    --ring: 35 85% 45%;
-
-    --destructive: 0 72% 52%;
-    --destructive-foreground: 210 20% 98%;
+    --background: 215 36% 9%;
+    --foreground: 0 0% 98%;
+    --card: 216 30% 13%;
+    --card-foreground: 0 0% 98%;
+    --popover: 216 30% 13%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 25 55% 55%;
+    --primary-foreground: 215 36% 9%;
+    --secondary: 216 22% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 216 20% 16%;
+    --muted-foreground: 215 10% 72%;
+    --accent: 35 55% 72%;
+    --accent-foreground: 215 36% 9%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 216 18% 24%;
+    --input: 216 18% 24%;
+    --ring: 35 55% 72%;
   }
 
   * {
