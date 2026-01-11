@@ -415,8 +415,8 @@ export default function HomePage() {
             <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30">
               <CardContent className="p-3 sm:p-6 text-center">
                 <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredTins}</p>
-                <p className="text-xs sm:text-sm text-white/80">Cellared Tins</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredOz.toFixed(1)}</p>
+                <p className="text-xs sm:text-sm text-white/80">Cellared (oz)</p>
               </CardContent>
             </Card>
           </motion.div>
