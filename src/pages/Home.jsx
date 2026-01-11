@@ -801,9 +801,46 @@ export default function HomePage() {
           </motion.div>
         )}
 
-
         </div>
       </div>
+
+      {/* Cellar Breakdown Dialog */}
+      <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              Cellar Breakdown ({totalCellaredOz.toFixed(1)} oz)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {cellarBreakdown.length === 0 ? (
+              <p className="text-center text-stone-500 py-8">No tobacco currently cellared</p>
+            ) : (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {cellarBreakdown.map((item) => (
+                  <a
+                    key={item.blend_id}
+                    href={createPageUrl(`TobaccoDetail?id=${item.blend_id}`)}
+                    onClick={() => setShowCellarDialog(false)}
+                  >
+                    <Card className="hover:bg-stone-50 transition-colors cursor-pointer">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium text-stone-800">{item.blend_name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-emerald-700">{item.totalOz.toFixed(1)} oz</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
