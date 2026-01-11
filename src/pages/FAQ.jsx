@@ -191,11 +191,6 @@ export default function FAQ() {
           </div>
         </Q>
 
-        <Q id="premium-included" q="What is included in Premium?">
-          Premium includes advanced tools such as enhanced pairing/optimization features, deeper reporting/export options,
-          and other upgraded capabilities. See below for detailed feature descriptions.
-        </Q>
-
         <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
           The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
         </Q>
