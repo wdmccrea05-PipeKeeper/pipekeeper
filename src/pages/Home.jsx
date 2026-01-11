@@ -264,6 +264,28 @@ export default function HomePage() {
     }
     return sum;
   }, 0);
+
+  // Calculate cellar breakdown by blend
+  const cellarBreakdown = React.useMemo(() => {
+    const byBlend = {};
+    safeCellarLogs.forEach(log => {
+      if (!byBlend[log.blend_id]) {
+        byBlend[log.blend_id] = {
+          blend_id: log.blend_id,
+          blend_name: log.blend_name,
+          totalOz: 0
+        };
+      }
+      if (log.transaction_type === 'added') {
+        byBlend[log.blend_id].totalOz += (log.amount_oz || 0);
+      } else if (log.transaction_type === 'removed') {
+        byBlend[log.blend_id].totalOz -= (log.amount_oz || 0);
+      }
+    });
+    return Object.values(byBlend)
+      .filter(b => b.totalOz > 0)
+      .sort((a, b) => b.totalOz - a.totalOz);
+  }, [safeCellarLogs]);
   
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
   const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
@@ -412,7 +434,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30">
+            <Card 
+              className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowCellarDialog(true)}
+            >
               <CardContent className="p-3 sm:p-6 text-center">
                 <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
                 <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredOz.toFixed(1)}</p>
