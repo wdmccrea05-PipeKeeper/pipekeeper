@@ -165,7 +165,6 @@ export default function FAQ() {
               <ul className="space-y-1 list-disc list-inside">
                 <li>Pipe and Tobacco Collection Management (unlimited entries)</li>
                 <li>Basic AI-Powered Pairing Suggestions</li>
-                <li>Smoking Log (track which pipes you use with which tobacco)</li>
                 <li>Basic Export Tools (CSV downloads)</li>
                 <li>User Profile Management</li>
                 <li>View Public Profiles and Comments</li>
@@ -175,6 +174,7 @@ export default function FAQ() {
             <div>
               <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
               <ul className="space-y-1 list-disc list-inside">
+                <li>Smoking Log (track sessions, rest periods, break-in progress)</li>
                 <li>Cellaring Log System (detailed transaction tracking)</li>
                 <li>Advanced Pairing Matrix (AI compatibility scores)</li>
                 <li>Collection Optimization (gap analysis, recommendations)</li>
