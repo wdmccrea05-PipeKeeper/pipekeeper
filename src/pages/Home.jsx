@@ -565,42 +565,24 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Favorites */}
-        {(favoritePipes.length > 0 || favoriteBlends.length > 0) && (
+        {/* Expert Tobacconist - Consolidated AI Features */}
+        {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="mb-12"
           >
-            <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-rose-800">
-                  <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
-                  Favorites
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {favoritePipes.map(pipe => (
-                    <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 cursor-pointer px-3 py-1.5">
-                        🪈 {pipe.name}
-                      </Badge>
-                    </a>
-                  ))}
-                  {favoriteBlends.map(blend => (
-                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                      <Badge className="bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-200 cursor-pointer px-3 py-1.5">
-                        🍂 {blend.name}
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {isPaidUser ? (
+              <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
+            ) : (
+              <UpgradePrompt 
+                featureName="Expert Tobacconist"
+                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
+              />
+            )}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Import Link */}
         <motion.div
@@ -641,28 +623,42 @@ export default function HomePage() {
           </motion.div>
         ) : null}
 
-
-
-
-
-        {/* Expert Tobacconist - Consolidated AI Features */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
+        {/* Favorites */}
+        {(favoritePipes.length > 0 || favoriteBlends.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.82 }}
             className="mb-12"
           >
-            {isPaidUser ? (
-              <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
-            ) : (
-              <UpgradePrompt 
-                featureName="Expert Tobacconist"
-                description="Unlock AI-powered pipe identification, pairing recommendations, collection optimization, and what-if scenario analysis to maximize your smoking experience."
-              />
-            )}
+            <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-rose-800">
+                  <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
+                  Favorites
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  {favoritePipes.map(pipe => (
+                    <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 cursor-pointer px-3 py-1.5">
+                        🪈 {pipe.name}
+                      </Badge>
+                    </a>
+                  ))}
+                  {favoriteBlends.map(blend => (
+                    <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
+                      <Badge className="bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-200 cursor-pointer px-3 py-1.5">
+                        🍂 {blend.name}
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
-        ) : null}
+        )}
 
         {/* Recently Added */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
