@@ -1,88 +1,191 @@
-css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* PipeKeeper Dark Lounge Theme */
-    --background: 215 36% 9%;          /* deep navy */
-    --foreground: 0 0% 98%;            /* near-white */
-
-    --card: 216 30% 13%;               /* card surface */
-    --card-foreground: 0 0% 98%;
-
-    --popover: 216 30% 13%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 25 55% 55%;             /* warm tobacco/amber */
-    --primary-foreground: 215 36% 9%;
-
-    --secondary: 216 22% 18%;          /* elevated surface */
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 216 20% 16%;
-    --muted-foreground: 215 10% 72%;   /* readable gray */
-
-    --accent: 35 55% 72%;              /* parchment highlight */
-    --accent-foreground: 215 36% 9%;
-
-    --destructive: 0 72% 55%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
-    --border: 216 18% 24%;
-    --input: 216 18% 24%;
-    --ring: 35 55% 72%;
+    /* PipeKeeper brand palette (RGB triplets for rgb(var(...))) */
+    --pk-bg-primary: 11 19 32;
+    --pk-bg-secondary: 17 33 51;
+    --pk-bg-0: 11 19 32;
+    --pk-bg-1: 17 33 51;
 
-    --radius: 14px;
+    --pk-surface: 22 38 57;
+    --pk-card: 24 40 60;
+
+    --pk-text-primary: 242 230 210;
+    --pk-text-secondary: 214 200 175;
+    --pk-text-muted: 170 160 145;
+
+    --pk-gold: 209 167 93;
+    --pk-burgundy: 126 45 45;
+    --pk-forest: 55 92 74;
+    --pk-brown: 122 74 46;
+
+    --pk-border-strong: 70 84 110;
+    --pk-border-subtle: 255 255 255;
+    --pk-cta-primary: 176 91 24;
+    --pk-cta-primary-hover: 196 109 33;
+
+    --pk-success: 46 125 92;
+    --pk-warning: 214 162 74;
+    --pk-error: 190 60 60;
   }
 
-  /* If your app uses a .dark class anywhere, keep it aligned */
   .dark {
-    --background: 215 36% 9%;
-    --foreground: 0 0% 98%;
-    --card: 216 30% 13%;
-    --card-foreground: 0 0% 98%;
-    --popover: 216 30% 13%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 25 55% 55%;
-    --primary-foreground: 215 36% 9%;
-    --secondary: 216 22% 18%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 216 20% 16%;
-    --muted-foreground: 215 10% 72%;
-    --accent: 35 55% 72%;
-    --accent-foreground: 215 36% 9%;
-    --destructive: 0 72% 55%;
+    --background: 218 49% 9%;
+    --foreground: 36 33% 92%;
+
+    --card: 215 42% 15%;
+    --card-foreground: 36 33% 92%;
+
+    --popover: 215 42% 15%;
+    --popover-foreground: 36 33% 92%;
+
+    --primary: 36 33% 92%;
+    --primary-foreground: 218 49% 9%;
+
+    --secondary: 215 35% 18%;
+    --secondary-foreground: 36 33% 92%;
+
+    --muted: 215 35% 18%;
+    --muted-foreground: 36 15% 70%;
+
+    --accent: 215 35% 18%;
+    --accent-foreground: 36 33% 92%;
+
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 216 18% 24%;
-    --input: 216 18% 24%;
-    --ring: 35 55% 72%;
-  }
 
+    --border: 215 28% 24%;
+    --input: 215 28% 24%;
+    --ring: 36 33% 92%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
-
   body {
-    @apply bg-background text-foreground;
+    background-color: rgb(var(--pk-bg-primary));
+    color: rgb(var(--pk-text-primary));
   }
-}
-
-@layer components {
-  /* Standard card helper used throughout your app */
-  .pk-card {
-    @apply rounded-2xl border border-border shadow-sm;
+  
+  html {
+    @apply dark;
   }
-
-  /* Optional: make "chips/badges" more consistent on dark pages */
-  .pk-chip {
-    @apply inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-1 text-xs font-medium text-foreground;
+  
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
   }
-}
-
-:root {
-  text-rendering: geometricPrecision;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--pk-bg-secondary));
+    border-radius: 0.5rem;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--pk-gold) / 0.4);
+    border-radius: 0.5rem;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--pk-gold) / 0.6);
+  }
+  
+  /* Input and textarea styling for better contrast */
+  input, textarea, select {
+    background: rgb(var(--pk-surface));
+    border-color: rgb(var(--pk-border-strong));
+    color: rgb(var(--pk-text-primary));
+    border-radius: 0.75rem;
+    transition: all 200ms ease-in-out;
+  }
+  
+  input::placeholder, textarea::placeholder, select::placeholder {
+    color: rgb(var(--pk-text-muted));
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: rgb(var(--pk-gold));
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold) / 0.2);
+  }
+  
+  /* Card and panel styling */
+  .card, [class*="Card"] {
+    @apply rounded-2xl transition-shadow duration-200;
+  }
+  
+  /* Button styling for consistency */
+  button {
+    border-radius: 0.75rem;
+    transition: all 200ms ease-in-out;
+  }
+  
+  button:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold));
+    ring-offset: 2px;
+  }
+  
+  button:active {
+    transform: scale(0.98);
+  }
+  
+  /* Dialog and modal styling */
+  [role="dialog"] {
+    @apply rounded-2xl;
+  }
+  
+  /* Link styling */
+  a:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: rgb(var(--pk-gold));
+    ring-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
+  /* Smooth transitions for interactive elements */
+  button, a, input, select, textarea {
+    @apply transition-all duration-200 ease-in-out;
+  }
 }

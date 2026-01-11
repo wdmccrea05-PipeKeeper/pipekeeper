@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
+import { Home, Leaf, Menu, X, User, UserPlus, HelpCircle, Users, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
@@ -11,14 +11,15 @@ import { isCompanionApp } from "@/components/utils/companion";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-import { PipeIcon as PipeKeeperPipeIcon, TobaccoLeafIcon } from "@/components/icons/PipeKeeperIcons";
+
 
 const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d11a7b2f7_UpdatedPipeIcon.png';
 
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
-  { name: 'Pipes', page: 'Pipes', icon: PipeKeeperPipeIcon, isIconComponent: true },
-  { name: 'Tobacco', page: 'Tobacco', icon: TobaccoLeafIcon, isIconComponent: true },
+  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
+  { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
   { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
@@ -26,24 +27,42 @@ const navItems = [
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
   const isActive = currentPage === item.page;
-
+  
   return (
-    <Link
-      to={createPageUrl(item.page)}
+    <Link 
+      to={createPageUrl(item.page)} 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors",
-        isActive
-          ? "bg-accent text-accent-foreground shadow"
-          : isMobile
-            ? "text-foreground hover:bg-accent/10"
-            : "text-foreground/80 hover:bg-secondary/60 hover:text-foreground"
+        "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 transform hover:scale-105",
+        isActive 
+          ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md" 
+          : isMobile 
+            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      style={{ 
+        WebkitTapHighlightColor: 'transparent',
+      }}
       aria-current={isActive ? 'page' : undefined}
       role="link"
     >
-      <item.icon className={cn("w-5 h-5", item.page === "Pipes" && "w-6 h-6")} />
+      {item.isIconComponent ? (
+        <item.icon className="w-5 h-5" />
+      ) : (
+        <img 
+          src={item.icon} 
+          alt={item.name} 
+          className="w-6 h-6 object-contain"
+          style={{
+            filter: isMobile
+              ? 'brightness(0)'
+              : isActive 
+                ? 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)'
+                : 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)'
+          }}
+        />
+      )}
+
       <span>{item.name}</span>
 
       {item.isPremium && !hasPaidAccess && (
@@ -63,22 +82,19 @@ export default function Layout({ children, currentPageName }) {
     }
     return false;
   });
-
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  // Ensure our theme class is present (Base44 previews sometimes reset html/body)
-  React.useEffect(() => {
-    try {
-      document.documentElement.classList.add("dark");
-    } catch {}
-  }, []);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: async () => {
-      const userData = await base44.auth.me();
-      return userData;
+      try {
+        const userData = await base44.auth.me();
+        return userData;
+      } catch (err) {
+        console.error('[Layout] Auth error:', err);
+        throw err;
+      }
     },
     staleTime: 10000,
     retry: 2,
@@ -87,12 +103,15 @@ export default function Layout({ children, currentPageName }) {
     refetchOnReconnect: true,
   });
 
+  // Clear query cache on logout signal, but preserve auth queries briefly
   React.useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'logout') {
-        queryClient.removeQueries({
-          predicate: (query) => query.queryKey[0] !== 'current-user'
+        // Remove all queries except current-user to avoid auth race conditions
+        queryClient.removeQueries({ 
+          predicate: (query) => query.queryKey[0] !== 'current-user' 
         });
+        // Reload after a brief delay to let auth state settle
         setTimeout(() => window.location.reload(), 100);
       }
     };
@@ -100,32 +119,35 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [queryClient]);
 
+  // Show age gate before authentication
   if (!ageConfirmed) {
     return (
-      <AgeGate
+      <AgeGate 
         onConfirm={() => {
           localStorage.setItem(AGE_GATE_KEY, "true");
           setAgeConfirmed(true);
-        }}
+        }} 
       />
     );
   }
 
+  // Show loading state during authentication
   if (userLoading) {
     return (
-      <div className="pk-page flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
-          <img
+          <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-foreground/80">Loading...</p>
+          <p className="text-[#e8d5b7]">Loading...</p>
         </div>
       </div>
     );
   }
 
+  // Pages that should remain viewable without login
   const PUBLIC_PAGES = new Set([
     'FAQ',
     'Support',
@@ -136,17 +158,18 @@ export default function Layout({ children, currentPageName }) {
     'Index',
   ]);
 
+  // If the user is logged out / session expired, do NOT render the app shell for private pages
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
-      <div className="pk-page flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card/70 border border-border rounded-2xl p-8 text-center">
-          <p className="text-foreground text-lg font-semibold mb-2">Login required</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
           {isCompanionApp() && (
-            <p className="text-foreground/80 text-sm mb-4">
+            <p className="text-[#e8d5b7]/80 text-sm mb-4">
               In the companion app, please sign in using your email and password.
             </p>
           )}
-          <p className="text-foreground/70 mb-6">Your session may have expired. Please log in again.</p>
+          <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
           <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
         </div>
       </div>
@@ -157,182 +180,122 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <>
-      {/* GLOBAL THEME ENFORCEMENT (prevents “light UI leaks”) */}
-<style>{`
-  body {
-    background: hsl(var(--background)) !important;
-    color: hsl(var(--foreground)) !important;
-    background-image:
-      radial-gradient(1200px 600px at 20% -10%, hsl(var(--accent) / 0.12), transparent 55%),
-      radial-gradient(900px 500px at 85% 0%, hsl(var(--primary) / 0.18), transparent 55%),
-      radial-gradient(900px 700px at 50% 110%, hsl(var(--secondary) / 0.55), transparent 55%) !important;
-    background-attachment: fixed;
-  }
-
-  .pk-page { min-height: 100vh; }
-  .pk-shell { margin: 0 auto; width: 100%; max-width: 72rem; padding-left: 1.5rem; padding-right: 1.5rem; }
-
-  /* Backgrounds that should respect the theme (Community + many others) */
-  .pk-page .bg-white,
-  .pk-page .bg-white\\/95,
-  .pk-page .bg-white\\/90,
-  .pk-page .bg-gray-50,
-  .pk-page .bg-slate-50,
-  .pk-page .bg-neutral-50,
-  .pk-page .bg-zinc-50 {
-    background: hsl(var(--card)) !important;
-  }
-
-  /* Text colors that should respect the theme */
-  .pk-page .text-black,
-  .pk-page .text-gray-900,
-  .pk-page .text-slate-900,
-  .pk-page .text-neutral-900,
-  .pk-page .text-zinc-900 {
-    color: hsl(var(--foreground)) !important;
-  }
-
-  .pk-page .text-gray-700,
-  .pk-page .text-slate-700,
-  .pk-page .text-neutral-700,
-  .pk-page .text-zinc-700 {
-    color: hsl(var(--muted-foreground)) !important;
-  }
-
-  /* Borders that look too “light app” */
-  .pk-page .border-gray-200,
-  .pk-page .border-gray-300,
-  .pk-page .border-slate-200,
-  .pk-page .border-neutral-200,
-  .pk-page .border-zinc-200,
-  .pk-page .border-stone-200 {
-    border-color: hsl(var(--border)) !important;
-  }
-
-  /* Inputs */
-  .pk-page input,
-  .pk-page textarea,
-  .pk-page select {
-    background: hsl(var(--secondary)) !important;
-    color: hsl(var(--foreground)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
-
-  .pk-page input::placeholder,
-  .pk-page textarea::placeholder {
-    color: hsl(var(--muted-foreground)) !important;
-  }
-`}</style>
-
       <DocumentTitle title="PipeKeeper" />
       <TermsGate user={user}>
-        <div className="pk-page">
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-lg border-b border-border shadow">
-            <div className="pk-shell px-6">
-              <div className="flex items-center justify-between h-16 gap-4">
-                <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
-                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-8 h-8 object-contain" />
-                  <span className="font-bold text-xl text-foreground">PipeKeeper</span>
-                </Link>
-                <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
-                  {navItems.map(item => (
-                    <NavLink
-                      key={item.page}
-                      item={item}
-                      currentPage={currentPageName}
-                      hasPaidAccess={hasPaidAccess}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </nav>
-
-          {/* Mobile Navigation */}
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-lg border-b border-border shadow">
-            <div className="flex items-center justify-between h-14 px-4">
-              <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
-                <span className="font-bold text-lg text-foreground">PipeKeeper</span>
-              </Link>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMobileOpen(prev => !prev);
-                }}
-                className="text-foreground p-2 -mr-2 hover:bg-accent/20 rounded-xl active:scale-95 transition-all duration-200"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-                aria-label="Toggle menu"
-              >
-                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </nav>
-
-          {/* Mobile Menu Overlay */}
-          <div
-            className={cn(
-              "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
-              mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            )}
-            onClick={() => setMobileOpen(false)}
-            style={{ top: '56px' }}
-          />
-
-          {/* Mobile Menu Panel */}
-          <div
-            className={cn(
-              "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-background z-50 shadow-xl overflow-y-auto transition-transform duration-200",
-              mobileOpen ? "translate-x-0" : "translate-x-full"
-            )}
-          >
-            <div className="flex flex-col gap-2 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 w-full">
+          <div className="flex items-center justify-between h-16 gap-4">
+            <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
+              <img 
+                src={PIPEKEEPER_LOGO}
+                alt="PipeKeeper"
+                className="w-8 h-8 object-contain"
+              />
+              <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
+            </Link>
+            <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
               {navItems.map(item => (
-                <NavLink
-                  key={item.page}
-                  item={item}
-                  currentPage={currentPageName}
-                  onClick={() => setMobileOpen(false)}
-                  hasPaidAccess={hasPaidAccess}
-                  isMobile={true}
-                />
+                <NavLink key={item.page} item={item} currentPage={currentPageName} hasPaidAccess={hasPaidAccess} />
               ))}
             </div>
           </div>
-
-          {/* Main Content */}
-          <main className="pt-16 md:pt-16 pb-20">
-            {children}
-          </main>
-
-          {/* Footer */}
-          <footer className="bg-background/85 border-t border-border mt-auto">
-            <div className="pk-shell px-6 py-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-5 h-5 object-contain" />
-                  <span className="text-sm text-foreground/70">© 2025 PipeKeeper. All rights reserved.</span>
-                </div>
-                <div className="flex gap-6">
-                  <a href__={createPageUrl('FAQ')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
-                    FAQ
-                  </a>
-                  <a href__={createPageUrl('Support')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
-                    Support
-                  </a>
-                  <a href__={createPageUrl('TermsOfService')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
-                    Terms of Service
-                  </a>
-                  <a href__={createPageUrl('PrivacyPolicy')} className="text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:underline">
-                    Privacy Policy
-                  </a>
-                </div>
-              </div>
-            </div>
-          </footer>
         </div>
+      </nav>
+
+      {/* Mobile Navigation */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+        <div className="flex items-center justify-between h-14 px-4">
+          <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+            <img 
+              src={PIPEKEEPER_LOGO}
+              alt="PipeKeeper"
+              className="w-7 h-7 object-contain"
+            />
+            <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
+            </Link>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileOpen(prev => !prev);
+            }}
+            className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={cn(
+          "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setMobileOpen(false)}
+        style={{ top: '56px' }}
+      />
+
+      {/* Mobile Menu Panel */}
+      <div 
+        className={cn(
+          "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        )}
+      >
+        <div className="flex flex-col gap-2 p-4">
+          {navItems.map(item => (
+            <NavLink 
+              key={item.page} 
+              item={item} 
+              currentPage={currentPageName}
+              onClick={() => setMobileOpen(false)}
+              hasPaidAccess={hasPaidAccess}
+              isMobile={true}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="pt-16 md:pt-16 pb-20">
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <img 
+                src={PIPEKEEPER_LOGO}
+                alt="PipeKeeper"
+                className="w-5 h-5 object-contain"
+              />
+              <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
+            </div>
+            <div className="flex gap-6">
+              <a href={createPageUrl('FAQ')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                FAQ
+              </a>
+              <a href={createPageUrl('Support')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                Support
+              </a>
+              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                Terms of Service
+              </a>
+              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                Privacy Policy
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+      </div>
       </TermsGate>
-    </>
-  );
-}
+      </>
+      );
+      }

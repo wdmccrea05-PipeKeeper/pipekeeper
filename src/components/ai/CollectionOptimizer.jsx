@@ -899,10 +899,10 @@ Provide concrete, actionable steps with specific field values.`,
   };
 
   const getVersatilityColor = (score) => {
-    if (score >= 8) return 'bg-emerald-900/25 text-emerald-300 border-emerald-600/30';
-    if (score >= 6) return 'bg-primary/15 text-primary border-primary/25';
-    if (score >= 4) return 'bg-amber-900/25 text-amber-300 border-amber-600/30';
-    return 'bg-destructive/15 text-destructive border-destructive/25';
+    if (score >= 8) return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    if (score >= 6) return 'bg-blue-100 text-blue-800 border-blue-300';
+    if (score >= 4) return 'bg-amber-100 text-amber-800 border-amber-300';
+    return 'bg-rose-100 text-rose-800 border-rose-300';
   };
 
   if (pipes.length === 0 || blends.length === 0) {
@@ -918,19 +918,19 @@ Provide concrete, actionable steps with specific field values.`,
   // If initialized to show only What If, render that section standalone
   if (initialShowWhatIf) {
     return (
-      <Card className="pk-card bg-card/70 border-border/60">
+      <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground text-lg">
+          <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
             <Lightbulb className="w-5 h-5" />
             What If Scenario Analysis
           </CardTitle>
-          <p className="text-sm text-foreground/70">
+          <p className="text-sm text-stone-600">
             Analyze potential changes to your collection before making them
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-foreground/80 mb-2 block">
+            <label className="text-sm font-medium text-stone-700 mb-2 block">
               Your Question or Scenario
             </label>
             <Textarea
@@ -939,24 +939,24 @@ Provide concrete, actionable steps with specific field values.`,
                 : "e.g., 'What collection changes should I do next if I want better English blend matches?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"}
               value={whatIfQuery}
               onChange={(e) => setWhatIfQuery(e.target.value)}
-              className="min-h-[80px] bg-card/40 border-border/60 text-foreground placeholder:text-foreground/40"
+              className="min-h-[80px]"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground/80 mb-2 block">
+            <label className="text-sm font-medium text-stone-700 mb-2 block">
               Pipe Details (Optional)
             </label>
             <Textarea
               placeholder="Describe characteristics: shape, bowl size, material, etc."
               value={whatIfDescription}
               onChange={(e) => setWhatIfDescription(e.target.value)}
-              className="min-h-[60px] bg-card/40 border-border/60 text-foreground placeholder:text-foreground/40"
+              className="min-h-[60px]"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground/80 mb-2 block">
+            <label className="text-sm font-medium text-stone-700 mb-2 block">
               Upload Photos (Optional)
             </label>
             <Input
@@ -964,16 +964,16 @@ Provide concrete, actionable steps with specific field values.`,
               accept="image/*"
               multiple
               onChange={handlePhotoUpload}
-              className="mb-2 bg-card/40 border-border/60 text-foreground"
+              className="mb-2"
             />
             {whatIfPhotos.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {whatIfPhotos.map((url, idx) => (
                   <div key={idx} className="relative">
-                    <img src={url} alt="" className="w-20 h-20 object-cover rounded border border-border/60" />
+                    <img src={url} alt="" className="w-20 h-20 object-cover rounded border" />
                     <button
                       onClick={() => setWhatIfPhotos(whatIfPhotos.filter((_, i) => i !== idx))}
-                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow"
+                      className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -987,7 +987,7 @@ Provide concrete, actionable steps with specific field values.`,
             <Button
               onClick={analyzeWhatIf}
               disabled={whatIfLoading || !whatIfQuery.trim()}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               {whatIfLoading ? (
                 <>
@@ -1015,21 +1015,21 @@ Provide concrete, actionable steps with specific field values.`,
               className="mt-6 space-y-4"
             >
               {whatIfResult.is_advice_only ? (
-                <Card className="pk-card bg-card/70 border-border/60">
+                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
                   <CardContent className="p-4 space-y-4">
                     <div>
-                      <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                      <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
                         {whatIfResult.advice_response}
                       </p>
                     </div>
 
                     {whatIfResult.key_points?.length > 0 && (
                       <div>
-                        <p className="text-sm font-semibold text-primary mb-2">Key Points:</p>
+                        <p className="text-sm font-semibold text-blue-800 mb-2">Key Points:</p>
                         <ul className="space-y-1">
                           {whatIfResult.key_points.map((point, idx) => (
-                            <li key={idx} className="text-sm text-foreground/70 flex gap-2">
-                              <span className="text-accent">•</span>
+                            <li key={idx} className="text-sm text-stone-600 flex gap-2">
+                              <span className="text-blue-600">•</span>
                               <span>{point}</span>
                             </li>
                           ))}
@@ -1038,11 +1038,11 @@ Provide concrete, actionable steps with specific field values.`,
                     )}
 
                     {whatIfResult.common_mistakes?.length > 0 && (
-                      <div className="bg-destructive/10 rounded-lg p-3 border border-destructive/25">
-                        <p className="text-sm font-semibold text-destructive mb-2">Common Mistakes to Avoid:</p>
+                      <div className="bg-rose-50 rounded-lg p-3 border border-rose-200">
+                        <p className="text-sm font-semibold text-rose-800 mb-2">Common Mistakes to Avoid:</p>
                         <ul className="space-y-1">
                           {whatIfResult.common_mistakes.map((mistake, idx) => (
-                            <li key={idx} className="text-sm text-destructive/80 flex gap-2">
+                            <li key={idx} className="text-sm text-rose-700 flex gap-2">
                               <span>⚠️</span>
                               <span>{mistake}</span>
                             </li>
@@ -1054,10 +1054,10 @@ Provide concrete, actionable steps with specific field values.`,
                 </Card>
               ) : (
                 <>
-              <div className="flex items-center justify-between p-4 bg-primary/15 rounded-lg border border-border/60">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
                 <div>
-                  <p className="text-sm font-medium text-primary">Collection Impact Score</p>
-                  <p className="text-3xl font-bold text-foreground">{whatIfResult.impact_score}/10</p>
+                  <p className="text-sm font-medium text-indigo-700">Collection Impact Score</p>
+                  <p className="text-3xl font-bold text-indigo-900">{whatIfResult.impact_score}/10</p>
                 </div>
                 <Badge className={
                   whatIfResult.recommendation_category?.includes('ESSENTIAL') ? 'bg-emerald-600 text-white text-lg px-4 py-2' :
@@ -1411,12 +1411,12 @@ Provide concrete, actionable steps with specific field values.`,
       </DialogContent>
     </Dialog>
 
-    <Card className="pk-card bg-card/70 border-border/60">
+    <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <CardTitle className="flex items-center gap-2 text-foreground">
+              <CardTitle className="flex items-center gap-2 text-blue-800">
                 <Target className="w-5 h-5" />
                 Collection Optimization
               </CardTitle>
@@ -1424,7 +1424,7 @@ Provide concrete, actionable steps with specific field values.`,
                 variant="ghost"
                 size="sm"
                 onClick={toggleCollapse}
-                className="text-foreground/70 hover:text-foreground"
+                className="text-blue-600 hover:text-blue-800"
               >
                 {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </Button>
@@ -1436,7 +1436,7 @@ Provide concrete, actionable steps with specific field values.`,
           {!isCollapsed && <Button
             onClick={analyzeCollection}
             disabled={loading}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
           >
             {loading ? (
               <>
@@ -1463,8 +1463,8 @@ Provide concrete, actionable steps with specific field values.`,
           {/* Pipe Specializations */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-stone-800 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600" />
                 Recommended Pipe Specializations
               </h3>
               {showAcceptAll && (
@@ -1507,7 +1507,7 @@ Provide concrete, actionable steps with specific field values.`,
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
                   >
-                    <Card className="pk-card bg-card/70 border-border/60 hover:border-primary/40 transition-colors">
+                    <Card className="border-stone-200 hover:border-blue-300 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -1521,12 +1521,12 @@ Provide concrete, actionable steps with specific field values.`,
                             <div className="flex items-center gap-2 mb-2">
                               {pipe?.id ? (
                                 <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                                  <h4 className="font-semibold text-foreground hover:text-primary transition-colors">
+                                  <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
                                     {displaySpec.pipe_name}
                                   </h4>
                                 </a>
                               ) : (
-                                <h4 className="font-semibold text-foreground/50" title="Pipe not found in collection.">
+                                <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
                                   {displaySpec.pipe_name}
                                 </h4>
                               )}
@@ -1548,19 +1548,19 @@ Provide concrete, actionable steps with specific field values.`,
                             </div>
                             
                             {displaySpec.recommended_blend_types?.length > 0 && (
-                            <div className="mb-3">
-                              <p className="text-sm font-medium text-primary mb-1">Specialize for:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {displaySpec.recommended_blend_types.map((type, i) => (
-                                  <Badge key={i} className="bg-primary/15 text-primary border-primary/25">
-                                    {type}
-                                  </Badge>
-                                ))}
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-blue-800 mb-1">Specialize for:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {displaySpec.recommended_blend_types.map((type, i) => (
+                                    <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
+                                      {type}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
                             )}
 
-                            <p className="text-sm text-foreground/70 mb-2">{displaySpec.reasoning}</p>
+                            <p className="text-sm text-stone-600 mb-2">{displaySpec.reasoning}</p>
                             
                             {displaySpec.score_improvement && (
                               <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
@@ -1579,9 +1579,9 @@ Provide concrete, actionable steps with specific field values.`,
                               </div>
                             )}
                             
-                            <div className="bg-secondary/30 rounded-lg p-2 border border-border/40">
-                              <p className="text-xs font-medium text-primary">Usage Pattern:</p>
-                              <p className="text-xs text-foreground/70">{displaySpec.usage_pattern}</p>
+                            <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                              <p className="text-xs font-medium text-blue-700">Usage Pattern:</p>
+                              <p className="text-xs text-stone-600">{displaySpec.usage_pattern}</p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 mt-2">
@@ -1591,7 +1591,7 @@ Provide concrete, actionable steps with specific field values.`,
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="border-primary/40 text-primary hover:bg-primary/10"
+                                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
                                       onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types)}
                                     >
                                       <Check className="w-4 h-4 mr-1" />
@@ -1602,7 +1602,7 @@ Provide concrete, actionable steps with specific field values.`,
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="border-border/60 text-foreground/70 hover:bg-secondary/40"
+                                      className="border-stone-300 text-stone-700 hover:bg-stone-50"
                                     >
                                       Create Custom
                                     </Button>
@@ -1684,15 +1684,15 @@ Provide concrete, actionable steps with specific field values.`,
           {/* Collection Gaps */}
           {optimization.collection_gaps && (
             <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-accent" />
+              <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-amber-600" />
                 Collection Analysis
               </h3>
-              <Card className="pk-card bg-card/70 border-border/60">
+              <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
                 <CardContent className="p-4 space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground/80 mb-2">Overall Assessment</p>
-                    <p className="text-sm text-foreground/70">{optimization.collection_gaps.overall_assessment}</p>
+                    <p className="text-sm font-medium text-stone-700 mb-2">Overall Assessment</p>
+                    <p className="text-sm text-stone-600">{optimization.collection_gaps.overall_assessment}</p>
                   </div>
 
                   {optimization.collection_gaps.missing_coverage?.length > 0 && (
@@ -1728,8 +1728,8 @@ Provide concrete, actionable steps with specific field values.`,
           {/* Priority Focus Changes */}
           {optimization.priority_focus_changes && optimization.priority_focus_changes.length > 0 && (
             <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-violet-600" />
                 Quick Wins - Priority Focus Changes
               </h3>
               <div className="space-y-3">
@@ -1741,7 +1741,7 @@ Provide concrete, actionable steps with specific field values.`,
                     JSON.stringify(pipe.focus.sort()) === JSON.stringify(change.recommended_focus.sort());
 
                   return (
-                    <Card key={idx} className="pk-card bg-card/70 border-border/60">
+                    <Card key={idx} className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -1850,8 +1850,8 @@ Provide concrete, actionable steps with specific field values.`,
           {/* Next Pipe Recommendations */}
           {optimization.next_pipe_recommendations && optimization.next_pipe_recommendations.length > 0 && (
             <div>
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-emerald-600" />
                 Top 3 Collection Changes To Do Next
               </h3>
               <div className="space-y-3">
@@ -1917,7 +1917,7 @@ Provide concrete, actionable steps with specific field values.`,
           <div>
             <Button
               variant="outline"
-              className="w-full border-border/60 text-foreground hover:bg-secondary/40"
+              className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
               onClick={() => setShowWhatIf(!showWhatIf)}
             >
               <HelpCircle className="w-4 h-4 mr-2" />
@@ -1925,43 +1925,43 @@ Provide concrete, actionable steps with specific field values.`,
             </Button>
 
             {showWhatIf && (
-              <Card className="mt-4 pk-card bg-card/70 border-border/60">
+              <Card className="mt-4 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-foreground text-lg">
+                  <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
                     <Lightbulb className="w-5 h-5" />
                     What If Scenario Analysis
                   </CardTitle>
-                  <p className="text-sm text-foreground/70">
+                  <p className="text-sm text-stone-600">
                     Analyze potential changes to your collection before making them
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-foreground/80 mb-2 block">
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
                       Your Question or Scenario
                     </label>
                     <Textarea
                       placeholder="e.g., 'What collection changes should I do next if I want better English blend matches?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"
                       value={whatIfQuery}
                       onChange={(e) => setWhatIfQuery(e.target.value)}
-                      className="min-h-[80px] bg-card/40 border-border/60 text-foreground placeholder:text-foreground/40"
+                      className="min-h-[80px]"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-foreground/80 mb-2 block">
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
                       Pipe Details (Optional)
                     </label>
                     <Textarea
                       placeholder="Describe characteristics: shape, bowl size, material, etc."
                       value={whatIfDescription}
                       onChange={(e) => setWhatIfDescription(e.target.value)}
-                      className="min-h-[60px] bg-card/40 border-border/60 text-foreground placeholder:text-foreground/40"
+                      className="min-h-[60px]"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-foreground/80 mb-2 block">
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">
                       Upload Photos (Optional)
                     </label>
                     <Input
@@ -1969,16 +1969,16 @@ Provide concrete, actionable steps with specific field values.`,
                       accept="image/*"
                       multiple
                       onChange={handlePhotoUpload}
-                      className="mb-2 bg-card/40 border-border/60 text-foreground"
+                      className="mb-2"
                     />
                     {whatIfPhotos.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {whatIfPhotos.map((url, idx) => (
                           <div key={idx} className="relative">
-                            <img src={url} alt="" className="w-20 h-20 object-cover rounded border border-border/60" />
+                            <img src={url} alt="" className="w-20 h-20 object-cover rounded border" />
                             <button
                               onClick={() => setWhatIfPhotos(whatIfPhotos.filter((_, i) => i !== idx))}
-                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow"
+                              className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -1992,7 +1992,7 @@ Provide concrete, actionable steps with specific field values.`,
                     <Button
                       onClick={analyzeWhatIf}
                       disabled={whatIfLoading || !whatIfQuery.trim()}
-                      className="bg-primary hover:bg-primary/90"
+                      className="bg-indigo-600 hover:bg-indigo-700"
                     >
                       {whatIfLoading ? (
                         <>
@@ -2019,10 +2019,10 @@ Provide concrete, actionable steps with specific field values.`,
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-6 space-y-4"
                     >
-                      <div className="flex items-center justify-between p-4 bg-primary/15 rounded-lg border border-border/60">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
                         <div>
-                          <p className="text-sm font-medium text-primary">Collection Impact Score</p>
-                          <p className="text-3xl font-bold text-foreground">{whatIfResult.impact_score}/10</p>
+                          <p className="text-sm font-medium text-indigo-700">Collection Impact Score</p>
+                          <p className="text-3xl font-bold text-indigo-900">{whatIfResult.impact_score}/10</p>
                         </div>
                         <Badge className={
                           whatIfResult.recommendation_category?.includes('ESSENTIAL') ? 'bg-emerald-600 text-white text-lg px-4 py-2' :
@@ -2067,11 +2067,11 @@ Provide concrete, actionable steps with specific field values.`,
                         </Card>
                       )}
 
-                      <Card className="pk-card bg-card/70 border-border/60">
+                      <Card className="border-stone-200">
                         <CardContent className="p-4 space-y-3">
                           <div>
-                            <p className="text-sm font-medium text-foreground/80 mb-1">Redundancy Analysis:</p>
-                            <p className="text-sm text-foreground/70">{whatIfResult.redundancy_analysis}</p>
+                            <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
+                            <p className="text-sm text-stone-600">{whatIfResult.redundancy_analysis}</p>
                           </div>
 
                           {whatIfResult.score_improvements && (
@@ -2082,8 +2082,8 @@ Provide concrete, actionable steps with specific field values.`,
                           )}
 
                           <div>
-                            <p className="text-sm font-medium text-foreground/80 mb-1">Detailed Analysis:</p>
-                            <p className="text-sm text-foreground/70">{whatIfResult.detailed_reasoning}</p>
+                            <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
+                            <p className="text-sm text-stone-600">{whatIfResult.detailed_reasoning}</p>
                           </div>
                         </CardContent>
                       </Card>
