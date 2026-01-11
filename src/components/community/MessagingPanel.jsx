@@ -9,13 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Trash2, Save, X, Circle } from "lucide-react";
+import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MessagingPanel({ user, friends, publicProfiles }) {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [showInbox, setShowInbox] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editText, setEditText] = useState('');
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -97,6 +99,20 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
       toast.success('Message deleted');
+    },
+  });
+
+  const editMessageMutation = useMutation({
+    mutationFn: ({ messageId, content }) => safeUpdate('Message', messageId, { 
+      content, 
+      is_edited: true,
+      edited_date: new Date().toISOString()
+    }, user?.email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      setEditingMessageId(null);
+      setEditText('');
+      toast.success('Message edited');
     },
   });
 
@@ -290,6 +306,8 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
             <div className="space-y-3">
               {getConversation(selectedFriend).map((message) => {
                 const isSent = message.sender_email === user.email;
+                const isEditing = editingMessageId === message.id;
+                
                 return (
                   <div key={message.id} className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-lg p-3 ${
@@ -297,35 +315,97 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                         ? 'bg-blue-600 text-white' 
                         : 'bg-stone-100 text-stone-800'
                     }`}>
-                      <p className="text-sm break-words">{message.content}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
-                          {new Date(message.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                        {!isSent && (
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            className="text-sm"
+                            autoFocus
+                          />
                           <div className="flex gap-1">
-                            <button
-                              onClick={() => toggleSaveMutation.mutate({ 
+                            <Button
+                              size="sm"
+                              onClick={() => editMessageMutation.mutate({ 
                                 messageId: message.id, 
-                                saved: !message.is_saved 
+                                content: editText 
                               })}
-                              className="hover:opacity-70"
+                              disabled={!editText.trim() || editMessageMutation.isPending}
                             >
-                              <Save className={`w-3 h-3 ${message.is_saved ? 'fill-current' : ''}`} />
-                            </button>
-                            <button
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               onClick={() => {
-                                if (window.confirm('Delete this message?')) {
-                                  deleteMessageMutation.mutate(message.id);
-                                }
+                                setEditingMessageId(null);
+                                setEditText('');
                               }}
-                              className="hover:opacity-70"
                             >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                              Cancel
+                            </Button>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm break-words">{message.content}</p>
+                          {message.is_edited && (
+                            <p className={`text-xs italic mt-1 ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
+                              (edited)
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
+                              {new Date(message.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            {isSent ? (
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => {
+                                    setEditingMessageId(message.id);
+                                    setEditText(message.content);
+                                  }}
+                                  className="hover:opacity-70"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm('Delete this message?')) {
+                                      deleteMessageMutation.mutate(message.id);
+                                    }
+                                  }}
+                                  className="hover:opacity-70"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => toggleSaveMutation.mutate({ 
+                                    messageId: message.id, 
+                                    saved: !message.is_saved 
+                                  })}
+                                  className="hover:opacity-70"
+                                >
+                                  <Save className={`w-3 h-3 ${message.is_saved ? 'fill-current' : ''}`} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm('Delete this message?')) {
+                                      deleteMessageMutation.mutate(message.id);
+                                    }
+                                  }}
+                                  className="hover:opacity-70"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
