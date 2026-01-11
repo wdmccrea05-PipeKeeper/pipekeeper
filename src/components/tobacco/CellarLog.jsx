@@ -9,8 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2 } from "lucide-react";
+import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2, Crown } from "lucide-react";
 import { format } from "date-fns";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CellarLog({ blend }) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -85,6 +87,17 @@ export default function CellarLog({ blend }) {
     .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
 
   const netCellared = totalAdded - totalRemoved;
+
+  const isPaidUser = hasPremiumAccess(user);
+
+  if (!isPaidUser) {
+    return (
+      <UpgradePrompt 
+        featureName="Cellaring Log"
+        description="Track detailed cellaring transactions including add/remove dates, amounts in ounces, container types, and notes. View net cellared amounts and full transaction history for each blend."
+      />
+    );
+  }
 
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">

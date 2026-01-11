@@ -97,7 +97,7 @@ export default function FAQ() {
         </Q>
 
         <Q id="what-cellaring" q="What is cellaring?">
-          Cellaring refers to storing sealed tins or bulk tobacco for aging. PipeKeeper tracks how many tins/containers you have cellared vs. opened, and when you cellared them.
+          Cellaring refers to storing sealed tins or bulk tobacco for aging. PipeKeeper includes a detailed cellaring log system that tracks when tobacco is added to or removed from your cellar, quantities in ounces, container types, and notes. This feature is available to Premium subscribers.
         </Q>
 
         <Q id="smoking-log" q="What is the smoking log?">
@@ -200,7 +200,11 @@ export default function FAQ() {
         </Q>
 
         <Q id="premium-messaging" q="Premium: Direct Messaging">
-          Send and receive instant messages with friends in the PipeKeeper community. Share photos, discuss blends, coordinate trades, and connect with fellow enthusiasts privately.
+          Send and receive instant messages with friends in the PipeKeeper community. Share photos, discuss blends, coordinate trades, and connect with fellow enthusiasts privately. Edit or delete sent messages as needed.
+        </Q>
+
+        <Q id="premium-cellaring-log" q="Premium: Cellaring Log System">
+          Track detailed cellaring transactions with the dedicated cellaring log. Record when tobacco is added to or removed from your cellar with precise amounts in ounces, container types (tin, jar, bulk, pouch), dates, and notes. View net cellared amounts for each blend and drill down into cellar inventory from the home page.
         </Q>
       </Section>
 
