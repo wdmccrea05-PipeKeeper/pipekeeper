@@ -890,6 +890,47 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
     setWhatIfDescription('');
     setWhatIfResult(null);
     setSuggestedProducts(null);
+    setWhatIfFollowUp('');
+    setWhatIfHistory([]);
+  };
+
+  const handleWhatIfFollowUp = async () => {
+    if (!whatIfFollowUp.trim() || !whatIfResult) return;
+
+    setWhatIfLoading(true);
+    try {
+      // Combine original query with follow-up questions
+      const combinedContext = [whatIfQuery, ...whatIfHistory.map(h => h.question), whatIfFollowUp].filter(Boolean).join('\n\n');
+
+      // Call optimization with the full context
+      const result = await generateOptimizationAI({
+        pipes,
+        blends,
+        profile: userProfile,
+        whatIfText: combinedContext
+      });
+
+      // Store the follow-up in history
+      setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
+
+      // Update the result with new analysis
+      setWhatIfResult({
+        impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
+        trophy_pairings: (result.next_additions || []).slice(0, 5),
+        redundancy_analysis: result.summary || '',
+        recommendation_category: 'STRONG ADDITION',
+        detailed_reasoning: result.summary || '',
+        gaps_filled: result.collection_gaps || [],
+        score_improvements: `Revised analysis: ${(result.next_additions || []).join(', ')}`
+      });
+
+      setWhatIfFollowUp('');
+    } catch (err) {
+      console.error('Error with follow-up question:', err);
+      toast.error('Failed to process follow-up question');
+    } finally {
+      setWhatIfLoading(false);
+    }
   };
 
   const suggestProducts = async () => {
