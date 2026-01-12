@@ -634,19 +634,34 @@ async function applyOptimizationChangesWithUndo(applyableChanges) {
   return batch;
 }
 
-  async function undoOptimizationApply(batchId) {
-    if (!batchId) return;
-    const batches = await base44.entities.OptimizationApplyBatch.filter({ id: batchId });
-    const batch = batches?.[0];
-    if (!batch?.pipe_changes) return;
+async function undoOptimizationApply(batchId) {
+  if (!batchId) return;
 
-    for (const ch of batch.pipe_changes) {
-      await safeUpdate('Pipe', ch.pipe_id, { focus: ch.before.focus }, user?.email);
+  const batches = await base44.entities.AIApplyBatch.filter({ id: batchId });
+  const batch = batches?.[0];
+  if (!batch?.pipe_changes) return;
+
+  const pipeMap = new Map((pipes || []).map((p) => [p.id, p]));
+
+  for (const ch of batch.pipe_changes) {
+    const p = pipeMap.get(ch.pipe_id);
+    if (!p) continue;
+
+    if (ch.bowl_variant_id) {
+      const idx = parseInt(String(ch.bowl_variant_id).replace("bowl_", ""), 10);
+      const bowls = Array.isArray(p.interchangeable_bowls) ? [...p.interchangeable_bowls] : [];
+      if (Number.isFinite(idx) && bowls[idx]) {
+        bowls[idx] = { ...bowls[idx], focus: ch.before.focus };
+        await safeUpdate("Pipe", ch.pipe_id, { interchangeable_bowls: bowls }, user?.email);
+      }
+    } else {
+      await safeUpdate("Pipe", ch.pipe_id, { focus: ch.before.focus }, user?.email);
     }
-
-    invalidatePipeQueries(queryClient, user?.email);
-    invalidateAIQueries(queryClient, user?.email);
   }
+
+  invalidatePipeQueries(queryClient, user?.email);
+  invalidateAIQueries(queryClient, user?.email);
+}
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
