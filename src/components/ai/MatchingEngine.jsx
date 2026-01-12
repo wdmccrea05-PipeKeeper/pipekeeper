@@ -19,7 +19,6 @@ export default function MatchingEngine({ user }) {
   const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
   const [activeTab, setActiveTab] = useState("recommendations");
   const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -41,15 +40,14 @@ export default function MatchingEngine({ user }) {
 
   // Initialize with first pipe when data loads
   useEffect(() => {
-    if (!pipes?.length || initialized) return;
+    if (!pipes?.length || activePipeId) return;
     
     const first = pipes[0];
     const hasBowls = Array.isArray(first.interchangeable_bowls) && first.interchangeable_bowls.length > 0;
     
     setActivePipeId(first.id);
     setActiveBowlVariantId(hasBowls ? "bowl_0" : null);
-    setInitialized(true);
-  }, [pipes, initialized]);
+  }, [pipes]);
 
   // Adjust bowl variant when pipe changes
   useEffect(() => {
