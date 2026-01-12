@@ -214,6 +214,7 @@ export default function MatchingEngine({ user }) {
               <SelectContent>
                 {pipes.map((p) => {
                   const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
+                  // Only show bowl variants if bowls array has items
                   if (bowls.length > 0) {
                     return bowls.map((b, i) => {
                       const bowlId = b.bowl_variant_id || `bowl_${i}`;
@@ -225,6 +226,7 @@ export default function MatchingEngine({ user }) {
                       );
                     });
                   }
+                  // Show regular pipe when no bowls exist
                   return (
                     <SelectItem key={getPipeVariantKey(p.id, null)} value={getPipeVariantKey(p.id, null)}>
                       {p.name}
