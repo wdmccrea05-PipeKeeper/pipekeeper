@@ -16,16 +16,16 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-[#1A2B3A] border border-[#A35C5C]/30">
-            <TabsTrigger value="log" className="flex items-center gap-2 text-[#E0D8C8]/70 data-[state=active]:text-[#E0D8C8] data-[state=active]:bg-[#A35C5C]/30">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-[#f5f5dc] border border-[#E8D5C8]/30">
+            <TabsTrigger value="log" className="flex items-center gap-2 text-[#1a2c42] data-[state=active]:text-[#1a2c42] data-[state=active]:bg-[#E8D5C8]">
               <BookOpen className="w-4 h-4" />
               <span className="hidden sm:inline">Log</span>
             </TabsTrigger>
-            <TabsTrigger value="reference" className="flex items-center gap-2 text-[#E0D8C8]/70 data-[state=active]:text-[#E0D8C8] data-[state=active]:bg-[#A35C5C]/30">
+            <TabsTrigger value="reference" className="flex items-center gap-2 text-[#1a2c42] data-[state=active]:text-[#1a2c42] data-[state=active]:bg-[#E8D5C8]">
               <Grid3x3 className="w-4 h-4" />
               <span className="hidden sm:inline">Pairing Grid</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2 text-[#E0D8C8]/70 data-[state=active]:text-[#E0D8C8] data-[state=active]:bg-[#A35C5C]/30">
+            <TabsTrigger value="stats" className="flex items-center gap-2 text-[#1a2c42] data-[state=active]:text-[#1a2c42] data-[state=active]:bg-[#E8D5C8]">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Stats</span>
             </TabsTrigger>
