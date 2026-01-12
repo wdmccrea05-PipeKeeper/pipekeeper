@@ -246,7 +246,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           </Button>
           <Button
             size="sm"
-            disabled={!pairingsStale || busy}
+            disabled={busy}
             onClick={() => regenPairings.mutate()}
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
@@ -291,7 +291,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           </Button>
           <Button
             size="sm"
-            disabled={!optStale || busy}
+            disabled={busy}
             onClick={() => regenOpt.mutate()}
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
