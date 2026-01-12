@@ -984,6 +984,7 @@ Provide concrete, actionable steps with specific field values.`,
               type: "object",
               properties: {
                 pipe_id: { type: "string" },
+                bowl_variant_id: { type: "string" },
                 name: { type: "string" },
                 maker: { type: "string" },
                 shape: { type: "string" },
@@ -1016,18 +1017,45 @@ Provide concrete, actionable steps with specific field values.`,
         
         alert(`New pipe created: ${newPipeData.name || 'Untitled Pipe'}\n\nYou can edit the details from your Pipes page.`);
       } else if (implementationPlan.action_type === "update_pipe_focus") {
-        // Update existing pipe's focus
+        // Update existing pipe's focus (either main pipe or bowl variant)
         if (implementationPlan.pipe_data.pipe_id && implementationPlan.pipe_data.focus) {
-          await updatePipeMutation.mutateAsync({
-            id: implementationPlan.pipe_data.pipe_id,
-            data: { focus: implementationPlan.pipe_data.focus }
-          });
-          
-          const pipeName = pipes.find(p => p.id === implementationPlan.pipe_data.pipe_id)?.name || 'Pipe';
-          alert(`Updated ${pipeName}'s focus to: ${implementationPlan.pipe_data.focus.join(', ')}`);
+          const pipe = pipes.find(p => p.id === implementationPlan.pipe_data.pipe_id);
+          if (!pipe) {
+            toast.error('Pipe not found');
+            return;
+          }
+
+          if (implementationPlan.pipe_data.bowl_variant_id) {
+            // Update bowl variant focus
+            const bowlIndex = parseInt(implementationPlan.pipe_data.bowl_variant_id.replace('bowl_', ''));
+            const updatedBowls = [...(pipe.interchangeable_bowls || [])];
+            if (updatedBowls[bowlIndex]) {
+              updatedBowls[bowlIndex] = {
+                ...updatedBowls[bowlIndex],
+                focus: implementationPlan.pipe_data.focus
+              };
+              await updatePipeMutation.mutateAsync({
+                id: implementationPlan.pipe_data.pipe_id,
+                data: { interchangeable_bowls: updatedBowls }
+              });
+              
+              const bowlName = updatedBowls[bowlIndex].name || `Bowl ${bowlIndex + 1}`;
+              toast.success(`Updated ${pipe.name} - ${bowlName}'s focus to: ${implementationPlan.pipe_data.focus.join(', ')}`);
+            } else {
+              toast.error('Bowl variant not found');
+            }
+          } else {
+            // Update main pipe focus
+            await updatePipeMutation.mutateAsync({
+              id: implementationPlan.pipe_data.pipe_id,
+              data: { focus: implementationPlan.pipe_data.focus }
+            });
+            
+            toast.success(`Updated ${pipe.name}'s focus to: ${implementationPlan.pipe_data.focus.join(', ')}`);
+          }
         }
       } else {
-        alert(`Cannot implement automatically:\n\n${implementationPlan.explanation}`);
+        toast.error(`Cannot implement automatically: ${implementationPlan.explanation || 'undefined'}`);
       }
       
       // Reset what-if after implementation
