@@ -1598,6 +1598,19 @@ Provide concrete, actionable steps with specific field values.`,
                               )}
                             </div>
                             
+                            {pv.focus && pv.focus.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-indigo-800 mb-1">Current Focus:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {pv.focus.map((type, i) => (
+                                    <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                      {type}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
                             {displaySpec.recommended_blend_types?.length > 0 && (
                               <div className="mb-3">
                                 <p className="text-sm font-medium text-blue-800 mb-1">Specialize for:</p>
