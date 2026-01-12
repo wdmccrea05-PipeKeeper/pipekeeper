@@ -6,38 +6,38 @@ import { Loader2 } from "lucide-react";
 import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
 
 export default function PairingGrid({ user }) {
+  // ✅ Use .filter like the rest of your app (returns array)
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
-    queryFn: async () => {
-      const res = await base44.entities.Pipe.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
-    },
+    queryFn: async () => (await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
     enabled: !!user?.email,
   });
 
-  const { data: artifacts = [], isLoading: artifactsLoading } = useQuery({
-    queryKey: ["ai_artifacts", user?.email],
-    queryFn: async () => {
-      const res = await base44.entities.AIArtifact.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
-    },
+  // ✅ Pairings in your app are stored in PairingMatrix (not AIArtifact)
+  const { data: activePairings, isLoading: pairingsLoading } = useQuery({
+    queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
+    queryFn: async () => {
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user.email, is_active: true },
+        "-created_date",
+        1
+      );
+      return active?.[0] || null;
+    },
   });
-
-  const pairingArtifacts = useMemo(() => (artifacts || []).filter((a) => a.type === "pairing_grid"), [artifacts]);
 
   const pairingsByVariant = useMemo(() => {
     const map = new Map();
-    pairingArtifacts.forEach((art) => {
-      const list = art?.data?.pairings || [];
-      list.forEach((p) => {
-        const key = getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null);
-        map.set(key, p);
-      });
+    const list = activePairings?.pairings || activePairings?.data?.pairings || [];
+    (list || []).forEach((p) => {
+      const key = getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null);
+      map.set(key, p);
     });
     return map;
-  }, [pairingArtifacts]);
+  }, [activePairings]);
 
+  // ✅ Expand pipes to bowl variants (each bowl becomes a row)
   const pipeVariants = useMemo(() => expandPipesToVariants(pipes, { includeMainWhenBowls: false }), [pipes]);
 
   const rows = useMemo(() => {
@@ -47,22 +47,19 @@ export default function PairingGrid({ user }) {
       const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
       const pairing = pairingsByVariant.get(key);
 
-      const focus = Array.isArray(variant?.focus) ? variant.focus : [];
-      const recs = pairing?.recommendations || [];
-
       return {
         key,
         name: variant?.variant_name || pv.variant_name || pv.name,
-        focus,
+        focus: Array.isArray(variant?.focus) ? variant.focus : [],
         chamber_volume: variant?.chamber_volume,
         bowl_diameter_mm: variant?.bowl_diameter_mm,
         bowl_depth_mm: variant?.bowl_depth_mm,
-        recommendations: recs,
+        recommendations: pairing?.recommendations || [],
       };
     });
   }, [pipeVariants, pipes, pairingsByVariant]);
 
-  if (pipesLoading || artifactsLoading) {
+  if (pipesLoading || pairingsLoading) {
     return (
       <div className="flex items-center justify-center py-12 text-stone-600">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
