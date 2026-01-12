@@ -151,17 +151,41 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
 }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
-  const pipesData = (pipes || []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    maker: p.maker,
-    shape: p.shape,
-    bowl_material: p.bowl_material,
-    focus: p.focus || [],
-    chamber_volume: p.chamber_volume,
-    bowl_diameter_mm: p.bowl_diameter_mm,
-    bowl_depth_mm: p.bowl_depth_mm,
-  }));
+  // Expand pipes to include bowl variants as separate entries
+  const pipesData = [];
+  for (const p of pipes || []) {
+    // If multiple bowls exist, only add bowl variants (use bowl-specific characteristics)
+    if (p.interchangeable_bowls?.length > 0) {
+      p.interchangeable_bowls.forEach((bowl, idx) => {
+        pipesData.push({
+          id: p.id,
+          bowl_variant_id: `bowl_${idx}`,
+          name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+          maker: p.maker,
+          shape: bowl.shape || p.shape,
+          bowl_material: bowl.bowl_material || p.bowl_material,
+          chamber_volume: bowl.chamber_volume || p.chamber_volume,
+          bowl_diameter_mm: bowl.bowl_diameter_mm || p.bowl_diameter_mm,
+          bowl_depth_mm: bowl.bowl_depth_mm || p.bowl_depth_mm,
+          focus: bowl.focus || [],
+        });
+      });
+    } else {
+      // No multiple bowls - use overall pipe record
+      pipesData.push({
+        id: p.id,
+        bowl_variant_id: null,
+        name: p.name,
+        maker: p.maker,
+        shape: p.shape,
+        bowl_material: p.bowl_material,
+        focus: p.focus || [],
+        chamber_volume: p.chamber_volume,
+        bowl_diameter_mm: p.bowl_diameter_mm,
+        bowl_depth_mm: p.bowl_depth_mm,
+      });
+    }
+  }
 
   const blendsData = (blends || []).map((b) => ({
     id: b.id,
@@ -188,10 +212,14 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     prompt: `Analyze the user's pipe and tobacco collection. Provide optimization recommendations.
 
 Rules:
-- Recommend specialization updates (pipe focus changes) only when justified.
-- Provide "applyable_changes" as a list of pipe focus updates: { pipe_id, before_focus, after_focus, rationale }.
-- Include "collection_gaps" and "next_additions" suggestions.
-- If what-if is advice-only, give advice and keep applyable_changes empty.
+- Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
+- When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
+- Recommend specialization updates (bowl focus changes) only when justified
+- Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
+- Include "collection_gaps" and "next_additions" suggestions
+- If what-if is advice-only, give advice and keep applyable_changes empty
+
+CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
 
 WHAT_IF:
 ${whatIfText ? whatIfText : ""}
@@ -208,7 +236,7 @@ ${JSON.stringify(profileContext, null, 2)}
 Return JSON:
 {
   summary: string,
-  applyable_changes: [{ pipe_id, before_focus: string[], after_focus: string[], rationale: string }],
+  applyable_changes: [{ pipe_id, bowl_variant_id, before_focus: string[], after_focus: string[], rationale: string }],
   collection_gaps: string[],
   next_additions: string[],
   notes: string
@@ -223,11 +251,12 @@ Return JSON:
             type: "object",
             properties: {
               pipe_id: { type: "string" },
+              bowl_variant_id: { type: ["string", "null"] },
               before_focus: { type: "array", items: { type: "string" } },
               after_focus: { type: "array", items: { type: "string" } },
               rationale: { type: "string" },
             },
-            required: ["pipe_id", "before_focus", "after_focus", "rationale"],
+            required: ["pipe_id", "bowl_variant_id", "before_focus", "after_focus", "rationale"],
           },
         },
         collection_gaps: { type: "array", items: { type: "string" } },
