@@ -98,7 +98,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   }, [isStale, optimization]);
 
   useEffect(() => {
-    if (activeOpt) setOptimization(activeOpt);
+    if (activeOpt?.id) setOptimization(activeOpt);
   }, [activeOpt?.id]);
 
   const saveOptimizationMutation = useMutation({
