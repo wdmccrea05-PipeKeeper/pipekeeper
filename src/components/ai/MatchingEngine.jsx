@@ -38,11 +38,11 @@ export default function MatchingEngine({ user }) {
 
   const activePipe = useMemo(() => pipes.find((p) => p.id === activePipeId) || null, [pipes, activePipeId]);
 
-  // Default selection:
-  // - If pipe has bowls, default to bowl_0
-  // - Else, default to main
+  // Default selection when pipes load or change
   useEffect(() => {
     if (!pipes?.length) return;
+    
+    // Set first pipe if none selected
     if (!activePipeId) {
       const first = pipes[0];
       setActivePipeId(first.id);
@@ -51,18 +51,30 @@ export default function MatchingEngine({ user }) {
       return;
     }
 
-    // If activePipe changes and it has bowls, ensure we default to bowl_0 when not set
+    // When active pipe changes, adjust bowl variant selection accordingly
     const p = pipes.find((x) => x.id === activePipeId);
-    const hasBowls = Array.isArray(p?.interchangeable_bowls) && p.interchangeable_bowls.length > 0;
-    if (hasBowls && !activeBowlVariantId) setActiveBowlVariantId("bowl_0");
-    if (!hasBowls && activeBowlVariantId) setActiveBowlVariantId(null);
-  }, [pipes, activePipeId, activeBowlVariantId]);
+    if (!p) return;
+    
+    const hasBowls = Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0;
+    
+    // If pipe has no bowls but we have a bowl selected, clear it
+    if (!hasBowls && activeBowlVariantId !== null) {
+      setActiveBowlVariantId(null);
+    }
+    // If pipe has bowls but no bowl selected, select first bowl
+    else if (hasBowls && activeBowlVariantId === null) {
+      setActiveBowlVariantId("bowl_0");
+    }
+  }, [pipes, activePipeId]);
 
   const activeVariant = useMemo(() => {
     if (!activePipe) return null;
 
     const bowls = Array.isArray(activePipe.interchangeable_bowls) ? activePipe.interchangeable_bowls : [];
-    if (activeBowlVariantId) {
+    const hasBowls = bowls.length > 0;
+    
+    // Only process bowl variant if pipe actually has bowls AND a bowl is selected
+    if (hasBowls && activeBowlVariantId) {
       const idx = parseInt(String(activeBowlVariantId).replace("bowl_", ""), 10);
       const bowl = Number.isFinite(idx) ? bowls[idx] : null;
 
@@ -80,7 +92,7 @@ export default function MatchingEngine({ user }) {
       }
     }
 
-    // main variant
+    // Main pipe variant (no bowls or bowl not found)
     return {
       pipe_id: activePipe.id,
       bowl_variant_id: null,
@@ -192,7 +204,7 @@ export default function MatchingEngine({ user }) {
           AI Matching Engine
         </CardTitle>
         <CardDescription>
-          When a pipe has interchangeable bowls, AI defaults to the selected bowl variant (treated as a separate pipe).
+          Select a pipe to view AI recommendations. Pipes with interchangeable bowls will show each bowl as a separate variant.
         </CardDescription>
       </CardHeader>
 
