@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw } from "lucide-react";
 import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
-import { generatePairingsAI } from "@/components/utils/aiGenerators";
-import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { toast } from "sonner";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
@@ -86,24 +83,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
-      const currentFingerprint = buildArtifactFingerprint({ pipes: allPipes, blends: allBlends, profile });
-      const { pairings } = await generatePairingsAI({ pipes: allPipes, blends: allBlends, profile });
-
-      if (activePairings?.id) {
-        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
-      }
-
-      await base44.entities.PairingMatrix.create({
-        created_by: user.email,
-        is_active: true,
-        previous_active_id: activePairings?.id ?? null,
-        input_fingerprint: currentFingerprint,
-        pairings,
-        generated_date: new Date().toISOString(),
+      await regeneratePairings({
+        pipes: allPipes,
+        blends: allBlends,
+        profile,
+        user,
+        queryClient,
+        activePairings
       });
-
-      await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
-      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings regenerated successfully");
     } catch (error) {
       toast.error("Failed to regenerate pairings");

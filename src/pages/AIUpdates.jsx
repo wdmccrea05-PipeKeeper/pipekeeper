@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
-import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
+import { generateOptimizationAI } from "@/components/utils/aiGenerators";
+import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2 } from "lucide-react";
@@ -70,26 +71,18 @@ export default function AIUpdates() {
   const regenPairings = useMutation({
     mutationFn: async () => {
       setBusy(true);
-      const { pairings } = await generatePairingsAI({ pipes, blends, profile });
-
-      if (activePairings?.id) {
-        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
-      }
-
-      await base44.entities.PairingMatrix.create({
-        created_by: user.email,
-        is_active: true,
-        previous_active_id: activePairings?.id ?? null,
-        input_fingerprint: currentFingerprint,
-        pairings,
-        generated_date: new Date().toISOString(),
+      await regeneratePairings({
+        pipes,
+        blends,
+        profile,
+        user,
+        queryClient,
+        activePairings
       });
-
       setBusy(false);
     },
     onSuccess: () => {
       refetchPairings();
-      invalidateAIQueries(queryClient, user?.email);
       toast.success("Pairings regenerated successfully");
     },
     onError: () => {
