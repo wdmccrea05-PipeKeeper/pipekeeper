@@ -1485,7 +1485,7 @@ Provide concrete, actionable steps with specific field values.`,
           <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
             Not Now
           </Button>
-          {savedOptimization?.previous_active_id && (
+          {optimization?.previous_active_id && (
             <Button
               variant="outline"
               onClick={() => undoOptimizationMutation.mutate()}
