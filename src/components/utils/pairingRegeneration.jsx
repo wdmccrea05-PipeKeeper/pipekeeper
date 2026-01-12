@@ -1,3 +1,4 @@
+
 import { generatePairingsAI } from "./aiGenerators";
 import { buildArtifactFingerprint } from "./fingerprint";
 import { safeUpdate } from "./safeUpdate";
@@ -7,6 +8,10 @@ import { base44 } from "@/api/base44Client";
 export async function regeneratePairings({ pipes, blends, profile, user, queryClient, activePairings }) {
   const currentFingerprint = buildArtifactFingerprint({ pipes, blends, profile });
   const { pairings } = await generatePairingsAI({ pipes, blends, profile });
+
+  if (!pairings || pairings.length === 0) {
+    throw new Error("No pairings generated.");
+  }
 
   if (activePairings?.id) {
     await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
