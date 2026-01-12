@@ -13,6 +13,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const queryClient = useQueryClient();
   const [regenerating, setRegenerating] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [hasAutoRegenerated, setHasAutoRegenerated] = useState(false);
 
   // Fallback to fetch pipes if not provided
   const { data: fetchedPipes = [], isLoading: pipesLoading } = useQuery({
@@ -43,6 +44,15 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       return active?.[0] || null;
     },
   });
+
+  // Auto-regenerate on first load if no pairings exist and data is ready
+  React.useEffect(() => {
+    if (!hasAutoRegenerated && !regenerating && allPipes.length > 0 && allBlends.length > 0 && user?.email && 
+        (!activePairings || (activePairings?.pairings?.length === 0))) {
+      setHasAutoRegenerated(true);
+      regenPairings();
+    }
+  }, [user?.email, allPipes.length, allBlends.length, activePairings, hasAutoRegenerated, regenerating]);
 
   const pairingsByVariant = useMemo(() => {
     const map = new Map();
