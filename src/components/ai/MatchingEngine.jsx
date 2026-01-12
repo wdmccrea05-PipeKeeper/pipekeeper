@@ -1,333 +1,168 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
-import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 
-export default function MatchingEngine({ user }) {
-  const queryClient = useQueryClient();
-  const [activePipeId, setActivePipeId] = useState(null);
-  const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
-  const [activeTab, setActiveTab] = useState("recommendations");
-  const [loading, setLoading] = useState(false);
-
-  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
-    queryKey: ["pipes", user?.email],
-    queryFn: async () => {
-      return await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500) || [];
-    },
-    enabled: !!user?.email,
+export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: () => base44.auth.me(),
+    staleTime: 10_000,
   });
 
-  const { data: tobaccos = [], isLoading: tobaccosLoading } = useQuery({
-    queryKey: ["tobaccos", user?.email],
-    queryFn: async () => {
-      return await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, "-updated_date", 500) || [];
-    },
+  // Load active PairingMatrix (this is the single source of truth)
+  const { data: activePairings, isLoading: pairingsLoading } = useQuery({
+    queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
-  });
-
-  const activePipe = useMemo(() => pipes.find((p) => p.id === activePipeId) || null, [pipes, activePipeId]);
-
-  // Initialize with first pipe when data loads
-  useEffect(() => {
-    if (!pipes?.length || activePipeId) return;
-    
-    const first = pipes[0];
-    const hasBowls = Array.isArray(first.interchangeable_bowls) && first.interchangeable_bowls.length > 0;
-    
-    setActivePipeId(first.id);
-    setActiveBowlVariantId(hasBowls ? "bowl_0" : null);
-  }, [pipes]);
-
-  // Adjust bowl variant when pipe changes
-  useEffect(() => {
-    if (!activePipeId || !pipes?.length) return;
-    
-    const p = pipes.find((x) => x.id === activePipeId);
-    if (!p) return;
-    
-    const hasBowls = Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0;
-    
-    if (!hasBowls) {
-      setActiveBowlVariantId(null);
-    } else if (activeBowlVariantId === null) {
-      setActiveBowlVariantId("bowl_0");
-    }
-  }, [activePipeId, pipes]);
-
-  const activeVariant = useMemo(() => {
-    if (!activePipe) return null;
-
-    const bowls = Array.isArray(activePipe.interchangeable_bowls) ? activePipe.interchangeable_bowls : [];
-    const hasBowls = bowls.length > 0;
-    
-    // Only process bowl variant if pipe actually has bowls AND a bowl is selected
-    if (hasBowls && activeBowlVariantId) {
-      const idx = parseInt(String(activeBowlVariantId).replace("bowl_", ""), 10);
-      const bowl = Number.isFinite(idx) ? bowls[idx] : null;
-
-      if (bowl) {
-        return {
-          pipe_id: activePipe.id,
-          bowl_variant_id: activeBowlVariantId,
-          pipe_name: `${activePipe.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
-          focus: Array.isArray(bowl.focus) ? bowl.focus : (Array.isArray(activePipe.focus) ? activePipe.focus : []),
-          chamber_volume: bowl.chamber_volume ?? activePipe.chamber_volume,
-          bowl_diameter_mm: bowl.bowl_diameter_mm ?? activePipe.bowl_diameter_mm,
-          bowl_depth_mm: bowl.bowl_depth_mm ?? activePipe.bowl_depth_mm,
-          bowl_material: bowl.bowl_material ?? activePipe.bowl_material,
-        };
-      }
-    }
-
-    // Main pipe variant (no bowls or bowl not found)
-    return {
-      pipe_id: activePipe.id,
-      bowl_variant_id: null,
-      pipe_name: activePipe.name,
-      focus: Array.isArray(activePipe.focus) ? activePipe.focus : [],
-      chamber_volume: activePipe.chamber_volume,
-      bowl_diameter_mm: activePipe.bowl_diameter_mm,
-      bowl_depth_mm: activePipe.bowl_depth_mm,
-      bowl_material: activePipe.bowl_material,
-    };
-  }, [activePipe, activeBowlVariantId]);
-
-  // Fetch pairing matrix data
-  const { data: pairingMatrix = [], isLoading: artifactsLoading } = useQuery({
-    queryKey: ["saved-pairings", user?.email],
     queryFn: async () => {
       const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email, is_active: true },
+        { created_by: user.email, is_active: true },
         "-created_date",
         1
       );
-      return active || [];
+      return active?.[0] || null;
     },
-    enabled: !!user?.email,
   });
 
-  const currentVariantKey = useMemo(
-    () => (activeVariant ? getPipeVariantKey(activeVariant.pipe_id, activeVariant.bowl_variant_id || null) : null),
-    [activeVariant]
-  );
-
-  const currentPairing = useMemo(() => {
-    if (!activeVariant) return null;
-    // find pairing entry for this variant from PairingMatrix
-    const activePairings = pairingMatrix?.[0]?.pairings || [];
-    const hit = activePairings.find(
-      (p) => p.pipe_id === activeVariant.pipe_id && (p.bowl_variant_id || null) === (activeVariant.bowl_variant_id || null)
-    );
-    return hit || null;
-  }, [pairingMatrix, activeVariant]);
-
   const bowlOptions = useMemo(() => {
-    if (!activePipe) return [];
-    const bowls = Array.isArray(activePipe.interchangeable_bowls) ? activePipe.interchangeable_bowls : [];
-    if (!bowls.length) return [];
+    const bowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
     return bowls.map((b, i) => ({
       id: b.bowl_variant_id || `bowl_${i}`,
       name: b.name || `Bowl ${i + 1}`,
     }));
-  }, [activePipe]);
+  }, [pipe]);
 
-  async function applyFocusToActiveVariant(newFocus = []) {
-    if (!activePipe) return;
+  const hasBowls = bowlOptions.length > 0;
+  const [activeBowlVariantId, setActiveBowlVariantId] = useState(hasBowls ? bowlOptions[0].id : null);
 
-    const normalized = Array.isArray(newFocus) ? newFocus : [];
-    try {
-      if (activeBowlVariantId) {
-        const idx = parseInt(String(activeBowlVariantId).replace("bowl_", ""), 10);
-        const bowls = Array.isArray(activePipe.interchangeable_bowls) ? [...activePipe.interchangeable_bowls] : [];
-        if (!Number.isFinite(idx) || !bowls[idx]) throw new Error("Invalid bowl selection");
+  const pairingEntry = useMemo(() => {
+    const list = activePairings?.pairings || [];
+    const pid = String(pipe?.id ?? "");
+    const bid = activeBowlVariantId || null;
 
-        bowls[idx] = {
-          ...bowls[idx],
-          focus: normalized,
-        };
-
-        await safeUpdate("Pipe", activePipe.id, { interchangeable_bowls: bowls }, user?.email);
-      } else {
-        await safeUpdate("Pipe", activePipe.id, { focus: normalized }, user?.email);
-      }
-
-      invalidatePipeQueries(queryClient, user?.email);
-      invalidateAIQueries(queryClient, user?.email);
-      toast.success("Focus updated");
-    } catch (e) {
-      toast.error(e?.message || "Failed to update focus");
-    }
-  }
-
-  // Example action: generate recommendations for the active variant
-  async function generateVariantRecommendations() {
-    if (!activeVariant) return;
-    setLoading(true);
-    try {
-      // Your existing generator call(s) likely live elsewhere; this component mainly ensures
-      // that the ACTIVE CONTEXT is the bowl variant when present.
-      toast.success("Using bowl-aware context for AI recommendations");
-    } catch (e) {
-      toast.error(e?.message || "Failed to generate recommendations");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (pipesLoading || tobaccosLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-stone-600">
+      list.find(
+        (p) => String(p.pipe_id) === pid && (p.bowl_variant_id || null) === bid
+      ) || null
+    );
+  }, [activePairings, pipe?.id, activeBowlVariantId]);
+
+  const top3 = useMemo(() => {
+    const recs = pairingEntry?.recommendations || [];
+    return [...recs].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3);
+  }, [pairingEntry]);
+
+  const [selectedBlendId, setSelectedBlendId] = useState("");
+  const selectedBlend = useMemo(() => blends.find((b) => String(b.id) === String(selectedBlendId)) || null, [blends, selectedBlendId]);
+
+  const selectedBlendScore = useMemo(() => {
+    if (!selectedBlend || !pairingEntry?.recommendations) return null;
+    const hit = pairingEntry.recommendations.find((r) => String(r.tobacco_id) === String(selectedBlend.id));
+    return hit?.score ?? null;
+  }, [pairingEntry, selectedBlend]);
+
+  if (!isPaidUser) {
+    return (
+      <UpgradePrompt
+        featureName="AI Tobacco Matching"
+        description="Get top blend recommendations for each pipe (and for each interchangeable bowl)."
+      />
+    );
+  }
+
+  if (pairingsLoading) {
+    return (
+      <div className="flex items-center justify-center py-10 text-stone-600">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading...
+        Loading recommendations...
       </div>
     );
   }
 
-  if (!pipesLoading && !pipes?.length) {
-    return (
-      <Card className="border-stone-200">
-        <CardContent className="py-12 text-center text-stone-600">
-          No pipes found. Add a pipe to use the AI Matching Engine.
-        </CardContent>
-      </Card>
-    );
+  if (!pipe?.id) {
+    return <div className="text-sm text-stone-600">Pipe not available.</div>;
   }
+
+  const variantKey = getPipeVariantKey(pipe.id, activeBowlVariantId || null);
 
   return (
     <Card className="border-stone-200">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-stone-700" />
-          AI Matching Engine
-        </CardTitle>
-        <CardDescription>
-          Select a pipe to view AI recommendations. Pipes with interchangeable bowls will show each bowl as a separate variant.
-        </CardDescription>
-      </CardHeader>
+      <CardContent className="p-0">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b bg-stone-50">
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-stone-800">Recommendations for</div>
+            <div className="text-xs text-stone-600">{pipe.name}</div>
+            <div className="text-[11px] text-stone-500 mt-1 font-mono">Variant: {variantKey}</div>
+          </div>
 
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-stone-600">Select Pipe / Bowl</div>
-            <Select 
-              value={currentVariantKey || undefined} 
-              onValueChange={(key) => {
-                if (!key) return;
-                const [pipeId, bowlId] = key.split('::');
-                setActivePipeId(pipeId);
-                setActiveBowlVariantId(bowlId === 'main' || !bowlId ? null : bowlId);
-              }}
+          <div className="w-full md:w-64">
+            <div className="text-xs font-semibold text-stone-600 mb-1">Bowl Variant</div>
+            <Select
+              value={activeBowlVariantId || "main"}
+              onValueChange={(v) => setActiveBowlVariantId(v === "main" ? null : v)}
+              disabled={!hasBowls}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select pipe or bowl variant" />
+                <SelectValue placeholder="Main (non-variant)" />
               </SelectTrigger>
               <SelectContent>
-                {pipes.map((p) => {
-                  const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
-                  
-                  // If pipe has interchangeable bowls, only show bowl variants
-                  if (bowls.length > 0) {
-                    return bowls.map((b, i) => {
-                      const bowlId = b.bowl_variant_id || `bowl_${i}`;
-                      const variantKey = getPipeVariantKey(p.id, bowlId);
-                      return (
-                        <SelectItem key={variantKey} value={variantKey}>
-                          {p.name} - {b.name || `Bowl ${i + 1}`}
-                        </SelectItem>
-                      );
-                    });
-                  }
-                  
-                  // Show regular pipe when no bowls exist
-                  const variantKey = getPipeVariantKey(p.id, null);
-                  return (
-                    <SelectItem key={variantKey} value={variantKey}>
-                      {p.name}
-                    </SelectItem>
-                  );
-                })}
+                <SelectItem value="main">Main (non-variant)</SelectItem>
+                {bowlOptions.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-stone-600">Active Context</div>
-            <div className="p-2 rounded-md border bg-stone-50">
-              <div className="text-sm font-semibold text-stone-800">{activeVariant?.pipe_name || "—"}</div>
-              <div className="text-xs text-stone-600 mt-1">
-                Variant key: <span className="font-mono">{currentVariantKey || "—"}</span>
-              </div>
-              <div className="flex gap-2 flex-wrap mt-2">
-                {(activeVariant?.focus || []).length ? (
-                  (activeVariant.focus || []).map((f) => (
-                    <Badge key={f} variant="secondary" className="bg-stone-200 text-stone-800">
-                      {f}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-xs text-stone-500">No focus set</span>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-            <TabsTrigger value="pairing">Pairing</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="recommendations" className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Button onClick={generateVariantRecommendations} disabled={!activeVariant || loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Generate (variant-aware)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => applyFocusToActiveVariant(activeVariant?.focus || [])}
-                disabled={!activeVariant}
-              >
-                Confirm & Apply Focus
-              </Button>
-            </div>
-            <div className="text-xs text-stone-500">
-              This screen ensures AI context uses the active bowl variant when present (instead of the parent pipe).
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pairing" className="space-y-3">
-            {artifactsLoading ? (
-              <div className="flex items-center text-stone-600">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading AI artifacts...
-              </div>
-            ) : currentPairing ? (
-              <div className="p-3 rounded-lg border bg-white">
-                <div className="font-semibold text-stone-800 mb-2">Pairing Results for Variant</div>
-                <div className="text-sm text-stone-700">
-                  {(currentPairing.recommendations || []).length
-                    ? currentPairing.recommendations.map((r) => `${r.tobacco_name || r.name || "Tobacco"} (${r.score || "—"})`).join(", ")
-                    : "No pairing recommendations found for this variant."}
-                </div>
+        <div className="p-4 space-y-4">
+          <div>
+            <div className="text-xs font-semibold text-stone-700 mb-2">Top 3 matches (from Pairing Grid)</div>
+            {top3.length ? (
+              <div className="flex flex-col gap-2">
+                {top3.map((r, idx) => (
+                  <div key={`${variantKey}-top-${idx}`} className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-stone-800 truncate">{r.tobacco_name}</span>
+                    <Badge className="bg-stone-200 text-stone-800">{r.score ?? "—"}</Badge>
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="text-sm text-stone-600">No pairing artifact entries for this bowl variant yet.</div>
+              <div className="text-sm text-stone-600">No pairing data yet. Regenerate Pairings.</div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          <div className="pt-3 border-t">
+            <div className="text-xs font-semibold text-stone-700 mb-2">Check any blend</div>
+            <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Select a blend..." />
+              </SelectTrigger>
+              <SelectContent>
+                {blends.map((b) => (
+                  <SelectItem key={b.id} value={String(b.id)}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {selectedBlend ? (
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-sm text-stone-800 truncate">{selectedBlend.name}</span>
+                <span className="text-sm text-stone-600">{selectedBlendScore ?? "No score"}</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
