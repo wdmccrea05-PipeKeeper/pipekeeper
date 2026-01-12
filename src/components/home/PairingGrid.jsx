@@ -50,8 +50,16 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     const map = new Map();
     const list = activePairings?.pairings || activePairings?.data?.pairings || [];
     (list || []).forEach((p) => {
-      const key = getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null);
+      // Normalize bowl_variant_id: treat null, undefined, "", "null", "main" all as null
+      const rawBowlId = p.bowl_variant_id;
+      const normalizedBowlId = (!rawBowlId || rawBowlId === "null" || rawBowlId === "main") ? null : rawBowlId;
+      const key = getPipeVariantKey(p.pipe_id, normalizedBowlId);
       map.set(key, p);
+      
+      // Also store by pipe_id alone as fallback for pipes without bowls
+      if (!normalizedBowlId) {
+        map.set(`${p.pipe_id}::fallback`, p);
+      }
     });
     return map;
   }, [activePairings]);
