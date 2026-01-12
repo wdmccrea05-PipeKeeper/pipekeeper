@@ -56,17 +56,31 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
 
   const pairingEntry = useMemo(() => {
-    const list = activePairings?.pairings || [];
+    const list = activePairings?.pairings || activePairings?.data?.pairings || [];
     const pid = String(pipe?.id ?? "");
-    // Normalize bowl variant: treat "main" and null the same (both mean main pipe, no bowl)
-    const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
 
-    return (
-      list.find(
-        (p) => String(p.pipe_id) === pid && (p.bowl_variant_id || null) === normalizedBowlId
-      ) || null
-    );
-  }, [activePairings, pipe?.id, activeBowlVariantId]);
+    const normalizedBowlId =
+      (!activeBowlVariantId || activeBowlVariantId === "main" || activeBowlVariantId === "null")
+        ? null
+        : activeBowlVariantId;
+
+    // Try exact match
+    let found =
+      list.find((p) => String(p.pipe_id) === pid && ((p.bowl_variant_id || null) === normalizedBowlId)) || null;
+
+    // Fallback for main pipe (some older records store bowl_variant_id weirdly)
+    if (!found && !normalizedBowlId) {
+      found = list.find((p) => String(p.pipe_id) === pid && (!p.bowl_variant_id || p.bowl_variant_id === "main" || p.bowl_variant_id === "null")) || null;
+    }
+
+    // Final fallback: match by name if needed
+    if (!found) {
+      const targetName = pipe?.name;
+      found = list.find((p) => p.pipe_name === targetName) || null;
+    }
+
+    return found;
+  }, [activePairings, pipe?.id, pipe?.name, activeBowlVariantId]);
 
   const top3 = useMemo(() => {
     const recs = pairingEntry?.recommendations || [];
