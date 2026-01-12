@@ -171,7 +171,10 @@ function PipeCard({ row, allBlends }) {
 
   const selectedBlendScore = useMemo(() => {
     if (!selectedBlendId) return null;
-    const match = row.recommendations?.find(r => r.tobacco_id === selectedBlendId);
+    // Try both possible field names for compatibility
+    const match = row.recommendations?.find(r => 
+      r.tobacco_id === selectedBlendId || r.blend_id === selectedBlendId || r.id === selectedBlendId
+    );
     return match?.score ?? null;
   }, [selectedBlendId, row.recommendations]);
 
