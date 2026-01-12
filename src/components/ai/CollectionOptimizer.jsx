@@ -1534,8 +1534,12 @@ Provide concrete, actionable steps with specific field values.`,
               )}
             </div>
             <div className="space-y-3">
-              {pipes.map((pipe, idx) => {
-                const spec = optimization.pipe_specializations?.find(s => s.pipe_id === pipe.id);
+               {expandPipesToVariants(pipes).map((pv, idx) => {
+                 const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
+                 const spec = optimization.pipe_specializations?.find(s => {
+                   const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
+                   return k === variantKey;
+                 });
                 // Show all pipes, even if no recommendation exists
                 const displaySpec = spec || {
                   pipe_id: pipe.id,
