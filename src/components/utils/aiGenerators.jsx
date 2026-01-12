@@ -12,6 +12,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     bowl_depth_mm: p.bowl_depth_mm,
     focus: p.focus || [],
     notes: p.notes || "",
+    interchangeable_bowls: p.interchangeable_bowls || [],
   }));
 
   const blendsData = (blends || []).map((b) => ({
@@ -46,10 +47,13 @@ CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection l
 Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
+INTERCHANGEABLE BOWLS SCORING:
+For pipes with interchangeable_bowls, score each bowl variant SEPARATELY. Each bowl can have different optimal pairings based on its unique material, size, and shape. Consider all bowls when determining blend matches for a pipe.
+
 Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe, evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well.
+For each pipe (including all interchangeable bowl variants), evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well.
 
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 

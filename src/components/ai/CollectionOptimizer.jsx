@@ -231,6 +231,9 @@ You are an expert pipe tobacco consultant specializing in collection optimizatio
 Pipes Collection:
 ${JSON.stringify(pipesData, null, 2)}
 
+INTERCHANGEABLE BOWLS OPTIMIZATION:
+For pipes with interchangeable_bowls, consider each bowl variant as a separate scoring opportunity. Different bowl materials, sizes, and shapes within the same pipe system should be optimized for different blend types to maximize trophy pairings.
+
 Tobacco Blends in Cellar:
 ${JSON.stringify(blendsData, null, 2)}${profileContext}${feedbackContext}
 
@@ -592,7 +595,8 @@ User Feedback: ${feedback}
         chamber_volume: p.chamber_volume,
         bowl_diameter_mm: p.bowl_diameter_mm,
         bowl_depth_mm: p.bowl_depth_mm,
-        focus: p.focus
+        focus: p.focus,
+        interchangeable_bowls: p.interchangeable_bowls || []
       }));
 
       const blendsData = blends.map(b => ({
