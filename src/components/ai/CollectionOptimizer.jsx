@@ -65,32 +65,17 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     enabled: !!user?.email,
   });
 
-  // Load saved optimization (scoped to current user) - active first, then latest
+  // Load active optimization (scoped to current user)
   const { data: savedOptimization } = useQuery({
     queryKey: ['saved-optimization', user?.email],
     enabled: !!user?.email,
-    retry: 1,
     queryFn: async () => {
-      try {
-        // Load active first
-        const active = await base44.entities.CollectionOptimization.filter(
-          { created_by: user.email, is_active: true },
-          '-created_date',
-          1
-        );
-        if (active?.[0]) return active[0];
-
-        // Fallback to latest
-        const latest = await base44.entities.CollectionOptimization.filter(
-          { created_by: user.email },
-          '-created_date',
-          1
-        );
-        return Array.isArray(latest) ? latest[0] : null;
-      } catch (err) {
-        console.error('Saved optimization load error:', err);
-        return null;
-      }
+      const active = await base44.entities.CollectionOptimization.filter(
+        { created_by: user.email, is_active: true },
+        '-created_date',
+        1
+      );
+      return active?.[0] || null;
     },
   });
 
