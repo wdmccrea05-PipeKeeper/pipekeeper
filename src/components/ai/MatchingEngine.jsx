@@ -83,16 +83,28 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   }, [activePairings, pipe?.id, pipe?.name, activeBowlVariantId]);
 
   const top3 = useMemo(() => {
-    const recs = pairingEntry?.recommendations || [];
-    return [...recs].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3);
+    const recs = pairingEntry?.recommendations || pairingEntry?.blend_matches || [];
+    return [...recs]
+      .filter((r) => (r.score ?? 0) > 0)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 3);
   }, [pairingEntry]);
 
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const selectedBlend = useMemo(() => blends.find((b) => String(b.id) === String(selectedBlendId)) || null, [blends, selectedBlendId]);
 
   const selectedBlendScore = useMemo(() => {
-    if (!selectedBlend || !pairingEntry?.recommendations) return null;
-    const hit = pairingEntry.recommendations.find((r) => String(r.tobacco_id) === String(selectedBlend.id));
+    if (!selectedBlend || !pairingEntry) return null;
+    const recs = pairingEntry.recommendations || pairingEntry.blend_matches || [];
+
+    const sid = String(selectedBlend.id);
+
+    const hit = recs.find((r) =>
+      String(r.tobacco_id ?? "") === sid ||
+      String(r.blend_id ?? "") === sid ||
+      String(r.id ?? "") === sid
+    );
+
     return hit?.score ?? null;
   }, [pairingEntry, selectedBlend]);
 
@@ -130,7 +142,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
         profile: userProfile,
         user,
         queryClient,
-        activePairings
+        activePairings,
+        mode: "merge", // ✅ critical
       });
       toast.success("Pairings regenerated successfully");
     } catch (error) {
