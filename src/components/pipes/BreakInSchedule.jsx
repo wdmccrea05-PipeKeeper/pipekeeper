@@ -16,7 +16,7 @@ import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [showRegenDialog, setShowRegenDialog] = useState(false);
   const queryClient = useQueryClient();
 
