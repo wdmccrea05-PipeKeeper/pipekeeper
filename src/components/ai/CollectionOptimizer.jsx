@@ -106,15 +106,15 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const saveOptimizationMutation = useMutation({
     mutationFn: async (data) => {
       // Deactivate current active optimization
-      if (savedOptimization?.id) {
-        await safeUpdate('CollectionOptimization', savedOptimization.id, { is_active: false }, user?.email);
+      if (optimization?.id) {
+        await safeUpdate('CollectionOptimization', optimization.id, { is_active: false }, user?.email);
       }
 
       // Create clean payload with only intended fields
       return base44.entities.CollectionOptimization.create({
         created_by: user?.email,
         is_active: true,
-        previous_active_id: savedOptimization?.id || null,
+        previous_active_id: optimization?.id || null,
         input_fingerprint: currentFingerprint,
         pipe_specializations: data.pipe_specializations,
         collection_gaps: data.collection_gaps,
@@ -124,7 +124,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-optimization', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["activeOptimization", user?.email] });
     },
   });
 
