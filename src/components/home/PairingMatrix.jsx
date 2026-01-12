@@ -305,25 +305,36 @@ export default function PairingMatrix({ pipes, blends }) {
       {!isCollapsed && pairings && (
         <CardContent>
           <div className="space-y-4">
-            {pairings.map((pipePairing, idx) => {
-              const pipe = pipes.find(p => p.id === pipePairing.pipe_id);
-              const bestMatch = getBestMatch(pipePairing.blend_matches);
-              const uniqueKey = pipePairing.bowl_variant_id ? `${pipePairing.pipe_id}_${pipePairing.bowl_variant_id}` : pipePairing.pipe_id;
-              const isExpanded = selectedPipe === uniqueKey;
+            {(() => {
+              // Group pairings by pipe_id
+              const groupedPairings = {};
+              pairings.forEach(pairing => {
+                if (!groupedPairings[pairing.pipe_id]) {
+                  groupedPairings[pairing.pipe_id] = [];
+                }
+                groupedPairings[pairing.pipe_id].push(pairing);
+              });
 
-              return (
-                <motion.div
-                  key={uniqueKey}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                >
-                  <Card className="border-stone-200 hover:border-violet-300 transition-colors">
-                    <CardContent className="p-4">
-                      <div 
-                        className="flex items-center justify-between cursor-pointer"
-                        onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(uniqueKey)}
-                      >
+              return Object.entries(groupedPairings).map(([pipeId, pipePairings], idx) => {
+                const pipe = pipes.find(p => p.id === pipeId);
+                const mainPairing = pipePairings.find(p => !p.bowl_variant_id) || pipePairings[0];
+                const bowlVariants = pipePairings.filter(p => p.bowl_variant_id);
+                const bestMatch = getBestMatch(mainPairing.blend_matches);
+                const isExpanded = selectedPipe === pipeId;
+
+                return (
+                  <motion.div
+                    key={pipeId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <Card className="border-stone-200 hover:border-violet-300 transition-colors">
+                      <CardContent className="p-4">
+                        <div 
+                          className="flex items-center justify-between cursor-pointer"
+                          onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(pipeId)}
+                        >
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
                             {pipe?.photos?.[0] ? (
@@ -336,33 +347,17 @@ export default function PairingMatrix({ pipes, blends }) {
                             <div className="flex items-center gap-2">
                               {pipe?.id ? (
                                 <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                                  <div className="flex flex-col gap-1">
-                                    <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
-                                      {pipePairing.pipe_name}
-                                    </h4>
-                                    {pipePairing.bowl_variant_id && pipe?.interchangeable_bowls && (
-                                      <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300">
-                                          Bowl Variant
-                                        </Badge>
-                                      </div>
-                                    )}
-                                  </div>
+                                  <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
+                                    {mainPairing.pipe_name}
+                                  </h4>
                                 </a>
                               ) : (
-                                <div className="flex flex-col gap-1">
-                                  <h4
-                                    className="font-semibold text-stone-500"
-                                    title="This pipe is missing from your collection (deleted or not loaded yet)."
-                                  >
-                                    {pipePairing.pipe_name}
-                                  </h4>
-                                  {pipePairing.bowl_variant_id && (
-                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300">
-                                      Bowl Variant
-                                    </Badge>
-                                  )}
-                                </div>
+                                <h4
+                                  className="font-semibold text-stone-500"
+                                  title="This pipe is missing from your collection (deleted or not loaded yet)."
+                                >
+                                  {mainPairing.pipe_name}
+                                </h4>
                               )}
                             </div>
                             {bestMatch && (
@@ -379,8 +374,13 @@ export default function PairingMatrix({ pipes, blends }) {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {bowlVariants.length > 0 && (
+                            <Badge className="bg-amber-100 text-amber-800 text-xs">
+                              {bowlVariants.length + 1} bowls
+                            </Badge>
+                          )}
                           <Badge variant="outline" className="text-xs">
-                            {pipePairing.blend_matches?.length || 0} matches
+                            {mainPairing.blend_matches?.length || 0} matches
                           </Badge>
                           <ChevronRight className={`w-5 h-5 text-stone-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                         </div>
@@ -392,9 +392,13 @@ export default function PairingMatrix({ pipes, blends }) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="mt-4 pt-4 border-t border-stone-200 space-y-3"
+                            className="mt-4 pt-4 border-t border-stone-200 space-y-4"
                           >
-                            {pipePairing.blend_matches
+                            {/* Main Bowl Section */}
+                            <div>
+                              <h5 className="text-sm font-semibold text-stone-700 mb-2">Main Bowl</h5>
+                              <div className="space-y-3">
+                                {mainPairing.blend_matches
                               ?.sort((a, b) => b.score - a.score)
                               .map((match) => {
                                 const blend = blends.find(b => b.id === match.blend_id);
@@ -455,18 +459,102 @@ export default function PairingMatrix({ pipes, blends }) {
                                       <Badge className={`${getScoreColor(match.score)} shrink-0`}>
                                         {match.score}/10
                                       </Badge>
+                                      </div>
                                     </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Bowl Variants */}
+                            {bowlVariants.length > 0 && bowlVariants.map((bowlPairing, bIdx) => {
+                              const bowlBestMatch = getBestMatch(bowlPairing.blend_matches);
+                              return (
+                                <div key={bowlPairing.bowl_variant_id}>
+                                  <h5 className="text-sm font-semibold text-amber-700 mb-2 flex items-center gap-2">
+                                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+                                      {bowlPairing.pipe_name.split(' - ').pop()}
+                                    </Badge>
+                                  </h5>
+                                  <div className="space-y-3">
+                                    {bowlPairing.blend_matches
+                                      ?.sort((a, b) => b.score - a.score)
+                                      .map((match) => {
+                                        const blend = blends.find(b => b.id === match.blend_id);
+                                        const isBest = match.blend_id === bowlBestMatch?.blend_id;
+
+                                        return (
+                                          <div 
+                                            key={`${bowlPairing.bowl_variant_id}_${match.blend_id}`}
+                                            className={`p-3 rounded-lg ${isBest ? 'bg-amber-50 border border-amber-200' : 'bg-stone-50'}`}
+                                          >
+                                            <div className="flex items-start justify-between gap-3">
+                                              <div className="flex items-center gap-3 flex-1">
+                                                {isBest && (
+                                                  <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
+                                                )}
+                                                <div className="w-10 h-10 rounded-lg bg-white overflow-hidden flex items-center justify-center shrink-0">
+                                                 {(() => {
+                                                   const logoUrl = blend?.logo || getTobaccoLogo(blend?.manufacturer, customLogos);
+                                                   return logoUrl ? (
+                                                     <img 
+                                                       src={logoUrl} 
+                                                       alt="" 
+                                                       className="w-full h-full object-contain p-1"
+                                                       onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
+                                                     />
+                                                   ) : blend?.photo ? (
+                                                     <img 
+                                                       src={blend.photo} 
+                                                       alt="" 
+                                                       className="w-full h-full object-cover"
+                                                       onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🍂'; }} 
+                                                     />
+                                                   ) : (
+                                                     <span className="text-lg">🍂</span>
+                                                   );
+                                                 })()}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2">
+                                                    {blend?.id ? (
+                                                      <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
+                                                        <p className="font-medium text-stone-800 hover:text-amber-700 transition-colors">
+                                                          {match.blend_name}
+                                                        </p>
+                                                      </a>
+                                                    ) : (
+                                                      <p
+                                                        className="font-medium text-stone-500"
+                                                        title="This blend is missing from your collection (deleted or not loaded yet)."
+                                                      >
+                                                        {match.blend_name}
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                  <p className="text-xs text-stone-600 mt-1">{match.reasoning}</p>
+                                                </div>
+                                              </div>
+                                              <Badge className={`${getScoreColor(match.score)} shrink-0`}>
+                                                {match.score}/10
+                                              </Badge>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
                                   </div>
-                                );
-                              })}
+                                </div>
+                              );
+                            })}
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              });
+            })()}
           </div>
 
           <div className="mt-4 text-center text-xs text-stone-500">
