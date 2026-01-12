@@ -133,13 +133,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-white">Pairing Grid</CardTitle>
-            <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
-          </div>
-          <div className="flex gap-2">
+            <CardDescription className="text-white">Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
+            </div>
+            <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setCollapsed(!collapsed)}
+              className="text-white hover:text-white hover:bg-[#A35C5C]/30"
             >
               {collapsed ? 'Show' : 'Hide'}
             </Button>
