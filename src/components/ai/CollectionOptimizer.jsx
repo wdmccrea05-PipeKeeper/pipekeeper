@@ -800,57 +800,79 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
           common_mistakes: result.common_mistakes
         });
       } else {
-        // Collection impact question - full analysis
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
+        // Collection impact question - full analysis using generateOptimizationAI function
+        try {
+          const result = await generateOptimizationAI({
+            pipes,
+            blends,
+            profile: userProfile,
+            whatIfText: whatIfQuery
+          });
 
-You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
+          // Transform the result to match whatIfResult format
+          setWhatIfResult({
+            impact_score: whatIfQuery.toLowerCase().includes('essential') || whatIfQuery.toLowerCase().includes('critical') ? 9 : 
+                         whatIfQuery.toLowerCase().includes('important') ? 7 : 6,
+            trophy_pairings: (result.next_additions || []).slice(0, 5),
+            redundancy_analysis: result.summary || '',
+            recommendation_category: 'STRONG ADDITION',
+            detailed_reasoning: result.summary || '',
+            gaps_filled: result.collection_gaps || [],
+            score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(', ')}`
+          });
+        } catch (err) {
+          // Fallback to direct LLM call if generateOptimizationAI fails
+          const result = await base44.integrations.Core.InvokeLLM({
+            prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
-Current Collection:
-Pipes: ${JSON.stringify(pipesData, null, 2)}
-Tobacco Blends: ${JSON.stringify(blendsData, null, 2)}${profileContext}
+      You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
 
-User Question/Scenario:
-${whatIfQuery}
+      Current Collection:
+      Pipes: ${JSON.stringify(pipesData, null, 2)}
+      Tobacco Blends: ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-${whatIfDescription ? `Potential Pipe Details: ${whatIfDescription}` : ''}
+      User Question/Scenario:
+      ${whatIfQuery}
 
-Provide a detailed "What If" analysis covering:
+      ${whatIfDescription ? `Potential Pipe Details: ${whatIfDescription}` : ''}
 
-1. **COLLECTION IMPACT SCORE** (1-10): Rate the overall value this change would add
-2. **TROPHY PAIRINGS**: Which specific blends would achieve 9-10 scores with this change
-3. **REDUNDANCY CHECK**: Does this duplicate existing coverage or fill a gap?
-4. **RECOMMENDATION CATEGORY**:
-   - "ESSENTIAL UPGRADE" - Fills critical gap, creates multiple trophies
-   - "STRONG ADDITION" - Adds meaningful coverage, some new trophies
-   - "NICE TO HAVE" - Minor improvement, mostly redundant
-   - "SKIP IT" - No meaningful improvement, purely redundant
+      Provide a detailed "What If" analysis covering:
 
-5. **DETAILED REASONING**: Explain the impact on collection performance and pairing scores
+      1. **COLLECTION IMPACT SCORE** (1-10): Rate the overall value this change would add
+      2. **TROPHY PAIRINGS**: Which specific blends would achieve 9-10 scores with this change
+      3. **REDUNDANCY CHECK**: Does this duplicate existing coverage or fill a gap?
+      4. **RECOMMENDATION CATEGORY**:
+      - "ESSENTIAL UPGRADE" - Fills critical gap, creates multiple trophies
+      - "STRONG ADDITION" - Adds meaningful coverage, some new trophies
+      - "NICE TO HAVE" - Minor improvement, mostly redundant
+      - "SKIP IT" - No meaningful improvement, purely redundant
 
-Be specific about which user-owned blends benefit and by how much.`,
-          file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              impact_score: { type: "number" },
-              trophy_pairings: {
-                type: "array",
-                items: { type: "string" }
-              },
-              redundancy_analysis: { type: "string" },
-              recommendation_category: { type: "string" },
-              detailed_reasoning: { type: "string" },
-              gaps_filled: {
-                type: "array",
-                items: { type: "string" }
-              },
-              score_improvements: { type: "string" }
+      5. **DETAILED REASONING**: Explain the impact on collection performance and pairing scores
+
+      Be specific about which user-owned blends benefit and by how much.`,
+            file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                impact_score: { type: "number" },
+                trophy_pairings: {
+                  type: "array",
+                  items: { type: "string" }
+                },
+                redundancy_analysis: { type: "string" },
+                recommendation_category: { type: "string" },
+                detailed_reasoning: { type: "string" },
+                gaps_filled: {
+                  type: "array",
+                  items: { type: "string" }
+                },
+                score_improvements: { type: "string" }
+              }
             }
-          }
-        });
+          });
 
-        setWhatIfResult(result);
+          setWhatIfResult(result);
+        }
       }
     } catch (err) {
       console.error('Error analyzing what-if:', err);
