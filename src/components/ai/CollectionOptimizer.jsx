@@ -1131,6 +1131,10 @@ Provide concrete, actionable steps with specific field values.`,
     return null;
   }
 
+  if (!optLoading && !optimization) {
+    return <div className="text-sm text-stone-600">No optimization data yet. Regenerate to get suggestions.</div>;
+  }
+
   const toggleCollapse = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
