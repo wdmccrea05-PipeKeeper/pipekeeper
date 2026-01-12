@@ -77,7 +77,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         bowl_depth_mm: variant?.bowl_depth_mm,
         recommendations: pairing?.recommendations || [],
       };
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name));
   }, [pipeVariants, allPipes, pairingsByVariant]);
 
   const regenPairings = async () => {
