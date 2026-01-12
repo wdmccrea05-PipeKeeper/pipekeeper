@@ -289,19 +289,19 @@ Return only a number between 0 and 10 (decimals allowed).`,
   }, [selectedBlendId, allBlends]);
 
   return (
-    <div className="border rounded-lg p-3 bg-[#f5f5dc]">
-      <div className="font-semibold text-stone-800">{row.name}</div>
-      <div className="text-xs text-stone-600 mt-1">
+    <div className="border rounded-lg p-3 bg-[#E8E8E8]">
+      <div className="font-semibold text-[#1a2c42]">{row.name}</div>
+      <div className="text-xs text-black mt-1">
         Focus: {row.focus?.length ? row.focus.join(", ") : "—"}
       </div>
-      <div className="text-xs text-stone-600">
+      <div className="text-xs text-black">
         Dim: {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold text-stone-700">Top Matches:</div>
+        <div className="text-xs font-semibold text-[#1a2c42]">Top Matches:</div>
         {topMatches.length > 0 ? (
-          <div className="text-sm text-stone-700 space-y-1">
+          <div className="text-sm text-black space-y-1">
             {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
                 <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
