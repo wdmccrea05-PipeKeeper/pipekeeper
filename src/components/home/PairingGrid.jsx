@@ -198,12 +198,14 @@ function PipeCard({ row, allBlends }) {
 
   // Only show top matches that have scores (AI should respect focus)
   const topMatches = useMemo(() => {
-    const sorted = (row.recommendations || [])
+    // Handle both 'recommendations' and 'blend_matches' field names for compatibility
+    const recs = row.recommendations || [];
+    const sorted = recs
       .filter(r => (r.score ?? 0) > 0)
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
     
-    // Show top 3 if available, otherwise top 2
-    return sorted.slice(0, Math.min(3, sorted.length));
+    // Show top 3 if available
+    return sorted.slice(0, 3);
   }, [row.recommendations]);
 
   const selectedBlendScore = useMemo(() => {
