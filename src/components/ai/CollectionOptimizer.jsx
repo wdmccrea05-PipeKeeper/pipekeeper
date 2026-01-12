@@ -1571,16 +1571,16 @@ Provide concrete, actionable steps with specific field values.`,
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
                               {pipe?.id ? (
-                                <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                                  <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
-                                    {displaySpec.pipe_name}
-                                  </h4>
-                                </a>
-                              ) : (
-                                <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
-                                  {displaySpec.pipe_name}
-                                </h4>
-                              )}
+                                   <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pv.pipe_id)}&bowl=${encodeURIComponent(pv.bowl_variant_id || "")}`)}>
+                                     <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
+                                       {displaySpec.pipe_name}
+                                     </h4>
+                                   </a>
+                                 ) : (
+                                   <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
+                                     {displaySpec.pipe_name}
+                                   </h4>
+                                 )}
                               {pipe?.focus && pipe.focus.length > 0 ? (
                                 <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
                                   <Star className="w-3 h-3 mr-1" />
