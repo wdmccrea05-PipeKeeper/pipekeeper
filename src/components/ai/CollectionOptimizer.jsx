@@ -1636,45 +1636,17 @@ Provide concrete, actionable steps with specific field values.`,
                             </div>
 
                             <div className="flex flex-wrap gap-2 mt-2">
-                              {!pipe?.focus || pipe.focus.length === 0 ? (
-                                <>
-                                  {displaySpec.recommended_blend_types?.length > 0 && (
-                                   <Button
-                                     size="sm"
-                                     variant="outline"
-                                     className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                                     onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types, displaySpec.bowl_variant_id)}
-                                   >
-                                     <Check className="w-4 h-4 mr-1" />
-                                     Apply Suggested
-                                   </Button>
-                                  )}
-                                  <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-stone-300 text-stone-700 hover:bg-stone-50"
-                                    >
-                                      Create Custom
-                                    </Button>
-                                  </a>
-                                </>
-                              ) : pipe.focus && displaySpec.recommended_blend_types?.length > 0 && 
-                                 JSON.stringify(pipe.focus.sort()) !== JSON.stringify(displaySpec.recommended_blend_types.sort()) ? (
-                                <Button
-                                  size="sm"
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                  onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types, displaySpec.bowl_variant_id)}
-                                >
-                                  <CheckCheck className="w-4 h-4 mr-1" />
-                                  Accept Current Optimization
-                                </Button>
-                              ) : (
-                                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
-                                  <Check className="w-3 h-3 mr-1" />
-                                  Focus Applied
-                                </Badge>
-                              )}
+                               {displaySpec.recommended_blend_types?.length > 0 && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                   onClick={() => applySpecialization(pv.pipe_id, displaySpec.recommended_blend_types, pv.bowl_variant_id)}
+                                 >
+                                   <Check className="w-4 h-4 mr-1" />
+                                   Apply Suggested
+                                 </Button>
+                               )}
                               <Button
                                 size="sm"
                                 variant="outline"
