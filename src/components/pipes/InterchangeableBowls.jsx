@@ -285,7 +285,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     ) : null}
                   </div>
 
-                  {bowl.notes ? <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p> :z= : null}
+                  {bowl.notes ? <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p> : null}
                 </div>
 
                 <div className="flex gap-1">
