@@ -13,46 +13,31 @@ export default function PairingMatrix({ user }) {
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
     queryFn: async () => {
-      const res = await base44.entities.Pipe.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
+      return await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500) || [];
     },
     enabled: !!user?.email,
   });
 
-  const { data: artifacts = [], isLoading: artifactsLoading } = useQuery({
-    queryKey: ["ai_artifacts", user?.email],
+  const { data: pairingMatrix = [], isLoading: artifactsLoading } = useQuery({
+    queryKey: ["saved-pairings", user?.email],
     queryFn: async () => {
-      const res = await base44.entities.AIArtifact.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true },
+        "-created_date",
+        1
+      );
+      return active || [];
     },
     enabled: !!user?.email,
   });
-
-  const pairingArtifacts = useMemo(() => (artifacts || []).filter((a) => a.type === "pairing_grid"), [artifacts]);
 
   const pairings = useMemo(() => {
-    // Flatten all pairing entries; treat (pipe_id + bowl_variant_id) as unique "pipe"
-    const out = [];
-    pairingArtifacts.forEach((art) => {
-      const list = art?.data?.pairings || [];
-      list.forEach((p) => {
-        out.push({
-          ...p,
-          __artifact_id: art.id,
-          __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
-        });
-      });
-    });
-
-    // Prefer latest artifact entries if duplicates exist
-    const map = new Map();
-    out.forEach((p) => {
-      // last write wins (assuming list order newest -> oldest or vice versa; still OK for UI)
-      map.set(p.__variant_key, p);
-    });
-
-    return Array.from(map.values());
-  }, [pairingArtifacts]);
+    const activePairings = pairingMatrix?.[0]?.pairings || [];
+    return activePairings.map((p) => ({
+      ...p,
+      __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
+    }));
+  }, [pairingMatrix]);
 
   const pipeNameById = useMemo(() => {
     const map = new Map();
