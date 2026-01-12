@@ -39,16 +39,17 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   }, [pipe]);
 
   const hasBowls = bowlOptions.length > 0;
-  const [activeBowlVariantId, setActiveBowlVariantId] = useState(hasBowls ? bowlOptions[0].id : null);
+  const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
 
   const pairingEntry = useMemo(() => {
     const list = activePairings?.pairings || [];
     const pid = String(pipe?.id ?? "");
-    const bid = activeBowlVariantId || null;
+    // Normalize bowl variant: treat "main" and null the same (both mean main pipe, no bowl)
+    const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
 
     return (
       list.find(
-        (p) => String(p.pipe_id) === pid && (p.bowl_variant_id || null) === bid
+        (p) => String(p.pipe_id) === pid && (p.bowl_variant_id || null) === normalizedBowlId
       ) || null
     );
   }, [activePairings, pipe?.id, activeBowlVariantId]);
@@ -89,7 +90,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
     return <div className="text-sm text-stone-600">Pipe not available.</div>;
   }
 
-  const variantKey = getPipeVariantKey(pipe.id, activeBowlVariantId || null);
+  const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
+  const variantKey = getPipeVariantKey(pipe.id, normalizedBowlId);
 
   return (
     <Card className="border-stone-200">
