@@ -66,18 +66,20 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   });
 
   // Load active optimization (scoped to current user)
-  const { data: savedOptimization } = useQuery({
-    queryKey: ['saved-optimization', user?.email],
+  const { data: activeOpt, isLoading: optLoading } = useQuery({
+    queryKey: ["activeOptimization", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
       const active = await base44.entities.CollectionOptimization.filter(
         { created_by: user.email, is_active: true },
-        '-created_date',
+        "-created_date",
         1
       );
       return active?.[0] || null;
     },
   });
+
+  const optimization = activeOpt;
 
   // Compute fingerprint and staleness
   const currentFingerprint = React.useMemo(() => 
