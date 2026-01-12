@@ -310,12 +310,12 @@ Return only a number between 0 and 10 (decimals allowed).`,
             ))}
           </div>
         ) : (
-          <span className="text-xs text-stone-500">No recommendations yet.</span>
+          <span className="text-xs text-black">No recommendations yet.</span>
         )}
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold text-stone-700">Check Any Blend:</div>
+        <div className="text-xs font-semibold text-[#1a2c42]">Check Any Blend:</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
           <SelectTrigger className="text-sm">
             <SelectValue placeholder="Select a blend..." />
