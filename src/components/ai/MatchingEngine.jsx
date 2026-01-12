@@ -1,19 +1,33 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
+import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 
 export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
+  const [regenerating, setRegenerating] = useState(false);
+  const queryClient = useQueryClient();
+
   const { data: user } = useQuery({
     queryKey: ["current-user"],
     queryFn: () => base44.auth.me(),
     staleTime: 10_000,
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
   });
 
   // Load active PairingMatrix (this is the single source of truth)
@@ -93,6 +107,25 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
   const variantKey = getPipeVariantKey(pipe.id, normalizedBowlId);
 
+  const regenPairings = async () => {
+    setRegenerating(true);
+    try {
+      await regeneratePairings({
+        pipes: [pipe],
+        blends,
+        profile: userProfile,
+        user,
+        queryClient,
+        activePairings
+      });
+      toast.success("Pairings regenerated successfully");
+    } catch (error) {
+      toast.error("Failed to regenerate pairings");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   return (
     <Card className="border-stone-200">
       <CardContent className="p-0">
@@ -101,6 +134,23 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
             <div className="text-sm font-semibold text-stone-800">Recommendations for</div>
             <div className="text-xs text-stone-600">{pipe.name}</div>
             <div className="text-[11px] text-stone-500 mt-1 font-mono">Variant: {variantKey}</div>
+          </div>
+
+          <div className="flex gap-2 items-start">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={regenPairings}
+              disabled={regenerating}
+              className="shrink-0"
+            >
+              {regenerating ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : (
+                <RefreshCw className="h-3 w-3 mr-1" />
+              )}
+              Regenerate
+            </Button>
           </div>
 
           <div className="w-full md:w-64">
