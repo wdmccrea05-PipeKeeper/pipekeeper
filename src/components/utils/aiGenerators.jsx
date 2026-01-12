@@ -270,7 +270,20 @@ Return JSON { "pairings": [...] } where each pairing has:
     throw new Error("LLM returned no pairings. (Schema mismatch or oversized response.)");
   }
 
-  return { pairings };
+  // Attach focus to pairings for enforcement
+  const focusByVariant = new Map(
+    pipesData.map((x) => [`${x.pipe_id}::${x.bowl_variant_id ?? "main"}`, x.focus || []])
+  );
+
+  pairings.forEach((p) => {
+    const k = `${String(p.pipe_id)}::${p.bowl_variant_id ?? "main"}`;
+    p.focus = focusByVariant.get(k) || [];
+  });
+
+  // Enforce hard pairing rules
+  const cleanedPairings = enforceHardPairingRules(pairings, blends);
+
+  return { pairings: cleanedPairings };
 }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
