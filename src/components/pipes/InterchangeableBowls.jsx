@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,47 +10,71 @@ import { Plus, Trash2, Edit, Layers } from "lucide-react";
 
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
-const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Other"];
+const SHAPES = [
+  "Billiard","Bulldog","Dublin","Apple","Author","Bent","Canadian","Churchwarden","Freehand",
+  "Lovat","Poker","Prince","Rhodesian","Zulu","Calabash","Other"
+];
 
 const INTERCHANGEABLE_BRANDS = ["Falcon", "Gabotherm", "Yello-Bole", "Viking"];
+
+function toNumberOrNull(v) {
+  if (v === "" || v == null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export default function InterchangeableBowls({ pipe, onUpdate }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+
   const [bowlForm, setBowlForm] = useState({
-    name: '',
-    shape: '',
-    bowl_material: '',
-    bowl_height_mm: '',
-    bowl_width_mm: '',
-    bowl_diameter_mm: '',
-    bowl_depth_mm: '',
-    chamber_volume: '',
+    bowl_variant_id: "",
+    name: "",
+    shape: "",
+    bowl_material: "",
+    bowl_height_mm: "",
+    bowl_width_mm: "",
+    bowl_diameter_mm: "",
+    bowl_depth_mm: "",
+    chamber_volume: "",
     focus: [],
-    notes: ''
+    notes: "",
   });
 
-  const interchangeableBowls = pipe?.interchangeable_bowls || [];
-  const isInterchangeableBrand = INTERCHANGEABLE_BRANDS.some(brand => 
-    pipe?.maker?.toLowerCase().includes(brand.toLowerCase())
-  );
+  const interchangeableBowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
+  const isInterchangeableBrand =
+    INTERCHANGEABLE_BRANDS.some((brand) => (pipe?.maker || "").toLowerCase().includes(brand.toLowerCase())) ||
+    INTERCHANGEABLE_BRANDS.some((brand) => (pipe?.brand || "").toLowerCase().includes(brand.toLowerCase()));
 
   const handleOpenDialog = (bowl = null, index = null) => {
     if (bowl) {
-      setBowlForm(bowl);
+      setBowlForm({
+        bowl_variant_id: bowl.bowl_variant_id || `bowl_${index}`,
+        name: bowl.name || "",
+        shape: bowl.shape || "",
+        bowl_material: bowl.bowl_material || "",
+        bowl_height_mm: bowl.bowl_height_mm ?? "",
+        bowl_width_mm: bowl.bowl_width_mm ?? "",
+        bowl_diameter_mm: bowl.bowl_diameter_mm ?? "",
+        bowl_depth_mm: bowl.bowl_depth_mm ?? "",
+        chamber_volume: bowl.chamber_volume || "",
+        focus: Array.isArray(bowl.focus) ? bowl.focus : [],
+        notes: bowl.notes || "",
+      });
       setEditingIndex(index);
     } else {
       setBowlForm({
-        name: '',
-        shape: '',
-        bowl_material: '',
-        bowl_height_mm: '',
-        bowl_width_mm: '',
-        bowl_diameter_mm: '',
-        bowl_depth_mm: '',
-        chamber_volume: '',
+        bowl_variant_id: `bowl_${interchangeableBowls.length}`,
+        name: "",
+        shape: "",
+        bowl_material: "",
+        bowl_height_mm: "",
+        bowl_width_mm: "",
+        bowl_diameter_mm: "",
+        bowl_depth_mm: "",
+        chamber_volume: "",
         focus: [],
-        notes: ''
+        notes: "",
       });
       setEditingIndex(null);
     }
@@ -59,11 +83,21 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
 
   const handleSaveBowl = () => {
     const updatedBowls = [...interchangeableBowls];
-    
+
+    const normalized = {
+      ...bowlForm,
+      bowl_variant_id: bowlForm.bowl_variant_id || (editingIndex != null ? `bowl_${editingIndex}` : `bowl_${updatedBowls.length}`),
+      bowl_height_mm: toNumberOrNull(bowlForm.bowl_height_mm),
+      bowl_width_mm: toNumberOrNull(bowlForm.bowl_width_mm),
+      bowl_diameter_mm: toNumberOrNull(bowlForm.bowl_diameter_mm),
+      bowl_depth_mm: toNumberOrNull(bowlForm.bowl_depth_mm),
+      focus: Array.isArray(bowlForm.focus) ? bowlForm.focus : [],
+    };
+
     if (editingIndex !== null) {
-      updatedBowls[editingIndex] = bowlForm;
+      updatedBowls[editingIndex] = normalized;
     } else {
-      updatedBowls.push(bowlForm);
+      updatedBowls.push(normalized);
     }
 
     onUpdate({ interchangeable_bowls: updatedBowls });
@@ -71,15 +105,14 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   };
 
   const handleDeleteBowl = (index) => {
-    if (window.confirm('Remove this bowl from the list?')) {
-      const updatedBowls = interchangeableBowls.filter((_, i) => i !== index);
-      onUpdate({ interchangeable_bowls: updatedBowls });
-    }
+    if (!window.confirm("Remove this bowl from the list?")) return;
+    const updatedBowls = interchangeableBowls.filter((_, i) => i !== index);
+    // re-stabilize ids for display/selection if you want consistent ordering
+    const rekeyed = updatedBowls.map((b, i) => ({ ...b, bowl_variant_id: b.bowl_variant_id || `bowl_${i}` }));
+    onUpdate({ interchangeable_bowls: rekeyed });
   };
 
-  if (!isInterchangeableBrand) {
-    return null;
-  }
+  if (!isInterchangeableBrand) return null;
 
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
@@ -89,23 +122,20 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
             <Layers className="w-5 h-5" />
             Interchangeable Bowls
           </CardTitle>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
-                size="sm" 
-                className="bg-amber-600 hover:bg-amber-700"
-                onClick={() => handleOpenDialog()}
-              >
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-1" />
                 Add Bowl
               </Button>
             </DialogTrigger>
+
             <DialogContent className="max-w-xl">
               <DialogHeader>
-                <DialogTitle>
-                  {editingIndex !== null ? 'Edit Bowl' : 'Add Interchangeable Bowl'}
-                </DialogTitle>
+                <DialogTitle>{editingIndex !== null ? "Edit Bowl" : "Add Interchangeable Bowl"}</DialogTitle>
               </DialogHeader>
+
               <div className="space-y-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -116,39 +146,37 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., Standard Bowl, Meerschaum Bowl"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label>Shape</Label>
                     <Select value={bowlForm.shape} onValueChange={(v) => setBowlForm({ ...bowlForm, shape: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select shape" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select shape" /></SelectTrigger>
                       <SelectContent>
-                        {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {SHAPES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
                     <Label>Material</Label>
                     <Select value={bowlForm.bowl_material} onValueChange={(v) => setBowlForm({ ...bowlForm, bowl_material: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select material" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select material" /></SelectTrigger>
                       <SelectContent>
-                        {BOWL_MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                        {BOWL_MATERIALS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
                     <Label>Chamber Volume</Label>
                     <Select value={bowlForm.chamber_volume} onValueChange={(v) => setBowlForm({ ...bowlForm, chamber_volume: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select volume" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select volume" /></SelectTrigger>
                       <SelectContent>
-                        {CHAMBER_VOLUMES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                        {CHAMBER_VOLUMES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
                     <Label>Bowl Height (mm)</Label>
                     <Input
@@ -159,6 +187,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., 50"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label>Bowl Width (mm)</Label>
                     <Input
@@ -169,6 +198,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., 38"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label>Chamber Diameter (mm)</Label>
                     <Input
@@ -179,6 +209,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., 20"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label>Chamber Depth (mm)</Label>
                     <Input
@@ -189,20 +220,22 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., 40"
                     />
                   </div>
-                  </div>
-                  <div className="space-y-2">
+                </div>
+
+                <div className="space-y-2">
                   <Label>Bowl Specialization (Focus)</Label>
                   <Input
-                    value={bowlForm.focus?.join(', ') || ''}
+                    value={bowlForm.focus?.join(", ") || ""}
                     onChange={(e) => {
-                      const focuses = e.target.value.split(',').map(f => f.trim()).filter(Boolean);
+                      const focuses = e.target.value.split(",").map((f) => f.trim()).filter(Boolean);
                       setBowlForm({ ...bowlForm, focus: focuses });
                     }}
                     placeholder="e.g., English, Virginia/Perique"
                   />
                   <p className="text-xs text-stone-500">Separate multiple types with commas</p>
-                  </div>
-                  <div className="space-y-2">
+                </div>
+
+                <div className="space-y-2">
                   <Label>Notes</Label>
                   <Input
                     value={bowlForm.notes}
@@ -210,12 +243,11 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     placeholder="Any additional notes about this bowl..."
                   />
                 </div>
+
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleSaveBowl} className="bg-amber-600 hover:bg-amber-700">
-                    {editingIndex !== null ? 'Update' : 'Add'} Bowl
+                    {editingIndex !== null ? "Update" : "Add"} Bowl
                   </Button>
                 </div>
               </div>
@@ -223,6 +255,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
           </Dialog>
         </div>
       </CardHeader>
+
       <CardContent>
         {interchangeableBowls.length === 0 ? (
           <div className="text-center py-6 text-stone-500">
@@ -233,74 +266,33 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         ) : (
           <div className="space-y-3">
             {interchangeableBowls.map((bowl, idx) => (
-              <div 
-                key={idx}
-                className="flex items-start justify-between p-4 bg-white rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
-              >
+              <div key={bowl.bowl_variant_id || idx} className="flex items-start justify-between p-4 bg-white rounded-lg border border-amber-200 hover:border-amber-300 transition-colors">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center_seq gap-2 mb-2">
                     <h4 className="font-semibold text-stone-800">{bowl.name || `Bowl ${idx + 1}`}</h4>
-                    {bowl.shape && (
-                      <Badge variant="outline" className="text-xs">
-                        {bowl.shape}
-                      </Badge>
-                    )}
+                    {bowl.shape ? <Badge variant="outline" className="text-xs">{bowl.shape}</Badge> : null}
                   </div>
+
                   <div className="flex flex-wrap gap-2 text-xs">
-                    {bowl.bowl_material && (
-                      <Badge className="bg-stone-100 text-stone-700">
-                        {bowl.bowl_material}
-                      </Badge>
-                    )}
-                    {bowl.chamber_volume && (
-                      <Badge className="bg-amber-100 text-amber-800">
-                        {bowl.chamber_volume}
-                      </Badge>
-                    )}
-                    {bowl.bowl_height_mm && (
-                      <span className="text-stone-600">
-                        H {bowl.bowl_height_mm}mm
-                      </span>
-                    )}
-                    {bowl.bowl_width_mm && (
-                      <span className="text-stone-600">
-                        W {bowl.bowl_width_mm}mm
-                      </span>
-                    )}
-                    {bowl.bowl_diameter_mm && (
-                      <span className="text-stone-600">
-                        Ø {bowl.bowl_diameter_mm}mm
-                      </span>
-                    )}
-                    {bowl.bowl_depth_mm && (
-                      <span className="text-stone-600">
-                        D {bowl.bowl_depth_mm}mm
-                      </span>
-                    )}
-                    {bowl.focus?.length > 0 && (
-                      <span className="text-amber-700 font-medium">
-                        🎯 {bowl.focus.join(', ')}
-                      </span>
-                    )}
+                    {bowl.bowl_material ? <Badge className="bg-stone-100 text-stone-700">{bowl.bowl_material}</Badge> : null}
+                    {bowl.chamber_volume ? <Badge className="bg-amber-100 text-amber-800">{bowl.chamber_volume}</Badge> : null}
+                    {bowl.bowl_height_mm ? <span className="text-stone-600">H {bowl.bowl_height_mm}mm</span> : null}
+                    {bowl.bowl_width_mm ? <span className="text-stone-600">W {bowl.bowl_width_mm}mm</span> : null}
+                    {bowl.bowl_diameter_mm ? <span className="text-stone-600">Ø {bowl.bowl_diameter_mm}mm</span> : null}
+                    {bowl.bowl_depth_mm ? <span className="text-stone-600">D {bowl.bowl_depth_mm}mm</span> : null}
+                    {Array.isArray(bowl.focus) && bowl.focus.length > 0 ? (
+                      <span className="text-amber-700 font-medium">🎯 {bowl.focus.join(", ")}</span>
+                    ) : null}
                   </div>
-                  {bowl.notes && (
-                    <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p>
-                  )}
+
+                  {bowl.notes ? <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p> :z= : null}
                 </div>
+
                 <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenDialog(bowl, idx)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(bowl, idx)}>
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteBowl(idx)}
-                    className="text-rose-600 hover:text-rose-700"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteBowl(idx)} className="text-rose-600 hover:text-rose-700">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
