@@ -1581,15 +1581,15 @@ Provide concrete, actionable steps with specific field values.`,
                                      {displaySpec.pipe_name}
                                    </h4>
                                  )}
-                              {pipe?.focus && pipe.focus.length > 0 ? (
+                              {(pv?.focus?.length > 0 || pipe?.focus?.length > 0) ? (
                                 <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
                                   <Star className="w-3 h-3 mr-1" />
                                   Specialized
                                 </Badge>
-                              ) : displaySpec.versatility_score <= 4 ? (
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
+                              ) : displaySpec.recommended_blend_types?.length > 0 ? (
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-300">
                                   <Star className="w-3 h-3 mr-1" />
-                                  Recommended: Specialized
+                                  Recommended
                                 </Badge>
                               ) : (
                                 <Badge className={getVersatilityColor(displaySpec.versatility_score)}>
