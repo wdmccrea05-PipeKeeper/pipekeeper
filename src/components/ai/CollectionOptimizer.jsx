@@ -1300,7 +1300,10 @@ Provide concrete, actionable steps with specific field values.`,
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={() => setShowRegenDialog(false)}>
+          <Button variant="outline" onClick={() => {
+            setShowRegenDialog(false);
+            setStaleDismissedId(optimization?.id);
+          }}>
             Not Now
           </Button>
           {optimization?.previous_active_id && (
