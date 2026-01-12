@@ -130,15 +130,15 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 
   const undoOptimizationMutation = useMutation({
     mutationFn: async () => {
-      if (!savedOptimization?.previous_active_id) {
+      if (!optimization?.previous_active_id) {
         throw new Error('No previous version to undo to');
       }
 
       // Deactivate current
-      await safeUpdate('CollectionOptimization', savedOptimization.id, { is_active: false }, user?.email);
+      await safeUpdate('CollectionOptimization', optimization.id, { is_active: false }, user?.email);
 
       // Reactivate previous
-      await safeUpdate('CollectionOptimization', savedOptimization.previous_active_id, { is_active: true }, user?.email);
+      await safeUpdate('CollectionOptimization', optimization.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       invalidateAIQueries(queryClient, user?.email);
