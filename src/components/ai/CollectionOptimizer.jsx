@@ -405,13 +405,13 @@ Be aggressive in recommending specialization - versatile pipes are enemies of ex
         }
       });
 
-      setOptimization(result);
-      
-      // Save optimization to database (with fingerprint)
-      await saveOptimizationMutation.mutateAsync({
-        ...result,
-        generated_date: new Date().toISOString(),
-      });
+      setOptimization(transformedResult);
+
+       // Save optimization to database (with fingerprint)
+       await saveOptimizationMutation.mutateAsync({
+         ...transformedResult,
+         generated_date: new Date().toISOString(),
+       });
 
       // Clear feedback after successful re-analysis and show confirmation
       if (withFeedback) {
