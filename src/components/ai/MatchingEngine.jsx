@@ -16,6 +16,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [activeBowl, setActiveBowl] = useState('main');
   const queryClient = useQueryClient();
 
   // Normalization and fuzzy matching helpers
@@ -29,7 +30,6 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   }
 
   function stripDupManufacturer(mfr) {
-    // Handles cases like "Cornell & Diehl - Cornell & Diehl"
     const parts = (mfr || "").split(" - ").map(p => p.trim()).filter(Boolean);
     if (parts.length >= 2 && norm(parts[0]) === norm(parts[1])) return parts[0];
     return mfr;
@@ -39,23 +39,19 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
     let m = (recManufacturer || "").trim();
     let n = (recName || "").trim();
 
-    // Sometimes the LLM stuffs "Mfr - Name" into manufacturer or name
     const mParts = m.split(" - ").map(p => p.trim()).filter(Boolean);
     const nParts = n.split(" - ").map(p => p.trim()).filter(Boolean);
 
     if (!n && mParts.length >= 2) {
-      // manufacturer field looks like "Mfr - Blend Name"
       m = mParts[0];
       n = mParts.slice(1).join(" - ");
     } else if (nParts.length >= 2 && !m) {
-      // name field looks like "Mfr - Blend Name"
       m = nParts[0];
       n = nParts.slice(1).join(" - ");
     }
 
     m = stripDupManufacturer(m);
 
-    // If name starts with manufacturer, trim it
     const nm = norm(m);
     const nn = norm(n);
     if (nm && nn.startsWith(nm + " ")) {
@@ -71,11 +67,9 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
     const rmN = norm(rm);
     const rnN = norm(rn);
 
-    // 1) Exact normalized match on manufacturer+name
     let hit = blends.find(b => norm(b.manufacturer) === rmN && norm(b.name) === rnN);
     if (hit) return hit;
 
-    // 2) Match by full string containment
     const targetFull = norm(`${rm} ${rn}`);
     hit = blends.find(b => {
       const full = norm(`${b.manufacturer} ${b.name}`);
@@ -83,7 +77,6 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
     });
     if (hit) return hit;
 
-    // 3) Fallback: best similarity by overlapping tokens
     const targetTokens = new Set(targetFull.split(" ").filter(Boolean));
     let best = null;
     let bestScore = 0;
@@ -103,7 +96,6 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       }
     }
 
-    // Require a reasonable overlap so we don't pick the wrong blend
     return bestScore >= 0.45 ? best : null;
   }
 
@@ -119,14 +111,13 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
 
   const confirmRecommendationMutation = useMutation({
     mutationFn: async () => {
-      if (!recommendations?.ideal_blend_types?.length) return;
+      const mainRecommendations = recommendations?.main;
+      if (!mainRecommendations?.ideal_blend_types?.length) return;
       
-      // Update pipe focus
       await safeUpdate('Pipe', pipe.id, {
-        focus: recommendations.ideal_blend_types
+        focus: mainRecommendations.ideal_blend_types
       }, user?.email);
       
-      // Mark existing pairing matrices as stale by clearing is_active
       const existingPairings = await base44.entities.PairingMatrix.filter(
         { created_by: user?.email, is_active: true }
       );
@@ -143,25 +134,8 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const getRecommendations = async () => {
     setLoading(true);
     try {
-      // Build interchangeable bowls description
-      const interchangeableBowlsText = pipe.interchangeable_bowls?.length > 0
-        ? `\n\nInterchangeable Bowls:\n${pipe.interchangeable_bowls.map((bowl, idx) => 
-            `Bowl ${idx + 1} (${bowl.name || 'Unnamed'}): Material: ${bowl.bowl_material || 'Unknown'}, Shape: ${bowl.shape || 'Unknown'}, Chamber Volume: ${bowl.chamber_volume || 'Unknown'}, Bowl Height: ${bowl.bowl_height_mm ? bowl.bowl_height_mm + 'mm' : 'Unknown'}, Bowl Width: ${bowl.bowl_width_mm ? bowl.bowl_width_mm + 'mm' : 'Unknown'}, Chamber Diameter: ${bowl.bowl_diameter_mm ? bowl.bowl_diameter_mm + 'mm' : 'Unknown'}, Chamber Depth: ${bowl.bowl_depth_mm ? bowl.bowl_depth_mm + 'mm' : 'Unknown'}${bowl.notes ? ', Notes: ' + bowl.notes : ''}`
-          ).join('\n')}`
-        : '';
-
-      const pipeDescription = `
-        Pipe: ${pipe.name}
-        Maker: ${pipe.maker || 'Unknown'}
-        Shape: ${pipe.shape || 'Unknown'}
-        Bowl Material: ${pipe.bowl_material || 'Unknown'}
-        Chamber Volume: ${pipe.chamber_volume || 'Unknown'}
-        Bowl Diameter: ${pipe.bowl_diameter_mm ? pipe.bowl_diameter_mm + 'mm' : 'Unknown'}
-        Bowl Depth: ${pipe.bowl_depth_mm ? pipe.bowl_depth_mm + 'mm' : 'Unknown'}
-        Finish: ${pipe.finish || 'Unknown'}
-        Smoking Characteristics: ${pipe.smoking_characteristics || 'Not specified'}${interchangeableBowlsText}
-      `;
-
+      const hasInterchangeableBowls = pipe.interchangeable_bowls?.length > 0;
+      
       const existingBlends = blends.map(b => ({
         manufacturer: b.manufacturer?.toLowerCase() || '',
         name: b.name?.toLowerCase() || '',
@@ -169,7 +143,6 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       }));
 
       const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
-      
       const blendsListText = blends.map(b => `${b.manufacturer || 'Unknown'} - ${b.name}`).join('\n');
 
       const hasFocus = pipe.focus && pipe.focus.length > 0;
@@ -191,14 +164,53 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       } else {
         focusContext = `\n\nThis pipe has NO designated focus. Base ALL recommendations ENTIRELY on its physical characteristics.`;
       }
+      
+      const bowlVariants = [
+        {
+          id: 'main',
+          name: 'Main Bowl',
+          description: `
+        Pipe: ${pipe.name}
+        Maker: ${pipe.maker || 'Unknown'}
+        Shape: ${pipe.shape || 'Unknown'}
+        Bowl Material: ${pipe.bowl_material || 'Unknown'}
+        Chamber Volume: ${pipe.chamber_volume || 'Unknown'}
+        Bowl Diameter: ${pipe.bowl_diameter_mm ? pipe.bowl_diameter_mm + 'mm' : 'Unknown'}
+        Bowl Depth: ${pipe.bowl_depth_mm ? pipe.bowl_depth_mm + 'mm' : 'Unknown'}
+        Finish: ${pipe.finish || 'Unknown'}
+        Smoking Characteristics: ${pipe.smoking_characteristics || 'Not specified'}
+      `
+        },
+        ...(pipe.interchangeable_bowls || []).map((bowl, idx) => ({
+          id: `bowl_${idx}`,
+          name: bowl.name || `Bowl ${idx + 1}`,
+          description: `
+        Pipe: ${pipe.name} - ${bowl.name || `Bowl ${idx + 1}`}
+        Maker: ${pipe.maker || 'Unknown'}
+        Shape: ${bowl.shape || pipe.shape || 'Unknown'}
+        Bowl Material: ${bowl.bowl_material || 'Unknown'}
+        Chamber Volume: ${bowl.chamber_volume || 'Unknown'}
+        Bowl Height: ${bowl.bowl_height_mm ? bowl.bowl_height_mm + 'mm' : 'Unknown'}
+        Bowl Width: ${bowl.bowl_width_mm ? bowl.bowl_width_mm + 'mm' : 'Unknown'}
+        Bowl Diameter: ${bowl.bowl_diameter_mm ? bowl.bowl_diameter_mm + 'mm' : 'Unknown'}
+        Bowl Depth: ${bowl.bowl_depth_mm ? bowl.bowl_depth_mm + 'mm' : 'Unknown'}
+        Notes: ${bowl.notes || 'Not specified'}
+      `
+        }))
+      ];
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco advisor helping an adult user manage their personal collection.
+      const allResults = {};
+      
+      for (const bowlVariant of bowlVariants) {
+        const pipeDescription = bowlVariant.description;
+
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `You are an expert pipe tobacco advisor helping an adult user manage their personal collection.
 
 CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:
 ${existingBlendsText}
 
-Your task: Provide blend recommendations for this pipe including matches from their collection and optional future additions (do NOT mention buying, pricing, retailers, or purchase steps).
+Your task: Provide blend recommendations for this pipe bowl including matches from their collection and optional future additions (do NOT mention buying, pricing, retailers, or purchase steps).
 
 ${pipeDescription}
 
@@ -211,7 +223,7 @@ Consider:
 2. Meerschaum pipes are excellent for Virginias and light blends, Briar works with everything
 3. Churchwarden and long pipes cool smoke - good for stronger tobaccos
 4. Wide shallow bowls suit flakes, deeper bowls work well with ribbon cuts
-5. If pipe has a focus, prioritize matching blends but explain how the physical characteristics support that focus
+5. Different bowl materials and sizes within the same pipe system should have different optimal pairings
 
 CRITICAL: Do NOT include any URLs, links, sources, or citations in your response.
 
@@ -222,68 +234,73 @@ IMPORTANT FORMATTING RULES:
 - No dashes, no duplication, no combined strings
 
 Provide recommendations in JSON format with:
-- ideal_blend_types: array of tobacco blend types that work best (e.g., "Virginia", "English", "Aromatic")
-- reasoning: why these types work well with this pipe
+- ideal_blend_types: array of tobacco blend types that work best for THIS SPECIFIC BOWL
+- reasoning: why these types work well with THIS SPECIFIC BOWL VARIANT
 - from_collection: array of 3-5 objects with {name, manufacturer, score (1-10), reasoning} for blends from user's collection that match well
 - future_additions: array of 3-5 objects with {name, manufacturer, blend_type, score (1-10), description} for optional future collection additions (NOT from user's collection)
-- smoking_tips: specific tips for smoking these blend types in this pipe`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            ideal_blend_types: { type: "array", items: { type: "string" } },
-            reasoning: { type: "string" },
-            from_collection: { 
-              type: "array", 
-              items: { 
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  manufacturer: { type: "string" },
-                  score: { type: "number" },
-                  reasoning: { type: "string" }
-                }
-              } 
-            },
-            future_additions: { 
-              type: "array", 
-              items: { 
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  manufacturer: { type: "string" },
-                  blend_type: { type: "string" },
-                  score: { type: "number" },
-                  description: { type: "string" }
-                }
-              } 
-            },
-            smoking_tips: { type: "string" }
+- smoking_tips: specific tips for smoking these blend types in THIS SPECIFIC BOWL`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              ideal_blend_types: { type: "array", items: { type: "string" } },
+              reasoning: { type: "string" },
+              from_collection: { 
+                type: "array", 
+                items: { 
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    manufacturer: { type: "string" },
+                    score: { type: "number" },
+                    reasoning: { type: "string" }
+                  }
+                } 
+              },
+              future_additions: { 
+                type: "array", 
+                items: { 
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    manufacturer: { type: "string" },
+                    blend_type: { type: "string" },
+                    score: { type: "number" },
+                    description: { type: "string" }
+                  }
+                } 
+              },
+              smoking_tips: { type: "string" }
+            }
           }
-        }
-      });
-
-      // Filter future_additions recommendations to exclude user's collection
-      if (result.future_additions) {
-        result.future_additions = result.future_additions.filter(product => {
-          const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase().trim();
-          const productName = product.name?.toLowerCase().trim() || '';
-          const productMfr = product.manufacturer?.toLowerCase().trim() || '';
-          
-          return !existingBlends.some(existing => {
-            const existingName = existing.name.trim();
-            const existingMfr = existing.manufacturer.trim();
-            const existingFull = existing.fullName.trim();
-            
-            return (
-              productFullName === existingFull ||
-              (productName === existingName && productMfr === existingMfr)
-            );
-          });
         });
+
+        if (result.future_additions) {
+          result.future_additions = result.future_additions.filter(product => {
+            const productFullName = `${product.manufacturer || ''} ${product.name || ''}`.toLowerCase().trim();
+            const productName = product.name?.toLowerCase().trim() || '';
+            const productMfr = product.manufacturer?.toLowerCase().trim() || '';
+            
+            return !existingBlends.some(existing => {
+              const existingName = existing.name.trim();
+              const existingMfr = existing.manufacturer.trim();
+              const existingFull = existing.fullName.trim();
+              
+              return (
+                productFullName === existingFull ||
+                (productName === existingName && productMfr === existingMfr)
+              );
+            });
+          });
+        }
+
+        allResults[bowlVariant.id] = {
+          ...result,
+          bowl_name: bowlVariant.name
+        };
       }
 
-      setRecommendations(result);
+      setRecommendations(allResults);
     } catch (err) {
       console.error('Error getting recommendations:', err);
     } finally {
@@ -300,6 +317,9 @@ Provide recommendations in JSON format with:
     );
   }
 
+  const hasMultipleBowls = pipe.interchangeable_bowls?.length > 0;
+  const currentRecommendations = recommendations?.[activeBowl];
+
   return (
     <div className="space-y-6">
       {!recommendations && (
@@ -310,6 +330,7 @@ Provide recommendations in JSON format with:
           <h3 className="text-lg font-semibold text-stone-800 mb-2">AI Tobacco Matching</h3>
           <p className="text-stone-500 mb-6 max-w-md mx-auto">
             Get personalized tobacco blend recommendations based on this pipe's characteristics
+            {hasMultipleBowls && <span className="block mt-1 text-amber-600 font-medium">Includes separate analysis for each bowl variant</span>}
           </p>
           <Button
             onClick={getRecommendations}
@@ -351,6 +372,32 @@ Provide recommendations in JSON format with:
 
             {!collapsed && (
               <div className="space-y-6">
+            {/* Bowl Selector */}
+            {hasMultipleBowls && (
+              <div className="flex flex-wrap gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200">
+                <span className="text-sm font-medium text-stone-700 mr-2">Bowl Variant:</span>
+                <Button
+                  size="sm"
+                  variant={activeBowl === 'main' ? 'default' : 'outline'}
+                  onClick={() => setActiveBowl('main')}
+                  className={activeBowl === 'main' ? 'bg-amber-600 hover:bg-amber-700' : ''}
+                >
+                  Main Bowl
+                </Button>
+                {pipe.interchangeable_bowls.map((bowl, idx) => (
+                  <Button
+                    key={idx}
+                    size="sm"
+                    variant={activeBowl === `bowl_${idx}` ? 'default' : 'outline'}
+                    onClick={() => setActiveBowl(`bowl_${idx}`)}
+                    className={activeBowl === `bowl_${idx}` ? 'bg-amber-600 hover:bg-amber-700' : ''}
+                  >
+                    {bowl.name || `Bowl ${idx + 1}`}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             {/* Ideal Blend Types */}
             <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
               <CardHeader className="pb-3">
@@ -360,47 +407,57 @@ Provide recommendations in JSON format with:
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {hasMultipleBowls && (
+                  <div className="text-xs text-amber-700 font-medium mb-2">
+                    For: {currentRecommendations?.bowl_name || 'Main Bowl'}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  {recommendations.ideal_blend_types?.map((type, idx) => (
+                  {currentRecommendations?.ideal_blend_types?.map((type, idx) => (
                     <Badge key={idx} className="bg-amber-600 text-white border-0 px-3 py-1">
                       {type}
                     </Badge>
                   ))}
                 </div>
-                <p className="text-stone-600">{recommendations.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
-                <Button
-                  onClick={() => confirmRecommendationMutation.mutate()}
-                  disabled={confirmRecommendationMutation.isPending}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {confirmRecommendationMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Star className="w-4 h-4 mr-2" />
-                      Confirm & Apply to Pipe
-                    </>
-                  )}
-                </Button>
+                <p className="text-stone-600">{currentRecommendations?.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                {activeBowl === 'main' && (
+                  <Button
+                    onClick={() => confirmRecommendationMutation.mutate()}
+                    disabled={confirmRecommendationMutation.isPending}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {confirmRecommendationMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-4 h-4 mr-2" />
+                        Confirm & Apply to Pipe
+                      </>
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
             {/* From Your Collection */}
-            {recommendations.from_collection?.length > 0 && (
+            {currentRecommendations?.from_collection?.length > 0 && (
               <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Star className="w-5 h-5 text-emerald-600" />
                     From Your Collection
                   </CardTitle>
-                  <CardDescription>Blends you already own that pair well</CardDescription>
+                  <CardDescription>
+                    Blends you already own that pair well
+                    {hasMultipleBowls && <span className="block mt-1 text-amber-600"> • {currentRecommendations?.bowl_name}</span>}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.from_collection.map((blend, idx) => {
+                    {currentRecommendations.from_collection.map((blend, idx) => {
                      const userBlend = findBestUserBlend(blends, blend);
                      const imageUrl = userBlend?.photo || userBlend?.logo || (userBlend?.manufacturer ? getTobaccoLogo(userBlend.manufacturer, customLogos) : getTobaccoLogo(blend.manufacturer, customLogos));
                      const hasValidId = userBlend?.id;
@@ -448,18 +505,21 @@ Provide recommendations in JSON format with:
             )}
 
             {/* Optional Future Additions */}
-            {recommendations.future_additions?.length > 0 && (
+            {currentRecommendations?.future_additions?.length > 0 && (
               <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-violet-600" />
                     Optional Future Collection Additions
                   </CardTitle>
-                  <CardDescription>Blends to consider that aren't in your collection</CardDescription>
+                  <CardDescription>
+                    Blends to consider that aren't in your collection
+                    {hasMultipleBowls && <span className="block mt-1 text-amber-600"> • {currentRecommendations?.bowl_name}</span>}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.future_additions.map((product, idx) => (
+                    {currentRecommendations.future_additions.map((product, idx) => (
                       <div 
                         key={idx} 
                         className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
@@ -492,9 +552,12 @@ Provide recommendations in JSON format with:
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Smoking Tips</CardTitle>
+                {hasMultipleBowls && (
+                  <p className="text-xs text-amber-700 font-medium mt-1">For: {currentRecommendations?.bowl_name}</p>
+                )}
               </CardHeader>
               <CardContent>
-                <p className="text-stone-600">{recommendations.smoking_tips?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                <p className="text-stone-600">{currentRecommendations?.smoking_tips?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
               </CardContent>
             </Card>
 
