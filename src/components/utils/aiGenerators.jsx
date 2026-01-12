@@ -107,32 +107,58 @@ ${JSON.stringify(pipesData, null, 2)}
 TOBACCOS (ONLY choose from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-SCORING RULES (0–10) - STRICT ENFORCEMENT:
-1. CATEGORY FILTERING (CRITICAL - applied first):
-   - EVERY blend includes a "category" field: either "AROMATIC" or "NON_AROMATIC", plus "aromatic_intensity" if aromatic.
-   - If pipe focus contains "Aromatic": score ONLY "AROMATIC" blends. Force ALL "NON_AROMATIC" to 0.
-   - If pipe focus contains "Non-Aromatic": score ONLY "NON_AROMATIC" blends. Force ALL "AROMATIC" to 0.
-   - If focus is empty or doesn't mention aromatic type: apply full scoring to all blends.
+SCORING ALGORITHM (APPLY IN THIS EXACT ORDER):
 
-2. AROMATIC INTENSITY MATCHING (for aromatic pipes):
-   - If focus contains "Light Aromatics": score ONLY "Light" intensity aromatics 8–10. Force "Medium" and "Heavy" to 0.
-   - If focus contains "Medium Aromatics" or just "Aromatics": score "Medium" intensity 8–10. Others max 5.
-   - If focus contains "Heavy Aromatics" or "Strong Aromatics": score ONLY "Heavy" intensity 8–10. Force "Light" and "Medium" to 0.
+STEP 1: CATEGORY FILTERING
+If pipe.focus contains "Aromatic":
+  - Set all NON_AROMATIC blends score to 0 immediately.
+  - Skip all other blends (only score AROMATIC blends).
+Else if pipe.focus contains "Non-Aromatic":
+  - Set all AROMATIC blends score to 0 immediately.
+  - Skip all other blends (only score NON_AROMATIC blends).
+Else:
+  - All blends eligible for scoring.
 
-3. FOCUS-EXACT MATCHING (highest priority):
-   - If focus contains exact tobacco_name: score 9–10 (MUST appear in Top 3).
+STEP 2: AROMATIC INTENSITY FILTERING (for AROMATIC blends only)
+If pipe.focus contains "Heavy Aromatics" or "Heavy":
+  - For aromatic_intensity == "Heavy": continue to Step 3.
+  - For aromatic_intensity == "Light" or "Medium": force score to 0.
+Else if pipe.focus contains "Light Aromatics" or "Light":
+  - For aromatic_intensity == "Light": continue to Step 3.
+  - For aromatic_intensity == "Medium" or "Heavy": force score to 0.
+Else if pipe.focus contains "Medium Aromatics" or "Aromatics" (but not "Light" or "Heavy"):
+  - For aromatic_intensity == "Medium": continue to Step 3 with score 8–9.
+  - For aromatic_intensity == "Light": continue to Step 3 with max score 5.
+  - For aromatic_intensity == "Heavy": continue to Step 3 with max score 5.
+Else:
+  - All aromatic intensities eligible (no intensity restriction).
 
-4. FOCUS-TYPE MATCHING (second priority):
-   - If focus contains blend_type keyword (e.g., "Virginia", "English", "Latakia"): score 8–9.
+STEP 3: EXACT NAME MATCH
+For each blend, check if tobacco_name exactly matches any focus keyword:
+  - If exact match found: base_score = 10.
+  - Else: continue to Step 4.
 
-5. USER PREFERENCES (applied to all blends in allowed category):
-   - Add +2 if blend_type matches user's preferred_blend_types.
-   - Add +1 if strength matches user's strength_preference.
+STEP 4: BLEND_TYPE KEYWORD MATCH
+For each blend, count how many blend_type keywords are in focus:
+  - 0 keywords: no bonus (continue to Step 5).
+  - 1 keyword match: base_score = 9.
+  - 2+ keyword matches: base_score = 9.
 
-6. BASE SCORE (for blends without focus or preference match):
-   - Score 4–5.
+STEP 5: USER PREFERENCES
+Apply adjustments:
+  - If blend_type in user.preferred_blend_types: add 2.
+  - If blend.strength == user.strength_preference: add 1.
 
-Return ALL tobaccos sorted by score descending. NEVER violate category or intensity filtering.
+STEP 6: FINAL BASE SCORE (if no focus/preference match so far)
+  - If base_score not yet set: base_score = 4.
+
+STEP 7: APPLY INTENSITY CAPS (from Step 2)
+If STEP 2 set a max score (e.g., max 5), cap final score at that value.
+
+STEP 8: SORT
+Sort ALL recommendations by score descending. Display top 3 recommendations.
+
+CRITICAL: DO NOT skip any steps. Apply each step mechanically and in order.
 
 OUTPUT:
 Return JSON { "pairings": [...] } where each pairing has:
