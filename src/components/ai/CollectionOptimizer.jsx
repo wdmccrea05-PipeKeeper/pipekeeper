@@ -1648,17 +1648,17 @@ Provide concrete, actionable steps with specific field values.`,
                                  </Button>
                                )}
                               <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                onClick={() => setShowFeedbackFor(showFeedbackFor === pipe.id ? null : pipe.id)}
-                              >
-                                <RefreshCw className="w-4 h-4 mr-1" />
-                                {showFeedbackFor === pipe.id ? 'Cancel' : 'Dispute / Add Info'}
-                              </Button>
-                            </div>
+                                 size="sm"
+                                 variant="outline"
+                                 className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                 onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                               >
+                                 <RefreshCw className="w-4 h-4 mr-1" />
+                                 {showFeedbackFor === variantKey ? 'Cancel' : 'Dispute / Add Info'}
+                               </Button>
+                              </div>
 
-                            {showFeedbackFor === pipe.id && (
+                              {showFeedbackFor === variantKey && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
