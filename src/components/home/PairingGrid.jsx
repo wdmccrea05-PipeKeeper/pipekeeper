@@ -1,17 +1,36 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, RefreshCw } from "lucide-react";
 import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
+import { generatePairingsAI } from "@/components/utils/aiGenerators";
+import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { toast } from "sonner";
 
-export default function PairingGrid({ user }) {
-  // ✅ Use .filter like the rest of your app (returns array)
-  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
+export default function PairingGrid({ user, pipes, blends, profile }) {
+  const queryClient = useQueryClient();
+  const [regenerating, setRegenerating] = useState(false);
+
+  // Fallback to fetch pipes if not provided
+  const { data: fetchedPipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
     queryFn: async () => (await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
-    enabled: !!user?.email,
+    enabled: !!user?.email && !pipes,
   });
+
+  const { data: fetchedBlends = [], isLoading: blendsLoading } = useQuery({
+    queryKey: ["tobaccos", user?.email],
+    queryFn: async () => (await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
+    enabled: !!user?.email && !blends,
+  });
+
+  const allPipes = pipes || fetchedPipes;
+  const allBlends = blends || fetchedBlends;
 
   // ✅ Pairings in your app are stored in PairingMatrix (not AIArtifact)
   const { data: activePairings, isLoading: pairingsLoading } = useQuery({
@@ -38,17 +57,19 @@ export default function PairingGrid({ user }) {
   }, [activePairings]);
 
   // ✅ Expand pipes to bowl variants (each bowl becomes a row)
-  const pipeVariants = useMemo(() => expandPipesToVariants(pipes, { includeMainWhenBowls: false }), [pipes]);
+  const pipeVariants = useMemo(() => expandPipesToVariants(allPipes, { includeMainWhenBowls: false }), [allPipes]);
 
   const rows = useMemo(() => {
     return pipeVariants.map((pv) => {
       const key = getPipeVariantKey(pv.id, pv.bowl_variant_id || null);
-      const pipe = pipes.find((p) => p.id === pv.id);
+      const pipe = allPipes.find((p) => p.id === pv.id);
       const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
       const pairing = pairingsByVariant.get(key);
 
       return {
         key,
+        pipe_id: pv.id,
+        bowl_variant_id: pv.bowl_variant_id || null,
         name: variant?.variant_name || pv.variant_name || pv.name,
         focus: Array.isArray(variant?.focus) ? variant.focus : [],
         chamber_volume: variant?.chamber_volume,
@@ -57,9 +78,38 @@ export default function PairingGrid({ user }) {
         recommendations: pairing?.recommendations || [],
       };
     });
-  }, [pipeVariants, pipes, pairingsByVariant]);
+  }, [pipeVariants, allPipes, pairingsByVariant]);
 
-  if (pipesLoading || pairingsLoading) {
+  const regenPairings = async () => {
+    setRegenerating(true);
+    try {
+      const currentFingerprint = buildArtifactFingerprint({ pipes: allPipes, blends: allBlends, profile });
+      const { pairings } = await generatePairingsAI({ pipes: allPipes, blends: allBlends, profile });
+
+      if (activePairings?.id) {
+        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
+      }
+
+      await base44.entities.PairingMatrix.create({
+        created_by: user.email,
+        is_active: true,
+        previous_active_id: activePairings?.id ?? null,
+        input_fingerprint: currentFingerprint,
+        pairings,
+        generated_date: new Date().toISOString(),
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
+      invalidateAIQueries(queryClient, user?.email);
+      toast.success("Pairings regenerated successfully");
+    } catch (error) {
+      toast.error("Failed to regenerate pairings");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  if (pipesLoading || pairingsLoading || blendsLoading) {
     return (
       <div className="flex items-center justify-center py-12 text-stone-600">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
