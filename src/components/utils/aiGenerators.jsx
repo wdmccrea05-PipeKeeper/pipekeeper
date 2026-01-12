@@ -90,10 +90,11 @@ TOBACCOS (ONLY choose from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
 SCORING RULES (0–10):
-- Focus/specialization overrides everything else.
+- Focus/specialization overrides EVERYTHING else.
 - If focus contains an EXACT tobacco_name from the user's list, that tobacco MUST be 9–10 and MUST appear in Top 3.
-- If focus includes "Non-Aromatic", Aromatics MUST score 0. If focus includes "Aromatic", non-aromatics MUST score 0.
-- If focus is non-empty: matching tobaccos should be 9–10, all others max 5.
+- CRITICAL: If focus includes "Aromatic": ONLY score Aromatic blends 6–10. ALL non-aromatic blends MUST be 0. If focus includes "Non-Aromatic": ONLY score non-aromatic blends 6–10. ALL aromatic blends MUST be 0.
+- Aromatics = blend_type contains "Aromatic" (English Aromatic, Aromatic, Balkan, etc). Non-Aromatics = Virginia, English, Burley, Latakia, Oriental, Navy Flake, Dark Fired, etc.
+- If focus is non-empty: exactly matching focus items score 9–10, all non-matching items max 3.
 
 OUTPUT:
 Return JSON { "pairings": [...] } where each pairing has:
