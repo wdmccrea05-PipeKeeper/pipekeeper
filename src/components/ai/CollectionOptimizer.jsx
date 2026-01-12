@@ -227,11 +227,11 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 
       setOptimization(transformedResult);
 
-       // Save optimization to database (with fingerprint)
-       await saveOptimizationMutation.mutateAsync({
-         ...transformedResult,
-         generated_date: new Date().toISOString(),
-       });
+      // Save optimization to database (with fingerprint)
+      await saveOptimizationMutation.mutateAsync({
+        ...transformedResult,
+        generated_date: new Date().toISOString(),
+      });
 
       // Clear feedback after successful re-analysis and show confirmation
       if (withFeedback) {
@@ -1371,7 +1371,15 @@ Provide concrete, actionable steps with specific field values.`,
             if (!spec.recommended_blend_types?.length || !pipe) return null;
 
             const variantKey = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
-            const currentFocus = pipe.focus || [];
+            // Handle both main pipe and bowl variant focus
+            let currentFocus = [];
+            if (spec.bowl_variant_id) {
+              const bowlIndex = parseInt(spec.bowl_variant_id.replace('bowl_', ''));
+              const bowl = pipe?.interchangeable_bowls?.[bowlIndex];
+              currentFocus = Array.isArray(bowl?.focus) ? bowl.focus : [];
+            } else {
+              currentFocus = Array.isArray(pipe.focus) ? pipe.focus : [];
+            }
             const hasChanges = JSON.stringify(currentFocus.sort()) !== JSON.stringify(spec.recommended_blend_types.sort());
 
             return (
@@ -1538,7 +1546,7 @@ Provide concrete, actionable steps with specific field values.`,
               )}
             </div>
             <div className="space-y-3">
-               {expandPipesToVariants(pipes).map((pv, idx) => {
+               {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
                  const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
                  const spec = optimization.pipe_specializations?.find(s => {
                    const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
