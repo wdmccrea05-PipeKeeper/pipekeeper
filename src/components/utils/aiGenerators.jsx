@@ -82,7 +82,7 @@ YOU MUST return the EXACT pipe_id, pipe_name, and bowl_variant_id for each entry
 Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe/bowl entry in the list, evaluate which tobacco blends FROM THE USER'S COLLECTION pair well with THAT SPECIFIC BOWL CONFIGURATION. Return one pairing entry per pipe/bowl with the matching bowl_variant_id.
+For each pipe/bowl entry in the list, you MUST score ALL tobacco blends in the user's collection for THAT SPECIFIC BOWL CONFIGURATION. Return one pairing entry per pipe/bowl with the matching bowl_variant_id, and include ALL blends in the recommendations array (even if score is 0 for incompatible blends). This allows users to see why certain blends don't work with certain pipes.
 
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
