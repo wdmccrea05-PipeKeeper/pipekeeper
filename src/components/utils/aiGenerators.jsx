@@ -51,6 +51,19 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
 
   const blendsData = (blends || []).map((b) => {
     const isAromatic = b.blend_type === "Aromatic" || b.blend_type === "English Aromatic";
+    
+    // Determine aromatic intensity: Light, Medium, Heavy
+    let aromaticIntensity = null;
+    if (isAromatic) {
+      if (b.strength === "Mild" || b.strength === "Mild-Medium") {
+        aromaticIntensity = "Light";
+      } else if (b.strength === "Medium" || b.strength === "Medium-Full") {
+        aromaticIntensity = "Medium";
+      } else if (b.strength === "Full") {
+        aromaticIntensity = "Heavy";
+      }
+    }
+    
     return {
       tobacco_id: String(b.id),
       tobacco_name: b.name,
@@ -61,6 +74,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
       flavor_notes: b.flavor_notes || null,
       tobacco_components: b.tobacco_components || null,
       category: isAromatic ? "AROMATIC" : "NON_AROMATIC",
+      aromatic_intensity: aromaticIntensity,
     };
   });
 
