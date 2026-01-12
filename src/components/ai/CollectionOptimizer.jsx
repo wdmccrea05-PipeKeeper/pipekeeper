@@ -184,9 +184,21 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
       const transformedResult = {
         pipe_specializations: result.applyable_changes?.map(change => {
           const pipe = pipes.find(p => p.id === change.pipe_id);
+          let pipeName = pipe?.name || 'Unknown';
+          
+          // If bowl variant, append bowl name
+          if (change.bowl_variant_id && pipe?.interchangeable_bowls) {
+            const bowlIndex = parseInt(change.bowl_variant_id.replace('bowl_', ''));
+            const bowl = pipe.interchangeable_bowls[bowlIndex];
+            if (bowl) {
+              pipeName = `${pipeName} - ${bowl.name || `Bowl ${bowlIndex + 1}`}`;
+            }
+          }
+          
           return {
             pipe_id: change.pipe_id,
-            pipe_name: pipe?.name || 'Unknown',
+            bowl_variant_id: change.bowl_variant_id,
+            pipe_name: pipeName,
             recommended_blend_types: change.after_focus || [],
             reasoning: change.rationale || '',
             usage_pattern: `Specialized for: ${(change.after_focus || []).join(', ')}`,
@@ -449,15 +461,34 @@ User Feedback: ${feedback}
           const pipe = pipes.find(p => p.id === spec.pipe_id);
           if (!pipe) return null;
           
-          // Only update if focus is different
-          const currentFocus = JSON.stringify(pipe.focus?.sort() || []);
-          const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
-          
-          if (currentFocus !== newFocus) {
-            return updatePipeMutation.mutateAsync({
-              id: spec.pipe_id,
-              data: { focus: spec.recommended_blend_types }
-            });
+          if (spec.bowl_variant_id) {
+            // Update bowl variant focus
+            const bowlIndex = parseInt(spec.bowl_variant_id.replace('bowl_', ''));
+            const bowl = pipe.interchangeable_bowls?.[bowlIndex];
+            if (!bowl) return null;
+            
+            const currentBowlFocus = JSON.stringify(bowl.focus?.sort() || []);
+            const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
+            
+            if (currentBowlFocus !== newFocus) {
+              const updatedBowls = [...(pipe.interchangeable_bowls || [])];
+              updatedBowls[bowlIndex] = { ...bowl, focus: spec.recommended_blend_types };
+              return updatePipeMutation.mutateAsync({
+                id: spec.pipe_id,
+                data: { interchangeable_bowls: updatedBowls }
+              });
+            }
+          } else {
+            // Update main pipe focus
+            const currentFocus = JSON.stringify(pipe.focus?.sort() || []);
+            const newFocus = JSON.stringify(spec.recommended_blend_types.sort());
+            
+            if (currentFocus !== newFocus) {
+              return updatePipeMutation.mutateAsync({
+                id: spec.pipe_id,
+                data: { focus: spec.recommended_blend_types }
+              });
+            }
           }
           return null;
         })
@@ -501,14 +532,35 @@ User Feedback: ${feedback}
     setSelectedChanges(changes);
   };
 
-  const applySpecialization = async (pipeId, focus) => {
-    await updatePipeMutation.mutateAsync({
-      id: pipeId,
-      data: { focus }
-    });
+  const applySpecialization = async (pipeId, focus, bowlVariantId = null) => {
+    const pipe = pipes.find(p => p.id === pipeId);
+    if (!pipe) return;
+
+    if (bowlVariantId) {
+      // Apply focus to specific bowl variant
+      const bowlIndex = parseInt(bowlVariantId.replace('bowl_', ''));
+      const updatedBowls = [...(pipe.interchangeable_bowls || [])];
+      if (updatedBowls[bowlIndex]) {
+        updatedBowls[bowlIndex] = {
+          ...updatedBowls[bowlIndex],
+          focus
+        };
+        await updatePipeMutation.mutateAsync({
+          id: pipeId,
+          data: { interchangeable_bowls: updatedBowls }
+        });
+      }
+    } else {
+      // Apply focus to main pipe
+      await updatePipeMutation.mutateAsync({
+        id: pipeId,
+        data: { focus }
+      });
+    }
+
     // Invalidate AI queries to refresh pairings
     invalidateAIQueries(queryClient, user?.email);
-    toast.success('Pipe focus updated', {
+    toast.success(bowlVariantId ? 'Bowl focus updated' : 'Pipe focus updated', {
       description: 'Regenerate pairings to see updated recommendations'
     });
   };
@@ -1592,15 +1644,15 @@ Provide concrete, actionable steps with specific field values.`,
                               {!pipe?.focus || pipe.focus.length === 0 ? (
                                 <>
                                   {displaySpec.recommended_blend_types?.length > 0 && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                                      onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types)}
-                                    >
-                                      <Check className="w-4 h-4 mr-1" />
-                                      Apply Suggested
-                                    </Button>
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                     onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types, displaySpec.bowl_variant_id)}
+                                   >
+                                     <Check className="w-4 h-4 mr-1" />
+                                     Apply Suggested
+                                   </Button>
                                   )}
                                   <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                                     <Button
@@ -1617,7 +1669,7 @@ Provide concrete, actionable steps with specific field values.`,
                                 <Button
                                   size="sm"
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                  onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types)}
+                                  onClick={() => applySpecialization(pipe.id, displaySpec.recommended_blend_types, displaySpec.bowl_variant_id)}
                                 >
                                   <CheckCheck className="w-4 h-4 mr-1" />
                                   Accept Current Optimization
