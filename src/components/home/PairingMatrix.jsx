@@ -104,18 +104,18 @@ export default function PairingMatrix({ user }) {
                 </button>
 
                 {isOpen ? (
-                  <div className="px-3 pb-3">
-                    {recs.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {recs.map((r, idx) => (
-                          <Badge key={`${key}-${idx}`} variant="secondary" className="bg-stone-100 text-stone-800">
-                            {r.tobacco_name || r.name || "Tobacco"} {r.score != null ? `(${r.score})` : ""}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-stone-600">No recommendations for this variant.</div>
-                    )}
+                   <div className="px-3 pb-3">
+                     {recs.length ? (
+                       <div className="flex flex-wrap gap-2">
+                         {recs.slice(0, 3).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).map((r, idx) => (
+                           <Badge key={`${key}-top-${idx}`} variant="secondary" className="bg-stone-100 text-stone-800">
+                             {r.tobacco_name || r.name || "Tobacco"} {r.score != null ? `(${r.score})` : ""}
+                           </Badge>
+                         ))}
+                       </div>
+                     ) : (
+                       <div className="text-sm text-stone-600">No recommendations for this variant.</div>
+                     )}
                     {p.reasoning ? (
                       <div className="mt-3 text-xs text-stone-600 whitespace-pre-wrap">{p.reasoning}</div>
                     ) : null}
