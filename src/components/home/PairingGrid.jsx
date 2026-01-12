@@ -37,6 +37,8 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const { data: activePairings, isLoading: pairingsLoading } = useQuery({
     queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
+    staleTime: Infinity,
+    gcTime: Infinity,
     queryFn: async () => {
       const active = await base44.entities.PairingMatrix.filter(
         { created_by: user.email, is_active: true },
