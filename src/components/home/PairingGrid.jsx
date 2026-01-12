@@ -70,7 +70,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const rows = useMemo(() => {
     return pipeVariants.map((pv) => {
       const key = getPipeVariantKey(pv.id, pv.bowl_variant_id || null);
-      const pipe = allPipes.find((p) => p.id === pv.id);
+      const pipe = allPipes.find((p) => String(p.id) === String(pv.id));
       const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
       
       // Try exact key first, then fallback for pipes without bowls
@@ -221,7 +221,7 @@ function PipeCard({ row, allBlends }) {
     if (!selectedBlendId) return;
     
     setCalculating(true);
-    const blend = allBlends.find(b => b.id === selectedBlendId);
+    const blend = allBlends.find(b => String(b.id) === String(selectedBlendId));
     if (!blend) {
       setCalculating(false);
       return;
@@ -283,7 +283,7 @@ Return only a number between 0 and 10 (decimals allowed).`,
 
   const selectedBlendName = useMemo(() => {
     if (!selectedBlendId) return null;
-    const blend = allBlends.find(b => b.id === selectedBlendId);
+    const blend = allBlends.find(b => String(b.id) === String(selectedBlendId));
     return blend?.name || "Unknown";
   }, [selectedBlendId, allBlends]);
 
@@ -321,7 +321,7 @@ Return only a number between 0 and 10 (decimals allowed).`,
           </SelectTrigger>
           <SelectContent>
             {allBlends.map(b => (
-              <SelectItem key={b.id} value={b.id}>
+              <SelectItem key={b.id} value={String(b.id)}>
                 {b.name}
               </SelectItem>
             ))}

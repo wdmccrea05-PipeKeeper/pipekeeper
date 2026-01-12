@@ -41,15 +41,15 @@ export default function PairingMatrix({ user }) {
 
   const pipeNameById = useMemo(() => {
     const map = new Map();
-    (pipes || []).forEach((p) => map.set(p.id, p.name));
+    (pipes || []).forEach((p) => map.set(String(p.id), p.name));
     return map;
   }, [pipes]);
 
   const variantLabel = (pair) => {
-    const base = pipeNameById.get(pair.pipe_id) || pair.pipe_name || "Unknown Pipe";
+    const base = pipeNameById.get(String(pair.pipe_id)) || pair.pipe_name || "Unknown Pipe";
     if (pair.bowl_variant_id) {
       // Try to find bowl name from pipe record
-      const pipe = pipes.find((p) => p.id === pair.pipe_id);
+      const pipe = pipes.find((p) => String(p.id) === String(pair.pipe_id));
       if (pipe?.interchangeable_bowls) {
         const idx = parseInt(String(pair.bowl_variant_id).replace("bowl_", ""), 10);
         const bowl = pipe.interchangeable_bowls?.[idx];
