@@ -82,7 +82,7 @@ export default function AIUpdates() {
       setBusy(false);
     },
     onSuccess: () => {
-      refetchPairings();
+      queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
       toast.success("Pairings regenerated successfully");
     },
     onError: () => {
