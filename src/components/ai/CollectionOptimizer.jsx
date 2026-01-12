@@ -1540,10 +1540,11 @@ Provide concrete, actionable steps with specific field values.`,
                    const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
                    return k === variantKey;
                  });
-                // Show all pipes, even if no recommendation exists
+                const pipe = pipes.find(p => p.id === pv.pipe_id);
                 const displaySpec = spec || {
-                  pipe_id: pipe.id,
-                  pipe_name: pipe.name,
+                  pipe_id: pv.pipe_id,
+                  bowl_variant_id: pv.bowl_variant_id || null,
+                  pipe_name: pv.name,
                   recommended_blend_types: [],
                   reasoning: "No specific recommendation generated. Consider running the optimization again.",
                   versatility_score: 5,
@@ -1552,7 +1553,7 @@ Provide concrete, actionable steps with specific field values.`,
 
                 return (
                   <motion.div
-                    key={pipe.id}
+                    key={variantKey}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
