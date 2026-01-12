@@ -100,8 +100,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   }, [isStale, optimization]);
 
   useEffect(() => {
-    if (savedOptimization) setOptimization(savedOptimization);
-  }, [savedOptimization?.id]);
+    if (activeOpt) setOptimization(activeOpt);
+  }, [activeOpt?.id]);
 
   const saveOptimizationMutation = useMutation({
     mutationFn: async (data) => {
