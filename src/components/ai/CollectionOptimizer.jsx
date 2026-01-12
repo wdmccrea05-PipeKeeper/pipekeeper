@@ -34,6 +34,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [whatIfResult, setWhatIfResult] = useState(null);
   const [suggestedProducts, setSuggestedProducts] = useState(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [whatIfFollowUp, setWhatIfFollowUp] = useState('');
+  const [whatIfHistory, setWhatIfHistory] = useState([]);
   const [pipeFeedback, setPipeFeedback] = useState({});
   const [showFeedbackFor, setShowFeedbackFor] = useState(null);
   const [userFeedbackHistory, setUserFeedbackHistory] = useState('');
