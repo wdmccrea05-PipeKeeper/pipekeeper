@@ -1566,10 +1566,10 @@ Provide concrete, actionable steps with specific field values.`,
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
-                            {pipe?.photos?.[0] ? (
-                              <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                            {pv?.photos?.[0] || pipe?.photos?.[0] ? (
+                              <img src={pv?.photos?.[0] || pipe?.photos?.[0]} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
                             ) : (
-                              <PipeShapeIcon shape={pipe?.shape} className="w-10 h-10" />
+                              <PipeShapeIcon shape={pv?.shape || pipe?.shape} className="w-10 h-10" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1577,7 +1577,7 @@ Provide concrete, actionable steps with specific field values.`,
                               {pipe?.id ? (
                                    <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pv.pipe_id)}&bowl=${encodeURIComponent(pv.bowl_variant_id || "")}`)}>
                                      <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
-                                       {displaySpec.pipe_name}
+                                       {pv.name || displaySpec.pipe_name}
                                      </h4>
                                    </a>
                                  ) : (
