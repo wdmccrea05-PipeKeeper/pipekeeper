@@ -2326,6 +2326,41 @@ Provide concrete, actionable steps with specific field values.`,
                         </CardContent>
                       </Card>
 
+                      {/* Follow-Up Questions */}
+                      <div className="border-t pt-4 mt-4 space-y-3">
+                        <div>
+                          <label className="text-sm font-medium text-stone-700 mb-2 block">
+                            Ask a Follow-Up Question
+                          </label>
+                          <Textarea
+                            placeholder="e.g., 'Which of my pipes would best be converted to fill this gap?' or 'What specific focus should I apply to my Dunhill Shell 498?'"
+                            value={whatIfFollowUp}
+                            onChange={(e) => setWhatIfFollowUp(e.target.value)}
+                            className="min-h-[60px]"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleWhatIfFollowUp}
+                            disabled={whatIfLoading || !whatIfFollowUp.trim()}
+                            variant="outline"
+                            className="border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                          >
+                            {whatIfLoading ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 mr-2" />
+                                Continue Analysis
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
                       {/* Implement Button */}
                       {whatIfResult.recommendation_category && 
                        !whatIfResult.recommendation_category.includes('SKIP') && (
