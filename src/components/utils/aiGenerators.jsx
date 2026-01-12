@@ -1,5 +1,64 @@
 import { base44 } from "@/api/base44Client";
 
+// === Hard Rules Enforcement ===
+
+function normalizeType(s) {
+  return String(s || "").toLowerCase();
+}
+
+function isAromaticBlend(blend) {
+  const t = normalizeType(blend?.blend_type);
+  if (t.includes("aromatic")) return true;
+
+  const notes = normalizeType(blend?.flavor_notes);
+  if (notes && notes.includes("aromatic")) return true;
+
+  return false;
+}
+
+function hasNonAromaticFocus(focusArr) {
+  return (focusArr || []).some((f) => {
+    const norm = normalizeType(f);
+    return norm.includes("non-aromatic") || norm.includes("non aromatic");
+  });
+}
+
+function hasAromaticOnlyFocus(focusArr) {
+  return (focusArr || []).some((f) => {
+    const norm = normalizeType(f);
+    return norm.includes("aromatic") && !norm.includes("non");
+  });
+}
+
+export function enforceHardPairingRules(pairings, blends) {
+  const blendById = new Map((blends || []).map((b) => [String(b.id), b]));
+
+  return (pairings || []).map((p) => {
+    const focus = Array.isArray(p.focus) ? p.focus : [];
+    const nonAro = hasNonAromaticFocus(focus);
+    const aroOnly = hasAromaticOnlyFocus(focus);
+
+    if (!p.recommendations) return p;
+
+    const updatedRecs = p.recommendations.map((r) => {
+      const blend = blendById.get(String(r.tobacco_id)) || blendById.get(String(r.blend_id)) || null;
+      const isAro = blend ? isAromaticBlend(blend) : normalizeType(r.tobacco_name).includes("aromatic");
+
+      // Enforce constraints
+      if (nonAro && isAro) {
+        return { ...r, score: 0, reasoning: `${r.reasoning} (Hard rule: non-aromatic pipe → aromatic scored 0)` };
+      }
+      if (aroOnly && !isAro) {
+        return { ...r, score: 0, reasoning: `${r.reasoning} (Hard rule: aromatic-only pipe → non-aromatic scored 0)` };
+      }
+
+      return r;
+    });
+
+    return { ...p, recommendations: updatedRecs };
+  });
+}
+
 export async function generatePairingsAI({ pipes, blends, profile }) {
   // Expand pipes to include bowl variants as separate entries
   // IMPORTANT: Use pipe_id / pipe_name in the input so the LLM can echo them back correctly.
