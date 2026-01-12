@@ -157,35 +157,45 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
   // Expand pipes to include bowl variants as separate entries
   const pipesData = [];
   for (const p of pipes || []) {
-    // If multiple bowls exist, only add bowl variants (use bowl-specific characteristics)
-    if (p.interchangeable_bowls?.length > 0) {
+    const pid = String(p.id);
+
+    if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
       p.interchangeable_bowls.forEach((bowl, idx) => {
         pipesData.push({
-          id: p.id,
-          bowl_variant_id: `bowl_${idx}`,
-          name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+          pipe_id: pid,
+          pipe_name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+          bowl_variant_id: bowl.bowl_variant_id || `bowl_${idx}`,
+
           maker: p.maker,
           shape: bowl.shape || p.shape,
-          bowl_material: bowl.bowl_material || p.bowl_material,
-          chamber_volume: bowl.chamber_volume || p.chamber_volume,
-          bowl_diameter_mm: bowl.bowl_diameter_mm || p.bowl_diameter_mm,
-          bowl_depth_mm: bowl.bowl_depth_mm || p.bowl_depth_mm,
-          focus: bowl.focus || [],
+
+          bowl_material: bowl.bowl_material ?? p.bowl_material,
+          chamber_volume: bowl.chamber_volume ?? p.chamber_volume,
+          bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm,
+          bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm,
+          bowl_height_mm: bowl.bowl_height_mm ?? null,
+          bowl_width_mm: bowl.bowl_width_mm ?? null,
+
+          focus: Array.isArray(bowl.focus) ? bowl.focus : [],
+          notes: bowl.notes || "",
         });
       });
     } else {
-      // No multiple bowls - use overall pipe record
       pipesData.push({
-        id: p.id,
+        pipe_id: pid,
+        pipe_name: p.name,
         bowl_variant_id: null,
-        name: p.name,
+
         maker: p.maker,
         shape: p.shape,
+
         bowl_material: p.bowl_material,
-        focus: p.focus || [],
         chamber_volume: p.chamber_volume,
         bowl_diameter_mm: p.bowl_diameter_mm,
         bowl_depth_mm: p.bowl_depth_mm,
+
+        focus: Array.isArray(p.focus) ? p.focus : [],
+        notes: p.notes || "",
       });
     }
   }
