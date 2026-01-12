@@ -58,6 +58,9 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     cut: b.cut || null,
     flavor_notes: b.flavor_notes || null,
     tobacco_components: b.tobacco_components || null,
+    is_aromatic: ["Aromatic", "English Aromatic", "Balkan"].some(at => 
+      b.blend_type?.includes(at)
+    ),
   }));
 
   let profileContext = "";
