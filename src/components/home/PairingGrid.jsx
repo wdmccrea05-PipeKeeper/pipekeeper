@@ -132,7 +132,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Pairing Grid</CardTitle>
+            <CardTitle className="text-white">Pairing Grid</CardTitle>
             <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
           </div>
           <div className="flex gap-2">
