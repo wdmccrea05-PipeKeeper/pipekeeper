@@ -16,6 +16,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [activeBowl, setActiveBowl] = useState('main');
   const queryClient = useQueryClient();
 
   // Normalization and fuzzy matching helpers
@@ -119,11 +120,12 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
 
   const confirmRecommendationMutation = useMutation({
     mutationFn: async () => {
-      if (!recommendations?.ideal_blend_types?.length) return;
+      const mainRecommendations = recommendations?.main;
+      if (!mainRecommendations?.ideal_blend_types?.length) return;
       
-      // Update pipe focus
+      // Update pipe focus (only for main bowl)
       await safeUpdate('Pipe', pipe.id, {
-        focus: recommendations.ideal_blend_types
+        focus: mainRecommendations.ideal_blend_types
       }, user?.email);
       
       // Mark existing pairing matrices as stale by clearing is_active
@@ -283,7 +285,13 @@ Provide recommendations in JSON format with:
         });
       }
 
-      setRecommendations(result);
+        allResults[bowlVariant.id] = {
+          ...result,
+          bowl_name: bowlVariant.name
+        };
+      }
+
+      setRecommendations(allResults);
     } catch (err) {
       console.error('Error getting recommendations:', err);
     } finally {
@@ -300,6 +308,9 @@ Provide recommendations in JSON format with:
     );
   }
 
+  const hasMultipleBowls = pipe.interchangeable_bowls?.length > 0;
+  const currentRecommendations = recommendations?.[activeBowl];
+
   return (
     <div className="space-y-6">
       {!recommendations && (
@@ -310,6 +321,7 @@ Provide recommendations in JSON format with:
           <h3 className="text-lg font-semibold text-stone-800 mb-2">AI Tobacco Matching</h3>
           <p className="text-stone-500 mb-6 max-w-md mx-auto">
             Get personalized tobacco blend recommendations based on this pipe's characteristics
+            {hasMultipleBowls && <span className="block mt-1 text-amber-600 font-medium">Includes separate analysis for each bowl variant</span>}
           </p>
           <Button
             onClick={getRecommendations}
@@ -351,6 +363,32 @@ Provide recommendations in JSON format with:
 
             {!collapsed && (
               <div className="space-y-6">
+            {/* Bowl Selector for Interchangeable Bowls */}
+            {hasMultipleBowls && (
+              <div className="flex flex-wrap gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200">
+                <span className="text-sm font-medium text-stone-700 mr-2">Bowl Variant:</span>
+                <Button
+                  size="sm"
+                  variant={activeBowl === 'main' ? 'default' : 'outline'}
+                  onClick={() => setActiveBowl('main')}
+                  className={activeBowl === 'main' ? 'bg-amber-600 hover:bg-amber-700' : ''}
+                >
+                  Main Bowl
+                </Button>
+                {pipe.interchangeable_bowls.map((bowl, idx) => (
+                  <Button
+                    key={idx}
+                    size="sm"
+                    variant={activeBowl === `bowl_${idx}` ? 'default' : 'outline'}
+                    onClick={() => setActiveBowl(`bowl_${idx}`)}
+                    className={activeBowl === `bowl_${idx}` ? 'bg-amber-600 hover:bg-amber-700' : ''}
+                  >
+                    {bowl.name || `Bowl ${idx + 1}`}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             {/* Ideal Blend Types */}
             <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
               <CardHeader className="pb-3">
@@ -360,47 +398,57 @@ Provide recommendations in JSON format with:
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {hasMultipleBowls && (
+                  <div className="text-xs text-amber-700 font-medium mb-2">
+                    For: {currentRecommendations?.bowl_name || 'Main Bowl'}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  {recommendations.ideal_blend_types?.map((type, idx) => (
+                  {currentRecommendations?.ideal_blend_types?.map((type, idx) => (
                     <Badge key={idx} className="bg-amber-600 text-white border-0 px-3 py-1">
                       {type}
                     </Badge>
                   ))}
                 </div>
-                <p className="text-stone-600">{recommendations.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
-                <Button
-                  onClick={() => confirmRecommendationMutation.mutate()}
-                  disabled={confirmRecommendationMutation.isPending}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {confirmRecommendationMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Star className="w-4 h-4 mr-2" />
-                      Confirm & Apply to Pipe
-                    </>
-                  )}
-                </Button>
+                <p className="text-stone-600">{currentRecommendations?.reasoning?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                {activeBowl === 'main' && (
+                  <Button
+                    onClick={() => confirmRecommendationMutation.mutate()}
+                    disabled={confirmRecommendationMutation.isPending}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {confirmRecommendationMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-4 h-4 mr-2" />
+                        Confirm & Apply to Pipe
+                      </>
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
             {/* From Your Collection */}
-            {recommendations.from_collection?.length > 0 && (
+            {currentRecommendations?.from_collection?.length > 0 && (
               <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Star className="w-5 h-5 text-emerald-600" />
                     From Your Collection
                   </CardTitle>
-                  <CardDescription>Blends you already own that pair well</CardDescription>
+                  <CardDescription>
+                    Blends you already own that pair well
+                    {hasMultipleBowls && <span className="block mt-1 text-amber-600"> • {currentRecommendations?.bowl_name}</span>}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.from_collection.map((blend, idx) => {
+                    {currentRecommendations.from_collection.map((blend, idx) => {
                      const userBlend = findBestUserBlend(blends, blend);
                      const imageUrl = userBlend?.photo || userBlend?.logo || (userBlend?.manufacturer ? getTobaccoLogo(userBlend.manufacturer, customLogos) : getTobaccoLogo(blend.manufacturer, customLogos));
                      const hasValidId = userBlend?.id;
@@ -448,18 +496,21 @@ Provide recommendations in JSON format with:
             )}
 
             {/* Optional Future Additions */}
-            {recommendations.future_additions?.length > 0 && (
+            {currentRecommendations?.future_additions?.length > 0 && (
               <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-violet-600" />
                     Optional Future Collection Additions
                   </CardTitle>
-                  <CardDescription>Blends to consider that aren't in your collection</CardDescription>
+                  <CardDescription>
+                    Blends to consider that aren't in your collection
+                    {hasMultipleBowls && <span className="block mt-1 text-amber-600"> • {currentRecommendations?.bowl_name}</span>}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {recommendations.future_additions.map((product, idx) => (
+                    {currentRecommendations.future_additions.map((product, idx) => (
                       <div 
                         key={idx} 
                         className="p-4 rounded-lg bg-white border border-violet-200 hover:border-violet-300 transition-colors"
@@ -492,9 +543,12 @@ Provide recommendations in JSON format with:
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Smoking Tips</CardTitle>
+                {hasMultipleBowls && (
+                  <p className="text-xs text-amber-700 font-medium mt-1">For: {currentRecommendations?.bowl_name}</p>
+                )}
               </CardHeader>
               <CardContent>
-                <p className="text-stone-600">{recommendations.smoking_tips?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
+                <p className="text-stone-600">{currentRecommendations?.smoking_tips?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s)]+/g, '')}</p>
               </CardContent>
             </Card>
 
