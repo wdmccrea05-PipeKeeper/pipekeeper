@@ -460,9 +460,9 @@ export default function PairingMatrix({ pipes, blends }) {
                                         {match.score}/10
                                       </Badge>
                                       </div>
-                                    </div>
-                                  );
-                                })}
+                                      </div>
+                                      );
+                                      })}
                               </div>
                             </div>
 
