@@ -261,27 +261,72 @@ Return JSON { "pairings": [...] } where each pairing has:
     },
   });
 
-  const pairings = result?.pairings || [];
+  const rawPairings = result?.pairings || [];
 
   // Hard guard: if LLM returns nothing, don't silently "succeed"
-  if (!pairings.length) {
+  if (!rawPairings.length) {
     throw new Error("LLM returned no pairings. (Schema mismatch or oversized response.)");
   }
 
-  // Attach focus to pairings for enforcement
-  const focusByVariant = new Map(
-    pipesData.map((x) => [`${x.pipe_id}::${x.bowl_variant_id ?? "main"}`, x.focus || []])
-  );
+  // Clamp scores deterministically based on pipe focus
+  const pairings = rawPairings.map((p) => {
+    // Find the corresponding pipe entry we sent to the model (so we use the same focus)
+    const pipeEntry =
+      pipesData.find((x) =>
+        String(x.pipe_id) === String(p.pipe_id) &&
+        String(x.bowl_variant_id ?? "") === String(p.bowl_variant_id ?? "")
+      ) || null;
 
-  pairings.forEach((p) => {
-    const k = `${String(p.pipe_id)}::${p.bowl_variant_id ?? "main"}`;
-    p.focus = focusByVariant.get(k) || [];
+    const pipeFocus = pipeEntry?.focus || [];
+    const mode = classifyPipeMode(pipeFocus);
+    const intensityPref = parseAromaticIntensityFromFocus(pipeFocus);
+
+    const recs = (p.recommendations || []).map((r) => {
+      const blend = blendsData.find((b) => String(b.tobacco_id) === String(r.tobacco_id));
+      const blendClass = classifyBlend(blend?.blend_type);
+      const intensity = norm(blend?.aromatic_intensity);
+
+      let score = clampScore(r.score, 0, 10);
+
+      // HARD category gating
+      if (mode === "AROMATIC_ONLY" && blendClass !== "AROMATIC") score = 0;
+      if (mode === "NON_AROMATIC_ONLY" && blendClass === "AROMATIC") score = 0;
+
+      // Optional intensity gating for aromatic blends only
+      if (blendClass === "AROMATIC" && score > 0 && intensityPref) {
+        if (intensityPref === "HEAVY" && intensity !== "heavy") score = 0;
+        if (intensityPref === "LIGHT" && intensity !== "light") score = 0;
+
+        // MEDIUM preference = allow all but cap light/heavy
+        if (intensityPref === "MEDIUM") {
+          if (intensity === "medium") score = Math.min(score, 9);
+          if (intensity === "light" || intensity === "heavy") score = Math.min(score, 5);
+        }
+      }
+
+      return {
+        ...r,
+        score,
+        reasoning:
+          score === 0
+            ? `${r.reasoning || ""} (Filtered by focus rules)`
+            : r.reasoning || "",
+      };
+    });
+
+    // Always sort after clamping so Top 3 is truly correct
+    recs.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+    return {
+      ...p,
+      pipe_id: String(p.pipe_id),
+      bowl_variant_id: p.bowl_variant_id ?? null,
+      recommendations: recs,
+      focus: pipeFocus,
+    };
   });
 
-  // Enforce hard pairing rules
-  const cleanedPairings = enforceHardPairingRules(pairings, blends);
-
-  return { pairings: cleanedPairings };
+  return { pairings };
 }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
