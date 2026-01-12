@@ -197,40 +197,40 @@ export default function MatchingEngine({ user }) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-stone-600">Pipe</div>
-            <Select value={activePipeId || ""} onValueChange={(v) => setActivePipeId(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select pipe" />
-              </SelectTrigger>
-              <SelectContent>
-                {pipes.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-stone-600">Bowl Variant</div>
-            <Select
-              value={activeBowlVariantId || "main"}
-              onValueChange={(v) => setActiveBowlVariantId(v === "main" ? null : v)}
-              disabled={!bowlOptions.length}
+            <div className="text-xs font-semibold text-stone-600">Select Pipe / Bowl</div>
+            <Select 
+              value={currentVariantKey || ""} 
+              onValueChange={(key) => {
+                const [pipeId, bowlId] = key.split('::');
+                setActivePipeId(pipeId);
+                setActiveBowlVariantId(bowlId === 'main' ? null : bowlId);
+              }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Main" />
+                <SelectValue placeholder="Select pipe or bowl variant" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="main">Main (non-variant)</SelectItem>
-                {bowlOptions.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
+                {pipes.map((p) => {
+                  const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
+                  if (bowls.length > 0) {
+                    return bowls.map((b, i) => {
+                      const bowlId = b.bowl_variant_id || `bowl_${i}`;
+                      const variantKey = getPipeVariantKey(p.id, bowlId);
+                      return (
+                        <SelectItem key={variantKey} value={variantKey}>
+                          {p.name} - {b.name || `Bowl ${i + 1}`}
+                        </SelectItem>
+                      );
+                    });
+                  }
+                  return (
+                    <SelectItem key={getPipeVariantKey(p.id, null)} value={getPipeVariantKey(p.id, null)}>
+                      {p.name}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
