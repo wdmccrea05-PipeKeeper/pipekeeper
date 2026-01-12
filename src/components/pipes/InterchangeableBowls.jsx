@@ -189,8 +189,20 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       placeholder="e.g., 40"
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
+                  </div>
+                  <div className="space-y-2">
+                  <Label>Bowl Specialization (Focus)</Label>
+                  <Input
+                    value={bowlForm.focus?.join(', ') || ''}
+                    onChange={(e) => {
+                      const focuses = e.target.value.split(',').map(f => f.trim()).filter(Boolean);
+                      setBowlForm({ ...bowlForm, focus: focuses });
+                    }}
+                    placeholder="e.g., English, Virginia/Perique"
+                  />
+                  <p className="text-xs text-stone-500">Separate multiple types with commas</p>
+                  </div>
+                  <div className="space-y-2">
                   <Label>Notes</Label>
                   <Input
                     value={bowlForm.notes}
