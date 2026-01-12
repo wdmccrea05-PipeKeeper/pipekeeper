@@ -2,123 +2,110 @@ import { base44 } from "@/api/base44Client";
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
   // Expand pipes to include bowl variants as separate entries
+  // IMPORTANT: Use pipe_id / pipe_name in the input so the LLM can echo them back correctly.
   const pipesData = [];
   for (const p of pipes || []) {
-    // If multiple bowls exist, only add bowl variants (use bowl-specific characteristics)
-    if (p.interchangeable_bowls?.length > 0) {
+    const pid = String(p.id);
+
+    if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
       p.interchangeable_bowls.forEach((bowl, idx) => {
+        const bowlId = bowl?.bowl_variant_id || `bowl_${idx}`;
         pipesData.push({
-          id: p.id,
-          bowl_variant_id: `bowl_${idx}`,
-          name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
-          maker: p.maker,
-          shape: bowl.shape || p.shape,
-          bowl_material: bowl.bowl_material || p.bowl_material,
-          chamber_volume: bowl.chamber_volume || p.chamber_volume,
-          bowl_diameter_mm: bowl.bowl_diameter_mm || p.bowl_diameter_mm,
-          bowl_depth_mm: bowl.bowl_depth_mm || p.bowl_depth_mm,
-          bowl_height_mm: bowl.bowl_height_mm,
-          bowl_width_mm: bowl.bowl_width_mm,
-          focus: bowl.focus || [],
+          pipe_id: pid,
+          pipe_name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+          bowl_variant_id: bowlId,
+
+          maker: p.maker || null,
+          shape: bowl.shape || p.shape || null,
+
+          bowl_material: bowl.bowl_material ?? p.bowl_material ?? null,
+          chamber_volume: bowl.chamber_volume ?? p.chamber_volume ?? null,
+          bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm ?? null,
+          bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm ?? null,
+          bowl_height_mm: bowl.bowl_height_mm ?? null,
+          bowl_width_mm: bowl.bowl_width_mm ?? null,
+
+          focus: Array.isArray(bowl.focus) ? bowl.focus : [],
           notes: bowl.notes || "",
         });
       });
     } else {
-      // No multiple bowls - use overall pipe record
       pipesData.push({
-        id: p.id,
+        pipe_id: pid,
+        pipe_name: p.name,
         bowl_variant_id: null,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        focus: p.focus || [],
+
+        maker: p.maker || null,
+        shape: p.shape || null,
+
+        bowl_material: p.bowl_material ?? null,
+        chamber_volume: p.chamber_volume ?? null,
+        bowl_diameter_mm: p.bowl_diameter_mm ?? null,
+        bowl_depth_mm: p.bowl_depth_mm ?? null,
+
+        focus: Array.isArray(p.focus) ? p.focus : [],
         notes: p.notes || "",
       });
     }
   }
 
   const blendsData = (blends || []).map((b) => ({
-    id: b.id,
-    name: b.name,
-    manufacturer: b.manufacturer,
-    blend_type: b.blend_type,
-    strength: b.strength,
-    cut: b.cut,
-    flavor_notes: b.flavor_notes,
-    tobacco_components: b.tobacco_components,
+    tobacco_id: String(b.id),
+    tobacco_name: b.name,
+    manufacturer: b.manufacturer || null,
+    blend_type: b.blend_type || null,
+    strength: b.strength || null,
+    cut: b.cut || null,
+    flavor_notes: b.flavor_notes || null,
+    tobacco_components: b.tobacco_components || null,
   }));
 
   let profileContext = "";
   if (profile) {
-    profileContext = `\n\nUser Smoking Preferences:
+    profileContext = `
+
+User Smoking Preferences:
 - Clenching: ${profile.clenching_preference}
 - Smoke Duration: ${profile.smoke_duration_preference}
-- Preferred Blend Types: ${profile.preferred_blend_types?.join(', ') || 'None'}
+- Preferred Blend Types: ${profile.preferred_blend_types?.join(", ") || "None"}
 - Pipe Size Preference: ${profile.pipe_size_preference}
 - Strength Preference: ${profile.strength_preference}
-- Additional Notes: ${profile.notes || 'None'}
+- Additional Notes: ${profile.notes || "None"}
 
-Weight these preferences heavily when scoring pairings. Prioritize blends that match their preferred types and strength.`;
+Weight these preferences heavily when scoring pairings.`;
   }
 
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are an expert pipe tobacco sommelier. Analyze these pipes and tobacco blends to create optimal pairings.
+    prompt: `You are an expert pipe tobacco sommelier. Create a pairing list for each pipe/bowl configuration.
 
-CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection listed below. DO NOT suggest blends that are not in this list.
+CRITICAL CONSTRAINTS:
+1) You MUST ONLY recommend tobaccos from the user's collection list below.
+2) You MUST return EXACTLY the same pipe_id, pipe_name, and bowl_variant_id values shown in the PIPES list.
+3) Return ONE pairing object PER pipe entry (so total pairings === number of pipe entries).
 
-Pipes:
+PIPES (each entry is a distinct pipe variant):
 ${JSON.stringify(pipesData, null, 2)}
 
-CRITICAL: Each entry in the pipes list represents a different bowl configuration. When multiple interchangeable bowls exist for a pipe, ONLY the bowl variant records are included (NOT the main pipe record). Each entry has a 'bowl_variant_id' field:
-- If bowl_variant_id is null: This pipe has NO interchangeable bowls - use the pipe's own characteristics
-- If bowl_variant_id has a value (e.g., "bowl_0", "bowl_1"): This is an interchangeable bowl - use THIS BOWL'S specific measurements, material, volume, and focus (NOT the parent pipe's details)
-
-YOU MUST return the EXACT pipe_id, pipe_name, and bowl_variant_id for each entry. Score ONLY based on the specific bowl's characteristics shown in each entry.
-
-Tobacco Blends in User's Collection (ONLY recommend from this list):
+TOBACCOS (ONLY choose from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe/bowl entry in the list, you MUST score ALL tobacco blends in the user's collection for THAT SPECIFIC BOWL CONFIGURATION. Return one pairing entry per pipe/bowl with the matching bowl_variant_id, and include ALL blends in the recommendations array (even if score is 0 for incompatible blends). This allows users to see why certain blends don't work with certain pipes.
+SCORING RULES (0–10):
+- Focus/specialization overrides everything else.
+- If focus contains an EXACT tobacco_name from the user's list, that tobacco MUST be 9–10 and MUST appear in Top 3.
+- If focus includes "Non-Aromatic", Aromatics MUST score 0. If focus includes "Aromatic", non-aromatics MUST score 0.
+- If focus is non-empty: matching tobaccos should be 9–10, all others max 5.
 
-CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
-
-1. **PIPE SPECIALIZATION/FOCUS** (HIGHEST PRIORITY - Weight: 40%):
-   - The "focus" field may contain SPECIFIC BLEND NAMES from the user's collection (e.g., "Cowboy Coffee"). When a pipe's focus contains an exact blend name, that blend MUST receive a score of 9-10 for that pipe.
-   - The "focus" field may also contain CATEGORIES (e.g., "Aromatic", "Non-Aromatic", "English", "Virginia"). Match blends by their blend_type to these categories.
-   - If a pipe has "Non-Aromatic" or "Non Aromatic" in focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
-   - If a pipe has "Aromatic" in focus: COMPLETELY EXCLUDE all non-aromatic blends (score = 0)
-   - If a pipe HAS ANY focus field set (non-empty array): Blends matching that focus should receive 9-10 scores, all others maximum 5/10
-   - EXACT NAME MATCHES in focus field override all other considerations - those blends MUST be in top 3
-   - A dedicated pipe should excel at its specialization - reward this heavily
-
-2. **USER SMOKING PREFERENCES** (SECOND PRIORITY - Weight: 30%):
-   - User's preferred blend types should receive +2 bonus points
-   - User's preferred strength should receive +1 bonus point
-   - User's pipe size preference should influence recommendations
-   - If user prefers certain shapes, highlight how those pipes work with their preferred blends
-   - Tailor ALL recommendations to align with stated preferences
-
-3. **PHYSICAL PIPE CHARACTERISTICS** (THIRD PRIORITY - Weight: 30%):
-   - Bowl diameter: <18mm for milder tobaccos, 18-22mm versatile, >22mm for fuller blends
-   - Chamber volume: Small for aromatics/milds, Large for full/English blends
-   - Material: Meerschaum excellent for Virginias, Briar versatile
-   - Shape: Affects smoke temperature and moisture retention
-
-RATING SCALE:
-- 10 = Perfect match (specialization + user preference aligned)
-- 9 = Excellent (strong specialization or preference match)
-- 7-8 = Very good (partial matches)
-- 5-6 = Acceptable (no conflicts but not optimal)
-- 3-4 = Suboptimal (conflicts with focus or preferences)
-- 0-2 = Poor/Incompatible (violates focus rules or strong conflicts)
-
-CRITICAL: Prioritize pipe specialization above all else. A pipe designated for English blends should score 9-10 for English blends and much lower for others, regardless of physical characteristics.
-
-OUTPUT FORMAT: Return an array of pairings where EACH pairing object represents ONE pipe/bowl configuration with its top tobacco recommendations. Use "recommendations" (not "blend_matches") for the tobacco list.`,
+OUTPUT:
+Return JSON { "pairings": [...] } where each pairing has:
+- pipe_id (string)
+- pipe_name (string)
+- bowl_variant_id (string|null)
+- recommendations: ARRAY of ALL tobaccos with:
+    - tobacco_id (string)
+    - tobacco_name (string)
+    - score (number)
+    - reasoning (string)
+`,
     response_json_schema: {
       type: "object",
       required: ["pairings"],
@@ -141,18 +128,25 @@ OUTPUT FORMAT: Return an array of pairings where EACH pairing object represents 
                     tobacco_id: { type: "string" },
                     tobacco_name: { type: "string" },
                     score: { type: "number" },
-                    reasoning: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                    reasoning: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
-  return { pairings: result?.pairings || [] };
+  const pairings = result?.pairings || [];
+
+  // Hard guard: if LLM returns nothing, don't silently "succeed"
+  if (!pairings.length) {
+    throw new Error("LLM returned no pairings. (Schema mismatch or oversized response.)");
+  }
+
+  return { pairings };
 }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
