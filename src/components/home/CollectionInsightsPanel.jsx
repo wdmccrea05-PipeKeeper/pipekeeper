@@ -36,7 +36,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           </TabsContent>
 
           <TabsContent value="reference" className="mt-0">
-            <PairingGrid pipes={pipes} blends={blends} />
+            <PairingGrid user={user} />
           </TabsContent>
 
           <TabsContent value="stats" className="mt-0">
