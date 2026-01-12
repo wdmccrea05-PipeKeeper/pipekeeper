@@ -1,19 +1,45 @@
 import { base44 } from "@/api/base44Client";
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
-  const pipesData = (pipes || []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    maker: p.maker,
-    shape: p.shape,
-    bowl_material: p.bowl_material,
-    chamber_volume: p.chamber_volume,
-    bowl_diameter_mm: p.bowl_diameter_mm,
-    bowl_depth_mm: p.bowl_depth_mm,
-    focus: p.focus || [],
-    notes: p.notes || "",
-    interchangeable_bowls: p.interchangeable_bowls || [],
-  }));
+  // Expand pipes to include bowl variants as separate entries
+  const pipesData = [];
+  for (const p of pipes || []) {
+    // Main bowl
+    pipesData.push({
+      id: p.id,
+      bowl_variant_id: null,
+      name: p.name,
+      maker: p.maker,
+      shape: p.shape,
+      bowl_material: p.bowl_material,
+      chamber_volume: p.chamber_volume,
+      bowl_diameter_mm: p.bowl_diameter_mm,
+      bowl_depth_mm: p.bowl_depth_mm,
+      focus: p.focus || [],
+      notes: p.notes || "",
+    });
+
+    // Interchangeable bowls as separate entries
+    if (p.interchangeable_bowls?.length > 0) {
+      p.interchangeable_bowls.forEach((bowl, idx) => {
+        pipesData.push({
+          id: p.id,
+          bowl_variant_id: `bowl_${idx}`,
+          name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+          maker: p.maker,
+          shape: bowl.shape || p.shape,
+          bowl_material: bowl.bowl_material,
+          chamber_volume: bowl.chamber_volume,
+          bowl_diameter_mm: bowl.bowl_diameter_mm,
+          bowl_depth_mm: bowl.bowl_depth_mm,
+          bowl_height_mm: bowl.bowl_height_mm,
+          bowl_width_mm: bowl.bowl_width_mm,
+          focus: bowl.focus || [],
+          notes: bowl.notes || "",
+        });
+      });
+    }
+  }
 
   const blendsData = (blends || []).map((b) => ({
     id: b.id,
@@ -47,13 +73,12 @@ CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection l
 Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
-INTERCHANGEABLE BOWLS SCORING:
-For pipes with interchangeable_bowls, score each bowl variant SEPARATELY. Each bowl can have different optimal pairings based on its unique material, size, and shape. Consider all bowls when determining blend matches for a pipe.
+CRITICAL: Each entry in the pipes list may represent a different bowl variant of the same pipe. Score each separately based on its unique characteristics (material, size, shape, focus).
 
 Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe (including all interchangeable bowl variants), evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well.
+For each pipe/bowl entry, evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well with THAT SPECIFIC BOWL CONFIGURATION.
 
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
@@ -96,6 +121,7 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
             properties: {
               pipe_id: { type: "string" },
               pipe_name: { type: "string" },
+              bowl_variant_id: { type: "string" },
               blend_matches: {
                 type: "array",
                 items: {
@@ -104,7 +130,8 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
                     blend_id: { type: "string" },
                     blend_name: { type: "string" },
                     score: { type: "number" },
-                    reasoning: { type: "string" }
+                    reasoning: { type: "string" },
+                    bowl_variant_id: { type: "string" }
                   },
                   required: ["blend_id", "blend_name", "score", "reasoning"]
                 }

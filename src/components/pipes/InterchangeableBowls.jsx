@@ -26,6 +26,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
     bowl_diameter_mm: '',
     bowl_depth_mm: '',
     chamber_volume: '',
+    focus: [],
     notes: ''
   });
 
@@ -48,6 +49,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         bowl_diameter_mm: '',
         bowl_depth_mm: '',
         chamber_volume: '',
+        focus: [],
         notes: ''
       });
       setEditingIndex(null);
@@ -261,6 +263,11 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     {bowl.bowl_depth_mm && (
                       <span className="text-stone-600">
                         D {bowl.bowl_depth_mm}mm
+                      </span>
+                    )}
+                    {bowl.focus?.length > 0 && (
+                      <span className="text-amber-700 font-medium">
+                        🎯 {bowl.focus.join(', ')}
                       </span>
                     )}
                   </div>

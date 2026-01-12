@@ -308,11 +308,12 @@ export default function PairingMatrix({ pipes, blends }) {
             {pairings.map((pipePairing, idx) => {
               const pipe = pipes.find(p => p.id === pipePairing.pipe_id);
               const bestMatch = getBestMatch(pipePairing.blend_matches);
-              const isExpanded = selectedPipe === pipePairing.pipe_id;
+              const uniqueKey = pipePairing.bowl_variant_id ? `${pipePairing.pipe_id}_${pipePairing.bowl_variant_id}` : pipePairing.pipe_id;
+              const isExpanded = selectedPipe === uniqueKey;
 
               return (
                 <motion.div
-                  key={pipePairing.pipe_id}
+                  key={uniqueKey}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
@@ -321,7 +322,7 @@ export default function PairingMatrix({ pipes, blends }) {
                     <CardContent className="p-4">
                       <div 
                         className="flex items-center justify-between cursor-pointer"
-                        onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(pipePairing.pipe_id)}
+                        onClick={() => isExpanded ? setSelectedPipe(null) : setSelectedPipe(uniqueKey)}
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -338,6 +339,11 @@ export default function PairingMatrix({ pipes, blends }) {
                                   <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
                                     {pipePairing.pipe_name}
                                   </h4>
+                                  {pipePairing.bowl_variant_id && (
+                                    <Badge variant="outline" className="text-xs ml-2">
+                                      Bowl Variant
+                                    </Badge>
+                                  )}
                                 </a>
                               ) : (
                                 <h4
