@@ -288,7 +288,7 @@ Return only a number between 0 and 10 (decimals allowed).`,
   }, [selectedBlendId, allBlends]);
 
   return (
-    <div className="border rounded-lg p-3 bg-[#e8d5b7]/20">
+    <div className="border rounded-lg p-3 bg-[#f5f5dc]">
       <div className="font-semibold text-stone-800">{row.name}</div>
       <div className="text-xs text-stone-600 mt-1">
         Focus: {row.focus?.length ? row.focus.join(", ") : "—"}
