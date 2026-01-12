@@ -53,7 +53,10 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   }, [pipe]);
 
   const hasBowls = bowlOptions.length > 0;
-  const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
+  // If has bowls, default to first bowl. Otherwise default to main (null).
+  const [activeBowlVariantId, setActiveBowlVariantId] = useState(() => 
+    hasBowls && bowlOptions.length > 0 ? bowlOptions[0].id : null
+  );
 
   const pairingEntry = useMemo(() => {
     const list = activePairings?.pairings || activePairings?.data?.pairings || [];
@@ -182,21 +185,20 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           <div className="w-full md:w-64">
             <div className="text-xs font-semibold text-stone-600 mb-1">Bowl Variant</div>
             <Select
-              value={activeBowlVariantId || "main"}
-              onValueChange={(v) => setActiveBowlVariantId(v === "main" ? null : v)}
-              disabled={!hasBowls}
+             value={activeBowlVariantId || ""}
+             onValueChange={setActiveBowlVariantId}
+             disabled={!hasBowls}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Main (non-variant)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="main">Main (non-variant)</SelectItem>
-                {bowlOptions.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+             <SelectTrigger>
+               <SelectValue placeholder="Select bowl..." />
+             </SelectTrigger>
+             <SelectContent>
+               {bowlOptions.map((b) => (
+                 <SelectItem key={b.id} value={b.id}>
+                   {b.name}
+                 </SelectItem>
+               ))}
+             </SelectContent>
             </Select>
           </div>
         </div>
