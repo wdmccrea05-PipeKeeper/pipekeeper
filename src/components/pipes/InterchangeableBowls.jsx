@@ -21,8 +21,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
     name: '',
     shape: '',
     bowl_material: '',
-    bowl_height_mm: '',
-    bowl_width_mm: '',
     bowl_diameter_mm: '',
     bowl_depth_mm: '',
     chamber_volume: '',
@@ -43,8 +41,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         name: '',
         shape: '',
         bowl_material: '',
-        bowl_height_mm: '',
-        bowl_width_mm: '',
         bowl_diameter_mm: '',
         bowl_depth_mm: '',
         chamber_volume: '',
@@ -148,26 +144,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Bowl Height (mm)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_height_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_height_mm: e.target.value })}
-                      placeholder="e.g., 50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Bowl Width (mm)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_width_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_width_mm: e.target.value })}
-                      placeholder="e.g., 38"
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label>Chamber Diameter (mm)</Label>
                     <Input
                       type="number"
@@ -242,16 +218,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       <Badge className="bg-amber-100 text-amber-800">
                         {bowl.chamber_volume}
                       </Badge>
-                    )}
-                    {bowl.bowl_height_mm && (
-                      <span className="text-stone-600">
-                        H: {bowl.bowl_height_mm}mm
-                      </span>
-                    )}
-                    {bowl.bowl_width_mm && (
-                      <span className="text-stone-600">
-                        W: {bowl.bowl_width_mm}mm
-                      </span>
                     )}
                     {bowl.bowl_diameter_mm && (
                       <span className="text-stone-600">
