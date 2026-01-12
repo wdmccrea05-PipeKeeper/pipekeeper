@@ -126,18 +126,17 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
               pipe_id: { type: "string" },
               pipe_name: { type: "string" },
               bowl_variant_id: { type: ["string", "null"] },
-              blend_matches: {
+              recommendations: {
                 type: "array",
                 items: {
                   type: "object",
                   properties: {
-                    blend_id: { type: "string" },
-                    blend_name: { type: "string" },
+                    tobacco_id: { type: "string" },
+                    tobacco_name: { type: "string" },
                     score: { type: "number" },
-                    reasoning: { type: "string" },
-                    bowl_variant_id: { type: "string" }
+                    reasoning: { type: "string" }
                   },
-                  required: ["blend_id", "blend_name", "score", "reasoning"]
+                  required: ["tobacco_id", "tobacco_name", "score", "reasoning"]
                 }
               }
             }
