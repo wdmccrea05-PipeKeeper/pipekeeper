@@ -79,8 +79,6 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     },
   });
 
-  const optimization = activeOpt;
-
   // Compute fingerprint and staleness
   const currentFingerprint = React.useMemo(() => 
     buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
