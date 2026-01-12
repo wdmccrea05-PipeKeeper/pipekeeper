@@ -170,6 +170,23 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
 function PipeCard({ row, allBlends }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
+  const [calculatedScore, setCalculatedScore] = useState(null);
+  const [calculating, setCalculating] = useState(false);
+  
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
+  });
 
   // Only show top matches that have scores (AI should respect focus)
   const topMatches = useMemo(() => {
@@ -182,13 +199,77 @@ function PipeCard({ row, allBlends }) {
   }, [row.recommendations]);
 
   const selectedBlendScore = useMemo(() => {
-    if (!selectedBlendId) return null;
+    if (!selectedBlendId) return calculatedScore;
     // Try both possible field names for compatibility
     const match = row.recommendations?.find(r => 
       r.tobacco_id === selectedBlendId || r.blend_id === selectedBlendId || r.id === selectedBlendId
     );
-    return match?.score ?? null;
-  }, [selectedBlendId, row.recommendations]);
+    return match?.score ?? calculatedScore;
+  }, [selectedBlendId, row.recommendations, calculatedScore]);
+
+  const calculateScore = async () => {
+    if (!selectedBlendId) return;
+    
+    setCalculating(true);
+    const blend = allBlends.find(b => b.id === selectedBlendId);
+    if (!blend) {
+      setCalculating(false);
+      return;
+    }
+
+    try {
+      // Simulate pipe object from row data
+      const pipeData = {
+        id: row.pipe_id,
+        name: row.name,
+        focus: row.focus || [],
+        chamber_volume: row.chamber_volume,
+        bowl_diameter_mm: row.bowl_diameter_mm,
+        bowl_depth_mm: row.bowl_depth_mm,
+      };
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Score the compatibility between this pipe and tobacco blend on a scale of 0-10.
+
+Pipe: ${JSON.stringify(pipeData, null, 2)}
+User Profile: ${JSON.stringify(userProfile || {}, null, 2)}
+
+Blend:
+- Name: ${blend.name}
+- Type: ${blend.blend_type}
+- Strength: ${blend.strength}
+- Cut: ${blend.cut}
+- Components: ${blend.tobacco_components?.join(', ') || 'N/A'}
+
+CRITICAL SCORING RULES:
+1. If pipe focus contains this exact blend name "${blend.name}", score MUST be 9-10
+2. If pipe has "Non-Aromatic" focus and blend is Aromatic: score = 0
+3. If pipe has "Aromatic" focus and blend is non-aromatic: score = 0
+4. If pipe focus matches blend type/category: 9-10
+5. Otherwise base on physical compatibility and user preferences
+
+Return only a number between 0 and 10 (decimals allowed).`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            score: { type: "number" }
+          }
+        }
+      });
+
+      setCalculatedScore(result.score || 0);
+    } catch (error) {
+      console.error('Score calculation failed:', error);
+      toast.error('Failed to calculate score');
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  // Reset calculated score when blend selection changes
+  React.useEffect(() => {
+    setCalculatedScore(null);
+  }, [selectedBlendId]);
 
   const selectedBlendName = useMemo(() => {
     if (!selectedBlendId) return null;
@@ -237,11 +318,31 @@ function PipeCard({ row, allBlends }) {
           </SelectContent>
         </Select>
         {selectedBlendId && (
-          <div className="flex justify-between gap-2 text-sm">
-            <span className="truncate text-stone-700">{selectedBlendName}</span>
-            <span className="text-stone-500 font-medium">
-              {selectedBlendScore !== null ? selectedBlendScore : "No score"}
-            </span>
+          <div className="space-y-2">
+            <div className="flex justify-between gap-2 text-sm">
+              <span className="truncate text-stone-700">{selectedBlendName}</span>
+              <span className="text-stone-500 font-medium">
+                {selectedBlendScore !== null ? selectedBlendScore : "No score"}
+              </span>
+            </div>
+            {selectedBlendScore === null && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={calculateScore}
+                disabled={calculating}
+                className="w-full"
+              >
+                {calculating ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Calculating...
+                  </>
+                ) : (
+                  'Get Score'
+                )}
+              </Button>
+            )}
           </div>
         )}
       </div>
