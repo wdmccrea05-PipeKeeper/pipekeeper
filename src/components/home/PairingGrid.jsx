@@ -15,6 +15,7 @@ import { toast } from "sonner";
 export default function PairingGrid({ user, pipes, blends, profile }) {
   const queryClient = useQueryClient();
   const [regenerating, setRegenerating] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Fallback to fetch pipes if not provided
   const { data: fetchedPipes = [], isLoading: pipesLoading } = useQuery({
@@ -126,32 +127,43 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
             <CardTitle>Pairing Grid</CardTitle>
             <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={regenPairings}
-            disabled={regenerating}
-          >
-            {regenerating ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : (
-              <RefreshCw className="h-3 w-3 mr-1" />
-            )}
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? 'Show' : 'Hide'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={regenPairings}
+              disabled={regenerating}
+            >
+              {regenerating ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : (
+                <RefreshCw className="h-3 w-3 mr-1" />
+              )}
+              Refresh
+            </Button>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {rows.length === 0 ? (
-          <div className="text-sm text-stone-600">No pipes found.</div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {rows.map((r) => (
-              <PipeCard key={r.key} row={r} allBlends={allBlends} />
-            ))}
-          </div>
-        )}
-      </CardContent>
+      {!collapsed && (
+        <CardContent className="space-y-3">
+          {rows.length === 0 ? (
+            <div className="text-sm text-stone-600">No pipes found.</div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {rows.map((r) => (
+                <PipeCard key={r.key} row={r} allBlends={allBlends} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 }
