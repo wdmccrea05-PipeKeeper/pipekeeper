@@ -87,10 +87,12 @@ For each pipe/bowl entry in the list, you MUST score ALL tobacco blends in the u
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
 1. **PIPE SPECIALIZATION/FOCUS** (HIGHEST PRIORITY - Weight: 40%):
+   - The "focus" field may contain SPECIFIC BLEND NAMES from the user's collection (e.g., "Cowboy Coffee"). When a pipe's focus contains an exact blend name, that blend MUST receive a score of 9-10 for that pipe.
+   - The "focus" field may also contain CATEGORIES (e.g., "Aromatic", "Non-Aromatic", "English", "Virginia"). Match blends by their blend_type to these categories.
    - If a pipe has "Non-Aromatic" or "Non Aromatic" in focus: COMPLETELY EXCLUDE all Aromatic blends (score = 0)
    - If a pipe has "Aromatic" in focus: COMPLETELY EXCLUDE all non-aromatic blends (score = 0)
-   - If a pipe HAS ANY focus field set (non-empty array): Give 9-10 scores ONLY to blends matching that focus
-   - Blends NOT matching the pipe's focus should receive maximum 5/10 score
+   - If a pipe HAS ANY focus field set (non-empty array): Blends matching that focus should receive 9-10 scores, all others maximum 5/10
+   - EXACT NAME MATCHES in focus field override all other considerations - those blends MUST be in top 3
    - A dedicated pipe should excel at its specialization - reward this heavily
 
 2. **USER SMOKING PREFERENCES** (SECOND PRIORITY - Weight: 30%):
