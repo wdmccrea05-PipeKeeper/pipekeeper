@@ -95,6 +95,51 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       setBusy(true);
       const result = await generateOptimizationAI({ pipes, blends, profile, whatIfText: "" });
 
+      const pipe_specializations = (result.applyable_changes || []).map((change) => {
+        const p = pipes.find((x) => String(x.id) === String(change.pipe_id));
+        let pipeName = p?.name || "Unknown";
+
+        if (change.bowl_variant_id && p?.interchangeable_bowls?.length) {
+          const idx = p.interchangeable_bowls.findIndex(
+            (b, i) => (b.bowl_variant_id || `bowl_${i}`) === change.bowl_variant_id
+          );
+          if (idx >= 0) pipeName = `${pipeName} - ${p.interchangeable_bowls[idx].name || `Bowl ${idx + 1}`}`;
+        }
+
+        return {
+          pipe_id: change.pipe_id,
+          bowl_variant_id: change.bowl_variant_id ?? null,
+          pipe_name: pipeName,
+          recommended_blend_types: change.after_focus || [],
+          reasoning: change.rationale || "",
+          usage_pattern: `Specialized for: ${(change.after_focus || []).join(", ")}`,
+        };
+      });
+
+      const collection_gaps = {
+        missing_coverage: result.collection_gaps || [],
+        redundancies: [],
+        overall_assessment: result.summary || "",
+      };
+
+      const priority_focus_changes = (result.applyable_changes || []).slice(0, 3).map((c, i) => ({
+        pipe_id: c.pipe_id,
+        pipe_name: pipes.find((p) => String(p.id) === String(c.pipe_id))?.name || "Unknown",
+        current_focus: c.before_focus || [],
+        recommended_focus: c.after_focus || [],
+        score_improvement: `Priority #${i + 1} change`,
+        reasoning: c.rationale || "",
+      }));
+
+      const next_pipe_recommendations = (result.next_additions || []).slice(0, 3).map((rec, i) => ({
+        priority_rank: i + 1,
+        reasoning: rec,
+        gap_filled: rec,
+        chamber_specs: rec,
+        budget_range: "Varies",
+        score_improvement: "Expected improvement",
+      }));
+
       if (activeOpt?.id) {
         await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
       }
@@ -104,8 +149,10 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         is_active: true,
         previous_active_id: activeOpt?.id ?? null,
         input_fingerprint: currentFingerprint,
-        pipe_specializations: result.applyable_changes || [],
-        collection_gaps: result,
+        pipe_specializations,
+        collection_gaps,
+        priority_focus_changes,
+        next_pipe_recommendations,
         generated_date: new Date().toISOString(),
       });
 
