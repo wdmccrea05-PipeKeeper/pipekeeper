@@ -49,19 +49,20 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     }
   }
 
-  const blendsData = (blends || []).map((b) => ({
-    tobacco_id: String(b.id),
-    tobacco_name: b.name,
-    manufacturer: b.manufacturer || null,
-    blend_type: b.blend_type || null,
-    strength: b.strength || null,
-    cut: b.cut || null,
-    flavor_notes: b.flavor_notes || null,
-    tobacco_components: b.tobacco_components || null,
-    is_aromatic: ["Aromatic", "English Aromatic", "Balkan"].some(at => 
-      b.blend_type?.includes(at)
-    ),
-  }));
+  const blendsData = (blends || []).map((b) => {
+    const isAromatic = b.blend_type === "Aromatic" || b.blend_type === "English Aromatic";
+    return {
+      tobacco_id: String(b.id),
+      tobacco_name: b.name,
+      manufacturer: b.manufacturer || null,
+      blend_type: b.blend_type || null,
+      strength: b.strength || null,
+      cut: b.cut || null,
+      flavor_notes: b.flavor_notes || null,
+      tobacco_components: b.tobacco_components || null,
+      category: isAromatic ? "AROMATIC" : "NON_AROMATIC",
+    };
+  });
 
   let profileContext = "";
   if (profile) {
