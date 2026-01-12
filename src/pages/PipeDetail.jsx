@@ -573,7 +573,7 @@ export default function PipeDetailPage() {
           </TabsList>
 
           <TabsContent value="match">
-            <Card className="border-stone-200">
+            <Card className="bg-[#182838] border-[#465C6E]">
               <CardContent className="p-6">
                 <MatchingEngine pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
               </CardContent>
@@ -581,7 +581,7 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="value">
-            <Card className="border-stone-200">
+            <Card className="bg-[#182838] border-[#465C6E]">
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
@@ -596,12 +596,12 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="identify">
-            <Card className="border-stone-200">
+            <Card className="bg-[#182838] border-[#465C6E]">
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <>
                     <PipeIdentifier pipe={pipe} onUpdatePipe={handlePipeUpdate} />
-                    <div className="mt-6 pt-6 border-t border-stone-200">
+                    <div className="mt-6 pt-6 border-t border-[#465C6E]">
                       <PipeMeasurementCalculator pipe={pipe} onUpdate={handlePipeUpdate} />
                     </div>
                   </>
