@@ -4,22 +4,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
   // Expand pipes to include bowl variants as separate entries
   const pipesData = [];
   for (const p of pipes || []) {
-    // Main bowl
-    pipesData.push({
-      id: p.id,
-      bowl_variant_id: null,
-      name: p.name,
-      maker: p.maker,
-      shape: p.shape,
-      bowl_material: p.bowl_material,
-      chamber_volume: p.chamber_volume,
-      bowl_diameter_mm: p.bowl_diameter_mm,
-      bowl_depth_mm: p.bowl_depth_mm,
-      focus: p.focus || [],
-      notes: p.notes || "",
-    });
-
-    // Interchangeable bowls as separate entries
+    // If multiple bowls exist, only add bowl variants (use bowl-specific characteristics)
     if (p.interchangeable_bowls?.length > 0) {
       p.interchangeable_bowls.forEach((bowl, idx) => {
         pipesData.push({
@@ -28,15 +13,30 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
           name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
           maker: p.maker,
           shape: bowl.shape || p.shape,
-          bowl_material: bowl.bowl_material,
-          chamber_volume: bowl.chamber_volume,
-          bowl_diameter_mm: bowl.bowl_diameter_mm,
-          bowl_depth_mm: bowl.bowl_depth_mm,
+          bowl_material: bowl.bowl_material || p.bowl_material,
+          chamber_volume: bowl.chamber_volume || p.chamber_volume,
+          bowl_diameter_mm: bowl.bowl_diameter_mm || p.bowl_diameter_mm,
+          bowl_depth_mm: bowl.bowl_depth_mm || p.bowl_depth_mm,
           bowl_height_mm: bowl.bowl_height_mm,
           bowl_width_mm: bowl.bowl_width_mm,
           focus: bowl.focus || [],
           notes: bowl.notes || "",
         });
+      });
+    } else {
+      // No multiple bowls - use overall pipe record
+      pipesData.push({
+        id: p.id,
+        bowl_variant_id: null,
+        name: p.name,
+        maker: p.maker,
+        shape: p.shape,
+        bowl_material: p.bowl_material,
+        chamber_volume: p.chamber_volume,
+        bowl_diameter_mm: p.bowl_diameter_mm,
+        bowl_depth_mm: p.bowl_depth_mm,
+        focus: p.focus || [],
+        notes: p.notes || "",
       });
     }
   }
@@ -73,11 +73,11 @@ CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection l
 Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
-CRITICAL: Each entry in the pipes list may represent a different bowl variant of the same pipe system. Each entry has a 'bowl_variant_id' field:
-- If bowl_variant_id is null: This is the main/original bowl
-- If bowl_variant_id has a value (e.g., "bowl_0", "bowl_1"): This is an interchangeable bowl variant
+CRITICAL: Each entry in the pipes list represents a different bowl configuration. When multiple interchangeable bowls exist for a pipe, ONLY the bowl variant records are included (NOT the main pipe record). Each entry has a 'bowl_variant_id' field:
+- If bowl_variant_id is null: This pipe has NO interchangeable bowls - use the pipe's own characteristics
+- If bowl_variant_id has a value (e.g., "bowl_0", "bowl_1"): This is an interchangeable bowl - use THIS BOWL'S specific measurements, material, volume, and focus (NOT the parent pipe's details)
 
-YOU MUST return the EXACT pipe_id, pipe_name, and bowl_variant_id for each entry in your response. Score each bowl variant separately based on its unique characteristics (material, size, shape, focus).
+YOU MUST return the EXACT pipe_id, pipe_name, and bowl_variant_id for each entry. Score ONLY based on the specific bowl's characteristics shown in each entry.
 
 Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
