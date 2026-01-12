@@ -304,8 +304,8 @@ Return only a number between 0 and 10 (decimals allowed).`,
           <div className="text-sm text-black space-y-1">
             {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
-                <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
-                <span className="text-stone-500 font-medium">{rec.score ?? "—"}</span>
+                <span className="truncate text-black">{rec.tobacco_name || rec.name || "Tobacco"}</span>
+                 <span className="text-black font-medium">{rec.score ?? "—"}</span>
               </div>
             ))}
           </div>
