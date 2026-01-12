@@ -1670,14 +1670,14 @@ Provide concrete, actionable steps with specific field values.`,
                                 </p>
                                 <Textarea
                                   placeholder="e.g., 'I prefer using this pipe for Latakia blends, not Virginias' or 'This pipe actually smokes hot with strong blends'"
-                                  value={pipeFeedback[pipe.id] || ''}
-                                  onChange={(e) => setPipeFeedback({...pipeFeedback, [pipe.id]: e.target.value})}
+                                  value={pipeFeedback[variantKey] || ''}
+                                  onChange={(e) => setPipeFeedback({...pipeFeedback, [variantKey]: e.target.value})}
                                   className="min-h-[60px] text-sm mb-2"
                                 />
                                 <Button
                                   size="sm"
-                                  onClick={() => handleSubmitFeedback(pipe.id)}
-                                  disabled={!pipeFeedback[pipe.id]?.trim() || loading}
+                                  onClick={() => handleSubmitFeedback(pv.pipe_id)}
+                                  disabled={!pipeFeedback[variantKey]?.trim() || loading}
                                   className="bg-amber-600 hover:bg-amber-700 text-white"
                                 >
                                   {loading ? (
