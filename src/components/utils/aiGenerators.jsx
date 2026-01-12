@@ -357,44 +357,46 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `Analyze the user's pipe and tobacco collection. Provide optimization recommendations.
 
-Rules:
-- Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
-- When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
-- Recommend specialization updates (bowl focus changes) only when justified
-- Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
-- Include "collection_gaps" and "next_additions" suggestions
-- If what-if is advice-only, give advice and keep applyable_changes empty
+  Rules:
+  - Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
+  - When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
+  - Recommend specialization updates (bowl focus changes) only when justified
+  - Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
+  - Include "collection_gaps" and "next_additions" suggestions
+  - If what-if is advice-only, give advice and keep applyable_changes empty
 
-CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
+  CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
 
-WHAT_IF:
-${whatIfText ? whatIfText : ""}
+  WHAT_IF:
+  ${whatIfText ? whatIfText : ""}
 
-PIPES:
-${JSON.stringify(pipesData, null, 2)}
+  PIPES:
+  ${JSON.stringify(pipesData, null, 2)}
 
-BLENDS:
-${JSON.stringify(blendsData, null, 2)}
+  BLENDS:
+  ${JSON.stringify(blendsData, null, 2)}
 
-USER_PREFERENCES:
-${JSON.stringify(profileContext, null, 2)}
+  USER_PREFERENCES:
+  ${JSON.stringify(profileContext, null, 2)}
 
-Return JSON:
-{
+  Return JSON:
+  {
   summary: string,
   applyable_changes: [{ pipe_id, bowl_variant_id, before_focus: string[], after_focus: string[], rationale: string }],
   collection_gaps: string[],
   next_additions: string[],
   notes: string
-}`,
+  }`,
     response_json_schema: {
       type: "object",
+      required: ["applyable_changes", "summary"],
       properties: {
         summary: { type: "string" },
         applyable_changes: {
           type: "array",
           items: {
             type: "object",
+            required: ["pipe_id", "before_focus", "after_focus", "rationale"],
             properties: {
               pipe_id: { type: "string" },
               bowl_variant_id: { type: ["string", "null"] },
@@ -402,16 +404,18 @@ Return JSON:
               after_focus: { type: "array", items: { type: "string" } },
               rationale: { type: "string" },
             },
-            required: ["pipe_id", "bowl_variant_id", "before_focus", "after_focus", "rationale"],
           },
         },
         collection_gaps: { type: "array", items: { type: "string" } },
         next_additions: { type: "array", items: { type: "string" } },
-        notes: { type: "string" },
       },
-      required: ["summary", "applyable_changes", "collection_gaps", "next_additions", "notes"],
     }
   });
+
+  // Hard guard: ensure applyable_changes are returned
+  if (!result?.applyable_changes?.length) {
+    throw new Error("Optimization returned no applyable changes.");
+  }
 
   return result;
 }
