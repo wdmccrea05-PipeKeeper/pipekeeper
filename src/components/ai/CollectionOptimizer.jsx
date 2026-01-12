@@ -2394,10 +2394,10 @@ Provide concrete, actionable steps with specific field values.`,
                       </div>
 
           <div className="text-center pt-2 text-xs text-stone-500">
-            {savedOptimization?.generated_date && (
-              <p>Last updated: {new Date(savedOptimization.generated_date).toLocaleDateString()}</p>
-            )}
-          </div>
+              {optimization?.generated_date && (
+                <p>Last updated: {new Date(optimization.generated_date).toLocaleDateString()}</p>
+              )}
+            </div>
         </CardContent>
       )}
     </Card>
