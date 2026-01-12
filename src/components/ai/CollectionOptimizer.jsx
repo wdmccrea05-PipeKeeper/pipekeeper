@@ -88,8 +88,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   );
 
   const isStale = React.useMemo(() => 
-    !!savedOptimization && (!savedOptimization.input_fingerprint || savedOptimization.input_fingerprint !== currentFingerprint),
-    [savedOptimization, currentFingerprint]
+    !!optimization && (!optimization.input_fingerprint || optimization.input_fingerprint !== currentFingerprint),
+    [optimization, currentFingerprint]
   );
 
   // Show regen dialog when stale
