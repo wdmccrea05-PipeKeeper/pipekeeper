@@ -146,7 +146,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
       // Build interchangeable bowls description
       const interchangeableBowlsText = pipe.interchangeable_bowls?.length > 0
         ? `\n\nInterchangeable Bowls:\n${pipe.interchangeable_bowls.map((bowl, idx) => 
-            `Bowl ${idx + 1} (${bowl.name || 'Unnamed'}): Material: ${bowl.bowl_material || 'Unknown'}, Shape: ${bowl.shape || 'Unknown'}, Chamber Volume: ${bowl.chamber_volume || 'Unknown'}, Diameter: ${bowl.bowl_diameter_mm ? bowl.bowl_diameter_mm + 'mm' : 'Unknown'}, Depth: ${bowl.bowl_depth_mm ? bowl.bowl_depth_mm + 'mm' : 'Unknown'}${bowl.notes ? ', Notes: ' + bowl.notes : ''}`
+            `Bowl ${idx + 1} (${bowl.name || 'Unnamed'}): Material: ${bowl.bowl_material || 'Unknown'}, Shape: ${bowl.shape || 'Unknown'}, Chamber Volume: ${bowl.chamber_volume || 'Unknown'}, Bowl Height: ${bowl.bowl_height_mm ? bowl.bowl_height_mm + 'mm' : 'Unknown'}, Bowl Width: ${bowl.bowl_width_mm ? bowl.bowl_width_mm + 'mm' : 'Unknown'}, Chamber Diameter: ${bowl.bowl_diameter_mm ? bowl.bowl_diameter_mm + 'mm' : 'Unknown'}, Chamber Depth: ${bowl.bowl_depth_mm ? bowl.bowl_depth_mm + 'mm' : 'Unknown'}${bowl.notes ? ', Notes: ' + bowl.notes : ''}`
           ).join('\n')}`
         : '';
 
