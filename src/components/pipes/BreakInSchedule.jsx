@@ -50,14 +50,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
     [pipe, currentFingerprint]
   );
 
-  // Only show regen dialog when user hasn't already dismissed it for this fingerprint
-  const [dismissedFingerprint, setDismissedFingerprint] = useState(null);
-
-  useEffect(() => {
-    if (isStale && schedule.length > 0 && currentFingerprint !== dismissedFingerprint) {
-      setShowRegenDialog(true);
-    }
-  }, [isStale, schedule.length, currentFingerprint, dismissedFingerprint]);
+  // Don't auto-show regen dialog - user can manually regenerate if desired
 
   const updatePipeMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipe.id, data, user?.email),
@@ -112,12 +105,11 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
         ].slice(0, 3);
 
         await updatePipeMutation.mutateAsync({ 
-          break_in_schedule: newSchedule,
-          break_in_schedule_history: nextHistory,
-          break_in_schedule_input_fingerprint: currentFingerprint,
-        });
-        setShowRegenDialog(false);
-        setDismissedFingerprint(null);
+           break_in_schedule: newSchedule,
+           break_in_schedule_history: nextHistory,
+           break_in_schedule_input_fingerprint: currentFingerprint,
+         });
+         setShowRegenDialog(false);
       }
     } catch (err) {
       console.error('Error generating schedule:', err);
