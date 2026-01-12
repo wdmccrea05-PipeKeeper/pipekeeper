@@ -516,12 +516,13 @@ User Feedback: ${feedback}
     }
   };
 
-  const toggleChange = (pipeId) => {
-    setSelectedChanges(prev => ({
-      ...prev,
-      [pipeId]: !prev[pipeId]
-    }));
-  };
+const toggleSelectedChange = (pipeId, bowlVariantId = null) => {
+  const k = getPipeVariantKey(pipeId, bowlVariantId);
+  setSelectedChanges(prev => ({
+    ...prev,
+    [k]: !prev[k]
+  }));
+};
 
   const toggleAllChanges = (checked) => {
     const changes = {};
