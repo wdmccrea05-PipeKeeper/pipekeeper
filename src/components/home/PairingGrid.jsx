@@ -331,8 +331,8 @@ Return only a number between 0 and 10 (decimals allowed).`,
         {selectedBlendId && (
           <div className="space-y-2">
             <div className="flex justify-between gap-2 text-sm">
-              <span className="truncate text-stone-700">{selectedBlendName}</span>
-              <span className="text-stone-500 font-medium">
+              <span className="truncate text-black">{selectedBlendName}</span>
+              <span className="text-black font-medium">
                 {selectedBlendScore !== null ? selectedBlendScore : "No score"}
               </span>
             </div>
