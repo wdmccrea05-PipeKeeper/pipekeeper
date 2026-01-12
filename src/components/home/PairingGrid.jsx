@@ -1,563 +1,114 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Download, Grid3X3, Printer, Trophy, RefreshCw, Share2 } from "lucide-react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
-import { generatePairingsAI } from "@/components/utils/aiGenerators";
-import PairingCard from "@/components/home/PairingCard";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
 
-export default function PairingGrid({ pipes, blends }) {
-  const [loading, setLoading] = useState(false);
-  const [showGrid, setShowGrid] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [selectedPairing, setSelectedPairing] = useState(null);
-  const gridRef = useRef(null);
-  const queryClient = useQueryClient();
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
-
-  const { data: savedPairings, refetch: refetchPairings } = useQuery({
-    queryKey: ['saved-pairings', user?.email],
+export default function PairingGrid({ user }) {
+  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
+    queryKey: ["pipes", user?.email],
     queryFn: async () => {
-      // Load active first, fallback to latest
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email, is_active: true },
-        '-created_date',
-        1
-      );
-      if (active?.[0]) return active[0];
-
-      const latest = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email },
-        '-created_date',
-        1
-      );
-      return latest?.[0] || null;
+      const res = await base44.entities.Pipe.list({ filter: { created_by: user?.email } });
+      return res?.data || [];
     },
     enabled: !!user?.email,
   });
 
-  // Don't auto-refresh on mount or navigation - only when user explicitly requests it
-  // The staleness indicator is enough to prompt users when changes have been made
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.email],
+  const { data: artifacts = [], isLoading: artifactsLoading } = useQuery({
+    queryKey: ["ai_artifacts", user?.email],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
+      const res = await base44.entities.AIArtifact.list({ filter: { created_by: user?.email } });
+      return res?.data || [];
     },
     enabled: !!user?.email,
   });
 
-  // Compute fingerprint and check staleness
-  const currentFingerprint = React.useMemo(() => 
-    buildArtifactFingerprint({ pipes, blends, profile: userProfile }),
-    [pipes, blends, userProfile]
-  );
+  const pairingArtifacts = useMemo(() => (artifacts || []).filter((a) => a.type === "pairing_grid"), [artifacts]);
 
-  const isStale = React.useMemo(() => 
-    !!savedPairings && (!savedPairings.input_fingerprint || savedPairings.input_fingerprint !== currentFingerprint),
-    [savedPairings, currentFingerprint]
-  );
-
-  const regeneratePairingsMutation = useMutation({
-    mutationFn: async () => {
-      // Deactivate current
-      if (savedPairings?.id) {
-        await safeUpdate('PairingMatrix', savedPairings.id, { is_active: false }, user?.email);
-      }
-
-      // Generate fresh pairings using shared generator
-      const { pairings: generatedPairings } = await generatePairingsAI({ 
-        pipes, 
-        blends, 
-        profile: userProfile 
+  const pairingsByVariant = useMemo(() => {
+    const map = new Map();
+    pairingArtifacts.forEach((art) => {
+      const list = art?.data?.pairings || [];
+      list.forEach((p) => {
+        const key = getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null);
+        map.set(key, p);
       });
+    });
+    return map;
+  }, [pairingArtifacts]);
 
-      // Create clean new active record
-      return await base44.entities.PairingMatrix.create({
-        created_by: user?.email,
-        is_active: true,
-        previous_active_id: savedPairings?.id ?? null,
-        input_fingerprint: currentFingerprint,
-        pairings: generatedPairings,
-        generated_date: new Date().toISOString(),
-      });
-    },
-    onSuccess: () => {
-      invalidateAIQueries(queryClient, user?.email);
-    },
-  });
+  const pipeVariants = useMemo(() => expandPipesToVariants(pipes, { includeMainWhenBowls: false }), [pipes]);
 
-  const generateGrid = () => {
-    if (!savedPairings) {
-      alert('Please generate pairings from the AI Pairing Recommendations section first');
-      return;
-    }
-    setShowGrid(true);
-  };
+  const rows = useMemo(() => {
+    return pipeVariants.map((pv) => {
+      const key = getPipeVariantKey(pv.id, pv.bowl_variant_id || null);
+      const pipe = pipes.find((p) => p.id === pv.id);
+      const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
+      const pairing = pairingsByVariant.get(key);
 
-  // Calculate compatibility score with weighted formula
-  // Formula: (Preference *.4) + (Focus *.25) + (Dimensions *.15) + (Tobacco *.2) = Grid Score
-  const calculateScore = (pipe, blend) => {
-    // CRITICAL: Aromatic/Non-Aromatic Exclusions
-    const focusList = pipe.focus || [];
-    const hasNonAromaticFocus = focusList.some(f => 
-      f.toLowerCase().includes('non-aromatic') || f.toLowerCase().includes('non aromatic')
+      const focus = Array.isArray(variant?.focus) ? variant.focus : [];
+      const recs = pairing?.recommendations || [];
+
+      return {
+        key,
+        name: variant?.variant_name || pv.variant_name || pv.name,
+        focus,
+        chamber_volume: variant?.chamber_volume,
+        bowl_diameter_mm: variant?.bowl_diameter_mm,
+        bowl_depth_mm: variant?.bowl_depth_mm,
+        recommendations: recs,
+      };
+    });
+  }, [pipeVariants, pipes, pairingsByVariant]);
+
+  if (pipesLoading || artifactsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12 text-stone-600">
+        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+        Loading pairing grid...
+      </div>
     );
-    const hasOnlyAromaticFocus = 
-      focusList.length === 1 && 
-      focusList[0].toLowerCase() === 'aromatic';
-    const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
-    
-    if (hasNonAromaticFocus && isAromaticBlend) return 0;
-    if (hasOnlyAromaticFocus && !isAromaticBlend) return 0;
-    
-    // CATEGORY 1: User Preferences (0-10 scale, weight 0.4)
-    let prefScore = 5.0; // Base compatibility
-    if (userProfile) {
-      if (userProfile.preferred_blend_types?.includes(blend.blend_type)) {
-        prefScore += 4.0; // Strong preference match
-      }
-      if (userProfile.strength_preference !== 'No Preference' && 
-          blend.strength === userProfile.strength_preference) {
-        prefScore += 1.0;
-      }
-    }
-    prefScore = Math.min(10, prefScore);
-    
-    // CATEGORY 2: Pipe Focus/Specialization (0-10 scale, weight 0.25, TROPHY FACTOR)
-    let focusScore = 5.0; // Base versatility score
-    let trophyBonus = 0; // Extra bonus to guarantee trophy status
-    
-    if (focusList.length > 0) {
-      const focusLower = focusList.map(f => f.toLowerCase());
-      const blendTypeLower = blend.blend_type?.toLowerCase() || '';
-      const blendNameLower = blend.name?.toLowerCase() || '';
-      const blendManufacturerLower = blend.manufacturer?.toLowerCase() || '';
-      const blendComponents = blend.tobacco_components || [];
-      
-      // Check for exact blend name match (HIGHEST priority - specific blend assignment)
-      const exactNameMatch = focusLower.some(f => {
-        if (f === blendNameLower || blendNameLower.includes(f) || f.includes(blendNameLower)) {
-          return true;
-        }
-        const fullName = `${blendManufacturerLower} ${blendNameLower}`.trim();
-        if (f === fullName || fullName.includes(f) || f.includes(fullName)) {
-          return true;
-        }
-        return false;
-      });
-      
-      // Check for blend type match
-      const exactTypeMatch = focusLower.some(f => 
-        f === blendTypeLower || blendTypeLower.includes(f) || f.includes(blendTypeLower)
-      );
-      
-      // Check for component match
-      const componentMatch = focusList.some(f => {
-        const focusLower = f.toLowerCase();
-        return blendComponents.some(comp => {
-          const compLower = comp.toLowerCase();
-          return compLower === focusLower || compLower.includes(focusLower) || focusLower.includes(compLower);
-        });
-      });
-      
-      if (exactNameMatch) {
-        // PERFECT TROPHY MATCH: Pipe specifically assigned to this exact blend
-        focusScore = 10.0; // Maximum focus score
-        trophyBonus = 2.0; // Guarantee trophy status with bonus points
-      } else if (exactTypeMatch) {
-        // Strong match on blend type
-        if (focusList.length === 1) {
-          focusScore = 10.0; // Single specialist = trophy
-          trophyBonus = 1.5; // Strong trophy bonus
-        } else if (focusList.length === 2) {
-          focusScore = 9.0;
-          trophyBonus = 1.0;
-        } else {
-          focusScore = 8.0;
-          trophyBonus = 0.5;
-        }
-      } else if (componentMatch) {
-        // Partial match on tobacco components
-        focusScore = 6.0;
-      } else {
-        // NO MATCH on specialized pipe = significant penalty
-        if (focusList.length === 1) focusScore = 0.0; // Wrong blend for specialist
-        else if (focusList.length === 2) focusScore = 1.0;
-        else focusScore = 3.0;
-      }
-    }
-    
-    // CATEGORY 3: Pipe Dimensions (0-10 scale, weight 0.15)
-    let dimensionScore = 5.0; // Base dimension score
-    
-    // Chamber size vs blend strength
-    if (pipe.chamber_volume && blend.strength) {
-      if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild') ||
-          (pipe.chamber_volume === 'Medium' && blend.strength === 'Medium') ||
-          (pipe.chamber_volume === 'Large' && (blend.strength === 'Full' || blend.strength === 'Medium-Full'))) {
-        dimensionScore += 5.0; // Perfect match
-      } else if ((pipe.chamber_volume === 'Small' && blend.strength === 'Mild-Medium') ||
-                 (pipe.chamber_volume === 'Medium' && (blend.strength === 'Mild-Medium' || blend.strength === 'Medium-Full')) ||
-                 (pipe.chamber_volume === 'Large' && blend.strength === 'Medium')) {
-        dimensionScore += 3.0; // Good match
-      } else {
-        dimensionScore += 1.0; // Acceptable
-      }
-    }
-    
-    // Bowl shape and cut compatibility
-    if (pipe.shape === 'Churchwarden' && blend.cut === 'Flake') dimensionScore += 1.0;
-    else if (pipe.shape === 'Billiard' || pipe.shape === 'Apple' || pipe.shape === 'Bulldog') dimensionScore += 0.5;
-    
-    dimensionScore = Math.min(10, dimensionScore);
-    
-    // CATEGORY 4: Tobacco Characteristics (0-10 scale, weight 0.2)
-    let tobaccoScore = 5.0; // Base tobacco score
-    const blendComponents = blend.tobacco_components || [];
-    
-    // Material-blend synergy based on burn characteristics
-    if (pipe.bowl_material === 'Meerschaum') {
-      if (blend.blend_type === 'Virginia' || blendComponents.includes('Virginia')) {
-        tobaccoScore += 5.0; // Cool smoke ideal for delicate Virginias
-      } else if (blend.blend_type === 'Aromatic') {
-        tobaccoScore += 3.0; // Good for aromatics
-      } else {
-        tobaccoScore += 2.0; // Works with most blends
-      }
-    } else if (pipe.bowl_material === 'Briar') {
-      // Briar is versatile - bonus depends on blend characteristics
-      if (blend.blend_type === 'English' || blend.blend_type === 'Balkan' || 
-          blendComponents.includes('Latakia')) {
-        tobaccoScore += 4.0; // Excellent for Latakia blends
-      } else {
-        tobaccoScore += 2.0; // Good universal material
-      }
-    } else if (pipe.bowl_material === 'Corn Cob') {
-      if (blend.blend_type === 'Aromatic') {
-        tobaccoScore += 5.0; // Perfect pairing
-      } else if (blend.blend_type === 'Burley') {
-        tobaccoScore += 3.0; // Traditional combo
-      } else {
-        tobaccoScore += 1.0;
-      }
-    } else {
-      tobaccoScore += 1.0;
-    }
-    
-    // Cut compatibility affects burning
-    if (blend.cut === 'Flake' && pipe.bowl_depth_mm && pipe.bowl_depth_mm > 35) {
-      tobaccoScore += 1.0; // Deep bowls better for flakes
-    }
-    
-    tobaccoScore = Math.min(10, tobaccoScore);
-    
-    // CALCULATE FINAL WEIGHTED SCORE
-    const finalScore = (prefScore * 0.4) + (focusScore * 0.25) + (dimensionScore * 0.15) + (tobaccoScore * 0.2) + trophyBonus;
-    
-    return Math.max(0, Math.min(10, Math.round(finalScore * 2) / 2)); // Allow half points
-  };
-
-  // Get the final score for display - always recalculates based on current pipe data
-  // This ensures scores update when pipes are modified (e.g., focus changes from optimization)
-  const getDisplayScore = (pipe, blend) => {
-    // Always calculate fresh score based on current pipe data
-    // This ensures the grid reflects any changes to pipe focus, profile preferences, etc.
-    return calculateScore(pipe, blend);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleDownload = () => {
-    const gridElement = gridRef.current;
-    if (!gridElement) return;
-
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>Pipe & Tobacco Pairing Grid</title>');
-    printWindow.document.write('<style>');
-    printWindow.document.write(`
-      body { font-family: Arial, sans-serif; padding: 20px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-      th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 11px; }
-      th { background-color: #f3f4f6; font-weight: bold; }
-      .pipe-name { background-color: #fef3c7; font-weight: bold; text-align: left; }
-      .blend-header { background-color: #dbeafe; font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; }
-      .score-high { background-color: #d1fae5; font-weight: bold; }
-      .score-mid { background-color: #bfdbfe; }
-      .score-low { background-color: #fef08a; }
-      .score-poor { background-color: #fecaca; }
-      .score-incompatible { background-color: #fecaca; font-weight: bold; }
-      .trophy-icon { width: 12px; height: 12px; display: inline-block; }
-      h1 { font-size: 24px; margin-bottom: 10px; }
-      .legend { margin-top: 20px; font-size: 12px; }
-      .legend-item { display: inline-block; margin-right: 15px; }
-      .legend-box { display: inline-block; width: 20px; height: 15px; margin-right: 5px; vertical-align: middle; border: 1px solid #ccc; }
-    `);
-    printWindow.document.write('</style></head><body>');
-    printWindow.document.write(gridElement.innerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-  };
-
-  const getScoreClass = (score) => {
-    if (score === 0) return 'bg-red-200 text-red-900'; // Incompatible (aromatic/non-aromatic mismatch)
-    if (score >= 9) return 'bg-emerald-200 text-emerald-900'; // High ratings - green
-    if (score >= 8) return 'bg-emerald-100 text-emerald-800';
-    if (score >= 6) return 'bg-blue-200 text-blue-900'; // Mid-tier - blue
-    if (score >= 5) return 'bg-blue-100 text-blue-800';
-    if (score >= 3) return 'bg-yellow-200 text-yellow-900'; // Lower tier - yellow
-    return 'bg-red-100 text-red-900'; // Very poor
-  };
-
-  if (!savedPairings || pipes.length === 0 || blends.length === 0) {
-    return null;
   }
 
   return (
-    <>
-    <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+    <Card className="border-stone-200">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-emerald-800">
-              <Grid3X3 className="w-5 h-5" />
-              Pairing Reference Grid
-            </CardTitle>
-            <p className="text-sm text-stone-600 mt-2">
-              Quick reference chart showing all pipe and tobacco combinations
-            </p>
-          </div>
-          {!showGrid ? (
-            <Button
-              onClick={generateGrid}
-              className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
-            >
-              <Grid3X3 className="w-4 h-4 mr-2" />
-              Show Grid
-            </Button>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={async () => {
-                  setRefreshing(true);
-                  // Force recalculation by hiding and showing grid
-                  setShowGrid(false);
-                  await refetchPairings();
-                  setTimeout(() => {
-                    setShowGrid(true);
-                    setRefreshing(false);
-                  }, 100);
-                }}
-                variant="outline"
-                size="sm"
-                disabled={refreshing}
-                className="border-emerald-300 text-emerald-700"
-              >
-                <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                size="sm"
-                className="border-emerald-300 text-emerald-700"
-              >
-                <Download className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Download</span>
-              </Button>
-              <Button
-                onClick={handlePrint}
-                variant="outline"
-                size="sm"
-                className="border-emerald-300 text-emerald-700"
-              >
-                <Printer className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Print</span>
-              </Button>
-            </div>
-          )}
-        </div>
+        <CardTitle>Pairing Grid</CardTitle>
+        <CardDescription>Each bowl variant appears as an individual “pipe” in recommendations.</CardDescription>
       </CardHeader>
+      <CardContent className="space-y-3">
+        {rows.length === 0 ? (
+          <div className="text-sm text-stone-600">No pipes found.</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {rows.map((r) => (
+              <div key={r.key} className="border rounded-lg p-3 bg-white">
+                <div className="font-semibold text-stone-800">{r.name}</div>
+                <div className="text-xs text-stone-600 mt-1">
+                  Focus: {r.focus?.length ? r.focus.join(", ") : "—"}
+                </div>
+                <div className="text-xs text-stone-600">
+                  Dim: {r.bowl_diameter_mm ?? "—"}mm × {r.bowl_depth_mm ?? "—"}mm (vol {r.chamber_volume ?? "—"})
+                </div>
 
-      {showGrid && (
-        <CardContent>
-          <div ref={gridRef} className="overflow-x-auto print:overflow-visible">
-            <h1 className="text-xl font-bold text-stone-800 mb-4 hidden print:block">
-              Pipe & Tobacco Pairing Reference Grid
-            </h1>
-            <p className="text-sm text-stone-600 mb-4 hidden print:block">
-              Generated: {new Date().toLocaleDateString()}
-            </p>
-            
-            <table className="min-w-full border border-stone-300">
-              <thead>
-                <tr>
-                  <th className="bg-stone-100 border border-stone-300 p-2 text-left sticky left-0 z-10">
-                    Pipes ↓ / Blends →
-                  </th>
-                  {blends.map((blend, idx) => (
-                    <th 
-                      key={blend.id}
-                      className="bg-blue-100 border border-stone-300 p-1 text-xs min-w-[60px] max-w-[80px]"
-                      style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-                    >
-                      <div className="py-2">
-                        {idx + 1}. {blend.name}
+                <div className="mt-2 text-sm text-stone-700">
+                  {r.recommendations?.length ? (
+                    r.recommendations.slice(0, 6).map((rec, idx) => (
+                      <div key={`${r.key}-${idx}`} className="flex justify-between gap-2">
+                        <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
+                        <span className="text-stone-500">{rec.score ?? "—"}</span>
                       </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pipes.map((pipe, pipeIdx) => {
-                  const pipePairing = savedPairings.pairings.find(p => p.pipe_id === pipe.id);
-                  
-                  return (
-                    <tr key={pipe.id}>
-                      <td className="bg-amber-100 border border-stone-300 p-2 font-semibold text-sm sticky left-0 z-10">
-                        {pipeIdx + 1}. {pipe.name}
-                        {pipe.focus && pipe.focus.length > 0 && (
-                          <div className="text-xs font-normal text-amber-700 mt-0.5">
-                            Focus: {pipe.focus.join(', ')}
-                          </div>
-                        )}
-                      </td>
-                      {blends.map(blend => {
-                        // Always calculate score based on CURRENT pipe data
-                        // This ensures the grid reflects optimization changes, focus updates, etc.
-                        const displayScore = getDisplayScore(pipe, blend);
-                        
-                        // Find best score for this blend across all pipes (using current data)
-                        const allScoresForBlend = pipes.map(p => getDisplayScore(p, blend));
-                        const bestScore = Math.max(...allScoresForBlend);
-                        const isBestPipe = displayScore === bestScore && displayScore >= 8.5;
-                        
-                        // Try to get AI reasoning if available
-                        const match = pipePairing?.blend_matches?.find(m => m.blend_id === blend.id);
-
-                        return (
-                          <td 
-                            key={blend.id}
-                            className={`border border-stone-300 p-2 text-center font-semibold ${
-                              getScoreClass(displayScore)
-                            } cursor-pointer hover:opacity-80`}
-                            title={match?.reasoning || 'Compatibility based on current pipe characteristics and focus'}
-                            onClick={() => {
-                              // Build reasoning that reflects current calculation
-                              let reasoning = match?.reasoning || '';
-                              if (!reasoning) {
-                                reasoning = 'Score based on: ';
-                                const reasons = [];
-                                if (pipe.focus?.length > 0) {
-                                  reasons.push(`pipe focus (${pipe.focus.join(', ')})`);
-                                }
-                                if (userProfile?.preferred_blend_types?.includes(blend.blend_type)) {
-                                  reasons.push('user blend preference');
-                                }
-                                reasons.push('physical compatibility');
-                                reasoning += reasons.join(', ');
-                              }
-                              setSelectedPairing({ pipe, blend, score: displayScore, reasoning });
-                              setShareDialogOpen(true);
-                            }}
-                          >
-                            <div className="flex items-center justify-center gap-1">
-                              {isBestPipe && <Trophy className="w-3 h-3 text-amber-600" />}
-                              <span>{displayScore.toFixed(1)}</span>
-                              <Share2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <div className="mt-6 p-4 bg-stone-50 rounded-lg border border-stone-200 text-xs">
-              <p className="font-semibold mb-2">Legend:</p>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-emerald-200 border border-stone-300"></div>
-                  <span>9-10 Excellent (Green)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-blue-200 border border-stone-300"></div>
-                  <span>6-8 Good (Blue)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-yellow-200 border border-stone-300"></div>
-                  <span>3-5 Average (Yellow)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-6 h-4 bg-red-200 border border-stone-300"></div>
-                  <span>0-2 Poor/Incompatible (Red)</span>
+                    ))
+                  ) : (
+                    <span className="text-stone-500">No recommendations yet.</span>
+                  )}
                 </div>
               </div>
-              <p className="mt-3 text-stone-600">
-                Ratings based on chamber size, bowl characteristics, material compatibility, pipe focus, and traditional pairings.
-                {userProfile && (
-                  <span className="block mt-1 font-medium text-blue-700">
-                    ✨ Scores adjusted based on your smoking profile preferences
-                  </span>
-                )}
-              </p>
-              <p className="mt-2 text-stone-500 italic">
-                Hover over any score to see pairing reasoning
-              </p>
-            </div>
+            ))}
           </div>
-
-          <div className="mt-4 text-center">
-            <Button
-              onClick={() => setShowGrid(false)}
-              variant="outline"
-              size="sm"
-            >
-              Hide Grid
-            </Button>
-          </div>
-        </CardContent>
-      )}
-
-    </Card>
-
-    {/* Share Pairing Dialog */}
-    <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="w-5 h-5" />
-            Share Pairing
-          </DialogTitle>
-        </DialogHeader>
-        {selectedPairing && (
-          <PairingCard
-            pipe={selectedPairing.pipe}
-            blend={selectedPairing.blend}
-            score={selectedPairing.score}
-            reasoning={selectedPairing.reasoning}
-          />
         )}
-      </DialogContent>
-    </Dialog>
-    </>
+      </CardContent>
+    </Card>
   );
 }
