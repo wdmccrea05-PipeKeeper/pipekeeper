@@ -133,7 +133,6 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           <div className="flex-1">
             <div className="text-sm font-semibold text-stone-800">Recommendations for</div>
             <div className="text-xs text-stone-600">{pipe.name}</div>
-            <div className="text-[11px] text-stone-500 mt-1 font-mono">Variant: {variantKey}</div>
           </div>
 
           <div className="flex gap-2 items-start">
