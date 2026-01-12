@@ -748,13 +748,13 @@ async function undoOptimizationApply(batchId) {
       let profileContext = "";
       if (userProfile) {
         profileContext = `\n\nUser Smoking Preferences:
-- Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-- Strength Preference: ${userProfile.strength_preference}`;
+      - Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
+      - Strength Preference: ${userProfile.strength_preference}`;
       }
 
       // Detect question type first (improved detection)
       const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
-      const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match/i.test(whatIfQuery);
+      const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match|which.*pipes|should.*change/i.test(whatIfQuery);
       
       // Treat "buy/purchase" as collection-change intent, not shopping intent
       const mentionsBuying = /should i buy|buy|purchase|acquire|next pipe/i.test(whatIfQuery);
