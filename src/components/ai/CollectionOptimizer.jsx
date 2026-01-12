@@ -443,7 +443,8 @@ User Feedback: ${feedback}
     const changes = {};
     optimization.pipe_specializations?.forEach(spec => {
       if (spec.recommended_blend_types?.length > 0) {
-        changes[spec.pipe_id] = true;
+        const k = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
+        changes[k] = true;
       }
     });
     setSelectedChanges(changes);
@@ -457,7 +458,10 @@ User Feedback: ${feedback}
     try {
       // Apply only selected changes
       const updatePromises = optimization.pipe_specializations
-        .filter(spec => selectedChanges[spec.pipe_id] && spec.recommended_blend_types?.length > 0)
+        .filter(spec => {
+          const k = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
+          return selectedChanges[k] && spec.recommended_blend_types?.length > 0;
+        })
         .map(spec => {
           const pipe = pipes.find(p => p.id === spec.pipe_id);
           if (!pipe) return null;
@@ -1412,9 +1416,11 @@ Provide concrete, actionable steps with specific field values.`,
           <div className="flex items-center gap-2 pb-4 border-b">
             <Checkbox
               id="select-all"
-              checked={optimization?.pipe_specializations?.every(spec => 
-                !spec.recommended_blend_types?.length || selectedChanges[spec.pipe_id]
-              )}
+              checked={optimization?.pipe_specializations?.every(spec => {
+                if (!spec.recommended_blend_types?.length) return true;
+                const k = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
+                return selectedChanges[k];
+              })}
               onCheckedChange={toggleAllChanges}
             />
             <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
@@ -1426,19 +1432,20 @@ Provide concrete, actionable steps with specific field values.`,
             const pipe = pipes.find(p => p.id === spec.pipe_id);
             if (!spec.recommended_blend_types?.length || !pipe) return null;
 
+            const variantKey = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
             const currentFocus = pipe.focus || [];
             const hasChanges = JSON.stringify(currentFocus.sort()) !== JSON.stringify(spec.recommended_blend_types.sort());
 
             return (
-              <div key={spec.pipe_id} className="flex items-start gap-3 p-3 bg-stone-50 rounded-lg border">
+              <div key={variantKey} className="flex items-start gap-3 p-3 bg-stone-50 rounded-lg border">
                 <Checkbox
-                  id={`change-${spec.pipe_id}`}
-                  checked={selectedChanges[spec.pipe_id] || false}
-                  onCheckedChange={() => toggleChange(spec.pipe_id)}
+                  id={`change-${variantKey}`}
+                  checked={selectedChanges[variantKey] || false}
+                  onCheckedChange={() => toggleSelectedChange(spec.pipe_id, spec.bowl_variant_id || null)}
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <label htmlFor={`change-${spec.pipe_id}`} className="cursor-pointer">
+                  <label htmlFor={`change-${variantKey}`} className="cursor-pointer">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-semibold text-stone-800">{spec.pipe_name}</h4>
                       {!hasChanges && (
