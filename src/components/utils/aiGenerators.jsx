@@ -114,7 +114,9 @@ RATING SCALE:
 - 3-4 = Suboptimal (conflicts with focus or preferences)
 - 0-2 = Poor/Incompatible (violates focus rules or strong conflicts)
 
-CRITICAL: Prioritize pipe specialization above all else. A pipe designated for English blends should score 9-10 for English blends and much lower for others, regardless of physical characteristics.`,
+CRITICAL: Prioritize pipe specialization above all else. A pipe designated for English blends should score 9-10 for English blends and much lower for others, regardless of physical characteristics.
+
+OUTPUT FORMAT: Return an array of pairings where EACH pairing object represents ONE pipe/bowl configuration with its top tobacco recommendations. Use "recommendations" (not "blend_matches") for the tobacco list.`,
     response_json_schema: {
       type: "object",
       properties: {
