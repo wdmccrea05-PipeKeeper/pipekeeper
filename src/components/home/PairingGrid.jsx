@@ -106,10 +106,15 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         profile,
         user,
         queryClient,
-        activePairings
+        activePairings,
+        mode: "merge"
       });
+      // Wait a brief moment for query cache to settle, then refetch
+      await new Promise(r => setTimeout(r, 500));
+      await queryClient.refetchQueries({ queryKey: ["activePairings", user?.email] });
       toast.success("Pairings regenerated successfully");
     } catch (error) {
+      console.error('Regeneration error:', error);
       toast.error("Failed to regenerate pairings");
     } finally {
       setRegenerating(false);

@@ -48,13 +48,18 @@ export async function regeneratePairings({
     const existing = activePairings?.pairings || [];
 
     // Build a set of (pipe_id, bowl_variant_id) keys coming from the new run
+    // Normalize: treat null and "main" identically for matching purposes
     const newKeys = new Set(
-      newPairings.map((p) => `${String(p.pipe_id)}::${p.bowl_variant_id ?? "main"}`)
+      newPairings.map((p) => {
+        const normalizedBowlId = (!p.bowl_variant_id || p.bowl_variant_id === "main") ? null : p.bowl_variant_id;
+        return `${String(p.pipe_id)}::${normalizedBowlId}`;
+      })
     );
 
     // Keep all existing pairings except the ones we regenerated
     const merged = existing.filter((p) => {
-      const key = `${String(p.pipe_id)}::${p.bowl_variant_id ?? "main"}`;
+      const normalizedBowlId = (!p.bowl_variant_id || p.bowl_variant_id === "main") ? null : p.bowl_variant_id;
+      const key = `${String(p.pipe_id)}::${normalizedBowlId}`;
       return !newKeys.has(key);
     });
 
