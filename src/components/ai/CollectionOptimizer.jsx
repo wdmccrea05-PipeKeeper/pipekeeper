@@ -90,12 +90,13 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     [optimization, currentFingerprint]
   );
 
-  // Show regen dialog when stale
+  // Show regen dialog when stale (only once until user interacts)
+  const [staleDismissedId, setStaleDismissedId] = React.useState(null);
   useEffect(() => {
-    if (isStale && optimization) {
+    if (isStale && optimization && staleDismissedId !== optimization.id) {
       setShowRegenDialog(true);
     }
-  }, [isStale, optimization]);
+  }, [isStale, optimization, staleDismissedId]);
 
   useEffect(() => {
     if (activeOpt?.id) setOptimization(activeOpt);
