@@ -23,7 +23,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             </TabsTrigger>
             <TabsTrigger value="reference" className="flex items-center gap-2">
               <Grid3x3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Reference</span>
+              <span className="hidden sm:inline">Pairing Grid</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
