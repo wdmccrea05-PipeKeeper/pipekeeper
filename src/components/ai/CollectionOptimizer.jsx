@@ -524,15 +524,16 @@ const toggleSelectedChange = (pipeId, bowlVariantId = null) => {
   }));
 };
 
-  const toggleAllChanges = (checked) => {
-    const changes = {};
-    optimization.pipe_specializations?.forEach(spec => {
-      if (spec.recommended_blend_types?.length > 0) {
-        changes[spec.pipe_id] = checked;
-      }
-    });
-    setSelectedChanges(changes);
-  };
+const toggleAllChanges = (checked) => {
+  const changes = {};
+  optimization.pipe_specializations?.forEach(spec => {
+    if (spec.recommended_blend_types?.length > 0) {
+      const k = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
+      changes[k] = checked;
+    }
+  });
+  setSelectedChanges(changes);
+};
 
   const applySpecialization = async (pipeId, focus, bowlVariantId = null) => {
     const pipe = pipes.find(p => p.id === pipeId);
