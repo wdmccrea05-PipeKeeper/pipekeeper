@@ -2,61 +2,59 @@ import { base44 } from "@/api/base44Client";
 
 // === Hard Rules Enforcement ===
 
-function normalizeType(s) {
-  return String(s || "").toLowerCase();
+function norm(s) {
+  return String(s || "").trim().toLowerCase();
 }
 
-function isAromaticBlend(blend) {
-  const t = normalizeType(blend?.blend_type);
-  if (t.includes("aromatic")) return true;
-
-  const notes = normalizeType(blend?.flavor_notes);
-  if (notes && notes.includes("aromatic")) return true;
-
-  return false;
+function classifyBlend(blendType) {
+  const t = norm(blendType);
+  if (!t) return "UNKNOWN";
+  if (t.includes("aromatic")) return "AROMATIC";
+  return "NON_AROMATIC";
 }
 
-function hasNonAromaticFocus(focusArr) {
-  return (focusArr || []).some((f) => {
-    const norm = normalizeType(f);
-    return norm.includes("non-aromatic") || norm.includes("non aromatic");
-  });
+// Decide pipe "mode" from focus list based on actual taxonomy
+function classifyPipeMode(focusArr) {
+  const f = (Array.isArray(focusArr) ? focusArr : []).map(norm);
+
+  const hasAromatic =
+    f.some((x) => x === "aromatic" || x.includes("aromatic")) ||
+    f.some((x) => x.includes("english aromatic"));
+
+  const hasNonAromatic =
+    f.some((x) => x === "non-aromatic" || x === "non aromatic" || x.includes("non-aromatic")) ||
+    f.some((x) => ["english", "balkan", "latakia", "virginia", "va/per", "vaper", "perique", "burley", "oriental"].includes(x));
+
+  // If user explicitly sets Aromatic, treat as Aromatic-only
+  if (hasAromatic && !hasNonAromatic) return "AROMATIC_ONLY";
+
+  // If user explicitly sets Non-Aromatic OR any classic non-aromatic focus tags, treat as Non-Aromatic-only
+  if (hasNonAromatic && !hasAromatic) return "NON_AROMATIC_ONLY";
+
+  // If both appear, treat as mixed (no category filtering)
+  if (hasAromatic && hasNonAromatic) return "MIXED";
+
+  // If nothing conclusive, don't filter
+  return "MIXED";
 }
 
-function hasAromaticOnlyFocus(focusArr) {
-  return (focusArr || []).some((f) => {
-    const norm = normalizeType(f);
-    return norm.includes("aromatic") && !norm.includes("non");
-  });
+function parseAromaticIntensityFromFocus(focusArr) {
+  const f = (Array.isArray(focusArr) ? focusArr : []).map(norm);
+
+  // Explicit intensity
+  if (f.some((x) => x.includes("heavy aromat") || x === "heavy")) return "HEAVY";
+  if (f.some((x) => x.includes("light aromat") || x === "light")) return "LIGHT";
+
+  // If they use generic "Aromatics", interpret as medium preference (but don't hard-zero)
+  if (f.some((x) => x === "aromatics" || x.includes("aromatic"))) return "MEDIUM";
+
+  return null;
 }
 
-export function enforceHardPairingRules(pairings, blends) {
-  const blendById = new Map((blends || []).map((b) => [String(b.id), b]));
-
-  return (pairings || []).map((p) => {
-    const focus = Array.isArray(p.focus) ? p.focus : [];
-    const nonAro = hasNonAromaticFocus(focus);
-    const aroOnly = hasAromaticOnlyFocus(focus);
-
-    if (!p.recommendations) return p;
-
-    const updatedRecs = p.recommendations.map((r) => {
-      const blend = blendById.get(String(r.tobacco_id)) || blendById.get(String(r.blend_id)) || null;
-      const isAro = blend ? isAromaticBlend(blend) : normalizeType(r.tobacco_name).includes("aromatic");
-
-      // Enforce constraints
-      if (nonAro && isAro) {
-        return { ...r, score: 0, reasoning: `${r.reasoning} (Hard rule: non-aromatic pipe → aromatic scored 0)` };
-      }
-      if (aroOnly && !isAro) {
-        return { ...r, score: 0, reasoning: `${r.reasoning} (Hard rule: aromatic-only pipe → non-aromatic scored 0)` };
-      }
-
-      return r;
-    });
-
-    return { ...p, recommendations: updatedRecs };
-  });
+function clampScore(n, min = 0, max = 10) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return min;
+  return Math.max(min, Math.min(max, x));
 }
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
