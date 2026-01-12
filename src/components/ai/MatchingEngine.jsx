@@ -196,7 +196,7 @@ export default function MatchingEngine({ user }) {
     );
   }
 
-  if (!pipes?.length) {
+  if (!pipesLoading && !pipes?.length) {
     return (
       <Card className="border-stone-200">
         <CardContent className="py-12 text-center text-stone-600">
