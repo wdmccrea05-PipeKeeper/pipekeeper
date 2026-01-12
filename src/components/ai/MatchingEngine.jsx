@@ -23,8 +23,7 @@ export default function MatchingEngine({ user }) {
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
     queryFn: async () => {
-      const res = await base44.entities.Pipe.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
+      return await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500) || [];
     },
     enabled: !!user?.email,
   });
@@ -32,8 +31,7 @@ export default function MatchingEngine({ user }) {
   const { data: tobaccos = [], isLoading: tobaccosLoading } = useQuery({
     queryKey: ["tobaccos", user?.email],
     queryFn: async () => {
-      const res = await base44.entities.Tobacco.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
+      return await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, "-updated_date", 500) || [];
     },
     enabled: !!user?.email,
   });
@@ -95,20 +93,19 @@ export default function MatchingEngine({ user }) {
     };
   }, [activePipe, activeBowlVariantId]);
 
-  // Fetch AI artifacts (pairings, optimization, what-if, etc.) – keyed by pipe + bowl variant where present
-  const { data: aiArtifacts = [], isLoading: artifactsLoading } = useQuery({
-    queryKey: ["ai_artifacts", user?.email],
+  // Fetch pairing matrix data
+  const { data: pairingMatrix = [], isLoading: artifactsLoading } = useQuery({
+    queryKey: ["saved-pairings", user?.email],
     queryFn: async () => {
-      const res = await base44.entities.AIArtifact.list({ filter: { created_by: user?.email } });
-      return res?.data || [];
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user?.email, is_active: true },
+        "-created_date",
+        1
+      );
+      return active || [];
     },
     enabled: !!user?.email,
   });
-
-  const pairingArtifacts = useMemo(() => {
-    const list = aiArtifacts?.filter((a) => a.type === "pairing_grid") || [];
-    return list;
-  }, [aiArtifacts]);
 
   const currentVariantKey = useMemo(
     () => (activeVariant ? getPipeVariantKey(activeVariant.pipe_id, activeVariant.bowl_variant_id || null) : null),
@@ -117,17 +114,13 @@ export default function MatchingEngine({ user }) {
 
   const currentPairing = useMemo(() => {
     if (!activeVariant) return null;
-    // find most relevant pairing artifact entry for this variant
-    // artifacts may store: pipe_id + bowl_variant_id inside artifact.data.pairings
-    for (const art of pairingArtifacts) {
-      const pairings = art?.data?.pairings || [];
-      const hit = pairings.find(
-        (p) => p.pipe_id === activeVariant.pipe_id && (p.bowl_variant_id || null) === (activeVariant.bowl_variant_id || null)
-      );
-      if (hit) return hit;
-    }
-    return null;
-  }, [pairingArtifacts, activeVariant]);
+    // find pairing entry for this variant from PairingMatrix
+    const activePairings = pairingMatrix?.[0]?.pairings || [];
+    const hit = activePairings.find(
+      (p) => p.pipe_id === activeVariant.pipe_id && (p.bowl_variant_id || null) === (activeVariant.bowl_variant_id || null)
+    );
+    return hit || null;
+  }, [pairingMatrix, activeVariant]);
 
   const bowlOptions = useMemo(() => {
     if (!activePipe) return [];

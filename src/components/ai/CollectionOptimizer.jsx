@@ -236,13 +236,46 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
       };
 
       const oldResult = result;
+      const pipesData2 = [];
+      for (const p of pipes || []) {
+        if (p.interchangeable_bowls?.length > 0) {
+          p.interchangeable_bowls.forEach((bowl, idx) => {
+            pipesData2.push({
+              id: p.id,
+              bowl_variant_id: `bowl_${idx}`,
+              name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
+              maker: p.maker,
+              shape: bowl.shape || p.shape,
+              bowl_material: bowl.bowl_material || p.bowl_material,
+              chamber_volume: bowl.chamber_volume || p.chamber_volume,
+              bowl_diameter_mm: bowl.bowl_diameter_mm || p.bowl_diameter_mm,
+              bowl_depth_mm: bowl.bowl_depth_mm || p.bowl_depth_mm,
+              focus: bowl.focus || [],
+            });
+          });
+        } else {
+          pipesData2.push({
+            id: p.id,
+            bowl_variant_id: null,
+            name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            bowl_material: p.bowl_material,
+            focus: p.focus || [],
+            chamber_volume: p.chamber_volume,
+            bowl_diameter_mm: p.bowl_diameter_mm,
+            bowl_depth_mm: p.bowl_depth_mm,
+          });
+        }
+      }
+
       const result2 = await base44.integrations.Core.InvokeLLM({
         prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
 You are an expert pipe tobacco consultant specializing in collection optimization for MAXIMUM PAIRING SCORES. Your goal is to help achieve 9-10 "trophy winning" pairings for every blend type the user enjoys.
 
 Pipes Collection:
-${JSON.stringify(pipesData, null, 2)}
+${JSON.stringify(pipesData2, null, 2)}
 
 INTERCHANGEABLE BOWLS OPTIMIZATION:
 For pipes with interchangeable_bowls, consider each bowl variant as a separate scoring opportunity. Different bowl materials, sizes, and shapes within the same pipe system should be optimized for different blend types to maximize trophy pairings.
