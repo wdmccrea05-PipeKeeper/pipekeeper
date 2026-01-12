@@ -73,12 +73,16 @@ CRITICAL CONSTRAINT: You MUST ONLY recommend blends from the user's collection l
 Pipes:
 ${JSON.stringify(pipesData, null, 2)}
 
-CRITICAL: Each entry in the pipes list may represent a different bowl variant of the same pipe. Score each separately based on its unique characteristics (material, size, shape, focus).
+CRITICAL: Each entry in the pipes list may represent a different bowl variant of the same pipe system. Each entry has a 'bowl_variant_id' field:
+- If bowl_variant_id is null: This is the main/original bowl
+- If bowl_variant_id has a value (e.g., "bowl_0", "bowl_1"): This is an interchangeable bowl variant
+
+YOU MUST return the EXACT pipe_id, pipe_name, and bowl_variant_id for each entry in your response. Score each bowl variant separately based on its unique characteristics (material, size, shape, focus).
 
 Tobacco Blends in User's Collection (ONLY recommend from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-For each pipe/bowl entry, evaluate which tobacco blends FROM THE USER'S COLLECTION would pair well with THAT SPECIFIC BOWL CONFIGURATION.
+For each pipe/bowl entry in the list, evaluate which tobacco blends FROM THE USER'S COLLECTION pair well with THAT SPECIFIC BOWL CONFIGURATION. Return one pairing entry per pipe/bowl with the matching bowl_variant_id.
 
 CRITICAL SCORING PRIORITY ORDER (HIGHEST TO LOWEST):
 
@@ -121,7 +125,7 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
             properties: {
               pipe_id: { type: "string" },
               pipe_name: { type: "string" },
-              bowl_variant_id: { type: "string" },
+              bowl_variant_id: { type: ["string", "null"] },
               blend_matches: {
                 type: "array",
                 items: {
