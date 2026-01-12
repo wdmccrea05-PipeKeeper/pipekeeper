@@ -1,14 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
+import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 
 export default function PairingMatrix({ user }) {
   const [expanded, setExpanded] = useState({});
+  const [regenerating, setRegenerating] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -30,6 +34,42 @@ export default function PairingMatrix({ user }) {
     },
     enabled: !!user?.email,
   });
+
+  const { data: blends = [] } = useQuery({
+    queryKey: ["blends", user?.email],
+    queryFn: async () => {
+      return await base44.entities.TobaccoBlend.filter({ created_by: user?.email }) || [];
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile", user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles[0];
+    },
+    enabled: !!user?.email,
+  });
+
+  const regenPairings = async () => {
+    setRegenerating(true);
+    try {
+      await regeneratePairings({
+        pipes,
+        blends,
+        profile: userProfile,
+        user,
+        queryClient,
+        activePairings: pairingMatrix[0]?.pairings || []
+      });
+      toast.success("Pairings regenerated successfully");
+    } catch (error) {
+      toast.error("Failed to regenerate pairings");
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   const pairings = useMemo(() => {
     const activePairings = pairingMatrix?.[0]?.pairings || [];
@@ -80,9 +120,24 @@ export default function PairingMatrix({ user }) {
         <CardDescription>Interchangeable bowls are shown as distinct pipe variants.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {pairings.length === 0 ? (
-          <div className="text-sm text-stone-600">No pairing grid data yet.</div>
-        ) : (
+         {pairings.length === 0 ? (
+           <div className="flex flex-col items-center justify-center py-8 text-center">
+             <p className="text-sm text-stone-600 mb-4">No pairing grid data yet.</p>
+             <Button 
+               onClick={regenPairings} 
+               disabled={regenerating}
+               className="mb-4"
+             >
+               {regenerating ? (
+                 <Loader2 className="h-3 w-3 animate-spin mr-2" />
+               ) : (
+                 <RefreshCw className="h-3 w-3 mr-2" />
+               )}
+               Generate Pairings
+             </Button>
+             <p className="text-xs text-stone-500">Generate AI recommendations, then visit <strong>PairingGrid</strong> to see results.</p>
+           </div>
+         ) : (
           pairings.map((p) => {
             const key = p.__variant_key;
             const isOpen = !!expanded[key];
