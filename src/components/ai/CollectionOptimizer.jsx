@@ -1,3 +1,4 @@
+import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -566,39 +567,70 @@ User Feedback: ${feedback}
   };
 
   // Apply optimization changes with undo support
-  async function applyOptimizationChangesWithUndo(applyableChanges) {
-    if (!Array.isArray(applyableChanges) || applyableChanges.length === 0) return;
+async function applyOptimizationChangesWithUndo(applyableChanges) {
+  if (!Array.isArray(applyableChanges) || applyableChanges.length === 0) return;
 
-    const pipeMap = new Map((pipes || []).map((p) => [p.id, p]));
-    const pipe_changes = applyableChanges
-      .map((c) => {
-        const p = pipeMap.get(c.pipe_id);
-        if (!p) return null;
-        return {
-          pipe_id: c.pipe_id,
-          before: { focus: Array.isArray(p.focus) ? p.focus : [] },
-          after: { focus: Array.isArray(c.recommended_blend_types) ? c.recommended_blend_types : [] },
-          rationale: c.reasoning || "",
+  const pipeMap = new Map((pipes || []).map((p) => [p.id, p]));
+
+  const pipe_changes = applyableChanges
+    .map((c) => {
+      const p = pipeMap.get(c.pipe_id);
+      if (!p) return null;
+
+      const isBowl = !!c.bowl_variant_id;
+      let beforeFocus = Array.isArray(p.focus) ? p.focus : [];
+
+      if (isBowl && Array.isArray(p.interchangeable_bowls)) {
+        const idx = parseInt(String(c.bowl_variant_id).replace("bowl_", ""), 10);
+        const bowl = Number.isFinite(idx) ? p.interchangeable_bowls[idx] : null;
+        if (bowl) beforeFocus = Array.isArray(bowl.focus) ? bowl.focus : [];
+      }
+
+      return {
+        pipe_id: c.pipe_id,
+        bowl_variant_id: c.bowl_variant_id || null,
+        before: { focus: beforeFocus },
+        after: { focus: Array.isArray(c.recommended_blend_types) ? c.recommended_blend_types : [] },
+        rationale: c.reasoning || "",
+      };
+    })
+    .filter(Boolean);
+
+  if (pipe_changes.length === 0) return;
+
+  // Save a batch for undo
+  const batch = await base44.entities.AIApplyBatch.create({
+    created_by: user?.email,
+    type: "optimization_focus_apply",
+    created_at: new Date().toISOString(),
+    pipe_changes,
+  });
+
+  // Apply changes to pipe or bowl
+  for (const ch of pipe_changes) {
+    const p = pipeMap.get(ch.pipe_id);
+    if (!p) continue;
+
+    if (ch.bowl_variant_id) {
+      const idx = parseInt(String(ch.bowl_variant_id).replace("bowl_", ""), 10);
+      const bowls = Array.isArray(p.interchangeable_bowls) ? [...p.interchangeable_bowls] : [];
+      if (Number.isFinite(idx) && bowls[idx]) {
+        bowls[idx] = {
+          ...bowls[idx],
+          focus: ch.after.focus,
         };
-      })
-      .filter(Boolean);
-
-    if (pipe_changes.length === 0) return;
-
-    const batch = await base44.entities.OptimizationApplyBatch.create({
-      created_by: user?.email,
-      pipe_changes,
-    });
-
-    for (const ch of pipe_changes) {
-      await safeUpdate('Pipe', ch.pipe_id, { focus: ch.after.focus }, user?.email);
+        await safeUpdate("Pipe", ch.pipe_id, { interchangeable_bowls: bowls }, user?.email);
+      }
+    } else {
+      await safeUpdate("Pipe", ch.pipe_id, { focus: ch.after.focus }, user?.email);
     }
-
-    invalidatePipeQueries(queryClient, user?.email);
-    invalidateAIQueries(queryClient, user?.email);
-
-    return batch;
   }
+
+  invalidatePipeQueries(queryClient, user?.email);
+  invalidateAIQueries(queryClient, user?.email);
+
+  return batch;
+}
 
   async function undoOptimizationApply(batchId) {
     if (!batchId) return;
