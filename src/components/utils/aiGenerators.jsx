@@ -57,6 +57,30 @@ function clampScore(n, min = 0, max = 10) {
   return Math.max(min, Math.min(max, x));
 }
 
+function deriveFocusCategory(focus) {
+  const f = (focus || []).map(x => norm(x));
+  
+  // Explicit aromatic signals
+  const aroSignals = ["aromatic", "aromatics", "light aromatics", "medium aromatics", "heavy aromatics", "english aromatic"];
+  const hasAro = aroSignals.some(s => f.some(fx => fx === s || fx.includes(s)));
+  
+  // Classic non-aromatic signals
+  const nonAroSignals = ["english", "balkan", "latakia", "virginia", "va/per", "vaper", "perique", "burley", "oriental", "kentucky"];
+  const hasNonAro = nonAroSignals.some(s => f.includes(s));
+  
+  // If explicit aromatic and no non-aromatic: AROMATIC_ONLY
+  if (hasAro && !hasNonAro) return "AROMATIC_ONLY";
+  
+  // If non-aromatic signals exist (with or without generic aromatic): NON_AROMATIC_ONLY
+  if (hasNonAro) return "NON_AROMATIC_ONLY";
+  
+  // If aromatic but no hard signals: still aromatic
+  if (hasAro) return "AROMATIC_ONLY";
+  
+  // Default: no restriction
+  return "MIXED";
+}
+
 export async function generatePairingsAI({ pipes, blends, profile }) {
   // Expand pipes to include bowl variants as separate entries
   // IMPORTANT: Use pipe_id / pipe_name in the input so the LLM can echo them back correctly.
@@ -159,7 +183,7 @@ CRITICAL CONSTRAINTS:
 3) Return ONE pairing object PER pipe entry (so total pairings === number of pipe entries).
 
 PIPES (each entry is a distinct pipe variant):
-${JSON.stringify(pipesData, null, 2)}
+${JSON.stringify(pipesData.map(p => ({ ...p, focus_category: deriveFocusCategory(p.focus) })), null, 2)}
 
 TOBACCOS (ONLY choose from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
@@ -167,27 +191,27 @@ ${JSON.stringify(blendsData, null, 2)}${profileContext}
 SCORING ALGORITHM (APPLY IN THIS EXACT ORDER):
 
 STEP 1: CATEGORY FILTERING
-If pipe.focus contains "Aromatic":
+If pipe.focus_category == "AROMATIC_ONLY":
   - Set all NON_AROMATIC blends score to 0 immediately.
-  - Skip all other blends (only score AROMATIC blends).
-Else if pipe.focus contains "Non-Aromatic":
+  - Only score AROMATIC blends.
+Else if pipe.focus_category == "NON_AROMATIC_ONLY":
   - Set all AROMATIC blends score to 0 immediately.
-  - Skip all other blends (only score NON_AROMATIC blends).
-Else:
+  - Only score NON_AROMATIC blends.
+Else (MIXED):
   - All blends eligible for scoring.
 
-STEP 2: AROMATIC INTENSITY FILTERING (for AROMATIC blends only)
-If pipe.focus contains "Heavy Aromatics" or "Heavy":
+STEP 2: AROMATIC INTENSITY FILTERING (for AROMATIC blends only, if focus specifies intensity)
+If pipe.focus contains "Heavy Aromatics":
   - For aromatic_intensity == "Heavy": continue to Step 3.
   - For aromatic_intensity == "Light" or "Medium": force score to 0.
-Else if pipe.focus contains "Light Aromatics" or "Light":
+Else if pipe.focus contains "Light Aromatics":
   - For aromatic_intensity == "Light": continue to Step 3.
   - For aromatic_intensity == "Medium" or "Heavy": force score to 0.
-Else if pipe.focus contains "Medium Aromatics" or "Aromatics" (but not "Light" or "Heavy"):
-  - For aromatic_intensity == "Medium": continue to Step 3 with score 8–9.
+Else if pipe.focus contains "Medium Aromatics":
+  - For aromatic_intensity == "Medium": continue to Step 3 with base score 8–9.
   - For aromatic_intensity == "Light": continue to Step 3 with max score 5.
   - For aromatic_intensity == "Heavy": continue to Step 3 with max score 5.
-Else:
+Else (no explicit intensity):
   - All aromatic intensities eligible (no intensity restriction).
 
 STEP 3: EXACT NAME MATCH
