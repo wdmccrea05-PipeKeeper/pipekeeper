@@ -143,6 +143,13 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
   const getRecommendations = async () => {
     setLoading(true);
     try {
+      // Build interchangeable bowls description
+      const interchangeableBowlsText = pipe.interchangeable_bowls?.length > 0
+        ? `\n\nInterchangeable Bowls:\n${pipe.interchangeable_bowls.map((bowl, idx) => 
+            `Bowl ${idx + 1} (${bowl.name || 'Unnamed'}): Material: ${bowl.bowl_material || 'Unknown'}, Shape: ${bowl.shape || 'Unknown'}, Chamber Volume: ${bowl.chamber_volume || 'Unknown'}, Diameter: ${bowl.bowl_diameter_mm ? bowl.bowl_diameter_mm + 'mm' : 'Unknown'}, Depth: ${bowl.bowl_depth_mm ? bowl.bowl_depth_mm + 'mm' : 'Unknown'}${bowl.notes ? ', Notes: ' + bowl.notes : ''}`
+          ).join('\n')}`
+        : '';
+
       const pipeDescription = `
         Pipe: ${pipe.name}
         Maker: ${pipe.maker || 'Unknown'}
@@ -152,7 +159,7 @@ export default function MatchingEngine({ pipe, blends, isPaidUser }) {
         Bowl Diameter: ${pipe.bowl_diameter_mm ? pipe.bowl_diameter_mm + 'mm' : 'Unknown'}
         Bowl Depth: ${pipe.bowl_depth_mm ? pipe.bowl_depth_mm + 'mm' : 'Unknown'}
         Finish: ${pipe.finish || 'Unknown'}
-        Smoking Characteristics: ${pipe.smoking_characteristics || 'Not specified'}
+        Smoking Characteristics: ${pipe.smoking_characteristics || 'Not specified'}${interchangeableBowlsText}
       `;
 
       const existingBlends = blends.map(b => ({
