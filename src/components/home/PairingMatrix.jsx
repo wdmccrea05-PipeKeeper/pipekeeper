@@ -336,22 +336,33 @@ export default function PairingMatrix({ pipes, blends }) {
                             <div className="flex items-center gap-2">
                               {pipe?.id ? (
                                 <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                                  <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
+                                  <div className="flex flex-col gap-1">
+                                    <h4 className="font-semibold text-stone-800 hover:text-amber-700 transition-colors">
+                                      {pipePairing.pipe_name}
+                                    </h4>
+                                    {pipePairing.bowl_variant_id && pipe?.interchangeable_bowls && (
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300">
+                                          Bowl Variant
+                                        </Badge>
+                                      </div>
+                                    )}
+                                  </div>
+                                </a>
+                              ) : (
+                                <div className="flex flex-col gap-1">
+                                  <h4
+                                    className="font-semibold text-stone-500"
+                                    title="This pipe is missing from your collection (deleted or not loaded yet)."
+                                  >
                                     {pipePairing.pipe_name}
                                   </h4>
                                   {pipePairing.bowl_variant_id && (
-                                    <Badge variant="outline" className="text-xs ml-2">
+                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300">
                                       Bowl Variant
                                     </Badge>
                                   )}
-                                </a>
-                              ) : (
-                                <h4
-                                  className="font-semibold text-stone-500"
-                                  title="This pipe is missing from your collection (deleted or not loaded yet)."
-                                >
-                                  {pipePairing.pipe_name}
-                                </h4>
+                                </div>
                               )}
                             </div>
                             {bestMatch && (
