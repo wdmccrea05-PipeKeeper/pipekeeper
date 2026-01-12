@@ -14,6 +14,7 @@ import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
 import ImageCropper from "@/components/pipes/ImageCropper";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
+import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 
 const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -49,8 +50,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     smoking_characteristics: '',
     photos: [],
     stamping_photos: [],
-    is_favorite: false
+    is_favorite: false,
+    interchangeable_bowls: []
   });
+  const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
+    pipe?.interchangeable_bowls?.length > 0 || false
+  );
   const [useImperial, setUseImperial] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamping, setUploadingStamping] = useState(false);
@@ -763,6 +768,39 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
             <Label>Mark as Favorite</Label>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Interchangeable Bowls */}
+      <Card className="border-stone-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-stone-800 flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5" />
+            Interchangeable Bowls
+          </CardTitle>
+          <p className="text-sm text-stone-500">Does this pipe have additional/interchangeable bowls? (e.g., Falcon, Yello-Bole Duo)</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={hasInterchangeableBowls}
+              onCheckedChange={(checked) => {
+                setHasInterchangeableBowls(checked);
+                if (!checked) {
+                  handleChange('interchangeable_bowls', []);
+                }
+              }}
+            />
+            <Label>This pipe has interchangeable bowls</Label>
+          </div>
+          {hasInterchangeableBowls && (
+            <div className="pt-2">
+              <InterchangeableBowls
+                pipe={formData}
+                onUpdate={(updatedPipe) => setFormData(updatedPipe)}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
