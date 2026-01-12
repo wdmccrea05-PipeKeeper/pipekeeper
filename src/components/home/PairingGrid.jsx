@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -121,8 +121,25 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   return (
     <Card className="border-stone-200">
       <CardHeader>
-        <CardTitle>Pairing Grid</CardTitle>
-        <CardDescription>Each bowl variant appears as an individual “pipe” in recommendations.</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Pairing Grid</CardTitle>
+            <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={regenPairings}
+            disabled={regenerating}
+          >
+            {regenerating ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : (
+              <RefreshCw className="h-3 w-3 mr-1" />
+            )}
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {rows.length === 0 ? (
@@ -130,32 +147,85 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {rows.map((r) => (
-              <div key={r.key} className="border rounded-lg p-3 bg-white">
-                <div className="font-semibold text-stone-800">{r.name}</div>
-                <div className="text-xs text-stone-600 mt-1">
-                  Focus: {r.focus?.length ? r.focus.join(", ") : "—"}
-                </div>
-                <div className="text-xs text-stone-600">
-                  Dim: {r.bowl_diameter_mm ?? "—"}mm × {r.bowl_depth_mm ?? "—"}mm (vol {r.chamber_volume ?? "—"})
-                </div>
-
-                <div className="mt-2 text-sm text-stone-700">
-                  {r.recommendations?.length ? (
-                    r.recommendations.slice(0, 6).map((rec, idx) => (
-                      <div key={`${r.key}-${idx}`} className="flex justify-between gap-2">
-                        <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
-                        <span className="text-stone-500">{rec.score ?? "—"}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <span className="text-stone-500">No recommendations yet.</span>
-                  )}
-                </div>
-              </div>
+              <PipeCard key={r.key} row={r} allBlends={allBlends} />
             ))}
           </div>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PipeCard({ row, allBlends }) {
+  const [selectedBlendId, setSelectedBlendId] = useState("");
+
+  const top3 = useMemo(() => {
+    return (row.recommendations || [])
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 3);
+  }, [row.recommendations]);
+
+  const selectedBlendScore = useMemo(() => {
+    if (!selectedBlendId) return null;
+    const match = row.recommendations?.find(r => r.tobacco_id === selectedBlendId);
+    return match?.score ?? null;
+  }, [selectedBlendId, row.recommendations]);
+
+  const selectedBlendName = useMemo(() => {
+    if (!selectedBlendId) return null;
+    const blend = allBlends.find(b => b.id === selectedBlendId);
+    return blend?.name || "Unknown";
+  }, [selectedBlendId, allBlends]);
+
+  return (
+    <div className="border rounded-lg p-3 bg-white">
+      <div className="font-semibold text-stone-800">{row.name}</div>
+      <div className="text-xs text-stone-600 mt-1">
+        Focus: {row.focus?.length ? row.focus.join(", ") : "—"}
+      </div>
+      <div className="text-xs text-stone-600">
+        Dim: {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
+      </div>
+
+      <div className="mt-3 space-y-2">
+        <div className="text-xs font-semibold text-stone-700">Top 3 Matches:</div>
+        {top3.length > 0 ? (
+          <div className="text-sm text-stone-700 space-y-1">
+            {top3.map((rec, idx) => (
+              <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
+                <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
+                <span className="text-stone-500 font-medium">{rec.score ?? "—"}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs text-stone-500">No recommendations yet.</span>
+        )}
+      </div>
+
+      <div className="mt-3 space-y-2">
+        <div className="text-xs font-semibold text-stone-700">Check Any Blend:</div>
+        <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
+          <SelectTrigger className="text-sm">
+            <SelectValue placeholder="Select a blend..." />
+          </SelectTrigger>
+          <SelectContent>
+            {allBlends.map(b => (
+              <SelectItem key={b.id} value={b.id}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedBlendId && (
+          <div className="flex justify-between gap-2 text-sm">
+            <span className="truncate text-stone-700">{selectedBlendName}</span>
+            <span className="text-stone-500 font-medium">
+              {selectedBlendScore !== null ? selectedBlendScore : "No score"}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
