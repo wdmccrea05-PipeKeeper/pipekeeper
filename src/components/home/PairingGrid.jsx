@@ -159,10 +159,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 function PipeCard({ row, allBlends }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
 
-  const top3 = useMemo(() => {
-    return (row.recommendations || [])
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-      .slice(0, 3);
+  // Only show top matches that have scores (AI should respect focus)
+  const topMatches = useMemo(() => {
+    const sorted = (row.recommendations || [])
+      .filter(r => (r.score ?? 0) > 0)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    
+    // Show top 3 if available, otherwise top 2
+    return sorted.slice(0, Math.min(3, sorted.length));
   }, [row.recommendations]);
 
   const selectedBlendScore = useMemo(() => {
@@ -188,10 +192,10 @@ function PipeCard({ row, allBlends }) {
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold text-stone-700">Top 3 Matches:</div>
-        {top3.length > 0 ? (
+        <div className="text-xs font-semibold text-stone-700">Top Matches:</div>
+        {topMatches.length > 0 ? (
           <div className="text-sm text-stone-700 space-y-1">
-            {top3.map((rec, idx) => (
+            {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
                 <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
                 <span className="text-stone-500 font-medium">{rec.score ?? "—"}</span>
