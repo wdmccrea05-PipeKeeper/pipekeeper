@@ -121,11 +121,13 @@ CRITICAL: Prioritize pipe specialization above all else. A pipe designated for E
 OUTPUT FORMAT: Return an array of pairings where EACH pairing object represents ONE pipe/bowl configuration with its top tobacco recommendations. Use "recommendations" (not "blend_matches") for the tobacco list.`,
     response_json_schema: {
       type: "object",
+      required: ["pairings"],
       properties: {
         pairings: {
           type: "array",
           items: {
             type: "object",
+            required: ["pipe_id", "pipe_name", "bowl_variant_id", "recommendations"],
             properties: {
               pipe_id: { type: "string" },
               pipe_name: { type: "string" },
@@ -134,13 +136,13 @@ OUTPUT FORMAT: Return an array of pairings where EACH pairing object represents 
                 type: "array",
                 items: {
                   type: "object",
+                  required: ["tobacco_id", "tobacco_name", "score", "reasoning"],
                   properties: {
                     tobacco_id: { type: "string" },
                     tobacco_name: { type: "string" },
                     score: { type: "number" },
                     reasoning: { type: "string" }
-                  },
-                  required: ["tobacco_id", "tobacco_name", "score", "reasoning"]
+                  }
                 }
               }
             }
