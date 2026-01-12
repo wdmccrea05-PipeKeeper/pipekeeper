@@ -16,9 +16,10 @@ import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 export default function MatchingEngine({ user }) {
   const queryClient = useQueryClient();
   const [activePipeId, setActivePipeId] = useState(null);
-  const [activeBowlVariantId, setActiveBowlVariantId] = useState(null); // 'bowl_0', 'bowl_1', etc.
+  const [activeBowlVariantId, setActiveBowlVariantId] = useState(null);
   const [activeTab, setActiveTab] = useState("recommendations");
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ["pipes", user?.email],
@@ -38,34 +39,33 @@ export default function MatchingEngine({ user }) {
 
   const activePipe = useMemo(() => pipes.find((p) => p.id === activePipeId) || null, [pipes, activePipeId]);
 
-  // Default selection when pipes load or change
+  // Initialize with first pipe when data loads
   useEffect(() => {
-    if (!pipes?.length) return;
+    if (!pipes?.length || initialized) return;
     
-    // Set first pipe if none selected
-    if (!activePipeId) {
-      const first = pipes[0];
-      setActivePipeId(first.id);
-      const hasBowls = Array.isArray(first.interchangeable_bowls) && first.interchangeable_bowls.length > 0;
-      setActiveBowlVariantId(hasBowls ? "bowl_0" : null);
-      return;
-    }
+    const first = pipes[0];
+    const hasBowls = Array.isArray(first.interchangeable_bowls) && first.interchangeable_bowls.length > 0;
+    
+    setActivePipeId(first.id);
+    setActiveBowlVariantId(hasBowls ? "bowl_0" : null);
+    setInitialized(true);
+  }, [pipes, initialized]);
 
-    // When active pipe changes, adjust bowl variant selection accordingly
+  // Adjust bowl variant when pipe changes
+  useEffect(() => {
+    if (!activePipeId || !pipes?.length) return;
+    
     const p = pipes.find((x) => x.id === activePipeId);
     if (!p) return;
     
     const hasBowls = Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0;
     
-    // If pipe has no bowls but we have a bowl selected, clear it
-    if (!hasBowls && activeBowlVariantId !== null) {
+    if (!hasBowls) {
       setActiveBowlVariantId(null);
-    }
-    // If pipe has bowls but no bowl selected, select first bowl
-    else if (hasBowls && activeBowlVariantId === null) {
+    } else if (activeBowlVariantId === null) {
       setActiveBowlVariantId("bowl_0");
     }
-  }, [pipes, activePipeId]);
+  }, [activePipeId, pipes]);
 
   const activeVariant = useMemo(() => {
     if (!activePipe) return null;
@@ -196,6 +196,16 @@ export default function MatchingEngine({ user }) {
     );
   }
 
+  if (!pipes?.length) {
+    return (
+      <Card className="border-stone-200">
+        <CardContent className="py-12 text-center text-stone-600">
+          No pipes found. Add a pipe to use the AI Matching Engine.
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-stone-200">
       <CardHeader>
@@ -213,11 +223,12 @@ export default function MatchingEngine({ user }) {
           <div className="space-y-1">
             <div className="text-xs font-semibold text-stone-600">Select Pipe / Bowl</div>
             <Select 
-              value={currentVariantKey || ""} 
+              value={currentVariantKey || undefined} 
               onValueChange={(key) => {
+                if (!key) return;
                 const [pipeId, bowlId] = key.split('::');
                 setActivePipeId(pipeId);
-                setActiveBowlVariantId(bowlId === 'main' ? null : bowlId);
+                setActiveBowlVariantId(bowlId === 'main' || !bowlId ? null : bowlId);
               }}
             >
               <SelectTrigger>
@@ -226,7 +237,8 @@ export default function MatchingEngine({ user }) {
               <SelectContent>
                 {pipes.map((p) => {
                   const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
-                  // Only show bowl variants if bowls array has items
+                  
+                  // If pipe has interchangeable bowls, only show bowl variants
                   if (bowls.length > 0) {
                     return bowls.map((b, i) => {
                       const bowlId = b.bowl_variant_id || `bowl_${i}`;
@@ -238,9 +250,11 @@ export default function MatchingEngine({ user }) {
                       );
                     });
                   }
+                  
                   // Show regular pipe when no bowls exist
+                  const variantKey = getPipeVariantKey(p.id, null);
                   return (
-                    <SelectItem key={getPipeVariantKey(p.id, null)} value={getPipeVariantKey(p.id, null)}>
+                    <SelectItem key={variantKey} value={variantKey}>
                       {p.name}
                     </SelectItem>
                   );
