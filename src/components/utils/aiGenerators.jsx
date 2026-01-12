@@ -93,25 +93,28 @@ ${JSON.stringify(pipesData, null, 2)}
 TOBACCOS (ONLY choose from this list):
 ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
-SCORING RULES (0–10) - WEIGHTED AND STRICT:
-1. CATEGORY FILTERING (applied first, blocks scoring):
-   - If focus includes "Aromatic": ONLY score Aromatic blends. ALL non-aromatics MUST be 0.
-   - If focus includes "Non-Aromatic": ONLY score non-aromatics. ALL aromatics MUST be 0.
+SCORING RULES (0–10) - STRICT ENFORCEMENT:
+1. CATEGORY FILTERING (CRITICAL - applied first):
+   - EVERY blend includes a "category" field: either "AROMATIC" or "NON_AROMATIC".
+   - If pipe focus contains "Aromatic": score ONLY "AROMATIC" blends 6–10. Force ALL "NON_AROMATIC" to 0.
+   - If pipe focus contains "Non-Aromatic": score ONLY "NON_AROMATIC" blends 6–10. Force ALL "AROMATIC" to 0.
+   - If focus is empty or doesn't mention aromatic type: apply full scoring to all blends.
 
-2. FOCUS MATCHING (highest priority within allowed category):
-   - If focus contains an EXACT tobacco_name: score 9–10 (MUST appear in Top 3).
-   - If focus contains a blend_type keyword (e.g., "Virginia", "English", "Latakia"): score 8–9.
-   - If focus contains multiple keywords, match all of them: add 0.5 per additional match (e.g., "English" + "Latakia" = +1.5).
+2. FOCUS-EXACT MATCHING (highest priority within allowed category):
+   - If focus contains exact tobacco_name: score 9–10 (MUST appear in Top 3).
 
-3. USER PREFERENCE WEIGHTING (applied to all tobaccos in allowed category):
+3. FOCUS-TYPE MATCHING (second priority):
+   - If focus contains blend_type keyword (e.g., "Virginia", "English", "Latakia"): score 8–9.
+   - If focus contains "Light" or "Light Aromatics": match only light/mild blends (low strength), score 8–9.
+
+4. USER PREFERENCES (applied to all blends in allowed category):
    - Add +2 if blend_type matches user's preferred_blend_types.
    - Add +1 if strength matches user's strength_preference.
-   - Base score without focus: 4–6 depending on preference matches.
 
-4. PIPE-BLEND PHYSICAL COMPATIBILITY (lowest priority):
-   - Chamber volume vs tobacco cut: +0.5 bonus.
+5. BASE SCORE (for blends without focus or preference match):
+   - Score 4–5.
 
-Return all tobaccos with their scores sorted by score descending.
+Return ALL tobaccos sorted by score descending. NEVER violate category filtering.
 
 OUTPUT:
 Return JSON { "pairings": [...] } where each pairing has:
