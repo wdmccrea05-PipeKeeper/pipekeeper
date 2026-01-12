@@ -36,6 +36,7 @@ import ImageModal from "@/components/ui/ImageModal";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator";
+import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -268,6 +269,14 @@ export default function PipeDetailPage() {
         {/* Break-In Schedule */}
         <div className="mb-6">
           <BreakInSchedule pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
+        </div>
+
+        {/* Interchangeable Bowls */}
+        <div className="mb-6">
+          <InterchangeableBowls 
+            pipe={pipe} 
+            onUpdate={(data) => updateMutation.mutate(data)}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
