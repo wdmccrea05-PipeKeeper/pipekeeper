@@ -109,26 +109,30 @@ ${JSON.stringify(blendsData, null, 2)}${profileContext}
 
 SCORING RULES (0–10) - STRICT ENFORCEMENT:
 1. CATEGORY FILTERING (CRITICAL - applied first):
-   - EVERY blend includes a "category" field: either "AROMATIC" or "NON_AROMATIC".
-   - If pipe focus contains "Aromatic": score ONLY "AROMATIC" blends 6–10. Force ALL "NON_AROMATIC" to 0.
-   - If pipe focus contains "Non-Aromatic": score ONLY "NON_AROMATIC" blends 6–10. Force ALL "AROMATIC" to 0.
+   - EVERY blend includes a "category" field: either "AROMATIC" or "NON_AROMATIC", plus "aromatic_intensity" if aromatic.
+   - If pipe focus contains "Aromatic": score ONLY "AROMATIC" blends. Force ALL "NON_AROMATIC" to 0.
+   - If pipe focus contains "Non-Aromatic": score ONLY "NON_AROMATIC" blends. Force ALL "AROMATIC" to 0.
    - If focus is empty or doesn't mention aromatic type: apply full scoring to all blends.
 
-2. FOCUS-EXACT MATCHING (highest priority within allowed category):
+2. AROMATIC INTENSITY MATCHING (for aromatic pipes):
+   - If focus contains "Light Aromatics": score ONLY "Light" intensity aromatics 8–10. Force "Medium" and "Heavy" to 0.
+   - If focus contains "Medium Aromatics" or just "Aromatics": score "Medium" intensity 8–10. Others max 5.
+   - If focus contains "Heavy Aromatics" or "Strong Aromatics": score ONLY "Heavy" intensity 8–10. Force "Light" and "Medium" to 0.
+
+3. FOCUS-EXACT MATCHING (highest priority):
    - If focus contains exact tobacco_name: score 9–10 (MUST appear in Top 3).
 
-3. FOCUS-TYPE MATCHING (second priority):
+4. FOCUS-TYPE MATCHING (second priority):
    - If focus contains blend_type keyword (e.g., "Virginia", "English", "Latakia"): score 8–9.
-   - If focus contains "Light" or "Light Aromatics": match only light/mild blends (low strength), score 8–9.
 
-4. USER PREFERENCES (applied to all blends in allowed category):
+5. USER PREFERENCES (applied to all blends in allowed category):
    - Add +2 if blend_type matches user's preferred_blend_types.
    - Add +1 if strength matches user's strength_preference.
 
-5. BASE SCORE (for blends without focus or preference match):
+6. BASE SCORE (for blends without focus or preference match):
    - Score 4–5.
 
-Return ALL tobaccos sorted by score descending. NEVER violate category filtering.
+Return ALL tobaccos sorted by score descending. NEVER violate category or intensity filtering.
 
 OUTPUT:
 Return JSON { "pairings": [...] } where each pairing has:
