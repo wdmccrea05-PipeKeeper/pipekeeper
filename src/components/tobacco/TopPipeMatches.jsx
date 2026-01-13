@@ -78,6 +78,33 @@ export default function TopPipeMatches({ blend, pipes }) {
   const updateMatchesFromData = () => {
     if (!blend) return;
 
+    // Try to use saved pairings first
+    if (savedPairings?.pairings) {
+      const scoredPipes = [];
+
+      savedPairings.pairings.forEach((pipePairing) => {
+        const recs = pipePairing?.recommendations || pipePairing?.blend_matches || [];
+        const blendRec = recs.find(r => 
+          String(r.tobacco_id) === String(blend.id)
+        );
+
+        if (blendRec && blendRec.score > 0) {
+          scoredPipes.push({
+            pipe_id: pipePairing.pipe_id,
+            pipe_name: pipePairing.pipe_name,
+            bowl_variant_id: pipePairing.bowl_variant_id,
+            match_score: blendRec.score,
+            reasoning: blendRec.reasoning || ""
+          });
+        }
+      });
+
+      const topThree = scoredPipes.sort((a, b) => b.match_score - a.match_score).slice(0, 3);
+      setMatches(topThree);
+      return;
+    }
+
+    // Fallback: recalculate scores if no saved pairings
     const scoredPipes = pipes.map((pipe) => {
       const { score, why } = scorePipeBlend(
         { focus: pipe.focus || [], pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
