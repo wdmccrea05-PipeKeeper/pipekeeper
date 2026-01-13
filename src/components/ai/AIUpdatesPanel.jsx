@@ -4,7 +4,15 @@ import { base44 } from "@/api/base44Client";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2, Ruler } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
+  Undo,
+  Loader2,
+  Ruler,
+  Tags,
+} from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
@@ -12,9 +20,10 @@ import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/c
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [reclassifyBusy, setReclassifyBusy] = useState(false);
 
   const { data: user } = useQuery({
-    queryKey: ['current-user'],
+    queryKey: ["current-user"],
     queryFn: () => base44.auth.me(),
     staleTime: 5000,
   });
@@ -28,7 +37,11 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter({ created_by: user.email, is_active: true }, "-created_date", 1);
+      const active = await base44.entities.PairingMatrix.filter(
+        { created_by: user.email, is_active: true },
+        "-created_date",
+        1
+      );
       return active?.[0] || null;
     },
   });
@@ -37,13 +50,21 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     queryKey: ["activeOptimization", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const active = await base44.entities.CollectionOptimization.filter({ created_by: user.email, is_active: true }, "-created_date", 1);
+      const active = await base44.entities.CollectionOptimization.filter(
+        { created_by: user.email, is_active: true },
+        "-created_date",
+        1
+      );
       return active?.[0] || null;
     },
   });
 
-  const pairingsStale = !!activePairings && (!activePairings.input_fingerprint || activePairings.input_fingerprint !== currentFingerprint);
-  const optStale = !!activeOpt && (!activeOpt.input_fingerprint || activeOpt.input_fingerprint !== currentFingerprint);
+  const pairingsStale =
+    !!activePairings &&
+    (!activePairings.input_fingerprint || activePairings.input_fingerprint !== currentFingerprint);
+
+  const optStale =
+    !!activeOpt && (!activeOpt.input_fingerprint || activeOpt.input_fingerprint !== currentFingerprint);
 
   const regenPairings = useMutation({
     mutationFn: async () => {
@@ -51,7 +72,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       const { pairings } = await generatePairingsAI({ pipes, blends, profile });
 
       if (activePairings?.id) {
-        await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
+        await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.PairingMatrix.create({
@@ -79,8 +100,8 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const undoPairings = useMutation({
     mutationFn: async () => {
       if (!activePairings?.previous_active_id) return;
-      await safeUpdate('PairingMatrix', activePairings.id, { is_active: false }, user?.email);
-      await safeUpdate('PairingMatrix', activePairings.previous_active_id, { is_active: true }, user?.email);
+      await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user?.email);
+      await safeUpdate("PairingMatrix", activePairings.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchPairings();
@@ -141,7 +162,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       }));
 
       if (activeOpt?.id) {
-        await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
+        await safeUpdate("CollectionOptimization", activeOpt.id, { is_active: false }, user?.email);
       }
 
       await base44.entities.CollectionOptimization.create({
@@ -172,8 +193,8 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const undoOpt = useMutation({
     mutationFn: async () => {
       if (!activeOpt?.previous_active_id) return;
-      await safeUpdate('CollectionOptimization', activeOpt.id, { is_active: false }, user?.email);
-      await safeUpdate('CollectionOptimization', activeOpt.previous_active_id, { is_active: true }, user?.email);
+      await safeUpdate("CollectionOptimization", activeOpt.id, { is_active: false }, user?.email);
+      await safeUpdate("CollectionOptimization", activeOpt.previous_active_id, { is_active: true }, user?.email);
     },
     onSuccess: () => {
       refetchOpt();
@@ -183,22 +204,140 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onError: () => toast.error("Failed to undo optimization"),
   });
 
+  // ✅ FIX: Add the missing "Reclassify Blends" card + function to the AI Updates panel
+  const reclassifyBlends = useMutation({
+    mutationFn: async () => {
+      if (!user?.email) return;
+
+      setReclassifyBusy(true);
+
+      const blendsToUpdate = (blends || []).filter(Boolean);
+      if (blendsToUpdate.length === 0) {
+        toast.info("No blends to reclassify");
+        setReclassifyBusy(false);
+        return;
+      }
+
+      // Keep prompt stable + explicit categories. Treat missing blend_type as Unknown.
+      const categories = [
+        "American",
+        "Aromatic",
+        "Balkan",
+        "Burley",
+        "Burley-based",
+        "Cavendish",
+        "Codger Blend",
+        "Dark Fired Kentucky",
+        "English",
+        "English Aromatic",
+        "English Balkan",
+        "Full English/Oriental",
+        "Kentucky",
+        "Lakeland",
+        "Latakia Blend",
+        "Navy Flake",
+        "Oriental/Turkish",
+        "Other",
+        "Perique",
+        "Shag",
+        "Virginia",
+        "Virginia/Burley",
+        "Virginia/Oriental",
+        "Virginia/Perique",
+      ];
+
+      const prompt = `Given the expanded tobacco blend classification system, analyze and reclassify these tobacco blends to the most accurate category.
+
+Available categories (alphabetical):
+${categories.join(", ")}
+
+Blends to reclassify:
+${blendsToUpdate
+  .map((b) => `- ${b.name} (current: ${b.blend_type || "Unknown"})`)
+  .join("\n")}
+
+Return JSON in the requested schema with updates ONLY for blends that should change categories.`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            updates: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  old_type: { type: "string" },
+                  new_type: { type: "string" },
+                  reasoning: { type: "string" },
+                },
+                required: ["name", "old_type", "new_type"],
+              },
+            },
+          },
+        },
+      });
+
+      const updates = Array.isArray(result?.updates) ? result.updates : [];
+      if (updates.length === 0) {
+        toast.info("All blends are already correctly classified");
+        setReclassifyBusy(false);
+        return;
+      }
+
+      // Update by best match: prefer ID match via name, fallback to exact name.
+      let changed = 0;
+
+      for (const upd of updates) {
+        const blend = blendsToUpdate.find((b) => String(b.name).trim() === String(upd.name).trim());
+        if (!blend) continue;
+
+        const current = blend.blend_type || "Unknown";
+        const next = upd.new_type;
+
+        if (!next || String(next).trim() === "" || String(next) === String(current)) continue;
+
+        await safeUpdate("TobaccoBlend", blend.id, { blend_type: next }, user?.email);
+        changed++;
+      }
+
+      // Refresh blends everywhere
+      queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+
+      if (changed > 0) toast.success(`Reclassified ${changed} blend(s)`);
+      else toast.info("No blend changes were applied");
+
+      setReclassifyBusy(false);
+    },
+    onError: (error) => {
+      setReclassifyBusy(false);
+      toast.error("Failed to reclassify blends");
+      console.error(error);
+    },
+  });
+
   const fillMeasurements = useMutation({
     mutationFn: async () => {
       setBusy(true);
       let updatedCount = 0;
 
-      // Process pipes with missing measurements
       for (const pipe of pipes) {
-        const hasMissingMeasurements = !pipe.length_mm || !pipe.weight_grams || !pipe.bowl_diameter_mm || !pipe.bowl_depth_mm;
-        
+        const hasMissingMeasurements =
+          !pipe.length_mm || !pipe.weight_grams || !pipe.bowl_diameter_mm || !pipe.bowl_depth_mm;
+
         if (hasMissingMeasurements) {
           try {
             const prompt = `Find verified manufacturer specifications for this pipe to fill missing measurements.
 
-Pipe: ${pipe.maker || 'Unknown'} ${pipe.name || 'Unknown'}
-Shape: ${pipe.shape || 'Unknown'}
-Existing: ${pipe.length_mm ? `Length: ${pipe.length_mm}mm` : ''} ${pipe.weight_grams ? `Weight: ${pipe.weight_grams}g` : ''} ${pipe.bowl_diameter_mm ? `Chamber: ${pipe.bowl_diameter_mm}mm` : ''} ${pipe.bowl_depth_mm ? `Depth: ${pipe.bowl_depth_mm}mm` : ''}
+Pipe: ${pipe.maker || "Unknown"} ${pipe.name || "Unknown"}
+Shape: ${pipe.shape || "Unknown"}
+Existing: ${pipe.length_mm ? `Length: ${pipe.length_mm}mm` : ""} ${
+              pipe.weight_grams ? `Weight: ${pipe.weight_grams}g` : ""
+            } ${pipe.bowl_diameter_mm ? `Chamber: ${pipe.bowl_diameter_mm}mm` : ""} ${
+              pipe.bowl_depth_mm ? `Depth: ${pipe.bowl_depth_mm}mm` : ""
+            }
 
 CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT estimate or guess. Return null if no verified data exists.`;
 
@@ -216,25 +355,25 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
                   bowl_depth_mm: { type: ["number", "null"] },
                   chamber_volume: { type: ["string", "null"] },
                   dimensions_found: { type: "boolean" },
-                  dimensions_source: { type: ["string", "null"] }
-                }
-              }
+                  dimensions_source: { type: ["string", "null"] },
+                },
+              },
             });
 
             const updates = {};
             let foundAny = false;
-            
-            Object.keys(result).forEach(key => {
+
+            Object.keys(result || {}).forEach((key) => {
               if (result[key] !== null && result[key] !== undefined && !pipe[key]) {
                 updates[key] = result[key];
-                if (key !== 'dimensions_found' && key !== 'dimensions_source') {
+                if (key !== "dimensions_found" && key !== "dimensions_source") {
                   foundAny = true;
                 }
               }
             });
 
             if (foundAny) {
-              await safeUpdate('Pipe', pipe.id, updates, user?.email);
+              await safeUpdate("Pipe", pipe.id, updates, user?.email);
               updatedCount++;
             }
           } catch (error) {
@@ -248,11 +387,8 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
     },
     onSuccess: (count) => {
       invalidatePipeQueries(queryClient, user?.email);
-      if (count > 0) {
-        toast.success(`Updated ${count} pipe(s) with verified measurements`);
-      } else {
-        toast.info("No verified measurements found for your pipes");
-      }
+      if (count > 0) toast.success(`Updated ${count} pipe(s) with verified measurements`);
+      else toast.info("No verified measurements found for your pipes");
     },
     onError: () => {
       setBusy(false);
@@ -260,8 +396,36 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
     },
   });
 
+  const anyBusy = busy || reclassifyBusy;
+
   return (
     <div className="space-y-4">
+      {/* ✅ NEW: Reclassify Blends card (this is what was missing) */}
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+        <div className="flex items-start gap-3 mb-3">
+          <Tags className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-[#e8d5b7]">Tobacco Blend Classification</h3>
+            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          disabled={anyBusy || (blends || []).length === 0}
+          onClick={() => reclassifyBlends.mutate()}
+          className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+        >
+          {reclassifyBusy ? (
+            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+          ) : (
+            <Tags className="w-3 h-3 mr-1" />
+          )}
+          Reclassify Blends ({(blends || []).length} total)
+        </Button>
+      </div>
+
       <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
         <div className="flex items-start gap-3 mb-3">
           {pairingsStale ? (
@@ -284,7 +448,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Button
             variant="outline"
             size="sm"
-            disabled={!activePairings?.previous_active_id || busy}
+            disabled={!activePairings?.previous_active_id || anyBusy}
             onClick={() => undoPairings.mutate()}
             className="border-[#e8d5b7]/30 text-[#e8d5b7]"
           >
@@ -293,15 +457,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           </Button>
           <Button
             size="sm"
-            disabled={busy}
+            disabled={anyBusy}
             onClick={() => regenPairings.mutate()}
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
-            {busy ? (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            ) : (
-              <RefreshCw className="w-3 h-3 mr-1" />
-            )}
+            {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
             Regenerate
           </Button>
         </div>
@@ -329,7 +489,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Button
             variant="outline"
             size="sm"
-            disabled={!activeOpt?.previous_active_id || busy}
+            disabled={!activeOpt?.previous_active_id || anyBusy}
             onClick={() => undoOpt.mutate()}
             className="border-[#e8d5b7]/30 text-[#e8d5b7]"
           >
@@ -338,15 +498,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           </Button>
           <Button
             size="sm"
-            disabled={busy}
+            disabled={anyBusy}
             onClick={() => regenOpt.mutate()}
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
-            {busy ? (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            ) : (
-              <RefreshCw className="w-3 h-3 mr-1" />
-            )}
+            {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
             Regenerate
           </Button>
         </div>
@@ -364,15 +520,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
         <Button
           size="sm"
-          disabled={busy}
+          disabled={anyBusy}
           onClick={() => fillMeasurements.mutate()}
           className="bg-gradient-to-r from-emerald-600 to-emerald-700"
         >
-          {busy ? (
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-          ) : (
-            <Ruler className="w-3 h-3 mr-1" />
-          )}
+          {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
           Fill Measurements
         </Button>
       </div>
