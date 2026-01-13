@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function FAQ() {
   const [openItems, setOpenItems] = useState({});
@@ -40,7 +41,15 @@ export default function FAQ() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
-        <h1 className="text-4xl font-bold text-[#e8d5b7] mb-8">PipeKeeper FAQ</h1>
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper FAQ</h1>
+          <Link to={createPageUrl('Troubleshooting')}>
+            <Button variant="outline" className="mt-4 border-[#8b3a3a]/40 text-[#e8d5b7]">
+              <Wrench className="w-4 h-4 mr-2" />
+              View Troubleshooting Guide
+            </Button>
+          </Link>
+        </div>
 
       <Section title="General">
         <Q id="what-is" q="What is PipeKeeper?">
