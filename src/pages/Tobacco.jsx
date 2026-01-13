@@ -21,7 +21,33 @@ import { toast } from "sonner";
 import { safeUpdate, safeBatchUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 
-const BLEND_TYPES = ["All Types", "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic", "Burley", "Latakia Blend", "Other"];
+const BLEND_TYPES = [
+  "All Types",
+  "Virginia",
+  "Virginia/Perique", 
+  "Virginia/Burley",
+  "Virginia/Oriental",
+  "English",
+  "English Aromatic",
+  "English Balkan",
+  "Full English/Oriental",
+  "Balkan",
+  "Latakia Blend",
+  "Aromatic",
+  "Burley",
+  "Burley-based",
+  "Kentucky",
+  "Dark Fired Kentucky",
+  "Oriental/Turkish",
+  "Perique",
+  "Navy Flake",
+  "Cavendish",
+  "Lakeland",
+  "American",
+  "Codger Blend",
+  "Shag",
+  "Other"
+];
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
   { value: "-created_date", label: "Recently Added" },
