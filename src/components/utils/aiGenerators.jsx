@@ -125,7 +125,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
           bowl_height_mm: bowl.bowl_height_mm ?? null,
           bowl_width_mm: bowl.bowl_width_mm ?? null,
 
-          focus: Array.isArray(bowl.focus) ? bowl.focus : [],
+          focus: normalizeFocus(Array.isArray(bowl.focus) ? bowl.focus : []),
           notes: bowl.notes || "",
         });
       });
@@ -143,7 +143,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
         bowl_diameter_mm: p.bowl_diameter_mm ?? null,
         bowl_depth_mm: p.bowl_depth_mm ?? null,
 
-        focus: Array.isArray(p.focus) ? p.focus : [],
+        focus: normalizeFocus(Array.isArray(p.focus) ? p.focus : []),
         notes: p.notes || "",
       });
     }
