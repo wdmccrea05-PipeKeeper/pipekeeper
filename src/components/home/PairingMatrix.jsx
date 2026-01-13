@@ -22,15 +22,15 @@ export default function PairingMatrix({ user }) {
     enabled: !!user?.email,
   });
 
-  const { data: pairingMatrix = [], isLoading: artifactsLoading } = useQuery({
-    queryKey: ["saved-pairings", user?.email],
+  const { data: activePairingsRecord, isLoading: artifactsLoading } = useQuery({
+    queryKey: ["activePairings", user?.email],
     queryFn: async () => {
       const active = await base44.entities.PairingMatrix.filter(
         { created_by: user?.email, is_active: true },
         "-created_date",
         1
       );
-      return active || [];
+      return active?.[0] || null;
     },
     enabled: !!user?.email,
   });
@@ -61,8 +61,9 @@ export default function PairingMatrix({ user }) {
         profile: userProfile,
         user,
         queryClient,
-        activePairings: pairingMatrix[0]?.pairings || []
+        activePairings: activePairingsRecord
       });
+      await queryClient.invalidateQueries({ queryKey: ["activePairings", user.email] });
       toast.success("Pairings regenerated successfully");
     } catch (error) {
       toast.error("Failed to regenerate pairings");
@@ -72,12 +73,12 @@ export default function PairingMatrix({ user }) {
   };
 
   const pairings = useMemo(() => {
-    const activePairings = pairingMatrix?.[0]?.pairings || [];
+    const activePairings = activePairingsRecord?.pairings || [];
     return activePairings.map((p) => ({
       ...p,
       __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
     }));
-  }, [pairingMatrix]);
+  }, [activePairingsRecord]);
 
   const pipeNameById = useMemo(() => {
     const map = new Map();
