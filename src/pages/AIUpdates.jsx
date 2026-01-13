@@ -228,6 +228,7 @@ Return a JSON array with updates only for blends that need reclassification to a
       </div>
 
       <div className="space-y-4">
+        {/* TOBACCO BLEND CLASSIFICATION - FIRST CARD */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
@@ -255,6 +256,7 @@ Return a JSON array with updates only for blends that need reclassification to a
           </CardContent>
         </Card>
 
+        {/* PAIRING MATRIX */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
@@ -302,6 +304,7 @@ Return a JSON array with updates only for blends that need reclassification to a
           </CardContent>
         </Card>
 
+        {/* COLLECTION OPTIMIZATION */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
@@ -349,6 +352,29 @@ Return a JSON array with updates only for blends that need reclassification to a
           </CardContent>
         </Card>
 
+        {/* PIPE MEASUREMENTS */}
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <CheckCircle2 className="w-5 h-5 text-teal-400" />
+              Pipe Measurements
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
+              Fill missing dimensions with verified manufacturer specs
+            </p>
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-teal-600 to-teal-700"
+              onClick={() => window.location.href = '/Pipes'}
+            >
+              Fill Measurements
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* BREAK-IN SCHEDULES */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
