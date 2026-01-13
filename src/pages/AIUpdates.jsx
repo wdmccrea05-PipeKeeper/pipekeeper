@@ -6,7 +6,7 @@ import { generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCw, Undo, Loader2, Tags } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
@@ -14,6 +14,7 @@ import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 export default function AIUpdates() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [reclassifyBusy, setReclassifyBusy] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -151,6 +152,72 @@ export default function AIUpdates() {
     onError: () => toast.error("Failed to undo optimization"),
   });
 
+  const reclassifyBlends = useMutation({
+    mutationFn: async () => {
+      setReclassifyBusy(true);
+      
+      const blendsToUpdate = blends.filter(b => b.blend_type);
+      
+      if (blendsToUpdate.length === 0) {
+        toast.info("No blends to reclassify");
+        setReclassifyBusy(false);
+        return;
+      }
+
+      const prompt = `Given the expanded tobacco blend classification system, analyze and reclassify these tobacco blends to the most accurate category:
+
+Available categories (alphabetical):
+American, Aromatic, Balkan, Burley, Burley-based, Cavendish, Codger Blend, Dark Fired Kentucky, English, English Aromatic, English Balkan, Full English/Oriental, Kentucky, Lakeland, Latakia Blend, Navy Flake, Oriental/Turkish, Other, Perique, Shag, Virginia, Virginia/Burley, Virginia/Oriental, Virginia/Perique
+
+Blends to reclassify:
+${blendsToUpdate.map(b => `- ${b.name} (current: ${b.blend_type})`).join('\n')}
+
+Return a JSON array with updates only for blends that need reclassification to a more accurate category.`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            updates: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  old_type: { type: "string" },
+                  new_type: { type: "string" },
+                  reasoning: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (result?.updates && result.updates.length > 0) {
+        for (const update of result.updates) {
+          const blend = blendsToUpdate.find(b => b.name === update.name);
+          if (blend) {
+            await safeUpdate('TobaccoBlend', blend.id, { blend_type: update.new_type }, user?.email);
+          }
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+        toast.success(`Reclassified ${result.updates.length} blend(s)`);
+      } else {
+        toast.info("All blends are already correctly classified");
+      }
+      
+      setReclassifyBusy(false);
+    },
+    onError: (error) => {
+      setReclassifyBusy(false);
+      toast.error("Failed to reclassify blends");
+      console.error(error);
+    },
+  });
+
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-6">
@@ -252,6 +319,33 @@ export default function AIUpdates() {
                 Regenerate
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <Tags className="w-5 h-5 text-blue-400" />
+              Tobacco Blend Classification
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
+              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis for improved accuracy.
+            </p>
+            <Button
+              size="sm"
+              disabled={reclassifyBusy || blends.length === 0}
+              onClick={() => reclassifyBlends.mutate()}
+              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+            >
+              {reclassifyBusy ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Tags className="w-4 h-4 mr-1" />
+              )}
+              Reclassify Blends
+            </Button>
           </CardContent>
         </Card>
 
