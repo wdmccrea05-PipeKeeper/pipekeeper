@@ -1,5 +1,5 @@
 import { base44 } from "@/api/base44Client";
-import { generatePairingsDeterministic } from "@/components/utils/pairingScorer";
+import { buildPairingsForPipes } from "@/components/utils/pairingScore";
 
 // === Hard Rules Enforcement ===
 
@@ -176,21 +176,30 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
       category: isAromatic ? "aromatic" : "non_aromatic",
       aromatic_intensity: aromaticIntensity,
     };
-  });
+    });
 
-  // Use deterministic scoring instead of LLM
-  const pairings = generatePairingsDeterministic({
-    pipesData,
-    blendsData,
-    profile
-  });
+    // Build a profile object in the same shape used by the scorer
+    const userProfile = profile
+    ? {
+        preferred_blend_types: profile.preferred_blend_types || [],
+        strength_preference: profile.strength_preference || null,
+        pipe_size_preference: profile.pipe_size_preference || null,
+        clenching_preference: profile.clenching_preference || null,
+        smoke_duration_preference: profile.smoke_duration_preference || null,
+        notes: profile.notes || null,
+      }
+    : null;
 
-  if (!pairings.length) {
-    throw new Error("No pairings generated (deterministic).");
-  }
+    // IMPORTANT: blendsData already contains tobacco_id / tobacco_name in your code above.
+    // Ensure it also carries flavor_notes / tobacco_components / aromatic_intensity if present.
+    const pairings = buildPairingsForPipes(pipesData, blendsData, userProfile);
 
-  return { pairings };
-}
+    if (!pairings.length) {
+    throw new Error("No pairings produced (pipes list empty?)");
+    }
+
+    return { pairings };
+    }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
   // Expand pipes to include bowl variants as separate entries
