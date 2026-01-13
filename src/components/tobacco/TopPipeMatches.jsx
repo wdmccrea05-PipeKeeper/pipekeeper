@@ -22,7 +22,8 @@ export default function TopPipeMatches({ blend, pipes }) {
   });
 
   const { data: savedPairings } = useQuery({
-    queryKey: ['saved-pairings', user?.email],
+    // Use the same cache key as PairingGrid / AI panel so refresh/regenerate stay in sync
+    queryKey: ['activePairings', user?.email],
     queryFn: async () => {
       // Load active first, fallback to latest (same as PairingGrid)
       const active = await base44.entities.PairingMatrix.filter(
