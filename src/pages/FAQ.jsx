@@ -44,7 +44,7 @@ export default function FAQ() {
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper FAQ</h1>
           <Link to={createPageUrl('Troubleshooting')}>
-            <Button variant="outline" className="mt-4 border-[#8b3a3a]/40 text-[#e8d5b7]">
+            <Button variant="outline" className="mt-4 border-[#8b3a3a]/40 text-blue-900">
               <Wrench className="w-4 h-4 mr-2" />
               View Troubleshooting Guide
             </Button>
