@@ -28,7 +28,18 @@ export async function regeneratePairings({
     throw new Error("No pairings generated.");
   }
 
-  // Deactivate current active if it exists
+  // Hard cleanup: ensure only one active artifact exists
+  const actives = await base44.entities.PairingMatrix.filter(
+    { created_by: user.email, is_active: true },
+    "-created_date",
+    50
+  );
+
+  for (const a of actives || []) {
+    await safeUpdate("PairingMatrix", a.id, { is_active: false }, user.email);
+  }
+
+  // Deactivate current active if provided (defensive; may already be handled above)
   if (activePairings?.id) {
     await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user.email);
   }

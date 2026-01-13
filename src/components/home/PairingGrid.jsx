@@ -8,6 +8,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { toast } from "sonner";
+import { scorePipeBlend } from "@/components/utils/pairingScore";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
   const queryClient = useQueryClient();
@@ -182,7 +183,6 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 function PipeCard({ row, allBlends }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
-  const [calculating, setCalculating] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -199,84 +199,77 @@ function PipeCard({ row, allBlends }) {
     enabled: !!user?.email,
   });
 
-  // Only show top matches that have scores (AI should respect focus)
+  // Top matches: use artifact recommendations when present, otherwise compute locally
   const topMatches = useMemo(() => {
-    // Handle both 'recommendations' and 'blend_matches' field names for compatibility
-    const recs = row.recommendations || [];
-    const sorted = recs
-      .filter(r => (r.score ?? 0) > 0)
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-    
-    // Show top 3 if available
-    return sorted.slice(0, 3);
-  }, [row.recommendations]);
+    const recs = (row.recommendations || []).filter(r => (r.score ?? 0) > 0);
+    if (recs.length) {
+      return [...recs].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3);
+    }
+
+    // Fallback: compute scores locally (fast, consistent)
+    const scored = (allBlends || []).map((b) => {
+      const { score } = scorePipeBlend(
+        { 
+          pipe_id: row.pipe_id, 
+          pipe_name: row.name, 
+          bowl_variant_id: row.bowl_variant_id,
+          focus: row.focus || [] 
+        },
+        {
+          tobacco_id: String(b.id),
+          tobacco_name: b.name,
+          blend_type: b.blend_type,
+          strength: b.strength,
+          flavor_notes: b.flavor_notes,
+          tobacco_components: b.tobacco_components,
+          aromatic_intensity: b.aromatic_intensity,
+        },
+        userProfile
+      );
+      return { tobacco_id: String(b.id), tobacco_name: b.name, score };
+    });
+    return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+  }, [row, allBlends, userProfile]);
 
   const selectedBlendScore = useMemo(() => {
     if (!selectedBlendId) return calculatedScore;
-    // Try both possible field names for compatibility
     const match = row.recommendations?.find(r => 
       r.tobacco_id === selectedBlendId || r.blend_id === selectedBlendId || r.id === selectedBlendId
     );
     return match?.score ?? calculatedScore;
   }, [selectedBlendId, row.recommendations, calculatedScore]);
 
-  const calculateScore = async () => {
-    if (!selectedBlendId) return;
-    
-    setCalculating(true);
-    const blend = allBlends.find(b => String(b.id) === String(selectedBlendId));
-    if (!blend) {
-      setCalculating(false);
+  const calculateScore = () => {
+    if (!selectedBlendId) {
+      setCalculatedScore(null);
+      return;
+    }
+    const selectedBlend = (allBlends || []).find((b) => String(b.id) === String(selectedBlendId));
+    if (!selectedBlend) {
+      setCalculatedScore(null);
       return;
     }
 
-    try {
-      // Simulate pipe object from row data
-      const pipeData = {
-        id: row.pipe_id,
-        name: row.name,
-        focus: row.focus || [],
-        chamber_volume: row.chamber_volume,
-        bowl_diameter_mm: row.bowl_diameter_mm,
-        bowl_depth_mm: row.bowl_depth_mm,
-      };
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Score the compatibility between this pipe and tobacco blend on a scale of 0-10.
-
-Pipe: ${JSON.stringify(pipeData, null, 2)}
-User Profile: ${JSON.stringify(userProfile || {}, null, 2)}
-
-Blend:
-- Name: ${blend.name}
-- Type: ${blend.blend_type}
-- Strength: ${blend.strength}
-- Cut: ${blend.cut}
-- Components: ${blend.tobacco_components?.join(', ') || 'N/A'}
-
-CRITICAL SCORING RULES:
-1. If pipe focus contains this exact blend name "${blend.name}", score MUST be 9-10
-2. If pipe has "Non-Aromatic" focus and blend is Aromatic: score = 0
-3. If pipe has "Aromatic" focus and blend is non-aromatic: score = 0
-4. If pipe focus matches blend type/category: 9-10
-5. Otherwise base on physical compatibility and user preferences
-
-Return only a number between 0 and 10 (decimals allowed).`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            score: { type: "number" }
-          }
-        }
-      });
-
-      setCalculatedScore(result.score || 0);
-    } catch (error) {
-      console.error('Score calculation failed:', error);
-      toast.error('Failed to calculate score');
-    } finally {
-      setCalculating(false);
-    }
+    // Deterministic scoring (same everywhere)
+    const { score } = scorePipeBlend(
+      { 
+        pipe_id: row.pipe_id, 
+        pipe_name: row.name, 
+        bowl_variant_id: row.bowl_variant_id,
+        focus: row.focus || [] 
+      },
+      {
+        tobacco_id: String(selectedBlend.id),
+        tobacco_name: selectedBlend.name,
+        blend_type: selectedBlend.blend_type,
+        strength: selectedBlend.strength,
+        flavor_notes: selectedBlend.flavor_notes,
+        tobacco_components: selectedBlend.tobacco_components,
+        aromatic_intensity: selectedBlend.aromatic_intensity,
+      },
+      userProfile
+    );
+    setCalculatedScore(score);
   };
 
   // Reset calculated score when blend selection changes
@@ -343,17 +336,9 @@ Return only a number between 0 and 10 (decimals allowed).`,
                 size="sm"
                 variant="outline"
                 onClick={calculateScore}
-                disabled={calculating}
                 className="w-full"
               >
-                {calculating ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    Calculating...
-                  </>
-                ) : (
-                  'Get Score'
-                )}
+                Get Score
               </Button>
             )}
           </div>
