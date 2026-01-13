@@ -19,6 +19,7 @@ import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import UserReport from './pages/UserReport';
 import index from './pages/index';
+import Troubleshooting from './pages/Troubleshooting';
 import __Layout from './Layout.jsx';
 
 
@@ -44,6 +45,7 @@ export const PAGES = {
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "UserReport": UserReport,
     "index": index,
+    "Troubleshooting": Troubleshooting,
 }
 
 export const pagesConfig = {
