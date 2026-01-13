@@ -11,7 +11,26 @@ function norm(s) {
 }
 
 function focusSet(focusArr) {
-  return new Set((focusArr || []).map(norm).filter(Boolean));
+  // Expand pills like "Heavy Aromatics" and "Virginia-Perique" into tokens
+  // so matching works even when focus entries are phrases.
+  const out = new Set();
+
+  (focusArr || []).forEach((f) => {
+    const raw = norm(f);
+    if (!raw) return;
+
+    // keep full phrase
+    out.add(raw);
+
+    // also add tokens
+    raw
+      .split(/[^a-z0-9]+/g)
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .forEach((t) => out.add(t));
+  });
+
+  return out;
 }
 
 function inferCategoryFromFocus(focusArr) {

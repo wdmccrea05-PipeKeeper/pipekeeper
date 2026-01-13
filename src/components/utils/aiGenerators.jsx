@@ -150,7 +150,11 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
   }
 
   const blendsData = (blends || []).map((b) => {
-    const isAromatic = b.blend_type === "Aromatic" || b.blend_type === "English Aromatic";
+    const bt = String(b.blend_type || "").toLowerCase();
+
+    // Treat ANY blend_type containing "aromatic" as aromatic.
+    // This fixes values like "Aromatic (Cherry)", "English Aromatic", etc.
+    const isAromatic = bt.includes("aromatic");
     
     // Determine aromatic intensity: Light, Medium, Heavy
     let aromaticIntensity = null;
