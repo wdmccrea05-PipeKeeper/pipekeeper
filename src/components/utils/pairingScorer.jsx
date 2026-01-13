@@ -59,21 +59,17 @@ export function scoreBlendForPipe({ pipeFocus, blend, profile }) {
   if (category === "AROMATIC" && !isAro) return { score: 0, reasoning: "Filtered: Aromatic-only focus." };
   if (category === "NON_AROMATIC" && isAro) return { score: 0, reasoning: "Filtered: Non-aromatic focus." };
 
-  // STEP 2: aromatic intensity filtering
-  let maxCap = null;
+  // STEP 2: aromatic intensity filtering (prefer match, don't hard-filter)
+  let intensityBonus = 0;
   if (isAro) {
     const rule = inferIntensityRule(focusArr); // heavy/light/medium/null
     const intensity = aromaticIntensity(blend); // light/medium/heavy/null
 
-    if (rule === "heavy") {
-      if (intensity !== "heavy") return { score: 0, reasoning: "Filtered: Heavy aromatic focus." };
-    } else if (rule === "light") {
-      if (intensity !== "light") return { score: 0, reasoning: "Filtered: Light aromatic focus." };
-    } else if (rule === "medium") {
-      if (intensity === "medium") {
-        // continue, but allow high score
+    if (rule && intensity) {
+      if (rule === intensity) {
+        intensityBonus = 3; // Boost for matching intensity
       } else {
-        maxCap = 5; // your current rule
+        intensityBonus = -2; // Penalty for mismatched intensity (but don't zero out)
       }
     }
   }
@@ -91,14 +87,21 @@ export function scoreBlendForPipe({ pipeFocus, blend, profile }) {
     if (matches >= 1) base = 9;
   }
 
+  // STEP 4b: check if focus contains "aromatics" or "aromatic" and blend is aromatic
+  if (base == null && isAro) {
+    if (focus.has("aromatics") || focus.has("aromatic") || [...focus].some(f => f.includes("aromatic"))) {
+      base = 8; // Good match for aromatic-focused pipe
+    }
+  }
+
   // STEP 5: user preferences
   let score = base == null ? 4 : base;
   const pref = profile?.preferred_blend_types || [];
   if (pref.includes(blend.blend_type)) score += 2;
   if (profile?.strength_preference && blend.strength === profile.strength_preference) score += 1;
 
-  // STEP 7: apply cap
-  if (maxCap != null) score = Math.min(score, maxCap);
+  // STEP 6: apply intensity bonus/penalty
+  score += intensityBonus;
 
   // Clamp 0..10
   score = Math.max(0, Math.min(10, score));
