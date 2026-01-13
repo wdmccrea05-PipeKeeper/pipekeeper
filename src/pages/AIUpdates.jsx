@@ -225,10 +225,33 @@ Return a JSON array with updates only for blends that need reclassification to a
         <p className="text-sm text-[#e8d5b7]/70 mt-2">
           Review what's out of date and regenerate with approval. You can undo changes and reclassify blends.
         </p>
+        <div className="mt-2 p-2 bg-yellow-500 text-black text-xs rounded">
+          DEBUG: Page updated - {new Date().toISOString()}
+        </div>
       </div>
 
       <div className="space-y-4">
         {/* TOBACCO BLEND CLASSIFICATION - FIRST CARD */}
+        <div className="p-6 border-2 border-blue-500 bg-blue-900/50 rounded-xl">
+          <h2 className="text-xl font-bold text-white mb-4">🏷️ Tobacco Blend Classification</h2>
+          <p className="text-white/80 mb-4">
+            Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis for improved accuracy.
+          </p>
+          <Button
+            size="sm"
+            disabled={reclassifyBusy || blends.length === 0}
+            onClick={() => reclassifyBlends.mutate()}
+            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+          >
+            {reclassifyBusy ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Tags className="w-4 h-4 mr-1" />
+            )}
+            Reclassify Blends ({blends.length} total)
+          </Button>
+        </div>
+
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
