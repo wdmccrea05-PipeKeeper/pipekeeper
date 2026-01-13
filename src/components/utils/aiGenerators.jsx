@@ -83,6 +83,25 @@ function deriveFocusCategory(focus) {
 }
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
+  // Normalize focus tags for consistent matching
+  function normalizeFocus(focusArr) {
+    const f = Array.isArray(focusArr) ? focusArr : [];
+    const joined = f.join(" ").toLowerCase();
+
+    const out = new Set(f);
+
+    // Normalize Aromatic tags
+    if (joined.includes("aromatic")) out.add("Aromatic"); // covers Aromatic/Aromatics/Heavy Aromatics/Light Aromatics
+    if (joined.includes("non-aromatic") || joined.includes("non aromatic")) out.add("Non-Aromatic");
+
+    // Normalize intensity tags
+    if (joined.includes("heavy")) out.add("Heavy Aromatics");
+    if (joined.includes("light")) out.add("Light Aromatics");
+    if (joined.includes("medium")) out.add("Medium Aromatics");
+
+    return [...out];
+  }
+
   // Expand pipes to include bowl variants as separate entries
   const pipesData = [];
   for (const p of pipes || []) {
