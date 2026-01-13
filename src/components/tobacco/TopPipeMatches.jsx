@@ -74,6 +74,13 @@ export default function TopPipeMatches({ blend, pipes }) {
     }
   }, [savedPairings?.generated_date, collectionOptimization?.generated_date, pipesFocusFingerprint]);
 
+  // Auto-trigger matching when blend is first loaded
+  useEffect(() => {
+    if (blend && pipes.length > 0 && !matches && !loading && savedPairings) {
+      updateMatchesFromData();
+    }
+  }, [blend?.id, pipes.length, savedPairings]);
+
 
 
   const updateMatchesFromData = () => {
@@ -139,70 +146,16 @@ export default function TopPipeMatches({ blend, pipes }) {
   const findMatches = async () => {
     if (pipes.length === 0) return;
 
-    // If we have pairing data, use it
-    if (savedPairings) {
+    // If we have pairing data, use it immediately
+    if (savedPairings?.pairings) {
       updateMatchesFromData();
       return;
     }
 
-    // Otherwise, generate fresh matches via AI
+    // No pairing data exists - trigger regeneration and use fallback scoring
     setLoading(true);
-    try {
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        focus: p.focus
-      }));
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe tobacco consultant. Analyze which pipes from this collection would be the best matches for smoking this tobacco blend.
-
-Tobacco Blend:
-- Name: ${blend.name}
-- Type: ${blend.blend_type}
-- Strength: ${blend.strength}
-- Cut: ${blend.cut}
-- Flavor Notes: ${blend.flavor_notes?.join(', ')}
-
-Available Pipes:
-${JSON.stringify(pipesData, null, 2)}
-
-Return the TOP 3 best matching pipes with reasoning. Consider:
-- Chamber size for the cut type
-- Pipe shape/bowl characteristics for the blend type
-- Designated specializations/focus if any
-- Traditional pairings and smoking experience`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            matches: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  pipe_id: { type: "string" },
-                  pipe_name: { type: "string" },
-                  match_score: { type: "number" },
-                  reasoning: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      setMatches(result.matches?.slice(0, 3) || []);
-    } catch (err) {
-      console.error('Error finding matches:', err);
-    } finally {
-      setLoading(false);
-    }
+    updateMatchesFromData(); // Use fallback scoring while regenerating
+    setLoading(false);
   };
 
   const getScoreColor = (score) => {
