@@ -8,6 +8,7 @@ import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
+import { scorePipeBlend } from "@/components/utils/pairingScore";
 
 export default function PairingMatrix({ user }) {
   const [expanded, setExpanded] = useState({});
@@ -74,11 +75,50 @@ export default function PairingMatrix({ user }) {
 
   const pairings = useMemo(() => {
     const activePairings = activePairingsRecord?.pairings || [];
-    return activePairings.map((p) => ({
-      ...p,
-      __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
-    }));
-  }, [activePairingsRecord]);
+    return activePairings.map((p) => {
+      const pipeRecord = pipes.find((x) => String(x.id) === String(p.pipe_id));
+      const pipeFocus = p.focus || pipeRecord?.focus || [];
+
+      // if bowl has its own focus, use it
+      let effectiveFocus = pipeFocus;
+      if (p.bowl_variant_id && pipeRecord?.interchangeable_bowls?.length) {
+        const bowl = pipeRecord.interchangeable_bowls.find((b, i) =>
+          String(b?.bowl_variant_id || `bowl_${i}`) === String(p.bowl_variant_id)
+        );
+        if (bowl?.focus?.length) effectiveFocus = bowl.focus;
+      }
+
+      const recsFromStored = p.recommendations || [];
+      const looksBad =
+        recsFromStored.length === 0 ||
+        recsFromStored.every((r) => (r.score ?? 0) <= 4);
+
+      const recs = looksBad
+        ? (blends || []).map((b) => {
+            const { score, why } = scorePipeBlend(
+              { pipe_id: p.pipe_id, pipe_name: p.pipe_name, bowl_variant_id: p.bowl_variant_id, focus: effectiveFocus },
+              {
+                tobacco_id: String(b.id),
+                tobacco_name: b.name,
+                blend_type: b.blend_type,
+                strength: b.strength,
+                flavor_notes: b.flavor_notes,
+                tobacco_components: b.tobacco_components,
+                aromatic_intensity: b.aromatic_intensity,
+              },
+              userProfile
+            );
+            return { tobacco_id: String(b.id), tobacco_name: b.name, score, reasoning: why };
+          }).sort((a, b) => b.score - a.score)
+        : recsFromStored;
+
+      return {
+        ...p,
+        __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
+        recommendations: recs,
+      };
+    });
+  }, [activePairingsRecord, pipes, blends, userProfile]);
 
   const pipeNameById = useMemo(() => {
     const map = new Map();
@@ -89,12 +129,23 @@ export default function PairingMatrix({ user }) {
   const variantLabel = (pair) => {
     const base = pipeNameById.get(String(pair.pipe_id)) || pair.pipe_name || "Unknown Pipe";
     if (pair.bowl_variant_id) {
-      // Try to find bowl name from pipe record
       const pipe = pipes.find((p) => String(p.id) === String(pair.pipe_id));
       if (pipe?.interchangeable_bowls) {
-        const idx = parseInt(String(pair.bowl_variant_id).replace("bowl_", ""), 10);
-        const bowl = pipe.interchangeable_bowls?.[idx];
-        if (bowl) return `${base} - ${bowl.name || `Bowl ${idx + 1}`}`;
+        const bowlId = String(pair.bowl_variant_id);
+        const bowl = pipe.interchangeable_bowls?.find((b, i) => {
+          const id = String(b?.bowl_variant_id || `bowl_${i}`);
+          return id === bowlId;
+        });
+
+        if (bowl) return `${base} - ${bowl.name || bowlId}`;
+
+        // fallback: if it's bowl_# style, show Bowl #
+        if (/^bowl_\d+$/.test(bowlId)) {
+          const n = Number(bowlId.split("_")[1]) + 1;
+          return `${base} - Bowl ${n}`;
+        }
+
+        return `${base} - ${bowlId}`;
       }
       return `${base} - ${pair.bowl_variant_id}`;
     }
