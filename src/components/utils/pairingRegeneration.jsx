@@ -1,3 +1,4 @@
+
 import { generatePairingsAI } from "./aiGenerators";
 import { buildArtifactFingerprint } from "./fingerprint";
 import { safeUpdate } from "./safeUpdate";
@@ -27,65 +28,12 @@ export async function regeneratePairings({
     throw new Error("No pairings generated.");
   }
 
-  // If no active matrix exists, always create one
-  if (!activePairings?.id) {
-    await base44.entities.PairingMatrix.create({
-      created_by: user.email,
-      is_active: true,
-      previous_active_id: null,
-      input_fingerprint: currentFingerprint,
-      pairings: newPairings,
-      generated_date: new Date().toISOString(),
-    });
-
-    await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
-    invalidateAIQueries(queryClient, user?.email);
-    return;
+  // Deactivate current active if it exists
+  if (activePairings?.id) {
+    await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user.email);
   }
 
-  // Merge mode: replace only regenerated pipes/variants inside the existing active matrix
-  if (mode === "merge") {
-    const existing = activePairings?.pairings || [];
-
-    // Build a set of (pipe_id, bowl_variant_id) keys coming from the new run
-    // Normalize: treat null and "main" identically for matching purposes
-    const newKeys = new Set(
-      newPairings.map((p) => {
-        const normalizedBowlId = (!p.bowl_variant_id || p.bowl_variant_id === "main") ? null : p.bowl_variant_id;
-        return `${String(p.pipe_id)}::${normalizedBowlId}`;
-      })
-    );
-
-    // Keep all existing pairings except the ones we regenerated
-    const merged = existing.filter((p) => {
-      const normalizedBowlId = (!p.bowl_variant_id || p.bowl_variant_id === "main") ? null : p.bowl_variant_id;
-      const key = `${String(p.pipe_id)}::${normalizedBowlId}`;
-      return !newKeys.has(key);
-    });
-
-    merged.push(...newPairings);
-
-    await safeUpdate(
-      "PairingMatrix",
-      activePairings.id,
-      {
-        // keep matrix active, just update contents
-        is_active: true,
-        input_fingerprint: currentFingerprint,
-        pairings: merged,
-        generated_date: new Date().toISOString(),
-      },
-      user?.email
-    );
-
-    await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
-    invalidateAIQueries(queryClient, user?.email);
-    return;
-  }
-
-  // Replace mode: deactivate old + create new
-  await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user?.email);
-
+  // Create new active artifact (fast + consistent)
   await base44.entities.PairingMatrix.create({
     created_by: user.email,
     is_active: true,
