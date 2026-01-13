@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { generatePairingsDeterministic } from "@/components/utils/pairingScorer";
 
 // === Hard Rules Enforcement ===
 
@@ -83,7 +84,6 @@ function deriveFocusCategory(focus) {
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
   // Expand pipes to include bowl variants as separate entries
-  // IMPORTANT: Use pipe_id / pipe_name in the input so the LLM can echo them back correctly.
   const pipesData = [];
   for (const p of pipes || []) {
     const pid = String(p.id);
@@ -137,11 +137,11 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     let aromaticIntensity = null;
     if (isAromatic) {
       if (b.strength === "Mild" || b.strength === "Mild-Medium") {
-        aromaticIntensity = "Light";
+        aromaticIntensity = "light";
       } else if (b.strength === "Medium" || b.strength === "Medium-Full") {
-        aromaticIntensity = "Medium";
+        aromaticIntensity = "medium";
       } else if (b.strength === "Full") {
-        aromaticIntensity = "Heavy";
+        aromaticIntensity = "heavy";
       }
     }
     
@@ -154,201 +154,21 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
       cut: b.cut || null,
       flavor_notes: b.flavor_notes || null,
       tobacco_components: b.tobacco_components || null,
-      category: isAromatic ? "AROMATIC" : "NON_AROMATIC",
+      category: isAromatic ? "aromatic" : "non_aromatic",
       aromatic_intensity: aromaticIntensity,
     };
   });
 
-  let profileContext = "";
-  if (profile) {
-    profileContext = `
-
-User Smoking Preferences:
-- Clenching: ${profile.clenching_preference}
-- Smoke Duration: ${profile.smoke_duration_preference}
-- Preferred Blend Types: ${profile.preferred_blend_types?.join(", ") || "None"}
-- Pipe Size Preference: ${profile.pipe_size_preference}
-- Strength Preference: ${profile.strength_preference}
-- Additional Notes: ${profile.notes || "None"}
-
-Weight these preferences heavily when scoring pairings.`;
-  }
-
-  const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are an expert pipe tobacco sommelier. Create a pairing list for each pipe/bowl configuration.
-
-CRITICAL CONSTRAINTS:
-1) You MUST ONLY recommend tobaccos from the user's collection list below.
-2) You MUST return EXACTLY the same pipe_id, pipe_name, and bowl_variant_id values shown in the PIPES list.
-3) Return ONE pairing object PER pipe entry (so total pairings === number of pipe entries).
-
-PIPES (each entry is a distinct pipe variant):
-${JSON.stringify(pipesData.map(p => ({ ...p, focus_category: deriveFocusCategory(p.focus) })), null, 2)}
-
-TOBACCOS (ONLY choose from this list):
-${JSON.stringify(blendsData, null, 2)}${profileContext}
-
-SCORING ALGORITHM (APPLY IN THIS EXACT ORDER):
-
-STEP 1: CATEGORY FILTERING
-If pipe.focus_category == "AROMATIC_ONLY":
-  - Set all NON_AROMATIC blends score to 0 immediately.
-  - Only score AROMATIC blends.
-Else if pipe.focus_category == "NON_AROMATIC_ONLY":
-  - Set all AROMATIC blends score to 0 immediately.
-  - Only score NON_AROMATIC blends.
-Else (MIXED):
-  - All blends eligible for scoring.
-
-STEP 2: AROMATIC INTENSITY FILTERING (for AROMATIC blends only, if focus specifies intensity)
-If pipe.focus contains "Heavy Aromatics":
-  - For aromatic_intensity == "Heavy": continue to Step 3.
-  - For aromatic_intensity == "Light" or "Medium": force score to 0.
-Else if pipe.focus contains "Light Aromatics":
-  - For aromatic_intensity == "Light": continue to Step 3.
-  - For aromatic_intensity == "Medium" or "Heavy": force score to 0.
-Else if pipe.focus contains "Medium Aromatics":
-  - For aromatic_intensity == "Medium": continue to Step 3 with base score 8–9.
-  - For aromatic_intensity == "Light": continue to Step 3 with max score 5.
-  - For aromatic_intensity == "Heavy": continue to Step 3 with max score 5.
-Else (no explicit intensity):
-  - All aromatic intensities eligible (no intensity restriction).
-
-STEP 3: EXACT NAME MATCH
-For each blend, check if tobacco_name exactly matches any focus keyword:
-  - If exact match found: base_score = 10.
-  - Else: continue to Step 4.
-
-STEP 4: BLEND_TYPE KEYWORD MATCH
-For each blend, count how many blend_type keywords are in focus:
-  - 0 keywords: no bonus (continue to Step 5).
-  - 1 keyword match: base_score = 9.
-  - 2+ keyword matches: base_score = 9.
-
-STEP 5: USER PREFERENCES
-Apply adjustments:
-  - If blend_type in user.preferred_blend_types: add 2.
-  - If blend.strength == user.strength_preference: add 1.
-
-STEP 6: FINAL BASE SCORE (if no focus/preference match so far)
-  - If base_score not yet set: base_score = 4.
-
-STEP 7: APPLY INTENSITY CAPS (from Step 2)
-If STEP 2 set a max score (e.g., max 5), cap final score at that value.
-
-STEP 8: SORT
-Sort ALL recommendations by score descending. Display top 3 recommendations.
-
-CRITICAL: DO NOT skip any steps. Apply each step mechanically and in order.
-
-OUTPUT:
-Return JSON { "pairings": [...] } where each pairing has:
-- pipe_id (string)
-- pipe_name (string)
-- bowl_variant_id (string|null)
-- recommendations: ARRAY of ALL tobaccos with:
-    - tobacco_id (string)
-    - tobacco_name (string)
-    - score (number)
-    - reasoning (string)
-`,
-    response_json_schema: {
-      type: "object",
-      required: ["pairings"],
-      properties: {
-        pairings: {
-          type: "array",
-          items: {
-            type: "object",
-            required: ["pipe_id", "pipe_name", "bowl_variant_id", "recommendations"],
-            properties: {
-              pipe_id: { type: "string" },
-              pipe_name: { type: "string" },
-              bowl_variant_id: { type: ["string", "null"] },
-              recommendations: {
-                type: "array",
-                items: {
-                  type: "object",
-                  required: ["tobacco_id", "tobacco_name", "score", "reasoning"],
-                  properties: {
-                    tobacco_id: { type: "string" },
-                    tobacco_name: { type: "string" },
-                    score: { type: "number" },
-                    reasoning: { type: "string" },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+  // Use deterministic scoring instead of LLM
+  const pairings = generatePairingsDeterministic({
+    pipesData,
+    blendsData,
+    profile
   });
 
-  const rawPairings = result?.pairings || [];
-
-  // Hard guard: if LLM returns nothing, don't silently "succeed"
-  if (!rawPairings.length) {
-    throw new Error("LLM returned no pairings. (Schema mismatch or oversized response.)");
+  if (!pairings.length) {
+    throw new Error("No pairings generated (deterministic).");
   }
-
-  // Clamp scores deterministically based on pipe focus
-  const pairings = rawPairings.map((p) => {
-    // Find the corresponding pipe entry we sent to the model (so we use the same focus)
-    const pipeEntry =
-      pipesData.find((x) =>
-        String(x.pipe_id) === String(p.pipe_id) &&
-        String(x.bowl_variant_id ?? "") === String(p.bowl_variant_id ?? "")
-      ) || null;
-
-    const pipeFocus = pipeEntry?.focus || [];
-    const mode = classifyPipeMode(pipeFocus);
-    const intensityPref = parseAromaticIntensityFromFocus(pipeFocus);
-
-    const recs = (p.recommendations || []).map((r) => {
-      const blend = blendsData.find((b) => String(b.tobacco_id) === String(r.tobacco_id));
-      const blendClass = classifyBlend(blend?.blend_type);
-      const intensity = norm(blend?.aromatic_intensity);
-
-      let score = clampScore(r.score, 0, 10);
-
-      // HARD category gating
-      if (mode === "AROMATIC_ONLY" && blendClass !== "AROMATIC") score = 0;
-      if (mode === "NON_AROMATIC_ONLY" && blendClass === "AROMATIC") score = 0;
-
-      // Optional intensity gating for aromatic blends only
-      if (blendClass === "AROMATIC" && score > 0 && intensityPref) {
-        if (intensityPref === "HEAVY" && intensity !== "heavy") score = 0;
-        if (intensityPref === "LIGHT" && intensity !== "light") score = 0;
-
-        // MEDIUM preference = allow all but cap light/heavy
-        if (intensityPref === "MEDIUM") {
-          if (intensity === "medium") score = Math.min(score, 9);
-          if (intensity === "light" || intensity === "heavy") score = Math.min(score, 5);
-        }
-      }
-
-      return {
-        ...r,
-        score,
-        reasoning:
-          score === 0
-            ? `${r.reasoning || ""} (Filtered by focus rules)`
-            : r.reasoning || "",
-      };
-    });
-
-    // Always sort after clamping so Top 3 is truly correct
-    recs.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-
-    return {
-      ...p,
-      pipe_id: String(p.pipe_id),
-      bowl_variant_id: p.bowl_variant_id ?? null,
-      recommendations: recs,
-      focus: pipeFocus,
-    };
-  });
 
   return { pairings };
 }
