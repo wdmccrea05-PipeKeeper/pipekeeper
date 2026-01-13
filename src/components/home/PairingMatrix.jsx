@@ -131,21 +131,10 @@ export default function PairingMatrix({ user }) {
     if (pair.bowl_variant_id) {
       const pipe = pipes.find((p) => String(p.id) === String(pair.pipe_id));
       if (pipe?.interchangeable_bowls) {
-        const bowlId = String(pair.bowl_variant_id);
-        const bowl = pipe.interchangeable_bowls?.find((b, i) => {
-          const id = String(b?.bowl_variant_id || `bowl_${i}`);
-          return id === bowlId;
-        });
-
-        if (bowl) return `${base} - ${bowl.name || bowlId}`;
-
-        // fallback: if it's bowl_# style, show Bowl #
-        if (/^bowl_\d+$/.test(bowlId)) {
-          const n = Number(bowlId.split("_")[1]) + 1;
-          return `${base} - Bowl ${n}`;
-        }
-
-        return `${base} - ${bowlId}`;
+        const bowl = pipe.interchangeable_bowls.find((b, i) =>
+          String(b.bowl_variant_id || `bowl_${i}`) === String(pair.bowl_variant_id)
+        );
+        if (bowl) return `${base} - ${bowl.name || "Bowl"}`;
       }
       return `${base} - ${pair.bowl_variant_id}`;
     }
