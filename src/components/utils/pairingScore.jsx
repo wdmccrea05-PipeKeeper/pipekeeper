@@ -2,6 +2,16 @@
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
+function inferBlendCategory(blend) {
+  const bt = String(blend?.blend_type || blend?.type || "").toLowerCase();
+
+  // Treat English Aromatic as aromatic
+  if (bt.includes("aromatic")) return "aromatic";
+
+  // Everything else is non-aromatic by default
+  return "non_aromatic";
+}
+
 export function isAromaticBlend(blend) {
   const t = (blend?.blend_type || "").toLowerCase();
   return t === "aromatic" || t === "english aromatic" || t.includes("aromatic");
@@ -80,7 +90,11 @@ function countKeywordMatches(focusLower, text) {
 export function scorePipeBlend(pipeVariant, blend, userProfile) {
   const nf = normalizeFocus(pipeVariant?.focus);
 
-  const aromatic = isAromaticBlend(blend);
+  const blendCat = String(
+    blend?.category ? blend.category : inferBlendCategory(blend)
+  ).toLowerCase();
+
+  const aromatic = blendCat === "aromatic" || isAromaticBlend(blend);
 
   // HARD category gating ONLY if the pipe is explicitly dedicated
   if (nf.aromaticOnly && !aromatic) return { score: 0, why: "Pipe is dedicated to aromatics." };
