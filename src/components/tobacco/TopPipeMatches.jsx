@@ -233,7 +233,10 @@ Return the TOP 3 best matching pipes with reasoning. Consider:
             {!collapsed && (
               <div className="space-y-2">
               {matches.map((match, idx) => {
-                const pipe = pipes.find(p => p.id === match.pipe_id);
+                const pipe = pipes.find(p =>
+                  String(p.id) === String(match.pipe_id) &&
+                  String(p.bowl_variant_id || "") === String(match.bowl_variant_id || "")
+                );
                 if (!pipe) return null;
 
                 return (
