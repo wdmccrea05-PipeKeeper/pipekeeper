@@ -60,6 +60,33 @@ export function getVariantFromPipe(pipe, bowlVariantId) {
   const bowls = Array.isArray(pipe.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
 
   if (bowlVariantId) {
+    // 1) Prefer explicit id match first (supports UUIDs / stable ids)
+    const direct = bowls.find((b, i) => (b?.bowl_variant_id || `bowl_${i}`) === bowlVariantId);
+    if (direct) {
+      const idx = bowls.indexOf(direct);
+      return {
+        ...pipe,
+        bowl_variant_id: bowlVariantId,
+        variant_key: getPipeVariantKey(pipe.id, bowlVariantId),
+        variant_name: `${pipe.name} - ${direct.name || "Bowl"}`,
+        focus: Array.isArray(direct.focus) ? direct.focus : (Array.isArray(pipe.focus) ? pipe.focus : []),
+
+        chamber_volume: direct.chamber_volume ?? pipe.chamber_volume,
+        bowl_diameter_mm: direct.bowl_diameter_mm ?? pipe.bowl_diameter_mm,
+        bowl_depth_mm: direct.bowl_depth_mm ?? pipe.bowl_depth_mm,
+        bowl_height_mm: direct.bowl_height_mm ?? pipe.bowl_height_mm,
+        bowl_outer_diameter_mm: direct.bowl_outer_diameter_mm ?? pipe.bowl_outer_diameter_mm,
+
+        bowl_material: direct.bowl_material ?? pipe.bowl_material,
+        specialization: direct.specialization ?? pipe.specialization,
+        dimensions_notes: direct.dimensions_notes ?? pipe.dimensions_notes,
+
+        __bowl_index: idx,
+        __bowl: direct,
+      };
+    }
+
+    // 2) Fallback to legacy bowl_# parsing
     const idx = parseInt(String(bowlVariantId).replace("bowl_", ""), 10);
     const bowl = Number.isFinite(idx) ? bowls[idx] : null;
 
@@ -71,7 +98,6 @@ export function getVariantFromPipe(pipe, bowlVariantId) {
         variant_name: `${pipe.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
         focus: Array.isArray(bowl.focus) ? bowl.focus : (Array.isArray(pipe.focus) ? pipe.focus : []),
 
-        // dimensions / measurements prefer bowl record first
         chamber_volume: bowl.chamber_volume ?? pipe.chamber_volume,
         bowl_diameter_mm: bowl.bowl_diameter_mm ?? pipe.bowl_diameter_mm,
         bowl_depth_mm: bowl.bowl_depth_mm ?? pipe.bowl_depth_mm,
@@ -88,7 +114,7 @@ export function getVariantFromPipe(pipe, bowlVariantId) {
     }
   }
 
-  // main
+  // Base pipe (no bowl variant)
   return {
     ...pipe,
     bowl_variant_id: null,
