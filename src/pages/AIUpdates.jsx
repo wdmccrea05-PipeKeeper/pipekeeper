@@ -154,25 +154,53 @@ export default function AIUpdates() {
 
   const reclassifyBlends = useMutation({
     mutationFn: async () => {
+      if (!user?.email) return;
+
       setReclassifyBusy(true);
-      
-      const blendsToUpdate = blends.filter(b => b.blend_type);
-      
+
+      const blendsToUpdate = (blends || []).filter(Boolean);
       if (blendsToUpdate.length === 0) {
         toast.info("No blends to reclassify");
         setReclassifyBusy(false);
         return;
       }
 
-      const prompt = `Given the expanded tobacco blend classification system, analyze and reclassify these tobacco blends to the most accurate category:
+      const categories = [
+        "American",
+        "Aromatic",
+        "Balkan",
+        "Burley",
+        "Burley-based",
+        "Cavendish",
+        "Codger Blend",
+        "Dark Fired Kentucky",
+        "English",
+        "English Aromatic",
+        "English Balkan",
+        "Full English/Oriental",
+        "Kentucky",
+        "Lakeland",
+        "Latakia Blend",
+        "Navy Flake",
+        "Oriental/Turkish",
+        "Other",
+        "Perique",
+        "Shag",
+        "Virginia",
+        "Virginia/Burley",
+        "Virginia/Oriental",
+        "Virginia/Perique",
+      ];
+
+      const prompt = `Given the expanded tobacco blend classification system, analyze and reclassify these tobacco blends to the most accurate category.
 
 Available categories (alphabetical):
-American, Aromatic, Balkan, Burley, Burley-based, Cavendish, Codger Blend, Dark Fired Kentucky, English, English Aromatic, English Balkan, Full English/Oriental, Kentucky, Lakeland, Latakia Blend, Navy Flake, Oriental/Turkish, Other, Perique, Shag, Virginia, Virginia/Burley, Virginia/Oriental, Virginia/Perique
+${categories.join(", ")}
 
 Blends to reclassify:
-${blendsToUpdate.map(b => `- ${b.name} (current: ${b.blend_type})`).join('\n')}
+${blendsToUpdate.map((b) => `- ${b.name} (current: ${b.blend_type || "Unknown"})`).join("\n")}
 
-Return a JSON array with updates only for blends that need reclassification to a more accurate category.`;
+Return JSON in the requested schema with updates ONLY for blends that should change categories.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -187,28 +215,42 @@ Return a JSON array with updates only for blends that need reclassification to a
                   name: { type: "string" },
                   old_type: { type: "string" },
                   new_type: { type: "string" },
-                  reasoning: { type: "string" }
-                }
-              }
-            }
-          }
-        }
+                  reasoning: { type: "string" },
+                },
+                required: ["name", "old_type", "new_type"],
+              },
+            },
+          },
+        },
       });
 
-      if (result?.updates && result.updates.length > 0) {
-        for (const update of result.updates) {
-          const blend = blendsToUpdate.find(b => b.name === update.name);
-          if (blend) {
-            await safeUpdate('TobaccoBlend', blend.id, { blend_type: update.new_type }, user?.email);
-          }
-        }
-        
-        queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
-        toast.success(`Reclassified ${result.updates.length} blend(s)`);
-      } else {
+      const updates = Array.isArray(result?.updates) ? result.updates : [];
+      if (updates.length === 0) {
         toast.info("All blends are already correctly classified");
+        setReclassifyBusy(false);
+        return;
       }
-      
+
+      let changed = 0;
+
+      for (const upd of updates) {
+        const blend = blendsToUpdate.find((b) => String(b.name).trim() === String(upd.name).trim());
+        if (!blend) continue;
+
+        const current = blend.blend_type || "Unknown";
+        const next = upd.new_type;
+
+        if (!next || String(next).trim() === "" || String(next) === String(current)) continue;
+
+        await safeUpdate("TobaccoBlend", blend.id, { blend_type: next }, user?.email);
+        changed++;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+
+      if (changed > 0) toast.success(`Reclassified ${changed} blend(s)`);
+      else toast.info("No blend changes were applied");
+
       setReclassifyBusy(false);
     },
     onError: (error) => {
@@ -225,33 +267,10 @@ Return a JSON array with updates only for blends that need reclassification to a
         <p className="text-sm text-[#e8d5b7]/70 mt-2">
           Review what's out of date and regenerate with approval. You can undo changes and reclassify blends.
         </p>
-        <div className="mt-2 p-2 bg-yellow-500 text-black text-xs rounded">
-          DEBUG: Page updated - {new Date().toISOString()}
-        </div>
       </div>
 
       <div className="space-y-4">
-        {/* TOBACCO BLEND CLASSIFICATION - FIRST CARD */}
-        <div className="p-6 border-2 border-blue-500 bg-blue-900/50 rounded-xl">
-          <h2 className="text-xl font-bold text-white mb-4">🏷️ Tobacco Blend Classification</h2>
-          <p className="text-white/80 mb-4">
-            Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis for improved accuracy.
-          </p>
-          <Button
-            size="sm"
-            disabled={reclassifyBusy || blends.length === 0}
-            onClick={() => reclassifyBlends.mutate()}
-            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-          >
-            {reclassifyBusy ? (
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <Tags className="w-4 h-4 mr-1" />
-            )}
-            Reclassify Blends ({blends.length} total)
-          </Button>
-        </div>
-
+        {/* TOBACCO BLEND CLASSIFICATION */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
@@ -274,7 +293,7 @@ Return a JSON array with updates only for blends that need reclassification to a
               ) : (
                 <Tags className="w-4 h-4 mr-1" />
               )}
-              Reclassify Blends
+              Reclassify Blends ({blends.length} total)
             </Button>
           </CardContent>
         </Card>
