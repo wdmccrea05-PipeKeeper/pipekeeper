@@ -3,6 +3,9 @@ const NON_ARO_KEYWORDS = new Set([
   "burley", "oriental", "turkish", "perique", "lakeland"
 ]);
 
+// Keyword families for expanded matching
+const BURLEY_FAMILY = new Set(["burley", "kentucky", "dark-fired", "dark fired", "dfk", "burley-based"]);
+
 function norm(s) {
   return String(s || "").trim().toLowerCase();
 }
@@ -84,10 +87,26 @@ export function scoreBlendForPipe({ pipeFocus, blend, profile }) {
   let base = null;
   if (focus.has(name)) base = 10;
 
-  // STEP 4: blend_type keyword match
+  // STEP 4: blend_type keyword match (with family expansion)
   if (base == null) {
     const bt = norm(blend.blend_type);
-    const matches = [...focus].filter(k => k && bt && bt.includes(k)).length;
+    let matches = 0;
+    
+    for (const kw of focus) {
+      // Direct match
+      if (bt.includes(kw)) {
+        matches++;
+        continue;
+      }
+      
+      // Family expansion: Burley/Kentucky/Dark-Fired
+      const isBurleyFamilyKeyword = BURLEY_FAMILY.has(kw);
+      if (isBurleyFamilyKeyword) {
+        const hasMatch = [...BURLEY_FAMILY].some(f => bt.includes(f));
+        if (hasMatch) matches++;
+      }
+    }
+    
     if (matches >= 1) base = 9;
   }
 
