@@ -140,8 +140,29 @@ export default function FAQ() {
       </Section>
 
       <Section title="Features & Tools">
+        <Q id="interchangeable-bowls" q="What are interchangeable bowls?">
+          Some pipe systems (Falcon, Gabotherm, Yello-Bole, Viking, etc.) allow you to swap different bowls on the same stem/shank assembly. PipeKeeper treats each bowl as a distinct "pipe variant" with its own:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Focus tags (dedicate one bowl to Virginias, another to Aromatics, etc.)</li>
+            <li>Chamber dimensions and characteristics</li>
+            <li>Tobacco pairing recommendations</li>
+            <li>Break-in schedules and smoking logs</li>
+          </ul>
+          This allows optimal specialization—use the same stem with multiple bowls for different tobacco types without ghosting.
+        </Q>
+
+        <Q id="pipe-focus" q="What are pipe focus tags?">
+          Focus tags let you specialize pipes for specific tobacco types. Common tags include:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li><b>Aromatic:</b> Dedicates pipe to aromatic blends only (Heavy/Medium/Light intensity supported)</li>
+            <li><b>Non-Aromatic:</b> Excludes aromatic blends</li>
+            <li><b>Virginia, VaPer, English, Balkan, Latakia:</b> Automatically treated as non-aromatic families</li>
+            <li><b>Utility/Versatile:</b> Allows mixed use without restrictions</li>
+          </ul>
+          The pairing system respects these tags—aromatic-only pipes won't recommend non-aromatic blends and vice versa. Focus tags work at the pipe level or per-bowl for interchangeable systems.
+        </Q>
         <Q id="pairing-matrix" q="What is the Pairing Matrix?">
-          The AI-powered Pairing Matrix suggests which tobacco blends work best with each pipe in your collection based on pipe characteristics, blend profiles, and your preferences. Basic pairing suggestions are available to all users.
+          The Pairing Matrix generates compatibility scores (0-10) between each pipe and tobacco blend in your collection. It considers pipe characteristics (shape, chamber volume, bowl material), blend profiles (type, strength, aromatic intensity), pipe focus tags (Virginia, English, Aromatic, etc.), and your personal preferences. The system generates recommendations once and stores them for instant access across the app. For pipes with interchangeable bowls, each bowl variant is treated separately with its own recommendations.
         </Q>
 
         <Q id="pipe-identification" q="How does pipe identification work?">
@@ -210,15 +231,42 @@ export default function FAQ() {
         </Q>
 
         <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
-          The enhanced Pairing Matrix uses AI to analyze your entire collection and generate compatibility scores between every pipe and tobacco combination. It considers pipe characteristics (shape, size, chamber volume), blend profiles (type, strength, cut), and your personal preferences to suggest optimal pairings.
+          The enhanced Pairing Matrix generates detailed compatibility scores (0-10) for every pipe-tobacco combination in your collection:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li><b>Smart Focus Matching:</b> Pipes with "Aromatic" focus only match aromatic blends; "Virginia" or "English" focus matches non-aromatic families</li>
+            <li><b>Interchangeable Bowl Support:</b> Each bowl variant gets its own recommendations based on its specific focus and characteristics</li>
+            <li><b>Aromatic Intensity:</b> Pipes dedicated to aromatics consider light/medium/heavy intensity preferences</li>
+            <li><b>Top 10 Storage:</b> For performance, only the top 10 recommendations per pipe are stored</li>
+            <li><b>Live Scoring:</b> Use "Check Any Blend" on pipe detail pages to calculate scores for any blend on-demand</li>
+            <li><b>One-Click Regeneration:</b> Regenerate all pairings when your collection changes significantly</li>
+          </ul>
+          The system uses deterministic scoring logic for consistency—no randomness, always the same result for the same inputs.
         </Q>
 
         <Q id="premium-collection-optimizer" q="Premium: Collection Optimization">
-          This AI feature analyzes your collection to identify gaps, redundancies, and specialization opportunities. It suggests dedicating specific pipes to certain blend types, recommends what pipe to buy next based on your collection needs, and helps you make the most of what you own.
+          This AI feature analyzes your collection to identify gaps, redundancies, and specialization opportunities:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li><b>Specialization Suggestions:</b> Recommends dedicating pipes to specific blend families (Virginias, Latakia blends, Aromatics)</li>
+            <li><b>Bowl-Specific Focus:</b> For interchangeable bowl systems, suggests focus tags for individual bowls</li>
+            <li><b>Gap Analysis:</b> Identifies missing pipe styles or blend types in your collection</li>
+            <li><b>Next Purchase Recommendations:</b> Suggests what pipe to buy next based on your current collection</li>
+            <li><b>One-Click Apply:</b> Apply recommended focus changes directly from the optimizer interface</li>
+            <li><b>Undo Support:</b> Revert optimization changes if needed</li>
+          </ul>
+          The optimizer works with your pairing matrix to ensure every pipe is used optimally.
         </Q>
 
         <Q id="premium-break-in" q="Premium: AI Break-in Schedules">
-          Generate customized break-in schedules for new pipes. The AI recommends specific tobaccos from your cellar and a progression of bowl counts designed to build proper cake without risking burnout. It adapts to your pipe's characteristics and your smoking preferences.
+          Generate customized break-in schedules for new pipes:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li><b>Smart Tobacco Selection:</b> Recommends specific blends from your collection for each break-in stage</li>
+            <li><b>Progressive Conditioning:</b> Starts with mild, forgiving blends then transitions to your pipe's intended focus</li>
+            <li><b>Bowl Count Tracking:</b> Track progress bowl-by-bowl with automated checkmarks</li>
+            <li><b>Interchangeable Bowl Support:</b> Generate separate break-in schedules for each bowl variant</li>
+            <li><b>Smoking Log Integration:</b> Sessions marked as "break-in" automatically update your schedule</li>
+            <li><b>Regeneration:</b> Update schedules as your tobacco collection changes</li>
+          </ul>
+          Break-in schedules help you build proper cake without risking burnout or ghosting in new pipes.
         </Q>
 
         <Q id="premium-pipe-specialization" q="Premium: Pipe Specialization">
