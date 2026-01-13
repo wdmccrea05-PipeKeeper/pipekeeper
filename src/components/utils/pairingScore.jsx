@@ -183,11 +183,14 @@ export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
 
     recs.sort((a, b) => b.score - a.score);
 
+    // Only keep top 10 recommendations to reduce storage and improve performance
+    const topRecs = recs.slice(0, 10);
+
     return {
       pipe_id: String(pv.pipe_id),
       pipe_name: String(pv.pipe_name),
       bowl_variant_id: pv.bowl_variant_id ?? null,
-      recommendations: recs,
+      recommendations: topRecs,
     };
   });
 }
