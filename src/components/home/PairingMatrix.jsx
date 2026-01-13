@@ -75,50 +75,12 @@ export default function PairingMatrix({ user }) {
 
   const pairings = useMemo(() => {
     const activePairings = activePairingsRecord?.pairings || [];
-    return activePairings.map((p) => {
-      const pipeRecord = pipes.find((x) => String(x.id) === String(p.pipe_id));
-      const pipeFocus = p.focus || pipeRecord?.focus || [];
-
-      // if bowl has its own focus, use it
-      let effectiveFocus = pipeFocus;
-      if (p.bowl_variant_id && pipeRecord?.interchangeable_bowls?.length) {
-        const bowl = pipeRecord.interchangeable_bowls.find((b, i) =>
-          String(b?.bowl_variant_id || `bowl_${i}`) === String(p.bowl_variant_id)
-        );
-        if (bowl?.focus?.length) effectiveFocus = bowl.focus;
-      }
-
-      const recsFromStored = p.recommendations || [];
-      const looksBad =
-        recsFromStored.length === 0 ||
-        recsFromStored.every((r) => (r.score ?? 0) <= 4);
-
-      const recs = looksBad
-        ? (blends || []).map((b) => {
-            const { score, why } = scorePipeBlend(
-              { pipe_id: p.pipe_id, pipe_name: p.pipe_name, bowl_variant_id: p.bowl_variant_id, focus: effectiveFocus },
-              {
-                tobacco_id: String(b.id),
-                tobacco_name: b.name,
-                blend_type: b.blend_type,
-                strength: b.strength,
-                flavor_notes: b.flavor_notes,
-                tobacco_components: b.tobacco_components,
-                aromatic_intensity: b.aromatic_intensity,
-              },
-              userProfile
-            );
-            return { tobacco_id: String(b.id), tobacco_name: b.name, score, reasoning: why };
-          }).sort((a, b) => b.score - a.score)
-        : recsFromStored;
-
-      return {
-        ...p,
-        __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
-        recommendations: recs,
-      };
-    });
-  }, [activePairingsRecord, pipes, blends, userProfile]);
+    return activePairings.map((p) => ({
+      ...p,
+      __variant_key: getPipeVariantKey(p.pipe_id, p.bowl_variant_id || null),
+      recommendations: p.recommendations || [],
+    }));
+  }, [activePairingsRecord]);
 
   const pipeNameById = useMemo(() => {
     const map = new Map();
