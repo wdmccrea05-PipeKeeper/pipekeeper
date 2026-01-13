@@ -55,19 +55,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   }, [user?.email, allPipes.length, allBlends.length, activePairings, hasAutoRegenerated, regenerating]);
 
   const pairingsByVariant = useMemo(() => {
+    const keyOf = (pipe_id, bowl_variant_id) =>
+      `${String(pipe_id)}::${bowl_variant_id ? String(bowl_variant_id) : "main"}`;
+
     const map = new Map();
     const list = activePairings?.pairings || activePairings?.data?.pairings || [];
     (list || []).forEach((p) => {
-      // Normalize bowl_variant_id: treat null, undefined, "", "null", "main" all as null
-      const rawBowlId = p.bowl_variant_id;
-      const normalizedBowlId = (!rawBowlId || rawBowlId === "null" || rawBowlId === "main") ? null : rawBowlId;
-      const key = getPipeVariantKey(p.pipe_id, normalizedBowlId);
+      const key = keyOf(p.pipe_id, p.bowl_variant_id);
       map.set(key, p);
-      
-      // Also store by pipe_id alone as fallback for pipes without bowls
-      if (!normalizedBowlId) {
-        map.set(`${p.pipe_id}::fallback`, p);
-      }
     });
     return map;
   }, [activePairings]);
@@ -76,25 +71,19 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const pipeVariants = useMemo(() => expandPipesToVariants(allPipes, { includeMainWhenBowls: false }), [allPipes]);
 
   const rows = useMemo(() => {
+    const keyOf = (pipe_id, bowl_variant_id) =>
+      `${String(pipe_id)}::${bowl_variant_id ? String(bowl_variant_id) : "main"}`;
+
     return pipeVariants.map((pv) => {
-      const key = getPipeVariantKey(pv.id, pv.bowl_variant_id || null);
       const pipe = allPipes.find((p) => String(p.id) === String(pv.id));
       const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
       
-      // Try exact key first, then fallback for pipes without bowls
-      let pairing = pairingsByVariant.get(key);
-      if (!pairing && !pv.bowl_variant_id) {
-        pairing = pairingsByVariant.get(`${pv.id}::fallback`);
-      }
-      // Also try matching by pipe name if ID-based lookup fails
-      if (!pairing) {
-        const variantName = variant?.variant_name || pv.variant_name || pv.name;
-        const list = activePairings?.pairings || activePairings?.data?.pairings || [];
-        pairing = list.find(p => p.pipe_name === variantName);
-      }
+      // Lookup using ONLY pipe_id + bowl_variant_id
+      const tileKey = keyOf(pv.id, pv.bowl_variant_id || null);
+      const pairing = pairingsByVariant.get(tileKey);
 
       return {
-        key,
+        key: tileKey,
         pipe_id: pv.id,
         bowl_variant_id: pv.bowl_variant_id || null,
         name: variant?.variant_name || pv.variant_name || pv.name,
@@ -105,7 +94,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         recommendations: pairing?.recommendations || pairing?.blend_matches || [],
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [pipeVariants, allPipes, pairingsByVariant, activePairings]);
+  }, [pipeVariants, allPipes, pairingsByVariant]);
 
   const regenPairings = async () => {
     setRegenerating(true);
