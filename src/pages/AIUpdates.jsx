@@ -223,7 +223,7 @@ Return a JSON array with updates only for blends that need reclassification to a
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">AI Updates</h1>
         <p className="text-sm text-[#e8d5b7]/70 mt-2">
-          Review what's out of date and regenerate with approval. You can undo changes.
+          Review what's out of date and regenerate with approval. You can undo changes and reclassify blends.
         </p>
       </div>
 
