@@ -352,33 +352,6 @@ Return a JSON array with updates only for blends that need reclassification to a
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
-              <Tags className="w-5 h-5 text-blue-400" />
-              Tobacco Blend Classification
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis for improved accuracy.
-            </p>
-            <Button
-              size="sm"
-              disabled={reclassifyBusy || blends.length === 0}
-              onClick={() => reclassifyBlends.mutate()}
-              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-            >
-              {reclassifyBusy ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              ) : (
-                <Tags className="w-4 h-4 mr-1" />
-              )}
-              Reclassify Blends
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
               Break-In Schedules
             </CardTitle>
