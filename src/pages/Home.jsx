@@ -159,6 +159,24 @@ export default function HomePage() {
     }
   }, [user?.email, showOnboarding, onboardingLoading]);
 
+  // Auto-expire the testing notice when the trial window ends (prevents a stale modal
+  // from remaining visible if the app stays open across the cutoff time).
+  useEffect(() => {
+    if (!showTestingNotice) return;
+
+    const tick = () => {
+      if (!isTrialWindowNow()) {
+        setShowTestingNotice(false);
+        // Mark as seen so it won't re-open if the clock is adjusted forcefully
+        localStorage.setItem('testingNoticeSeen', 'true');
+      }
+    };
+
+    const interval = setInterval(tick, 30 * 1000);
+    tick();
+    return () => clearInterval(interval);
+  }, [showTestingNotice]);
+
   const handleOnboardingComplete = async () => {
     if (onboardingStatus) {
       await updateOnboardingMutation.mutateAsync({
