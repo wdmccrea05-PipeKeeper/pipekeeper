@@ -110,14 +110,27 @@ Deno.serve(async (req) => {
       },
       // Durable identity for subscription webhook events
       ...(mode === 'subscription'
-        ? {
-            subscription_data: {
-              metadata: {
-                user_email: user.email,
-                user_id: user.id,
+        ? (() => {
+            const trialEndMs = Date.parse(TRIAL_END_UTC);
+            const nowMs = Date.now();
+            const trialEndUnix = Number.isFinite(trialEndMs)
+              ? Math.floor(trialEndMs / 1000)
+              : null;
+
+            // If we're still in the testing window, defer billing until the cutoff.
+            // Stripe requires trial_end to be a future timestamp.
+            const useTrialEnd = !!trialEndUnix && nowMs < trialEndMs;
+
+            return {
+              subscription_data: {
+                metadata: {
+                  user_email: user.email,
+                  user_id: user.id,
+                },
+                ...(useTrialEnd ? { trial_end: trialEndUnix } : {}),
               },
-            },
-          }
+            };
+          })()
         : {}),
     });
 
