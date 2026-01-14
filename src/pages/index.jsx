@@ -45,35 +45,31 @@ const ROUTES = {
   "/AIUpdates": AIUpdates,
 };
 
-// Route → feature mapping for Apple compliance
-const ROUTE_FEATURE_REQUIREMENTS = {
-  "/Community": "community",
-  "/AIUpdates": "recommendations",
-  // If you later add routes for recommendation/optimization pages, add them here:
-  // "/Pairings": "recommendations",
-  // "/Optimize": "optimization",
-  // "/WhatIf": "optimization",
-  // "/SmokingLog": "smokingLogs",
-};
+const APPLE_BLOCKED_ROUTES = new Set([
+  // Anything that could be interpreted as encouraging consumption:
+  "/Community",
 
-function getAppleGatedComponent(path, Component) {
-  if (!isAppleBuild) return Component;
+  // If AIUpdates contains Pairing/Optimization regeneration cards in your build:
+  "/AIUpdates",
 
-  const requiredFeature = ROUTE_FEATURE_REQUIREMENTS[path];
-  if (!requiredFeature) return Component;
+  // Optional: if your subscription page lists restricted features in Apple build
+  // "/Subscription",
+]);
 
-  if (FEATURES[requiredFeature] === false) {
-    return function AppleBlocked() {
-      return (
-        <AppleBlockedFeature
-          title="Not available on iOS"
-          message="This iOS build is a Collection & Cellar Manager. Social/recommendation-style features are not included."
-        />
-      );
-    };
+function getAppleGatedComponent(path, DefaultComp) {
+  if (!isAppleBuild) return DefaultComp;
+
+  // Block entire pages (strongest: route-level removal)
+  if (APPLE_BLOCKED_ROUTES.has(path)) {
+    return () => (
+      <AppleBlockedFeature
+        title="Not available on iOS"
+        message="This iOS build is a Collection & Cellar Manager. Community and recommendation-style features are not included."
+      />
+    );
   }
 
-  return Component;
+  return DefaultComp;
 }
 
 // Create case-insensitive route lookup
