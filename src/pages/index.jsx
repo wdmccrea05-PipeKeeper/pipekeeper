@@ -48,7 +48,6 @@ const ROUTES = {
 // Route → feature mapping for Apple compliance
 const ROUTE_FEATURE_REQUIREMENTS = {
   "/Community": "community",
-  "/AIUpdates": "recommendations",
   // If you later add routes for recommendation/optimization pages, add them here:
   // "/Pairings": "recommendations",
   // "/Optimize": "optimization",
