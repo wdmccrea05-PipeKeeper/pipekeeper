@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
+import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
@@ -19,8 +20,8 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
-  { name: 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
-  { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true },
+  { name: isAppleBuild ? 'Cellar' : 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
+  ...(FEATURES.community ? [{ name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true }] : []),
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
