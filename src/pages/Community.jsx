@@ -16,6 +16,8 @@ import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CommunityPage() {
+  if (isAppleBuild) return null;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [locationFilters, setLocationFilters] = useState({
