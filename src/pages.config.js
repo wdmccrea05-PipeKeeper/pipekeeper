@@ -24,6 +24,7 @@ import FAQFull from './pages/FAQFull';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import InviteFull from './pages/InviteFull';
 import SupportFull from './pages/SupportFull';
+import SubscriptionFull from './pages/SubscriptionFull';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +55,7 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "InviteFull": InviteFull,
     "SupportFull": SupportFull,
+    "SubscriptionFull": SubscriptionFull,
 }
 
 export const pagesConfig = {
