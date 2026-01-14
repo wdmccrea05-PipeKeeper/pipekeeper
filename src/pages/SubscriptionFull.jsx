@@ -179,6 +179,12 @@ export default function SubscriptionFull() {
   }
 
   const handleSubscribe = async () => {
+    if (isAppleBuild) {
+      // iOS uses Apple IAP instead
+      await openAppleSettings();
+      return;
+    }
+
     if (isCompanionApp()) {
       alert('Subscriptions must be managed on the web.');
       return;
