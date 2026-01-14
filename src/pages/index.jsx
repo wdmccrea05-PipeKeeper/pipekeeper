@@ -1,7 +1,5 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
-import AppleBlockedFeature from "@/components/compliance/AppleBlockedFeature";
 
 import Layout from "../Layout";
 import Home from "./Home";
@@ -22,6 +20,9 @@ import PrivacyPolicy from "./PrivacyPolicy";
 import TobaccoLibrarySync from "./TobaccoLibrarySync";
 import BulkLogoUpload from "./BulkLogoUpload";
 import AIUpdates from "./AIUpdates";
+
+import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+import AppleBlockedFeature from "@/components/compliance/AppleBlockedFeature";
 
 const ROUTES = {
   "/Home": Home,
@@ -44,31 +45,35 @@ const ROUTES = {
   "/AIUpdates": AIUpdates,
 };
 
-const APPLE_BLOCKED_ROUTES = new Set([
-  // Anything that could be interpreted as encouraging consumption:
-  "/Community",
+// Route → feature mapping for Apple compliance
+const ROUTE_FEATURE_REQUIREMENTS = {
+  "/Community": "community",
+  "/AIUpdates": "recommendations",
+  // If you later add routes for recommendation/optimization pages, add them here:
+  // "/Pairings": "recommendations",
+  // "/Optimize": "optimization",
+  // "/WhatIf": "optimization",
+  // "/SmokingLog": "smokingLogs",
+};
 
-  // If AIUpdates contains Pairing/Optimization regeneration cards in your build:
-  "/AIUpdates",
+function getAppleGatedComponent(path, Component) {
+  if (!isAppleBuild) return Component;
 
-  // Optional: if your subscription page lists restricted features in Apple build
-  // "/Subscription",
-]);
+  const requiredFeature = ROUTE_FEATURE_REQUIREMENTS[path];
+  if (!requiredFeature) return Component;
 
-function getAppleGatedComponent(path, DefaultComp) {
-  if (!isAppleBuild) return DefaultComp;
-
-  // Block entire pages (strongest: route-level removal)
-  if (APPLE_BLOCKED_ROUTES.has(path)) {
-    return () => (
-      <AppleBlockedFeature
-        title="Not available on iOS"
-        message="This iOS build is a Collection & Cellar Manager. Community and recommendation-style features are not included."
-      />
-    );
+  if (FEATURES[requiredFeature] === false) {
+    return function AppleBlocked() {
+      return (
+        <AppleBlockedFeature
+          title="Not available on iOS"
+          message="This iOS build is a Collection & Cellar Manager. Social/recommendation-style features are not included."
+        />
+      );
+    };
   }
 
-  return DefaultComp;
+  return Component;
 }
 
 // Create case-insensitive route lookup
@@ -89,12 +94,14 @@ export default function Pages() {
 
   // Case-insensitive route matching for compatibility
   const RawComp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
+
+  // Apple compliance gate
   const Comp = getAppleGatedComponent(path, RawComp);
 
   // Derive page name for Layout
-  const matchedKey = ROUTES[path] 
-    ? path 
-    : Object.keys(ROUTES).find(k => k.toLowerCase() === path.toLowerCase()) || "/Home";
+  const matchedKey = ROUTES[path]
+    ? path
+    : Object.keys(ROUTES).find((k) => k.toLowerCase() === path.toLowerCase()) || "/Home";
   const currentPageName = matchedKey.replace("/", "");
 
   return (
