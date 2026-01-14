@@ -22,6 +22,7 @@ import UserReport from './pages/UserReport';
 import index from './pages/index';
 import FAQFull from './pages/FAQFull';
 import TroubleshootingFull from './pages/TroubleshootingFull';
+import InviteFull from './pages/InviteFull';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +51,7 @@ export const PAGES = {
     "index": index,
     "FAQFull": FAQFull,
     "TroubleshootingFull": TroubleshootingFull,
+    "InviteFull": InviteFull,
 }
 
 export const pagesConfig = {
