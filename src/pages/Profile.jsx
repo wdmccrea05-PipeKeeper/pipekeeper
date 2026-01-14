@@ -338,7 +338,12 @@ export default function ProfilePage() {
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
                           onClick={async () => {
                             try {
-                              await openManageSubscription();
+                              if (isAppleBuild) {
+                                // iOS uses App Store subscription settings
+                                await openAppleSettings();
+                              } else {
+                                await openManageSubscription();
+                              }
                             } catch (e) {
                               const message = e?.message || "Unable to open subscription management portal";
                               console.error('[Profile] Manage subscription error:', message);
@@ -346,7 +351,7 @@ export default function ProfilePage() {
                             }
                           }}
                         >
-                          {getManageSubscriptionLabel()}
+                          {isAppleBuild ? 'Manage Subscription (App Store)' : getManageSubscriptionLabel()}
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       )}
