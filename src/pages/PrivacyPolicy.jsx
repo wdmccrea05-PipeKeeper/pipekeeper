@@ -1,123 +1,152 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/components/utils/createPageUrl";
 
-export default function PrivacyPolicy() {
-  const P = ({ children }) => <p className="text-[#e8d5b7]/90 leading-relaxed my-3">{children}</p>;
-  const H2 = ({ children }) => <h2 className="text-2xl font-semibold text-[#e8d5b7] mt-6 mb-3">{children}</h2>;
-  const LI = ({ children }) => <li className="text-[#e8d5b7]/90 mb-2">{children}</li>;
-
+export default function Privacy() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] py-12 px-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Privacy Policy</h1>
-        <div className="text-[#e8d5b7]/70 mb-8">Last updated: January 2026</div>
+    <div className="legal-container">
+      <h1>Privacy Policy</h1>
+      <p className="last-updated">Last updated: January 2026</p>
 
-      <P>
-        This Privacy Policy explains how PipeKeeper ("we," "us") collects, uses, and shares information when you use the
-        PipeKeeper app and related services (the "Service").
-      </P>
+      <p>
+        This Privacy Policy explains how PipeKeeper ("we," "us") collects, uses,
+        and shares information when you use the PipeKeeper application and
+        related services (the "Service").
+      </p>
 
-      <H2>1. Information We Collect</H2>
-      <ul style={{ marginTop: 8 }}>
-        <LI>
-          <b>Account information:</b> such as email address and basic profile details needed to operate your account.
-        </LI>
-        <LI>
-          <b>Collection data you provide:</b> pipes, tobaccos, notes, photos you upload, and usage logs.
-        </LI>
-        <LI>
-          <b>Device/usage data:</b> basic analytics or diagnostic information (e.g., crash logs) to maintain and improve
-          the Service.
-        </LI>
+      <h2>1. Information We Collect</h2>
+      <ul>
+        <li>
+          <strong>Account information:</strong> such as email address and basic
+          profile details required to operate your account.
+        </li>
+        <li>
+          <strong>Collection data you provide:</strong> pipe and cellar inventory
+          details, personal notes, photos you upload, and historical records
+          associated with your collection.
+        </li>
+        <li>
+          <strong>Device and usage data:</strong> limited analytics or diagnostic
+          information (such as crash logs) used to maintain and improve the
+          Service.
+        </li>
       </ul>
 
-      <H2>2. User-Generated Content and Moderation</H2>
-      <P>
-        PipeKeeper allows users to create, upload, and manage content such as notes, descriptions, images, reviews, and collection data ("User-Generated Content").
-      </P>
-      <P>
-        PipeKeeper does not permit objectionable, abusive, or harmful content. We reserve the right to review, moderate, restrict, remove, or delete User-Generated Content or user accounts that violate our Terms of Service, applicable laws, or community standards.
-      </P>
-      <P>
-        Users may report objectionable content or abusive behavior by contacting PipeKeeper support. Reported content is reviewed and handled in accordance with our moderation policies.
-      </P>
+      <h2>2. User-Generated Content and Moderation</h2>
+      <p>
+        PipeKeeper allows users to create, upload, and manage content such as
+        notes, descriptions, images, and collection data ("User-Generated
+        Content").
+      </p>
+      <p>
+        PipeKeeper does <strong>not permit objectionable, abusive, or harmful
+        content</strong>. We reserve the right to review, moderate, restrict,
+        remove, or delete User-Generated Content or user accounts that violate
+        our Terms of Service, applicable laws, or community standards.
+      </p>
+      <p>
+        Users may report objectionable content or abusive behavior by contacting
+        PipeKeeper support. Reports are reviewed and handled in accordance with
+        our moderation policies.
+      </p>
 
-      <H2>3. Payments and Billing Information</H2>
-      <P>
-        PipeKeeper does not store or process payment card details. Subscription payments are handled securely by a third-party payment processor. PipeKeeper only stores limited identifiers required to manage subscription status and access.
-      </P>
-
-      <H2>4. How We Use Your Information</H2>
-      <P>We use your information to:</P>
-      <ul style={{ marginTop: 8 }}>
-        <LI>Operate and maintain the Service</LI>
-        <LI>Display your collection data to you</LI>
-        <LI>Provide Premium features and subscription access</LI>
-        <LI>Improve functionality, performance, and reliability</LI>
-        <LI>Enforce our Terms of Service and community standards</LI>
-        <LI>Respond to support inquiries and abuse reports</LI>
+      <h2>3. Payments and Billing Information</h2>
+      <p>
+        PipeKeeper does not store or process payment card details.
+      </p>
+      <ul>
+        <li>
+          <strong>iOS:</strong> Subscriptions are processed by Apple through the
+          App Store’s In-App Purchase system.
+        </li>
+        <li>
+          <strong>Web and Android:</strong> Subscriptions are processed securely
+          by third-party payment providers.
+        </li>
       </ul>
-      <P>
-        PipeKeeper does not sell personal data.
-      </P>
+      <p>
+        PipeKeeper stores only limited identifiers required to manage
+        subscription status and access.
+      </p>
 
-      <H2>5. How We Share Information</H2>
-      <P>We may share information in limited circumstances:</P>
-      <ul style={{ marginTop: 8 }}>
-        <LI>
-          <b>Service providers:</b> vendors that help us run the Service (hosting, analytics, payment processing).
-        </LI>
-        <LI>
-          <b>Legal and safety:</b> if required to comply with law or to protect rights, safety, and security.
-        </LI>
-        <LI>
-          <b>Business changes:</b> if the Service is involved in a merger, acquisition, or asset sale.
-        </LI>
+      <h2>4. How We Use Your Information</h2>
+      <ul>
+        <li>Operate and maintain the Service</li>
+        <li>Display your collection and journal data to you</li>
+        <li>Provide Premium features and subscription access</li>
+        <li>Improve functionality, performance, and reliability</li>
+        <li>Enforce our Terms of Service and community standards</li>
+        <li>Respond to support requests and abuse reports</li>
+      </ul>
+      <p>PipeKeeper does not sell personal data.</p>
+
+      <h2>5. How We Share Information</h2>
+      <p>
+        We may share information only in limited circumstances, including:
+      </p>
+      <ul>
+        <li>
+          <strong>Service providers:</strong> vendors that support hosting,
+          analytics, or payment processing.
+        </li>
+        <li>
+          <strong>Legal and safety:</strong> when required to comply with law or
+          protect rights, safety, or security.
+        </li>
+        <li>
+          <strong>Business changes:</strong> in the event of a merger,
+          acquisition, or asset sale.
+        </li>
       </ul>
 
-      <H2>6. Data Retention and Account Termination</H2>
-      <P>
-        You may delete your account at any time. Upon account deletion, your personal data and User-Generated Content will be removed or anonymized in accordance with applicable law, except where retention is required for legal or security purposes.
-      </P>
+      <h2>6. Data Retention and Account Termination</h2>
+      <p>
+        You may delete your account at any time. Upon deletion, personal data
+        and User-Generated Content will be removed or anonymized in accordance
+        with applicable law, except where retention is required for legal or
+        security purposes.
+      </p>
 
-      <H2>7. Security</H2>
-      <P>
-        We use reasonable safeguards designed to protect information, but no system is 100% secure. You are responsible
-        for maintaining the security of your account credentials.
-      </P>
+      <h2>7. Security</h2>
+      <p>
+        We use reasonable safeguards designed to protect information, but no
+        system is completely secure. You are responsible for maintaining the
+        security of your account credentials.
+      </p>
 
-      <H2>8. Your Choices</H2>
-      <ul style={{ marginTop: 8 }}>
-        <LI>Access and update your account information within the app where available.</LI>
-        <LI>Request deletion of your account and associated data via support, subject to applicable requirements.</LI>
+      <h2>8. Your Choices</h2>
+      <ul>
+        <li>Access and update your account information within the app</li>
+        <li>
+          Request deletion of your account and associated data via support,
+          subject to applicable requirements
+        </li>
       </ul>
 
-      <H2>9. Children</H2>
-      <P>The Service is not directed to children. Do not use the Service if you are under the age required by law.</P>
+      <h2>9. Children</h2>
+      <p>
+        The Service is intended for adult users only and is not directed to
+        children. Do not use the Service if you are under the age required by
+        law.
+      </p>
 
-      <H2>10. Changes</H2>
-      <P>
-        We may update this Privacy Policy. If changes are material, we will take reasonable steps to notify you (for
-        example, by posting within the Service).
-      </P>
+      <h2>10. Changes to This Policy</h2>
+      <p>
+        We may update this Privacy Policy from time to time. If changes are
+        material, we will take reasonable steps to notify users, such as by
+        posting within the Service.
+      </p>
 
-      <H2>11. Contact and Reporting</H2>
-      <P>
-        If you have questions about this Privacy Policy, wish to report objectionable content, or need assistance with your account, please contact PipeKeeper support.
-      </P>
-      <P>
-        Related documents:
-        <ul className="mt-2 space-y-1">
-          <li>
-            <Link to={createPageUrl('TermsOfService')} className="text-[#8b3a3a] hover:text-[#a94747] underline">Terms of Service</Link>
-          </li>
-          <li>
-            <Link to={createPageUrl('FAQ')} className="text-[#8b3a3a] hover:text-[#a94747] underline">FAQ</Link>
-          </li>
-        </ul>
-      </P>
-      </div>
+      <h2>11. Contact and Reporting</h2>
+      <p>
+        If you have questions about this Privacy Policy, wish to report
+        objectionable content, or need assistance with your account, please
+        contact PipeKeeper support.
+      </p>
+
+      <p className="legal-links">
+        Related documents:{" "}
+        <a href="/terms">Terms of Service</a> ·{" "}
+        <a href="/faq">FAQ</a>
+      </p>
     </div>
   );
 }
