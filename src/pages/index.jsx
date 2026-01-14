@@ -1,5 +1,7 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+import AppleBlockedFeature from "@/components/compliance/AppleBlockedFeature";
 
 import Layout from "../Layout";
 import Home from "./Home";
@@ -42,6 +44,33 @@ const ROUTES = {
   "/AIUpdates": AIUpdates,
 };
 
+const APPLE_BLOCKED_ROUTES = new Set([
+  // Anything that could be interpreted as encouraging consumption:
+  "/Community",
+
+  // If AIUpdates contains Pairing/Optimization regeneration cards in your build:
+  "/AIUpdates",
+
+  // Optional: if your subscription page lists restricted features in Apple build
+  // "/Subscription",
+]);
+
+function getAppleGatedComponent(path, DefaultComp) {
+  if (!isAppleBuild) return DefaultComp;
+
+  // Block entire pages (strongest: route-level removal)
+  if (APPLE_BLOCKED_ROUTES.has(path)) {
+    return () => (
+      <AppleBlockedFeature
+        title="Not available on iOS"
+        message="This iOS build is a Collection & Cellar Manager. Community and recommendation-style features are not included."
+      />
+    );
+  }
+
+  return DefaultComp;
+}
+
 // Create case-insensitive route lookup
 const ROUTES_LOWER = Object.fromEntries(
   Object.entries(ROUTES).map(([k, v]) => [k.toLowerCase(), v])
@@ -59,7 +88,8 @@ export default function Pages() {
   }
 
   // Case-insensitive route matching for compatibility
-  const Comp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
+  const BaseComp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
+  const Comp = getAppleGatedComponent(path, BaseComp);
 
   // Derive page name for Layout
   const matchedKey = ROUTES[path] 
