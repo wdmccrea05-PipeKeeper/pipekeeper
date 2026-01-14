@@ -9,8 +9,10 @@ import { expandPipesToVariants, getPipeVariantKey, getVariantFromPipe } from "@/
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { toast } from "sonner";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
+  if (isAppleBuild) return null;
   const queryClient = useQueryClient();
   const [regenerating, setRegenerating] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
