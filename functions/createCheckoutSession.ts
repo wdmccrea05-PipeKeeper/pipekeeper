@@ -4,6 +4,11 @@ import Stripe from 'npm:stripe@17.4.0';
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '');
 
 const APP_URL = Deno.env.get('APP_URL') || 'https://pipekeeper.app';
+// Global testing/free-access period ends at 11:59:59 PM Eastern on Jan 15, 2026
+// (UTC: 2026-01-16T04:59:59.000Z). If a user subscribes before this cutoff,
+// we create the Stripe subscription in "trialing" status so billing begins
+// automatically when the testing period ends.
+const TRIAL_END_UTC = Deno.env.get('TRIAL_END_UTC') || '2026-01-16T04:59:59.000Z';
 // Optional allowlist: comma-separated Stripe Price IDs
 const ALLOWED_PRICE_IDS = (Deno.env.get('ALLOWED_PRICE_IDS') || '')
   .split(',')
