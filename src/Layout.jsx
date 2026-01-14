@@ -8,7 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
-import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+import { isAppleBuild, FEATURES } from "@/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
