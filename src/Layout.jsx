@@ -21,7 +21,11 @@ const navItems = [
   { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
   { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
   { name: isAppleBuild ? 'Cellar' : 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
-  ...(FEATURES.community ? [{ name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true }] : []),
+
+  ...(FEATURES.community ? [
+    { name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true }
+  ] : []),
+
   { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
   { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
 ];
