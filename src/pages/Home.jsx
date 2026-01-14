@@ -21,6 +21,7 @@ import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
@@ -653,7 +654,12 @@ export default function HomePage() {
             transition={{ delay: 0.82 }}
             className="mb-12"
           >
-            {isPaidUser ? (
+            {isAppleBuild ? (
+              <UpgradePrompt
+                featureName="Collection & Cellar Tools"
+                description="This iOS build focuses on cataloging and cellar inventory management: identification assistance, metadata cleanup, verified measurements, export reports, and organization tools."
+              />
+            ) : isPaidUser ? (
               <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
             ) : (
               <UpgradePrompt 
