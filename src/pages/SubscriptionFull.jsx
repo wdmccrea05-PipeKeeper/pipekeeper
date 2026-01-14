@@ -16,6 +16,7 @@ import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompa
 import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import { openAppleSettings } from "@/components/utils/appleIAP";
 
 const PRICING_OPTIONS = [
   { 
