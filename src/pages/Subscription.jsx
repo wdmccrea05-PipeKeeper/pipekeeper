@@ -15,6 +15,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 const PRICING_OPTIONS = [
   { 
@@ -371,27 +372,41 @@ export default function SubscriptionPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {[
-                  "AI Expert Tobacconist chat for personalized recommendations",
-                  "AI-powered pipe-tobacco pairing matrix with scoring",
-                  "Photo identification for pipes (stamps, shapes, makers)",
-                  "Market value lookup and automated tracking",
-                  "Collection optimizer with gap analysis",
-                  "AI break-in schedule generator for new pipes",
-                  "Bulk CSV import/export for pipes & tobacco",
-                  "Quick Edit: Batch update multiple blends at once",
-                  "Advanced PDF exports for insurance documentation",
-                  "Smoking log with auto inventory reduction",
-                  "Pipe rest status tracking with recommendations",
-                  "Cellar log with transaction history",
-                  "Community: Public profiles, search, follow collections",
-                  "Comments on pipes, tobacco, and smoking logs",
-                  "Instant messaging with friends (real-time chat)",
-                  "AI web search for auto-filling pipe & tobacco details",
-                  "Brand logo library with custom uploads",
-                  "Unlimited pipes and tobacco blends",
-                  "Priority customer support"
-                ].map((feature, idx) => (
+                {(isAppleBuild
+                  ? [
+                      "Photo identification for pipes (stamps, shapes, makers)",
+                      "AI web search for auto-filling pipe & blend metadata",
+                      "Market value lookup and automated tracking (collection documentation)",
+                      "Bulk CSV import/export for pipes & inventory",
+                      "Quick Edit: Batch update multiple items at once",
+                      "Advanced PDF exports for inventory/insurance documentation",
+                      "Category standardization tools (metadata cleanup)",
+                      "Brand logo library with custom uploads",
+                      "Unlimited pipes and inventory items",
+                      "Priority customer support",
+                    ]
+                  : [
+                      "AI Expert Tobacconist chat for personalized recommendations",
+                      "AI-powered pipe-tobacco pairing matrix with scoring",
+                      "Photo identification for pipes (stamps, shapes, makers)",
+                      "Market value lookup and automated tracking",
+                      "Collection optimizer with gap analysis",
+                      "AI break-in schedule generator for new pipes",
+                      "Bulk CSV import/export for pipes & tobacco",
+                      "Quick Edit: Batch update multiple blends at once",
+                      "Advanced PDF exports for insurance documentation",
+                      "Smoking log with auto inventory reduction",
+                      "Pipe rest status tracking with recommendations",
+                      "Cellar log with transaction history",
+                      "Community: Public profiles, search, follow collections",
+                      "Comments on pipes, tobacco, and smoking logs",
+                      "Instant messaging with friends (real-time chat)",
+                      "AI web search for auto-filling pipe & tobacco details",
+                      "Brand logo library with custom uploads",
+                      "Unlimited pipes and tobacco blends",
+                      "Priority customer support",
+                    ]
+                ).map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <span className="text-stone-700">{feature}</span>
