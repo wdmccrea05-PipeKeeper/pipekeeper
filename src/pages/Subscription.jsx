@@ -61,7 +61,14 @@ function AppleSubscription() {
           <FeatureList items={premiumFeatures} />
 
           <div className="pt-2">
-            <Button className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]">
+            <Button 
+              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+              onClick={() => {
+                if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
+                  window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscription" });
+                }
+              }}
+            >
               Upgrade to Premium
             </Button>
             <p className="text-xs text-[#e8d5b7]/60 mt-2">
