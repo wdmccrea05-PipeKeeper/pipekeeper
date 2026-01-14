@@ -88,8 +88,8 @@ export default function Pages() {
   }
 
   // Case-insensitive route matching for compatibility
-  const BaseComp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
-  const Comp = getAppleGatedComponent(path, BaseComp);
+  const RawComp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
+  const Comp = getAppleGatedComponent(path, RawComp);
 
   // Derive page name for Layout
   const matchedKey = ROUTES[path] 
