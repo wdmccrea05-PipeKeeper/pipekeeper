@@ -1,6 +1,7 @@
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { isAppleBuild } from "@/components/utils/appVariant";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -20,6 +21,8 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
+  if (isAppleBuild) return null;
+
   const [loading, setLoading] = useState(false);
   const [optimization, setOptimization] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(() => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { isAppleBuild } from "@/components/utils/appVariant";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,8 @@ import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
+  if (isAppleBuild) return null;
+
   const hasPaidAccess = hasPremiumAccess(user);
 
   if (!hasPaidAccess) {

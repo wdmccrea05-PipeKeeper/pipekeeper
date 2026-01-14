@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { isAppleBuild } from "@/components/utils/appVariant";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -14,6 +15,8 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 
 export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
+  if (isAppleBuild) return null;
+
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
   const [collapsed, setCollapsed] = useState(true);

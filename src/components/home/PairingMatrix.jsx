@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,8 @@ import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
 
 export default function PairingMatrix({ user }) {
+  if (isAppleBuild) return null;
+
   const [expanded, setExpanded] = useState({});
   const [regenerating, setRegenerating] = useState(false);
   const queryClient = useQueryClient();

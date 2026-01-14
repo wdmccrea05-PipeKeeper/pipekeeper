@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isAppleBuild } from "@/components/utils/appVariant";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,6 +10,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Loader2, Save, Trash } from "lucide-react";
 
 export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete, onCancel, isLoading }) {
+  if (isAppleBuild) return null;
+
   const [formData, setFormData] = useState({
     pipe_id: log.pipe_id || '',
     blend_id: log.blend_id || '',
