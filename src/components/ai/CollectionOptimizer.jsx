@@ -39,6 +39,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [whatIfFollowUp, setWhatIfFollowUp] = useState('');
   const [whatIfHistory, setWhatIfHistory] = useState([]);
+  const [conversationMessages, setConversationMessages] = useState([]);
   const [pipeFeedback, setPipeFeedback] = useState({});
   const [showFeedbackFor, setShowFeedbackFor] = useState(null);
   const [userFeedbackHistory, setUserFeedbackHistory] = useState('');
@@ -526,12 +527,18 @@ async function undoOptimizationApply(batchId) {
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
   };
 
-  const analyzeWhatIf = async () => {
+  const analyzeWhatIf = async (mode = 'auto') => {
     if (!whatIfQuery.trim()) return;
     
     setWhatIfLoading(true);
-    setWhatIfResult(null);
-    setSuggestedProducts(null);
+    
+    // Add user message to conversation
+    setConversationMessages(prev => [...prev, {
+      role: 'user',
+      content: whatIfQuery,
+      photos: whatIfPhotos,
+      timestamp: new Date().toISOString()
+    }]);
     
     try {
       const pipesData = pipes.map(p => ({
@@ -562,16 +569,22 @@ async function undoOptimizationApply(batchId) {
       - Strength Preference: ${userProfile.strength_preference}`;
       }
 
-      // Detect question type first (improved detection)
-      const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
-      const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match|which.*pipes|should.*change/i.test(whatIfQuery);
+      const isAdviceMode = mode === 'advice';
+      const isCollectionMode = mode === 'collection';
       
-      // Treat "buy/purchase" as collection-change intent, not shopping intent
-      const mentionsBuying = /should i buy|buy|purchase|acquire|next pipe/i.test(whatIfQuery);
+      // Auto-detect if mode is 'auto'
+      let shouldShowAdvice = isAdviceMode;
+      let shouldShowCollection = isCollectionMode;
       
-      const treatAsCollectionChanges = isCollectionQuestion || mentionsBuying;
+      if (mode === 'auto') {
+        const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
+        const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match|which.*pipes|should.*change|should i buy|buy|purchase|acquire|next pipe/i.test(whatIfQuery);
+        
+        shouldShowAdvice = isAdviceQuestion && !isCollectionQuestion;
+        shouldShowCollection = isCollectionQuestion || !isAdviceQuestion;
+      }
 
-      if (improvedWhatIf && isAdviceQuestion && !treatAsCollectionChanges) {
+      if (shouldShowAdvice) {
         // General advice question - no collection impact
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
@@ -620,7 +633,7 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
           });
 
           // Transform the result to match whatIfResult format
-          setWhatIfResult({
+          const aiResponse = {
             impact_score: whatIfQuery.toLowerCase().includes('essential') || whatIfQuery.toLowerCase().includes('critical') ? 9 : 
                          whatIfQuery.toLowerCase().includes('important') ? 7 : 6,
             trophy_pairings: (result.next_additions || []).slice(0, 5),
@@ -629,7 +642,19 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
             detailed_reasoning: result.summary || '',
             gaps_filled: result.collection_gaps || [],
             score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(', ')}`
-          });
+          };
+          
+          setWhatIfResult(aiResponse);
+          
+          // Add AI response to conversation
+          setConversationMessages(prev => [...prev, {
+            role: 'assistant',
+            content: aiResponse,
+            timestamp: new Date().toISOString()
+          }]);
+          
+          setWhatIfQuery('');
+          setWhatIfPhotos([]);
         } catch (err) {
           // Fallback to direct LLM call if generateOptimizationAI fails
           const result = await base44.integrations.Core.InvokeLLM({
@@ -681,12 +706,26 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
             }
           });
 
-          setWhatIfResult(result);
+          const aiResponse = result;
+          setWhatIfResult(aiResponse);
+          
+          // Add AI response to conversation
+          setConversationMessages(prev => [...prev, {
+            role: 'assistant',
+            content: aiResponse,
+            timestamp: new Date().toISOString()
+          }]);
+          
+          setWhatIfQuery('');
+          setWhatIfPhotos([]);
         }
       }
     } catch (err) {
       console.error('Error analyzing what-if:', err);
-      alert('Failed to analyze scenario. Please try again.');
+      toast.error('Failed to analyze scenario. Please try again.');
+      
+      // Remove the user message if analysis failed
+      setConversationMessages(prev => prev.slice(0, -1));
     } finally {
       setWhatIfLoading(false);
     }
@@ -700,18 +739,42 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
     setSuggestedProducts(null);
     setWhatIfFollowUp('');
     setWhatIfHistory([]);
+    setConversationMessages([]);
   };
 
-  const handleWhatIfFollowUp = async () => {
-    if (!whatIfFollowUp.trim() || !whatIfResult) return;
+  const handleWhatIfFollowUp = async (mode = 'auto') => {
+    const query = whatIfFollowUp.trim();
+    if (!query) return;
 
     setWhatIfLoading(true);
+    
+    // Add user follow-up to conversation
+    setConversationMessages(prev => [...prev, {
+      role: 'user',
+      content: query,
+      timestamp: new Date().toISOString()
+    }]);
+    
+    setWhatIfFollowUp('');
+    
     try {
-      // Combine original query with follow-up questions
-      const combinedContext = [whatIfQuery, ...whatIfHistory.map(h => h.question), whatIfFollowUp].filter(Boolean).join('\n\nFollow-up: ');
+      // Build context from conversation history
+      const conversationContext = conversationMessages
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join('\n\nFollow-up: ');
+      const combinedContext = conversationContext + '\n\nFollow-up: ' + query;
 
-      // Check if this is advice-only or collection-impact
-      const isAdviceContext = whatIfResult.is_advice_only;
+      // Determine mode
+      const isAdviceMode = mode === 'advice';
+      const isCollectionMode = mode === 'collection';
+      
+      let isAdviceContext = isAdviceMode;
+      if (mode === 'auto') {
+        // Check last AI response type
+        const lastAiMessage = [...conversationMessages].reverse().find(m => m.role === 'assistant');
+        isAdviceContext = lastAiMessage?.content?.is_advice_only;
+      }
 
       if (isAdviceContext) {
         // Continue advice conversation
@@ -742,17 +805,22 @@ Provide clear, expert advice addressing their follow-up question. Be conversatio
           }
         });
 
-        // Store the follow-up in history
-        setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
-
-        // Update with new advice
-        setWhatIfResult({
+        const aiResponse = {
           is_advice_only: true,
           advice_response: result.advice_response,
           key_points: result.key_points,
           common_mistakes: result.common_mistakes
-        });
-      } else {
+        };
+
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+        
+        setWhatIfResult(aiResponse);
+      } else if (isCollectionMode || !isAdviceContext) {
         // Collection-impact follow-up
         const result = await generateOptimizationAI({
           pipes,
@@ -761,11 +829,7 @@ Provide clear, expert advice addressing their follow-up question. Be conversatio
           whatIfText: combinedContext
         });
 
-        // Store the follow-up in history
-        setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
-
-        // Update the result with new analysis
-        setWhatIfResult({
+        const aiResponse = {
           impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
           trophy_pairings: (result.next_additions || []).slice(0, 5),
           redundancy_analysis: result.summary || '',
@@ -773,13 +837,23 @@ Provide clear, expert advice addressing their follow-up question. Be conversatio
           detailed_reasoning: result.summary || '',
           gaps_filled: result.collection_gaps || [],
           score_improvements: `Revised analysis: ${(result.next_additions || []).join(', ')}`
-        });
-      }
+        };
 
-      setWhatIfFollowUp('');
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+        
+        setWhatIfResult(aiResponse);
+      }
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
+      
+      // Remove the user message if analysis failed
+      setConversationMessages(prev => prev.slice(0, -1));
     } finally {
       setWhatIfLoading(false);
     }
@@ -1020,17 +1094,79 @@ Provide concrete, actionable steps with specific field values.`,
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Conversation History */}
+          {conversationMessages.length > 0 && (
+            <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-stone-50">
+              {conversationMessages.map((msg, idx) => (
+                <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                  {msg.role === 'user' ? (
+                    <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
+                      <p className="text-sm">{msg.content}</p>
+                      {msg.photos?.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {msg.photos.map((url, i) => (
+                            <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="inline-block bg-white border rounded-lg px-4 py-3 max-w-[80%] text-left">
+                      {msg.content.is_advice_only ? (
+                        <div className="text-sm text-stone-700 space-y-2">
+                          <p className="leading-relaxed">{msg.content.advice_response}</p>
+                          {msg.content.key_points?.length > 0 && (
+                            <div className="pt-2 border-t">
+                              <p className="font-medium text-xs text-stone-500 mb-1">Key Points:</p>
+                              <ul className="space-y-1 text-xs">
+                                {msg.content.key_points.map((pt, i) => (
+                                  <li key={i} className="flex gap-1">
+                                    <span>•</span>
+                                    <span>{pt}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-indigo-600 text-white">
+                              Score: {msg.content.impact_score}/10
+                            </Badge>
+                            <Badge className="bg-blue-600 text-white">
+                              {msg.content.recommendation_category}
+                            </Badge>
+                          </div>
+                          <p className="text-stone-600 text-xs">{msg.content.detailed_reasoning}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div>
             <label className="text-sm font-medium text-stone-700 mb-2 block">
-              Your Question or Scenario
+              {conversationMessages.length > 0 ? 'Continue the conversation...' : 'Ask a question or describe a scenario'}
             </label>
             <Textarea
-              placeholder={improvedWhatIf 
-                ? "e.g., 'How do I clean my pipe?' or 'What pipe should I add for English blends?'" 
-                : "e.g., 'What collection changes should I do next if I want better English blend matches?' or 'What if I dedicate my Dublin pipe to Virginia/Perique only?'"}
-              value={whatIfQuery}
-              onChange={(e) => setWhatIfQuery(e.target.value)}
+              placeholder={conversationMessages.length > 0 
+                ? "e.g., 'Can you explain more?' or 'What about for Virginia blends?'"
+                : "e.g., 'How do I clean my pipe?' or 'Should I buy a bent pipe for English blends?'"}
+              value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
+              onChange={(e) => conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value)}
               className="min-h-[80px]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.metaKey) {
+                  if (conversationMessages.length > 0) {
+                    handleWhatIfFollowUp('auto');
+                  }
+                }
+              }}
             />
           </div>
 
@@ -1075,27 +1211,63 @@ Provide concrete, actionable steps with specific field values.`,
           </div>
 
           <div className="flex gap-2">
-            <Button
-              onClick={analyzeWhatIf}
-              disabled={whatIfLoading || !whatIfQuery.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              {whatIfLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Analyze Scenario
-                </>
-              )}
-            </Button>
-            {(whatIfResult || whatIfQuery || whatIfPhotos.length > 0) && (
-              <Button variant="outline" onClick={resetWhatIf}>
-                Reset
-              </Button>
+            {conversationMessages.length > 0 ? (
+              <>
+                <Button
+                  onClick={() => handleWhatIfFollowUp('collection')}
+                  disabled={whatIfLoading || !whatIfFollowUp.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 flex-1"
+                >
+                  {whatIfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Target className="w-4 h-4 mr-2" />
+                  )}
+                  Analyze Impact
+                </Button>
+                <Button
+                  onClick={() => handleWhatIfFollowUp('advice')}
+                  disabled={whatIfLoading || !whatIfFollowUp.trim()}
+                  className="bg-emerald-600 hover:bg-emerald-700 flex-1"
+                >
+                  {whatIfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Get Advice
+                </Button>
+                <Button variant="outline" onClick={resetWhatIf}>
+                  Reset
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => analyzeWhatIf('collection')}
+                  disabled={whatIfLoading || !whatIfQuery.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 flex-1"
+                >
+                  {whatIfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Target className="w-4 h-4 mr-2" />
+                  )}
+                  Analyze Impact to Collection
+                </Button>
+                <Button
+                  onClick={() => analyzeWhatIf('advice')}
+                  disabled={whatIfLoading || !whatIfQuery.trim()}
+                  className="bg-emerald-600 hover:bg-emerald-700 flex-1"
+                >
+                  {whatIfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Get Advice
+                </Button>
+              </>
             )}
           </div>
 
