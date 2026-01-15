@@ -381,9 +381,10 @@ export default function SubscriptionFull() {
               <div className="space-y-3">
                 {(isAppleBuild
                   ? [
-                      "Photo identification for pipes (stamps, shapes, makers)",
+                      "AI photo identification for pipes (stamps, shapes, makers)",
                       "AI web search for auto-filling pipe & blend metadata",
-                      "Market value lookup and automated tracking (collection documentation)",
+                      "AI market value lookup and automated tracking",
+                      "AI measurement calculator from photos",
                       "Bulk CSV import/export for pipes & inventory",
                       "Quick Edit: Batch update multiple items at once",
                       "Advanced PDF exports for inventory/insurance documentation",
@@ -394,11 +395,16 @@ export default function SubscriptionFull() {
                     ]
                   : [
                       "AI Expert Tobacconist chat for personalized recommendations",
-                      "AI-powered pipe-tobacco pairing matrix with scoring",
-                      "Photo identification for pipes (stamps, shapes, makers)",
-                      "Market value lookup and automated tracking",
-                      "Collection optimizer with gap analysis",
+                      "AI pipe-tobacco pairing matrix with scoring",
+                      "AI tobacco matching engine for each pipe",
+                      "AI collection optimizer with gap analysis",
+                      "AI photo identification for pipes (stamps, shapes, makers)",
+                      "AI market value lookup and automated tracking",
                       "AI break-in schedule generator for new pipes",
+                      "AI pipe specialization recommendations",
+                      "AI measurement calculator from photos",
+                      "AI web search for auto-filling pipe & tobacco details",
+                      "AI What-If scenario analysis for collection changes",
                       "Bulk CSV import/export for pipes & tobacco",
                       "Quick Edit: Batch update multiple blends at once",
                       "Advanced PDF exports for insurance documentation",
@@ -408,7 +414,6 @@ export default function SubscriptionFull() {
                       "Community: Public profiles, search, follow collections",
                       "Comments on pipes, tobacco, and smoking logs",
                       "Instant messaging with friends (real-time chat)",
-                      "AI web search for auto-filling pipe & tobacco details",
                       "Brand logo library with custom uploads",
                       "Unlimited pipes and tobacco blends",
                       "Priority customer support",
