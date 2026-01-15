@@ -130,6 +130,10 @@ export default function TroubleshootingFull() {
       color: "text-red-400",
       questions: [
         {
+          q: "The app shows Terms of Service on launch - is this normal?",
+          a: "Yes! First-time users must accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement. Once accepted, you'll go directly to your Home page. If you keep seeing it after accepting, try a hard refresh or clearing your browser cache."
+        },
+        {
           q: "How do I add photos to pipes or tobacco?",
           a: "Click the camera icon or 'Add Photo' button on detail pages. You can upload multiple photos per item."
         },
@@ -152,6 +156,10 @@ export default function TroubleshootingFull() {
         {
           q: "Can I mark pipes or blends as favorites?",
           a: "Yes! Click the star/heart icon on any pipe or blend to mark it as a favorite for quick access."
+        },
+        {
+          q: "Where can I review the Terms of Service or Privacy Policy?",
+          a: "Both documents are accessible from the Help menu, your Profile page, and the footer links at the bottom of every page. You can review them anytime."
         }
       ]
     }

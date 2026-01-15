@@ -66,6 +66,10 @@ export default function FAQFull() {
         <Q id="data-privacy" q="Is my data private?">
           Yes. Your collection data belongs to you. PipeKeeper uses your data only to operate the app and provide features. We do not sell personal data.
         </Q>
+
+        <Q id="first-launch" q="Why do I see Terms of Service when I first open the app?">
+          On your first use, PipeKeeper requires you to accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement. Once accepted, you'll proceed directly to your Home page on future visits. You can review these documents anytime from the Help menu or footer links.
+        </Q>
       </Section>
 
       <Section title="Getting Started">
@@ -76,7 +80,12 @@ export default function FAQFull() {
             <li><b>iOS:</b> Download the PipeKeeper companion app from the Apple App Store</li>
             <li><b>Android:</b> Download the PipeKeeper companion app from Google Play</li>
           </ul>
-          Note: Subscriptions are managed through the web version, not through app stores.
+          <div className="mt-2">
+            <b>First-time setup:</b> You'll need to confirm your age (21+) and accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement.
+          </div>
+          <div className="mt-2">
+            Note: Subscriptions are managed through the web version, not through app stores.
+          </div>
         </Q>
 
         <Q id="tutorial" q="Is there a tutorial or walkthrough?">
