@@ -1195,87 +1195,13 @@ Provide concrete, actionable steps with specific field values.`,
             )}
           </div>
 
-          {whatIfResult && (
+          {whatIfResult?.is_impact_analysis && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-6 space-y-4"
             >
-              {whatIfResult.is_advice_only ? (
-                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-                  <CardContent className="p-4 space-y-4">
-                    <div className="space-y-3">
-                      {whatIfResult.advice_response?.split(/\n\n+/).map((paragraph, i) => (
-                        <p key={i} className="text-stone-700 text-sm leading-relaxed">
-                          {paragraph.trim()}
-                        </p>
-                      ))}
-                    </div>
-
-                    {whatIfResult.key_points?.length > 0 && (
-                      <div>
-                        <p className="text-sm font-semibold text-blue-800 mb-2">Key Points:</p>
-                        <ul className="space-y-1">
-                          {whatIfResult.key_points.map((point, idx) => (
-                            <li key={idx} className="text-sm text-stone-600 flex gap-2">
-                              <span className="text-blue-600">•</span>
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {whatIfResult.common_mistakes?.length > 0 && (
-                      <div className="bg-rose-50 rounded-lg p-3 border border-rose-200">
-                        <p className="text-sm font-semibold text-rose-800 mb-2">Common Mistakes to Avoid:</p>
-                        <ul className="space-y-1">
-                          {whatIfResult.common_mistakes.map((mistake, idx) => (
-                            <li key={idx} className="text-sm text-rose-700 flex gap-2">
-                              <span>⚠️</span>
-                              <span>{mistake}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Follow-Up Questions for Advice */}
-                    <div className="border-t pt-4 mt-4 space-y-3">
-                      <div>
-                        <label className="text-sm font-medium text-stone-700 mb-2 block">
-                          Ask a Follow-Up Question
-                        </label>
-                        <Textarea
-                          placeholder="e.g., 'Can you explain that in more detail?' or 'What about for a different type of tobacco?'"
-                          value={whatIfFollowUp}
-                          onChange={(e) => setWhatIfFollowUp(e.target.value)}
-                          className="min-h-[60px]"
-                        />
-                      </div>
-                      <Button
-                        onClick={handleWhatIfFollowUp}
-                        disabled={whatIfLoading || !whatIfFollowUp.trim()}
-                        variant="outline"
-                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                      >
-                        {whatIfLoading ? (
-                          <>
-                            <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-3 h-3 mr-2" />
-                            Continue Conversation
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
+              <>
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
                 <div>
                   <p className="text-sm font-medium text-indigo-700">Collection Impact Score</p>
@@ -1383,10 +1309,9 @@ Provide concrete, actionable steps with specific field values.`,
                   )}
                 </Button>
               </div>
-                </>
-              )}
+              </>
 
-              {suggestedProducts?.suggestions && !whatIfResult.is_advice_only && (
+              {suggestedProducts?.suggestions && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
