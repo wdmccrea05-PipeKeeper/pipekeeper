@@ -708,29 +708,73 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
     setWhatIfLoading(true);
     try {
       // Combine original query with follow-up questions
-      const combinedContext = [whatIfQuery, ...whatIfHistory.map(h => h.question), whatIfFollowUp].filter(Boolean).join('\n\n');
+      const combinedContext = [whatIfQuery, ...whatIfHistory.map(h => h.question), whatIfFollowUp].filter(Boolean).join('\n\nFollow-up: ');
 
-      // Call optimization with the full context
-      const result = await generateOptimizationAI({
-        pipes,
-        blends,
-        profile: userProfile,
-        whatIfText: combinedContext
-      });
+      // Check if this is advice-only or collection-impact
+      const isAdviceContext = whatIfResult.is_advice_only;
 
-      // Store the follow-up in history
-      setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
+      if (isAdviceContext) {
+        // Continue advice conversation
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
 
-      // Update the result with new analysis
-      setWhatIfResult({
-        impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
-        trophy_pairings: (result.next_additions || []).slice(0, 5),
-        redundancy_analysis: result.summary || '',
-        recommendation_category: 'STRONG ADDITION',
-        detailed_reasoning: result.summary || '',
-        gaps_filled: result.collection_gaps || [],
-        score_improvements: `Revised analysis: ${(result.next_additions || []).join(', ')}`
-      });
+You are an expert pipe smoking advisor. Continue the conversation based on the context below.
+
+Original Question: ${whatIfQuery}
+${whatIfHistory.length > 0 ? `Previous Discussion:\n${whatIfHistory.map(h => `Q: ${h.question}`).join('\n')}` : ''}
+
+Follow-up Question: ${whatIfFollowUp}
+
+Provide clear, expert advice addressing their follow-up question. Be conversational and helpful.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              advice_response: { type: "string" },
+              key_points: {
+                type: "array",
+                items: { type: "string" }
+              },
+              common_mistakes: {
+                type: "array",
+                items: { type: "string" }
+              }
+            }
+          }
+        });
+
+        // Store the follow-up in history
+        setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
+
+        // Update with new advice
+        setWhatIfResult({
+          is_advice_only: true,
+          advice_response: result.advice_response,
+          key_points: result.key_points,
+          common_mistakes: result.common_mistakes
+        });
+      } else {
+        // Collection-impact follow-up
+        const result = await generateOptimizationAI({
+          pipes,
+          blends,
+          profile: userProfile,
+          whatIfText: combinedContext
+        });
+
+        // Store the follow-up in history
+        setWhatIfHistory(prev => [...prev, { question: whatIfFollowUp, result }]);
+
+        // Update the result with new analysis
+        setWhatIfResult({
+          impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
+          trophy_pairings: (result.next_additions || []).slice(0, 5),
+          redundancy_analysis: result.summary || '',
+          recommendation_category: 'STRONG ADDITION',
+          detailed_reasoning: result.summary || '',
+          gaps_filled: result.collection_gaps || [],
+          score_improvements: `Revised analysis: ${(result.next_additions || []).join(', ')}`
+        });
+      }
 
       setWhatIfFollowUp('');
     } catch (err) {
@@ -1097,6 +1141,39 @@ Provide concrete, actionable steps with specific field values.`,
                         </ul>
                       </div>
                     )}
+
+                    {/* Follow-Up Questions for Advice */}
+                    <div className="border-t pt-4 mt-4 space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-stone-700 mb-2 block">
+                          Ask a Follow-Up Question
+                        </label>
+                        <Textarea
+                          placeholder="e.g., 'Can you explain that in more detail?' or 'What about for a different type of tobacco?'"
+                          value={whatIfFollowUp}
+                          onChange={(e) => setWhatIfFollowUp(e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleWhatIfFollowUp}
+                        disabled={whatIfLoading || !whatIfFollowUp.trim()}
+                        variant="outline"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        {whatIfLoading ? (
+                          <>
+                            <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3 h-3 mr-2" />
+                            Continue Conversation
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
