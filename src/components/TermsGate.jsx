@@ -11,9 +11,8 @@ const PRIVACY_URL = "https://pipekeeper.app/PrivacyPolicy";
  *
  * Props:
  * - user: the current user object from auth.me() / your user query
- * - children: app content to render after acceptance
  */
-export default function TermsGate({ user, children }) {
+export default function TermsGate({ user }) {
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -49,18 +48,12 @@ export default function TermsGate({ user, children }) {
     }
   }
 
-  // If not logged in yet, don't block the login screen.
-  if (!user) return children;
-
-  // If already accepted, proceed.
-  if (accepted) return children;
+  // If not logged in or already accepted, don't show the gate.
+  if (!user || accepted) return null;
 
   // Block the app with a modal overlay
   return (
-    <>
-      {children}
-
-      <div style={styles.backdrop}>
+    <div style={styles.backdrop}>
         <div style={styles.modal} role="dialog" aria-modal="true" aria-label="Terms acceptance">
           <h2 style={styles.title}>Before you continue</h2>
 
@@ -107,8 +100,7 @@ export default function TermsGate({ user, children }) {
             If you do not accept, you cannot use PipeKeeper.
           </p>
         </div>
-      </div>
-    </>
+    </div>
   );
 }
 

@@ -186,7 +186,6 @@ export default function Layout({ children, currentPageName }) {
   return (
     <>
       <DocumentTitle title="PipeKeeper" />
-      <TermsGate user={user}>
       <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
@@ -299,8 +298,8 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
-      </div>
-      </TermsGate>
-      </>
-      );
+    </div>
+    <TermsGate user={user} />
+    </>
+    );
       }
