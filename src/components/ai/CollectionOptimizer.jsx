@@ -1542,7 +1542,7 @@ Provide concrete, actionable steps with specific field values.`,
     <>
     {/* Staleness Dialog */}
     <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
-      <DialogContent>
+      <DialogContent className="mx-4 max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-600" />
@@ -1552,11 +1552,11 @@ Provide concrete, actionable steps with specific field values.`,
             Your pipes, blends, or preferences have changed. Regenerate optimization now for accurate recommendations? You can undo this action.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-2 justify-end">
+        <div className="flex flex-col sm:flex-row gap-2 justify-end">
           <Button variant="outline" onClick={() => {
             setShowRegenDialog(false);
             setStaleDismissedId(optimization?.id);
-          }}>
+          }} className="w-full sm:w-auto">
             Not Now
           </Button>
           {optimization?.previous_active_id && (
@@ -1564,6 +1564,7 @@ Provide concrete, actionable steps with specific field values.`,
               variant="outline"
               onClick={() => undoOptimizationMutation.mutate()}
               disabled={undoOptimizationMutation.isPending}
+              className="w-full sm:w-auto"
             >
               <Undo className="w-4 h-4 mr-2" />
               Undo Last Change
@@ -1575,7 +1576,7 @@ Provide concrete, actionable steps with specific field values.`,
               analyzeCollection();
             }}
             disabled={loading}
-            className="bg-amber-700 hover:bg-amber-800"
+            className="bg-amber-700 hover:bg-amber-800 w-full sm:w-auto"
           >
             {loading ? (
               <>
@@ -1592,7 +1593,7 @@ Provide concrete, actionable steps with specific field values.`,
 
     {/* Confirmation Modal */}
     <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -1693,18 +1694,19 @@ Provide concrete, actionable steps with specific field values.`,
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button
             variant="outline"
             onClick={() => setShowConfirmation(false)}
             disabled={acceptingAll}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmChanges}
             disabled={acceptingAll || Object.values(selectedChanges).filter(Boolean).length === 0}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
           >
             {acceptingAll ? (
               <>
