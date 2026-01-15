@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function TermsOfService() {
   return (
