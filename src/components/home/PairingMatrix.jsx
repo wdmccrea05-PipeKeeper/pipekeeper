@@ -65,7 +65,8 @@ export default function PairingMatrix({ user }) {
         profile: userProfile,
         user,
         queryClient,
-        activePairings: activePairingsRecord
+        activePairings: activePairingsRecord,
+        mode: "merge"
       });
       await queryClient.invalidateQueries({ queryKey: ["activePairings", user.email] });
       toast.success("Pairings regenerated successfully");
