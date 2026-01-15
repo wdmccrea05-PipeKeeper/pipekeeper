@@ -9,7 +9,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
-import { regeneratePairings } from "@/components/utils/pairingRegeneration";
+import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 
 export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const [regenerating, setRegenerating] = useState(false);
@@ -139,14 +139,14 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
-      await regeneratePairings({
+      await regeneratePairingsConsistent({
         pipes: [pipe],
         blends,
         profile: userProfile,
         user,
         queryClient,
         activePairings,
-        mode: "merge", // ✅ critical
+        skipIfUpToDate: true,
       });
       toast.success("Pairings regenerated successfully");
     } catch (error) {
