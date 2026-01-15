@@ -68,6 +68,11 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
 
   const regenPairings = useMutation({
     mutationFn: async () => {
+      // Check if active pairings still match current fingerprint (no regeneration needed)
+      if (activePairings && activePairings.input_fingerprint === currentFingerprint && activePairings.is_active) {
+        return; // Already up to date, skip regeneration
+      }
+
       setBusy(true);
       const { pairings } = await generatePairingsAI({ pipes, blends, profile });
 
