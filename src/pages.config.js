@@ -59,7 +59,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "TermsOfService",
     Pages: PAGES,
     Layout: __Layout,
 };
