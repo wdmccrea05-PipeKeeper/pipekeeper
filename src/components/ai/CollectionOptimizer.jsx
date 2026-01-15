@@ -765,18 +765,11 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
         .join('\n\nFollow-up: ');
       const combinedContext = conversationContext + '\n\nFollow-up: ' + query;
 
-      // Determine mode
-      const isAdviceMode = mode === 'advice';
+      // Determine mode - default to advice unless explicitly requested collection impact
+      const isAdviceMode = mode === 'advice' || mode === 'auto';
       const isCollectionMode = mode === 'collection';
-      
-      let isAdviceContext = isAdviceMode;
-      if (mode === 'auto') {
-        // Check last AI response type
-        const lastAiMessage = [...conversationMessages].reverse().find(m => m.role === 'assistant');
-        isAdviceContext = lastAiMessage?.content?.is_advice_only;
-      }
 
-      if (isAdviceContext) {
+      if (isAdviceMode) {
         // Continue advice conversation
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
@@ -820,7 +813,7 @@ Provide clear, expert advice addressing their question. Be conversational and he
         }]);
         
         setWhatIfResult(aiResponse);
-      } else if (isCollectionMode || !isAdviceContext) {
+      } else if (isCollectionMode) {
         // Collection-impact follow-up
         const result = await generateOptimizationAI({
           pipes,
