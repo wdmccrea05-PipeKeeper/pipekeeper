@@ -1210,7 +1210,7 @@ Provide concrete, actionable steps with specific field values.`,
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             {conversationMessages.length > 0 ? (
               <>
                 <Button
@@ -1237,7 +1237,7 @@ Provide concrete, actionable steps with specific field values.`,
                   )}
                   Get Advice
                 </Button>
-                <Button variant="outline" onClick={resetWhatIf}>
+                <Button variant="outline" onClick={resetWhatIf} className="sm:w-auto">
                   Reset
                 </Button>
               </>
@@ -1253,7 +1253,8 @@ Provide concrete, actionable steps with specific field values.`,
                   ) : (
                     <Target className="w-4 h-4 mr-2" />
                   )}
-                  Analyze Impact to Collection
+                  <span className="hidden sm:inline">Analyze Impact to Collection</span>
+                  <span className="sm:hidden">Analyze Impact</span>
                 </Button>
                 <Button
                   onClick={() => analyzeWhatIf('advice')}
