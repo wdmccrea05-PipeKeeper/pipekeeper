@@ -349,6 +349,7 @@ export default function SubscriptionFull() {
                   "Rate and favorite your pipes and tobacco",
                   "View recent additions",
                   "Basic collection statistics",
+                  "Brand logo library with custom uploads",
                   "7-day free trial of Premium features"
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
@@ -389,7 +390,6 @@ export default function SubscriptionFull() {
                       "Quick Edit: Batch update multiple items at once",
                       "Advanced PDF exports for inventory/insurance documentation",
                       "Category standardization tools (metadata cleanup)",
-                      "Brand logo library with custom uploads",
                       "Unlimited pipes and inventory items",
                       "Priority customer support",
                     ]
@@ -414,7 +414,6 @@ export default function SubscriptionFull() {
                       "Community: Public profiles, search, follow collections",
                       "Comments on pipes, tobacco, and smoking logs",
                       "Instant messaging with friends (real-time chat)",
-                      "Brand logo library with custom uploads",
                       "Unlimited pipes and tobacco blends",
                       "Priority customer support",
                     ]

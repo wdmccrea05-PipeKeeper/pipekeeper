@@ -33,6 +33,7 @@ function AppleSubscription() {
     "Track cellar inventory quantities and jar dates",
     "Basic search and filters",
     "Notes and photos for documentation",
+    "Brand logo library with custom uploads",
   ];
 
   return (
