@@ -106,6 +106,14 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     setRegenerating(true);
     try {
       const currentFingerprint = buildArtifactFingerprint({ pipes: allPipes, blends: allBlends, profile });
+      
+      // Check if active pairings still match current fingerprint (no regeneration needed)
+      if (activePairings && activePairings.input_fingerprint === currentFingerprint && activePairings.is_active) {
+        toast.success("Pairings are already up to date");
+        setRegenerating(false);
+        return;
+      }
+
       const { pairings } = await generatePairingsAI({ pipes: allPipes, blends: allBlends, profile });
 
       if (activePairings?.id) {
