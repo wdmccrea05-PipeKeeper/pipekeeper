@@ -527,7 +527,7 @@ async function undoOptimizationApply(batchId) {
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
   };
 
-  const analyzeWhatIf = async (mode = 'auto') => {
+  const analyzeWhatIf = async () => {
     if (!whatIfQuery.trim()) return;
     
     setWhatIfLoading(true);
@@ -539,6 +539,9 @@ async function undoOptimizationApply(batchId) {
       photos: whatIfPhotos,
       timestamp: new Date().toISOString()
     }]);
+    
+    const currentQuery = whatIfQuery;
+    setWhatIfQuery(''); // Clear input immediately
     
     try {
       const pipesData = pipes.map(p => ({
@@ -569,37 +572,16 @@ async function undoOptimizationApply(batchId) {
       - Strength Preference: ${userProfile.strength_preference}`;
       }
 
-      const isAdviceMode = mode === 'advice';
-      const isCollectionMode = mode === 'collection';
-      
-      // Auto-detect if mode is 'auto'
-      let shouldShowAdvice = isAdviceMode;
-      let shouldShowCollection = isCollectionMode;
-      
-      if (mode === 'auto') {
-        const isAdviceQuestion = /how do i|how to|how can i|what's the best way|tips for|guide to|help with|advice on|teach me|explain|tell me about|clean|maintain|store|break.?in|season|pack|tamp|light|prevent|fix|avoid/i.test(whatIfQuery);
-        const isCollectionQuestion = /what collection changes|collection change|rebalance|speciali[sz]e|add a pipe|add pipe type|gap|improve trophies|improve match|which.*pipes|should.*change|should i buy|buy|purchase|acquire|next pipe/i.test(whatIfQuery);
-        
-        shouldShowAdvice = isAdviceQuestion && !isCollectionQuestion;
-        shouldShowCollection = isCollectionQuestion || !isAdviceQuestion;
-      }
-
-      if (shouldShowAdvice) {
-        // General advice question - no collection impact
+      // Default to conversational advice mode
+      // General pipe smoking advice from expert tobacconist
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
 
-You are an expert pipe smoking advisor. The user has asked for general advice that doesn't involve purchasing or modifying their collection.
+You are an expert tobacconist and pipe smoking advisor having a friendly conversation with the user. They can ask you anything about pipe smoking, pipe selection, tobacco, maintenance, techniques, or their collection.
 
-User's Question: ${whatIfQuery}
+User's Question: ${currentQuery}
 
-Provide clear, expert advice covering:
-1. Step-by-step guidance if applicable
-2. Common mistakes to avoid
-3. Best practices from experienced pipe smokers
-4. Any tools or techniques that might help
-
-Be conversational, helpful, and concise. This is NOT about buying new pipes or changing collection focus - just practical smoking advice.`,
+Provide clear, expert advice in a conversational tone. Be helpful, knowledgeable, and personable. If they're asking about collection changes or purchases, guide them through the decision-making process with questions and considerations - but let them know they can analyze the specific impact on their collection at any time.`,
           response_json_schema: {
             type: "object",
             properties: {
@@ -616,116 +598,82 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
           }
         });
 
-        setWhatIfResult({
+        const aiResponse = {
           is_advice_only: true,
           advice_response: result.advice_response,
           key_points: result.key_points,
           common_mistakes: result.common_mistakes
-        });
-      } else {
-        // Collection impact question - full analysis using generateOptimizationAI function
-        try {
-          const result = await generateOptimizationAI({
-            pipes,
-            blends,
-            profile: userProfile,
-            whatIfText: whatIfQuery
-          });
-
-          // Transform the result to match whatIfResult format
-          const aiResponse = {
-            impact_score: whatIfQuery.toLowerCase().includes('essential') || whatIfQuery.toLowerCase().includes('critical') ? 9 : 
-                         whatIfQuery.toLowerCase().includes('important') ? 7 : 6,
-            trophy_pairings: (result.next_additions || []).slice(0, 5),
-            redundancy_analysis: result.summary || '',
-            recommendation_category: 'STRONG ADDITION',
-            detailed_reasoning: result.summary || '',
-            gaps_filled: result.collection_gaps || [],
-            score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(', ')}`
-          };
-          
-          setWhatIfResult(aiResponse);
-          
-          // Add AI response to conversation
-          setConversationMessages(prev => [...prev, {
-            role: 'assistant',
-            content: aiResponse,
-            timestamp: new Date().toISOString()
-          }]);
-          
-          setWhatIfQuery('');
-          setWhatIfPhotos([]);
-        } catch (err) {
-          // Fallback to direct LLM call if generateOptimizationAI fails
-          const result = await base44.integrations.Core.InvokeLLM({
-            prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
-
-      You are an expert pipe collection analyst. Analyze this hypothetical scenario for the user's collection.
-
-      Current Collection:
-      Pipes: ${JSON.stringify(pipesData, null, 2)}
-      Tobacco Blends: ${JSON.stringify(blendsData, null, 2)}${profileContext}
-
-      User Question/Scenario:
-      ${whatIfQuery}
-
-      ${whatIfDescription ? `Potential Pipe Details: ${whatIfDescription}` : ''}
-
-      Provide a detailed "What If" analysis covering:
-
-      1. **COLLECTION IMPACT SCORE** (1-10): Rate the overall value this change would add
-      2. **TROPHY PAIRINGS**: Which specific blends would achieve 9-10 scores with this change
-      3. **REDUNDANCY CHECK**: Does this duplicate existing coverage or fill a gap?
-      4. **RECOMMENDATION CATEGORY**:
-      - "ESSENTIAL UPGRADE" - Fills critical gap, creates multiple trophies
-      - "STRONG ADDITION" - Adds meaningful coverage, some new trophies
-      - "NICE TO HAVE" - Minor improvement, mostly redundant
-      - "SKIP IT" - No meaningful improvement, purely redundant
-
-      5. **DETAILED REASONING**: Explain the impact on collection performance and pairing scores
-
-      Be specific about which user-owned blends benefit and by how much.`,
-            file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                impact_score: { type: "number" },
-                trophy_pairings: {
-                  type: "array",
-                  items: { type: "string" }
-                },
-                redundancy_analysis: { type: "string" },
-                recommendation_category: { type: "string" },
-                detailed_reasoning: { type: "string" },
-                gaps_filled: {
-                  type: "array",
-                  items: { type: "string" }
-                },
-                score_improvements: { type: "string" }
-              }
-            }
-          });
-
-          const aiResponse = result;
-          setWhatIfResult(aiResponse);
-          
-          // Add AI response to conversation
-          setConversationMessages(prev => [...prev, {
-            role: 'assistant',
-            content: aiResponse,
-            timestamp: new Date().toISOString()
-          }]);
-          
-          setWhatIfQuery('');
-          setWhatIfPhotos([]);
-        }
-      }
+        };
+        
+        setWhatIfResult(aiResponse);
+        
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
     } catch (err) {
       console.error('Error analyzing what-if:', err);
       toast.error('Failed to analyze scenario. Please try again.');
       
       // Remove the user message if analysis failed
       setConversationMessages(prev => prev.slice(0, -1));
+    } finally {
+      setWhatIfLoading(false);
+    }
+  };
+
+  const analyzeCollectionImpact = async () => {
+    if (conversationMessages.length === 0) return;
+    
+    setWhatIfLoading(true);
+    
+    try {
+      // Build full context from conversation
+      const conversationContext = conversationMessages
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join('\n\n');
+      
+      // Run collection impact analysis
+      try {
+        const result = await generateOptimizationAI({
+          pipes,
+          blends,
+          profile: userProfile,
+          whatIfText: conversationContext
+        });
+
+        // Transform the result to match whatIfResult format
+        const impactAnalysis = {
+          is_impact_analysis: true,
+          impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
+          trophy_pairings: (result.next_additions || []).slice(0, 5),
+          redundancy_analysis: result.summary || '',
+          recommendation_category: 'STRONG ADDITION',
+          detailed_reasoning: result.summary || '',
+          gaps_filled: result.collection_gaps || [],
+          score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(', ')}`,
+          applyable_changes: result.applyable_changes || []
+        };
+        
+        // Add impact analysis to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: impactAnalysis,
+          timestamp: new Date().toISOString(),
+          isImpactAnalysis: true
+        }]);
+        
+        setWhatIfResult(impactAnalysis);
+      } catch (err) {
+        console.error('Error analyzing collection impact:', err);
+        toast.error('Failed to analyze collection impact. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error in impact analysis:', err);
+      toast.error('Failed to analyze impact.');
     } finally {
       setWhatIfLoading(false);
     }
@@ -742,7 +690,7 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
     setConversationMessages([]);
   };
 
-  const handleWhatIfFollowUp = async (mode = 'auto') => {
+  const handleWhatIfFollowUp = async () => {
     const query = whatIfFollowUp.trim();
     if (!query) return;
 
@@ -758,30 +706,23 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
     setWhatIfFollowUp('');
     
     try {
-      // Build context from conversation history
-      const conversationContext = conversationMessages
-        .filter(m => m.role === 'user')
-        .map(m => m.content)
-        .join('\n\nFollow-up: ');
-      const combinedContext = conversationContext + '\n\nFollow-up: ' + query;
+      // Continue conversational advice
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
 
-      // Determine mode - default to advice unless explicitly requested collection impact
-      const isAdviceMode = mode === 'advice' || mode === 'auto';
-      const isCollectionMode = mode === 'collection';
-
-      if (isAdviceMode) {
-        // Continue advice conversation
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
-
-You are an expert pipe smoking advisor. Continue the conversation based on the context below.
+You are an expert tobacconist having a conversation with a pipe smoker. Continue the natural conversation.
 
 Conversation History:
-${conversationMessages.map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice_response || m.content.detailed_reasoning || JSON.stringify(m.content)}`).join('\n')}
+${conversationMessages.map(m => {
+  if (m.role === 'user') return `User: ${m.content}`;
+  if (m.content.is_advice_only) return `Tobacconist: ${m.content.advice_response}`;
+  if (m.content.is_impact_analysis) return `[Collection Impact Analysis Completed]`;
+  return `Tobacconist: ${m.content.advice_response || ''}`;
+}).join('\n')}
 
 User: ${query}
 
-Provide clear, expert advice addressing their question. Be conversational and helpful.`,
+Provide clear, conversational expert advice. Be friendly and knowledgeable.`,
           response_json_schema: {
             type: "object",
             properties: {
@@ -813,34 +754,6 @@ Provide clear, expert advice addressing their question. Be conversational and he
         }]);
         
         setWhatIfResult(aiResponse);
-      } else if (isCollectionMode) {
-        // Collection-impact follow-up
-        const result = await generateOptimizationAI({
-          pipes,
-          blends,
-          profile: userProfile,
-          whatIfText: combinedContext
-        });
-
-        const aiResponse = {
-          impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
-          trophy_pairings: (result.next_additions || []).slice(0, 5),
-          redundancy_analysis: result.summary || '',
-          recommendation_category: 'STRONG ADDITION',
-          detailed_reasoning: result.summary || '',
-          gaps_filled: result.collection_gaps || [],
-          score_improvements: `Revised analysis: ${(result.next_additions || []).join(', ')}`
-        };
-
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-        
-        setWhatIfResult(aiResponse);
-      }
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
@@ -1122,17 +1035,36 @@ Provide concrete, actionable steps with specific field values.`,
                             </div>
                           )}
                         </div>
-                      ) : (
-                        <div className="text-sm space-y-2">
-                          <div className="flex items-center gap-2">
+                      ) : msg.content.is_impact_analysis ? (
+                        <div className="text-sm space-y-3 w-full">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Badge className="bg-indigo-600 text-white">
-                              Score: {msg.content.impact_score}/10
+                              Impact Score: {msg.content.impact_score}/10
                             </Badge>
                             <Badge className="bg-blue-600 text-white">
                               {msg.content.recommendation_category}
                             </Badge>
                           </div>
-                          <p className="text-stone-600 text-xs">{msg.content.detailed_reasoning}</p>
+                          <div className="space-y-2">
+                            <p className="text-stone-700 font-medium">Analysis:</p>
+                            <p className="text-stone-600 text-xs">{msg.content.detailed_reasoning}</p>
+                          </div>
+                          {msg.content.trophy_pairings?.length > 0 && (
+                            <div>
+                              <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {msg.content.trophy_pairings.map((blend, i) => (
+                                  <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
+                                    {blend}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-stone-700">
+                          <p>{msg.content.advice_response || msg.content.detailed_reasoning}</p>
                         </div>
                       )}
                     </div>
@@ -1144,7 +1076,7 @@ Provide concrete, actionable steps with specific field values.`,
 
           <div>
             <label className="text-sm font-medium text-stone-700 mb-2 block">
-              {conversationMessages.length > 0 ? 'Continue the conversation...' : 'Ask a question or describe a scenario'}
+              {conversationMessages.length > 0 ? 'Continue the conversation...' : 'Chat with the Tobacconist'}
             </label>
             <Textarea
               placeholder={conversationMessages.length > 0 
@@ -1154,13 +1086,16 @@ Provide concrete, actionable steps with specific field values.`,
               onChange={(e) => conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value)}
               className="min-h-[80px]"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.metaKey) {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   if (conversationMessages.length > 0) {
-                    handleWhatIfFollowUp('auto');
+                    handleWhatIfFollowUp();
+                  } else {
+                    analyzeWhatIf();
                   }
                 }
               }}
             />
+            <p className="text-xs text-stone-500 mt-1">Press Cmd+Enter to send</p>
           </div>
 
           <div>
@@ -1207,9 +1142,22 @@ Provide concrete, actionable steps with specific field values.`,
             {conversationMessages.length > 0 ? (
               <>
                 <Button
-                  onClick={() => handleWhatIfFollowUp('collection')}
+                  onClick={handleWhatIfFollowUp}
                   disabled={whatIfLoading || !whatIfFollowUp.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 flex-1"
+                  className="bg-indigo-600 hover:bg-indigo-700 flex-1"
+                >
+                  {whatIfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Send Message
+                </Button>
+                <Button
+                  onClick={analyzeCollectionImpact}
+                  disabled={whatIfLoading}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
                   {whatIfLoading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1218,50 +1166,28 @@ Provide concrete, actionable steps with specific field values.`,
                   )}
                   Analyze Impact
                 </Button>
-                <Button
-                  onClick={() => handleWhatIfFollowUp('advice')}
-                  disabled={whatIfLoading || !whatIfFollowUp.trim()}
-                  className="bg-emerald-600 hover:bg-emerald-700 flex-1"
-                >
-                  {whatIfLoading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <HelpCircle className="w-4 h-4 mr-2" />
-                  )}
-                  Get Advice
-                </Button>
                 <Button variant="outline" onClick={resetWhatIf} className="sm:w-auto">
                   Reset
                 </Button>
               </>
             ) : (
-              <>
-                <Button
-                  onClick={() => analyzeWhatIf('collection')}
-                  disabled={whatIfLoading || !whatIfQuery.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 flex-1"
-                >
-                  {whatIfLoading ? (
+              <Button
+                onClick={analyzeWhatIf}
+                disabled={whatIfLoading || !whatIfQuery.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                {whatIfLoading ? (
+                  <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Target className="w-4 h-4 mr-2" />
-                  )}
-                  <span className="hidden sm:inline">Analyze Impact to Collection</span>
-                  <span className="sm:hidden">Analyze Impact</span>
-                </Button>
-                <Button
-                  onClick={() => analyzeWhatIf('advice')}
-                  disabled={whatIfLoading || !whatIfQuery.trim()}
-                  className="bg-emerald-600 hover:bg-emerald-700 flex-1"
-                >
-                  {whatIfLoading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <HelpCircle className="w-4 h-4 mr-2" />
-                  )}
-                  Get Advice
-                </Button>
-              </>
+                    Starting...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Conversation
+                  </>
+                )}
+              </Button>
             )}
           </div>
 
@@ -1413,36 +1339,19 @@ Provide concrete, actionable steps with specific field values.`,
                 </CardContent>
               </Card>
 
-              {whatIfResult.recommendation_category && 
-               !whatIfResult.recommendation_category.includes('SKIP') && (
-                <div className="flex gap-2 mt-4">
+              {whatIfResult.applyable_changes?.length > 0 && (
+                <div className="mt-4">
                   <Button
-                    onClick={implementWhatIf}
-                    disabled={whatIfLoading}
-                    className={
-                      whatIfResult.recommendation_category?.includes('ESSENTIAL') 
-                        ? 'bg-emerald-600 hover:bg-emerald-700 flex-1'
-                        : 'bg-indigo-600 hover:bg-indigo-700 flex-1'
-                    }
+                    onClick={() => {
+                      // Apply the changes from the impact analysis
+                      applyOptimizationChangesWithUndo(whatIfResult.applyable_changes);
+                      toast.success('Changes applied to your collection');
+                      resetWhatIf();
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 w-full"
                   >
-                    {whatIfLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Implementing...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCheck className="w-4 h-4 mr-2" />
-                        Implement This Scenario
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={resetWhatIf}
-                    disabled={whatIfLoading}
-                  >
-                    Cancel
+                    <CheckCheck className="w-4 h-4 mr-2" />
+                    Confirm & Apply Changes
                   </Button>
                 </div>
               )}
