@@ -2329,39 +2329,22 @@ Provide concrete, actionable steps with specific field values.`,
                       </div>
 
                       {/* Implement Button */}
-                      {whatIfResult.recommendation_category && 
-                       !whatIfResult.recommendation_category.includes('SKIP') && (
-                        <div className="flex gap-2 mt-4">
+                      {whatIfResult.applyable_changes?.length > 0 && (
+                        <div className="mt-4">
                           <Button
-                            onClick={implementWhatIf}
-                            disabled={whatIfLoading}
-                            className={
-                              whatIfResult.recommendation_category?.includes('ESSENTIAL') 
-                                ? 'bg-emerald-600 hover:bg-emerald-700 flex-1'
-                                : 'bg-indigo-600 hover:bg-indigo-700 flex-1'
-                            }
+                            onClick={() => {
+                              // Apply the changes from the impact analysis
+                              applyOptimizationChangesWithUndo(whatIfResult.applyable_changes);
+                              toast.success('Changes applied to your collection');
+                              resetWhatIf();
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 w-full"
                           >
-                            {whatIfLoading ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Implementing...
-                              </>
-                            ) : (
-                              <>
-                                <CheckCheck className="w-4 h-4 mr-2" />
-                                Implement This Scenario
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={resetWhatIf}
-                            disabled={whatIfLoading}
-                          >
-                            Cancel
+                            <CheckCheck className="w-4 h-4 mr-2" />
+                            Confirm & Apply Changes
                           </Button>
                         </div>
-                      )}
+                        )}
                       </motion.div>
                       )}
                       </CardContent>
