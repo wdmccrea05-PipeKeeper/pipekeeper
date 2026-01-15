@@ -1019,15 +1019,19 @@ Provide concrete, actionable steps with specific field values.`,
                   ) : (
                     <div className="inline-block bg-white border rounded-lg px-4 py-3 max-w-[80%] text-left">
                       {msg.content.is_advice_only ? (
-                        <div className="text-sm text-stone-700 space-y-2">
-                          <p className="leading-relaxed">{msg.content.advice_response}</p>
+                        <div className="text-sm text-stone-700 space-y-3">
+                          <div className="space-y-3">
+                            {msg.content.advice_response?.split(/\n\n+/).map((paragraph, i) => (
+                              <p key={i} className="leading-relaxed">{paragraph.trim()}</p>
+                            ))}
+                          </div>
                           {msg.content.key_points?.length > 0 && (
-                            <div className="pt-2 border-t">
-                              <p className="font-medium text-xs text-stone-500 mb-1">Key Points:</p>
-                              <ul className="space-y-1 text-xs">
+                            <div className="pt-3 border-t">
+                              <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
+                              <ul className="space-y-1.5 text-sm">
                                 {msg.content.key_points.map((pt, i) => (
-                                  <li key={i} className="flex gap-1">
-                                    <span>•</span>
+                                  <li key={i} className="flex gap-2 leading-relaxed">
+                                    <span className="text-blue-600">•</span>
                                     <span>{pt}</span>
                                   </li>
                                 ))}
@@ -1200,10 +1204,12 @@ Provide concrete, actionable steps with specific field values.`,
               {whatIfResult.is_advice_only ? (
                 <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
                   <CardContent className="p-4 space-y-4">
-                    <div>
-                      <p className="text-stone-700 text-sm leading-relaxed whitespace-pre-wrap">
-                        {whatIfResult.advice_response}
-                      </p>
+                    <div className="space-y-3">
+                      {whatIfResult.advice_response?.split(/\n\n+/).map((paragraph, i) => (
+                        <p key={i} className="text-stone-700 text-sm leading-relaxed">
+                          {paragraph.trim()}
+                        </p>
+                      ))}
                     </div>
 
                     {whatIfResult.key_points?.length > 0 && (
