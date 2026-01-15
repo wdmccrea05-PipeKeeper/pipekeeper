@@ -120,13 +120,23 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
             <Target className="w-5 h-5 text-blue-600" />
             <span className="font-semibold text-blue-800">Pipe Specialization</span>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setEditing(!editing)}
-          >
-            {editing ? 'Done' : 'Edit'}
-          </Button>
+          <div className="flex gap-2">
+            <SpecializationRecommender 
+              pipe={pipe} 
+              onApplyRecommendation={(data) => {
+                setDesignations(data.focus);
+                onUpdate(data);
+                invalidateAIQueries(queryClient, pipe.created_by);
+              }} 
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setEditing(!editing)}
+            >
+              {editing ? 'Done' : 'Edit'}
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
