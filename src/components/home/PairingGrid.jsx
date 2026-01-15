@@ -106,35 +106,23 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
-      const currentFingerprint = buildArtifactFingerprint({ pipes: allPipes, blends: allBlends, profile });
-      
-      // Check if active pairings still match current fingerprint (no regeneration needed)
-      if (activePairings && activePairings.input_fingerprint === currentFingerprint && activePairings.is_active) {
-        toast.success("Pairings are already up to date");
-        setRegenerating(false);
-        return;
-      }
-
-      const { pairings } = await generatePairingsAI({ pipes: allPipes, blends: allBlends, profile });
-
-      if (activePairings?.id) {
-        await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user?.email);
-      }
-
-      await base44.entities.PairingMatrix.create({
-        created_by: user.email,
-        is_active: true,
-        previous_active_id: activePairings?.id ?? null,
-        input_fingerprint: currentFingerprint,
-        pairings,
-        generated_date: new Date().toISOString(),
+      const result = await regeneratePairingsConsistent({
+        pipes: allPipes,
+        blends: allBlends,
+        profile,
+        user,
+        queryClient,
+        activePairings,
+        skipIfUpToDate: true,
       });
 
-      await queryClient.invalidateQueries({ queryKey: ["activePairings", user?.email] });
-      invalidateAIQueries(queryClient, user?.email);
-      toast.success("Pairings regenerated successfully");
+      if (result?.skipped) {
+        toast.success("Pairings are already up to date");
+      } else {
+        toast.success("Pairings regenerated successfully");
+      }
     } catch (error) {
-      console.error('Regeneration error:', error);
+      console.error("Regeneration error:", error);
       toast.error("Failed to regenerate pairings");
     } finally {
       setRegenerating(false);
