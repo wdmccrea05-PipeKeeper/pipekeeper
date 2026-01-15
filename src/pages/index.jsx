@@ -85,8 +85,8 @@ const queryClient = new QueryClient();
 export default function Pages() {
   const path = window.location.pathname || "/";
 
-  // Root should go to Home once
-  if (path === "/") {
+  // Root should go to Home
+  if (path === "/" || path === "/TermsOfService") {
     window.location.replace("/Home");
     return null;
   }
