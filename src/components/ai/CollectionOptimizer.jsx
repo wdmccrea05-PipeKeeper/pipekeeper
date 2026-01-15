@@ -783,12 +783,12 @@ Be conversational, helpful, and concise. This is NOT about buying new pipes or c
 
 You are an expert pipe smoking advisor. Continue the conversation based on the context below.
 
-Original Question: ${whatIfQuery}
-${whatIfHistory.length > 0 ? `Previous Discussion:\n${whatIfHistory.map(h => `Q: ${h.question}`).join('\n')}` : ''}
+Conversation History:
+${conversationMessages.map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice_response || m.content.detailed_reasoning || JSON.stringify(m.content)}`).join('\n')}
 
-Follow-up Question: ${whatIfFollowUp}
+User: ${query}
 
-Provide clear, expert advice addressing their follow-up question. Be conversational and helpful.`,
+Provide clear, expert advice addressing their question. Be conversational and helpful.`,
           response_json_schema: {
             type: "object",
             properties: {
