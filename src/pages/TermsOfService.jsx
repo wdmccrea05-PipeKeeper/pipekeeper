@@ -3,6 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function TermsOfService() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // If Terms is being used as the default landing page at "/",
+  // immediately redirect to Home. Still allow "/TermsOfService" to show Terms.
+  useEffect(() => {
+    if (location.pathname === "/" || location.pathname === "") {
+      navigate(createPageUrl("Home"), { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   return (
     <div className="mx-auto max-w-4xl px-5 py-10 text-[#f3e7d3]">
       <h1 className="text-4xl font-semibold tracking-tight text-white">
