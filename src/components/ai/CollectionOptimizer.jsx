@@ -770,9 +770,15 @@ Provide clear, conversational expert advice. Be friendly and knowledgeable.`,
 
     setLoadingProducts(true);
     try {
-      // Determine if question is about pipes or tobacco
-      const isPipeQuery = /pipe|briar|meerschaum|shape|chamber|stem|bowl/i.test(whatIfQuery);
-      const isTobaccoQuery = /tobacco|blend|tin|virginia|english|latakia|aromatic|flake|ribbon/i.test(whatIfQuery);
+      // Build full conversation context
+      const conversationContext = conversationMessages
+        .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice_response || ''}`)
+        .join('\n\n');
+      
+      // Determine if conversation is about pipes or tobacco based on full context
+      const fullContext = conversationContext || whatIfQuery;
+      const isPipeQuery = /pipe|briar|meerschaum|shape|chamber|stem|bowl|calabash|billiard|dublin|bent|straight|rusticated|sandblast|smooth|finish/i.test(fullContext);
+      const isTobaccoQuery = /tobacco|blend|tin|virginia|english|latakia|aromatic|flake|ribbon|perique|burley|oriental|navy/i.test(fullContext);
       
       let productType = 'both';
       if (isPipeQuery && !isTobaccoQuery) {
@@ -784,9 +790,11 @@ Provide clear, conversational expert advice. Be friendly and knowledgeable.`,
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this analysis.
 
-Based on this "What If" analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'SMOKING PIPES ONLY' : productType === 'tobacco' ? 'PIPE TOBACCO BLENDS ONLY' : 'products (smoking pipes or pipe tobacco blends)'} that match the criteria.
+Based on this conversation and analysis, suggest 5 specific real-world ${productType === 'pipes' ? 'SMOKING PIPES ONLY' : productType === 'tobacco' ? 'PIPE TOBACCO BLENDS ONLY' : 'products (smoking pipes or pipe tobacco blends)'} that match the criteria.
 
-User's Question: ${whatIfQuery}
+Full Conversation Context:
+${conversationContext || whatIfQuery}
+
 Analysis Result: ${JSON.stringify(whatIfResult, null, 2)}
 
 For each product, provide:
