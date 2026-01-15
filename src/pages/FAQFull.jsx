@@ -202,29 +202,42 @@ export default function FAQFull() {
             <div>
               <h4 className="font-semibold text-[#1a2c42] mb-2">Free Features:</h4>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Pipe and Tobacco Collection Management (unlimited entries)</li>
-                <li>Basic AI-Powered Pairing Suggestions</li>
-                <li>Basic Export Tools (CSV downloads)</li>
-                <li>User Profile Management</li>
-                <li>View Public Profiles and Comments</li>
-                <li>Tutorial and Onboarding</li>
+                <li>Manual pipe and tobacco entry</li>
+                <li>Organize and browse your collection</li>
+                <li>Track dimensions, materials, and basic details</li>
+                <li>Manual cellar log for inventory tracking</li>
+                <li>Rate and favorite your pipes and tobacco</li>
+                <li>View recent additions</li>
+                <li>Basic collection statistics</li>
+                <li>Brand logo library with custom uploads</li>
+                <li>7-day free trial of Premium features</li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Smoking Log (track sessions, rest periods, break-in progress)</li>
-                <li>Cellaring Log System (detailed transaction tracking)</li>
-                <li>Advanced Pairing Matrix (AI compatibility scores)</li>
-                <li>Collection Optimization (gap analysis, recommendations)</li>
-                <li>AI Break-in Schedules for new pipes</li>
-                <li>Pipe Specialization recommendations</li>
-                <li>Full Community Features (public profile, messaging, follow users)</li>
-                <li>Advanced PDF Reports and Analytics</li>
-                <li>Bulk Operations (edit multiple items at once)</li>
-                <li>Enhanced Value Tracking and market alerts</li>
-                <li>Pipe Photo Identification (AI maker/model identification)</li>
-                <li>AI Value Lookup for market estimates</li>
+                <li>AI Expert Tobacconist chat for personalized recommendations</li>
+                <li>AI pipe-tobacco pairing matrix with scoring</li>
+                <li>AI tobacco matching engine for each pipe</li>
+                <li>AI collection optimizer with gap analysis</li>
+                <li>AI photo identification for pipes (stamps, shapes, makers)</li>
+                <li>AI market value lookup and automated tracking</li>
+                <li>AI break-in schedule generator for new pipes</li>
+                <li>AI pipe specialization recommendations</li>
+                <li>AI measurement calculator from photos</li>
+                <li>AI web search for auto-filling pipe & tobacco details</li>
+                <li>AI What-If scenario analysis for collection changes</li>
+                <li>Bulk CSV import/export for pipes & tobacco</li>
+                <li>Quick Edit: Batch update multiple blends at once</li>
+                <li>Advanced PDF exports for insurance documentation</li>
+                <li>Smoking log with auto inventory reduction</li>
+                <li>Pipe rest status tracking with recommendations</li>
+                <li>Cellar log with transaction history</li>
+                <li>Community: Public profiles, search, follow collections</li>
+                <li>Comments on pipes, tobacco, and smoking logs</li>
+                <li>Instant messaging with friends (real-time chat)</li>
+                <li>Unlimited pipes and tobacco blends</li>
+                <li>Priority customer support</li>
               </ul>
             </div>
           </div>
