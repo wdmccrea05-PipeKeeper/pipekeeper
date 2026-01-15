@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
-import PairingMatrix from "@/components/home/PairingMatrix";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
 import { useQuery } from "@tanstack/react-query";
@@ -88,10 +87,6 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
 
           <TabsContent value="identifier" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
             <QuickPipeIdentifier pipes={pipes} blends={blends} />
-          </TabsContent>
-
-          <TabsContent value="pairings" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
-            <PairingMatrix pipes={pipes} blends={blends} />
           </TabsContent>
 
           <TabsContent value="optimizer" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
