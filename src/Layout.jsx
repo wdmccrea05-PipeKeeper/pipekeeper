@@ -253,6 +253,12 @@ export default function Layout({ children, currentPageName }) {
                   FAQ
                 </a>
                 <a
+                  href={createPageUrl("Troubleshooting")}
+                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+                >
+                  Troubleshooting
+                </a>
+                <a
                   href={createPageUrl("Support")}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
