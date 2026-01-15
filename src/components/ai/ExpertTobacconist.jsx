@@ -47,20 +47,13 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
       </CardHeader>
       <CardContent className="pt-6">
         <Tabs defaultValue="identifier" className="space-y-6">
-          <TabsList className="grid grid-cols-5 bg-[#1a2c42]/60 border border-[#e8d5b7]/30 p-1 rounded-xl shadow-inner">
+          <TabsList className="grid grid-cols-4 bg-[#1a2c42]/60 border border-[#e8d5b7]/30 p-1 rounded-xl shadow-inner">
             <TabsTrigger 
               value="identifier"
               className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
             >
               <Camera className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Identify</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="pairings"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
-            >
-              <Sparkles className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">Pairings</span>
             </TabsTrigger>
             <TabsTrigger 
               value="optimizer"
