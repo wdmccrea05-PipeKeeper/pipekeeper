@@ -81,50 +81,53 @@ const ROUTES_LOWER = Object.fromEntries(
 
 const queryClient = new QueryClient();
 
-/**
- * Normalize the incoming path:
- * - "/" => "/Home"
- * - "" => "/Home"
- * - "/index" or "/pages" variants => "/Home"
- * - unknown routes => "/Home"
- * - keep known routes as-is (case-insensitive)
- */
-function normalizePath(rawPath) {
+function canonicalizePath(rawPath) {
   const p = (rawPath || "/").trim();
   if (p === "/" || p === "") return "/Home";
 
-  // Common base44 / hosting edgecases
   const lower = p.toLowerCase();
-  if (lower === "/index" || lower === "/index.html" || lower === "/pages") return "/Home";
 
-  // If route exists (case-insensitive), preserve original casing by mapping to canonical key
   if (ROUTES[p]) return p;
   if (ROUTES_LOWER[lower]) {
-    const canonical =
-      Object.keys(ROUTES).find((k) => k.toLowerCase() === lower) || "/Home";
-    return canonical;
+    return (
+      Object.keys(ROUTES).find((k) => k.toLowerCase() === lower) || "/Home"
+    );
   }
 
-  // Unknown route => Home
   return "/Home";
 }
 
 export default function Pages() {
-  const initialPath = useMemo(() => normalizePath(window.location.pathname), []);
+  const rawPath = window.location.pathname || "/";
+  const search = window.location.search || "";
+  const params = new URLSearchParams(search);
 
-  // Ensure the URL reflects the normalized path without forcing a reload
+  // If wrapper starts at Terms/Privacy, treat as startup route unless explicitly requested.
+  const startupLegal =
+    (rawPath.toLowerCase() === "/termsofservice" ||
+      rawPath.toLowerCase() === "/privacypolicy") &&
+    params.get("view") !== "1";
+
+  const path = useMemo(() => {
+    if (startupLegal) return "/Home";
+    return canonicalizePath(rawPath);
+  }, [rawPath, startupLegal]);
+
+  // Update URL without reload (prevents iOS/webcontainer race conditions)
   useEffect(() => {
-    const current = window.location.pathname || "/";
-    if (current !== initialPath) {
-      window.history.replaceState({}, "", initialPath);
+    if ((window.location.pathname || "/") !== path) {
+      window.history.replaceState({}, "", path);
     }
-  }, [initialPath]);
+  }, [path]);
 
-  const RawComp = ROUTES[initialPath] || ROUTES_LOWER[initialPath.toLowerCase()] || Home;
-  const Comp = getAppleGatedComponent(initialPath, RawComp);
+  const RawComp = ROUTES[path] || ROUTES_LOWER[path.toLowerCase()] || Home;
+  const Comp = getAppleGatedComponent(path, RawComp);
 
-  // Derive page name for Layout
-  const currentPageName = initialPath.replace("/", "") || "Home";
+  const matchedKey = ROUTES[path]
+    ? path
+    : Object.keys(ROUTES).find((k) => k.toLowerCase() === path.toLowerCase()) ||
+      "/Home";
+  const currentPageName = matchedKey.replace("/", "") || "Home";
 
   return (
     <QueryClientProvider client={queryClient}>
