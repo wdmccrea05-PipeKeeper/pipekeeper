@@ -31,6 +31,7 @@ import ValueLookup from "@/components/ai/ValueLookup";
 import PipeIdentifier from "@/components/ai/PipeIdentifier";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import PipeSpecialization from "@/components/pipes/PipeSpecialization";
+import SpecializationRecommender from "@/components/pipes/SpecializationRecommender";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
@@ -251,6 +252,27 @@ export default function PipeDetailPage() {
             Back to Pipes
           </Button>
         </a>
+
+        {/* AI Specialization Suggestion - show prominently for pipes without focus */}
+        {blends.length > 0 && (!pipe.focus || pipe.focus.length === 0) && (
+          <Card className="mb-6 border-purple-300 bg-gradient-to-br from-purple-50 to-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-900">
+                <Sparkles className="w-5 h-5" />
+                AI Specialization Suggestion
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-stone-700 mb-4">
+                Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.
+              </p>
+              <SpecializationRecommender 
+                pipe={pipe}
+                onApplyRecommendation={(data) => updateMutation.mutate(data)}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pipe Specialization */}
         {blends.length > 0 && (
