@@ -291,20 +291,7 @@ export default function HomePage() {
       .sort((a, b) => b.totalOz - a.totalOz);
   };
 
-  if (pipesLoading || blendsLoading || onboardingLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-        <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
-            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-          />
-          <p className="text-[#e8d5b7]">Loading your collection...</p>
-        </div>
-      </div>
-    );
-  }
+  const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
   
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
   const cellarBreakdown = getCellarBreakdown();
@@ -337,6 +324,19 @@ export default function HomePage() {
 
   return (
     <>
+      {isInitialLoading ? (
+        <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+          <div className="text-center">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+              alt="PipeKeeper"
+              className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+            />
+            <p className="text-[#e8d5b7]">Loading your collection...</p>
+          </div>
+        </div>
+      ) : null}
+
       {showOnboarding && user?.email ? (
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
@@ -345,7 +345,7 @@ export default function HomePage() {
       ) : null}
       
       {/* Testing Notice Popup */}
-      {showTestingNotice && !showOnboarding ? (
+      {showTestingNotice && !showOnboarding && !isInitialLoading ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -389,6 +389,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
+      {!isInitialLoading && (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
@@ -827,6 +828,7 @@ export default function HomePage() {
 
         </div>
       </div>
+      )}
 
       {/* Cellar Breakdown Dialog */}
       <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
