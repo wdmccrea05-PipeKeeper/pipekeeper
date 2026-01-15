@@ -352,33 +352,48 @@ export default function FAQFull() {
         <Q id="how-subscribe" q="How do subscriptions work?">
           PipeKeeper offers optional Premium features through a paid subscription. Subscription pricing and trial availability are displayed in the app.
           <div className="mt-2">
-            Subscriptions are purchased on the web and managed through a secure customer portal accessible from the app's Profile section.
+            <b>iOS:</b> Subscriptions are managed through Apple's in-app purchase system. Purchase and manage your subscription through the iOS Settings app.
           </div>
-          <div className="mt-2 font-semibold">
-            PipeKeeper does not use Apple App Store or Google Play billing systems for subscriptions.
+          <div className="mt-2">
+            <b>Web/Android:</b> Subscriptions are purchased on the web and managed through a secure customer portal accessible from the app's Profile section.
           </div>
         </Q>
 
         <Q id="manage-subscription" q="How do I manage, change, or cancel my subscription?">
-          PipeKeeper subscriptions are purchased on the web and managed securely through our payment provider's customer portal.
-          <div className="mt-2">
-            To manage your subscription (update payment method, view invoices, or cancel), go to <b>Profile → Manage subscription</b>.
-          </div>
-          <div className="mt-2">
-            From the customer portal, you can:
-            <ul className="mt-2 space-y-1 list-disc list-inside">
-              <li>Cancel or restart your subscription</li>
-              <li>Update your payment method</li>
-              <li>View invoices and billing history</li>
-            </ul>
-          </div>
-          <div className="mt-2">
-            If you don't see the <b>Manage subscription</b> option, contact support and we'll help you access your subscription portal.
+          <div className="space-y-3">
+            <div>
+              <b>iOS Subscriptions:</b>
+              <div className="mt-1">
+                Subscriptions purchased through the iOS app are managed through Apple's system. To manage your subscription:
+                <ul className="mt-2 space-y-1 list-disc list-inside">
+                  <li>Open iOS <b>Settings</b> → [Your Name] → <b>Subscriptions</b></li>
+                  <li>Select PipeKeeper</li>
+                  <li>Cancel, change plans, or view billing details</li>
+                </ul>
+              </div>
+            </div>
+            <div>
+              <b>Web/Android Subscriptions:</b>
+              <div className="mt-1">
+                To manage your subscription (update payment method, view invoices, or cancel), go to <b>Profile → Manage subscription</b>.
+                <ul className="mt-2 space-y-1 list-disc list-inside">
+                  <li>Cancel or restart your subscription</li>
+                  <li>Update your payment method</li>
+                  <li>View invoices and billing history</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </Q>
 
         <Q id="continue-trial" q="How do I continue my subscription after a free trial?">
-          If your account includes a free trial, you will be prompted to subscribe before the trial ends to continue Premium access. Subscription status and renewal options are always available from your Profile page.
+          If your account includes a free trial, you will be prompted to subscribe before the trial ends to continue Premium access.
+          <div className="mt-2">
+            <b>iOS:</b> Subscribe through the app using Apple's in-app purchase system. Your subscription will be managed through iOS Settings.
+          </div>
+          <div className="mt-2">
+            <b>Web/Android:</b> Subscribe through your Profile page. Subscription status and renewal options are always available there.
+          </div>
         </Q>
 
         <Q id="premium-activate" q="I already paid—when do Premium features activate?">
@@ -388,8 +403,14 @@ export default function FAQFull() {
         </Q>
 
         <Q id="refunds" q="Refunds and billing questions">
-          For web subscriptions, billing is handled through our third-party payment processor. Please contact support for billing
-          questions, refunds (where applicable), or account access issues.
+          <div className="space-y-2">
+            <div>
+              <b>iOS Subscriptions:</b> Billing is handled by Apple. For refund requests or billing questions, contact Apple Support directly or request a refund through reportaproblem.apple.com.
+            </div>
+            <div>
+              <b>Web/Android Subscriptions:</b> Billing is handled through our third-party payment processor. Please contact PipeKeeper support for billing questions, refunds (where applicable), or account access issues.
+            </div>
+          </div>
         </Q>
       </Section>
 
