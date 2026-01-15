@@ -268,16 +268,28 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <a href={createPageUrl('FAQ')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+              <a
+                href={createPageUrl("FAQ")}
+                className="text-sm text-[#CFC6B5] hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+              >
                 FAQ
               </a>
-              <a href={createPageUrl('Support')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+              <a
+                href={createPageUrl("Support")}
+                className="text-sm text-[#CFC6B5] hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+              >
                 Support
               </a>
-              <a href={createPageUrl('TermsOfService')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+              <a
+                href={createPageUrl("TermsOfService")}
+                className="text-sm text-[#CFC6B5] hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+              >
                 Terms of Service
               </a>
-              <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+              <a
+                href={createPageUrl("PrivacyPolicy")}
+                className="text-sm text-[#CFC6B5] hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+              >
                 Privacy Policy
               </a>
             </div>
