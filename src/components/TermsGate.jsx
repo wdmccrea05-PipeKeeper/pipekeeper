@@ -1,175 +1,211 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-
-const TOS_URL = "https://pipekeeper.app/TermsOfService";
-const PRIVACY_URL = "https://pipekeeper.app/PrivacyPolicy";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 /**
  * TermsGate
- * - Blocks the app until the logged-in user accepts TOS/Privacy
+ * - Shows an overlay until the logged-in user accepts Terms + Privacy.
  * - Persists acceptance via base44.auth.updateMe({ tos_accepted_at: ISO })
  *
  * Props:
- * - user: the current user object from auth.me() / your user query
+ * - user: the current user object from your auth/me query.
  */
 export default function TermsGate({ user }) {
   const [checked, setChecked] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState("");
 
-  // Consider accepted if user has a timestamp.
-  const accepted = useMemo(() => {
-    const v = user?.tos_accepted_at;
-    return typeof v === "string" && v.length > 10;
+  const tosUrl = useMemo(() => createPageUrl("TermsOfService"), []);
+  const privacyUrl = useMemo(() => createPageUrl("PrivacyPolicy"), []);
+
+  const alreadyAccepted = useMemo(() => {
+    // Base44 user field (as used elsewhere in your app)
+    const iso = user?.tos_accepted_at;
+    if (!iso) return false;
+    const t = Date.parse(iso);
+    return Number.isFinite(t);
   }, [user]);
 
-  async function handleAccept() {
+  // If not logged in, do not block (let your auth flow handle it)
+  if (!user) return null;
+
+  // If already accepted, do not block
+  if (alreadyAccepted) return null;
+
+  async function onAccept() {
+    if (!checked || submitting) return;
+    setSubmitting(true);
+    setErr("");
+
     try {
-      setError(null);
+      const ISO = new Date().toISOString();
+      await base44.auth.updateMe({ tos_accepted_at: ISO });
 
-      if (!checked) {
-        setError("Please confirm you agree to the Terms of Service and Privacy Policy.");
-        return;
-      }
+      // Optional: local flag (helps prevent UI flicker during slow reloads)
+      try {
+        localStorage.setItem("tosAcceptedAt", ISO);
+      } catch (_) {}
 
-      setBusy(true);
-
-      // Save on the current user (client-side safe)
-      await base44.auth.updateMe({
-        tos_accepted_at: new Date().toISOString(),
-      });
-
-      // Force reload to refresh user state everywhere (simple + reliable)
+      // Do not hard-navigate; let Layout refresh the user query
+      // If your user query doesn't refetch automatically, a full reload is safest:
       window.location.reload();
     } catch (e) {
-      setError(e?.message || "Unable to save acceptance. Please try again.");
+      setErr(
+        e?.message ||
+          "We couldn’t save your acceptance. Please try again (or contact support)."
+      );
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   }
 
-  // If not logged in or already accepted, don't show the gate.
-  if (!user || accepted) return null;
-
-  // Block the app with a modal overlay
   return (
-    <div style={styles.backdrop}>
-        <div style={styles.modal} role="dialog" aria-modal="true" aria-label="Terms acceptance">
-          <h2 style={styles.title}>Before you continue</h2>
-
-          <p style={styles.text}>
-            Please review and accept the{" "}
-            <a href={TOS_URL} target="_blank" rel="noreferrer" style={styles.link}>
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href={PRIVACY_URL} target="_blank" rel="noreferrer" style={styles.link}>
-              Privacy Policy
-            </a>
-            .
-          </p>
-
-          <div style={styles.checkboxRow}>
-            <input
-              type="checkbox"
-              id="tosAgree"
-              checked={checked}
-              onChange={(e) => setChecked(e.target.checked)}
-              disabled={busy}
-            />
-            <label htmlFor="tosAgree" style={styles.checkboxLabel}>
-              I agree to the Terms of Service and Privacy Policy.
-            </label>
+    <div style={styles.overlay} role="dialog" aria-modal="true">
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <div style={styles.title}>Before you continue</div>
+          <div style={styles.subtitle}>
+            Please review and accept the Terms of Service and Privacy Policy.
           </div>
-
-          {error && <div style={styles.error}>{error}</div>}
-
-          <button
-            onClick={handleAccept}
-            disabled={busy || !checked}
-            style={{
-              ...styles.button,
-              opacity: busy || !checked ? 0.6 : 1,
-              cursor: busy || !checked ? "not-allowed" : "pointer",
-            }}
-          >
-            {busy ? "Saving..." : "Accept and Continue"}
-          </button>
-
-          <p style={styles.small}>
-            If you do not accept, you cannot use PipeKeeper.
-          </p>
         </div>
+
+        <div style={styles.linksRow}>
+          <a href={tosUrl} target="_blank" rel="noreferrer" style={styles.link}>
+            Terms of Service
+          </a>
+          <span style={styles.dot}>•</span>
+          <a
+            href={privacyUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={styles.link}
+          >
+            Privacy Policy
+          </a>
+        </div>
+
+        <label style={styles.checkboxRow}>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => setChecked(e.target.checked)}
+            style={styles.checkbox}
+          />
+          <span style={styles.checkboxText}>
+            I have read and agree to the Terms of Service and Privacy Policy.
+          </span>
+        </label>
+
+        {err ? <div style={styles.error}>{err}</div> : null}
+
+        <button
+          onClick={onAccept}
+          disabled={!checked || submitting}
+          style={{
+            ...styles.button,
+            opacity: !checked || submitting ? 0.6 : 1,
+            cursor: !checked || submitting ? "not-allowed" : "pointer",
+          }}
+        >
+          {submitting ? "Saving..." : "Accept and Continue"}
+        </button>
+
+        <p style={styles.small}>
+          You can review these documents at any time from Help and your Profile
+          menu.
+        </p>
+      </div>
     </div>
   );
 }
 
 const styles = {
-  backdrop: {
+  overlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(0,0,0,0.72)",
     zIndex: 9999,
+    background: "rgba(0,0,0,0.65)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
   },
-  modal: {
-    width: "100%",
-    maxWidth: 520,
-    background: "#121212",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 14,
-    padding: 18,
-    color: "#fff",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.45)",
+  card: {
+    width: "min(720px, 100%)",
+    borderRadius: 16,
+    background: "linear-gradient(180deg, rgba(20,34,52,0.98), rgba(14,24,38,0.98))",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+    padding: 20,
+    color: "#f3e7d3",
   },
+  header: { marginBottom: 14 },
   title: {
-    margin: 0,
-    marginBottom: 10,
-    fontSize: 20,
-    fontWeight: 700,
+    fontSize: 22,
+    fontWeight: 800,
+    letterSpacing: "-0.01em",
+    color: "#ffffff",
   },
-  text: {
-    margin: 0,
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "rgba(243,231,211,0.85)",
+    lineHeight: 1.4,
+  },
+  linksRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
     marginBottom: 14,
-    lineHeight: 1.45,
-    color: "rgba(255,255,255,0.9)",
+    flexWrap: "wrap",
   },
   link: {
-    color: "#8ab4ff",
+    color: "#f3e7d3",
     textDecoration: "underline",
+    fontWeight: 700,
   },
+  dot: { color: "rgba(243,231,211,0.55)" },
   checkboxRow: {
     display: "flex",
     gap: 10,
     alignItems: "flex-start",
-    marginBottom: 14,
+    userSelect: "none",
+    marginBottom: 12,
   },
-  checkboxLabel: {
+  checkbox: { marginTop: 3 },
+  checkboxText: {
+    fontSize: 14,
+    color: "rgba(243,231,211,0.95)",
     lineHeight: 1.35,
-    color: "rgba(255,255,255,0.92)",
   },
   error: {
-    marginBottom: 12,
-    color: "#ff6b6b",
+    marginTop: 10,
+    marginBottom: 10,
+    padding: "10px 12px",
+    borderRadius: 10,
+    background: "rgba(180, 60, 60, 0.18)",
+    border: "1px solid rgba(180, 60, 60, 0.35)",
+    color: "#ffd7d7",
     fontSize: 13,
+    lineHeight: 1.35,
   },
   button: {
     width: "100%",
+    marginTop: 8,
     border: "none",
-    borderRadius: 10,
+    borderRadius: 12,
     padding: "12px 14px",
-    background: "#2d6cdf",
+    background: "#7b2d2d", // PipeKeeper burgundy vibe
     color: "#fff",
     fontSize: 15,
-    fontWeight: 700,
+    fontWeight: 800,
   },
   small: {
     marginTop: 10,
     marginBottom: 0,
     fontSize: 12,
-    color: "rgba(255,255,255,0.65)",
+    color: "rgba(243,231,211,0.65)",
+    lineHeight: 1.35,
   },
 };
