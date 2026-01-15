@@ -10,6 +10,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import SpecializationRecommender from "./SpecializationRecommender";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const queryClient = useQueryClient();
