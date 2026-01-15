@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
+import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const queryClient = useQueryClient();
@@ -68,33 +69,27 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
 
   const regenPairings = useMutation({
     mutationFn: async () => {
-      // Check if active pairings still match current fingerprint (no regeneration needed)
-      if (activePairings && activePairings.input_fingerprint === currentFingerprint && activePairings.is_active) {
-        return; // Already up to date, skip regeneration
-      }
-
       setBusy(true);
-      const { pairings } = await generatePairingsAI({ pipes, blends, profile });
-
-      if (activePairings?.id) {
-        await safeUpdate("PairingMatrix", activePairings.id, { is_active: false }, user?.email);
-      }
-
-      await base44.entities.PairingMatrix.create({
-        created_by: user.email,
-        is_active: true,
-        previous_active_id: activePairings?.id ?? null,
-        input_fingerprint: currentFingerprint,
-        pairings,
-        generated_date: new Date().toISOString(),
+      const result = await regeneratePairingsConsistent({
+        pipes,
+        blends,
+        profile,
+        user,
+        queryClient,
+        activePairings,
+        skipIfUpToDate: true,
       });
-
       setBusy(false);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Pairings regenerated successfully");
+      if (result?.skipped) {
+        toast.success("Pairings are already up to date");
+      } else {
+        toast.success("Pairings regenerated successfully");
+      }
     },
     onError: () => {
       setBusy(false);
