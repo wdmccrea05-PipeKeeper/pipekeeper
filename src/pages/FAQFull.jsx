@@ -84,7 +84,7 @@ export default function FAQFull() {
             <b>First-time setup:</b> You'll need to confirm your age (21+) and accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement.
           </div>
           <div className="mt-2">
-            Note: Subscriptions are managed through the web version, not through app stores.
+            <b>Subscriptions:</b> iOS subscriptions are managed through Apple's in-app purchase system. Web and Android subscriptions are managed through the web version.
           </div>
         </Q>
 
