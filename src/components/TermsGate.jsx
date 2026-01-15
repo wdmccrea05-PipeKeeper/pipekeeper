@@ -19,7 +19,6 @@ export default function TermsGate({ user }) {
   const privacyUrl = useMemo(() => createPageUrl("PrivacyPolicy"), []);
 
   const alreadyAccepted = useMemo(() => {
-    // Base44 user field (as used elsewhere in your app)
     const iso = user?.tos_accepted_at;
     if (!iso) return false;
     const t = Date.parse(iso);
@@ -41,13 +40,12 @@ export default function TermsGate({ user }) {
       const ISO = new Date().toISOString();
       await base44.auth.updateMe({ tos_accepted_at: ISO });
 
-      // Optional: local flag (helps prevent UI flicker during slow reloads)
+      // Helps prevent flicker during slower refreshes
       try {
         localStorage.setItem("tosAcceptedAt", ISO);
       } catch (_) {}
 
-      // Do not hard-navigate; let Layout refresh the user query
-      // If your user query doesn't refetch automatically, a full reload is safest:
+      // Most reliable in Base44: refresh so user/me query refetches
       window.location.reload();
     } catch (e) {
       setErr(
@@ -133,7 +131,8 @@ const styles = {
   card: {
     width: "min(720px, 100%)",
     borderRadius: 16,
-    background: "linear-gradient(180deg, rgba(20,34,52,0.98), rgba(14,24,38,0.98))",
+    background:
+      "linear-gradient(180deg, rgba(20,34,52,0.98), rgba(14,24,38,0.98))",
     border: "1px solid rgba(255,255,255,0.10)",
     boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
     padding: 20,
@@ -196,7 +195,7 @@ const styles = {
     border: "none",
     borderRadius: 12,
     padding: "12px 14px",
-    background: "#7b2d2d", // PipeKeeper burgundy vibe
+    background: "#7b2d2d",
     color: "#fff",
     fontSize: 15,
     fontWeight: 800,
