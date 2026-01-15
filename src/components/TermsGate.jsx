@@ -2,21 +2,16 @@ import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
-/**
- * TermsGate
- * - Shows an overlay until the logged-in user accepts Terms + Privacy.
- * - Persists acceptance via base44.auth.updateMe({ tos_accepted_at: ISO })
- *
- * Props:
- * - user: the current user object from your auth/me query.
- */
 export default function TermsGate({ user }) {
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
 
-  const tosUrl = useMemo(() => createPageUrl("TermsOfService"), []);
-  const privacyUrl = useMemo(() => createPageUrl("PrivacyPolicy"), []);
+  const tosUrl = useMemo(() => `${createPageUrl("TermsOfService")}?view=1`, []);
+  const privacyUrl = useMemo(
+    () => `${createPageUrl("PrivacyPolicy")}?view=1`,
+    []
+  );
 
   const alreadyAccepted = useMemo(() => {
     const iso = user?.tos_accepted_at;
@@ -25,10 +20,7 @@ export default function TermsGate({ user }) {
     return Number.isFinite(t);
   }, [user]);
 
-  // If not logged in, do not block (let your auth flow handle it)
   if (!user) return null;
-
-  // If already accepted, do not block
   if (alreadyAccepted) return null;
 
   async function onAccept() {
@@ -40,12 +32,7 @@ export default function TermsGate({ user }) {
       const ISO = new Date().toISOString();
       await base44.auth.updateMe({ tos_accepted_at: ISO });
 
-      // Helps prevent flicker during slower refreshes
-      try {
-        localStorage.setItem("tosAcceptedAt", ISO);
-      } catch (_) {}
-
-      // Most reliable in Base44: refresh so user/me query refetches
+      // Base44-safe: reload so Layout's me() refreshes and gate disappears
       window.location.reload();
     } catch (e) {
       setErr(
@@ -109,7 +96,7 @@ export default function TermsGate({ user }) {
         </button>
 
         <p style={styles.small}>
-          You can review these documents at any time from Help and your Profile
+          You can review these documents at any time from Help or your Profile
           menu.
         </p>
       </div>
