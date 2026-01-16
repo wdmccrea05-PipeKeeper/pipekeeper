@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 
 const PIPE_TEMPLATE_HEADERS = [
   'name', 'maker', 'country_of_origin', 'shape', 'length_mm', 'weight_grams',
@@ -40,13 +41,7 @@ export default function ImportPage() {
     retry: 1,
   });
 
-  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date ? 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+  const isPaidUser = hasPremiumAccess(user);
 
   const downloadPipeTemplate = () => {
     const csvContent = PIPE_TEMPLATE_HEADERS.join(',') + '\n' +

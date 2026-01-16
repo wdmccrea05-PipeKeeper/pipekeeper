@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,14 +161,8 @@ export default function PipeDetailPage() {
     enabled: !!user?.email,
   });
 
-  // Check if user has paid access (subscription or 7-day trial)
-  const EXTENDED_TRIAL_END = new Date('2026-01-15T23:59:59');
-  const now = new Date();
-  const isBeforeExtendedTrialEnd = now < EXTENDED_TRIAL_END;
-  const isWithinSevenDayTrial = user?.created_date ? 
-    now.getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
-  const isWithinTrial = isBeforeExtendedTrialEnd || isWithinSevenDayTrial;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+  // Canonical premium access check (post-trial: paid only)
+  const isPaidUser = hasPremiumAccess(user);
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),
