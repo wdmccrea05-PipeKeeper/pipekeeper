@@ -235,6 +235,23 @@ export default function SubscriptionFull() {
     }
   };
 
+  const handleManageSubscription = async () => {
+    try {
+      if (isAppleBuild) {
+        // Apple-managed subscriptions
+        // This is the standard Apple URL that opens subscription management
+        window.location.href = "https://apps.apple.com/account/subscriptions";
+        return;
+      }
+
+      // Web/Android: Stripe billing portal
+      await openManageSubscription();
+    } catch (e) {
+      console.error("Manage subscription error:", e);
+      alert("Unable to open subscription management. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -301,13 +318,17 @@ export default function SubscriptionFull() {
                     Renews on {new Date(subscription.current_period_end).toLocaleDateString()}
                   </div>
                 )}
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancelSubscription}
-                  className="w-full text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                >
-                  Cancel Subscription
-                </Button>
+                <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={handleManageSubscription} 
+                    className="w-full sm:w-auto"
+                  >
+                    Manage Subscription
+                  </Button>
+                  <p className="text-sm text-stone-600 leading-snug">
+                    Manage, change, or cancel your subscription. Canceling keeps access until the end of the billing period.
+                  </p>
+                </div>
               </div>
             )}
 
