@@ -113,6 +113,8 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
+  const { hasPremium: hasPaidAccess } = usePremiumAccess(user);
+
   if (!ageConfirmed) {
     return (
       <AgeGate
@@ -152,8 +154,6 @@ export default function Layout({ children, currentPageName }) {
       </div>
     );
   }
-
-  const { hasPremium: hasPaidAccess } = usePremiumAccess(user);
 
   return (
     <>
