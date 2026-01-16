@@ -16,6 +16,7 @@ export default function UserReport() {
   const [showFreeTable, setShowFreeTable] = useState(true);
   const [sortColumn, setSortColumn] = useState('created_date');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -120,17 +121,44 @@ export default function UserReport() {
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">User Subscription Report</h1>
-        <Button
-          onClick={() => {
-            refetch();
-            toast.success('Report refreshed');
-          }}
-          variant="outline"
-          className="gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={async () => {
+              try {
+                setIsSyncing(true);
+                const res = await base44.functions.invoke('syncStripeSubscriptions', {});
+                if (res?.data?.ok) {
+                  toast.success(`Stripe sync complete: ${res.data.updatedUsers} users updated`);
+                } else {
+                  toast.error(res?.data?.error || 'Stripe sync failed');
+                }
+                await refetch();
+              } catch (e) {
+                toast.error(e?.message || 'Stripe sync failed');
+              } finally {
+                setIsSyncing(false);
+              }
+            }}
+            variant="default"
+            className="gap-2"
+            disabled={isSyncing}
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing…' : 'Sync from Stripe'}
+          </Button>
+
+          <Button
+            onClick={() => {
+              refetch();
+              toast.success('Report refreshed');
+            }}
+            variant="outline"
+            className="gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
