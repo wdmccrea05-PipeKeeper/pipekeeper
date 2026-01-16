@@ -14,8 +14,12 @@ export function hasPremiumAccess(user) {
 
   const isPaid = user?.subscription_level === "paid";
   const inTrial = typeof isTrialWindow === "function" ? isTrialWindow() : false;
+  
+  // 7-day trial for new accounts
+  const isWithinSevenDayTrial = user?.created_date ? 
+    Date.now() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
 
-  return isPaid || inTrial;
+  return isPaid || inTrial || isWithinSevenDayTrial;
 }
 
 /**
