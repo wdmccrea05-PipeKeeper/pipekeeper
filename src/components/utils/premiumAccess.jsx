@@ -1,5 +1,5 @@
 // src/components/utils/premiumAccess.jsx
-import { isWithinTrialWindow } from "./trialAccess";
+import { hasTrialAccess } from "./trialAccess";
 
 export function hasPremiumAccess(user) {
   if (!user) return false;
@@ -11,7 +11,7 @@ export function hasPremiumAccess(user) {
   const isPaid = level === "paid" || status === "active";
 
   // Trial fallback for new accounts (7 days) – preserves your intended behavior
-  const isTrial = isWithinTrialWindow(user);
+  const isTrial = hasTrialAccess(user);
 
   return isPaid || isTrial;
 }

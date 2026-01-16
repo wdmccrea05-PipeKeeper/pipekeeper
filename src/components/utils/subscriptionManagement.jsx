@@ -2,8 +2,15 @@ import { base44 } from "@/api/base44Client";
 import { shouldShowPurchaseUI, isIOSCompanion } from "./companion";
 import { isTrialWindow } from "./access";
 import { createPageUrl } from "./createPageUrl";
+import { isAppleBuild } from "./appVariant";
 
 export async function openManageSubscription() {
+  // Apple build: Direct to Apple subscriptions
+  if (isAppleBuild) {
+    window.open("https://apps.apple.com/account/subscriptions", "_blank", "noopener,noreferrer");
+    return;
+  }
+
   try {
     // iOS compliance: Include platform parameter for iOS detection
     const params = isIOSCompanion() ? { platform: 'ios' } : {};
