@@ -17,6 +17,7 @@ import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } fro
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
+import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 
 const PRICING_OPTIONS = [
   { 
@@ -62,8 +63,21 @@ export default function SubscriptionFull() {
     queryKey: ['subscription', user?.email],
     queryFn: async () => {
       try {
-        const subs = await base44.entities.Subscription.filter({ user_email: user?.email });
-        return Array.isArray(subs) ? subs[0] : null;
+        const subs = await base44.entities.Subscription.filter(
+          { user_email: user?.email },
+          "-current_period_end",
+          25
+        );
+
+        if (!Array.isArray(subs) || subs.length === 0) return null;
+
+        // Prefer active/trialing if present
+        const preferred =
+          subs.find((s) => s?.status === "active") ||
+          subs.find((s) => s?.status === "trialing") ||
+          subs[0];
+
+        return preferred || null;
       } catch (err) {
         console.error('Subscription load error:', err);
         return null;
@@ -202,20 +216,22 @@ export default function SubscriptionFull() {
   };
 
   const handleCancelSubscription = async () => {
-    if (subscription && window.confirm('Are you sure you want to cancel your subscription? You will continue to have access until the end of your billing period.')) {
-      await updateSubscriptionMutation.mutateAsync({
-        id: subscription.id,
-        data: { cancel_at_period_end: true }
-      });
+    // Stripe must be the source of truth for cancellations
+    try {
+      await openManageSubscription();
+    } catch (e) {
+      console.error("Open portal error:", e);
+      alert("Unable to open subscription management. Please try again.");
     }
   };
 
   const handleReactivateSubscription = async () => {
-    if (subscription) {
-      await updateSubscriptionMutation.mutateAsync({
-        id: subscription.id,
-        data: { cancel_at_period_end: false }
-      });
+    // Reactivation also must happen in Stripe
+    try {
+      await openManageSubscription();
+    } catch (e) {
+      console.error("Open portal error:", e);
+      alert("Unable to open subscription management. Please try again.");
     }
   };
 
