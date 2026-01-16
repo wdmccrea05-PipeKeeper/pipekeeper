@@ -1,11 +1,13 @@
 import { base44 } from "@/api/base44Client";
-import { shouldShowPurchaseUI } from "./companion";
+import { shouldShowPurchaseUI, isIOSCompanion } from "./companion";
 import { isTrialWindow } from "./access";
 import { createPageUrl } from "./createPageUrl";
 
 export async function openManageSubscription() {
   try {
-    const response = await base44.functions.invoke('createBillingPortalSession', {});
+    // iOS compliance: Include platform parameter for iOS detection
+    const params = isIOSCompanion() ? { platform: 'ios' } : {};
+    const response = await base44.functions.invoke('createBillingPortalSession', params);
     const url = response?.data?.url;
     
     if (!url) {
