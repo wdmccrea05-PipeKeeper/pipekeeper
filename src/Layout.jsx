@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { usePremiumAccess } from "@/components/hooks/usePremiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
@@ -153,7 +153,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  const { hasPremium: hasPaidAccess } = usePremiumAccess(user);
 
   return (
     <>
