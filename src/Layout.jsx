@@ -246,36 +246,41 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="flex gap-6">
-                <a
-                  href={createPageUrl("FAQ")}
+                <Link
+                  to={createPageUrl("FAQ")}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
                   FAQ
-                </a>
-                <a
-                  href={createPageUrl("Troubleshooting")}
+                </Link>
+
+                <Link
+                  to={createPageUrl("Troubleshooting")}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
                   Troubleshooting
-                </a>
-                <a
-                  href={createPageUrl("Support")}
+                </Link>
+
+                <Link
+                  to={createPageUrl("Support")}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
                   Support
-                </a>
-                <a
-                  href={`${createPageUrl("TermsOfService")}?view=1`}
+                </Link>
+
+                {/* view=1 prevents startup-legal redirect logic from treating it as a launch route */}
+                <Link
+                  to={`${createPageUrl("TermsOfService")}?view=1`}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
                   Terms of Service
-                </a>
-                <a
-                  href={`${createPageUrl("PrivacyPolicy")}?view=1`}
+                </Link>
+
+                <Link
+                  to={`${createPageUrl("PrivacyPolicy")}?view=1`}
                   className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </div>
             </div>
           </div>
