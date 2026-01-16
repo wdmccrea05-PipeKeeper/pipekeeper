@@ -15,6 +15,7 @@ import Invite from "./Invite";
 import Subscription from "./Subscription";
 import Support from "./Support";
 import FAQ from "./FAQ";
+import Troubleshooting from "./Troubleshooting";
 import TermsOfService from "./TermsOfService";
 import PrivacyPolicy from "./PrivacyPolicy";
 import TobaccoLibrarySync from "./TobaccoLibrarySync";
@@ -38,6 +39,7 @@ const ROUTES = {
   "/Subscription": Subscription,
   "/Support": Support,
   "/FAQ": FAQ,
+  "/Troubleshooting": Troubleshooting,
   "/TermsOfService": TermsOfService,
   "/PrivacyPolicy": PrivacyPolicy,
   "/TobaccoLibrarySync": TobaccoLibrarySync,
