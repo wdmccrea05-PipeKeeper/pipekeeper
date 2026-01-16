@@ -239,16 +239,20 @@ export default function SubscriptionFull() {
     try {
       if (isAppleBuild) {
         // Apple-managed subscriptions
-        // This is the standard Apple URL that opens subscription management
         window.location.href = "https://apps.apple.com/account/subscriptions";
         return;
       }
 
       // Web/Android: Stripe billing portal
+      if (!subscription?.stripe_customer_id) {
+        alert("No subscription found to manage. Please contact support if you believe this is an error.");
+        return;
+      }
+      
       await openManageSubscription();
     } catch (e) {
       console.error("Manage subscription error:", e);
-      alert("Unable to open subscription management. Please try again.");
+      alert(`Unable to open subscription management: ${e.message || 'Please try again.'}`);
     }
   };
 
