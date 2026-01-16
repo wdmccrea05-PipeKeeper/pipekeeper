@@ -303,7 +303,7 @@ export default function SubscriptionFull() {
               </Alert>
             )}
 
-            {hasActiveSubscription && !subscriptionCanceled && (
+            {userHasPaidAccess && !subscriptionCanceled && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                   <div>
