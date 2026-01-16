@@ -1,16 +1,48 @@
 // src/components/utils/trialAccess.jsx
 
-/**
- * Check if user is within their 7-day trial window
- * @param {object} user - Current user object
- * @returns {boolean} Whether user is within trial period
- */
-export function isWithinTrialWindow(user) {
-  if (!user?.created_date) return false;
-  
-  const TRIAL_DAYS = 7;
-  const accountAge = Date.now() - new Date(user.created_date).getTime();
-  const trialWindow = TRIAL_DAYS * 24 * 60 * 60 * 1000;
-  
-  return accountAge < trialWindow;
+// Returns true if the user should have Premium access via a free trial window.
+// This is separate from Stripe-paid status and should be used as a fallback
+// for new accounts (e.g., "7 days free Premium").
+
+const TRIAL_DAYS = 7;
+
+function parseUserCreatedAt(user) {
+  // Base44 / auth providers may expose different keys depending on runtime
+  const raw =
+    user?.created_at ||
+    user?.createdAt ||
+    user?.created_date ||
+    user?.created ||
+    user?.inserted_at ||
+    null;
+
+  if (!raw) return null;
+
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+export function getTrialInfo(user) {
+  const createdAt = parseUserCreatedAt(user);
+  if (!createdAt) {
+    return {
+      inTrial: false,
+      trialEndsAt: null,
+      reason: "no-created-date",
+    };
+  }
+
+  const trialEndsAt = new Date(createdAt.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  const now = new Date();
+
+  return {
+    inTrial: now < trialEndsAt,
+    trialEndsAt: trialEndsAt.toISOString(),
+    reason: "ok",
+  };
+}
+
+export function hasTrialAccess(user) {
+  return getTrialInfo(user).inTrial;
 }
