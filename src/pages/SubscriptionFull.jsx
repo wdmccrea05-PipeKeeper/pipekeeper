@@ -366,7 +366,7 @@ export default function SubscriptionFull() {
                   "View recent additions",
                   "Basic collection statistics",
                   "Brand logo library with custom uploads",
-                  "Premium features available with subscription"
+                  "7-day free trial of Premium features for new accounts"
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
