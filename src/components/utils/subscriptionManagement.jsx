@@ -57,3 +57,24 @@ export function shouldShowManageSubscription(subscription, user) {
 export function getManageSubscriptionLabel() {
   return "Manage subscription";
 }
+
+export async function startSubscriptionCheckout(billingInterval) {
+  if (isAppleBuild) {
+    window.open("https://apps.apple.com/account/subscriptions", "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  try {
+    const response = await base44.functions.invoke('createCheckoutSession', { billingInterval });
+    const url = response?.data?.url;
+    
+    if (!url) {
+      throw new Error('Could not start checkout');
+    }
+    
+    window.location.href = url;
+  } catch (error) {
+    console.error('[startSubscriptionCheckout] Error:', error);
+    throw new Error(error?.message || 'Unable to start subscription checkout');
+  }
+}
