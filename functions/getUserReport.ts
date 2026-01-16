@@ -29,8 +29,10 @@ Deno.serve(async (req) => {
     allUsers.forEach(user => {
       const subscription = subscriptionMap.get(user.email);
       
+      // Check if subscription grants premium access
       const isPaid = subscription && 
-        (subscription.status === 'active' || subscription.status === 'trial');
+        (subscription.status === 'active' || subscription.status === 'trialing') &&
+        (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
 
       const userData = {
         email: user.email,
