@@ -1,30 +1,17 @@
-import { isIOSCompanion } from "./companion.jsx";
-import { isTrialWindow } from "./access";
+// src/components/utils/premiumAccess.jsx
+import { isWithinTrialWindow } from "./trialAccess";
 
-/**
- * Centralized premium access logic
- * CRITICAL: iOS companion MUST NOT unlock paid digital content (App Store compliance)
- * 
- * @param {object} user - Current user object
- * @returns {boolean} Whether user has premium access
- */
 export function hasPremiumAccess(user) {
-  // ✅ App Store compliance: iOS companion must NOT unlock paid digital content
-  if (isIOSCompanion()) return false;
+  if (!user) return false;
 
-  const isPaid = user?.subscription_level === "paid";
-  const inTrial = typeof isTrialWindow === "function" ? isTrialWindow() : false;
-  
-  // 7-day trial for new accounts
-  const isWithinSevenDayTrial = user?.created_date ? 
-    Date.now() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
+  const level = (user.subscription_level || "").toLowerCase();
+  const status = (user.subscription_status || "").toLowerCase();
 
-  return isPaid || inTrial || isWithinSevenDayTrial;
-}
+  // Primary source of truth
+  const isPaid = level === "paid" || status === "active";
 
-/**
- * Legacy alias - use hasPremiumAccess instead
- */
-export function checkPremiumAccess(user) {
-  return hasPremiumAccess(user);
+  // Trial fallback for new accounts (7 days) – preserves your intended behavior
+  const isTrial = isWithinTrialWindow(user);
+
+  return isPaid || isTrial;
 }
