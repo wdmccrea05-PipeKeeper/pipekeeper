@@ -29,43 +29,25 @@ export function normalizeFocus(focusArr) {
     ["utility", "versatile", "multi", "multiple", "any", "general"].some((k) => x.includes(k))
   );
 
-  // Any aromatic wording counts as aromatic intent
-  const aromaticOnly =
-    !isUtility &&
-    (lower.includes("aromatic") ||
-      lower.includes("aromatics") ||
-      lower.some((x) => x.includes("aromatic")));
-
-  // Classic non-aromatic family signals
-  const nonAromaticSignals = [
-    "burley",
-    "virginia",
-    "va/per",
-    "vaper",
-    "virginia-perique",
-    "perique",
-    "english",
-    "balkan",
-    "latakia",
-    "oriental",
-  ];
-  const hasNonAromaticFamily = lower.some((x) =>
-    nonAromaticSignals.some((k) => x === k || x.includes(k))
-  );
-
-  // Explicit override tag
-  const explicitlyNonAromatic =
-    lower.includes("non-aromatic") || lower.includes("non aromatic") || lower.includes("nonaromatic");
-
-  // Infer non-aromatic-only when not utility and not aromatic
-  const nonAromaticOnly = !isUtility && !aromaticOnly && (explicitlyNonAromatic || hasNonAromaticFamily);
-
   // Intensity preferences (soft preference, NOT a hard filter)
   const wantsHeavyAromatics = lower.some((x) => x.includes("heavy arom"));
   const wantsLightAromatics = lower.some((x) => x.includes("light arom"));
   const wantsMediumAromatics =
     lower.some((x) => x.includes("medium arom")) ||
     (lower.some((x) => x.includes("arom")) && !wantsHeavyAromatics && !wantsLightAromatics);
+
+  // ✅ Dedicated/Only flags must be explicit (not inferred from "light aromatics")
+  const aromaticOnly =
+    !isUtility &&
+    lower.some((x) =>
+      /(aromatic(s)?\s*only|aromatic[-\s]*dedicated|dedicated\s*to\s*aromatic)/.test(x)
+    );
+
+  const nonAromaticOnly =
+    !isUtility &&
+    lower.some((x) =>
+      /(non[-\s]?aromatic(s)?\s*only|non[-\s]?aromatic[-\s]*dedicated|dedicated\s*to\s*non)/.test(x)
+    );
 
   return {
     focus,

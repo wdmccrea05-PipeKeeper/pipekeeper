@@ -241,10 +241,24 @@ function PipeCard({ row, allBlends }) {
 
   const selectedBlendScore = useMemo(() => {
     if (!selectedBlendId) return calculatedScore;
-    const match = row.recommendations?.find(r => 
-      r.tobacco_id === selectedBlendId || r.blend_id === selectedBlendId || r.id === selectedBlendId
-    );
-    return match?.score ?? calculatedScore;
+
+    const sid = String(selectedBlendId);
+
+    // ✅ Normalize ids to strings to avoid "number vs string" misses
+    const match = row.recommendations?.find((r) => {
+      const rid = r?.tobacco_id ?? r?.blend_id ?? r?.id ?? null;
+      return rid != null && String(rid) === sid;
+    });
+
+    // If we have a match but the score is 0, recompute locally.
+    // This prevents stale/incorrect AI zeros from "sticking" in the UI.
+    if (match && match.score != null) {
+      const s = Number(match.score);
+      if (!Number.isNaN(s) && s > 0) return s;
+      // else fall through to local recompute
+    }
+
+    return calculatedScore;
   }, [selectedBlendId, row.recommendations, calculatedScore]);
 
   const calculateScore = () => {
