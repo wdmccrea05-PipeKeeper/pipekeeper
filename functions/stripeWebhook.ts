@@ -20,7 +20,15 @@ async function upsertSubscription(base44, where, data) {
 
 async function setUserFields(base44, email, fields) {
   if (!email) return;
-  await base44.asServiceRole.auth.updateUser(email, fields);
+  try {
+    // Store subscription data on User entity as well for backwards compatibility
+    const users = await base44.asServiceRole.entities.User.filter({ email });
+    if (users && users.length > 0) {
+      await base44.asServiceRole.entities.User.update(users[0].id, fields);
+    }
+  } catch (err) {
+    console.warn('Failed to update User entity:', err);
+  }
 }
 
 Deno.serve(async (req) => {
