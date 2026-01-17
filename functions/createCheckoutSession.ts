@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       customerId = customer.id;
 
       // Persist customer id on user (your stated canonical field)
-      await base44.auth.updateUser(user.email, {
+      await base44.auth.updateMe({
         stripe_customer_id: customerId,
       });
     }
