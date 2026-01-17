@@ -89,8 +89,8 @@ export default function ProfilePage() {
   });
 
   // Check if user has paid access
-  const isWithinTrial = isTrialWindow();
-  const daysLeftInTrial = getTrialDaysRemaining();
+  const isWithinTrial = isTrialWindow(user);
+  const daysLeftInTrial = getTrialDaysRemaining(user);
   const hasActiveSubscription = hasPremiumAccess(user);
 
   const { data: subscription } = useQuery({
