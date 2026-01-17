@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
-import { TRIAL_END_UTC, isTrialWindowNow, hasPaidAccess as checkPaidAccess } from "@/components/utils/access";
+import { hasPaidAccess as checkPaidAccess, isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
@@ -42,15 +42,6 @@ export default function SubscriptionFull() {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
-  const [trialActive, setTrialActive] = useState(isTrialWindowNow());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTrialActive(isTrialWindowNow());
-    }, 60 * 1000); // recheck every minute
-
-    return () => clearInterval(interval);
-  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -110,15 +101,10 @@ export default function SubscriptionFull() {
     },
   });
 
-  // Calculate trial status using centralized helper
-  const isInTrial = trialActive;
-  const trialExpired = !trialActive && !checkPaidAccess(user);
-  const trialEndMs = Date.parse(TRIAL_END_UTC);
-  const daysLeftInTrial = isInTrial
-    ? Math.max(0, Math.ceil((trialEndMs - Date.now()) / (1000 * 60 * 60 * 24)))
-    : 0;
-
-  const trialEndDate = new Date(trialEndMs);
+  // Calculate trial status using centralized helper (7 days from signup)
+  const isInTrial = isTrialWindow(user);
+  const trialExpired = !isInTrial && !checkPaidAccess(user);
+  const daysLeftInTrial = getTrialDaysRemaining(user);
 
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
@@ -313,8 +299,8 @@ export default function SubscriptionFull() {
               <Alert className="bg-amber-50 border-amber-200">
                 <Sparkles className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>Testing Period:</strong> No charges until after January 15, 2026. 
-                  All premium features are free during testing. ({daysLeftInTrial} days remaining)
+                  <strong>Free Trial:</strong> You have {daysLeftInTrial} days remaining in your 7-day trial. 
+                  All premium features are unlocked during this period.
                 </AlertDescription>
               </Alert>
             )}
