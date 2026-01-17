@@ -30,6 +30,7 @@ export default function PipesPage() {
     return localStorage.getItem('pipesViewMode') || 'grid';
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [sortBy, setSortBy] = useState('date');
 
   const queryClient = useQueryClient();
 
@@ -101,6 +102,19 @@ export default function PipesPage() {
     const matchesShape = shapeFilter === 'All Shapes' || pipe.shape === shapeFilter;
     const matchesMaterial = materialFilter === 'All Materials' || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
+  }).sort((a, b) => {
+    if (sortBy === 'maker') {
+      const makerA = (a.maker || '').toLowerCase();
+      const makerB = (b.maker || '').toLowerCase();
+      return makerA.localeCompare(makerB);
+    }
+    if (sortBy === 'name') {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    }
+    // Default: date (newest first)
+    return new Date(b.created_date || 0) - new Date(a.created_date || 0);
   });
 
   const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
@@ -158,7 +172,7 @@ export default function PipesPage() {
               aria-label="Search pipes"
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
               <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by shape">
                 <SelectValue />
@@ -173,6 +187,16 @@ export default function PipesPage() {
               </SelectTrigger>
               <SelectContent>
                 {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Sort by">
+                <SelectValue placeholder="Sort by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Newest First</SelectItem>
+                <SelectItem value="maker">By Maker</SelectItem>
+                <SelectItem value="name">By Name</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex border border-[#E0D8C8]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start" role="group" aria-label="View mode">
