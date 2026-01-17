@@ -206,12 +206,24 @@ export default function SubscriptionFull() {
 
     try {
       const response = await base44.functions.invoke('createCheckoutSession', { priceId: selectedPlan });
-      if (response.data?.url) {
-        window.location.href = response.data.url;
+      
+      if (!response || !response.data) {
+        throw new Error('No response from checkout service');
       }
+      
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+      
+      if (!response.data.url) {
+        throw new Error('No checkout URL returned');
+      }
+      
+      window.location.href = response.data.url;
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('Failed to start checkout. Please try again.');
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to start checkout';
+      alert(`Failed to load checkout: ${errorMessage}. Please try again.`);
     }
   };
 
