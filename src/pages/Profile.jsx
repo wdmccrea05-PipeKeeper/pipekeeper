@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe } from "lucide-react";
+import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -63,6 +63,8 @@ export default function ProfilePage() {
     privacy_hide_values: false,
     privacy_hide_inventory: false,
     privacy_hide_collection_counts: false,
+    social_media: [],
+    show_social_media: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
     preferred_blend_types: [],
@@ -141,6 +143,8 @@ export default function ProfilePage() {
         privacy_hide_values: profile.privacy_hide_values || false,
         privacy_hide_inventory: profile.privacy_hide_inventory || false,
         privacy_hide_collection_counts: profile.privacy_hide_collection_counts || false,
+        social_media: profile.social_media || [],
+        show_social_media: profile.show_social_media || false,
         clenching_preference: profile.clenching_preference || "Sometimes",
         smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -594,6 +598,78 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  <div className="pt-4 border-t space-y-4">
+                    <h4 className="font-semibold text-violet-800">Social Media (Optional)</h4>
+                    <p className="text-sm text-stone-600">Add links to your social media profiles</p>
+                    
+                    <div className="space-y-3">
+                      {formData.social_media.map((link, index) => (
+                        <div key={index} className="flex gap-2 items-start">
+                          <div className="flex-1 grid grid-cols-2 gap-2">
+                            <Input
+                              placeholder="Platform (e.g., Instagram)"
+                              value={link.platform || ""}
+                              onChange={(e) => {
+                                const newLinks = [...formData.social_media];
+                                newLinks[index] = { ...newLinks[index], platform: e.target.value };
+                                setFormData({ ...formData, social_media: newLinks });
+                              }}
+                            />
+                            <Input
+                              placeholder="URL"
+                              value={link.url || ""}
+                              onChange={(e) => {
+                                const newLinks = [...formData.social_media];
+                                newLinks[index] = { ...newLinks[index], url: e.target.value };
+                                setFormData({ ...formData, social_media: newLinks });
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newLinks = formData.social_media.filter((_, i) => i !== index);
+                              setFormData({ ...formData, social_media: newLinks });
+                            }}
+                            className="text-rose-600 hover:text-rose-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            social_media: [...formData.social_media, { platform: "", url: "" }]
+                          });
+                        }}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Social Media Link
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="show_social_media"
+                        checked={formData.show_social_media}
+                        onChange={(e) => setFormData({...formData, show_social_media: e.target.checked})}
+                        className="w-4 h-4 rounded border-stone-300"
+                      />
+                      <Label htmlFor="show_social_media" className="text-sm text-stone-700 cursor-pointer">
+                        Display social media links publicly on my profile
+                      </Label>
+                    </div>
+                  </div>
 
                   <div className="pt-4 border-t space-y-4">
                     <h4 className="font-semibold text-violet-800">Location (Optional)</h4>
