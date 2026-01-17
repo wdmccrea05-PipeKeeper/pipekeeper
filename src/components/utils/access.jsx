@@ -1,14 +1,47 @@
 // src/components/utils/access.js
 
-// Trial ends at 11:59:59 PM Eastern on Jan 15, 2026
-export const TRIAL_END_UTC = '2026-01-16T04:59:59.000Z';
+const TRIAL_DAYS = 7;
 
-export const isTrialWindow = () => {
-  return Date.now() <= Date.parse(TRIAL_END_UTC);
+export const isTrialWindow = (user) => {
+  if (!user) return false;
+
+  const created =
+    user?.created_at ||
+    user?.createdAt ||
+    user?.created_date ||
+    user?.createdDate ||
+    null;
+
+  if (!created) return false;
+
+  const createdMs = Date.parse(created);
+  if (!Number.isFinite(createdMs)) return false;
+
+  const now = Date.now();
+  const trialMs = TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  return now - createdMs < trialMs;
 };
 
-export const getTrialDaysRemaining = () => {
-  const msLeft = Date.parse(TRIAL_END_UTC) - Date.now();
+export const getTrialDaysRemaining = (user) => {
+  if (!user) return 0;
+
+  const created =
+    user?.created_at ||
+    user?.createdAt ||
+    user?.created_date ||
+    user?.createdDate ||
+    null;
+
+  if (!created) return 0;
+
+  const createdMs = Date.parse(created);
+  if (!Number.isFinite(createdMs)) return 0;
+
+  const now = Date.now();
+  const trialMs = TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  const endMs = createdMs + trialMs;
+  const msLeft = endMs - now;
+
   if (msLeft <= 0) return 0;
   return Math.ceil(msLeft / (1000 * 60 * 60 * 24));
 };
@@ -19,7 +52,7 @@ export function hasPaidAccess(user) {
 
 /**
  * Canonical access evaluation.
- * - During trial: premium access granted to logged-in users
+ * - During trial: premium access granted to logged-in users (7 days from signup)
  * - After trial: only paid users have premium access
  */
 export function hasPremiumAccess(user) {
@@ -29,13 +62,13 @@ export function hasPremiumAccess(user) {
   // Primary paid indicator
   if ((user?.subscription_level || "").toLowerCase() === "paid") return true;
 
-  // Trial window grants premium only to signed-in users
-  return isTrialWindow();
+  // Trial window grants premium only to signed-in users within 7 days of signup
+  return isTrialWindow(user);
 }
 
 export function getPlanLabel(user) {
   return hasPremiumAccess(user) ? "Premium" : "Free";
 }
 
-// Legacy aliases for compatibility
+// Legacy aliases for compatibility (deprecated - pass user object)
 export const isTrialWindowNow = isTrialWindow;

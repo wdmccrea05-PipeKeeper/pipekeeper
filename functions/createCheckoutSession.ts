@@ -116,17 +116,9 @@ Deno.serve(async (req) => {
     // Persist customer ID safely
     await safePersistCustomerId(base44, user.email, customerId);
 
-    // Trial logic
+    // Trial logic: No Stripe trial since users already get 7 days from signup
+    // If they're subscribing, they should pay immediately
     const subscription_data = {};
-    const nowMs = Date.now();
-    const trialEndMs = TRIAL_END_UTC ? Date.parse(TRIAL_END_UTC) : NaN;
-
-    if (!Number.isNaN(trialEndMs) && trialEndMs > nowMs) {
-      subscription_data.trial_end = Math.floor(trialEndMs / 1000);
-    } else {
-      const hasAny = await userHasAnySubscription(base44, user.email);
-      if (!hasAny) subscription_data.trial_period_days = 7;
-    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
