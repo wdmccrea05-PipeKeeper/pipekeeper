@@ -93,12 +93,12 @@ function markSubscribePromptShown() {
 }
 
 export default function Layout({ children, currentPageName }) {
+  // ALL HOOKS MUST BE AT THE TOP - before any conditional returns
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem(AGE_GATE_KEY) === "true";
     return false;
   });
-
   const [showSubscribePrompt, setShowSubscribePrompt] = React.useState(false);
 
   const navigate = useNavigate();
@@ -149,7 +149,39 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [queryClient]);
 
-  // Age gate
+  const hasPaidAccess = hasPremiumAccess(user);
+
+  // ✅ Trial-expired prompt on next login (for anyone beyond 7 day trial, including pre-Jan 15 users)
+  React.useEffect(() => {
+    if (userLoading) return;
+    if (!user?.email) return;
+
+    // If already premium, no prompt
+    if (hasPaidAccess) return;
+
+    const PUBLIC_PAGES = new Set([
+      'FAQ',
+      'Support',
+      'TermsOfService',
+      'PrivacyPolicy',
+      'Invite',
+      'PublicProfile',
+      'Index',
+      'Subscription',
+    ]);
+
+    // Only prompt on non-public pages
+    if (PUBLIC_PAGES.has(currentPageName)) return;
+
+    // Show once per day
+    if (!shouldShowSubscribePrompt()) return;
+
+    // Show prompt
+    setShowSubscribePrompt(true);
+    markSubscribePromptShown();
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName]);
+
+  // Age gate - now after all hooks
   if (!ageConfirmed) {
     return (
       <AgeGate
@@ -188,27 +220,6 @@ export default function Layout({ children, currentPageName }) {
       </div>
     );
   }
-
-  const hasPaidAccess = hasPremiumAccess(user);
-
-  // ✅ Trial-expired prompt on next login (for anyone beyond 7 day trial, including pre-Jan 15 users)
-  React.useEffect(() => {
-    if (userLoading) return;
-    if (!user?.email) return;
-
-    // If already premium, no prompt
-    if (hasPaidAccess) return;
-
-    // Only prompt on non-public pages (or you can allow everywhere)
-    if (PUBLIC_PAGES.has(currentPageName)) return;
-
-    // Show once per day
-    if (!shouldShowSubscribePrompt()) return;
-
-    // Show prompt (not hard-block); user can continue free but premium stays locked
-    setShowSubscribePrompt(true);
-    markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName]);
 
   return (
     <>
