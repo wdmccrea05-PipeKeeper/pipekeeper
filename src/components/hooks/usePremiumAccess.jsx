@@ -49,14 +49,31 @@ function subscriptionGrantsPremium(sub) {
 }
 
 export function usePremiumAccess(user) {
-  const email = user?.email || null;
+  const userId = user?.id;
+  const email = (user?.email || "").toLowerCase();
 
-  const { data: subs = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["subscription-status", email],
-    enabled: !!email,
+  const { data: sub = null, isLoading, error, refetch } = useQuery({
+    queryKey: ["subscription-status", userId, email],
+    enabled: !!(userId || email),
     queryFn: async () => {
-      const rows = await base44.entities.Subscription.filter({ user_email: email });
-      return Array.isArray(rows) ? rows : [];
+      const subById = userId
+        ? await base44.entities.Subscription.find({
+            filter: { user_id: userId },
+            limit: 1,
+            order: { created_at: "desc" },
+          })
+        : null;
+
+      const subByEmail = email
+        ? await base44.entities.Subscription.find({
+            filter: { user_email: email },
+            limit: 1,
+            order: { created_at: "desc" },
+          })
+        : null;
+
+      const sub = subById?.items?.[0] || subByEmail?.items?.[0] || null;
+      return sub;
     },
     staleTime: 30_000,
     refetchOnMount: "always",
@@ -64,8 +81,8 @@ export function usePremiumAccess(user) {
   });
 
   const hasSubscriptionPremium = React.useMemo(() => {
-    return subs.some(subscriptionGrantsPremium);
-  }, [subs]);
+    return subscriptionGrantsPremium(sub);
+  }, [sub]);
 
   const hasTrialPremium = React.useMemo(() => {
     return !hasSubscriptionPremium && isWithinNewUserTrial(user);
@@ -77,6 +94,6 @@ export function usePremiumAccess(user) {
     isLoading,
     error,
     refetch,
-    subscriptions: subs,
+    subscription: sub,
   };
 }
