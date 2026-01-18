@@ -9,14 +9,23 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Target, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
+import { Sparkles, Target, CheckCircle2, AlertCircle, Lightbulb, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useQuery } from "@tanstack/react-query";
 
 export default function SpecializationRecommender({ pipe, onApplyRecommendation }) {
   const [isOpen, setIsOpen] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const isPremiumUser = hasPremiumAccess(user);
 
   const handleGetRecommendation = async () => {
     setIsLoading(true);
@@ -57,9 +66,10 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         size="sm"
         variant="outline"
         onClick={handleGetRecommendation}
-        disabled={isLoading}
+        disabled={isLoading || !isPremiumUser}
         className="border-purple-300 text-purple-700 hover:bg-purple-50"
       >
+        {!isPremiumUser && <Crown className="w-3 h-3 mr-1 text-amber-500" />}
         <Sparkles className="w-4 h-4 mr-1" />
         {isLoading ? 'Analyzing...' : 'Get AI Recommendation'}
       </Button>
