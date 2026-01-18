@@ -193,7 +193,10 @@ export default function Layout({ children, currentPageName }) {
 
   return false;
 }, [user]);
-
+const premiumContext = {
+  isPremium: hasPaidAccess,
+  isAdmin: user?.role === 'admin'
+};
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
