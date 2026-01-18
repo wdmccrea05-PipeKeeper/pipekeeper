@@ -233,7 +233,8 @@ export default function Layout({ children, currentPageName }) {
 
   // Use your existing premium access helper for UI gating.
   // Now it will see subscription_level="paid" for paid users (and admins).
-  const hasPaidAccess = hasPremiumAccessUI(user);
+const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
+const hasPaidAccess = isAdmin || hasPremiumAccess(user);
 
   React.useEffect(() => {
     if (userLoading) return;
