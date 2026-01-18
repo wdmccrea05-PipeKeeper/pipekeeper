@@ -176,7 +176,8 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
   });
 
   // Check if user has paid access
-  const isPaidUser = hasPremiumAccess(user);
+const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
+const isPaidUser = isAdmin || hasPremiumAccess(user);
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
