@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { FileText, FileSpreadsheet, Shield } from "lucide-react";
+import { FileText, FileSpreadsheet, Shield, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 
 export default function PipeExporter() {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,8 @@ export default function PipeExporter() {
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
     enabled: !!user?.email,
   });
+
+  const isPremiumUser = hasPremiumAccess(user);
 
   const exportToCSV = () => {
     const headers = [
@@ -242,9 +245,10 @@ export default function PipeExporter() {
         variant="outline"
         size="sm"
         onClick={exportInsurancePDF}
-        disabled={loading || pipes.length === 0}
+        disabled={loading || pipes.length === 0 || !isPremiumUser}
         className="text-blue-600 border-blue-300 hover:bg-blue-50"
       >
+        {!isPremiumUser && <Crown className="w-4 h-4 mr-2 text-amber-500" />}
         <Shield className="w-4 h-4 mr-2" />
         Insurance Report
       </Button>
