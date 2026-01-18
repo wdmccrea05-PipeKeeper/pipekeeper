@@ -1,11 +1,10 @@
-import React from 'react';
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
@@ -13,16 +12,22 @@ import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 
-const PIPEKEEPER_LOGO = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png';
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
+// IMPORTANT: use the SAME access helper everywhere possible
+import { hasPaidAccess as hasPaidAccessFromAccess } from "@/components/utils/access";
+
+const PIPEKEEPER_LOGO =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+
+const PIPE_ICON =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
 const navItems = [
-  { name: 'Home', page: 'Home', icon: Home, isIconComponent: true },
-  { name: 'Pipes', page: 'Pipes', icon: PIPE_ICON, isIconComponent: false },
-  { name: isAppleBuild ? 'Cellar' : 'Tobacco', page: 'Tobacco', icon: Leaf, isIconComponent: true },
-  ...(FEATURES.community ? [{ name: 'Community', page: 'Community', icon: Users, isIconComponent: true, isPremium: true }] : []),
-  { name: 'Profile', page: 'Profile', icon: User, isIconComponent: true },
-  { name: 'Help', page: 'FAQ', icon: HelpCircle, isIconComponent: true },
+  { name: "Home", page: "Home", icon: Home, isIconComponent: true },
+  { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
+  { name: isAppleBuild ? "Cellar" : "Tobacco", page: "Tobacco", icon: Leaf, isIconComponent: true },
+  ...(FEATURES.community ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }] : []),
+  { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
+  { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
 ];
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
@@ -37,11 +42,11 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
-            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
-            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
+          ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+          : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-      aria-current={isActive ? 'page' : undefined}
+      style={{ WebkitTapHighlightColor: "transparent" }}
+      aria-current={isActive ? "page" : undefined}
       role="link"
     >
       {item.isIconComponent ? (
@@ -53,19 +58,17 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
           className="w-6 h-6 object-contain"
           style={{
             filter: isMobile
-              ? 'brightness(0)'
+              ? "brightness(0)"
               : isActive
-                ? 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)'
-                : 'invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)'
+              ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
+              : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
           }}
         />
       )}
 
       <span>{item.name}</span>
 
-      {item.isPremium && !hasPaidAccess && (
-        <Crown className="w-3 h-3 text-amber-500" />
-      )}
+      {item.isPremium && !hasPaidAccess && <Crown className="w-3 h-3 text-amber-500" />}
     </Link>
   );
 }
@@ -79,7 +82,7 @@ function shouldShowSubscribePrompt() {
     if (!v) return true;
     const last = new Date(v).getTime();
     if (Number.isNaN(last)) return true;
-    return (Date.now() - last) > 24 * 60 * 60 * 1000;
+    return Date.now() - last > 24 * 60 * 60 * 1000;
   } catch {
     return true;
   }
@@ -91,10 +94,28 @@ function markSubscribePromptShown() {
   } catch {}
 }
 
+function isSubscriptionCurrentlyActive(subscription) {
+  if (!subscription) return false;
+
+  const status = (subscription.status || "").toLowerCase();
+  const activeStatuses = new Set(["active", "trialing"]);
+
+  if (!activeStatuses.has(status)) return false;
+
+  // If Stripe gave you current_period_end, use it to avoid stale “active”
+  const cpe = subscription.current_period_end || subscription.currentPeriodEnd || null;
+  if (!cpe) return true;
+
+  const end = new Date(cpe);
+  if (Number.isNaN(end.getTime())) return true;
+
+  return end.getTime() > Date.now();
+}
+
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem(AGE_GATE_KEY) === "true";
+    if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";
     return false;
   });
   const [showSubscribePrompt, setShowSubscribePrompt] = React.useState(false);
@@ -102,124 +123,115 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // PUBLIC PAGES do not require auth
+  const PUBLIC_PAGES = React.useMemo(
+    () =>
+      new Set([
+        "FAQ",
+        "Support",
+        "TermsOfService",
+        "PrivacyPolicy",
+        "Invite",
+        "PublicProfile",
+        "Index",
+        "Subscription",
+      ]),
+    []
+  );
+
+  /**
+   * SINGLE SOURCE OF TRUTH:
+   * Build a merged "current-user" that includes Subscription entity state.
+   * Any page calling useQuery(['current-user']) will receive this merged version.
+   */
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['current-user'],
+    queryKey: ["current-user"],
     queryFn: async () => {
       const authUser = await base44.auth.me();
 
+      // If not logged in, return authUser (likely null-ish)
+      if (!authUser?.email) return authUser;
+
+      const email = authUser.email;
+
+      // Load optional entities.User (if your project uses it)
       let entityUser = null;
       try {
-        if (authUser?.email) {
-          const rows = await base44.entities.User.filter({ email: authUser.email });
-          entityUser = rows?.[0] || null;
-        }
+        const rows = await base44.entities.User.filter({ email });
+        entityUser = rows?.[0] || null;
       } catch (e) {
-        console.warn("[Layout] Could not load entities.User for subscription fields:", e);
+        console.warn("[Layout] Could not load entities.User:", e);
       }
 
-      // Also check Subscription entity (most authoritative)
+      // Load Subscription entity (authoritative for paid state)
       let subscription = null;
       try {
-        if (authUser?.email) {
-          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
-          subscription = subs?.[0] || null;
-        }
+        const subs = await base44.entities.Subscription.filter({ user_email: email });
+        subscription = subs?.[0] || null;
+
+        // helpful for pages that query it directly
+        queryClient.setQueryData(["subscription", email], subscription);
       } catch (e) {
         console.warn("[Layout] Could not load Subscription entity:", e);
       }
 
-      // Determine subscription_level from Subscription entity if available
-      let subscriptionLevel = entityUser?.subscription_level;
-      let subscriptionStatus = entityUser?.subscription_status;
-      
-      if (subscription) {
-        const isPaid = (subscription.status === 'active' || subscription.status === 'trialing') &&
-          (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
-        
-        if (isPaid) {
-          subscriptionLevel = 'paid';
-          subscriptionStatus = subscription.status;
-        }
-      }
+      // Determine paid state from subscription entity
+      const isPaidBySubscription = isSubscriptionCurrentlyActive(subscription);
 
-      return {
-        ...authUser,
+      // Admin override (if you have role flags—adjust as needed)
+      const role = (entityUser?.role || authUser?.role || "").toLowerCase();
+      const isAdmin = role === "admin" || role === "owner" || authUser?.is_admin === true || entityUser?.is_admin === true;
+
+      // Compose final user object
+      const merged = {
+        ...(authUser || {}),
         ...(entityUser || {}),
-        subscription_level: subscriptionLevel,
-        subscription_status: subscriptionStatus,
-        email: authUser?.email || entityUser?.email,
+        subscription, // keep the full row available if needed
+        email,
+        subscription_status: isPaidBySubscription ? subscription?.status : (entityUser?.subscription_status || authUser?.subscription_status),
+        subscription_level: (isPaidBySubscription || isAdmin) ? "paid" : (entityUser?.subscription_level || authUser?.subscription_level),
+        is_admin: isAdmin || authUser?.is_admin || entityUser?.is_admin,
       };
+
+      return merged;
     },
-    staleTime: 10000,
+    staleTime: 10_000,
     retry: 2,
-    refetchOnMount: 'always',
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 
+  // Keep logout in sync across tabs
   React.useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key === 'logout') {
+      if (e.key === "logout") {
         queryClient.removeQueries({
-          predicate: (query) => query.queryKey[0] !== 'current-user'
+          predicate: (query) => query.queryKey[0] !== "current-user",
         });
         setTimeout(() => window.location.reload(), 100);
       }
     };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  const hasPaidAccess = React.useMemo(() => {
-  if (!user) return false;
+  // Use the centralized access helper (supports trial window, too)
+  const hasPaidAccess = hasPaidAccessFromAccess(user) || user?.is_admin === true;
 
-  // Always unlock for admins
-  if (user.role === 'admin') return true;
-
-  // Explicit paid flag
-  if (user.subscription_level === 'paid') return true;
-
-  // Stripe-backed subscription
-  if (
-    user.subscription_status === 'active' ||
-    user.subscription_status === 'trialing'
-  ) return true;
-
-  // Fallback: future billing period
-  if (user.current_period_end) {
-    const end = new Date(user.current_period_end);
-    if (end > new Date()) return true;
-  }
-
-  return false;
-}, [user]);
-const premiumContext = {
-  isPremium: hasPaidAccess,
-  isAdmin: user?.role === 'admin'
-};
+  // Subscribe prompt logic
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
     if (hasPaidAccess) return;
-
-    const PUBLIC_PAGES = new Set([
-      'FAQ',
-      'Support',
-      'TermsOfService',
-      'PrivacyPolicy',
-      'Invite',
-      'PublicProfile',
-      'Index',
-      'Subscription',
-    ]);
-
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName]);
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
 
+  // Age gate
   if (!ageConfirmed) {
     return (
       <AgeGate
@@ -231,18 +243,8 @@ const premiumContext = {
     );
   }
 
-  const PUBLIC_PAGES = new Set([
-    'FAQ',
-    'Support',
-    'TermsOfService',
-    'PrivacyPolicy',
-    'Invite',
-    'PublicProfile',
-    'Index',
-    'Subscription',
-  ]);
-
-  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+  // Auth gate
+  if ((userError || (!userLoading && !user?.email)) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
@@ -264,18 +266,17 @@ const premiumContext = {
       <DocumentTitle title="PipeKeeper" />
 
       <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
-
         {/* Desktop Navigation */}
         <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="flex items-center justify-between h-16 gap-4">
-              <Link to={createPageUrl('Home')} className="flex items-center gap-3 flex-shrink-0">
+              <Link to={createPageUrl("Home")} className="flex items-center gap-3 flex-shrink-0">
                 <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-8 h-8 object-contain" />
                 <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
               </Link>
 
               <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
-                {navItems.map(item => (
+                {navItems.map((item) => (
                   <NavLink
                     key={item.page}
                     item={item}
@@ -291,7 +292,7 @@ const premiumContext = {
         {/* Mobile Navigation */}
         <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="flex items-center justify-between h-14 px-4">
-            <Link to={createPageUrl('Home')} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+            <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
               <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
               <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
             </Link>
@@ -299,10 +300,10 @@ const premiumContext = {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setMobileOpen(prev => !prev);
+                setMobileOpen((prev) => !prev);
               }}
               className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ WebkitTapHighlightColor: "transparent" }}
               aria-label="Toggle menu"
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -317,7 +318,7 @@ const premiumContext = {
             mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
           onClick={() => setMobileOpen(false)}
-          style={{ top: '56px' }}
+          style={{ top: "56px" }}
         />
 
         {/* Mobile Menu Panel */}
@@ -328,7 +329,7 @@ const premiumContext = {
           )}
         >
           <div className="flex flex-col gap-2 p-4">
-            {navItems.map(item => (
+            {navItems.map((item) => (
               <NavLink
                 key={item.page}
                 item={item}
@@ -342,9 +343,7 @@ const premiumContext = {
         </div>
 
         {/* Main Content */}
-        <main className="pt-16 md:pt-16 pb-20">
-          {children}
-        </main>
+        <main className="pt-16 md:pt-16 pb-20">{children}</main>
 
         {/* Footer */}
         <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
@@ -355,10 +354,10 @@ const premiumContext = {
                 <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
               </div>
               <div className="flex gap-6">
-                <a href={createPageUrl('FAQ')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">FAQ</a>
-                <a href={createPageUrl('Support')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Support</a>
-                <a href={createPageUrl('TermsOfService')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Terms of Service</a>
-                <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Privacy Policy</a>
+                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">FAQ</a>
+                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Support</a>
+                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Terms of Service</a>
+                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Privacy Policy</a>
               </div>
             </div>
           </div>
@@ -377,10 +376,7 @@ const premiumContext = {
               To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
             </p>
             <div className="flex gap-3 justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => setShowSubscribePrompt(false)}
-              >
+              <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
                 Continue Free
               </Button>
               <Button
