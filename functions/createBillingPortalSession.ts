@@ -4,83 +4,80 @@ import Stripe from "npm:stripe@17.4.0";
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "");
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
-function isIOSCompanionRequest(req) {
-  const url = new URL(req.url);
-  const platform = (url.searchParams.get("platform") || "").toLowerCase();
-  return platform === "ios";
+function json(body, status = 200, headers = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", ...headers },
+  });
 }
 
-async function safePersistCustomerId(base44, email, customerId) {
+function isIOSCompanionRequest(req) {
   try {
-    const authApi = base44 && base44.asServiceRole && base44.asServiceRole.auth;
-    if (authApi && typeof authApi.updateUser === "function") {
-      await authApi.updateUser(email, { stripe_customer_id: customerId });
-    }
-  } catch (e) {
-    // Never break billing portal creation because persistence failed
-    console.warn("safePersistCustomerId skipped/failed:", e && e.message ? e.message : e);
-  }
+    const url = new URL(req.url);
+    const platform = (url.searchParams.get("platform") || "").toLowerCase();
+    if (platform === "ios") return true;
+  } catch {}
+
+  const ua = (req.headers.get("user-agent") || "").toLowerCase();
+  return ua.includes("pipekeeperios/");
+}
+
+function safeOrigin(req) {
+  const origin = req.headers.get("origin");
+  if (origin && origin.startsWith("http")) return origin;
+  return APP_URL;
+}
+
+async function findStripeCustomerIdForEmail(email) {
+  const existing = await stripe.customers.list({ email, limit: 1 });
+  return existing.data?.[0]?.id || null;
 }
 
 Deno.serve(async (req) => {
-  // iOS compliance: Block portal for iOS companion
+  // Block iOS companion (Apple compliance)
   if (isIOSCompanionRequest(req)) {
-    return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
+    return json({ error: "Not available in iOS companion app." }, 403);
   }
 
   try {
+    if (req.method !== "POST") {
+      return json({ error: "Method not allowed" }, 405);
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user || !user.email) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return json({ error: "Unauthorized" }, 401);
     }
 
-    // Prefer canonical field on user
-    let customerId = user.stripe_customer_id || null;
-
-    // Fallback: look up from Subscription entity
-    if (!customerId) {
-      const subs = await base44.asServiceRole.entities.Subscription.filter({
-        user_email: user.email,
-      });
-
-      if (subs && subs.length) {
-        const withCustomer = subs.find((s) => s && s.stripe_customer_id);
-        customerId = withCustomer ? withCustomer.stripe_customer_id : null;
-      }
-    }
+    // IMPORTANT: Do NOT call base44.auth.updateUser / updateUser.
+    // We'll derive customerId from Stripe by email (reliable) and proceed.
+    const customerId = await findStripeCustomerIdForEmail(user.email);
 
     if (!customerId) {
-      return Response.json(
+      return json(
         {
           error:
             "No Stripe customer found for this account yet. Please start a subscription first.",
         },
-        { status: 400 }
+        400
       );
     }
 
-    // Persist to user record IF the auth admin API is available (do not crash if not)
-    if (!user.stripe_customer_id && customerId) {
-      await safePersistCustomerId(base44, user.email, customerId);
-    }
-
-    // Return URL back into app
-    const origin = req.headers.get("origin");
-    const appUrl = origin && origin.startsWith("http") ? origin : APP_URL;
+    const origin = safeOrigin(req);
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${appUrl}/Profile`,
+      return_url: `${origin}/Profile`,
     });
 
-    return Response.json({ url: portalSession.url });
-  } catch (error) {
-    console.error("createBillingPortalSession error:", error);
-    return Response.json(
-      { error: (error && error.message) ? error.message : "Failed to create portal session" },
-      { status: 500 }
+    return json({ url: portalSession.url });
+  } catch (err) {
+    console.error("[createBillingPortalSession] error:", err);
+    return json(
+      { error: err && err.message ? err.message : "Failed to create portal session" },
+      500
     );
   }
 });
