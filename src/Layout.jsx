@@ -71,7 +71,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
 }
 
 const AGE_GATE_KEY = "pk_age_confirmed";
-const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown"; // store ISO date
+const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
 
 function shouldShowSubscribePrompt() {
   try {
@@ -79,7 +79,6 @@ function shouldShowSubscribePrompt() {
     if (!v) return true;
     const last = new Date(v).getTime();
     if (Number.isNaN(last)) return true;
-    // show at most once per 24h
     return (Date.now() - last) > 24 * 60 * 60 * 1000;
   } catch {
     return true;
@@ -93,7 +92,6 @@ function markSubscribePromptShown() {
 }
 
 export default function Layout({ children, currentPageName }) {
-  // ALL HOOKS MUST BE AT THE TOP - before any conditional returns
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem(AGE_GATE_KEY) === "true";
@@ -107,11 +105,8 @@ export default function Layout({ children, currentPageName }) {
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: async () => {
-      // 1) Auth user
       const authUser = await base44.auth.me();
 
-      // 2) Merge in entity user (Stripe sync/webhook updates these fields)
-      //    This is the key fix for “Stripe says active but app shows free”.
       let entityUser = null;
       try {
         if (authUser?.email) {
@@ -122,10 +117,36 @@ export default function Layout({ children, currentPageName }) {
         console.warn("[Layout] Could not load entities.User for subscription fields:", e);
       }
 
-      // merge (entityUser wins for subscription fields)
+      // Also check Subscription entity (most authoritative)
+      let subscription = null;
+      try {
+        if (authUser?.email) {
+          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
+          subscription = subs?.[0] || null;
+        }
+      } catch (e) {
+        console.warn("[Layout] Could not load Subscription entity:", e);
+      }
+
+      // Determine subscription_level from Subscription entity if available
+      let subscriptionLevel = entityUser?.subscription_level;
+      let subscriptionStatus = entityUser?.subscription_status;
+      
+      if (subscription) {
+        const isPaid = (subscription.status === 'active' || subscription.status === 'trialing') &&
+          (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+        
+        if (isPaid) {
+          subscriptionLevel = 'paid';
+          subscriptionStatus = subscription.status;
+        }
+      }
+
       return {
         ...authUser,
         ...(entityUser || {}),
+        subscription_level: subscriptionLevel,
+        subscription_status: subscriptionStatus,
         email: authUser?.email || entityUser?.email,
       };
     },
@@ -151,12 +172,9 @@ export default function Layout({ children, currentPageName }) {
 
   const hasPaidAccess = hasPremiumAccess(user);
 
-  // ✅ Trial-expired prompt on next login (for anyone beyond 7 day trial, including pre-Jan 15 users)
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-
-    // If already premium, no prompt
     if (hasPaidAccess) return;
 
     const PUBLIC_PAGES = new Set([
@@ -170,18 +188,13 @@ export default function Layout({ children, currentPageName }) {
       'Subscription',
     ]);
 
-    // Only prompt on non-public pages
     if (PUBLIC_PAGES.has(currentPageName)) return;
-
-    // Show once per day
     if (!shouldShowSubscribePrompt()) return;
 
-    // Show prompt
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
   }, [userLoading, user?.email, hasPaidAccess, currentPageName]);
 
-  // Age gate - now after all hooks
   if (!ageConfirmed) {
     return (
       <AgeGate
@@ -330,7 +343,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Terms overlay if needed */}
       <TermsGate user={user} />
 
-      {/* ✅ Subscribe prompt (trial expired) */}
+      {/* Subscribe prompt */}
       {showSubscribePrompt && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
