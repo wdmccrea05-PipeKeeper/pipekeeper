@@ -86,17 +86,37 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    // Body expects { billingInterval: "month" | "year" }
-    const body = await req.json().catch(() => ({}));
-    const billingInterval = body?.billingInterval;
+// Body supports either:
+// 1) { billingInterval: "month" | "year" }
+// 2) { priceId: "price_..." }
+const body = await req.json().catch(() => ({}));
 
-    const priceId = pickPriceId(billingInterval);
-    if (!priceId) {
-      return Response.json(
-        { error: "Server misconfigured: missing STRIPE_PRICE_ID_MONTHLY / STRIPE_PRICE_ID_YEARLY." },
-        { status: 500 }
-      );
-    }
+let priceId = "";
+const sentPriceId = typeof body?.priceId === "string" ? body.priceId.trim() : "";
+const billingInterval = body?.billingInterval;
+
+if (sentPriceId) {
+  priceId = sentPriceId;
+} else {
+  priceId = pickPriceId(billingInterval);
+}
+
+// Better error message when request is wrong
+if (!priceId) {
+  return Response.json(
+    { error: "Missing billingInterval (month/year) or priceId in request body." },
+    { status: 400 }
+  );
+}
+
+// If you’re using env-based price ids, you can optionally force them:
+// priceId must match the monthly/yearly IDs OR be in ALLOWED_PRICE_IDS.
+const envPriceIds = [PRICE_ID_MONTHLY, PRICE_ID_YEARLY].filter(Boolean);
+const allowed = new Set([ ...envPriceIds, ...ALLOWED_PRICE_IDS ]);
+
+if (allowed.size && !allowed.has(priceId)) {
+  return Response.json({ error: "Invalid priceId" }, { status: 400 });
+}
 
     if (!isAllowedPriceId(priceId)) {
       return Response.json({ error: "Invalid price configuration (priceId not allowed)." }, { status: 500 });
