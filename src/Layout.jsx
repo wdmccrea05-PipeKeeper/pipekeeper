@@ -11,10 +11,13 @@ import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-import { hasPremiumAccess as hasPremiumAccessUI } from "@/components/utils/premiumAccess";
+
+// ✅ IMPORTANT: import the real symbol name (no alias mismatch)
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -22,9 +25,7 @@ const navItems = [
   { name: "Home", page: "Home", icon: Home, isIconComponent: true },
   { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
   { name: isAppleBuild ? "Cellar" : "Tobacco", page: "Tobacco", icon: Leaf, isIconComponent: true },
-  ...(FEATURES.community
-    ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
-    : []),
+  ...(FEATURES.community ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }] : []),
   { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
   { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
 ];
@@ -41,8 +42,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
-          ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
-          : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
+            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
       style={{ WebkitTapHighlightColor: "transparent" }}
       aria-current={isActive ? "page" : undefined}
@@ -59,8 +60,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
             filter: isMobile
               ? "brightness(0)"
               : isActive
-              ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
-              : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
+                ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
+                : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
           }}
         />
       )}
@@ -93,33 +94,12 @@ function markSubscribePromptShown() {
   } catch {}
 }
 
-function normalizeStatus(s) {
-  return (s || "").toString().trim().toLowerCase();
-}
-
-function isFutureDate(d) {
-  const t = Date.parse(d);
-  if (Number.isNaN(t)) return false;
-  return t > Date.now();
-}
-
-function computePaidFromSubscriptionRow(sub) {
-  if (!sub) return false;
-
-  const status = normalizeStatus(sub.status);
-  const activeLike = ["active", "trialing", "paid", "succeeded"].includes(status);
-
-  // Treat cancel_at_period_end as still paid until period end
-  const end = sub.current_period_end || sub.currentPeriodEnd || sub.period_end || sub.periodEnd;
-  const notExpired = !end || isFutureDate(end);
-
-  return activeLike && notExpired;
-}
-
-function computeIsAdmin(u) {
-  const role = normalizeStatus(u?.role);
-  const isAdminFlag = !!(u?.is_admin || u?.isAdmin || u?.admin);
-  return isAdminFlag || role === "admin" || role === "owner" || role === "superadmin";
+function computeIsAdmin(user) {
+  // Accept a few possible shapes (role, is_admin, admin flag, etc.)
+  const role = (user?.role || user?.user_role || "").toString().toLowerCase();
+  if (role === "admin" || role === "owner" || role === "superadmin") return true;
+  if (user?.is_admin === true || user?.isAdmin === true) return true;
+  return false;
 }
 
 export default function Layout({ children, currentPageName }) {
@@ -133,11 +113,6 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Patch base44.auth.me so every page sees the enriched user (prevents “AI locked” while subscription is active)
-  const patchedRef = React.useRef(false);
-  const originalMeRef = React.useRef(null);
-  const latestUserRef = React.useRef(null);
-
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
@@ -150,9 +125,10 @@ export default function Layout({ children, currentPageName }) {
           entityUser = rows?.[0] || null;
         }
       } catch (e) {
-        console.warn("[Layout] Could not load entities.User:", e);
+        console.warn("[Layout] Could not load entities.User for subscription fields:", e);
       }
 
+      // Subscription entity (authoritative when present)
       let subscription = null;
       try {
         if (authUser?.email) {
@@ -160,63 +136,38 @@ export default function Layout({ children, currentPageName }) {
           subscription = subs?.[0] || null;
         }
       } catch (e) {
-        console.warn("[Layout] Could not load entities.Subscription:", e);
+        console.warn("[Layout] Could not load Subscription entity:", e);
       }
 
-      // Merge user fields (auth + entity)
-      const merged = {
-        ...(authUser || {}),
+      let subscriptionLevel = entityUser?.subscription_level;
+      let subscriptionStatus = entityUser?.subscription_status;
+
+      if (subscription) {
+        const status = (subscription.status || "").toLowerCase();
+        const cpe = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+        const notExpired = !cpe || cpe > new Date();
+
+        const isPaid = (status === "active" || status === "trialing") && notExpired;
+        if (isPaid) {
+          subscriptionLevel = "paid";
+          subscriptionStatus = status;
+        }
+      }
+
+      return {
+        ...authUser,
         ...(entityUser || {}),
+        subscription_level: subscriptionLevel,
+        subscription_status: subscriptionStatus,
         email: authUser?.email || entityUser?.email,
       };
-
-      // Determine paid access
-      const isAdmin = computeIsAdmin(merged);
-      const paidBySub = computePaidFromSubscriptionRow(subscription);
-
-      // Force subscription_level/status when paid (or admin)
-      if (isAdmin || paidBySub) {
-        merged.subscription_level = "paid";
-        merged.subscription_status = subscription?.status || merged.subscription_status || "active";
-      }
-
-      // If subscription row carries stripe_customer_id, keep it available everywhere
-      if (!merged.stripe_customer_id && subscription?.stripe_customer_id) {
-        merged.stripe_customer_id = subscription.stripe_customer_id;
-      }
-
-      // Expose subscription row (optional, but handy for debugging/UI)
-      merged._subscription = subscription || null;
-
-      return merged;
     },
-    staleTime: 10_000,
+    staleTime: 10000,
     retry: 2,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
-
-  // Keep latest user in a ref for the patched me()
-  React.useEffect(() => {
-    latestUserRef.current = user || null;
-  }, [user]);
-
-  // Patch base44.auth.me once per session
-  React.useEffect(() => {
-    if (patchedRef.current) return;
-    if (!base44?.auth?.me) return;
-
-    patchedRef.current = true;
-    originalMeRef.current = base44.auth.me;
-
-    base44.auth.me = async () => {
-      // If we already fetched an enriched user, return it.
-      if (latestUserRef.current?.email) return latestUserRef.current;
-      // Otherwise fall back to the original.
-      return await originalMeRef.current();
-    };
-  }, []);
 
   React.useEffect(() => {
     const handleStorageChange = (e) => {
@@ -231,14 +182,17 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  // Use your existing premium access helper for UI gating.
-  // Now it will see subscription_level="paid" for paid users (and admins).
-const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-const hasPaidAccess = isAdmin || hasPremiumAccess(user);
+  const isAdmin = computeIsAdmin(user);
+  const hasPaidAccess = isAdmin || hasPremiumAccess(user);
 
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
+
+    // Admin should never be nagged
+    if (isAdmin) return;
+
+    // Already has access
     if (hasPaidAccess) return;
 
     const PUBLIC_PAGES = new Set([
@@ -257,7 +211,7 @@ const hasPaidAccess = isAdmin || hasPremiumAccess(user);
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName]);
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName, isAdmin]);
 
   if (!ageConfirmed) {
     return (
@@ -391,18 +345,10 @@ const hasPaidAccess = isAdmin || hasPremiumAccess(user);
                 <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
               </div>
               <div className="flex gap-6">
-                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                  FAQ
-                </a>
-                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                  Support
-                </a>
-                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                  Terms of Service
-                </a>
-                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                  Privacy Policy
-                </a>
+                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">FAQ</a>
+                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Support</a>
+                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Terms of Service</a>
+                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Privacy Policy</a>
               </div>
             </div>
           </div>
@@ -412,8 +358,8 @@ const hasPaidAccess = isAdmin || hasPremiumAccess(user);
       {/* Terms overlay if needed */}
       <TermsGate user={user} />
 
-      {/* Subscribe prompt */}
-      {showSubscribePrompt && (
+      {/* Subscribe prompt (non-admin only) */}
+      {showSubscribePrompt && !isAdmin && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
             <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
