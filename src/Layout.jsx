@@ -170,7 +170,29 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [queryClient]);
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  const hasPaidAccess = React.useMemo(() => {
+  if (!user) return false;
+
+  // Always unlock for admins
+  if (user.role === 'admin') return true;
+
+  // Explicit paid flag
+  if (user.subscription_level === 'paid') return true;
+
+  // Stripe-backed subscription
+  if (
+    user.subscription_status === 'active' ||
+    user.subscription_status === 'trialing'
+  ) return true;
+
+  // Fallback: future billing period
+  if (user.current_period_end) {
+    const end = new Date(user.current_period_end);
+    if (end > new Date()) return true;
+  }
+
+  return false;
+}, [user]);
 
   React.useEffect(() => {
     if (userLoading) return;
