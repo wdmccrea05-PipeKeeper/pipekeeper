@@ -1,32 +1,164 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
+
+import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isCompanionApp } from "@/components/utils/companion";
-import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 
-// IMPORTANT: use the same premium logic everywhere
-import { usePremiumAccess } from "@/components/hooks/usePremiumAccess";
-
+// ---- Brand ----
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
+// ---- Gates / keys ----
+const AGE_GATE_KEY = "pk_age_confirmed";
+const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
+
+// ---- Trial rules ----
+const LEGACY_CUTOFF_LOCAL = new Date("2026-01-15T00:00:00"); // “signed up prior to Jan 15”
+const TRIAL_DAYS = 7;
+
+function shouldShowSubscribePrompt() {
+  try {
+    const v = localStorage.getItem(SUB_PROMPT_KEY);
+    if (!v) return true;
+    const last = new Date(v).getTime();
+    if (Number.isNaN(last)) return true;
+    return Date.now() - last > 24 * 60 * 60 * 1000;
+  } catch {
+    return true;
+  }
+}
+function markSubscribePromptShown() {
+  try {
+    localStorage.setItem(SUB_PROMPT_KEY, new Date().toISOString());
+  } catch {}
+}
+
+function parseDateMaybe(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// Determine trial end from user signup date (auth created_at preferred; fallback to entity created_date)
+function computeTrialWindow(user) {
+  const created =
+    parseDateMaybe(user?.created_at) ||
+    parseDateMaybe(user?.created_date) ||
+    parseDateMaybe(user?.createdAt);
+
+  if (!created) return { trialStart: null, trialEnd: null, inTrial: false, legacyCutoffApplies: false };
+
+  const trialStart = created;
+  const trialEnd = new Date(created.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
+  const now = new Date();
+  const inTrial = now < trialEnd;
+
+  // Only enforce “prompt on next login” behavior for users created before Jan 15
+  const legacyCutoffApplies = created < LEGACY_CUTOFF_LOCAL;
+
+  return { trialStart, trialEnd, inTrial, legacyCutoffApplies };
+}
+
+function isAdminUser(user) {
+  // If you have a role field or is_admin flag in entities.User, this catches it
+  const role = (user?.role || user?.user_role || "").toLowerCase();
+  const isAdminFlag = user?.is_admin === true || user?.admin === true;
+
+  // Optional allowlist by email (add yours + any staff)
+  const ADMIN_EMAILS = new Set([
+    // "you@domain.com",
+  ]);
+
+  const email = (user?.email || "").toLowerCase();
+  return isAdminFlag || role === "admin" || ADMIN_EMAILS.has(email);
+}
+
+function isActiveSubscription(sub) {
+  if (!sub) return false;
+  const status = (sub.status || "").toLowerCase();
+  const okStatus = status === "active" || status === "trialing";
+
+  // If current_period_end exists, ensure it’s not expired
+  const cpe = parseDateMaybe(sub.current_period_end);
+  if (cpe && cpe < new Date()) return false;
+
+  return okStatus;
+}
+
+// This is the ONE authoritative current-user loader.
+// IMPORTANT: Every page should use the same queryKey and queryFn shape.
+async function fetchCurrentUser() {
+  const authUser = await base44.auth.me();
+
+  // If not logged in, just return what we have
+  if (!authUser?.email) return authUser;
+
+  // Pull entity user (if you store extra fields there)
+  let entityUser = null;
+  try {
+    const rows = await base44.entities.User.filter({ email: authUser.email });
+    entityUser = rows?.[0] || null;
+  } catch (e) {
+    console.warn("[Layout] Could not load entities.User:", e);
+  }
+
+  // Pull subscription entity (authoritative for Stripe sync)
+  let subscription = null;
+  try {
+    const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
+    subscription = subs?.[0] || null;
+  } catch (e) {
+    console.warn("[Layout] Could not load entities.Subscription:", e);
+  }
+
+  const merged = {
+    ...authUser,
+    ...(entityUser || {}),
+    email: authUser.email, // always prefer auth email
+  };
+
+  // Compute trial + premium
+  const { trialStart, trialEnd, inTrial, legacyCutoffApplies } = computeTrialWindow(merged);
+  const admin = isAdminUser(merged);
+  const paid = isActiveSubscription(subscription);
+
+  // subscription_level/status normalized (used by your gating utilities)
+  const subscription_level = admin || paid ? "paid" : "free";
+  const subscription_status = paid ? (subscription?.status || "active") : "none";
+
+  return {
+    ...merged,
+    // attach subscription info (safe to expose)
+    subscription_entity: subscription,
+    subscription_level,
+    subscription_status,
+    // attach trial info
+    trial_start: trialStart ? trialStart.toISOString() : null,
+    trial_end: trialEnd ? trialEnd.toISOString() : null,
+    in_trial: inTrial,
+    legacy_cutoff_applies: legacyCutoffApplies,
+    // final gate used everywhere
+    has_premium_access: admin || paid || inTrial,
+    is_admin: admin,
+  };
+}
+
 const navItems = [
   { name: "Home", page: "Home", icon: Home, isIconComponent: true },
   { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
-  { name: isAppleBuild ? "Cellar" : "Tobacco", page: "Tobacco", icon: Leaf, isIconComponent: true },
-  ...(FEATURES.community
-    ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
-    : []),
+  { name: "Tobacco", page: "Tobacco", icon: Leaf, isIconComponent: true },
+  { name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true },
   { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
   { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
 ];
@@ -74,46 +206,6 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
   );
 }
 
-const AGE_GATE_KEY = "pk_age_confirmed";
-const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
-
-function shouldShowSubscribePrompt() {
-  try {
-    const v = localStorage.getItem(SUB_PROMPT_KEY);
-    if (!v) return true;
-    const last = new Date(v).getTime();
-    if (Number.isNaN(last)) return true;
-    return Date.now() - last > 24 * 60 * 60 * 1000;
-  } catch {
-    return true;
-  }
-}
-
-function markSubscribePromptShown() {
-  try {
-    localStorage.setItem(SUB_PROMPT_KEY, new Date().toISOString());
-  } catch {}
-}
-
-// We only nag if we can CONFIRM the user is beyond 7-day trial.
-// If we can't determine the signup date, we do NOT show the nag (avoids false positives).
-function isBeyondTrialWindow(user) {
-  const raw =
-    user?.created_at ||
-    user?.createdAt ||
-    user?.created_date ||
-    user?.createdDate ||
-    user?.inserted_at ||
-    user?.insertedAt;
-
-  if (!raw) return false;
-  const created = new Date(raw).getTime();
-  if (Number.isNaN(created)) return false;
-
-  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-  return Date.now() > created + sevenDaysMs;
-}
-
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [ageConfirmed, setAgeConfirmed] = React.useState(() => {
@@ -125,70 +217,33 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const PUBLIC_PAGES = React.useMemo(
-    () =>
-      new Set([
-        "FAQ",
-        "Support",
-        "TermsOfService",
-        "PrivacyPolicy",
-        "Invite",
-        "PublicProfile",
-        "Index",
-        "Subscription",
-      ]),
-    []
-  );
-
-  // Keep this query lightweight and safe: do NOT depend on client-reading Subscription
-  // (often blocked by RLS). Premium gating comes from usePremiumAccess().
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+  // Single source of truth for user
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useQuery({
     queryKey: ["current-user"],
-    queryFn: async () => {
-      const authUser = await base44.auth.me();
-
-      // Optional: pull a small safe subset from entities.User (if it exists and is readable)
-      let entityUser = null;
-      try {
-        if (authUser?.email) {
-          const rows = await base44.entities.User.filter({ email: authUser.email });
-          entityUser = rows?.[0] || null;
-        }
-      } catch (e) {
-        console.warn("[Layout] entities.User not readable (ok):", e?.message || e);
-      }
-
-      // Only merge safe fields; do NOT spread entire entity object (prevents clobbering)
-      const safeEntityFields = entityUser
-        ? {
-            subscription_level: entityUser.subscription_level,
-            subscription_status: entityUser.subscription_status,
-            created_date: entityUser.created_date,
-          }
-        : {};
-
-      return {
-        ...authUser,
-        ...safeEntityFields,
-        email: authUser?.email || entityUser?.email,
-      };
-    },
-    staleTime: 10_000,
+    queryFn: fetchCurrentUser,
+    staleTime: 30_000,
     retry: 2,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 
-  // Premium (single source of truth) — drives crowns, gates, nags
-  const { hasPremium: hasPaidAccess, isLoading: premiumLoading } = usePremiumAccess(user);
+  // Ensure cache stays rich even if other pages mount first
+  React.useEffect(() => {
+    if (user?.email) {
+      queryClient.setQueryData(["current-user"], user);
+    }
+  }, [user?.email]);
 
+  // Handle logout signals if you use localStorage logout flag
   React.useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "logout") {
-        queryClient.removeQueries({
-          predicate: (query) => query.queryKey[0] !== "current-user",
-        });
+        queryClient.removeQueries();
         setTimeout(() => window.location.reload(), 100);
       }
     };
@@ -196,20 +251,35 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  // Subscribe prompt (only when we can confirm trial ended + user not premium)
+  const hasPaidAccess = !!user?.has_premium_access;
+
+  // Subscribe prompt logic: only for legacy users (created < Jan 15) after their 7 days ended
   React.useEffect(() => {
-    if (userLoading || premiumLoading) return;
+    if (userLoading) return;
     if (!user?.email) return;
     if (hasPaidAccess) return;
-    if (!isBeyondTrialWindow(user)) return;
+
+    const PUBLIC_PAGES = new Set([
+      "FAQ",
+      "Support",
+      "TermsOfService",
+      "PrivacyPolicy",
+      "Invite",
+      "PublicProfile",
+      "Index",
+      "Subscription",
+    ]);
+
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
-    setShowSubscribePrompt(true);
-    markSubscribePromptShown();
-  }, [userLoading, premiumLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
+    // Only prompt legacy cohort + only when trial is over
+    if (user?.legacy_cutoff_applies && !user?.in_trial) {
+      setShowSubscribePrompt(true);
+      markSubscribePromptShown();
+    }
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName, user?.legacy_cutoff_applies, user?.in_trial]);
 
-  // Age gate before anything else
   if (!ageConfirmed) {
     return (
       <AgeGate
@@ -221,17 +291,22 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // Logged out: show login required for private pages
+  const PUBLIC_PAGES = new Set([
+    "FAQ",
+    "Support",
+    "TermsOfService",
+    "PrivacyPolicy",
+    "Invite",
+    "PublicProfile",
+    "Index",
+    "Subscription",
+  ]);
+
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#243548]/60 border border-[#8b3a3a]/60 rounded-2xl p-8 text-center">
           <p className="text-[#e8d5b7] text-lg font-semibold mb-2">Login required</p>
-          {isCompanionApp() && (
-            <p className="text-[#e8d5b7]/80 text-sm mb-4">
-              In the companion app, please sign in using your email and password.
-            </p>
-          )}
           <p className="text-[#e8d5b7]/70 mb-6">Your session may have expired. Please log in again.</p>
           <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
         </div>
@@ -240,7 +315,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <>
+    <TermsGate user={user}>
       <DocumentTitle title="PipeKeeper" />
 
       <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
@@ -270,11 +345,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Mobile Navigation */}
         <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="flex items-center justify-between h-14 px-4">
-            <Link
-              to={createPageUrl("Home")}
-              className="flex items-center gap-2"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
               <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
               <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
             </Link>
@@ -336,28 +407,16 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm text-[#E0D8C8]/70">© 2026 PipeKeeper. All rights reserved.</span>
               </div>
               <div className="flex gap-6">
-                <a
-                  href={createPageUrl("FAQ")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:underline">
                   FAQ
                 </a>
-                <a
-                  href={createPageUrl("Support")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:underline">
                   Support
                 </a>
-                <a
-                  href={createPageUrl("TermsOfService")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:underline">
                   Terms of Service
                 </a>
-                <a
-                  href={createPageUrl("PrivacyPolicy")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] hover:underline">
                   Privacy Policy
                 </a>
               </div>
@@ -366,17 +425,13 @@ export default function Layout({ children, currentPageName }) {
         </footer>
       </div>
 
-      {/* Terms overlay if needed */}
-      <TermsGate user={user} />
-
       {/* Subscribe prompt */}
-      {showSubscribePrompt && !hasPaidAccess && (
+      {showSubscribePrompt && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
             <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
             <p className="text-[#E0D8C8]/80 mb-5">
-              To continue using Premium features, please start a subscription. You can keep using free collection features
-              anytime.
+              To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
             </p>
             <div className="flex gap-3 justify-end">
               <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
@@ -394,6 +449,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       )}
-    </>
+    </TermsGate>
   );
 }
