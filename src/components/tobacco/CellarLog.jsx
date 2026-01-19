@@ -194,7 +194,7 @@ export default function CellarLog({ blend }) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="open_collection">Moved to Open Collection</SelectItem>
-                        <SelectItem value="sold">Sold</SelectItem>
+                        <SelectItem value="exchanged">Exchanged</SelectItem>
                         <SelectItem value="discarded">Discarded</SelectItem>
                       </SelectContent>
                     </Select>
@@ -294,7 +294,7 @@ export default function CellarLog({ blend }) {
                         {log.removal_destination && (
                           <Badge className="text-xs bg-blue-100 text-blue-800">
                             {log.removal_destination === 'open_collection' && 'To Open'}
-                            {log.removal_destination === 'sold' && 'Sold'}
+                            {log.removal_destination === 'exchanged' && 'Exchanged'}
                             {log.removal_destination === 'discarded' && 'Discarded'}
                           </Badge>
                         )}
