@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,24 +6,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package } from "lucide-react";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
+  // Initialize form data from existing blend data, preserving all values
   const [formData, setFormData] = useState({
-    tin_size_oz: blend.tin_size_oz || '',
-    tin_total_tins: blend.tin_total_tins || '',
-    tin_total_quantity_oz: blend.tin_total_quantity_oz || '',
-    tin_tins_open: blend.tin_tins_open || '',
-    tin_tins_cellared: blend.tin_tins_cellared || '',
-    tin_cellared_date: blend.tin_cellared_date || '',
-    bulk_total_quantity_oz: blend.bulk_total_quantity_oz || '',
-    bulk_open: blend.bulk_open || '',
-    bulk_cellared: blend.bulk_cellared || '',
-    bulk_cellared_date: blend.bulk_cellared_date || '',
-    pouch_size_oz: blend.pouch_size_oz || '',
-    pouch_total_pouches: blend.pouch_total_pouches || '',
-    pouch_total_quantity_oz: blend.pouch_total_quantity_oz || '',
-    pouch_pouches_open: blend.pouch_pouches_open || '',
-    pouch_pouches_cellared: blend.pouch_pouches_cellared || '',
-    pouch_cellared_date: blend.pouch_cellared_date || '',
+    tin_size_oz: blend?.tin_size_oz ?? '',
+    tin_total_tins: blend?.tin_total_tins ?? '',
+    tin_total_quantity_oz: blend?.tin_total_quantity_oz ?? '',
+    tin_tins_open: blend?.tin_tins_open ?? '',
+    tin_tins_cellared: blend?.tin_tins_cellared ?? '',
+    tin_cellared_date: blend?.tin_cellared_date ?? '',
+    bulk_total_quantity_oz: blend?.bulk_total_quantity_oz ?? '',
+    bulk_open: blend?.bulk_open ?? '',
+    bulk_cellared: blend?.bulk_cellared ?? '',
+    bulk_cellared_date: blend?.bulk_cellared_date ?? '',
+    pouch_size_oz: blend?.pouch_size_oz ?? '',
+    pouch_total_pouches: blend?.pouch_total_pouches ?? '',
+    pouch_total_quantity_oz: blend?.pouch_total_quantity_oz ?? '',
+    pouch_pouches_open: blend?.pouch_pouches_open ?? '',
+    pouch_pouches_cellared: blend?.pouch_pouches_cellared ?? '',
+    pouch_cellared_date: blend?.pouch_cellared_date ?? '',
   });
+
+  // Update form when blend changes to reflect latest saved data
+  React.useEffect(() => {
+    if (blend) {
+      setFormData({
+        tin_size_oz: blend.tin_size_oz ?? '',
+        tin_total_tins: blend.tin_total_tins ?? '',
+        tin_total_quantity_oz: blend.tin_total_quantity_oz ?? '',
+        tin_tins_open: blend.tin_tins_open ?? '',
+        tin_tins_cellared: blend.tin_tins_cellared ?? '',
+        tin_cellared_date: blend.tin_cellared_date ?? '',
+        bulk_total_quantity_oz: blend.bulk_total_quantity_oz ?? '',
+        bulk_open: blend.bulk_open ?? '',
+        bulk_cellared: blend.bulk_cellared ?? '',
+        bulk_cellared_date: blend.bulk_cellared_date ?? '',
+        pouch_size_oz: blend.pouch_size_oz ?? '',
+        pouch_total_pouches: blend.pouch_total_pouches ?? '',
+        pouch_total_quantity_oz: blend.pouch_total_quantity_oz ?? '',
+        pouch_pouches_open: blend.pouch_pouches_open ?? '',
+        pouch_pouches_cellared: blend.pouch_pouches_cellared ?? '',
+        pouch_cellared_date: blend.pouch_cellared_date ?? '',
+      });
+    }
+  }, [blend]);
 
   const handleChange = (field, value) => {
     setFormData(prev => {
@@ -90,7 +115,9 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         </Button>
       </div>
 
-      <p className="text-sm text-stone-500">Track your tobacco across tins, bulk, and pouches</p>
+      <p className="text-sm text-stone-500">
+        Track your tobacco across tins, bulk, and pouches. Automatic reductions (e.g., smoking logs) deduct from Open quantities first.
+      </p>
 
       <Tabs defaultValue="tins" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
