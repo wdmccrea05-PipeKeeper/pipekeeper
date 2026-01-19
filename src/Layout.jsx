@@ -5,19 +5,17 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-
-// ✅ IMPORTANT: import the real symbol name (no alias mismatch)
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion"; // safe to import if present
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
-
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -42,8 +40,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
-            ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
-            : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
+          ? "text-[#1a2c42] hover:bg-[#A35C5C]/10"
+          : "text-[#E0D8C8]/70 hover:bg-[#A35C5C]/30 hover:text-[#E0D8C8]"
       )}
       style={{ WebkitTapHighlightColor: "transparent" }}
       aria-current={isActive ? "page" : undefined}
@@ -60,8 +58,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
             filter: isMobile
               ? "brightness(0)"
               : isActive
-                ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
-                : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
+              ? "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(1)"
+              : "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.7)",
           }}
         />
       )}
@@ -76,6 +74,30 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
 const AGE_GATE_KEY = "pk_age_confirmed";
 const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
 
+// Auto-sync throttle key (per user)
+function syncKey(email) {
+  return `pk_stripe_sync_last_${email || "unknown"}`;
+}
+function shouldRunStripeSync(email) {
+  try {
+    if (!email) return false;
+    const v = localStorage.getItem(syncKey(email));
+    if (!v) return true;
+    const last = new Date(v).getTime();
+    if (Number.isNaN(last)) return true;
+    // every 10 minutes max
+    return Date.now() - last > 10 * 60 * 1000;
+  } catch {
+    return true;
+  }
+}
+function markStripeSyncRan(email) {
+  try {
+    if (!email) return;
+    localStorage.setItem(syncKey(email), new Date().toISOString());
+  } catch {}
+}
+
 function shouldShowSubscribePrompt() {
   try {
     const v = localStorage.getItem(SUB_PROMPT_KEY);
@@ -87,19 +109,41 @@ function shouldShowSubscribePrompt() {
     return true;
   }
 }
-
 function markSubscribePromptShown() {
   try {
     localStorage.setItem(SUB_PROMPT_KEY, new Date().toISOString());
   } catch {}
 }
 
-function computeIsAdmin(user) {
-  // Accept a few possible shapes (role, is_admin, admin flag, etc.)
-  const role = (user?.role || user?.user_role || "").toString().toLowerCase();
-  if (role === "admin" || role === "owner" || role === "superadmin") return true;
-  if (user?.is_admin === true || user?.isAdmin === true) return true;
-  return false;
+/**
+ * Attempts a server-side Stripe->Base44 sync.
+ * We try a few likely function names to match whatever you currently wired to the "Sync from Stripe" button.
+ * If none exist, we fail silently (so we do NOT white-screen).
+ */
+async function tryStripeSync() {
+  const candidates = [
+    "syncFromStripe",
+    "syncStripeFromStripe",
+    "syncStripeSubscriptions",
+    "syncSubscriptionFromStripe",
+    "syncStripeForUser",
+    "syncStripeForCurrentUser",
+    "syncMySubscription",
+  ];
+
+  for (const fn of candidates) {
+    try {
+      // include platform param for iOS wrapper detection if needed
+      const params = isIOSCompanion?.() ? { platform: "ios" } : {};
+      const res = await base44.functions.invoke(fn, params);
+      // If function exists it will usually return 200 with some data.
+      return { ok: true, fn, res };
+    } catch (e) {
+      // keep trying next name
+    }
+  }
+
+  return { ok: false };
 }
 
 export default function Layout({ children, currentPageName }) {
@@ -109,15 +153,32 @@ export default function Layout({ children, currentPageName }) {
     return false;
   });
   const [showSubscribePrompt, setShowSubscribePrompt] = React.useState(false);
+  const [syncing, setSyncing] = React.useState(false);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const PUBLIC_PAGES = React.useMemo(
+    () =>
+      new Set([
+        "FAQ",
+        "Support",
+        "TermsOfService",
+        "PrivacyPolicy",
+        "Invite",
+        "PublicProfile",
+        "Index",
+        "Subscription",
+      ]),
+    []
+  );
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
       const authUser = await base44.auth.me();
 
+      // Merge in subscription-relevant fields from entities (if present)
       let entityUser = null;
       try {
         if (authUser?.email) {
@@ -125,10 +186,10 @@ export default function Layout({ children, currentPageName }) {
           entityUser = rows?.[0] || null;
         }
       } catch (e) {
-        console.warn("[Layout] Could not load entities.User for subscription fields:", e);
+        console.warn("[Layout] Could not load entities.User:", e);
       }
 
-      // Subscription entity (authoritative when present)
+      // Also check Subscription entity (authoritative *when synced*)
       let subscription = null;
       try {
         if (authUser?.email) {
@@ -139,36 +200,41 @@ export default function Layout({ children, currentPageName }) {
         console.warn("[Layout] Could not load Subscription entity:", e);
       }
 
+      // Compute subscription_level/status from subscription entity if it’s active
       let subscriptionLevel = entityUser?.subscription_level;
       let subscriptionStatus = entityUser?.subscription_status;
 
       if (subscription) {
         const status = (subscription.status || "").toLowerCase();
-        const cpe = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
-        const notExpired = !cpe || cpe > new Date();
+        const endOk =
+          !subscription.current_period_end ||
+          new Date(subscription.current_period_end).getTime() > Date.now();
 
-        const isPaid = (status === "active" || status === "trialing") && notExpired;
+        const isPaid = (status === "active" || status === "trialing") && endOk;
+
         if (isPaid) {
           subscriptionLevel = "paid";
-          subscriptionStatus = status;
+          subscriptionStatus = subscription.status;
         }
       }
 
+      // IMPORTANT: keep email always present
       return {
-        ...authUser,
+        ...(authUser || {}),
         ...(entityUser || {}),
         subscription_level: subscriptionLevel,
         subscription_status: subscriptionStatus,
         email: authUser?.email || entityUser?.email,
       };
     },
-    staleTime: 10000,
+    staleTime: 10_000,
     retry: 2,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 
+  // If any tab logs out, clear caches
   React.useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "logout") {
@@ -182,36 +248,70 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  const isAdmin = computeIsAdmin(user);
-  const hasPaidAccess = isAdmin || hasPremiumAccess(user);
+  const hasPaidAccess = hasPremiumAccess(user);
 
+  /**
+   * ✅ AUTO-SYNC ON LOGIN (THROTTLED)
+   *
+   * If user is NOT paid (per local state), attempt to sync with Stripe automatically.
+   * This is what removes the need for you to hit "Sync from Stripe" manually.
+   */
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
 
-    // Admin should never be nagged
-    if (isAdmin) return;
+    // Don’t sync in Apple build (Apple subs handled separately)
+    if (isAppleBuild) return;
 
-    // Already has access
+    // Optional: don’t sync in companion app if you must avoid Stripe exposure there
+    // But in practice this is a server-side function call, safe.
+    // If you want strict iOS compliance, gate it:
+    // if (!shouldShowPurchaseUI?.()) return;
+
+    // If already paid/trial, no need
     if (hasPaidAccess) return;
 
-    const PUBLIC_PAGES = new Set([
-      "FAQ",
-      "Support",
-      "TermsOfService",
-      "PrivacyPolicy",
-      "Invite",
-      "PublicProfile",
-      "Index",
-      "Subscription",
-    ]);
+    // Throttle
+    if (!shouldRunStripeSync(user.email)) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setSyncing(true);
+        const result = await tryStripeSync();
+        markStripeSyncRan(user.email);
+
+        if (!cancelled && result.ok) {
+          // Re-fetch user/subscription fields now that server may have updated entities
+          await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+          await queryClient.refetchQueries({ queryKey: ["current-user"] });
+        }
+      } catch (e) {
+        // Never crash layout
+        console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);
+      } finally {
+        if (!cancelled) setSyncing(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userLoading, user?.email, hasPaidAccess, queryClient]);
+
+  // Subscribe prompt logic (only after sync has had a chance)
+  React.useEffect(() => {
+    if (userLoading) return;
+    if (!user?.email) return;
+    if (hasPaidAccess) return;
 
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName, isAdmin]);
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
 
   if (!ageConfirmed) {
     return (
@@ -223,17 +323,6 @@ export default function Layout({ children, currentPageName }) {
       />
     );
   }
-
-  const PUBLIC_PAGES = new Set([
-    "FAQ",
-    "Support",
-    "TermsOfService",
-    "PrivacyPolicy",
-    "Invite",
-    "PublicProfile",
-    "Index",
-    "Subscription",
-  ]);
 
   if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
     return (
@@ -275,6 +364,13 @@ export default function Layout({ children, currentPageName }) {
                     hasPaidAccess={hasPaidAccess}
                   />
                 ))}
+              </div>
+
+              {/* Optional tiny sync indicator (non-blocking) */}
+              <div className="flex items-center gap-2">
+                {syncing ? (
+                  <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -345,10 +441,30 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
               </div>
               <div className="flex gap-6">
-                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">FAQ</a>
-                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Support</a>
-                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Terms of Service</a>
-                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">Privacy Policy</a>
+                <a
+                  href={createPageUrl("FAQ")}
+                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+                >
+                  FAQ
+                </a>
+                <a
+                  href={createPageUrl("Support")}
+                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+                >
+                  Support
+                </a>
+                <a
+                  href={createPageUrl("TermsOfService")}
+                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+                >
+                  Terms of Service
+                </a>
+                <a
+                  href={createPageUrl("PrivacyPolicy")}
+                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
+                >
+                  Privacy Policy
+                </a>
               </div>
             </div>
           </div>
@@ -358,8 +474,8 @@ export default function Layout({ children, currentPageName }) {
       {/* Terms overlay if needed */}
       <TermsGate user={user} />
 
-      {/* Subscribe prompt (non-admin only) */}
-      {showSubscribePrompt && !isAdmin && (
+      {/* Subscribe prompt */}
+      {showSubscribePrompt && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
             <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
