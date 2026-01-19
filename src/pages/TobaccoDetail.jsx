@@ -28,6 +28,7 @@ import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
 import TobaccoContainerManager from "@/components/tobacco/TobaccoContainerManager";
 import TobaccoInventoryManager from "@/components/tobacco/TobaccoInventoryManager";
+import OpenInventorySummary from "@/components/tobacco/OpenInventorySummary";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
@@ -344,12 +345,7 @@ export default function TobaccoDetailPage() {
 
                 <TabsContent value="containers" className="m-0">
                   <div className="p-4">
-                    <TobaccoContainerManager 
-                      blendId={blend.id} 
-                      blendName={blend.name}
-                      user={user}
-                      showOnlyOpen={true}
-                    />
+                    <OpenInventorySummary blend={blend} />
                   </div>
                 </TabsContent>
 
