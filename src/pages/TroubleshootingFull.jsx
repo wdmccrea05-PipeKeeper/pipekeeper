@@ -176,12 +176,12 @@ export default function TroubleshootingFull() {
   })).filter(topic => topic.questions.length > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">Troubleshooting Guide</h1>
           <p className="text-[#1a2c42]/80 mb-4">Common questions and solutions for PipeKeeper features</p>
-          <div className="flex gap-3 justify-center mt-4">
+          <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <a href="/HowTo">
               <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
@@ -208,7 +208,7 @@ export default function TroubleshootingFull() {
         </div>
 
         {filteredTopics.length === 0 ? (
-          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <Card className="bg-white border-gray-200">
             <CardContent className="p-8 text-center">
               <Info className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-[#1a2c42]/80">No results found. Try a different search term.</p>
@@ -219,7 +219,7 @@ export default function TroubleshootingFull() {
             {filteredTopics.map((topic) => {
               const IconComponent = topic.icon;
               return (
-                <Card key={topic.id} className="border-[#8b3a3a]/40 bg-[#243548]/95">
+                <Card key={topic.id} className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-[#1a2c42]">
                       <IconComponent className={`w-6 h-6 ${topic.color}`} />
@@ -246,7 +246,7 @@ export default function TroubleshootingFull() {
           </div>
         )}
 
-        <div className="mt-8 p-6 bg-[#243548]/60 border border-[#8b3a3a]/40 rounded-2xl text-center">
+        <div className="mt-8 p-6 bg-white border border-gray-200 rounded-2xl text-center">
           <h2 className="text-xl font-semibold text-[#1a2c42] mb-2">Still Need Help?</h2>
           <p className="text-[#1a2c42]/80 mb-4">
             Check <a href="/HowTo" className="text-blue-600 hover:underline">How-To Guides</a> for step-by-step instructions,{" "}

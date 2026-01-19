@@ -430,11 +430,25 @@ export default function HowTo() {
   })).filter(section => section.guides.length > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">How To Use PipeKeeper</h1>
-          <p className="text-[#1a2c42]/80">Step-by-step guides for all features</p>
+          <p className="text-[#1a2c42]/80 mb-4">Step-by-step guides for all features</p>
+          <div className="flex gap-3 justify-center mt-4 flex-wrap">
+            <a href="/FAQ">
+              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                FAQ
+              </button>
+            </a>
+            <a href="/Troubleshooting">
+              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                Troubleshooting
+              </button>
+            </a>
+          </div>
         </div>
 
         <div className="mb-6">
@@ -448,7 +462,7 @@ export default function HowTo() {
         </div>
 
         {filteredSections.length === 0 ? (
-          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <Card className="bg-white border-gray-200">
             <CardContent className="p-8 text-center">
               <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-[#1a2c42]/80">No guides found. Try a different search term.</p>
@@ -459,7 +473,7 @@ export default function HowTo() {
             {filteredSections.map((section) => {
               const IconComponent = section.icon;
               return (
-                <Card key={section.id} className="border-[#8b3a3a]/40 bg-[#243548]/95">
+                <Card key={section.id} className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-[#1a2c42]">
                       <IconComponent className={`w-6 h-6 ${section.color}`} />
@@ -490,7 +504,7 @@ export default function HowTo() {
           </div>
         )}
 
-        <div className="mt-8 p-6 bg-[#243548]/60 border border-[#8b3a3a]/40 rounded-2xl text-center">
+        <div className="mt-8 p-6 bg-white border border-gray-200 rounded-2xl text-center">
           <h2 className="text-xl font-semibold text-[#1a2c42] mb-2">Need More Help?</h2>
           <p className="text-[#1a2c42]/80 mb-4">
             Check the <a href="/FAQ" className="text-blue-600 hover:underline">FAQ</a> for general information or{" "}
