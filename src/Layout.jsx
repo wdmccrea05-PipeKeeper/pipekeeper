@@ -175,18 +175,63 @@ export default function Layout({ children, currentPageName }) {
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ["current-user"],
-queryFn: async () => {
+    queryFn: async () => {
   const authUser = await base44.auth.me();
+  const email = (authUser?.email || "").trim().toLowerCase();
 
-  let entityUser = null;
-  try {
-    if (authUser?.email) {
-      const rows = await base44.entities.User.filter({ email: authUser.email });
-      entityUser = rows?.[0] || null;
+  // Load entities.User (optional)
+  const entityUser = await (async () => {
+    try {
+      if (!email) return null;
+      const rows = await base44.entities.User.filter({ email });
+      return rows?.[0] || null;
+    } catch (e) {
+      console.warn("[Layout] Could not load entities.User:", e);
+      return null;
     }
-  } catch (e) {
-    console.warn("[Layout] Could not load entities.User:", e);
-  }
+  })();
+
+  // Load entities.Subscription (source of truth)
+  const subscription = await (async () => {
+    try {
+      if (!email) return null;
+      const subs = await base44.entities.Subscription.filter({ user_email: email });
+      return subs?.[0] || null;
+    } catch (e) {
+      console.warn("[Layout] Could not load Subscription entity:", e);
+      return null;
+    }
+  })();
+
+  const derived = (() => {
+    const baseLevel = (entityUser?.subscription_level || "").toString();
+    const baseStatus = (entityUser?.subscription_status || "").toString();
+
+    if (!subscription) {
+      return { subscription_level: baseLevel, subscription_status: baseStatus };
+    }
+
+    const status = (subscription.status || "").toLowerCase();
+    const periodEnd = subscription.current_period_end
+      ? new Date(subscription.current_period_end)
+      : null;
+
+    const periodOk = !periodEnd || periodEnd > new Date();
+    const isPaid = (status === "active" || status === "trialing") && periodOk;
+
+    return {
+      subscription_level: isPaid ? "paid" : baseLevel,
+      subscription_status: isPaid ? status : baseStatus,
+    };
+  })();
+
+  return {
+    ...authUser,
+    ...(entityUser || {}),
+    ...derived,
+    email: authUser?.email || entityUser?.email,
+  };
+},
 
   // Pull subscription (source of truth)
   let subscription = null;
