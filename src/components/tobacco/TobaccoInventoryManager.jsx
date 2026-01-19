@@ -135,7 +135,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_size_oz}
+                value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
                 placeholder="e.g., 1.75"
                 className="border-stone-200"
@@ -158,7 +158,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.tin_total_quantity_oz}
+                value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
                 placeholder="Auto-calculated"
                 className="border-stone-200 bg-stone-50"
                 readOnly
@@ -207,7 +207,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_total_quantity_oz}
+                value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder="e.g., 16"
                 className="border-stone-200"
@@ -219,7 +219,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_open}
+                value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder="e.g., 2"
                 className="border-stone-200"
@@ -231,7 +231,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.bulk_cellared}
+                value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_cellared', e.target.value)}
                 placeholder="e.g., 14"
                 className="border-stone-200"
@@ -258,7 +258,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_size_oz}
+                value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder="e.g., 1.5"
                 className="border-stone-200"
@@ -281,7 +281,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.pouch_total_quantity_oz}
+                value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
                 placeholder="Auto-calculated"
                 className="border-stone-200 bg-stone-50"
                 readOnly
