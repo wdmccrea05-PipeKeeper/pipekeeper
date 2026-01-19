@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter, Grid3X3, List, Sparkles, Package } from "lucide-react";
@@ -24,6 +36,7 @@ export default function PipesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [shapeFilter, setShapeFilter] = useState('All Shapes');
   const [materialFilter, setMaterialFilter] = useState('All Materials');
   const [viewMode, setViewMode] = useState(() => {
@@ -31,6 +44,11 @@ export default function PipesPage() {
   });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [sortBy, setSortBy] = useState('date');
+
+  const debouncedSetSearch = useCallback(
+    debounce((value) => setDebouncedSearch(value), 300),
+    []
+  );
 
   const queryClient = useQueryClient();
 
@@ -96,9 +114,9 @@ export default function PipesPage() {
   };
 
   const filteredPipes = pipes.filter(pipe => {
-    const matchesSearch = !searchQuery || 
-      pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !debouncedSearch || 
+      pipe.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      pipe.maker?.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesShape = shapeFilter === 'All Shapes' || pipe.shape === shapeFilter;
     const matchesMaterial = materialFilter === 'All Materials' || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
@@ -167,7 +185,10 @@ export default function PipesPage() {
             <Input
               placeholder="Search by name, maker, or shape..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                debouncedSetSearch(e.target.value);
+              }}
               className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
               aria-label="Search pipes"
             />

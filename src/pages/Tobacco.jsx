@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -63,6 +75,7 @@ export default function TobaccoPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBlend, setEditingBlend] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [strengthFilter, setStrengthFilter] = useState('All Strengths');
   const [sortBy, setSortBy] = useState('-created_date');
@@ -74,6 +87,11 @@ export default function TobaccoPage() {
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [selectedForEdit, setSelectedForEdit] = useState([]);
   const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);
+
+  const debouncedSetSearch = useCallback(
+    debounce((value) => setDebouncedSearch(value), 300),
+    []
+  );
 
   const queryClient = useQueryClient();
 
@@ -171,9 +189,9 @@ export default function TobaccoPage() {
   };
 
   const filteredBlends = blends.filter(blend => {
-    const matchesSearch = !searchQuery || 
-      blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !debouncedSearch || 
+      blend.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      blend.manufacturer?.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesType = typeFilter === 'All Types' || blend.blend_type === typeFilter;
     const matchesStrength = strengthFilter === 'All Strengths' || blend.strength === strengthFilter;
     return matchesSearch && matchesType && matchesStrength;
@@ -282,7 +300,10 @@ export default function TobaccoPage() {
             <Input
               placeholder="Search by name, manufacturer, or blend type..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                debouncedSetSearch(e.target.value);
+              }}
               className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
               aria-label="Search tobacco blends"
             />
