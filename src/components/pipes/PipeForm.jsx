@@ -800,7 +800,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <div className="pt-2">
               <InterchangeableBowls
                 pipe={formData}
-                onUpdate={(updatedPipe) => setFormData(updatedPipe)}
+                onUpdate={(updates) => setFormData({ ...formData, ...updates })}
               />
             </div>
           )}
