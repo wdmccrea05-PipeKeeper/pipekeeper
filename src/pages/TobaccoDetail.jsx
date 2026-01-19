@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
+import TobaccoContainerManager from "@/components/tobacco/TobaccoContainerManager";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
