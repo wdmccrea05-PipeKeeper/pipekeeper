@@ -154,19 +154,25 @@ if (allowed.size && !allowed.has(priceId)) {
 
     // IMPORTANT: No Stripe trial here—your app already grants 7-day access at signup.
     // If they click subscribe, we charge immediately.
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      allow_promotion_codes: true,
-      success_url: `${origin}/Subscription?status=success`,
-      cancel_url: `${origin}/Subscription?status=cancel`,
-      metadata: {
-        user_email: user.email,
-        platform,
-        price_id: priceId,
-      },
-    });
+const session = await stripe.checkout.sessions.create({
+  mode: "subscription",
+  customer: customerId,
+  line_items: [{ price: priceId, quantity: 1 }],
+  allow_promotion_codes: true,
+  subscription_data: {
+    metadata: {
+      user_email: user.email,
+      platform,
+    },
+  },
+  success_url: `${origin}/Subscription?status=success`,
+  cancel_url: `${origin}/Subscription?status=cancel`,
+  metadata: {
+    user_email: user.email,
+    platform,
+    price_id: priceId,
+  },
+});
 
     return Response.json({ url: session.url });
   } catch (err) {
