@@ -271,17 +271,16 @@ export default function TobaccoDetailPage() {
             </div>
 
             {/* Rating */}
-            {blend.rating && (
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Star 
-                    key={i}
-                    className={`w-6 h-6 ${i <= blend.rating ? 'text-amber-500 fill-current' : 'text-stone-300'}`}
-                  />
-                ))}
-                <span className="text-stone-600 ml-2">{blend.rating}/5</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Star 
+                  key={i}
+                  className={`w-6 h-6 cursor-pointer transition-colors ${i <= (blend.rating || 0) ? 'text-amber-500 fill-current' : 'text-stone-300 hover:text-amber-300'}`}
+                  onClick={() => updateMutation.mutate({ rating: i })}
+                />
+              ))}
+              {blend.rating && <span className="text-white ml-2">{blend.rating}/5</span>}
+            </div>
 
             {/* Top Pipe Matches */}
             {pipes.length > 0 && (
