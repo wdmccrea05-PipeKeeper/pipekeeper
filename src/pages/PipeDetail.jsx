@@ -166,6 +166,18 @@ export default function PipeDetailPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ['pipe', pipeId, user?.email] });
+      const previousPipe = queryClient.getQueryData(['pipe', pipeId, user?.email]);
+      queryClient.setQueryData(['pipe', pipeId, user?.email], (old) => ({
+        ...old,
+        ...newData
+      }));
+      return { previousPipe };
+    },
+    onError: (err, newData, context) => {
+      queryClient.setQueryData(['pipe', pipeId, user?.email], context.previousPipe);
+    },
     onSuccess: () => {
       invalidatePipeQueries(queryClient, user?.email);
       setShowEdit(false);
