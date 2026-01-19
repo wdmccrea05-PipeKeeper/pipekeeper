@@ -12,7 +12,7 @@ import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
-import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion"; // safe to import if present
+import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -74,10 +74,10 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
 const AGE_GATE_KEY = "pk_age_confirmed";
 const SUB_PROMPT_KEY = "pk_subscribe_prompt_last_shown";
 
-// Auto-sync throttle key (per user)
 function syncKey(email) {
   return `pk_stripe_sync_last_${email || "unknown"}`;
 }
+
 function shouldRunStripeSync(email) {
   try {
     if (!email) return false;
@@ -85,12 +85,12 @@ function shouldRunStripeSync(email) {
     if (!v) return true;
     const last = new Date(v).getTime();
     if (Number.isNaN(last)) return true;
-    // every 10 minutes max
     return Date.now() - last > 10 * 60 * 1000;
   } catch {
     return true;
   }
 }
+
 function markStripeSyncRan(email) {
   try {
     if (!email) return;
@@ -109,17 +109,13 @@ function shouldShowSubscribePrompt() {
     return true;
   }
 }
+
 function markSubscribePromptShown() {
   try {
     localStorage.setItem(SUB_PROMPT_KEY, new Date().toISOString());
   } catch {}
 }
 
-/**
- * Attempts a server-side Stripe->Base44 sync.
- * We try a few likely function names to match whatever you currently wired to the "Sync from Stripe" button.
- * If none exist, we fail silently (so we do NOT white-screen).
- */
 async function tryStripeSync() {
   const candidates = [
     "syncFromStripe",
@@ -133,10 +129,8 @@ async function tryStripeSync() {
 
   for (const fn of candidates) {
     try {
-      // include platform param for iOS wrapper detection if needed
       const params = isIOSCompanion?.() ? { platform: "ios" } : {};
       const res = await base44.functions.invoke(fn, params);
-      // If function exists it will usually return 200 with some data.
       return { ok: true, fn, res };
     } catch (e) {
       // keep trying next name
@@ -176,136 +170,57 @@ export default function Layout({ children, currentPageName }) {
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
-  const authUser = await base44.auth.me();
-  const email = (authUser?.email || "").trim().toLowerCase();
+      const authUser = await base44.auth.me();
+      const email = (authUser?.email || "").trim().toLowerCase();
 
-  // Load entities.User (optional)
-  const entityUser = await (async () => {
-    try {
-      if (!email) return null;
-      const rows = await base44.entities.User.filter({ email });
-      return rows?.[0] || null;
-    } catch (e) {
-      console.warn("[Layout] Could not load entities.User:", e);
-      return null;
-    }
-  })();
-
-  // Load entities.Subscription (source of truth)
-  const subscription = await (async () => {
-    try {
-      if (!email) return null;
-      const subs = await base44.entities.Subscription.filter({ user_email: email });
-      return subs?.[0] || null;
-    } catch (e) {
-      console.warn("[Layout] Could not load Subscription entity:", e);
-      return null;
-    }
-  })();
-
-  const derived = (() => {
-    const baseLevel = (entityUser?.subscription_level || "").toString();
-    const baseStatus = (entityUser?.subscription_status || "").toString();
-
-    if (!subscription) {
-      return { subscription_level: baseLevel, subscription_status: baseStatus };
-    }
-
-    const status = (subscription.status || "").toLowerCase();
-    const periodEnd = subscription.current_period_end
-      ? new Date(subscription.current_period_end)
-      : null;
-
-    const periodOk = !periodEnd || periodEnd > new Date();
-    const isPaid = (status === "active" || status === "trialing") && periodOk;
-
-    return {
-      subscription_level: isPaid ? "paid" : baseLevel,
-      subscription_status: isPaid ? status : baseStatus,
-    };
-  })();
-
-  return {
-    ...authUser,
-    ...(entityUser || {}),
-    ...derived,
-    email: authUser?.email || entityUser?.email,
-  };
-},
-
-  // Pull subscription (source of truth)
-  let subscription = null;
-  try {
-    if (authUser?.email) {
-      const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
-      subscription = subs?.[0] || null;
-    }
-  } catch (e) {
-    console.warn("[Layout] Could not load Subscription entity:", e);
-  }
-
-  // Decide paid/trialing from Subscription
-  let subscriptionLevel = entityUser?.subscription_level;
-  let subscriptionStatus = entityUser?.subscription_status;
-
-  if (subscription) {
-    const status = (subscription.status || "").toLowerCase();
-    const periodEndOk =
-      !subscription.current_period_end ||
-      new Date(subscription.current_period_end) > new Date();
-
-    const isPaid = (status === "active" || status === "trialing") && periodEndOk;
-
-    if (isPaid) {
-      subscriptionLevel = "paid";
-      subscriptionStatus = status;
-    }
-  }
-
-  return {
-    ...authUser,
-    ...(entityUser || {}),
-    subscription_level: subscriptionLevel,
-    subscription_status: subscriptionStatus,
-    email: authUser?.email || entityUser?.email,
-  };
-},
-
-      // Also check Subscription entity (authoritative *when synced*)
-      let subscription = null;
-      try {
-        if (authUser?.email) {
-          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
-          subscription = subs?.[0] || null;
+      const entityUser = await (async () => {
+        try {
+          if (!email) return null;
+          const rows = await base44.entities.User.filter({ email });
+          return rows?.[0] || null;
+        } catch (e) {
+          console.warn("[Layout] Could not load entities.User:", e);
+          return null;
         }
-      } catch (e) {
-        console.warn("[Layout] Could not load Subscription entity:", e);
-      }
+      })();
 
-      // Compute subscription_level/status from subscription entity if it’s active
-      let subscriptionLevel = entityUser?.subscription_level;
-      let subscriptionStatus = entityUser?.subscription_status;
+      const subscription = await (async () => {
+        try {
+          if (!email) return null;
+          const subs = await base44.entities.Subscription.filter({ user_email: email });
+          return subs?.[0] || null;
+        } catch (e) {
+          console.warn("[Layout] Could not load Subscription entity:", e);
+          return null;
+        }
+      })();
 
-      if (subscription) {
+      const derived = (() => {
+        const baseLevel = (entityUser?.subscription_level || "").toString();
+        const baseStatus = (entityUser?.subscription_status || "").toString();
+
+        if (!subscription) {
+          return { subscription_level: baseLevel, subscription_status: baseStatus };
+        }
+
         const status = (subscription.status || "").toLowerCase();
-        const endOk =
-          !subscription.current_period_end ||
-          new Date(subscription.current_period_end).getTime() > Date.now();
+        const periodEnd = subscription.current_period_end
+          ? new Date(subscription.current_period_end)
+          : null;
 
-        const isPaid = (status === "active" || status === "trialing") && endOk;
+        const periodOk = !periodEnd || periodEnd > new Date();
+        const isPaid = (status === "active" || status === "trialing") && periodOk;
 
-        if (isPaid) {
-          subscriptionLevel = "paid";
-          subscriptionStatus = subscription.status;
-        }
-      }
+        return {
+          subscription_level: isPaid ? "paid" : baseLevel,
+          subscription_status: isPaid ? status : baseStatus,
+        };
+      })();
 
-      // IMPORTANT: keep email always present
       return {
-        ...(authUser || {}),
+        ...authUser,
         ...(entityUser || {}),
-        subscription_level: subscriptionLevel,
-        subscription_status: subscriptionStatus,
+        ...derived,
         email: authUser?.email || entityUser?.email,
       };
     },
@@ -316,7 +231,6 @@ export default function Layout({ children, currentPageName }) {
     refetchOnReconnect: true,
   });
 
-  // If any tab logs out, clear caches
   React.useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "logout") {
@@ -332,28 +246,11 @@ export default function Layout({ children, currentPageName }) {
 
   const hasPaidAccess = hasPremiumAccess(user);
 
-  /**
-   * ✅ AUTO-SYNC ON LOGIN (THROTTLED)
-   *
-   * If user is NOT paid (per local state), attempt to sync with Stripe automatically.
-   * This is what removes the need for you to hit "Sync from Stripe" manually.
-   */
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-
-    // Don’t sync in Apple build (Apple subs handled separately)
     if (isAppleBuild) return;
-
-    // Optional: don’t sync in companion app if you must avoid Stripe exposure there
-    // But in practice this is a server-side function call, safe.
-    // If you want strict iOS compliance, gate it:
-    // if (!shouldShowPurchaseUI?.()) return;
-
-    // If already paid/trial, no need
     if (hasPaidAccess) return;
-
-    // Throttle
     if (!shouldRunStripeSync(user.email)) return;
 
     let cancelled = false;
@@ -365,12 +262,10 @@ export default function Layout({ children, currentPageName }) {
         markStripeSyncRan(user.email);
 
         if (!cancelled && result.ok) {
-          // Re-fetch user/subscription fields now that server may have updated entities
           await queryClient.invalidateQueries({ queryKey: ["current-user"] });
           await queryClient.refetchQueries({ queryKey: ["current-user"] });
         }
       } catch (e) {
-        // Never crash layout
         console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);
       } finally {
         if (!cancelled) setSyncing(false);
@@ -382,12 +277,10 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [userLoading, user?.email, hasPaidAccess, queryClient]);
 
-  // Subscribe prompt logic (only after sync has had a chance)
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
     if (hasPaidAccess) return;
-
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
@@ -428,7 +321,6 @@ export default function Layout({ children, currentPageName }) {
       <DocumentTitle title="PipeKeeper" />
 
       <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="flex items-center justify-between h-16 gap-4">
@@ -448,7 +340,6 @@ export default function Layout({ children, currentPageName }) {
                 ))}
               </div>
 
-              {/* Optional tiny sync indicator (non-blocking) */}
               <div className="flex items-center gap-2">
                 {syncing ? (
                   <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
@@ -458,7 +349,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </nav>
 
-        {/* Mobile Navigation */}
         <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="flex items-center justify-between h-14 px-4">
             <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
@@ -480,7 +370,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </nav>
 
-        {/* Mobile Menu Overlay */}
         <div
           className={cn(
             "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
@@ -490,7 +379,6 @@ export default function Layout({ children, currentPageName }) {
           style={{ top: "56px" }}
         />
 
-        {/* Mobile Menu Panel */}
         <div
           className={cn(
             "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
@@ -511,10 +399,8 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
 
-        {/* Main Content */}
         <main className="pt-16 md:pt-16 pb-20">{children}</main>
 
-        {/* Footer */}
         <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -523,28 +409,16 @@ export default function Layout({ children, currentPageName }) {
                 <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
               </div>
               <div className="flex gap-6">
-                <a
-                  href={createPageUrl("FAQ")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                   FAQ
                 </a>
-                <a
-                  href={createPageUrl("Support")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                   Support
                 </a>
-                <a
-                  href={createPageUrl("TermsOfService")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                   Terms of Service
                 </a>
-                <a
-                  href={createPageUrl("PrivacyPolicy")}
-                  className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline"
-                >
+                <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
                   Privacy Policy
                 </a>
               </div>
@@ -553,10 +427,8 @@ export default function Layout({ children, currentPageName }) {
         </footer>
       </div>
 
-      {/* Terms overlay if needed */}
       <TermsGate user={user} />
 
-      {/* Subscribe prompt */}
       {showSubscribePrompt && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
