@@ -1,28 +1,27 @@
 // src/components/utils/premiumAccess.jsx
+// CANONICAL PREMIUM ACCESS HELPER - Use this everywhere
 import { hasTrialAccess } from "./trialAccess";
 
-export function hasPremiumAccess(user) {
+export function hasPaidAccess(user) {
   if (!user) return false;
 
-  // Admin override (prevents locking your admin login)
+  // Admin override
   const role = (user.role || "").toLowerCase();
   if (role === "admin" || role === "owner" || user.is_admin === true) return true;
 
   const level = (user.subscription_level || "").toLowerCase();
   const status = (user.subscription_status || "").toLowerCase();
 
-  // Treat all paid-like statuses as premium
+  // Check paid status
   const isPaidStatus =
     status === "active" ||
-    status === "trialing" || // important for Stripe
+    status === "trialing" ||
     status === "paid" ||
     status === "complete";
 
-  // Primary source of truth from app DB fields
   const isPaid = level === "paid" || isPaidStatus;
 
-  // Strong fallback: if current_period_end exists and is in the future, treat as premium
-  // (covers cases where level/status didn't propagate yet but the subscription row did)
+  // Fallback: if current_period_end exists and is in the future
   let hasFuturePeriod = false;
   try {
     const endRaw = user.current_period_end || user.subscription?.current_period_end;
@@ -34,9 +33,19 @@ export function hasPremiumAccess(user) {
     // ignore
   }
 
-  // Check if subscription is explicitly paid or has active period
-  if (isPaid || hasFuturePeriod) return true;
+  return isPaid || hasFuturePeriod;
+}
+
+export function hasPremiumAccess(user) {
+  if (!user?.email) return false;
+
+  // Check paid access first
+  if (hasPaidAccess(user)) return true;
 
   // Trial fallback for new accounts (7 days)
   return hasTrialAccess(user);
+}
+
+export function getPlanLabel(user) {
+  return hasPremiumAccess(user) ? "Premium" : "Free";
 }
