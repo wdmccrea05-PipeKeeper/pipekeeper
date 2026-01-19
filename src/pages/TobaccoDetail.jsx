@@ -140,6 +140,25 @@ export default function TobaccoDetailPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('TobaccoBlend', blendId, data, user?.email),
+    onMutate: async (newData) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['blend', blendId, user?.email] });
+      
+      // Snapshot previous value
+      const previousBlend = queryClient.getQueryData(['blend', blendId, user?.email]);
+      
+      // Optimistically update
+      queryClient.setQueryData(['blend', blendId, user?.email], (old) => ({
+        ...old,
+        ...newData
+      }));
+      
+      return { previousBlend };
+    },
+    onError: (err, newData, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['blend', blendId, user?.email], context.previousBlend);
+    },
     onSuccess: () => {
       invalidateBlendQueries(queryClient, user?.email);
       setShowEdit(false);
