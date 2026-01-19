@@ -194,7 +194,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                           src={brandObj.logo} 
                           alt={brandObj.brand}
                           className="max-w-full max-h-full object-contain"
-                          loading="lazy"
+                          crossOrigin="anonymous"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             const parent = e.target.parentElement;
