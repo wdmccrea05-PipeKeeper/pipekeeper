@@ -1,4 +1,5 @@
-// src/components/utils/access.js
+// src/components/utils/access.jsx
+import { hasTrialAccess } from "./trialAccess";
 
 const TRIAL_DAYS = 7;
 
@@ -47,28 +48,36 @@ export const getTrialDaysRemaining = (user) => {
 };
 
 export function hasPaidAccess(user) {
-  return (user?.subscription_level || "").toLowerCase() === "paid";
+  if (!user) return false;
+
+  // Always allow admin
+  if ((user?.role || "").toLowerCase() === "admin") return true;
+
+  const level = (user.subscription_level || "").toLowerCase();
+  const status = (user.subscription_status || "").toLowerCase();
+
+  // Treat status active/trialing as paid access too
+  const isPaid = level === "paid" || status === "active" || status === "trialing";
+  return isPaid;
 }
 
 /**
- * Canonical access evaluation.
- * - During trial: premium access granted to logged-in users (7 days from signup)
- * - After trial: only paid users have premium access
+ * Canonical access evaluation:
+ * - Paid users (or admin) => premium
+ * - Otherwise trial access => premium
  */
 export function hasPremiumAccess(user) {
-  // No user? No premium access (prevents accidental unlock during loading/logged-out states)
   if (!user?.email) return false;
 
-  // Primary paid indicator
-  if ((user?.subscription_level || "").toLowerCase() === "paid") return true;
+  if (hasPaidAccess(user)) return true;
 
-  // Trial window grants premium only to signed-in users within 7 days of signup
-  return isTrialWindow(user);
+  // Trial fallback (your 7-day access logic)
+  return hasTrialAccess ? hasTrialAccess(user) : isTrialWindow(user);
 }
 
 export function getPlanLabel(user) {
   return hasPremiumAccess(user) ? "Premium" : "Free";
 }
 
-// Legacy aliases for compatibility (deprecated - pass user object)
+// Legacy alias
 export const isTrialWindowNow = isTrialWindow;
