@@ -181,7 +181,12 @@ export default function PipeDetailPage() {
   });
 
   const toggleFavorite = () => {
-    updateMutation.mutate({ is_favorite: !pipe.is_favorite });
+    const newValue = !pipe.is_favorite;
+    queryClient.setQueryData(['pipe', pipeId, user?.email], (old) => ({
+      ...old,
+      is_favorite: newValue
+    }));
+    updateMutation.mutate({ is_favorite: newValue });
   };
 
   const handleValueUpdate = (value) => {

@@ -173,8 +173,13 @@ export default function TobaccoDetailPage() {
   });
 
   const toggleFavorite = () => {
+    const newValue = !blend.is_favorite;
+    queryClient.setQueryData(['blend', blendId, user?.email], (old) => ({
+      ...old,
+      is_favorite: newValue
+    }));
     updateMutation.mutate({
-      is_favorite: !blend.is_favorite,
+      is_favorite: newValue,
     });
   };
 
