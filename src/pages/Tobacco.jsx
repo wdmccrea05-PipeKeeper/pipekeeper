@@ -444,7 +444,7 @@ export default function TobaccoPage() {
                       {viewMode === 'grid' ? (
                         <TobaccoCard blend={blend} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                       ) : (
-                        <TobaccoListItem blend={blend} onClick={() => {}} />
+                        <TobaccoListItem blend={blend} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                       )}
                     </a>
                   )}

@@ -305,7 +305,7 @@ export default function PipesPage() {
                     {viewMode === 'grid' ? (
                       <PipeCard pipe={pipe} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                     ) : (
-                      <PipeListItem pipe={pipe} onClick={() => {}} />
+                      <PipeListItem pipe={pipe} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                     )}
                   </a>
                 </motion.div>

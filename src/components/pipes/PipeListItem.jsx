@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
 
-export default function PipeListItem({ pipe, onClick }) {
+export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -27,11 +28,20 @@ export default function PipeListItem({ pipe, onClick }) {
                 <PipeShapeIcon shape={pipe.shape} className="text-3xl text-stone-400" />
               </div>
             )}
-            {pipe.is_favorite && (
-              <div className="absolute top-2 right-2">
-                <Heart className="w-4 h-4 fill-rose-500 text-rose-500 drop-shadow-md" />
-              </div>
-            )}
+            <div className="absolute top-1 right-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleFavorite?.(pipe);
+                }}
+              >
+                <Heart className={`w-3.5 h-3.5 ${pipe.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
+              </Button>
+            </div>
           </div>
 
           {/* Details */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Heart, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 
@@ -19,7 +20,7 @@ const BLEND_COLORS = {
   "Cavendish": "bg-amber-200 text-amber-900 border-amber-300",
 };
 
-export default function TobaccoListItem({ blend, onClick }) {
+export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
   
   return (
@@ -54,11 +55,20 @@ export default function TobaccoListItem({ blend, onClick }) {
                 />
               </div>
             )}
-            {blend.is_favorite && (
-              <div className="absolute top-2 right-2">
-                <Heart className="w-4 h-4 fill-rose-500 text-rose-500 drop-shadow-md" />
-              </div>
-            )}
+            <div className="absolute top-1 right-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleFavorite?.(blend);
+                }}
+              >
+                <Heart className={`w-3.5 h-3.5 ${blend.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
+              </Button>
+            </div>
           </div>
 
           {/* Details */}
