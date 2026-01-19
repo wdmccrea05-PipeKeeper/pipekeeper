@@ -175,19 +175,56 @@ export default function Layout({ children, currentPageName }) {
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ["current-user"],
-    queryFn: async () => {
-      const authUser = await base44.auth.me();
+queryFn: async () => {
+  const authUser = await base44.auth.me();
 
-      // Merge in subscription-relevant fields from entities (if present)
-      let entityUser = null;
-      try {
-        if (authUser?.email) {
-          const rows = await base44.entities.User.filter({ email: authUser.email });
-          entityUser = rows?.[0] || null;
-        }
-      } catch (e) {
-        console.warn("[Layout] Could not load entities.User:", e);
-      }
+  let entityUser = null;
+  try {
+    if (authUser?.email) {
+      const rows = await base44.entities.User.filter({ email: authUser.email });
+      entityUser = rows?.[0] || null;
+    }
+  } catch (e) {
+    console.warn("[Layout] Could not load entities.User:", e);
+  }
+
+  // Pull subscription (source of truth)
+  let subscription = null;
+  try {
+    if (authUser?.email) {
+      const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
+      subscription = subs?.[0] || null;
+    }
+  } catch (e) {
+    console.warn("[Layout] Could not load Subscription entity:", e);
+  }
+
+  // Decide paid/trialing from Subscription
+  let subscriptionLevel = entityUser?.subscription_level;
+  let subscriptionStatus = entityUser?.subscription_status;
+
+  if (subscription) {
+    const status = (subscription.status || "").toLowerCase();
+    const periodEndOk =
+      !subscription.current_period_end ||
+      new Date(subscription.current_period_end) > new Date();
+
+    const isPaid = (status === "active" || status === "trialing") && periodEndOk;
+
+    if (isPaid) {
+      subscriptionLevel = "paid";
+      subscriptionStatus = status;
+    }
+  }
+
+  return {
+    ...authUser,
+    ...(entityUser || {}),
+    subscription_level: subscriptionLevel,
+    subscription_status: subscriptionStatus,
+    email: authUser?.email || entityUser?.email,
+  };
+},
 
       // Also check Subscription entity (authoritative *when synced*)
       let subscription = null;
