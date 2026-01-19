@@ -80,9 +80,9 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               </div>
               <div className="shrink-0 flex items-center gap-3">
                 {blend.rating && (
-                  <div className="flex items-center gap-0.5 text-amber-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="text-sm font-medium">{blend.rating.toFixed(1)}/5</span>
+                  <div className="flex items-center gap-0.5">
+                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    <span className="text-sm font-medium text-blue-900">{blend.rating.toFixed(1)}/5</span>
                   </div>
                 )}
                 {blend.quantity_owned > 0 && (

@@ -132,9 +132,9 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
               <p className="text-sm text-stone-500 truncate">{blend.manufacturer || 'Unknown maker'}</p>
             </div>
             {blend.rating && (
-              <div className="flex items-center gap-0.5 text-amber-500 shrink-0">
-                <Star className="w-4 h-4 fill-current" />
-                <span className="text-sm font-medium">{blend.rating.toFixed(1)}/5</span>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span className="text-sm font-medium text-blue-900">{blend.rating.toFixed(1)}/5</span>
               </div>
             )}
           </div>
