@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import PipeShapeIcon from "./PipeShapeIcon";
 
-export default function PipeCard({ pipe, onClick }) {
+export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -32,11 +33,20 @@ export default function PipeCard({ pipe, onClick }) {
               </div>
             </div>
           )}
-          {pipe.is_favorite && (
-            <div className="absolute top-3 right-3">
-              <Heart className="w-5 h-5 fill-rose-500 text-rose-500 drop-shadow-md" />
-            </div>
-          )}
+          <div className="absolute top-3 right-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 bg-white/90 hover:bg-white shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite?.(pipe);
+              }}
+            >
+              <Heart className={`w-4 h-4 ${pipe.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
+            </Button>
+          </div>
           {pipe.estimated_value && (
             <div className="absolute bottom-3 left-3">
               <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm">

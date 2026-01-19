@@ -95,6 +95,25 @@ export default function PipesPage() {
     setShowForm(true);
   };
 
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: ({ id, is_favorite }) => safeUpdate('Pipe', id, { is_favorite }, user?.email),
+    onMutate: async ({ id, is_favorite }) => {
+      await queryClient.cancelQueries({ queryKey: ['pipes', user?.email] });
+      const previousPipes = queryClient.getQueryData(['pipes', user?.email]);
+      queryClient.setQueryData(['pipes', user?.email], (old) =>
+        old.map(p => p.id === id ? { ...p, is_favorite } : p)
+      );
+      return { previousPipes };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['pipes', user?.email], context.previousPipes);
+    },
+  });
+
+  const handleToggleFavorite = (pipe) => {
+    toggleFavoriteMutation.mutate({ id: pipe.id, is_favorite: !pipe.is_favorite });
+  };
+
   const filteredPipes = pipes.filter(pipe => {
     const matchesSearch = !searchQuery || 
       pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,6 +122,11 @@ export default function PipesPage() {
     const matchesMaterial = materialFilter === 'All Materials' || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
   }).sort((a, b) => {
+    if (sortBy === 'favorites') {
+      if (a.is_favorite && !b.is_favorite) return -1;
+      if (!a.is_favorite && b.is_favorite) return 1;
+      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+    }
     if (sortBy === 'maker') {
       const makerA = (a.maker || '').toLowerCase();
       const makerB = (b.maker || '').toLowerCase();
@@ -201,6 +225,7 @@ export default function PipesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="date">Newest First</SelectItem>
+                <SelectItem value="favorites">Favorites First</SelectItem>
                 <SelectItem value="maker">By Maker</SelectItem>
                 <SelectItem value="name">By Name</SelectItem>
               </SelectContent>
@@ -278,7 +303,7 @@ export default function PipesPage() {
                 >
                   <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                     {viewMode === 'grid' ? (
-                      <PipeCard pipe={pipe} onClick={() => {}} />
+                      <PipeCard pipe={pipe} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                     ) : (
                       <PipeListItem pipe={pipe} onClick={() => {}} />
                     )}

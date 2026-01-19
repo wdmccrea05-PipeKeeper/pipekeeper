@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
@@ -20,7 +21,7 @@ const BLEND_COLORS = {
   "Cavendish": "bg-amber-200 text-amber-900 border-amber-300",
 };
 
-export default function TobaccoCard({ blend, onClick }) {
+export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
   
   return (
@@ -56,11 +57,20 @@ export default function TobaccoCard({ blend, onClick }) {
               />
             </div>
           )}
-          {blend.is_favorite && (
-            <div className="absolute top-3 right-3">
-              <Heart className="w-5 h-5 fill-rose-500 text-rose-500 drop-shadow-md" />
-            </div>
-          )}
+          <div className="absolute top-3 right-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 bg-white/90 hover:bg-white shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite?.(blend);
+              }}
+            >
+              <Heart className={`w-4 h-4 ${blend.is_favorite ? 'fill-rose-500 text-rose-500' : 'text-stone-400'}`} />
+            </Button>
+          </div>
           <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1">
             {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">

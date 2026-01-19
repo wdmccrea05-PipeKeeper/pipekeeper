@@ -51,6 +51,7 @@ const BLEND_TYPES = [
 const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
   { value: "-created_date", label: "Recently Added" },
+  { value: "favorites", label: "Favorites First" },
   { value: "name", label: "Name (A-Z)" },
   { value: "-name", label: "Name (Z-A)" },
   { value: "-rating", label: "Highest Rated" },
@@ -89,8 +90,17 @@ export default function TobaccoPage() {
     queryKey: ['blends', user?.email, sortBy],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, sortBy);
-        return Array.isArray(result) ? result : [];
+        const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, actualSort);
+        let data = Array.isArray(result) ? result : [];
+        if (sortBy === 'favorites') {
+          data = data.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            return 0;
+          });
+        }
+        return data;
       } catch (err) {
         console.error('Blends load error:', err);
         return [];
@@ -168,6 +178,25 @@ export default function TobaccoPage() {
 
   const handleBulkUpdate = (blendIds, updateData) => {
     bulkUpdateMutation.mutate({ blendIds, updateData });
+  };
+
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: ({ id, is_favorite }) => safeUpdate('TobaccoBlend', id, { is_favorite }, user?.email),
+    onMutate: async ({ id, is_favorite }) => {
+      await queryClient.cancelQueries({ queryKey: ['blends', user?.email, sortBy] });
+      const previousBlends = queryClient.getQueryData(['blends', user?.email, sortBy]);
+      queryClient.setQueryData(['blends', user?.email, sortBy], (old) =>
+        old.map(b => b.id === id ? { ...b, is_favorite } : b)
+      );
+      return { previousBlends };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['blends', user?.email, sortBy], context.previousBlends);
+    },
+  });
+
+  const handleToggleFavorite = (blend) => {
+    toggleFavoriteMutation.mutate({ id: blend.id, is_favorite: !blend.is_favorite });
   };
 
   const filteredBlends = blends.filter(blend => {
@@ -413,7 +442,7 @@ export default function TobaccoPage() {
                   ) : (
                     <a href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                       {viewMode === 'grid' ? (
-                        <TobaccoCard blend={blend} onClick={() => {}} />
+                        <TobaccoCard blend={blend} onClick={() => {}} onToggleFavorite={handleToggleFavorite} />
                       ) : (
                         <TobaccoListItem blend={blend} onClick={() => {}} />
                       )}
