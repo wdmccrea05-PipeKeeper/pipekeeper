@@ -54,21 +54,21 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
 
-      // Auto-calculate tin total quantity
+      // Auto-calculate tin total quantity (rounded to 2 decimals)
       if (field === 'tin_size_oz' || field === 'tin_total_tins') {
         if (field === 'tin_size_oz' && value && updated.tin_total_tins) {
-          updated.tin_total_quantity_oz = Number(value) * Number(updated.tin_total_tins);
+          updated.tin_total_quantity_oz = parseFloat((Number(value) * Number(updated.tin_total_tins)).toFixed(2));
         } else if (field === 'tin_total_tins' && value && updated.tin_size_oz) {
-          updated.tin_total_quantity_oz = Number(updated.tin_size_oz) * Number(value);
+          updated.tin_total_quantity_oz = parseFloat((Number(updated.tin_size_oz) * Number(value)).toFixed(2));
         }
       }
 
-      // Auto-calculate pouch total quantity
+      // Auto-calculate pouch total quantity (rounded to 2 decimals)
       if (field === 'pouch_size_oz' || field === 'pouch_total_pouches') {
         if (field === 'pouch_size_oz' && value && updated.pouch_total_pouches) {
-          updated.pouch_total_quantity_oz = Number(value) * Number(updated.pouch_total_pouches);
+          updated.pouch_total_quantity_oz = parseFloat((Number(value) * Number(updated.pouch_total_pouches)).toFixed(2));
         } else if (field === 'pouch_total_pouches' && value && updated.pouch_size_oz) {
-          updated.pouch_total_quantity_oz = Number(updated.pouch_size_oz) * Number(value);
+          updated.pouch_total_quantity_oz = parseFloat((Number(updated.pouch_size_oz) * Number(value)).toFixed(2));
         }
       }
 
@@ -78,19 +78,19 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
 
   const handleSave = () => {
     const cleanedData = {
-      tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
+      tin_size_oz: formData.tin_size_oz ? parseFloat(Number(formData.tin_size_oz).toFixed(2)) : null,
       tin_total_tins: formData.tin_total_tins ? Number(formData.tin_total_tins) : null,
-      tin_total_quantity_oz: formData.tin_total_quantity_oz ? Number(formData.tin_total_quantity_oz) : null,
+      tin_total_quantity_oz: formData.tin_total_quantity_oz ? parseFloat(Number(formData.tin_total_quantity_oz).toFixed(2)) : null,
       tin_tins_open: formData.tin_tins_open ? Number(formData.tin_tins_open) : null,
       tin_tins_cellared: formData.tin_tins_cellared ? Number(formData.tin_tins_cellared) : null,
       tin_cellared_date: formData.tin_cellared_date || null,
-      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? Number(formData.bulk_total_quantity_oz) : null,
-      bulk_open: formData.bulk_open ? Number(formData.bulk_open) : null,
-      bulk_cellared: formData.bulk_cellared ? Number(formData.bulk_cellared) : null,
+      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? parseFloat(Number(formData.bulk_total_quantity_oz).toFixed(2)) : null,
+      bulk_open: formData.bulk_open ? parseFloat(Number(formData.bulk_open).toFixed(2)) : null,
+      bulk_cellared: formData.bulk_cellared ? parseFloat(Number(formData.bulk_cellared).toFixed(2)) : null,
       bulk_cellared_date: formData.bulk_cellared_date || null,
-      pouch_size_oz: formData.pouch_size_oz ? Number(formData.pouch_size_oz) : null,
+      pouch_size_oz: formData.pouch_size_oz ? parseFloat(Number(formData.pouch_size_oz).toFixed(2)) : null,
       pouch_total_pouches: formData.pouch_total_pouches ? Number(formData.pouch_total_pouches) : null,
-      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? Number(formData.pouch_total_quantity_oz) : null,
+      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? parseFloat(Number(formData.pouch_total_quantity_oz).toFixed(2)) : null,
       pouch_pouches_open: formData.pouch_pouches_open ? Number(formData.pouch_pouches_open) : null,
       pouch_pouches_cellared: formData.pouch_pouches_cellared ? Number(formData.pouch_pouches_cellared) : null,
       pouch_cellared_date: formData.pouch_cellared_date || null,

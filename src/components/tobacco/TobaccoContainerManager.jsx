@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Plus, Trash2, Edit2, Archive, Package2 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function TobaccoContainerManager({ blendId, blendName, user }) {
+export default function TobaccoContainerManager({ blendId, blendName, user, showOnlyOpen = false }) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingContainer, setEditingContainer] = useState(null);
   const [containerName, setContainerName] = useState('');
@@ -92,9 +92,19 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
     setShowDialog(true);
   };
 
-  const totalQuantity = containers.reduce((sum, c) => sum + (c.quantity_grams || 0), 0);
-  const openContainers = containers.filter(c => c.is_open).length;
-  const cellaringContainers = containers.filter(c => !c.is_open).length;
+  // Filter containers based on showOnlyOpen prop
+  const displayedContainers = showOnlyOpen 
+    ? containers.filter(c => c.is_open)
+    : containers;
+
+  const totalQuantity = displayedContainers.reduce((sum, c) => sum + (c.quantity_grams || 0), 0);
+  const totalQuantityOz = (totalQuantity / 28.35).toFixed(2);
+  const openContainers = containers.filter(c => c.is_open);
+  const openQuantityGrams = openContainers.reduce((sum, c) => sum + (c.quantity_grams || 0), 0);
+  const openQuantityOz = (openQuantityGrams / 28.35).toFixed(2);
+  const cellaringContainers = containers.filter(c => !c.is_open);
+  const cellaringQuantityGrams = cellaringContainers.reduce((sum, c) => sum + (c.quantity_grams || 0), 0);
+  const cellaringQuantityOz = (cellaringQuantityGrams / 28.35).toFixed(2);
 
   return (
     <>
@@ -114,31 +124,42 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
       </div>
       
       <div className="space-y-4">
-        {containers.length === 0 ? (
+        {displayedContainers.length === 0 ? (
           <div className="text-center py-8 text-stone-500">
             <Package2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No containers tracked yet</p>
-            <p className="text-xs mt-1">Track individual tins, jars, and bulk quantities</p>
+            <p className="text-sm">
+              {showOnlyOpen ? 'No open containers yet' : 'No containers tracked yet'}
+            </p>
+            <p className="text-xs mt-1">
+              {showOnlyOpen 
+                ? 'Add containers and mark them as open to track usage'
+                : 'Track individual tins, jars, and bulk quantities'}
+            </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <p className="text-xs text-amber-700 mb-1">Total</p>
-                <p className="text-lg font-bold text-amber-900">{totalQuantity}g</p>
+            {!showOnlyOpen && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-xs text-amber-700 mb-1">Total</p>
+                  <p className="text-lg font-bold text-amber-900">{totalQuantityOz} oz</p>
+                  <p className="text-xs text-amber-600">{totalQuantity.toFixed(2)}g</p>
+                </div>
+                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <p className="text-xs text-emerald-700 mb-1">Open</p>
+                  <p className="text-lg font-bold text-emerald-900">{openQuantityOz} oz</p>
+                  <p className="text-xs text-emerald-600">{openQuantityGrams.toFixed(2)}g</p>
+                </div>
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-xs text-blue-700 mb-1">Cellared</p>
+                  <p className="text-lg font-bold text-blue-900">{cellaringQuantityOz} oz</p>
+                  <p className="text-xs text-blue-600">{cellaringQuantityGrams.toFixed(2)}g</p>
+                </div>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <p className="text-xs text-emerald-700 mb-1">Open</p>
-                <p className="text-lg font-bold text-emerald-900">{openContainers}</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-xs text-blue-700 mb-1">Cellared</p>
-                <p className="text-lg font-bold text-blue-900">{cellaringContainers}</p>
-              </div>
-            </div>
+            )}
 
             <div className="space-y-2">
-              {containers.map((container) => (
+              {displayedContainers.map((container) => (
                 <div 
                   key={container.id}
                   className="flex items-center justify-between p-3 bg-stone-50 rounded-lg border border-stone-200 hover:border-amber-400 transition-colors"
@@ -161,7 +182,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
                       </Badge>
                     </div>
                     <p className="text-sm text-stone-600 mt-1">
-                      {container.quantity_grams}g
+                      {container.quantity_grams.toFixed(2)}g ({(container.quantity_grams / 28.35).toFixed(2)} oz)
                       {container.created_date && (
                         <span className="text-xs text-stone-400 ml-2">
                           Added {new Date(container.created_date).toLocaleDateString()}
