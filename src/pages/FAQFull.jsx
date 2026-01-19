@@ -42,17 +42,17 @@ export default function FAQFull() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper FAQ</h1>
-          <p className="text-[#e8d5b7]/70 mb-4">Definitions, general information, and disclaimers</p>
+          <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">PipeKeeper FAQ</h1>
+          <p className="text-[#1a2c42]/80 mb-4">Definitions, general information, and disclaimers</p>
           <div className="flex gap-3 justify-center mt-4">
             <Link to={createPageUrl('HowTo')}>
-              <Button variant="outline" className="border-[#8b3a3a]/40 text-[#e8d5b7]">
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                 <BookOpen className="w-4 h-4 mr-2" />
                 How-To Guides
               </Button>
             </Link>
             <Link to={createPageUrl('Troubleshooting')}>
-              <Button variant="outline" className="border-[#8b3a3a]/40 text-[#e8d5b7]">
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                 <Wrench className="w-4 h-4 mr-2" />
                 Troubleshooting
               </Button>

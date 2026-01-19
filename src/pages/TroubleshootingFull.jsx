@@ -179,17 +179,17 @@ export default function TroubleshootingFull() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">Troubleshooting Guide</h1>
-          <p className="text-[#e8d5b7]/70 mb-4">Common questions and solutions for PipeKeeper features</p>
+          <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">Troubleshooting Guide</h1>
+          <p className="text-[#1a2c42]/80 mb-4">Common questions and solutions for PipeKeeper features</p>
           <div className="flex gap-3 justify-center mt-4">
             <a href="/HowTo">
-              <button className="px-4 py-2 border border-[#8b3a3a]/40 text-[#e8d5b7] rounded-lg hover:bg-[#8b3a3a]/20 transition-colors inline-flex items-center gap-2">
+              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
                 How-To Guides
               </button>
             </a>
             <a href="/FAQ">
-              <button className="px-4 py-2 border border-[#8b3a3a]/40 text-[#e8d5b7] rounded-lg hover:bg-[#8b3a3a]/20 transition-colors inline-flex items-center gap-2">
+              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 FAQ
               </button>
@@ -203,15 +203,15 @@ export default function TroubleshootingFull() {
             placeholder="Search troubleshooting topics..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-[#243548] border border-[#8b3a3a]/40 text-[#e8d5b7] placeholder-[#e8d5b7]/50 focus:outline-none focus:border-[#8b3a3a]"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-[#1a2c42] placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
         </div>
 
         {filteredTopics.length === 0 ? (
           <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
             <CardContent className="p-8 text-center">
-              <Info className="w-12 h-12 mx-auto mb-4 text-[#e8d5b7]/50" />
-              <p className="text-[#e8d5b7]/70">No results found. Try a different search term.</p>
+              <Info className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-[#1a2c42]/80">No results found. Try a different search term.</p>
             </CardContent>
           </Card>
         ) : (
@@ -221,7 +221,7 @@ export default function TroubleshootingFull() {
               return (
                 <Card key={topic.id} className="border-[#8b3a3a]/40 bg-[#243548]/95">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+                    <CardTitle className="flex items-center gap-2 text-[#1a2c42]">
                       <IconComponent className={`w-6 h-6 ${topic.color}`} />
                       {topic.title}
                     </CardTitle>
@@ -230,10 +230,10 @@ export default function TroubleshootingFull() {
                     <Accordion type="single" collapsible className="w-full">
                       {topic.questions.map((item, idx) => (
                         <AccordionItem key={idx} value={`item-${idx}`} className="border-[#8b3a3a]/20">
-                          <AccordionTrigger className="text-left text-[#e8d5b7] hover:text-[#d1a761]">
+                          <AccordionTrigger className="text-left text-[#1a2c42] hover:text-blue-600">
                             {item.q}
                           </AccordionTrigger>
-                          <AccordionContent className="text-[#e8d5b7]/80 leading-relaxed">
+                          <AccordionContent className="text-[#1a2c42]/80 leading-relaxed">
                             {item.a}
                           </AccordionContent>
                         </AccordionItem>
@@ -247,11 +247,11 @@ export default function TroubleshootingFull() {
         )}
 
         <div className="mt-8 p-6 bg-[#243548]/60 border border-[#8b3a3a]/40 rounded-2xl text-center">
-          <h2 className="text-xl font-semibold text-[#e8d5b7] mb-2">Still Need Help?</h2>
-          <p className="text-[#e8d5b7]/70 mb-4">
-            Check <a href="/HowTo" className="text-[#d1a761] hover:underline">How-To Guides</a> for step-by-step instructions,{" "}
-            <a href="/FAQ" className="text-[#d1a761] hover:underline">FAQ</a> for general info, or{" "}
-            <a href="/Support" className="text-[#d1a761] hover:underline">contact support</a>.
+          <h2 className="text-xl font-semibold text-[#1a2c42] mb-2">Still Need Help?</h2>
+          <p className="text-[#1a2c42]/80 mb-4">
+            Check <a href="/HowTo" className="text-blue-600 hover:underline">How-To Guides</a> for step-by-step instructions,{" "}
+            <a href="/FAQ" className="text-blue-600 hover:underline">FAQ</a> for general info, or{" "}
+            <a href="/Support" className="text-blue-600 hover:underline">contact support</a>.
           </p>
         </div>
       </div>

@@ -65,10 +65,10 @@ export default function Help() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8b3a3a]/20 mb-6">
-            <HelpCircle className="w-10 h-10 text-[#e8d5b7]" />
+            <HelpCircle className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-5xl font-bold text-[#e8d5b7] mb-4">Help Center</h1>
-          <p className="text-xl text-[#e8d5b7]/70 max-w-2xl mx-auto">
+          <h1 className="text-5xl font-bold text-[#1a2c42] mb-4">Help Center</h1>
+          <p className="text-xl text-[#1a2c42]/80 max-w-2xl mx-auto">
             Find answers, learn features, and troubleshoot issues
           </p>
         </div>
@@ -86,18 +86,18 @@ export default function Help() {
                     <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${category.bgColor} mx-auto mb-4`}>
                       <Icon className={`w-8 h-8 ${category.color}`} />
                     </div>
-                    <CardTitle className="text-2xl text-[#e8d5b7] mb-2">
+                    <CardTitle className="text-2xl text-[#1a2c42] mb-2">
                       {category.title}
                     </CardTitle>
-                    <CardDescription className="text-[#e8d5b7]/70">
+                    <CardDescription className="text-[#1a2c42]/80">
                       {category.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
                       {category.topics.map((topic, topicIdx) => (
-                        <li key={topicIdx} className="flex items-start gap-2 text-sm text-[#e8d5b7]/80">
-                          <span className="text-[#d1a761] mt-1">•</span>
+                        <li key={topicIdx} className="flex items-start gap-2 text-sm text-[#1a2c42]/80">
+                          <span className="text-blue-600 mt-1">•</span>
                           <span>{topic}</span>
                         </li>
                       ))}
@@ -112,19 +112,19 @@ export default function Help() {
         {/* Quick Links */}
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Quick Links</CardTitle>
+            <CardTitle className="text-[#1a2c42]">Quick Links</CardTitle>
           </CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-4">
-            <Link to={createPageUrl("Support")} className="text-[#d1a761] hover:text-[#e8d5b7] hover:underline">
+            <Link to={createPageUrl("Support")} className="text-blue-600 hover:text-blue-800 hover:underline">
               → Contact Support
             </Link>
-            <Link to={createPageUrl("TermsOfService")} className="text-[#d1a761] hover:text-[#e8d5b7] hover:underline">
+            <Link to={createPageUrl("TermsOfService")} className="text-blue-600 hover:text-blue-800 hover:underline">
               → Terms of Service
             </Link>
-            <Link to={createPageUrl("PrivacyPolicy")} className="text-[#d1a761] hover:text-[#e8d5b7] hover:underline">
+            <Link to={createPageUrl("PrivacyPolicy")} className="text-blue-600 hover:text-blue-800 hover:underline">
               → Privacy Policy
             </Link>
-            <Link to={createPageUrl("Subscription")} className="text-[#d1a761] hover:text-[#e8d5b7] hover:underline">
+            <Link to={createPageUrl("Subscription")} className="text-blue-600 hover:text-blue-800 hover:underline">
               → Subscription & Billing
             </Link>
           </CardContent>
@@ -132,11 +132,11 @@ export default function Help() {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <p className="text-[#e8d5b7]/70 mb-4">
+          <p className="text-[#1a2c42]/80 mb-4">
             Can't find what you're looking for?
           </p>
           <Link to={createPageUrl("Support")}>
-            <button className="px-6 py-3 bg-[#8b3a3a] text-[#e8d5b7] rounded-lg hover:bg-[#a94747] transition-colors font-semibold">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
               Contact Support
             </button>
           </Link>

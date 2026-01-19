@@ -433,8 +433,8 @@ export default function HowTo() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">How To Use PipeKeeper</h1>
-          <p className="text-[#e8d5b7]/70">Step-by-step guides for all features</p>
+          <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">How To Use PipeKeeper</h1>
+          <p className="text-[#1a2c42]/80">Step-by-step guides for all features</p>
         </div>
 
         <div className="mb-6">
@@ -443,15 +443,15 @@ export default function HowTo() {
             placeholder="Search how-to guides..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-[#243548] border border-[#8b3a3a]/40 text-[#e8d5b7] placeholder-[#e8d5b7]/50 focus:outline-none focus:border-[#8b3a3a]"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-[#1a2c42] placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
         </div>
 
         {filteredSections.length === 0 ? (
           <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
             <CardContent className="p-8 text-center">
-              <BookOpen className="w-12 h-12 mx-auto mb-4 text-[#e8d5b7]/50" />
-              <p className="text-[#e8d5b7]/70">No guides found. Try a different search term.</p>
+              <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-[#1a2c42]/80">No guides found. Try a different search term.</p>
             </CardContent>
           </Card>
         ) : (
@@ -461,7 +461,7 @@ export default function HowTo() {
               return (
                 <Card key={section.id} className="border-[#8b3a3a]/40 bg-[#243548]/95">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+                    <CardTitle className="flex items-center gap-2 text-[#1a2c42]">
                       <IconComponent className={`w-6 h-6 ${section.color}`} />
                       {section.title}
                     </CardTitle>
@@ -470,11 +470,11 @@ export default function HowTo() {
                     <Accordion type="single" collapsible className="w-full">
                       {section.guides.map((guide, idx) => (
                         <AccordionItem key={idx} value={`guide-${idx}`} className="border-[#8b3a3a]/20">
-                          <AccordionTrigger className="text-left text-[#e8d5b7] hover:text-[#d1a761]">
+                          <AccordionTrigger className="text-left text-[#1a2c42] hover:text-blue-600">
                             {guide.q}
                           </AccordionTrigger>
                           <AccordionContent>
-                            <ol className="list-decimal list-inside space-y-2 text-[#e8d5b7]/80 leading-relaxed">
+                            <ol className="list-decimal list-inside space-y-2 text-[#1a2c42]/80 leading-relaxed">
                               {guide.steps.map((step, stepIdx) => (
                                 <li key={stepIdx} className="pl-2">{step}</li>
                               ))}
@@ -491,10 +491,10 @@ export default function HowTo() {
         )}
 
         <div className="mt-8 p-6 bg-[#243548]/60 border border-[#8b3a3a]/40 rounded-2xl text-center">
-          <h2 className="text-xl font-semibold text-[#e8d5b7] mb-2">Need More Help?</h2>
-          <p className="text-[#e8d5b7]/70 mb-4">
-            Check the <a href="/FAQ" className="text-[#d1a761] hover:underline">FAQ</a> for general information or{" "}
-            <a href="/Troubleshooting" className="text-[#d1a761] hover:underline">Troubleshooting</a> if something isn't working.
+          <h2 className="text-xl font-semibold text-[#1a2c42] mb-2">Need More Help?</h2>
+          <p className="text-[#1a2c42]/80 mb-4">
+            Check the <a href="/FAQ" className="text-blue-600 hover:underline">FAQ</a> for general information or{" "}
+            <a href="/Troubleshooting" className="text-blue-600 hover:underline">Troubleshooting</a> if something isn't working.
           </p>
         </div>
       </div>
