@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info } from "lucide-react";
+import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen } from "lucide-react";
 
 export default function TroubleshootingFull() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -180,7 +180,21 @@ export default function TroubleshootingFull() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">Troubleshooting Guide</h1>
-          <p className="text-[#e8d5b7]/70">Common questions and solutions for PipeKeeper features</p>
+          <p className="text-[#e8d5b7]/70 mb-4">Common questions and solutions for PipeKeeper features</p>
+          <div className="flex gap-3 justify-center mt-4">
+            <a href="/HowTo">
+              <button className="px-4 py-2 border border-[#8b3a3a]/40 text-[#e8d5b7] rounded-lg hover:bg-[#8b3a3a]/20 transition-colors inline-flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                How-To Guides
+              </button>
+            </a>
+            <a href="/FAQ">
+              <button className="px-4 py-2 border border-[#8b3a3a]/40 text-[#e8d5b7] rounded-lg hover:bg-[#8b3a3a]/20 transition-colors inline-flex items-center gap-2">
+                <Info className="w-4 h-4" />
+                FAQ
+              </button>
+            </a>
+          </div>
         </div>
 
         <div className="mb-6">
@@ -235,7 +249,8 @@ export default function TroubleshootingFull() {
         <div className="mt-8 p-6 bg-[#243548]/60 border border-[#8b3a3a]/40 rounded-2xl text-center">
           <h2 className="text-xl font-semibold text-[#e8d5b7] mb-2">Still Need Help?</h2>
           <p className="text-[#e8d5b7]/70 mb-4">
-            Check out our comprehensive <a href="/FAQ" className="text-[#d1a761] hover:underline">FAQ</a> or{" "}
+            Check <a href="/HowTo" className="text-[#d1a761] hover:underline">How-To Guides</a> for step-by-step instructions,{" "}
+            <a href="/FAQ" className="text-[#d1a761] hover:underline">FAQ</a> for general info, or{" "}
             <a href="/Support" className="text-[#d1a761] hover:underline">contact support</a>.
           </p>
         </div>

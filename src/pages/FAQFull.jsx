@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ChevronDown, Wrench } from "lucide-react";
+import { ChevronDown, Wrench, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -43,12 +43,21 @@ export default function FAQFull() {
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#e8d5b7] mb-2">PipeKeeper FAQ</h1>
-          <Link to={createPageUrl('Troubleshooting')}>
-            <Button variant="outline" className="mt-4 border-[#8b3a3a]/40 text-blue-900">
-              <Wrench className="w-4 h-4 mr-2" />
-              View Troubleshooting Guide
-            </Button>
-          </Link>
+          <p className="text-[#e8d5b7]/70 mb-4">Definitions, general information, and disclaimers</p>
+          <div className="flex gap-3 justify-center mt-4">
+            <Link to={createPageUrl('HowTo')}>
+              <Button variant="outline" className="border-[#8b3a3a]/40 text-[#e8d5b7]">
+                <BookOpen className="w-4 h-4 mr-2" />
+                How-To Guides
+              </Button>
+            </Link>
+            <Link to={createPageUrl('Troubleshooting')}>
+              <Button variant="outline" className="border-[#8b3a3a]/40 text-[#e8d5b7]">
+                <Wrench className="w-4 h-4 mr-2" />
+                Troubleshooting
+              </Button>
+            </Link>
+          </div>
         </div>
 
       <Section title="General">
@@ -73,30 +82,8 @@ export default function FAQFull() {
       </Section>
 
       <Section title="Getting Started">
-        <Q id="how-install" q="How do I install PipeKeeper on my phone?">
-          PipeKeeper is available as a web app and through companion apps. To use on your phone:
-          <ul className="mt-2 space-y-1">
-            <li><b>Web:</b> Visit pipekeeper.app in your mobile browser and add to home screen</li>
-            <li><b>iOS:</b> Download the PipeKeeper companion app from the Apple App Store</li>
-            <li><b>Android:</b> Download the PipeKeeper companion app from Google Play</li>
-          </ul>
-          <div className="mt-2">
-            <b>First-time setup:</b> You'll need to confirm your age (21+) and accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement.
-          </div>
-          <div className="mt-2">
-            <b>Subscriptions:</b> iOS subscriptions are managed through Apple's in-app purchase system. Web and Android subscriptions are managed through the web version.
-          </div>
-        </Q>
-
         <Q id="tutorial" q="Is there a tutorial or walkthrough?">
-          Yes! When you first create your account, PipeKeeper offers a guided onboarding flow that walks you through:
-          <ul className="mt-2 space-y-1">
-            <li>Setting up your smoking profile preferences</li>
-            <li>Adding your first pipe to your collection</li>
-            <li>Adding your first tobacco blend</li>
-            <li>Logging your first smoking session</li>
-            <li>Accessing AI-powered features</li>
-          </ul>
+          Yes! When you first create your account, PipeKeeper offers a guided onboarding flow that walks you through setting up your profile, adding your first pipe and tobacco, and accessing AI features. You can restart the tutorial anytime from the Home page.
           <div className="mt-4">
             <a href={createPageUrl('Home?restart_tutorial=true')} className="inline-block">
               <button className="px-4 py-2 bg-[#8b3a3a] text-white rounded-lg hover:bg-[#a94747] transition-colors">
@@ -106,20 +93,12 @@ export default function FAQFull() {
           </div>
         </Q>
 
-        <Q id="how-add-pipe" q="How do I add a pipe to my collection?">
-          Go to the <b>Pipes</b> tab and tap the <b>+</b> button. Fill in as much or as little detail as you want—only the pipe name is required. You can use the AI identification tool to help fill in details from photos.
-        </Q>
-
-        <Q id="how-add-tobacco" q="How do I add tobacco to my collection?">
-          Go to the <b>Tobacco</b> tab and tap the <b>+</b> button. Enter the blend name and any other details you want to track (manufacturer, blend type, quantities, etc.). The AI can help identify blends from photos or labels.
-        </Q>
-
         <Q id="what-cellaring" q="What is cellaring?">
           Cellaring refers to storing sealed tins or bulk tobacco for aging. PipeKeeper includes a detailed cellaring log system that tracks when tobacco is added to or removed from your cellar, quantities in ounces, container types, and notes. This feature is available to Premium subscribers.
         </Q>
 
         <Q id="smoking-log" q="What is the smoking log?">
-          The smoking log tracks which pipes you've smoked with which tobaccos. It helps you remember what works well together and contributes to AI pairing recommendations.
+          The smoking log tracks which pipes you've smoked with which tobaccos. It helps you remember what works well together and contributes to AI pairing recommendations. Premium subscribers benefit from automatic inventory reduction based on logged sessions.
         </Q>
       </Section>
 
