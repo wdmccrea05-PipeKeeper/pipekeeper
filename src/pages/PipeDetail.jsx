@@ -289,12 +289,14 @@ export default function PipeDetailPage() {
         </div>
 
         {/* Interchangeable Bowls */}
-        <div className="mb-6">
-          <InterchangeableBowls 
-            pipe={pipe} 
-            onUpdate={(data) => updateMutation.mutate(data)}
-          />
-        </div>
+        {pipe.interchangeable_bowls && pipe.interchangeable_bowls.length > 0 && (
+          <div className="mb-6">
+            <InterchangeableBowls 
+              pipe={pipe} 
+              onUpdate={(data) => updateMutation.mutate(data)}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Photo Gallery */}
