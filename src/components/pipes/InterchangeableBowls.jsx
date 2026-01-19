@@ -15,8 +15,6 @@ const SHAPES = [
   "Lovat","Poker","Prince","Rhodesian","Zulu","Calabash","Other"
 ];
 
-const INTERCHANGEABLE_BRANDS = ["Falcon", "Gabotherm", "Yello-Bole", "Viking"];
-
 function toNumberOrNull(v) {
   if (v === "" || v == null) return null;
   const n = Number(v);
@@ -42,9 +40,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   });
 
   const interchangeableBowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
-  const isInterchangeableBrand =
-    INTERCHANGEABLE_BRANDS.some((brand) => (pipe?.maker || "").toLowerCase().includes(brand.toLowerCase())) ||
-    INTERCHANGEABLE_BRANDS.some((brand) => (pipe?.brand || "").toLowerCase().includes(brand.toLowerCase()));
 
   const handleOpenDialog = (bowl = null, index = null) => {
     if (bowl) {
@@ -111,8 +106,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
     const rekeyed = updatedBowls.map((b, i) => ({ ...b, bowl_variant_id: b.bowl_variant_id || `bowl_${i}` }));
     onUpdate({ interchangeable_bowls: rekeyed });
   };
-
-  if (!isInterchangeableBrand) return null;
 
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
