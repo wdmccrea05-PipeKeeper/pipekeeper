@@ -224,12 +224,12 @@ export default function Layout({ children, currentPageName }) {
         email: authUser?.email || entityUser?.email,
       };
     },
-    staleTime: 30_000,
+    staleTime: 10_000,
     retry: 2,
-    refetchOnMount: false,
-    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    });
+  });
 
   React.useEffect(() => {
     const handleStorageChange = (e) => {
