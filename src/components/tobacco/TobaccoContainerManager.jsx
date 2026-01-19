@@ -97,24 +97,23 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
   const cellaringContainers = containers.filter(c => !c.is_open).length;
 
   return (
-    <Card className="bg-white/95 border-[#e8d5b7]/30">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-stone-800 flex items-center gap-2">
-            <Package className="w-5 h-5 text-amber-600" />
-            Container Tracking
-          </CardTitle>
-          <Button 
-            onClick={() => setShowDialog(true)}
-            size="sm"
-            className="bg-amber-700 hover:bg-amber-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Container
-          </Button>
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Package className="w-5 h-5 text-amber-600" />
+          <h3 className="font-semibold text-stone-800">Container Tracking</h3>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        <Button 
+          onClick={() => setShowDialog(true)}
+          size="sm"
+          className="bg-amber-700 hover:bg-amber-800"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Container
+        </Button>
+      </div>
+      
+      <div className="space-y-4">
         {containers.length === 0 ? (
           <div className="text-center py-8 text-stone-500">
             <Package2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -196,7 +195,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
             </div>
           </>
         )}
-      </CardContent>
+      </div>
 
       <Dialog open={showDialog} onOpenChange={(open) => {
         if (!open) resetForm();
@@ -269,6 +268,6 @@ export default function TobaccoContainerManager({ blendId, blendName, user }) {
           </form>
         </DialogContent>
       </Dialog>
-    </Card>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, Edit, Trash2, Heart, Star, Package
 } from "lucide-react";
@@ -312,55 +313,95 @@ export default function TobaccoDetailPage() {
               <TopPipeMatches blend={blend} pipes={pipes} />
             )}
 
-            {/* Container Manager */}
-            <TobaccoContainerManager 
-              blendId={blend.id} 
-              blendName={blend.name}
-              user={user}
-            />
+            {/* Inventory & Cellaring Management */}
+            <Card className="bg-white/95 border-[#e8d5b7]/30">
+              <Tabs defaultValue="containers" className="w-full">
+                <div className="border-b border-stone-200">
+                  <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none">
+                    <TabsTrigger 
+                      value="containers" 
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-4 py-3"
+                    >
+                      Container Tracking
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="inventory" 
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-4 py-3"
+                    >
+                      Inventory Status
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="log" 
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-4 py-3"
+                    >
+                      Cellaring Log
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-            {/* Inventory Status */}
-            {(blend.tin_total_tins > 0 || blend.bulk_total_quantity_oz > 0 || blend.pouch_total_pouches > 0) && (
-              <Card className="bg-amber-50 border-amber-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Package className="w-5 h-5 text-amber-600" />
-                    <p className="text-xs font-semibold text-amber-600 uppercase">Inventory Status</p>
+                <TabsContent value="containers" className="m-0">
+                  <div className="p-4">
+                    <TobaccoContainerManager 
+                      blendId={blend.id} 
+                      blendName={blend.name}
+                      user={user}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    {blend.tin_total_tins > 0 && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-amber-800">Tins:</span>
-                        <span className="font-semibold text-amber-900">
-                          {blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared
-                          {blend.tin_total_quantity_oz > 0 && ` (${Number(blend.tin_total_quantity_oz).toFixed(2)}oz total)`}
-                        </span>
-                      </div>
-                    )}
-                    {blend.bulk_total_quantity_oz > 0 && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-amber-800">Bulk:</span>
-                        <span className="font-semibold text-amber-900">
-                          {Number(blend.bulk_open || 0).toFixed(2)}oz open, {Number(blend.bulk_cellared || 0).toFixed(2)}oz cellared
-                        </span>
-                      </div>
-                    )}
-                    {blend.pouch_total_pouches > 0 && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-amber-800">Pouches:</span>
-                        <span className="font-semibold text-amber-900">
-                          {blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared
-                          {blend.pouch_total_quantity_oz > 0 && ` (${Number(blend.pouch_total_quantity_oz).toFixed(2)}oz total)`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                </TabsContent>
 
-            {/* Cellaring Log */}
-            <CellarLog blend={blend} />
+                <TabsContent value="inventory" className="m-0">
+                  <CardContent className="p-4">
+                    {(blend.tin_total_tins > 0 || blend.bulk_total_quantity_oz > 0 || blend.pouch_total_pouches > 0) ? (
+                      <>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Package className="w-5 h-5 text-amber-600" />
+                          <p className="text-xs font-semibold text-amber-600 uppercase">Inventory Status</p>
+                        </div>
+                        <div className="space-y-2">
+                          {blend.tin_total_tins > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-amber-800">Tins:</span>
+                              <span className="font-semibold text-amber-900">
+                                {blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared
+                                {blend.tin_total_quantity_oz > 0 && ` (${Number(blend.tin_total_quantity_oz).toFixed(2)}oz total)`}
+                              </span>
+                            </div>
+                          )}
+                          {blend.bulk_total_quantity_oz > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-amber-800">Bulk:</span>
+                              <span className="font-semibold text-amber-900">
+                                {Number(blend.bulk_open || 0).toFixed(2)}oz open, {Number(blend.bulk_cellared || 0).toFixed(2)}oz cellared
+                              </span>
+                            </div>
+                          )}
+                          {blend.pouch_total_pouches > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-amber-800">Pouches:</span>
+                              <span className="font-semibold text-amber-900">
+                                {blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared
+                                {blend.pouch_total_quantity_oz > 0 && ` (${Number(blend.pouch_total_quantity_oz).toFixed(2)}oz total)`}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-stone-500">
+                        <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">No inventory tracked yet</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </TabsContent>
+
+                <TabsContent value="log" className="m-0">
+                  <div className="p-4">
+                    <CellarLog blend={blend} />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </Card>
 
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
