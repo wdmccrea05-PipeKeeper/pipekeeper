@@ -224,10 +224,10 @@ export default function Layout({ children, currentPageName }) {
         email: authUser?.email || entityUser?.email,
       };
     },
-    staleTime: 10_000,
+    staleTime: 30_000,
     retry: 2,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 

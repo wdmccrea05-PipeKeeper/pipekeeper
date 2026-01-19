@@ -167,7 +167,13 @@ export default function PipesPage() {
             <Input
               placeholder="Search by name, maker, or shape..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Debounce search input
+                if (window.pipeSearchTimeout) clearTimeout(window.pipeSearchTimeout);
+                window.pipeSearchTimeout = setTimeout(() => setSearchQuery(value), 300);
+              }}
+              defaultValue={searchQuery}
               className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
               aria-label="Search pipes"
             />
