@@ -34,8 +34,9 @@ export function hasPremiumAccess(user) {
     // ignore
   }
 
-  // Trial fallback for new accounts (7 days)
-  const isTrial = hasTrialAccess(user);
+  // Check if subscription is explicitly paid or has active period
+  if (isPaid || hasFuturePeriod) return true;
 
-  return isPaid || hasFuturePeriod || isTrial;
+  // Trial fallback for new accounts (7 days)
+  return hasTrialAccess(user);
 }
