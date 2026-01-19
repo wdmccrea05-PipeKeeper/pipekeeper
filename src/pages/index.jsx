@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@/components/i18n";
 
 import Layout from "../Layout";
 import Home from "./Home";
