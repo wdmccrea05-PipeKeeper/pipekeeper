@@ -21,6 +21,7 @@ export default function CellarLog({ blend }) {
     date: new Date().toISOString().split('T')[0],
     amount_oz: '',
     container_type: 'tin',
+    removal_destination: 'open_collection',
     notes: ''
   });
 
@@ -55,6 +56,7 @@ export default function CellarLog({ blend }) {
         date: new Date().toISOString().split('T')[0],
         amount_oz: '',
         container_type: 'tin',
+        removal_destination: 'open_collection',
         notes: ''
       });
     },
@@ -78,6 +80,7 @@ export default function CellarLog({ blend }) {
       date: formData.date,
       amount_oz: parseFloat(formData.amount_oz),
       container_type: formData.container_type,
+      removal_destination: formData.transaction_type === 'removed' ? formData.removal_destination : undefined,
       notes: formData.notes,
     });
   };
@@ -108,7 +111,7 @@ export default function CellarLog({ blend }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-amber-600" />
-          <h3 className="font-semibold text-stone-800">Cellaring Log</h3>
+          <h3 className="font-semibold text-stone-800">Cellared Tobacco</h3>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -178,6 +181,25 @@ export default function CellarLog({ blend }) {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {formData.transaction_type === 'removed' && (
+                  <div>
+                    <Label>Destination</Label>
+                    <Select
+                      value={formData.removal_destination}
+                      onValueChange={(value) => setFormData({ ...formData, removal_destination: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="open_collection">Moved to Open Collection</SelectItem>
+                        <SelectItem value="sold">Sold</SelectItem>
+                        <SelectItem value="discarded">Discarded</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div>
                   <Label>Notes (optional)</Label>
@@ -269,6 +291,13 @@ export default function CellarLog({ blend }) {
                         <Badge variant="outline" className="text-xs">
                           {log.container_type}
                         </Badge>
+                        {log.removal_destination && (
+                          <Badge className="text-xs bg-blue-100 text-blue-800">
+                            {log.removal_destination === 'open_collection' && 'To Open'}
+                            {log.removal_destination === 'sold' && 'Sold'}
+                            {log.removal_destination === 'discarded' && 'Discarded'}
+                          </Badge>
+                        )}
                         <span className="flex items-center gap-1 text-xs text-stone-500">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(log.date), 'MMM d, yyyy')}

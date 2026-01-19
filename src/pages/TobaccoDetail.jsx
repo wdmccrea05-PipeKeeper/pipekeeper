@@ -322,22 +322,21 @@ export default function TobaccoDetailPage() {
                       value="containers" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
                     >
-                      <span className="hidden sm:inline">Container Tracking</span>
-                      <span className="sm:hidden">Containers</span>
+                      <span className="hidden sm:inline">Open Tobacco</span>
+                      <span className="sm:hidden">Open</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="inventory" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
                     >
-                      <span className="hidden sm:inline">Inventory Status</span>
-                      <span className="sm:hidden">Inventory</span>
+                      Inventory
                     </TabsTrigger>
                     <TabsTrigger 
                       value="log" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
                     >
-                      <span className="hidden sm:inline">Cellaring Log</span>
-                      <span className="sm:hidden">Log</span>
+                      <span className="hidden sm:inline">Cellared Tobacco</span>
+                      <span className="sm:hidden">Cellared</span>
                     </TabsTrigger>
                   </TabsList>
                 </div>
