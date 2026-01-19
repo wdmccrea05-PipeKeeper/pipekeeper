@@ -299,7 +299,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+  if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -309,6 +309,22 @@ export default function Layout({ children, currentPageName }) {
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
           <p className="text-[#e8d5b7]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain"
+          />
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">Please log in to continue</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
         </div>
       </div>
     );
