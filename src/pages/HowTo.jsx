@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   BookOpen, Plus, Edit, Camera, Package, Archive, Sparkles, 
-  Users, FileDown, MessageSquare, Target, Calendar
+  Users, FileDown, MessageSquare, Target, Calendar, Info, AlertCircle
 } from "lucide-react";
 
 export default function HowTo() {
