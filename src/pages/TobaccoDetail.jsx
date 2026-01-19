@@ -348,6 +348,7 @@ export default function TobaccoDetailPage() {
                       blendId={blend.id} 
                       blendName={blend.name}
                       user={user}
+                      showOnlyOpen={true}
                     />
                   </div>
                 </TabsContent>
