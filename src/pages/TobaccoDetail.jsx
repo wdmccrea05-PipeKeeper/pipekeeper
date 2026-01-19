@@ -27,6 +27,7 @@ import {
 import TobaccoForm from "@/components/tobacco/TobaccoForm";
 import TopPipeMatches from "@/components/tobacco/TopPipeMatches";
 import TobaccoContainerManager from "@/components/tobacco/TobaccoContainerManager";
+import TobaccoInventoryManager from "@/components/tobacco/TobaccoInventoryManager";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
@@ -326,17 +327,17 @@ export default function TobaccoDetailPage() {
                       <span className="sm:hidden">Open</span>
                     </TabsTrigger>
                     <TabsTrigger 
-                      value="inventory" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
-                    >
-                      Inventory
-                    </TabsTrigger>
-                    <TabsTrigger 
                       value="log" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
                     >
                       <span className="hidden sm:inline">Cellared Tobacco</span>
                       <span className="sm:hidden">Cellared</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="inventory" 
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+                    >
+                      Inventory
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -351,55 +352,19 @@ export default function TobaccoDetailPage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="inventory" className="m-0">
-                  <CardContent className="p-4">
-                    {(blend.tin_total_tins > 0 || blend.bulk_total_quantity_oz > 0 || blend.pouch_total_pouches > 0) ? (
-                      <>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Package className="w-5 h-5 text-amber-600" />
-                          <p className="text-xs font-semibold text-amber-600 uppercase">Inventory Status</p>
-                        </div>
-                        <div className="space-y-2">
-                          {blend.tin_total_tins > 0 && (
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-amber-800">Tins:</span>
-                              <span className="font-semibold text-amber-900">
-                                {blend.tin_tins_open || 0} open, {blend.tin_tins_cellared || 0} cellared
-                                {blend.tin_total_quantity_oz > 0 && ` (${Number(blend.tin_total_quantity_oz).toFixed(2)}oz total)`}
-                              </span>
-                            </div>
-                          )}
-                          {blend.bulk_total_quantity_oz > 0 && (
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-amber-800">Bulk:</span>
-                              <span className="font-semibold text-amber-900">
-                                {Number(blend.bulk_open || 0).toFixed(2)}oz open, {Number(blend.bulk_cellared || 0).toFixed(2)}oz cellared
-                              </span>
-                            </div>
-                          )}
-                          {blend.pouch_total_pouches > 0 && (
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-amber-800">Pouches:</span>
-                              <span className="font-semibold text-amber-900">
-                                {blend.pouch_pouches_open || 0} open, {blend.pouch_pouches_cellared || 0} cellared
-                                {blend.pouch_total_quantity_oz > 0 && ` (${Number(blend.pouch_total_quantity_oz).toFixed(2)}oz total)`}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-8 text-stone-500">
-                        <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">No inventory tracked yet</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </TabsContent>
-
                 <TabsContent value="log" className="m-0">
                   <div className="p-4">
                     <CellarLog blend={blend} />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="inventory" className="m-0">
+                  <div className="p-4">
+                    <TobaccoInventoryManager 
+                      blend={blend}
+                      onUpdate={(data) => updateMutation.mutate(data)}
+                      isUpdating={updateMutation.isPending}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>
