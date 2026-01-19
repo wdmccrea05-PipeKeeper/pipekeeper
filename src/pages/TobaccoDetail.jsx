@@ -312,6 +312,13 @@ export default function TobaccoDetailPage() {
               <TopPipeMatches blend={blend} pipes={pipes} />
             )}
 
+            {/* Container Manager */}
+            <TobaccoContainerManager 
+              blendId={blend.id} 
+              blendName={blend.name}
+              user={user}
+            />
+
             {/* Inventory Status */}
             {(blend.tin_total_tins > 0 || blend.bulk_total_quantity_oz > 0 || blend.pouch_total_pouches > 0) && (
               <Card className="bg-amber-50 border-amber-200">
