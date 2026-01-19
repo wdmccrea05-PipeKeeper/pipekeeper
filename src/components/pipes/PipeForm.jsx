@@ -16,9 +16,9 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 
-const SHAPES = ["Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent", "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker", "Prince", "Rhodesian", "Zulu", "Calabash", "Cavalier", "Chimney", "Devil Anse", "Egg", "Hawkbill", "Horn", "Hungarian", "Nautilus", "Oom Paul", "Panel", "Pot", "Sitter", "Tomato", "Volcano", "Woodstock", "Other"];
+const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
-const STEM_MATERIALS = ["Vulcanite", "Acrylic", "Lucite", "Cumberland", "Amber", "Horn", "Bone", "Other"];
+const STEM_MATERIALS = ["Acrylic", "Amber", "Bone", "Cumberland", "Ebonite", "Horn", "Lucite", "Other", "Vulcanite"];
 const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Partially Rusticated", "Carved", "Natural", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
 const CONDITIONS = ["Mint", "Excellent", "Very Good", "Good", "Fair", "Poor", "Estate - Unrestored"];
@@ -226,6 +226,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       bowl_depth_mm: formData.bowl_depth_mm ? Number(formData.bowl_depth_mm) : null,
       purchase_price: formData.purchase_price ? Number(formData.purchase_price) : null,
       estimated_value: formData.estimated_value ? Number(formData.estimated_value) : null,
+      interchangeable_bowls: hasInterchangeableBowls ? formData.interchangeable_bowls : [],
     };
     onSave(cleanedData);
   };
@@ -322,6 +323,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 className="hidden"
                 onChange={(e) => handlePhotoUpload(e, false)}
@@ -373,6 +375,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 className="hidden"
                 onChange={(e) => handlePhotoUpload(e, true)}

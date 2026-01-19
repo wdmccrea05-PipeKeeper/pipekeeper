@@ -53,6 +53,8 @@ const SORT_OPTIONS = [
   { value: "-created_date", label: "Recently Added" },
   { value: "name", label: "Name (A-Z)" },
   { value: "-name", label: "Name (Z-A)" },
+  { value: "-rating", label: "Highest Rated" },
+  { value: "rating", label: "Lowest Rated" },
   { value: "cellared_date", label: "Oldest in Cellar" },
   { value: "-cellared_date", label: "Newest in Cellar" }
 ];
