@@ -104,20 +104,19 @@ export default function CellarLog({ blend }) {
   }
 
   return (
-    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-amber-800">
-            <Package className="w-5 h-5" />
-            Cellaring Log
-          </CardTitle>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
-                <Plus className="w-4 h-4 mr-1" />
-                Add Entry
-              </Button>
-            </DialogTrigger>
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Package className="w-5 h-5 text-amber-600" />
+          <h3 className="font-semibold text-stone-800">Cellaring Log</h3>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+              <Plus className="w-4 h-4 mr-1" />
+              Add Entry
+            </Button>
+          </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add Cellar Transaction</DialogTitle>
@@ -201,10 +200,9 @@ export default function CellarLog({ blend }) {
               </form>
             </DialogContent>
           </Dialog>
-        </div>
-      </CardHeader>
+      </div>
 
-      <CardContent>
+      <div>
         {/* Summary Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
@@ -298,7 +296,7 @@ export default function CellarLog({ blend }) {
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </>
   );
 }
