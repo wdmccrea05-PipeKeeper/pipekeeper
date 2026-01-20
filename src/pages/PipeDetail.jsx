@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
+import { PK_THEME } from "@/components/theme/pkTheme";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -207,7 +208,7 @@ export default function PipeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
+      <div className={`min-h-screen ${PK_THEME.pageBg} p-8`}>
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -226,7 +227,7 @@ export default function PipeDetailPage() {
 
   if (!pipe || error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
@@ -246,7 +247,7 @@ export default function PipeDetailPage() {
   const allPhotos = [...(pipe.photos || []), ...(pipe.stamping_photos || [])];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Pipes')}>
@@ -257,10 +258,10 @@ export default function PipeDetailPage() {
         </a>
 
         {/* AI Specialization Suggestion - show prominently for pipes without focus */}
-        {blends.length > 0 && (!pipe.focus || pipe.focus.length === 0) && (
-          <Card className="mb-6 border-purple-300 bg-gradient-to-br from-purple-50 to-white">
+         {blends.length > 0 && (!pipe.focus || pipe.focus.length === 0) && (
+           <Card className={`mb-6 ${PK_THEME.card}`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-900">
+              <CardTitle className={`flex items-center gap-2 ${PK_THEME.textTitle}`}>
                 <Sparkles className="w-5 h-5" />
                 AI Specialization Suggestion
               </CardTitle>
@@ -279,7 +280,7 @@ export default function PipeDetailPage() {
 
         {/* Pipe Management Card with Tabs */}
         {blends.length > 0 && (
-          <Card className="mb-6">
+          <Card className={`mb-6 ${PK_THEME.card}`}>
             <CardContent className="p-6">
               <Tabs defaultValue="specialization">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
@@ -453,7 +454,7 @@ export default function PipeDetailPage() {
             </div>
 
             {/* Details Grid */}
-            <Card className="border-stone-200">
+            <Card className={PK_THEME.card}>
               <CardContent className="p-6">
                 <div className="flex justify-end mb-3">
                   <Button
@@ -573,7 +574,7 @@ export default function PipeDetailPage() {
 
             {/* Stamping */}
             {pipe.stamping && (
-              <Card className="border-stone-200">
+              <Card className={PK_THEME.card}>
                 <CardContent className="p-6">
                   <p className="text-xs text-stone-500 mb-1">Stamping</p>
                   <p className="font-medium text-stone-800">{pipe.stamping}</p>
@@ -583,7 +584,7 @@ export default function PipeDetailPage() {
 
             {/* Notes */}
             {(pipe.smoking_characteristics || pipe.notes) && (
-              <Card className="border-stone-200">
+              <Card className={PK_THEME.card}>
                 <CardContent className="p-6 space-y-4">
                   {pipe.smoking_characteristics && (
                     <div>
@@ -605,7 +606,7 @@ export default function PipeDetailPage() {
 
         {/* AI Features Tabs */}
         <Tabs defaultValue="match" className="space-y-6">
-          <TabsList className="bg-white border border-stone-200 p-1 overflow-x-auto flex-nowrap w-full">
+          <TabsList className={`${PK_THEME.card} p-1 overflow-x-auto flex-nowrap w-full`}>
             <TabsTrigger value="match" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Tobacco Matching</span>
@@ -624,7 +625,7 @@ export default function PipeDetailPage() {
           </TabsList>
 
           <TabsContent value="match">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card className={PK_THEME.card}>
               <CardContent className="p-6">
                 <MatchingEngine pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
               </CardContent>
@@ -632,7 +633,7 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="value">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card className={PK_THEME.card}>
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
@@ -647,7 +648,7 @@ export default function PipeDetailPage() {
           </TabsContent>
 
           <TabsContent value="identify">
-            <Card className="bg-[#182838] border-[#465C6E]">
+            <Card className={PK_THEME.card}>
               <CardContent className="p-6">
                 {isPaidUser ? (
                   <>
@@ -669,7 +670,7 @@ export default function PipeDetailPage() {
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (
-          <Card className="border-stone-200 mt-8">
+          <Card className={`mt-8 ${PK_THEME.card}`}>
             <CardContent className="p-6">
               <CommentSection
                 entityType="pipe"
