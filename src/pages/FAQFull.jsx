@@ -14,7 +14,7 @@ export default function FAQFull() {
 
   const Section = ({ title, children }) => (
     <div style={{ marginBottom: 32 }}>
-      <h2 className="text-2xl font-bold text-[#1a2c42] mb-4">{title}</h2>
+      <h2 className="text-2xl font-bold text-[#E0D8C8] mb-4">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -23,15 +23,15 @@ export default function FAQFull() {
     <Card className="bg-white border-gray-200 overflow-hidden">
       <button
         onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-[#1a2c42]/5 transition-colors"
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
       >
-        <span className="font-semibold text-[#1a2c42] pr-4">{q}</span>
+        <span className="font-semibold text-gray-900 pr-4">{q}</span>
         <ChevronDown 
-          className={`w-5 h-5 text-[#1a2c42]/70 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
         />
       </button>
       {openItems[id] && (
-        <CardContent className="px-4 pb-4 pt-0 text-[#1a2c42]/80 leading-relaxed">
+        <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed">
           {children}
         </CardContent>
       )}
@@ -39,11 +39,11 @@ export default function FAQFull() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">PipeKeeper FAQ</h1>
-          <p className="text-[#1a2c42]/80 mb-4">Definitions, general information, and disclaimers</p>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">PipeKeeper FAQ</h1>
+          <p className="text-[#E0D8C8]/80 mb-4">Definitions, general information, and disclaimers</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <Link to={createPageUrl('HowTo')}>
               <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">

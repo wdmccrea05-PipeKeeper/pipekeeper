@@ -60,15 +60,15 @@ export default function Help() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div className="max-w-5xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8b3a3a]/20 mb-6">
-            <HelpCircle className="w-10 h-10 text-blue-600" />
+            <HelpCircle className="w-10 h-10 text-blue-400" />
           </div>
-          <h1 className="text-5xl font-bold text-[#1a2c42] mb-4">Help Center</h1>
-          <p className="text-xl text-[#1a2c42]/80 max-w-2xl mx-auto">
+          <h1 className="text-5xl font-bold text-[#E0D8C8] mb-4">Help Center</h1>
+          <p className="text-xl text-[#E0D8C8]/80 max-w-2xl mx-auto">
             Find answers, learn features, and troubleshoot issues
           </p>
         </div>
@@ -86,18 +86,18 @@ export default function Help() {
                     <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${category.bgColor} mx-auto mb-4`}>
                       <Icon className={`w-8 h-8 ${category.color}`} />
                     </div>
-                    <CardTitle className="text-2xl text-[#1a2c42] mb-2">
-                      {category.title}
+                    <CardTitle className="text-2xl text-gray-900 mb-2">
+                     {category.title}
                     </CardTitle>
-                    <CardDescription className="text-[#1a2c42]/80">
-                      {category.description}
+                    <CardDescription className="text-gray-700">
+                     {category.description}
                     </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                    </CardHeader>
+                    <CardContent>
                     <ul className="space-y-2">
-                      {category.topics.map((topic, topicIdx) => (
-                        <li key={topicIdx} className="flex items-start gap-2 text-sm text-[#1a2c42]/80">
-                          <span className="text-blue-600 mt-1">•</span>
+                     {category.topics.map((topic, topicIdx) => (
+                       <li key={topicIdx} className="flex items-start gap-2 text-sm text-gray-700">
+                         <span className="text-blue-500 mt-1">•</span>
                           <span>{topic}</span>
                         </li>
                       ))}
@@ -110,21 +110,21 @@ export default function Help() {
         </div>
 
         {/* Quick Links */}
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <Card className="border-gray-200 bg-white">
           <CardHeader>
-            <CardTitle className="text-[#1a2c42]">Quick Links</CardTitle>
+            <CardTitle className="text-gray-900">Quick Links</CardTitle>
           </CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-4">
-            <Link to={createPageUrl("Support")} className="text-blue-600 hover:text-blue-800 hover:underline">
+            <Link to={createPageUrl("Support")} className="text-blue-500 hover:text-blue-700 hover:underline">
               → Contact Support
             </Link>
-            <Link to={createPageUrl("TermsOfService")} className="text-blue-600 hover:text-blue-800 hover:underline">
+            <Link to={createPageUrl("TermsOfService")} className="text-blue-500 hover:text-blue-700 hover:underline">
               → Terms of Service
             </Link>
-            <Link to={createPageUrl("PrivacyPolicy")} className="text-blue-600 hover:text-blue-800 hover:underline">
+            <Link to={createPageUrl("PrivacyPolicy")} className="text-blue-500 hover:text-blue-700 hover:underline">
               → Privacy Policy
             </Link>
-            <Link to={createPageUrl("Subscription")} className="text-blue-600 hover:text-blue-800 hover:underline">
+            <Link to={createPageUrl("Subscription")} className="text-blue-500 hover:text-blue-700 hover:underline">
               → Subscription & Billing
             </Link>
           </CardContent>
@@ -132,7 +132,7 @@ export default function Help() {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <p className="text-[#1a2c42]/80 mb-4">
+          <p className="text-[#E0D8C8]/80 mb-4">
             Can't find what you're looking for?
           </p>
           <Link to={createPageUrl("Support")}>

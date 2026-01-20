@@ -430,11 +430,11 @@ export default function HowTo() {
   })).filter(section => section.guides.length > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#1a2c42] mb-2">How To Use PipeKeeper</h1>
-          <p className="text-[#1a2c42]/80 mb-4">Step-by-step guides for all features</p>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">How To Use PipeKeeper</h1>
+          <p className="text-[#E0D8C8]/80 mb-4">Step-by-step guides for all features</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <a href="/FAQ">
               <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
@@ -505,8 +505,8 @@ export default function HowTo() {
         )}
 
         <div className="mt-8 p-6 bg-white border border-gray-200 rounded-2xl text-center">
-          <h2 className="text-xl font-semibold text-[#1a2c42] mb-2">Need More Help?</h2>
-          <p className="text-[#1a2c42]/80 mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Need More Help?</h2>
+          <p className="text-gray-700 mb-4">
             Check the <a href="/FAQ" className="text-blue-600 hover:underline">FAQ</a> for general information or{" "}
             <a href="/Troubleshooting" className="text-blue-600 hover:underline">Troubleshooting</a> if something isn't working.
           </p>
