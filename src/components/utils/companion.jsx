@@ -49,3 +49,10 @@ export function shouldShowPurchaseUI() {
   // Web / Android web app can show Stripe purchase UI (if you still use Stripe there)
   return true;
 }
+
+export function getPremiumGateMessage() {
+  if (isIOSCompanion()) {
+    return "Upgrade to Premium via the App Store to unlock this feature.";
+  }
+  return "Upgrade to Premium to unlock this feature.";
+}
