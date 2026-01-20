@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
-const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/ecd65f889_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png';
+const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
 export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
   if (isAppleBuild) return null;

@@ -76,8 +76,13 @@ export default function TopPipeMatches({ blend, pipes }) {
 
   // Auto-trigger matching when blend is first loaded
   useEffect(() => {
-    if (blend && pipes.length > 0 && !matches && !loading && savedPairings) {
-      updateMatchesFromData();
+    if (blend && pipes.length > 0 && !matches && !loading) {
+      if (savedPairings) {
+        updateMatchesFromData();
+      } else {
+        // Use fallback scoring immediately even if no saved pairings yet
+        updateMatchesFromData();
+      }
     }
   }, [blend?.id, pipes.length, savedPairings]);
 
