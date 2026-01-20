@@ -234,7 +234,7 @@ export default function CommunityPage() {
 
         <Tabs defaultValue="discover" className="space-y-6">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="bg-white/95 inline-flex min-w-full sm:w-auto">
+            <TabsList className="bg-[#223447]/60 border border-[#E0D8C8]/15 inline-flex min-w-full sm:w-auto">
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">Discover</span>
@@ -273,13 +273,13 @@ export default function CommunityPage() {
 
           <TabsContent value="discover" className="space-y-6">
             {!userProfile?.is_public && (
-              <Card className="bg-amber-50 border-amber-200">
+              <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-4">
-                  <p className="text-sm text-amber-800 mb-2">
+                  <p className="text-sm text-[#E0D8C8]/70 mb-2">
                     <strong>Your profile is private.</strong> Enable public visibility in your Profile settings to be discovered by other users.
                   </p>
                   <a href={createPageUrl('Profile')}>
-                    <Button size="sm" variant="outline" className="border-amber-300 text-amber-700">
+                    <Button size="sm" variant="outline">
                       Update Settings
                     </Button>
                   </a>
@@ -287,15 +287,15 @@ export default function CommunityPage() {
               </Card>
             )}
 
-            <Card className="bg-white/95">
+            <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
-                <CardTitle className="text-stone-800">Find Users</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">Find Users</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+                      <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/50" />
                       <Input
                         placeholder="Search by name or email..."
                         value={searchQuery}
@@ -309,17 +309,16 @@ export default function CommunityPage() {
                         setActiveSearchQuery(searchQuery);
                         setShowResults(true);
                       }}
-                      className="bg-amber-700 hover:bg-amber-800"
                     >
                       <Search className="w-4 h-4 mr-2" />
                       Search
                     </Button>
                   </div>
 
-                  <div className="space-y-3 p-4 bg-stone-50 rounded-lg border border-stone-200">
+                  <div className="space-y-3 p-4 bg-[#1E2F43] rounded-lg border border-[#E0D8C8]/15">
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-stone-600" />
-                      <h4 className="font-semibold text-stone-800 text-sm">Search by Location</h4>
+                      <MapPin className="w-4 h-4 text-[#E0D8C8]/70" />
+                      <h4 className="font-semibold text-[#E0D8C8] text-sm">Search by Location</h4>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -380,7 +379,7 @@ export default function CommunityPage() {
                           setActiveLocationFilters(locationFilters);
                           setShowResults(true);
                         }}
-                        className="flex-1 bg-amber-700 hover:bg-amber-800"
+                        className="flex-1"
                       >
                         <Search className="w-4 h-4 mr-2" />
                         Search Location
@@ -425,25 +424,25 @@ export default function CommunityPage() {
                 </SheetHeader>
                 <div className="space-y-2 mt-6">
                   {publicProfiles.filter(p => p.user_email !== user?.email).map((profile) => (
-                    <div key={profile.id} className="p-4 bg-white border border-stone-200 rounded-lg hover:border-amber-400 transition-colors">
+                    <div key={profile.id} className="p-4 bg-[#223447] border border-[#E0D8C8]/15 rounded-lg hover:border-[#A35C5C]/50 transition-colors">
                       <div className="flex items-center gap-4">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile.avatar_url} />
-                          <AvatarFallback className="bg-amber-200 text-amber-800">
+                          <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                             {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(profile.user_email)}`)}>
-                            <h3 className="font-semibold text-stone-800 hover:text-amber-700 truncate">
+                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
                               {profile.display_name || profile.user_email}
                             </h3>
                           </a>
                           {profile.bio && (
-                            <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
+                            <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
                           )}
                           {profile.show_location && (profile.city || profile.state_province || profile.country) && (
-                            <p className="text-xs text-stone-500 mt-1">
+                            <p className="text-xs text-[#E0D8C8]/60 mt-1">
                               📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
                             </p>
                           )}
@@ -487,7 +486,7 @@ export default function CommunityPage() {
                               size="sm"
                               onClick={() => followMutation.mutate(profile.user_email)}
                               disabled={followMutation.isPending}
-                              className="bg-amber-700 hover:bg-amber-800 whitespace-nowrap"
+                              className="whitespace-nowrap"
                             >
                               <UserPlus className="w-4 h-4 mr-1" />
                               Follow
@@ -499,7 +498,7 @@ export default function CommunityPage() {
                   ))}
 
                   {publicProfiles.filter(p => p.user_email !== user?.email).length === 0 && (
-                    <div className="text-center py-12 text-stone-500">
+                    <div className="text-center py-12 text-[#E0D8C8]/70">
                       <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
                       <p>No users found matching your search</p>
                     </div>
@@ -518,8 +517,8 @@ export default function CommunityPage() {
                   publicProfiles={allPublicProfiles || []}
                 />
               ) : (
-                <Card className="bg-white/95">
-                  <CardContent className="py-12 text-center text-stone-500">
+                <Card className="bg-[#223447] border-[#E0D8C8]/15">
+                  <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                     <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
                     <p>No friends to message yet</p>
                     <p className="text-sm mt-2">Add friends from the Discover tab to start messaging</p>
@@ -527,15 +526,15 @@ export default function CommunityPage() {
                 </Card>
               )
             ) : (
-              <Card className="bg-amber-50 border-amber-200">
+              <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-6 text-center">
-                  <Mail className="w-12 h-12 mx-auto mb-4 text-amber-600" />
-                  <h3 className="font-semibold text-amber-900 mb-2">Instant Messaging Disabled</h3>
-                  <p className="text-sm text-amber-800 mb-4">
+                  <Mail className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/70" />
+                  <h3 className="font-semibold text-[#E0D8C8] mb-2">Instant Messaging Disabled</h3>
+                  <p className="text-sm text-[#E0D8C8]/70 mb-4">
                     Enable instant messaging in your Profile settings to chat with friends in real-time.
                   </p>
                   <a href={createPageUrl('Profile')}>
-                    <Button className="bg-amber-700 hover:bg-amber-800">
+                    <Button>
                       <Settings className="w-4 h-4 mr-2" />
                       Go to Profile Settings
                     </Button>
@@ -548,17 +547,17 @@ export default function CommunityPage() {
           <TabsContent value="friends" className="space-y-6">
             {/* Friends List */}
             {acceptedFriends.length === 0 ? (
-              <Card className="bg-white/95">
-                <CardContent className="py-12 text-center text-stone-500">
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
+                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <UserCog className="w-12 h-12 mx-auto mb-4 opacity-30" />
                   <p>You don't have any friends yet</p>
                   <p className="text-sm mt-2">Send friend requests from the Discover tab</p>
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-white/95">
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardHeader>
-                  <CardTitle className="text-stone-800">Your Friends</CardTitle>
+                  <CardTitle className="text-[#E0D8C8]">Your Friends</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {acceptedFriends.map((friendship) => {
@@ -567,26 +566,26 @@ export default function CommunityPage() {
                       : friendship.requester_email;
                     const profile = publicProfiles.find(p => p.user_email === friendEmail);
                     return (
-                      <Card key={friendship.id} className="bg-white/95 border-stone-200">
+                      <Card key={friendship.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-amber-200 text-amber-800">
+                              <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(friendEmail)}`)}>
-                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
                                   {profile?.display_name || friendEmail}
                                 </h3>
                               </a>
                               {profile?.bio && (
-                                <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
+                                <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
                               )}
                               {profile?.show_location && (profile?.city || profile?.state_province || profile?.country) && (
-                                <p className="text-xs text-stone-500 mt-1">
+                                <p className="text-xs text-[#E0D8C8]/60 mt-1">
                                   📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
                                 </p>
                               )}
@@ -617,38 +616,38 @@ export default function CommunityPage() {
 
           <TabsContent value="requests" className="space-y-6">
             {friendRequests.length === 0 ? (
-              <Card className="bg-white/95">
-                <CardContent className="py-12 text-center text-stone-500">
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
+                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
                   <p>No pending friend requests</p>
                   <p className="text-sm mt-2">Friend requests will appear here</p>
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-white/95">
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardHeader>
-                  <CardTitle className="text-stone-800">Pending Friend Requests</CardTitle>
+                  <CardTitle className="text-[#E0D8C8]">Pending Friend Requests</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {friendRequests.map((request) => {
                     const profile = publicProfiles.find(p => p.user_email === request.requester_email);
                     return (
-                      <Card key={request.id} className="bg-white border-stone-200">
+                      <Card key={request.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-amber-200 text-amber-800">
+                              <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || request.requester_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(request.requester_email)}`)}>
-                                <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
                                   {profile?.display_name || request.requester_email}
                                 </h3>
                               </a>
-                              <p className="text-xs text-stone-500">Wants to be friends</p>
+                              <p className="text-xs text-[#E0D8C8]/60">Wants to be friends</p>
                             </div>
                             <div className="flex gap-2">
                               <Button
@@ -683,8 +682,8 @@ export default function CommunityPage() {
 
           <TabsContent value="following" className="space-y-4">
             {connections.length === 0 ? (
-              <Card className="bg-white/95">
-                <CardContent className="py-12 text-center text-stone-500">
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
+                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
                   <p>You're not following anyone yet</p>
                   <p className="text-sm mt-2">Discover users to follow in the Discover tab</p>
@@ -694,23 +693,23 @@ export default function CommunityPage() {
               connections.map((connection) => {
                 const profile = publicProfiles.find(p => p.user_email === connection.following_email);
                 return (
-                  <Card key={connection.id} className="bg-white/95 border-stone-200">
+                  <Card key={connection.id} className="bg-[#223447] border-[#E0D8C8]/15">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={profile?.avatar_url} />
-                          <AvatarFallback className="bg-amber-200 text-amber-800">
+                          <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                             {profile?.display_name?.[0] || connection.following_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(connection.following_email)}`)}>
-                            <h3 className="font-semibold text-stone-800 hover:text-amber-700">
+                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
                               {profile?.display_name || connection.following_email}
                             </h3>
                           </a>
                           {profile?.bio && (
-                            <p className="text-sm text-stone-600 line-clamp-1">{profile.bio}</p>
+                            <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
                           )}
                         </div>
                         <Button
@@ -731,13 +730,13 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="myprofile">
-            <Card className="bg-white/95">
+            <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                <CardTitle className="text-stone-800">Your Public Profile</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">Your Public Profile</CardTitle>
                 {user?.email && (
                   <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${userProfile?.is_public ? '' : '&preview=true'}`)}>
-                    <Button variant="outline" size="sm" className="border-amber-300 text-amber-700">
+                    <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 mr-2" />
                       {userProfile?.is_public ? 'View Profile' : 'Preview Profile'}
                     </Button>
@@ -748,22 +747,22 @@ export default function CommunityPage() {
               <CardContent className="space-y-4">
                 {userProfile?.is_public ? (
                   <>
-                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                      <p className="text-sm text-emerald-800">
+                    <div className="p-4 bg-[#2EAF6F]/20 border border-[#2EAF6F]/30 rounded-lg">
+                      <p className="text-sm text-[#2EAF6F]">
                         ✅ Your profile is public and searchable by other users.
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-stone-800">Profile Settings</h4>
-                      <p className="text-sm text-stone-600">
+                      <h4 className="font-semibold text-[#E0D8C8]">Profile Settings</h4>
+                      <p className="text-sm text-[#E0D8C8]/70">
                         Display Name: <strong>{userProfile.display_name || 'Not set'}</strong>
                       </p>
                       {userProfile.bio && (
-                        <p className="text-sm text-stone-600">
+                        <p className="text-sm text-[#E0D8C8]/70">
                           Bio: {userProfile.bio}
                         </p>
                       )}
-                      <p className="text-sm text-stone-600">
+                      <p className="text-sm text-[#E0D8C8]/70">
                         Comments: <strong>{userProfile.allow_comments ? 'Enabled' : 'Disabled'}</strong>
                       </p>
                     </div>
@@ -776,13 +775,13 @@ export default function CommunityPage() {
                   </>
                 ) : (
                   <>
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm text-amber-800 mb-2">
+                    <div className="p-4 bg-[#1E2F43] border border-[#E0D8C8]/15 rounded-lg">
+                      <p className="text-sm text-[#E0D8C8]/70 mb-2">
                         Your profile is currently private. Enable public visibility to connect with other users.
                       </p>
                     </div>
                     <a href={createPageUrl('Profile')}>
-                      <Button className="w-full bg-amber-700 hover:bg-amber-800">
+                      <Button className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
                         Make Profile Public
                       </Button>
@@ -794,16 +793,16 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="invite">
-            <Card className="bg-white/95">
+            <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
-                <CardTitle className="text-stone-800">Invite Friends to PipeKeeper</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">Invite Friends to PipeKeeper</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-stone-600 mb-4">
+                <p className="text-[#E0D8C8]/70 mb-4">
                   Know someone who would love PipeKeeper? Invite them to join the community!
                 </p>
                 <a href={createPageUrl('Invite')}>
-                  <Button className="bg-amber-700 hover:bg-amber-800">
+                  <Button>
                     <Mail className="w-4 h-4 mr-2" />
                     Send Invitations
                   </Button>
