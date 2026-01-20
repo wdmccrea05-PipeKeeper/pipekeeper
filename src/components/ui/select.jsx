@@ -16,7 +16,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-lg border border-[#E0D8C8]/15 bg-[#1A2B3A]/50 px-3 py-2 text-sm text-[#E0D8C8] shadow-sm ring-offset-background data-[placeholder]:text-[#E0D8C8]/45 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/60 focus:ring-offset-0 focus:border-[#E0D8C8]/25 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors hover:border-[#E0D8C8]/20",
+      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-lg border border-white/10 bg-[#162433] px-3 py-2 text-sm text-[#E0D8C8] shadow-sm ring-offset-background data-[placeholder]:text-[#E0D8C8]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/60 focus:ring-offset-0 focus:border-[#E0D8C8]/30 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors hover:border-white/15",
       className
     )}
     {...props}>
