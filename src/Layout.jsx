@@ -276,7 +276,7 @@ export default function Layout({ children, currentPageName }) {
       <DocumentTitle title="PipeKeeper" />
       <Toaster position="top-center" />
       <MeasurementProvider>
-      <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+        <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
         <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="flex items-center justify-between h-16 gap-4">
@@ -408,8 +408,35 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
         </div>
-      )}
-      </MeasurementProvider>
-      </>
-      );
-      }
+        )}
+        </div>
+
+        <TermsGate user={user} />
+
+        {showSubscribePrompt && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+        <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
+          <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
+          <p className="text-[#E0D8C8]/80 mb-5">
+            To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
+              Continue Free
+            </Button>
+            <Button
+              onClick={() => {
+                setShowSubscribePrompt(false);
+                navigate(createPageUrl("Subscription"));
+              }}
+            >
+              Subscribe
+            </Button>
+          </div>
+        </div>
+        </div>
+        )}
+        </MeasurementProvider>
+        </>
+        );
+        }
