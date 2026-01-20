@@ -56,3 +56,10 @@ export function getPremiumGateMessage() {
   }
   return "Upgrade to Premium to unlock this feature.";
 }
+
+export function getSubscriptionManagementMessage() {
+  if (isIOSCompanion()) {
+    return "Manage your subscription on the web at pipekeeper.app";
+  }
+  return "Upgrade to Premium to unlock this feature.";
+}
