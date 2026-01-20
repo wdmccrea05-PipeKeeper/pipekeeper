@@ -174,9 +174,9 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
 
   if (!isPaidUser) {
     return (
-      <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-violet-800">
+          <CardTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5" />
             Break-In Schedule
           </CardTitle>
@@ -243,26 +243,26 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
         </DialogContent>
       </Dialog>
 
-    <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-violet-800">
+            <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5" />
               Break-In Schedule
             </CardTitle>
             {schedule.length > 0 && (
-              <p className="text-sm text-stone-600 mt-1">
+              <p className="text-sm text-[#E0D8C8]/60 mt-1">
                 {completedBowls} / {totalBowls} bowls completed ({progress}%)
               </p>
             )}
           </div>
           {schedule.length === 0 ? (
-            <Button
-              onClick={generateSchedule}
-              disabled={generating || blends.length === 0}
-              className="bg-violet-600 hover:bg-violet-700"
-            >
+           <Button
+             onClick={generateSchedule}
+             disabled={generating || blends.length === 0}
+             className="bg-[#A35C5C] hover:bg-[#8B4A4A]"
+           >
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -276,32 +276,33 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
               )}
             </Button>
           ) : (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCollapsed(!collapsed)}
-              >
-                {collapsed ? 'Show' : 'Hide'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateSchedule}
-                disabled={generating}
-              >
-                Regenerate
-              </Button>
-            </div>
+           <div className="flex gap-2">
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={() => setCollapsed(!collapsed)}
+               className="bg-white/5 text-[#E0D8C8] border border-white/10 hover:bg-white/10"
+             >
+               {collapsed ? 'Show' : 'Hide'}
+             </Button>
+             <Button
+               size="sm"
+               onClick={generateSchedule}
+               disabled={generating}
+               className="bg-[#A35C5C] text-[#FFF7ED] hover:bg-[#8B4A4A]"
+             >
+               Regenerate
+             </Button>
+           </div>
           )}
         </div>
       </CardHeader>
       {schedule.length > 0 && !collapsed && (
         <CardContent>
           {progress < 100 && (
-            <div className="mb-4 bg-stone-200 rounded-full h-2 overflow-hidden">
+            <div className="mb-4 bg-white/10 rounded-full h-2 overflow-hidden">
               <div 
-                className="bg-violet-600 h-full transition-all duration-500"
+                className="bg-[#A35C5C] h-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -314,23 +315,23 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
                   key={idx}
                   className={`p-4 rounded-lg border transition-all ${
                     isComplete 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-white border-stone-200'
+                      ? 'bg-green-500/15 border-green-500/30' 
+                      : 'bg-white/5 border-white/10'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-stone-800">{item.blend_name}</p>
+                        <p className="font-semibold text-[#E0D8C8]">{item.blend_name}</p>
                         {isComplete && (
-                          <Badge className="bg-green-600 text-white">
-                            <Check className="w-3 h-3 mr-1" />
-                            Complete
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-stone-600 mb-2">{item.reasoning}</p>
-                      <p className="text-xs text-stone-500">
+                            <Badge className="bg-green-600/80 text-white">
+                              <Check className="w-3 h-3 mr-1" />
+                              Complete
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-[#E0D8C8]/70 mb-2">{item.reasoning}</p>
+                        <p className="text-xs text-[#E0D8C8]/50">
                         Suggested: {item.suggested_bowls} bowls
                       </p>
                     </div>
@@ -343,7 +344,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
                           onChange={(e) => updateBowlsCompleted(idx, e.target.value)}
                           className="w-16 h-9 text-center"
                         />
-                        <span className="text-sm text-stone-500">/ {item.suggested_bowls}</span>
+                        <span className="text-sm text-[#E0D8C8]/60">/ {item.suggested_bowls}</span>
                       </div>
                       <Button
                         size="sm"
@@ -363,7 +364,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
       )}
       {blends.length === 0 && (
         <CardContent>
-          <p className="text-sm text-stone-500 text-center py-4">
+          <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
             Add tobacco blends to your collection to generate a break-in schedule
           </p>
         </CardContent>
