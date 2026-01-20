@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
-import { PK_THEME } from "@/components/theme/pkTheme";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter, Grid3X3, List, Sparkles, Package } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
@@ -145,7 +144,7 @@ export default function PipesPage() {
   const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
 
   return (
-    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 

@@ -5,7 +5,6 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PK_THEME } from "@/components/theme/pkTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
@@ -442,7 +441,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
       ) : null}
 
       {!isInitialLoading && (
-      <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero */}
         <motion.div 
@@ -645,9 +644,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             transition={{ delay: 0.7 }}
             className="mb-12"
           >
-            <Card className={PK_THEME.card}>
+            <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
               <CardHeader>
-                <CardTitle className={`flex items-center gap-2 ${PK_THEME.textHeading}`}>
+                <CardTitle className="flex items-center gap-2 text-rose-800">
                   <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
                   Favorites
                 </CardTitle>

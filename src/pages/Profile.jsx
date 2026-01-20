@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PK_THEME } from "@/components/theme/pkTheme";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -288,7 +287,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       {showCropper && imageToCrop && (
         <AvatarCropper
           image={imageToCrop}
@@ -308,7 +307,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <Card className={PK_THEME.card}>
+          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -393,16 +392,16 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className={PK_THEME.card}>
+          <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
             <CardHeader>
               <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
                 <User className="w-6 h-6 text-white" />
               </div>
               <div>
-                <CardTitle className={`text-2xl ${PK_THEME.textTitle}`}>{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
-                <CardDescription className={`flex items-center gap-2 mt-1 ${PK_THEME.textSubtle}`}>
-                  {!isAppleBuild && <Sparkles className="w-4 h-4 text-[#C9A46A]" />}
+                <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  {!isAppleBuild && <Sparkles className="w-4 h-4 text-violet-600" />}
                   {isAppleBuild ? 'Organize your collection preferences' : 'Personalize your AI recommendations'}
                 </CardDescription>
               </div>
@@ -911,7 +910,7 @@ export default function ProfilePage() {
           transition={{ delay: 0.2 }}
           className="mt-6"
         >
-          <Card className={PK_THEME.card}>
+          <Card className="border-blue-200 bg-white">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-blue-600" />
@@ -941,7 +940,7 @@ export default function ProfilePage() {
           transition={{ delay: 0.25 }}
           className="mt-6"
         >
-          <Card className={PK_THEME.card}>
+          <Card className="border-rose-200 bg-white">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1019,7 +1018,7 @@ export default function ProfilePage() {
           transition={{ delay: 0.3 }}
           className="mt-6"
         >
-          <Card className={PK_THEME.card}>
+          <Card className="bg-white/95 border-rose-200">
             <CardHeader>
               <CardTitle className="text-rose-700">Delete Account</CardTitle>
             </CardHeader>
@@ -1044,7 +1043,7 @@ export default function ProfilePage() {
           transition={{ delay: 0.35 }}
           className="mt-6"
         >
-          <Card className={PK_THEME.card}>
+          <Card className="border-stone-200/60 bg-white/50">
             <CardContent className="p-4">
               <div className="flex flex-wrap items-center justify-center gap-6">
                 <a href={createPageUrl('TermsOfService')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">

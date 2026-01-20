@@ -5,7 +5,6 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { getTobaccoLogo, GENERIC_TOBACCO_ICON } from "@/components/tobacco/TobaccoLogoLibrary";
 import { Button } from "@/components/ui/button";
-import { PK_THEME } from "@/components/theme/pkTheme";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -190,7 +189,7 @@ export default function TobaccoDetailPage() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} p-8`}>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 bg-stone-200 rounded" />
@@ -209,7 +208,7 @@ export default function TobaccoDetailPage() {
 
   if (!blend) {
     return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
           <h2 className="text-2xl font-semibold text-stone-800 mb-2">Blend not found</h2>
@@ -224,7 +223,7 @@ export default function TobaccoDetailPage() {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
 
   return (
-    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <a href={createPageUrl('Tobacco')}>
@@ -317,7 +316,7 @@ export default function TobaccoDetailPage() {
             )}
 
             {/* Inventory & Cellaring Management */}
-            <Card className={`${PK_THEME.card} overflow-hidden`}>
+            <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
               <Tabs defaultValue="containers" className="w-full">
                 <div className="border-b border-[#A35C5C]/30 overflow-x-auto">
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
@@ -403,7 +402,7 @@ export default function TobaccoDetailPage() {
 
             {/* Tobacco Components */}
             {blend.tobacco_components?.length > 0 && (
-              <Card className={PK_THEME.card}>
+              <Card className="border-stone-200">
                 <CardContent className="p-4">
                   <p className="text-xs text-stone-500 mb-2">Tobacco Components</p>
                   <div className="flex flex-wrap gap-2">
@@ -419,7 +418,7 @@ export default function TobaccoDetailPage() {
 
             {/* Flavor Notes */}
             {blend.flavor_notes?.length > 0 && (
-              <Card className={PK_THEME.card}>
+              <Card className="border-stone-200">
                 <CardContent className="p-4">
                   <p className="text-xs text-stone-500 mb-2">Flavor Notes</p>
                   <div className="flex flex-wrap gap-2">
@@ -435,7 +434,7 @@ export default function TobaccoDetailPage() {
 
             {/* Aging Potential */}
             {blend.aging_potential && (
-              <Card className={PK_THEME.card}>
+              <Card className="border-stone-200">
                 <CardContent className="p-4">
                   <p className="text-xs text-stone-500 mb-1">Aging Potential</p>
                   <p className="font-medium text-stone-800">{blend.aging_potential}</p>
@@ -445,7 +444,7 @@ export default function TobaccoDetailPage() {
 
             {/* Notes */}
             {blend.notes && (
-              <Card className={PK_THEME.card}>
+              <Card className="border-stone-200">
                 <CardContent className="p-4">
                   <p className="text-xs text-stone-500 mb-1">Notes</p>
                   <p className="text-stone-700">{blend.notes}</p>
@@ -457,7 +456,7 @@ export default function TobaccoDetailPage() {
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (
-          <Card className={`mt-8 ${PK_THEME.card}`}>
+          <Card className="border-stone-200 mt-8">
             <CardContent className="p-6">
               <CommentSection
                 entityType="blend"
