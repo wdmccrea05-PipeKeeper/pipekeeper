@@ -175,10 +175,10 @@ export default function CellarAgingDashboard({ user }) {
                   
                   <Badge 
                     className={
-                      recommendation.color === "green" ? "bg-green-500/20 text-green-300 border-green-500/30" :
-                      recommendation.color === "yellow" ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" :
-                      recommendation.color === "blue" ? "bg-blue-500/20 text-blue-300 border-blue-500/30" :
-                      "bg-gray-500/20 text-gray-300 border-gray-500/30"
+                      recommendation.color === "green" ? "bg-green-500/20 text-black border-green-500/30" :
+                      recommendation.color === "yellow" ? "bg-yellow-500/20 text-black border-yellow-500/30" :
+                      recommendation.color === "blue" ? "bg-blue-500/20 text-black border-blue-500/30" :
+                      "bg-gray-500/20 text-black border-gray-500/30"
                     }
                   >
                     {recommendation.message}
