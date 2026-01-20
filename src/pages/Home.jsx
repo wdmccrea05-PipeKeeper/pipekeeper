@@ -543,7 +543,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                   <div className="flex items-start justify-between mb-4 sm:mb-6">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
-                      <p className="text-[#e8d5b7] text-sm sm:text-base">Track and value your pipes</p>
+                      <p className="text-white text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
                       <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
@@ -599,7 +599,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                   <div className="flex items-start justify-between mb-4 sm:mb-6">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
-                      <p className="text-[#e8d5b7] text-sm sm:text-base">Manage your blends</p>
+                      <p className="text-white text-sm sm:text-base">Manage your blends</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
                       <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
