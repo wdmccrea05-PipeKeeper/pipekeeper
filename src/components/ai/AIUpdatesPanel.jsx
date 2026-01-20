@@ -406,7 +406,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Tags className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <h3 className="font-semibold text-[#1a2c42]">Tobacco Blend Classification</h3>
-            <p className="text-sm text-[#1a2c42]/70 mt-1">
+            <p className="text-sm text-[#1a2c42]/85 mt-1">
               Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
             </p>
           </div>
@@ -435,7 +435,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
-            <p className="text-sm text-[#1a2c42]/70 mt-1">
+            <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - regeneration recommended</span>
               ) : (
@@ -476,7 +476,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
-            <p className="text-sm text-[#1a2c42]/70 mt-1">
+            <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - regeneration recommended</span>
               ) : (
@@ -513,7 +513,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <h3 className="font-semibold text-[#1a2c42]">Pipe Measurements</h3>
-            <p className="text-sm text-[#1a2c42]/70 mt-1">
+            <p className="text-sm text-[#1a2c42]/85 mt-1">
               Fill missing dimensions with verified manufacturer specs
             </p>
           </div>
@@ -534,7 +534,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <h3 className="font-semibold text-[#1a2c42]">Break-In Schedules</h3>
-            <p className="text-sm text-[#1a2c42]/70 mt-1">
+            <p className="text-sm text-[#1a2c42]/85 mt-1">
               Regeneration is handled per pipe on the Pipe detail page (with undo/history).
             </p>
           </div>
