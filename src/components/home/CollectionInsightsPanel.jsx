@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText } from "lucide-react";
+import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Wine } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
+import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
@@ -37,7 +38,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-5"} mb-6 bg-white border border-[#E5E5E5]`}
+            className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"} mb-6 bg-white border border-[#E5E5E5]`}
           >
             {isAppleBuild ? (
               <TabsTrigger
@@ -83,6 +84,13 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 >
                   <FileText className="w-4 h-4" />
                   <span className="hidden sm:inline">Reports</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="aging"
+                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
+                >
+                  <Wine className="w-4 h-4" />
+                  <span className="hidden sm:inline">Aging</span>
                 </TabsTrigger>
               </>
             )}
@@ -136,6 +144,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     Additional report formats coming soon.
                   </p>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="aging" className="mt-0">
+                <CellarAgingDashboard user={user} />
               </TabsContent>
             </>
           )}
