@@ -287,42 +287,41 @@ Provide analysis as JSON:
   };
 
   return (
-    <Card className="bg-white border-[#1a2c42]/20">
+    <Card className="bg-[#223447] border-[#E0D8C8]/15">
       <CardContent className="p-6">
         <div className="flex items-start gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-purple-600/10 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+          <div className="w-10 h-10 rounded-lg bg-[#A35C5C]/20 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-[#A35C5C]" />
           </div>
           <div>
-            <p className="font-semibold text-[#1a2c42] text-lg">AI Pipe Identifier</p>
-            <p className="text-sm text-[#1a2c42]/70">Upload photos to identify and add pipes instantly</p>
+            <p className="font-semibold text-[#E0D8C8] text-lg">AI Pipe Identifier</p>
+            <p className="text-sm text-[#E0D8C8]/70">Upload photos to identify and add pipes instantly</p>
           </div>
         </div>
 
         {clarificationNeeded && !identified ? (
-          <div className="space-y-4">
-            {/* Initial Observations */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <p className="text-xs text-[#1a2c42]/60 font-semibold mb-2">Initial Analysis</p>
-              <p className="text-sm text-[#1a2c42]">{clarificationNeeded.initial_observations}</p>
-            </div>
+           <div className="space-y-4">
+             {/* Initial Observations */}
+             <div className="bg-[#1E2F43] rounded-lg p-4 border border-[#E0D8C8]/15">
+               <p className="text-xs text-[#E0D8C8]/60 font-semibold mb-2">Initial Analysis</p>
+               <p className="text-sm text-[#E0D8C8]">{clarificationNeeded.initial_observations}</p>
+             </div>
 
-            {/* Clarification Questions */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-sm font-semibold text-amber-900 mb-3">Additional Information Needed</p>
-              <div className="space-y-3">
-                {clarificationNeeded.clarification_questions?.map((question, idx) => (
-                  <div key={idx}>
-                    <Label className="text-sm text-[#1a2c42] mb-1.5 block font-medium">{question}</Label>
-                    <Input
-                      placeholder="Your answer..."
-                      value={clarificationResponses[question] || ''}
-                      onChange={(e) => setClarificationResponses({
-                        ...clarificationResponses,
-                        [question]: e.target.value
-                      })}
-                      className="bg-white border-gray-300 text-[#1a2c42] placeholder:text-[#1a2c42]/40"
-                    />
+             {/* Clarification Questions */}
+             <div className="bg-[#1E2F43] border border-[#E0D8C8]/15 rounded-lg p-4">
+               <p className="text-sm font-semibold text-[#E0D8C8] mb-3">Additional Information Needed</p>
+               <div className="space-y-3">
+                 {clarificationNeeded.clarification_questions?.map((question, idx) => (
+                   <div key={idx}>
+                     <Label className="text-sm text-[#E0D8C8] mb-1.5 block font-medium">{question}</Label>
+                     <Input
+                       placeholder="Your answer..."
+                       value={clarificationResponses[question] || ''}
+                       onChange={(e) => setClarificationResponses({
+                         ...clarificationResponses,
+                         [question]: e.target.value
+                       })}
+                     />
                   </div>
                 ))}
               </div>
@@ -333,7 +332,6 @@ Provide analysis as JSON:
               <Button
                 onClick={handleClarificationSubmit}
                 disabled={loading}
-                className="bg-purple-600 hover:bg-purple-700"
               >
                 {loading ? (
                   <>
@@ -361,9 +359,9 @@ Provide analysis as JSON:
           {/* Photo Upload Section */}
           <div className="grid grid-cols-2 gap-3">
             <label className="cursor-pointer">
-              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 transition-colors bg-gray-50">
-                <Upload className="w-5 h-5 text-gray-600 mb-1" />
-                <span className="text-xs text-gray-600 font-medium">Upload Photos</span>
+              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
+                <Upload className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
+                <span className="text-xs text-[#E0D8C8]/60 font-medium">Upload Photos</span>
               </div>
               <input
                 type="file"
@@ -376,9 +374,9 @@ Provide analysis as JSON:
             </label>
 
             <label className="cursor-pointer">
-              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 transition-colors bg-gray-50">
-                <Camera className="w-5 h-5 text-gray-600 mb-1" />
-                <span className="text-xs text-gray-600 font-medium">Take Photo</span>
+              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
+                <Camera className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
+                <span className="text-xs text-[#E0D8C8]/60 font-medium">Take Photo</span>
               </div>
               <input
                 type="file"
@@ -395,7 +393,7 @@ Provide analysis as JSON:
             {photos.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {photos.map((url, idx) => (
-                  <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-300">
+                  <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-[#E0D8C8]/15">
                     <img src={url} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
@@ -404,7 +402,7 @@ Provide analysis as JSON:
 
             {/* Optional Hint Fields */}
             <div className="space-y-3 pt-2">
-              <Label className="text-sm text-[#1a2c42] font-medium">
+              <Label className="text-sm text-[#E0D8C8] font-medium">
                 Optional: Provide hints to improve identification
               </Label>
               <div className="grid grid-cols-2 gap-2">
@@ -412,25 +410,21 @@ Provide analysis as JSON:
                   placeholder="Name/Description"
                   value={hints.name}
                   onChange={(e) => setHints({...hints, name: e.target.value})}
-                  className="bg-white border-gray-300 text-[#1a2c42] placeholder:text-gray-400 text-sm"
                 />
                 <Input
                   placeholder="Brand/Maker"
                   value={hints.maker}
                   onChange={(e) => setHints({...hints, maker: e.target.value})}
-                  className="bg-white border-gray-300 text-[#1a2c42] placeholder:text-gray-400 text-sm"
                 />
                 <Input
                   placeholder="Shape"
                   value={hints.shape}
                   onChange={(e) => setHints({...hints, shape: e.target.value})}
-                  className="bg-white border-gray-300 text-[#1a2c42] placeholder:text-gray-400 text-sm"
                 />
                 <Input
                   placeholder="Stampings"
                   value={hints.stamping}
                   onChange={(e) => setHints({...hints, stamping: e.target.value})}
-                  className="bg-white border-gray-300 text-[#1a2c42] placeholder:text-gray-400 text-sm"
                 />
               </div>
             </div>
@@ -439,7 +433,7 @@ Provide analysis as JSON:
             <Button
               onClick={handleIdentify}
               disabled={photos.length === 0 || loading}
-              className="w-full bg-purple-600 hover:bg-purple-700"
+              className="w-full"
             >
               {loading ? (
                 <>
@@ -457,38 +451,38 @@ Provide analysis as JSON:
         ) : (
           <div className="space-y-4">
             {/* Identification Results */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2 border border-gray-200">
+            <div className="bg-[#1E2F43] rounded-lg p-4 space-y-2 border border-[#E0D8C8]/15">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-[#1a2c42] text-lg">{identified.name}</p>
-                  <p className="text-sm text-[#1a2c42]/60">{identified.maker || 'Unknown Maker'}</p>
+                  <p className="font-semibold text-[#E0D8C8] text-lg">{identified.name}</p>
+                  <p className="text-sm text-[#E0D8C8]/70">{identified.maker || 'Unknown Maker'}</p>
                 </div>
-                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 border border-green-200">
-                  <CheckCircle2 className="w-3 h-3 text-green-600" />
-                  <span className="text-xs text-green-700 font-medium">{identified.confidence}</span>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#2EAF6F]/20 border border-[#2EAF6F]/30">
+                  <CheckCircle2 className="w-3 h-3 text-[#2EAF6F]" />
+                  <span className="text-xs text-[#2EAF6F] font-medium">{identified.confidence}</span>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mt-3">
                 {identified.shape && (
-                  <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded font-medium">
+                  <span className="text-xs px-2 py-1 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded font-medium">
                     {identified.shape}
                   </span>
                 )}
                 {identified.bowl_material && (
-                  <span className="text-xs px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded font-medium">
+                  <span className="text-xs px-2 py-1 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded font-medium">
                     {identified.bowl_material}
                   </span>
                 )}
                 {identified.estimated_value && (
-                  <span className="text-xs px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-medium">
+                  <span className="text-xs px-2 py-1 bg-[#2EAF6F]/20 text-[#2EAF6F] border border-[#2EAF6F]/30 rounded font-medium">
                     ${identified.estimated_value}
                   </span>
                 )}
               </div>
 
               {identified.notes && (
-                <p className="text-xs text-[#1a2c42]/70 mt-2 pt-2 border-t border-gray-200">
+                <p className="text-xs text-[#E0D8C8]/70 mt-2 pt-2 border-t border-[#E0D8C8]/15">
                   {identified.notes}
                 </p>
               )}
@@ -496,41 +490,41 @@ Provide analysis as JSON:
 
             {/* Impact Analysis */}
             {impactAnalysis && (
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 space-y-3">
+              <div className="bg-[#1E2F43] rounded-lg p-4 border border-[#E0D8C8]/15 space-y-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  <span className="font-semibold text-[#1a2c42] text-sm">Collection Impact</span>
+                  <TrendingUp className="w-4 h-4 text-[#A35C5C]" />
+                  <span className="font-semibold text-[#E0D8C8] text-sm">Collection Impact</span>
                 </div>
-                
+
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-[#1a2c42]/60 font-medium">Fills Gap:</span>
-                    <p className="text-[#1a2c42] mt-1">{impactAnalysis.fills_gap}</p>
+                    <span className="text-[#E0D8C8]/70 font-medium">Fills Gap:</span>
+                    <p className="text-[#E0D8C8] mt-1">{impactAnalysis.fills_gap}</p>
                   </div>
-                  
+
                   {impactAnalysis.redundancy && (
                     <div>
-                      <span className="text-[#1a2c42]/60 font-medium">Redundancy Check:</span>
-                      <p className="text-[#1a2c42] mt-1">{impactAnalysis.redundancy}</p>
+                      <span className="text-[#E0D8C8]/70 font-medium">Redundancy Check:</span>
+                      <p className="text-[#E0D8C8] mt-1">{impactAnalysis.redundancy}</p>
                     </div>
                   )}
-                  
+
                   {impactAnalysis.recommended_for?.length > 0 && (
                     <div>
-                      <span className="text-[#1a2c42]/60 font-medium">Best For:</span>
+                      <span className="text-[#E0D8C8]/70 font-medium">Best For:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {impactAnalysis.recommended_for.map((blend, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-200 rounded text-xs font-medium">
+                          <span key={idx} className="px-2 py-0.5 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded text-xs font-medium">
                             {blend}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
-                  
+
                   <div>
-                    <span className="text-[#1a2c42]/60 font-medium">Overall:</span>
-                    <p className="text-[#1a2c42] mt-1 font-semibold">{impactAnalysis.recommendation}</p>
+                    <span className="text-[#E0D8C8]/70 font-medium">Overall:</span>
+                    <p className="text-[#E0D8C8] mt-1 font-semibold">{impactAnalysis.recommendation}</p>
                   </div>
                 </div>
               </div>
@@ -543,7 +537,7 @@ Provide analysis as JSON:
                   <Button
                     onClick={handleAnalyzeImpact}
                     disabled={analyzing}
-                    className="bg-blue-600 hover:bg-blue-700 col-span-2"
+                    className="col-span-2"
                   >
                     {analyzing ? (
                       <>
@@ -570,7 +564,6 @@ Provide analysis as JSON:
                   <Button
                     onClick={handleAddToCollection}
                     disabled={adding}
-                    className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
                   >
                     {adding ? (
                       <>
