@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Grid3x3, BookOpen } from "lucide-react";
+import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
+import RotationPlanner from "@/components/pipes/RotationPlanner";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { createPageUrl } from "@/components/utils/createPageUrl";
+import { Download } from "lucide-react";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
@@ -33,7 +37,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-3"} mb-6 bg-white border border-[#E5E5E5]`}
+            className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-5"} mb-6 bg-white border border-[#E5E5E5]`}
           >
             {isAppleBuild ? (
               <TabsTrigger
@@ -60,11 +64,25 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <span className="hidden sm:inline">Pairing Grid</span>
                 </TabsTrigger>
                 <TabsTrigger
+                  value="rotation"
+                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
+                >
+                  <CalendarClock className="w-4 h-4" />
+                  <span className="hidden sm:inline">Rotation</span>
+                </TabsTrigger>
+                <TabsTrigger
                   value="stats"
                   className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
                 >
                   <BarChart3 className="w-4 h-4" />
                   <span className="hidden sm:inline">Stats</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reports"
+                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Reports</span>
                 </TabsTrigger>
               </>
             )}
@@ -83,6 +101,41 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               <TabsContent value="reference" className="mt-0">
                 {/* ✅ IMPORTANT: pass same pipes/blends/profile so regen matches AI Updates exactly */}
                 <PairingGrid user={user} pipes={pipes} blends={blends} profile={userProfile} />
+              </TabsContent>
+
+              <TabsContent value="rotation" className="mt-0">
+                <RotationPlanner />
+              </TabsContent>
+
+              <TabsContent value="reports" className="mt-0">
+                <div className="space-y-4">
+                  <div className="text-sm text-[#E0D8C8]/80 mb-4">
+                    Download collection reports, exports, and comprehensive analysis documents.
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href={createPageUrl('UserReport')} target="_blank">
+                      <Button variant="outline" className="w-full justify-start border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#E0D8C8]/10">
+                        <Download className="w-4 h-4 mr-2" />
+                        Full Collection Report
+                      </Button>
+                    </a>
+                    <Button variant="outline" className="w-full justify-start border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#E0D8C8]/10" disabled>
+                      <Download className="w-4 h-4 mr-2" />
+                      Cellar Aging Report
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#E0D8C8]/10" disabled>
+                      <Download className="w-4 h-4 mr-2" />
+                      Pipe Valuation PDF
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start border-[#E0D8C8]/30 text-[#E0D8C8] hover:bg-[#E0D8C8]/10" disabled>
+                      <Download className="w-4 h-4 mr-2" />
+                      Smoking History
+                    </Button>
+                  </div>
+                  <p className="text-xs text-[#E0D8C8]/60 mt-4">
+                    Additional report formats coming soon.
+                  </p>
+                </div>
               </TabsContent>
             </>
           )}

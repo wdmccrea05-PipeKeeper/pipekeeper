@@ -39,6 +39,8 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import BreakInSchedule from "@/components/pipes/BreakInSchedule";
 import PipeMeasurementCalculator from "@/components/ai/PipeMeasurementCalculator";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
+import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
+import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 
 export default function PipeDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -286,7 +288,21 @@ export default function PipeDetailPage() {
           </div>
         )}
 
+        {/* Pipe Condition Tracking */}
+        <div className="mb-6">
+          <PipeConditionTracker 
+            pipe={pipe}
+            onUpdate={(data) => updateMutation.mutate(data)}
+          />
+        </div>
 
+        {/* Maintenance Log */}
+        <div className="mb-6">
+          <MaintenanceLog 
+            pipeId={pipeId}
+            pipeName={pipe.name}
+          />
+        </div>
 
         {/* Break-In Schedule */}
         <div className="mb-6">
