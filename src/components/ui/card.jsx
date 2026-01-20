@@ -1,31 +1,11 @@
-// src/components/ui/card.jsx
+
 import * as React from "react";
+import { PKCard } from "@/components/ui/pk-surface";
 import { cn } from "@/lib/utils";
 
-/**
- * PipeKeeper surfaces:
- * - default: primary dark surface card used everywhere
- * - elevated: slightly lighter, used for “panels inside panels”
- * - subtle: very low-contrast container (rare)
- */
-const Card = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
-  const variants = {
-    default:
-      "rounded-2xl border border-[#E0D8C8]/15 bg-[#243548]/70 backdrop-blur-md text-[#E0D8C8] shadow-lg",
-    elevated:
-      "rounded-2xl border border-[#E0D8C8]/15 bg-[#2B3E55]/70 backdrop-blur-md text-[#E0D8C8] shadow-lg",
-    subtle:
-      "rounded-2xl border border-[#E0D8C8]/10 bg-[#1A2B3A]/40 backdrop-blur-md text-[#E0D8C8]",
-  };
-
-  return (
-    <div
-      ref={ref}
-      className={cn(variants[variant] || variants.default, className)}
-      {...props}
-    />
-  );
-});
+const Card = React.forwardRef(({ className, ...props }, ref) => (
+  <PKCard ref={ref} className={cn(className)} {...props} />
+));
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
