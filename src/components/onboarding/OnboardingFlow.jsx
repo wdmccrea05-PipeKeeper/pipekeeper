@@ -29,37 +29,37 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             alt="PipeKeeper"
             className="w-24 h-24 mx-auto object-contain mix-blend-multiply"
           />
-          <p className="text-stone-600 text-lg">
+          <p className="text-[#E0D8C8]/70 text-lg">
             Manage your collection with AI-powered features for identification, 
             valuation, and personalized tobacco pairing recommendations.
           </p>
           <div className="grid grid-cols-2 gap-3 mt-6 text-left">
-            <Card className="bg-amber-50 border-amber-200">
+            <Card>
               <CardContent className="p-4">
-                <Camera className="w-6 h-6 text-amber-600 mb-2" />
-                <h4 className="font-semibold text-amber-900 text-sm">Photo ID</h4>
-                <p className="text-xs text-amber-700">Identify pipes from photos</p>
+                <Camera className="w-6 h-6 text-amber-400 mb-2" />
+                <h4 className="font-semibold text-sm">Photo ID</h4>
+                <p className="text-xs text-[#E0D8C8]/70">Identify pipes from photos</p>
               </CardContent>
             </Card>
-            <Card className="bg-emerald-50 border-emerald-200">
+            <Card>
               <CardContent className="p-4">
-                <Search className="w-6 h-6 text-emerald-600 mb-2" />
-                <h4 className="font-semibold text-emerald-900 text-sm">AI Search</h4>
-                <p className="text-xs text-emerald-700">Auto-fill details from web</p>
+                <Search className="w-6 h-6 text-emerald-400 mb-2" />
+                <h4 className="font-semibold text-sm">AI Search</h4>
+                <p className="text-xs text-[#E0D8C8]/70">Auto-fill details from web</p>
               </CardContent>
             </Card>
-            <Card className="bg-violet-50 border-violet-200">
+            <Card>
               <CardContent className="p-4">
-                <Star className="w-6 h-6 text-violet-600 mb-2" />
-                <h4 className="font-semibold text-violet-900 text-sm">Pairings</h4>
-                <p className="text-xs text-violet-700">Match pipes with tobacco</p>
+                <Star className="w-6 h-6 text-violet-400 mb-2" />
+                <h4 className="font-semibold text-sm">Pairings</h4>
+                <p className="text-xs text-[#E0D8C8]/70">Match pipes with tobacco</p>
               </CardContent>
             </Card>
-            <Card className="bg-blue-50 border-blue-200">
+            <Card>
               <CardContent className="p-4">
-                <Sparkles className="w-6 h-6 text-blue-600 mb-2" />
-                <h4 className="font-semibold text-blue-900 text-sm">Optimize</h4>
-                <p className="text-xs text-blue-700">Get collection insights</p>
+                <Sparkles className="w-6 h-6 text-blue-400 mb-2" />
+                <h4 className="font-semibold text-sm">Optimize</h4>
+                <p className="text-xs text-[#E0D8C8]/70">Get collection insights</p>
               </CardContent>
             </Card>
           </div>
@@ -72,16 +72,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       icon: Users,
       content: (
         <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-amber-50 to-white border-amber-200">
+          <Card>
             <CardContent className="p-6">
-              <h4 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 User Profile
               </h4>
-              <p className="text-stone-600 mb-4">
+              <p className="text-[#E0D8C8]/70 mb-4">
                 Create your smoking profile to get personalized recommendations based on:
               </p>
-              <ul className="space-y-2 text-sm text-stone-700">
+              <ul className="space-y-2 text-sm text-[#E0D8C8]/70">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                   <span>Preferred tobacco blend types (Virginia, English, Aromatic, etc.)</span>
@@ -119,56 +119,56 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       icon: Star,
       content: (
         <div className="space-y-4">
-          <Card className="border-stone-200">
+          <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Badge className="bg-amber-600 text-white shrink-0">1</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Your Profile Preferences</h4>
-                    <p className="text-sm text-stone-600">
-                      Highest priority. Recommendations favor your preferred blend types and strengths.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-amber-500 text-white shrink-0">2</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Pipe Focus</h4>
-                    <p className="text-sm text-stone-600">
-                      If you designate a pipe for specific blends (e.g., "English", "Aromatic"), 
-                      matches are heavily prioritized.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-stone-500 text-white shrink-0">3</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Pipe Characteristics</h4>
-                    <p className="text-sm text-stone-600">
-                      Bowl size, shape, material, and chamber volume determine which blends smoke best.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-stone-400 text-white shrink-0">4</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Blend Characteristics</h4>
-                    <p className="text-sm text-stone-600">
-                      Cut, strength, and flavor profile of the tobacco.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-900 font-medium mb-2">
-                  ✨ Personalization in Action
-                </p>
-                <p className="text-xs text-amber-800">
-                  A pipe with "English" focus + your preference for English blends = 
-                  maximum boost (+3.5 points). Scores are saved and only update when you request.
-                </p>
-              </div>
+                   <Badge className="bg-amber-600 text-white shrink-0">1</Badge>
+                   <div>
+                     <h4 className="font-semibold">Your Profile Preferences</h4>
+                     <p className="text-sm text-[#E0D8C8]/70">
+                       Highest priority. Recommendations favor your preferred blend types and strengths.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-amber-500 text-white shrink-0">2</Badge>
+                   <div>
+                     <h4 className="font-semibold">Pipe Focus</h4>
+                     <p className="text-sm text-[#E0D8C8]/70">
+                       If you designate a pipe for specific blends (e.g., "English", "Aromatic"), 
+                       matches are heavily prioritized.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-slate-500 text-white shrink-0">3</Badge>
+                   <div>
+                     <h4 className="font-semibold">Pipe Characteristics</h4>
+                     <p className="text-sm text-[#E0D8C8]/70">
+                       Bowl size, shape, material, and chamber volume determine which blends smoke best.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-slate-400 text-white shrink-0">4</Badge>
+                   <div>
+                     <h4 className="font-semibold">Blend Characteristics</h4>
+                     <p className="text-sm text-[#E0D8C8]/70">
+                       Cut, strength, and flavor profile of the tobacco.
+                     </p>
+                   </div>
+                 </div>
+               </div>
+               <div className="mt-6 p-4 rounded-lg border border-[#E0D8C8]/15 bg-[#1A2B3A]/50">
+                 <p className="text-sm font-medium mb-2">
+                   ✨ Personalization in Action
+                 </p>
+                 <p className="text-xs text-[#E0D8C8]/70">
+                   A pipe with "English" focus + your preference for English blends = 
+                   maximum boost (+3.5 points). Scores are saved and only update when you request.
+                 </p>
+               </div>
             </CardContent>
           </Card>
         </div>
@@ -180,75 +180,75 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       icon: Sparkles,
       content: (
         <div className="space-y-3">
-          <Card className="border-stone-200 hover:border-amber-300 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Camera className="w-6 h-6 text-amber-600 shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-stone-900">Photo Identification</h4>
-                  <p className="text-sm text-stone-600">
-                    Upload stamping photos and let AI identify maker, era, and authenticity
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Card className="hover:border-amber-300/30 transition-colors">
+             <CardContent className="p-4">
+               <div className="flex items-start gap-3">
+                 <Camera className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
+                 <div>
+                   <h4 className="font-semibold">Photo Identification</h4>
+                   <p className="text-sm text-[#E0D8C8]/70">
+                     Upload stamping photos and let AI identify maker, era, and authenticity
+                   </p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
 
-          <Card className="border-stone-200 hover:border-emerald-300 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Search className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-stone-900">Market Valuation</h4>
-                  <p className="text-sm text-stone-600">
-                    AI-powered price lookups from recent sales and market data
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+           <Card className="hover:border-emerald-300/30 transition-colors">
+             <CardContent className="p-4">
+               <div className="flex items-start gap-3">
+                 <Search className="w-6 h-6 text-emerald-400 shrink-0 mt-1" />
+                 <div>
+                   <h4 className="font-semibold">Market Valuation</h4>
+                   <p className="text-sm text-[#E0D8C8]/70">
+                     AI-powered price lookups from recent sales and market data
+                   </p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
 
-          <Card className="border-stone-200 hover:border-violet-300 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Star className="w-6 h-6 text-violet-600 shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-stone-900">Tobacco Matching</h4>
-                  <p className="text-sm text-stone-600">
-                    Get personalized blend recommendations for each pipe
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+           <Card className="hover:border-violet-300/30 transition-colors">
+             <CardContent className="p-4">
+               <div className="flex items-start gap-3">
+                 <Star className="w-6 h-6 text-violet-400 shrink-0 mt-1" />
+                 <div>
+                   <h4 className="font-semibold">Tobacco Matching</h4>
+                   <p className="text-sm text-[#E0D8C8]/70">
+                     Get personalized blend recommendations for each pipe
+                   </p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
 
-          <Card className="border-stone-200 hover:border-blue-300 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles className="w-6 h-6 text-blue-600 shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-stone-900">Collection Optimization</h4>
-                  <p className="text-sm text-stone-600">
-                    Analyze your collection for gaps and get recommendations for your next pipe
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+           <Card className="hover:border-blue-300/30 transition-colors">
+             <CardContent className="p-4">
+               <div className="flex items-start gap-3">
+                 <Sparkles className="w-6 h-6 text-blue-400 shrink-0 mt-1" />
+                 <div>
+                   <h4 className="font-semibold">Collection Optimization</h4>
+                   <p className="text-sm text-[#E0D8C8]/70">
+                     Analyze your collection for gaps and get recommendations for your next pipe
+                   </p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
 
-          <Card className="border-stone-200 hover:border-purple-300 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Leaf className="w-6 h-6 text-purple-600 shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-stone-900">Quick Edit & Bulk Actions</h4>
-                  <p className="text-sm text-stone-600">
-                    Update multiple tobacco blends at once with Quick Edit mode
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+           <Card className="hover:border-purple-300/30 transition-colors">
+             <CardContent className="p-4">
+               <div className="flex items-start gap-3">
+                 <Leaf className="w-6 h-6 text-purple-400 shrink-0 mt-1" />
+                 <div>
+                   <h4 className="font-semibold">Quick Edit & Bulk Actions</h4>
+                   <p className="text-sm text-[#E0D8C8]/70">
+                     Update multiple tobacco blends at once with Quick Edit mode
+                   </p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
         </div>
       )
     },
@@ -262,17 +262,17 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <Check className="w-10 h-10 text-amber-700" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-stone-900 mb-2">You're All Set!</h3>
-            <p className="text-stone-600">
-              Start by adding your first pipe or tobacco blend. 
-              Visit your Profile page to set your smoking preferences.
-            </p>
+            <h3 className="text-2xl font-bold mb-2">You're All Set!</h3>
+             <p className="text-[#E0D8C8]/70">
+               Start by adding your first pipe or tobacco blend. 
+               Visit your Profile page to set your smoking preferences.
+             </p>
           </div>
           <div className="grid gap-3 max-w-md mx-auto">
             <Button 
-              className="w-full bg-amber-700 hover:bg-amber-800 justify-between group"
-              onClick={() => { onComplete(); navigate(createPageUrl('Profile')); }}
-            >
+               className="w-full justify-between group"
+               onClick={() => { onComplete(); navigate(createPageUrl('Profile')); }}
+             >
               <span>Set Up Profile First</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -322,8 +322,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-2xl"
         >
-          <Card className="border-stone-200 shadow-2xl">
-            <CardHeader className="border-b border-stone-200">
+          <Card className="shadow-2xl">
+            <CardHeader className="border-b border-[#E0D8C8]/15">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-2">
                   {steps.map((_, idx) => (
@@ -334,7 +334,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                           ? 'w-8 bg-amber-600' 
                           : idx < currentStep 
                           ? 'w-2 bg-amber-400' 
-                          : 'w-2 bg-stone-200'
+                          : 'w-2 bg-[#E0D8C8]/20'
                       }`}
                     />
                   ))}
@@ -343,7 +343,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   variant="ghost"
                   size="sm"
                   onClick={onSkip}
-                  className="text-stone-500 hover:text-stone-700"
+                  className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
                 >
                   Skip <X className="w-4 h-4 ml-1" />
                 </Button>
@@ -366,7 +366,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 </motion.div>
               </AnimatePresence>
             </CardContent>
-            <div className="p-4 sm:p-6 border-t border-stone-200 flex items-center justify-between">
+            <div className="p-4 sm:p-6 border-t border-[#E0D8C8]/15 flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -377,12 +377,11 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 <ArrowLeft className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
-              <div className="text-xs sm:text-sm text-stone-500">
+              <div className="text-xs sm:text-sm text-[#E0D8C8]/60">
                 {currentStep + 1}/{steps.length}
               </div>
               <Button
                 onClick={handleNext}
-                className="bg-amber-700 hover:bg-amber-800"
                 size="sm"
               >
                 {currentStep === steps.length - 1 ? (

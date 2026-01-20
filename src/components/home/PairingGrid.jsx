@@ -131,7 +131,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
   if (pipesLoading || pairingsLoading || blendsLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-stone-600">
+      <div className="flex items-center justify-center py-12 text-[#E0D8C8]/60">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading pairing grid...
       </div>
@@ -139,12 +139,12 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   }
 
   return (
-    <Card className="border-stone-200 bg-[#e8d5b7]/10">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-[#1a2c42]">Pairing Grid</CardTitle>
-            <CardDescription className="text-[#1a2c42]">Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
+            <CardTitle>Pairing Grid</CardTitle>
+            <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
             </div>
             <div className="flex gap-2">
             <Button
@@ -174,7 +174,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       {!collapsed && (
         <CardContent className="space-y-3">
           {rows.length === 0 ? (
-            <div className="text-sm text-stone-600">No pipes found.</div>
+            <div className="text-sm text-[#E0D8C8]/60">No pipes found.</div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {rows.map((r) => (
@@ -306,33 +306,33 @@ function PipeCard({ row, allBlends }) {
   }, [selectedBlendId, allBlends]);
 
   return (
-    <div className="border rounded-lg p-3 bg-[#E8E8E8]">
-      <div className="font-semibold text-[#1a2c42]">{row.name}</div>
-      <div className="text-xs text-black mt-1">
+    <div className="border rounded-lg p-3 bg-[#1A2B3A]/50">
+      <div className="font-semibold">{row.name}</div>
+      <div className="text-xs text-[#E0D8C8]/60 mt-1">
         Focus: {row.focus?.length ? row.focus.join(", ") : "—"}
       </div>
-      <div className="text-xs text-black">
+      <div className="text-xs text-[#E0D8C8]/60">
         Dim: {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold text-[#1a2c42]">Top Matches:</div>
+        <div className="text-xs font-semibold">Top Matches:</div>
         {topMatches.length > 0 ? (
-          <div className="text-sm text-black space-y-1">
+          <div className="text-sm space-y-1">
             {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
-                <span className="truncate text-black">{rec.tobacco_name || rec.name || "Tobacco"}</span>
-                 <span className="text-black font-medium">{rec.score ?? "—"}</span>
+                <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
+                 <span className="font-medium">{rec.score ?? "—"}</span>
               </div>
             ))}
           </div>
         ) : (
-          <span className="text-xs text-black">No recommendations yet.</span>
+          <span className="text-xs">No recommendations yet.</span>
         )}
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold text-[#1a2c42]">Check Any Blend:</div>
+        <div className="text-xs font-semibold">Check Any Blend:</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
           <SelectTrigger className="text-sm">
             <SelectValue placeholder="Select a blend..." />
@@ -348,8 +348,8 @@ function PipeCard({ row, allBlends }) {
         {selectedBlendId && (
           <div className="space-y-2">
             <div className="flex justify-between gap-2 text-sm">
-              <span className="truncate text-black">{selectedBlendName}</span>
-              <span className="text-black font-medium">
+              <span className="truncate">{selectedBlendName}</span>
+              <span className="font-medium">
                 {selectedBlendScore !== null ? selectedBlendScore : "No score"}
               </span>
             </div>
