@@ -66,59 +66,39 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   });
 
   return (
-    <Card className="border-[#A35C5C]/30 bg-[#243548]/50">
+    <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-[#E0D8C8] font-bold text-lg">
+        <CardTitle className="font-bold text-lg">
           {isAppleBuild ? "Inventory Insights" : "Collection Insights"}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList
-            className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"} mb-6 bg-white border border-[#E5E5E5]`}
-          >
+          <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
             {isAppleBuild ? (
-              <TabsTrigger
-                value="stats"
-                className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-              >
+              <TabsTrigger value="stats" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span>Stats</span>
               </TabsTrigger>
             ) : (
               <>
-                <TabsTrigger
-                  value="log"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
+                <TabsTrigger value="log" className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4" />
                   <span className="hidden sm:inline">Log</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="reference"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
+                <TabsTrigger value="reference" className="flex items-center gap-2">
                   <Grid3x3 className="w-4 h-4" />
                   <span className="hidden sm:inline">Pairing Grid</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="rotation"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
+                <TabsTrigger value="rotation" className="flex items-center gap-2">
                   <CalendarClock className="w-4 h-4" />
                   <span className="hidden sm:inline">Rotation</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="stats"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
+                <TabsTrigger value="stats" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   <span className="hidden sm:inline">Stats</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="aging"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white relative"
-                >
+                <TabsTrigger value="aging" className="flex items-center gap-2 relative">
                   <Clock className="w-4 h-4" />
                   <span className="hidden sm:inline">Aging</span>
                   {agingAlertCount > 0 && (
@@ -128,10 +108,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     </div>
                   )}
                 </TabsTrigger>
-                <TabsTrigger
-                  value="reports"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
+                <TabsTrigger value="reports" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   <span className="hidden sm:inline">Reports</span>
                 </TabsTrigger>
@@ -160,11 +137,11 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
 
               <TabsContent value="reports" className="mt-0">
                 <div className="space-y-4">
-                  <div className="text-sm text-white mb-4">
+                  <div className="text-sm mb-4">
                     Download collection reports, exports, and comprehensive analysis documents.
                   </div>
                   <CollectionReportExporter user={user} />
-                  <p className="text-xs text-white/80 mt-4">
+                  <p className="text-xs opacity-70 mt-4">
                     Additional report formats coming soon.
                   </p>
                 </div>
