@@ -179,9 +179,52 @@ export default function HowTo() {
       ]
     },
     {
+      id: "cellar-aging",
+      icon: Archive,
+      title: "Cellar Management & Aging",
+      color: "text-purple-400",
+      guides: [
+        {
+          q: "How to view your aging dashboard",
+          steps: [
+            "Go to Home page",
+            "Find the 'Cellar Aging' or 'Aging Dashboard' section",
+            "View all cellared tobacco blends organized by age",
+            "Color coding shows aging status: not ready, aging, ready to enjoy",
+            "Tap on any blend to see full aging details",
+            "Check which blends are recommended for smoking based on aging potential",
+            "Track progress toward optimal aging"
+          ]
+        },
+        {
+          q: "How to use aging recommendations",
+          steps: [
+            "Open a tobacco blend detail page",
+            "Check the 'Aging Potential' field (Excellent, Good, Fair, or Poor)",
+            "View the Cellar Log to see when tobacco was cellared",
+            "The aging dashboard automatically calculates how long it's been aging",
+            "Look for status badge showing current aging status",
+            "Follow recommendations for when to start smoking (ready, keep aging, etc.)",
+            "Premium feature helps optimize your cellaring decisions"
+          ]
+        },
+        {
+          q: "How to forecast when tobacco will run out",
+          steps: [
+            "Go to Tobacco detail page",
+            "Check Open Tobacco tab to see current quantities",
+            "View recent smoking logs to see usage frequency",
+            "The system calculates estimated depletion dates based on your smoking habits",
+            "Plan future purchases when inventory is forecasted to run low",
+            "Use projections to decide which cellared tins to rotate into open stock"
+          ]
+        }
+      ]
+    },
+    {
       id: "inventory-tracking",
       icon: Archive,
-      title: "Inventory & Cellar Management",
+      title: "Smoking Log & Inventory",
       color: "text-purple-400",
       guides: [
         {
@@ -194,7 +237,7 @@ export default function HowTo() {
             "Select which tobacco blend",
             "Enter number of bowls smoked",
             "Optionally mark as 'Break-in session' if applicable",
-            "Add notes about the experience",
+            "Add notes about the experience, flavor impressions, etc.",
             "Save - inventory will automatically reduce for open tobacco quantities (Premium)"
           ]
         },
