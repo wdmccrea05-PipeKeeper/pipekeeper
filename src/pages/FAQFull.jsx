@@ -4,6 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ChevronDown, Wrench, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 export default function FAQFull() {
   const [openItems, setOpenItems] = useState({});
@@ -177,49 +178,87 @@ export default function FAQFull() {
 
       <Section title="Premium Feature Definitions">
         <Q id="free-vs-premium" q="What's the difference between Free and Premium?">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-[#1a2c42] mb-2">Free Features:</h4>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>Manual pipe and tobacco entry</li>
-                <li>Organize and browse your collection</li>
-                <li>Track dimensions, materials, and basic details</li>
-                <li>Manual cellar log for inventory tracking</li>
-                <li>Rate and favorite your pipes and tobacco</li>
-                <li>View recent additions</li>
-                <li>Basic collection statistics</li>
-                <li>Brand logo library with custom uploads</li>
-                <li>7-day free trial of Premium features</li>
-              </ul>
+          {isAppleBuild ? (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-[#1a2c42] mb-2">Free on iOS:</h4>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Manual pipe and tobacco entry</li>
+                  <li>Organize and browse your collection</li>
+                  <li>Track dimensions, materials, and basic details</li>
+                  <li>Manual cellar inventory tracking</li>
+                  <li>Rate and favorite your pipes and tobacco</li>
+                  <li>View recent additions</li>
+                  <li>Basic collection statistics</li>
+                  <li>Brand logo library with custom uploads</li>
+                  <li>7-day free trial of Premium features</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#1a2c42] mb-2">Premium on iOS:</h4>
+                <p className="text-[#1a2c42]/80 mb-3">Premium on iOS focuses on collection organization, documentation, and advanced management:</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>AI photo identification for pipes (maker, era, authenticity)</li>
+                  <li>AI market valuation lookups for insurance documentation</li>
+                  <li>Bulk CSV import/export for pipes & tobacco</li>
+                  <li>Quick Edit: Batch update multiple items at once</li>
+                  <li>Advanced PDF exports with photos and valuations</li>
+                  <li>Usage log tracking with inventory management</li>
+                  <li>Cellar transaction log with complete history</li>
+                  <li>Aging dashboard for cellared inventory</li>
+                  <li>Inventory forecasting based on usage patterns</li>
+                  <li>Pipe maintenance & restoration log</li>
+                  <li>Advanced collection statistics and trends</li>
+                  <li>Unlimited pipes and tobacco blends</li>
+                  <li>Priority customer support</li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>AI Expert Tobacconist chat for personalized recommendations</li>
-                <li>AI pipe-tobacco pairing matrix with scoring</li>
-                <li>AI tobacco matching engine for each pipe</li>
-                <li>AI collection optimizer with gap analysis</li>
-                <li>AI photo identification for pipes (stamps, shapes, makers)</li>
-                <li>AI market value lookup and automated tracking</li>
-                <li>AI break-in schedule generator for new pipes</li>
-                <li>AI pipe specialization recommendations</li>
-                <li>AI measurement calculator from photos</li>
-                <li>AI web search for auto-filling pipe & tobacco details</li>
-                <li>AI What-If scenario analysis for collection changes</li>
-                <li>Bulk CSV import/export for pipes & tobacco</li>
-                <li>Quick Edit: Batch update multiple blends at once</li>
-                <li>Advanced PDF exports for insurance documentation</li>
-                <li>Smoking log with auto inventory reduction</li>
-                <li>Pipe rest status tracking with recommendations</li>
-                <li>Cellar log with transaction history</li>
-                <li>Community: Public profiles, search, follow collections</li>
-                <li>Comments on pipes, tobacco, and smoking logs</li>
-                <li>Instant messaging with friends (real-time chat)</li>
-                <li>Unlimited pipes and tobacco blends</li>
-                <li>Priority customer support</li>
-              </ul>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-[#1a2c42] mb-2">Free Features:</h4>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Manual pipe and tobacco entry</li>
+                  <li>Organize and browse your collection</li>
+                  <li>Track dimensions, materials, and basic details</li>
+                  <li>Manual cellar log for inventory tracking</li>
+                  <li>Rate and favorite your pipes and tobacco</li>
+                  <li>View recent additions</li>
+                  <li>Basic collection statistics</li>
+                  <li>Brand logo library with custom uploads</li>
+                  <li>7-day free trial of Premium features</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>AI Expert Tobacconist chat for personalized recommendations</li>
+                  <li>AI pipe-tobacco pairing matrix with scoring</li>
+                  <li>AI tobacco matching engine for each pipe</li>
+                  <li>AI collection optimizer with gap analysis</li>
+                  <li>AI photo identification for pipes (stamps, shapes, makers)</li>
+                  <li>AI market value lookup and automated tracking</li>
+                  <li>AI break-in schedule generator for new pipes</li>
+                  <li>AI pipe specialization recommendations</li>
+                  <li>AI measurement calculator from photos</li>
+                  <li>AI web search for auto-filling pipe & tobacco details</li>
+                  <li>AI What-If scenario analysis for collection changes</li>
+                  <li>Bulk CSV import/export for pipes & tobacco</li>
+                  <li>Quick Edit: Batch update multiple blends at once</li>
+                  <li>Advanced PDF exports for insurance documentation</li>
+                  <li>Smoking log with auto inventory reduction</li>
+                  <li>Pipe rest status tracking with recommendations</li>
+                  <li>Cellar log with transaction history</li>
+                  <li>Community: Public profiles, search, follow collections</li>
+                  <li>Comments on pipes, tobacco, and smoking logs</li>
+                  <li>Instant messaging with friends (real-time chat)</li>
+                  <li>Unlimited pipes and tobacco blends</li>
+                  <li>Priority customer support</li>
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
         </Q>
 
         <Q id="premium-smoking-log" q="Premium: Smoking Log">
