@@ -122,17 +122,26 @@ export default function CellarLog({ blend }) {
       
       const net = Math.max(0, added - removed);
       
-      // Find oldest cellared date
+      // Find oldest cellared date from added logs
       const addedLogs = allLogs.filter(l => l.transaction_type === 'added' && l.date);
       const oldestDate = addedLogs.length > 0 
         ? addedLogs.sort((a, b) => new Date(a.date) - new Date(b.date))[0].date
         : null;
       
-      // Update blend with bulk_cellared since we're tracking in ounces
-      await base44.entities.TobaccoBlend.update(blend.id, {
+      // Update blend with bulk_cellared to sync all sources
+      // This makes the cellar log the source of truth
+      const updateData = {
         bulk_cellared: net,
         bulk_cellared_date: net > 0 ? oldestDate : null,
-      });
+        // Also reset tin and pouch cellared to 0 when using transaction log
+        // to avoid confusion - users should use transaction log OR inventory, not both
+        tin_tins_cellared: 0,
+        tin_cellared_date: null,
+        pouch_pouches_cellared: 0,
+        pouch_cellared_date: null,
+      };
+      
+      await base44.entities.TobaccoBlend.update(blend.id, updateData);
     } catch (error) {
       console.error('Failed to sync blend cellar quantities:', error);
     }
