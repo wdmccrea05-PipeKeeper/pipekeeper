@@ -276,38 +276,48 @@ export default function PipeDetailPage() {
           </Card>
         )}
 
-        {/* Pipe Specialization */}
+        {/* Pipe Management Card with Tabs */}
         {blends.length > 0 && (
-          <div className="mb-6">
-            <PipeSpecialization 
-              pipe={pipe} 
-              blends={blends}
-              onUpdate={(data) => updateMutation.mutate(data)}
-              isPaidUser={isPaidUser}
-            />
-          </div>
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <Tabs defaultValue="specialization">
+                <TabsList className="grid grid-cols-4 w-full mb-6">
+                  <TabsTrigger value="specialization">Specialization</TabsTrigger>
+                  <TabsTrigger value="condition">Condition</TabsTrigger>
+                  <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+                  <TabsTrigger value="breakin">Break-In</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="specialization" className="mt-0">
+                  <PipeSpecialization 
+                    pipe={pipe} 
+                    blends={blends}
+                    onUpdate={(data) => updateMutation.mutate(data)}
+                    isPaidUser={isPaidUser}
+                  />
+                </TabsContent>
+
+                <TabsContent value="condition" className="mt-0">
+                  <PipeConditionTracker 
+                    pipe={pipe}
+                    onUpdate={(data) => updateMutation.mutate(data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="maintenance" className="mt-0">
+                  <MaintenanceLog 
+                    pipeId={pipeId}
+                    pipeName={pipe.name}
+                  />
+                </TabsContent>
+
+                <TabsContent value="breakin" className="mt-0">
+                  <BreakInSchedule pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         )}
-
-        {/* Pipe Condition Tracking */}
-        <div className="mb-6">
-          <PipeConditionTracker 
-            pipe={pipe}
-            onUpdate={(data) => updateMutation.mutate(data)}
-          />
-        </div>
-
-        {/* Maintenance Log */}
-        <div className="mb-6">
-          <MaintenanceLog 
-            pipeId={pipeId}
-            pipeName={pipe.name}
-          />
-        </div>
-
-        {/* Break-In Schedule */}
-        <div className="mb-6">
-          <BreakInSchedule pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
-        </div>
 
         {/* Interchangeable Bowls */}
         {pipe.interchangeable_bowls && pipe.interchangeable_bowls.length > 0 && (
