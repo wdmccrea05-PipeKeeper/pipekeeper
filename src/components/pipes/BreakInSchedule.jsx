@@ -281,7 +281,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
                variant="outline"
                size="sm"
                onClick={() => setCollapsed(!collapsed)}
-               className="bg-white/5 text-[#E0D8C8] border border-white/10 hover:bg-white/10"
+               className="bg-[#223447]/5 text-[#E0D8C8] border border-white/10 hover:bg-[#223447]/10"
              >
                {collapsed ? 'Show' : 'Hide'}
              </Button>
@@ -300,7 +300,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
       {schedule.length > 0 && !collapsed && (
         <CardContent>
           {progress < 100 && (
-            <div className="mb-4 bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="mb-4 bg-[#223447]/10 rounded-full h-2 overflow-hidden">
               <div 
                 className="bg-[#A35C5C] h-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
@@ -316,7 +316,7 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
                   className={`p-4 rounded-lg border transition-all ${
                     isComplete 
                       ? 'bg-green-500/15 border-green-500/30' 
-                      : 'bg-white/5 border-white/10'
+                      : 'bg-[#223447]/5 border-white/10'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
