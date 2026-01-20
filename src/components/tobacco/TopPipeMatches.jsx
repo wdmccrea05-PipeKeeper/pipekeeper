@@ -74,13 +74,13 @@ export default function TopPipeMatches({ blend, pipes }) {
     }
   }, [savedPairings?.generated_date, collectionOptimization?.generated_date, pipesFocusFingerprint]);
 
-  // Auto-trigger matching when blend is first loaded
+  // Auto-trigger matching when blend is first loaded or when data changes
   useEffect(() => {
-    if (blend && pipes.length > 0 && !matches && !loading) {
-      // Always auto-trigger on load
+    if (blend && pipes.length > 0 && !loading) {
+      // Always auto-trigger on load or when data changes
       updateMatchesFromData();
     }
-  }, [blend?.id, pipes.length]);
+  }, [blend?.id, pipes.length, savedPairings?.pairings, userProfile?.id]);
 
 
 
