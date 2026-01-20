@@ -250,13 +250,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* AI Search Section */}
       {!pipe && (
         <>
-          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+          <Card className="border-[#A35C5C]/50" variant="elevated">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-amber-800 flex items-center gap-2">
+              <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
                 <Search className="w-5 h-5" />
                 Search for Pipe
               </CardTitle>
-              <p className="text-sm text-stone-600">
+              <p className="text-sm text-[#E0D8C8]/70">
                 Search by maker or model to auto-fill details
               </p>
             </CardHeader>
@@ -276,19 +276,19 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-stone-200" />
+              <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-stone-500">Or enter manually</span>
+              <span className="bg-[#243548] px-2 text-[#E0D8C8]/70">Or enter manually</span>
             </div>
           </div>
         </>
       )}
 
       {/* Photos Section */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Pipe Photos</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">Pipe Photos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
@@ -337,10 +337,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Stamping Photos */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Stamping Photos</CardTitle>
-          <p className="text-sm text-stone-500">Photos of maker stamps, logos, or markings for identification</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">Stamping Photos</CardTitle>
+          <p className="text-sm text-[#E0D8C8]/70">Photos of maker stamps, logos, or markings for identification</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
@@ -389,9 +389,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Basic Info */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Basic Information</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -468,12 +468,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Physical Characteristics */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg text-stone-800">Physical Characteristics</CardTitle>
+            <CardTitle className="text-lg text-[#E0D8C8]">Physical Characteristics</CardTitle>
             {dataSource && (
-              <p className="text-xs text-stone-500 mt-1">Data source: {dataSource}</p>
+              <p className="text-xs text-[#E0D8C8]/70 mt-1">Data source: {dataSource}</p>
             )}
           </div>
           <Button
@@ -708,9 +708,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Value & Notes */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Value & Notes</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">Value & Notes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -766,13 +766,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Interchangeable Bowls */}
-      <Card className="border-stone-200">
+      <Card className="border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800 flex items-center gap-2">
+          <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5" />
             Interchangeable Bowls
           </CardTitle>
-          <p className="text-sm text-stone-500">Does this pipe have additional/interchangeable bowls? (e.g., Falcon, Yello-Bole Duo)</p>
+          <p className="text-sm text-[#E0D8C8]/70">Does this pipe have additional/interchangeable bowls? (e.g., Falcon, Yello-Bole Duo)</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3">

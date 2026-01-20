@@ -406,9 +406,9 @@ export default function TobaccoDetailPage() {
 
             {/* Tobacco Components */}
             {blend.tobacco_components?.length > 0 && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-stone-500 mb-2">Tobacco Components</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-2">Tobacco Components</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.tobacco_components.map((comp, idx) => (
                       <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
@@ -422,12 +422,12 @@ export default function TobaccoDetailPage() {
 
             {/* Flavor Notes */}
             {blend.flavor_notes?.length > 0 && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-stone-500 mb-2">Flavor Notes</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-2">Flavor Notes</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.flavor_notes.map((note, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-stone-100 text-stone-700 border-stone-200">
+                      <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
                         {note}
                       </Badge>
                     ))}
@@ -438,20 +438,20 @@ export default function TobaccoDetailPage() {
 
             {/* Aging Potential */}
             {blend.aging_potential && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-stone-500 mb-1">Aging Potential</p>
-                  <p className="font-medium text-stone-800">{blend.aging_potential}</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Aging Potential</p>
+                  <p className="font-medium text-[#E0D8C8]">{blend.aging_potential}</p>
                 </CardContent>
               </Card>
             )}
 
             {/* Notes */}
             {blend.notes && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-stone-500 mb-1">Notes</p>
-                  <p className="text-stone-700">{blend.notes}</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Notes</p>
+                  <p className="text-[#E0D8C8]/80">{blend.notes}</p>
                 </CardContent>
               </Card>
             )}
@@ -460,7 +460,7 @@ export default function TobaccoDetailPage() {
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (
-          <Card className="border-stone-200 mt-8">
+          <Card className="border-white/10 mt-8">
             <CardContent className="p-6">
               <CommentSection
                 entityType="blend"

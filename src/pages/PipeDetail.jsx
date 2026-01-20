@@ -258,15 +258,15 @@ export default function PipeDetailPage() {
 
         {/* AI Specialization Suggestion - show prominently for pipes without focus */}
         {blends.length > 0 && (!pipe.focus || pipe.focus.length === 0) && (
-          <Card className="mb-6 border-purple-300 bg-gradient-to-br from-purple-50 to-white">
+          <Card className="mb-6 border-[#A35C5C]/50" variant="elevated">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-900">
+              <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                 <Sparkles className="w-5 h-5" />
                 AI Specialization Suggestion
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-stone-700 mb-4">
+              <p className="text-sm text-[#E0D8C8]/70 mb-4">
                 Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.
               </p>
               <SpecializationRecommender 
@@ -405,23 +405,23 @@ export default function PipeDetailPage() {
             {/* Quick Info */}
             <div className="grid grid-cols-2 gap-4">
               {pipe.estimated_value && (
-                <Card className="bg-emerald-50 border-emerald-200">
+                <Card className="border-emerald-500/30 bg-emerald-500/15">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                    <DollarSign className="w-5 h-5 text-emerald-400" />
                     <div>
-                      <p className="text-xs text-emerald-600">Est. Value</p>
-                      <p className="font-semibold text-emerald-800">${Number(pipe.estimated_value).toFixed(2)}</p>
+                      <p className="text-xs text-[#E0D8C8]/70">Est. Value</p>
+                      <p className="font-semibold text-emerald-200">${Number(pipe.estimated_value).toFixed(2)}</p>
                     </div>
                   </CardContent>
                 </Card>
               )}
               {pipe.purchase_price && (
-                <Card className="bg-amber-50 border-amber-200">
+                <Card className="border-amber-500/30 bg-amber-500/15">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-amber-600" />
+                    <DollarSign className="w-5 h-5 text-amber-400" />
                     <div>
-                      <p className="text-xs text-amber-600">Paid</p>
-                      <p className="font-semibold text-amber-800">${Number(pipe.purchase_price).toFixed(2)}</p>
+                      <p className="text-xs text-[#E0D8C8]/70">Paid</p>
+                      <p className="font-semibold text-amber-200">${Number(pipe.purchase_price).toFixed(2)}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -453,7 +453,7 @@ export default function PipeDetailPage() {
             </div>
 
             {/* Details Grid */}
-            <Card className="border-stone-200">
+            <Card className="border-white/10">
               <CardContent className="p-6">
                 <div className="flex justify-end mb-3">
                   <Button
@@ -558,43 +558,43 @@ export default function PipeDetailPage() {
                   )}
                 </div>
                 {(pipe?.dimensions_found || pipe?.dimensions_source) && (
-                  <div className="mt-4 pt-4 border-t border-stone-200">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span className="font-medium text-emerald-800">Verified measurements</span>
-                      {pipe?.dimensions_source && (
-                        <span className="text-emerald-700">Source: {pipe.dimensions_source}</span>
-                      )}
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span className="font-medium text-emerald-200">Verified measurements</span>
+                        {pipe?.dimensions_source && (
+                          <span className="text-emerald-300">Source: {pipe.dimensions_source}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Stamping */}
             {pipe.stamping && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-6">
-                  <p className="text-xs text-stone-500 mb-1">Stamping</p>
-                  <p className="font-medium text-stone-800">{pipe.stamping}</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Stamping</p>
+                  <p className="font-medium text-[#E0D8C8]">{pipe.stamping}</p>
                 </CardContent>
               </Card>
             )}
 
             {/* Notes */}
             {(pipe.smoking_characteristics || pipe.notes) && (
-              <Card className="border-stone-200">
+              <Card className="border-white/10">
                 <CardContent className="p-6 space-y-4">
                   {pipe.smoking_characteristics && (
                     <div>
-                      <p className="text-xs text-stone-500 mb-1">Smoking Characteristics</p>
-                      <p className="text-stone-700">{pipe.smoking_characteristics}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Smoking Characteristics</p>
+                      <p className="text-[#E0D8C8]/80">{pipe.smoking_characteristics}</p>
                     </div>
                   )}
                   {pipe.notes && (
                     <div>
-                      <p className="text-xs text-stone-500 mb-1">Notes</p>
-                      <p className="text-stone-700">{pipe.notes}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Notes</p>
+                      <p className="text-[#E0D8C8]/80">{pipe.notes}</p>
                     </div>
                   )}
                 </CardContent>
@@ -605,18 +605,18 @@ export default function PipeDetailPage() {
 
         {/* AI Features Tabs */}
         <Tabs defaultValue="match" className="space-y-6">
-          <TabsList className="bg-white border border-stone-200 p-1 overflow-x-auto flex-nowrap w-full">
-            <TabsTrigger value="match" className="data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 shrink-0">
+          <TabsList className="bg-transparent border border-white/10 p-1 overflow-x-auto flex-nowrap w-full">
+            <TabsTrigger value="match" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Tobacco Matching</span>
               <span className="sm:hidden">Matching</span>
             </TabsTrigger>
-            <TabsTrigger value="value" className="data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800 shrink-0">
+            <TabsTrigger value="value" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <DollarSign className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Value Lookup</span>
               <span className="sm:hidden">Value</span>
             </TabsTrigger>
-            <TabsTrigger value="identify" className="data-[state=active]:bg-violet-100 data-[state=active]:text-violet-800 shrink-0">
+            <TabsTrigger value="identify" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Identify Pipe</span>
               <span className="sm:hidden">Identify</span>
@@ -669,7 +669,7 @@ export default function PipeDetailPage() {
 
         {/* Comments Section */}
         {userProfile?.allow_comments && (
-          <Card className="border-stone-200 mt-8">
+          <Card className="border-white/10 mt-8">
             <CardContent className="p-6">
               <CommentSection
                 entityType="pipe"
