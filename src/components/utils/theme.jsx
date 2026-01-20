@@ -114,6 +114,13 @@ export const BADGE = {
   error: 'bg-[#BE3C3C] text-white border border-[#BE3C3C]/50',
 };
 
+// Tab variants (standardized across app)
+export const TABS = {
+  list: 'bg-white border-b border-[#1a2c42]/20',
+  trigger: 'text-[#1a2c42] data-[state=active]:bg-[#8B3A3A] data-[state=active]:text-[#E0D8C8] transition-all rounded-t-lg px-4 py-2 font-medium',
+  triggerIcon: 'text-[#1a2c42] data-[state=active]:text-[#E0D8C8]',
+};
+
 // Empty states
 export const EMPTY_STATE = {
   container: 'text-center py-12 px-6',
