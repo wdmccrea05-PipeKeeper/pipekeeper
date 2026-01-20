@@ -20,6 +20,8 @@ import QuickEditPanel from "@/components/tobacco/QuickEditPanel";
 import { toast } from "sonner";
 import { safeUpdate, safeBatchUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
+import { PK_THEME } from "@/components/utils/pkTheme";
+import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 
 const BLEND_TYPES = [
   "All Types",
@@ -231,7 +233,7 @@ export default function TobaccoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
@@ -240,10 +242,10 @@ export default function TobaccoPage() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold text-[#E0D8C8]">My Tobacco</h1>
-            <p className="text-[#E0D8C8]/70 mt-1">
+            <PkPageTitle>My Tobacco</PkPageTitle>
+            <PkText className="mt-1">
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
-            </p>
+            </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
             <TobaccoExporter />
@@ -255,8 +257,8 @@ export default function TobaccoPage() {
                 }}
                 variant={quickEditMode ? "default" : "outline"}
                 className={quickEditMode 
-                  ? "bg-[#8b3a3a] hover:bg-[#6d2e2e]"
-                  : "border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+                  ? PK_THEME.buttonPrimary
+                  : `${PK_THEME.buttonSecondary} text-white`
                 }
               >
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -265,15 +267,14 @@ export default function TobaccoPage() {
             )}
             <Button 
               onClick={() => setShowQuickSearch(true)}
-              variant="outline"
-              className="border-[#e8d5b7]/30 text-black hover:bg-[#8b3a3a]/20"
+              className={PK_THEME.buttonSecondary}
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Quick Search & Add
             </Button>
             <Button 
               onClick={() => { setEditingBlend(null); setShowForm(true); }}
-              className="bg-[#8b3a3a] hover:bg-[#6d2e2e]"
+              className={PK_THEME.buttonPrimary}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Blend
@@ -284,7 +285,7 @@ export default function TobaccoPage() {
         {/* Quick Edit Select All */}
         {quickEditMode && (
           <div 
-            className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4 cursor-pointer"
+            className={`flex items-center gap-3 p-4 ${PK_THEME.card} rounded-xl mb-4 cursor-pointer`}
             onClick={toggleSelectAll}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
@@ -293,7 +294,7 @@ export default function TobaccoPage() {
               onCheckedChange={toggleSelectAll}
               className="touch-none pointer-events-none"
             />
-            <span className="font-medium text-amber-900">
+            <span className={`font-medium ${PK_THEME.textBody}`}>
               Select All ({selectedForEdit.length} of {filteredBlends.length} selected)
             </span>
           </div>
@@ -307,17 +308,17 @@ export default function TobaccoPage() {
           className="flex flex-col sm:flex-row gap-3 mb-6"
         >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${PK_THEME.textMuted}`} />
             <Input
               placeholder="Search by name, manufacturer, or blend type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
+              className={`pl-10 ${PK_THEME.input}`}
               aria-label="Search tobacco blends"
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+            <SelectTrigger className={`w-full sm:w-40 ${PK_THEME.input}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -325,7 +326,7 @@ export default function TobaccoPage() {
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
-            <SelectTrigger className="w-full sm:w-40 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+            <SelectTrigger className={`w-full sm:w-40 ${PK_THEME.input}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -333,14 +334,14 @@ export default function TobaccoPage() {
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-48 bg-[#243548] border-[#e8d5b7]/30 text-[#e8d5b7]">
+            <SelectTrigger className={`w-full sm:w-48 ${PK_THEME.input}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {SORT_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="flex border border-[#e8d5b7]/30 rounded-lg bg-[#243548]">
+          <div className={`flex border rounded-lg ${PK_THEME.card}`}>
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
@@ -348,7 +349,7 @@ export default function TobaccoPage() {
                 setViewMode('grid');
                 localStorage.setItem('tobaccoViewMode', 'grid');
               }}
-              className={`rounded-r-none ${viewMode === 'grid' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+              className={`rounded-r-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
             >
               <Grid3X3 className="w-4 h-4" />
             </Button>
@@ -359,7 +360,7 @@ export default function TobaccoPage() {
                 setViewMode('list');
                 localStorage.setItem('tobaccoViewMode', 'list');
               }}
-              className={`rounded-l-none ${viewMode === 'list' ? 'bg-[#8b3a3a] hover:bg-[#6d2e2e] text-[#e8d5b7]' : 'text-[#e8d5b7] hover:bg-[#8b3a3a]/20'}`}
+              className={`rounded-l-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
             >
               <List className="w-4 h-4" />
             </Button>
