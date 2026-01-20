@@ -1583,7 +1583,7 @@ Provide concrete, actionable steps with specific field values.`,
                 {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </Button>
             </div>
-            <CardDescription className="mt-2">
+            <CardDescription className="mt-2 text-stone-700">
               Maximize your collection's potential with strategic pipe specializations
             </CardDescription>
           </div>
@@ -1708,7 +1708,7 @@ Provide concrete, actionable steps with specific field values.`,
                             
                             {pv.focus && pv.focus.length > 0 && (
                               <div className="mb-3">
-                                <p className="text-sm font-medium text-indigo-800 mb-1">Current Focus:</p>
+                                <p className="text-sm font-medium text-indigo-900 mb-1">Current Focus:</p>
                                 <div className="flex flex-wrap gap-1">
                                   {pv.focus.map((type, i) => (
                                     <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
@@ -1721,7 +1721,7 @@ Provide concrete, actionable steps with specific field values.`,
 
                             {displaySpec.recommended_blend_types?.length > 0 && (
                               <div className="mb-3">
-                                <p className="text-sm font-medium text-blue-800 mb-1">Specialize for:</p>
+                                <p className="text-sm font-medium text-blue-900 mb-1">Specialize for:</p>
                                 <div className="flex flex-wrap gap-1">
                                   {displaySpec.recommended_blend_types.map((type, i) => (
                                     <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
@@ -1732,7 +1732,7 @@ Provide concrete, actionable steps with specific field values.`,
                               </div>
                             )}
 
-                            <p className="text-sm text-stone-600 mb-2">{displaySpec.reasoning}</p>
+                            <p className="text-sm text-stone-700 mb-2">{displaySpec.reasoning}</p>
                             
                             {displaySpec.score_improvement && (
                               <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
