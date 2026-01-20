@@ -37,7 +37,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 bg-white/90 hover:bg-white shadow-md"
+              className="h-8 w-8 bg-[#223447]/90 hover:bg-[#223447] shadow-md"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -60,17 +60,17 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
          <p className="text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || 'Unknown maker'}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
-              <Badge variant="secondary" className="bg-amber-100/80 text-amber-800 border-amber-200/50 text-xs">
+              <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
                 {pipe.shape}
               </Badge>
             )}
             {pipe.bowl_material && (
-              <Badge variant="secondary" className="bg-stone-100 text-stone-600 border-stone-200/50 text-xs">
+              <Badge variant="secondary" className="bg-slate-700/40 text-slate-100 border-slate-600/50 text-xs">
                 {pipe.bowl_material}
               </Badge>
             )}
             {pipe.chamber_volume && (
-              <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200/50 text-xs">
+              <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
                 {pipe.chamber_volume}
               </Badge>
             )}

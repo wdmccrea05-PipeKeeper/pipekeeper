@@ -70,7 +70,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 bg-white/90 hover:bg-white shadow-md"
+              className="h-8 w-8 bg-[#223447]/90 hover:bg-[#223447] shadow-md"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
