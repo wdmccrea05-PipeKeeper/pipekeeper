@@ -66,8 +66,8 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
 
     try {
       setUploadingPhoto(true);
-      const { data } = await base44.integrations.Core.UploadFile({ file });
-      setBowlForm({ ...bowlForm, photo: data.file_url });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setBowlForm({ ...bowlForm, photo: file_url });
     } catch (error) {
       console.error("Error uploading photo:", error);
       alert("Failed to upload photo. Please try again.");
