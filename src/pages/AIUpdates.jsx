@@ -133,10 +133,10 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-[#1e3a5f]">
+        <h1 className="text-3xl font-bold text-[#e8d5b7]">
           {isAppleBuild ? "Inventory Tools" : "AI Updates"}
         </h1>
-        <p className="text-sm text-[#2c4f7c] mt-2">
+        <p className="text-sm text-[#e8d5b7]/70 mt-2">
           {isAppleBuild
             ? "Tools for cataloging and standardizing collection metadata for easier searching and reporting."
             : "Review what's out of date and regenerate with approval. You can undo changes and reclassify blends."}
@@ -144,15 +144,15 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
       </div>
 
       <div className="space-y-4">
-        <Card className="border-[#8b3a3a]/40 bg-white">
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#1e3a5f]">
-              <Tags className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <Tags className="w-5 h-5 text-blue-400" />
               Category Standardization
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-[#2c4f7c] mb-4">
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
               Standardize your existing inventory categories for improved accuracy and filtering.
             </p>
             <Button
@@ -171,15 +171,15 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           </CardContent>
         </Card>
 
-        <Card className="border-[#8b3a3a]/40 bg-white">
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#1e3a5f]">
-              <CheckCircle2 className="w-5 h-5 text-teal-600" />
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <CheckCircle2 className="w-5 h-5 text-teal-400" />
               Pipe Measurements
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-[#2c4f7c] mb-4">
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
               Fill missing dimensions with verified manufacturer specs (inventory metadata only).
             </p>
             <Button
