@@ -79,18 +79,18 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <span className="hidden sm:inline">Stats</span>
                 </TabsTrigger>
                 <TabsTrigger
-                  value="reports"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Reports</span>
-                </TabsTrigger>
-                <TabsTrigger
                   value="aging"
                   className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
                 >
                   <Wine className="w-4 h-4" />
                   <span className="hidden sm:inline">Aging</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reports"
+                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Reports</span>
                 </TabsTrigger>
               </>
             )}
