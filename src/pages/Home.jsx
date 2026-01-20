@@ -470,7 +470,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             <a href={createPageUrl('Pipes')}>
               <PkCard>
                 <PkCardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(1.1) sepia(0.5) hue-rotate(25deg) saturate(1.1)' }} />
+                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'invert(1) sepia(0.7) hue-rotate(25deg) saturate(1.5) brightness(0.95)' }} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <PkSubtext>Pipes</PkSubtext>
                   </PkCardContent>
