@@ -30,8 +30,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             className="w-24 h-24 mx-auto object-contain mix-blend-multiply"
           />
           <p className="text-stone-600 text-lg">
-            Manage your collection with AI-powered features for identification, 
-            valuation, and personalized tobacco pairing recommendations.
+            {isAppleBuild 
+              ? "Manage your collection with advanced organization, documentation, and valuation tools."
+              : "Manage your collection with AI-powered features for identification, valuation, and personalized tobacco pairing recommendations."}
           </p>
           <div className="grid grid-cols-2 gap-3 mt-6 text-left">
             <Card className="bg-amber-50 border-amber-200">
@@ -48,6 +49,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 <p className="text-xs text-emerald-700">Auto-fill details from web</p>
               </CardContent>
             </Card>
+            {!isAppleBuild && (
+            <>
             <Card className="bg-violet-50 border-violet-200">
               <CardContent className="p-4">
                 <Star className="w-6 h-6 text-violet-600 mb-2" />
@@ -62,13 +65,15 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 <p className="text-xs text-blue-700">Get collection insights</p>
               </CardContent>
             </Card>
+            </>
+            )}
           </div>
         </div>
       )
     },
     {
       title: "Set Your Preferences",
-      description: "Tell us about your smoking style for personalized recommendations",
+      description: isAppleBuild ? "Organize your collection preferences" : "Tell us about your smoking style for personalized recommendations",
       icon: Users,
       content: (
         <div className="space-y-4">
@@ -79,7 +84,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 User Profile
               </h4>
               <p className="text-stone-600 mb-4">
-                Create your smoking profile to get personalized recommendations based on:
+                {isAppleBuild ? "Set up your collection profile:" : "Create your smoking profile to get personalized recommendations based on:"}
               </p>
               <ul className="space-y-2 text-sm text-stone-700">
                 <li className="flex items-start gap-2">
@@ -95,25 +100,29 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   <span>Pipe size and shape preferences</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Smoking session duration</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Clenching style</span>
-                </li>
+                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                   <span>{isAppleBuild ? "Inventory organization preferences" : "Smoking session duration"}</span>
+                 </li>
+                 {!isAppleBuild && (
+                 <li className="flex items-start gap-2">
+                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                   <span>Clenching style</span>
+                 </li>
+                 )}
               </ul>
+              {!isAppleBuild && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800">
                   💡 Your profile influences all AI recommendations with highest priority
                 </p>
               </div>
+              )}
             </CardContent>
           </Card>
         </div>
       )
     },
-    {
+    ...(isAppleBuild ? [] : [{
       title: "Recommendation Priority",
       description: "How PipeKeeper ranks tobacco pairings",
       icon: Star,
@@ -123,57 +132,57 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Badge className="bg-amber-600 text-white shrink-0">1</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Your Profile Preferences</h4>
-                    <p className="text-sm text-stone-600">
-                      Highest priority. Recommendations favor your preferred blend types and strengths.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-amber-500 text-white shrink-0">2</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Pipe Focus</h4>
-                    <p className="text-sm text-stone-600">
-                      If you designate a pipe for specific blends (e.g., "English", "Aromatic"), 
-                      matches are heavily prioritized.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-stone-500 text-white shrink-0">3</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Pipe Characteristics</h4>
-                    <p className="text-sm text-stone-600">
-                      Bowl size, shape, material, and chamber volume determine which blends smoke best.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-stone-400 text-white shrink-0">4</Badge>
-                  <div>
-                    <h4 className="font-semibold text-stone-900">Blend Characteristics</h4>
-                    <p className="text-sm text-stone-600">
-                      Cut, strength, and flavor profile of the tobacco.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-900 font-medium mb-2">
-                  ✨ Personalization in Action
-                </p>
-                <p className="text-xs text-amber-800">
-                  A pipe with "English" focus + your preference for English blends = 
-                  maximum boost (+3.5 points). Scores are saved and only update when you request.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    },
+                   <Badge className="bg-amber-600 text-white shrink-0">1</Badge>
+                   <div>
+                     <h4 className="font-semibold text-stone-900">Your Profile Preferences</h4>
+                     <p className="text-sm text-stone-600">
+                       Highest priority. Recommendations favor your preferred blend types and strengths.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-amber-500 text-white shrink-0">2</Badge>
+                   <div>
+                     <h4 className="font-semibold text-stone-900">Pipe Focus</h4>
+                     <p className="text-sm text-stone-600">
+                       If you designate a pipe for specific blends (e.g., "English", "Aromatic"), 
+                       matches are heavily prioritized.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-stone-500 text-white shrink-0">3</Badge>
+                   <div>
+                     <h4 className="font-semibold text-stone-900">Pipe Characteristics</h4>
+                     <p className="text-sm text-stone-600">
+                       Bowl size, shape, material, and chamber volume determine which blends smoke best.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3">
+                   <Badge className="bg-stone-400 text-white shrink-0">4</Badge>
+                   <div>
+                     <h4 className="font-semibold text-stone-900">Blend Characteristics</h4>
+                     <p className="text-sm text-stone-600">
+                       Cut, strength, and flavor profile of the tobacco.
+                     </p>
+                   </div>
+                 </div>
+               </div>
+               <div className="mt-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                 <p className="text-sm text-amber-900 font-medium mb-2">
+                   ✨ Personalization in Action
+                 </p>
+                 <p className="text-xs text-amber-800">
+                   A pipe with "English" focus + your preference for English blends = 
+                   maximum boost (+3.5 points). Scores are saved and only update when you request.
+                 </p>
+               </div>
+             </CardContent>
+           </Card>
+         </div>
+       )
+    }]),
     {
       title: "Key Features",
       description: "Everything you can do with PipeKeeper",
@@ -208,6 +217,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             </CardContent>
           </Card>
 
+          {!isAppleBuild && (
+          <>
           <Card className="border-stone-200 hover:border-violet-300 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
@@ -235,6 +246,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
               </div>
             </CardContent>
           </Card>
+          </>
+          )}
 
           <Card className="border-stone-200 hover:border-purple-300 transition-colors">
             <CardContent className="p-4">
@@ -264,8 +277,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           <div>
             <h3 className="text-2xl font-bold text-stone-900 mb-2">You're All Set!</h3>
             <p className="text-stone-600">
-              Start by adding your first pipe or tobacco blend. 
-              Visit your Profile page to set your smoking preferences.
+              {isAppleBuild 
+                ? "Start by adding your first pipe or tobacco blend. Visit your Profile page to set your collection preferences."
+                : "Start by adding your first pipe or tobacco blend. Visit your Profile page to set your smoking preferences."}
             </p>
           </div>
           <div className="grid gap-3 max-w-md mx-auto">
