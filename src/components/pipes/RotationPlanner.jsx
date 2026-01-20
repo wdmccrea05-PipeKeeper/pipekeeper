@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CalendarClock, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 
 export default function RotationPlanner({ user }) {
+  const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
+  const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
@@ -90,12 +93,28 @@ export default function RotationPlanner({ user }) {
 
             {neverSmoked.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-red-500" />
-                  <h3 className="font-semibold text-sm">Never Smoked ({neverSmoked.length})</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <h3 className="font-semibold text-sm">Never Smoked ({neverSmoked.length})</h3>
+                  </div>
+                  {neverSmoked.length > 3 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedNeverSmoked(!expandedNeverSmoked)}
+                      className="h-7 text-xs"
+                    >
+                      {expandedNeverSmoked ? (
+                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>Show All <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  {neverSmoked.slice(0, 3).map(pipe => (
+                  {neverSmoked.slice(0, expandedNeverSmoked ? neverSmoked.length : 3).map(pipe => (
                     <Link 
                       key={pipe.id} 
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
@@ -118,12 +137,28 @@ export default function RotationPlanner({ user }) {
 
             {recentlySmoked.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <h3 className="font-semibold text-sm">Recently Smoked</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <h3 className="font-semibold text-sm">Recently Smoked</h3>
+                  </div>
+                  {recentlySmoked.length > 3 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedRecentlySmoked(!expandedRecentlySmoked)}
+                      className="h-7 text-xs"
+                    >
+                      {expandedRecentlySmoked ? (
+                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>Show More <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  {recentlySmoked.slice(0, 3).map(pipe => (
+                  {recentlySmoked.slice(0, expandedRecentlySmoked ? 10 : 3).map(pipe => (
                     <div 
                       key={pipe.id} 
                       className="flex items-center justify-between p-3 border border-green-200 rounded-lg"
