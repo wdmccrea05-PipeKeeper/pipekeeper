@@ -235,85 +235,41 @@ export default function TobaccoDetailPage() {
 
 
 
+        {/* Desktop layout: logo + cellaring side-by-side, details below */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Photo */}
-          <motion.div 
-            className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
-            layoutId={`blend-${blend.id}`}
-            onClick={() => setExpandedImage(blend.logo || blend.photo)}
-          >
-            {blend.logo || blend.photo ? (
-              <img 
-                src={blend.logo || blend.photo} 
-                alt={blend.name}
-                className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'} hover:scale-105 transition-transform duration-300`}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const fallbackLogo = getTobaccoLogo(blend.manufacturer);
-                  e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-6"><img src="' + fallbackLogo + '" class="w-full h-full object-contain" /></div>';
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white p-6">
+          {/* Left column: Photo + Cellaring */}
+          <div className="space-y-6">
+            {/* Photo */}
+            <motion.div 
+              className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
+              layoutId={`blend-${blend.id}`}
+              onClick={() => setExpandedImage(blend.logo || blend.photo)}
+            >
+              {blend.logo || blend.photo ? (
                 <img 
-                  src={getTobaccoLogo(blend.manufacturer)} 
-                  alt={blend.manufacturer || 'Tobacco'}
-                  className="w-full h-full object-contain"
+                  src={blend.logo || blend.photo} 
+                  alt={blend.name}
+                  className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'} hover:scale-105 transition-transform duration-300`}
                   onError={(e) => {
                     e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-8xl">🍂</div></div>';
+                    const fallbackLogo = getTobaccoLogo(blend.manufacturer);
+                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-6"><img src="' + fallbackLogo + '" class="w-full h-full object-contain" /></div>';
                   }}
                 />
-              </div>
-            )}
-          </motion.div>
-
-          {/* Blend Details */}
-          <div className="space-y-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-[#e8d5b7]">{blend.name}</h1>
-                <p className="text-lg text-[#e8d5b7]/70">{blend.manufacturer || 'Unknown maker'}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={toggleFavorite}
-                  className={blend.is_favorite ? 'text-rose-500' : 'text-stone-400'}
-                >
-                  <Heart className={`w-5 h-5 ${blend.is_favorite ? 'fill-current' : ''}`} />
-                </Button>
-                <Button variant="outline" size="icon" onClick={() => setShowEdit(true)}>
-                  <Edit className="w-5 h-5" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="text-rose-500 hover:text-rose-600"
-                  onClick={() => setShowDelete(true)}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map(i => (
-                <Star 
-                  key={i}
-                  className={`w-6 h-6 cursor-pointer transition-colors ${i <= (blend.rating || 0) ? 'text-amber-500 fill-current' : 'text-stone-300 hover:text-amber-300'}`}
-                  onClick={() => updateMutation.mutate({ rating: i })}
-                />
-              ))}
-              {blend.rating && <span className="text-white ml-2">{blend.rating}/5</span>}
-            </div>
-
-            {/* Top Pipe Matches */}
-            {pipes.length > 0 && (
-              <TopPipeMatches blend={blend} pipes={pipes} />
-            )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-white p-6">
+                  <img 
+                    src={getTobaccoLogo(blend.manufacturer)} 
+                    alt={blend.manufacturer || 'Tobacco'}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-8xl">🍂</div></div>';
+                    }}
+                  />
+                </div>
+              )}
+            </motion.div>
 
             {/* Inventory & Cellaring Management */}
             <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
@@ -366,6 +322,54 @@ export default function TobaccoDetailPage() {
                 </TabsContent>
               </Tabs>
             </Card>
+          </div>
+
+          {/* Right column: Blend Details */}
+          <div className="space-y-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-[#e8d5b7]">{blend.name}</h1>
+                <p className="text-lg text-[#e8d5b7]/70">{blend.manufacturer || 'Unknown maker'}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleFavorite}
+                  className={blend.is_favorite ? 'text-rose-500' : 'text-stone-400'}
+                >
+                  <Heart className={`w-5 h-5 ${blend.is_favorite ? 'fill-current' : ''}`} />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => setShowEdit(true)}>
+                  <Edit className="w-5 h-5" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="text-rose-500 hover:text-rose-600"
+                  onClick={() => setShowDelete(true)}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Rating */}
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Star 
+                  key={i}
+                  className={`w-6 h-6 cursor-pointer transition-colors ${i <= (blend.rating || 0) ? 'text-amber-500 fill-current' : 'text-stone-300 hover:text-amber-300'}`}
+                  onClick={() => updateMutation.mutate({ rating: i })}
+                />
+              ))}
+              {blend.rating && <span className="text-white ml-2">{blend.rating}/5</span>}
+            </div>
+
+            {/* Top Pipe Matches */}
+            {pipes.length > 0 && (
+              <TopPipeMatches blend={blend} pipes={pipes} />
+            )}
 
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
