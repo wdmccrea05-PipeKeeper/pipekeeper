@@ -399,17 +399,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+        <Card className="border-[#E0D8C8]/15 bg-[#223447]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-orange-800">
+                  <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                     <Flame className="w-5 h-5" />
                     Smoking Log
                     <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
-                  <p className="text-sm text-stone-600 mt-1">
+                  <p className="text-sm text-[#E0D8C8]/70 mt-1">
                     {totalBowls} total bowls ({breakInBowls} break-in)
                   </p>
                 </div>
@@ -417,7 +417,6 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               <Button
                 onClick={() => setShowAddLog(true)}
                 size="sm"
-                className="bg-orange-600 hover:bg-orange-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Log Session
@@ -427,7 +426,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           <CollapsibleContent>
             <CardContent>
           {logs.length === 0 ? (
-            <p className="text-sm text-stone-500 text-center py-8">
+            <p className="text-sm text-[#E0D8C8]/70 text-center py-8">
               No smoking sessions logged yet. Start tracking your sessions!
             </p>
           ) : (
@@ -435,27 +434,27 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               {logs.map((log) => (
                 <div 
                   key={log.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-white border border-stone-200 hover:border-orange-300 transition-colors group"
+                  className="flex items-start justify-between p-3 rounded-lg bg-[#1E2F43] border border-[#E0D8C8]/15 hover:border-[#A35C5C]/50 transition-colors group"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-stone-800">{log.pipe_name}</p>
-                      <span className="text-stone-400">+</span>
-                      <p className="font-medium text-stone-800">{log.blend_name}</p>
+                      <p className="font-medium text-[#E0D8C8]">{log.pipe_name}</p>
+                      <span className="text-[#E0D8C8]/50">+</span>
+                      <p className="font-medium text-[#E0D8C8]">{log.blend_name}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-stone-500">
+                    <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/70">
                       <Calendar className="w-3 h-3" />
                       {format(new Date(log.date), 'MMM d, yyyy')}
                       <span>•</span>
                       <span>{log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}</span>
                     </div>
                     {log.notes && (
-                      <p className="text-xs text-stone-600 mt-1">{log.notes}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mt-1">{log.notes}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {log.is_break_in && (
-                      <Badge className="bg-violet-100 text-violet-800 border-violet-200 shrink-0">
+                      <Badge className="bg-[#A35C5C]/30 text-[#E0D8C8] border-[#A35C5C]/50 shrink-0">
                         Break-In
                       </Badge>
                     )}
@@ -465,7 +464,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                       className="opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => setEditingLog(log)}
                     >
-                      <Edit className="w-4 h-4 text-stone-600" />
+                      <Edit className="w-4 h-4 text-[#E0D8C8]/70" />
                     </Button>
                   </div>
                 </div>
@@ -617,7 +616,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               <Button 
                 type="submit" 
                 disabled={!formData.pipe_id || !formData.blend_id || createLogMutation.isPending}
-                className="flex-1 bg-orange-600 hover:bg-orange-700"
+                className="flex-1"
               >
                 Log Session
               </Button>
