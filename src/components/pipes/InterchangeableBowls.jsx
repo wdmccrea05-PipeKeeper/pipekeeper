@@ -277,10 +277,21 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
 
                 <div className="space-y-2">
                   <Label>Bowl Photo</Label>
+                  {bowlForm.photo && (
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 mb-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                        <span className="text-xs font-semibold text-amber-900">Preview</span>
+                      </div>
+                      <div className="flex justify-center">
+                        <img src={bowlForm.photo} alt="Bowl preview" className="w-24 h-24 object-cover rounded-lg border-2 border-amber-400" />
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-3 items-start">
                     {bowlForm.photo ? (
                       <div className="relative">
-                        <img src={bowlForm.photo} alt="Bowl" className="w-24 h-24 object-cover rounded-lg border border-amber-200" />
+                        <img src={bowlForm.photo} alt="Bowl" className="w-20 h-20 object-cover rounded-lg border border-amber-200" />
                         <button
                           type="button"
                           onClick={() => setBowlForm({ ...bowlForm, photo: "" })}
@@ -307,6 +318,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                           </span>
                         </Button>
                       </label>
+                      <p className="text-xs text-stone-500 mt-1">Square photos work best</p>
                     </div>
                   </div>
                 </div>

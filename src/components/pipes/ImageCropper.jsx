@@ -435,6 +435,59 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
         </DialogHeader>
         
         <div className="space-y-3 sm:space-y-4">
+          {/* Preview Reference Frame */}
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+              <span className="text-xs sm:text-sm font-semibold text-amber-900">Final Result Preview (16:9 ratio)</span>
+            </div>
+            <div className="relative bg-white rounded-lg border-2 border-dashed border-amber-400 aspect-video flex items-center justify-center overflow-hidden">
+              {imageLoaded && (
+                <canvas
+                  ref={(canvas) => {
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const img = imageRef.current;
+                    if (!img) return;
+                    
+                    // Set canvas to 16:9 aspect ratio
+                    canvas.width = 320;
+                    canvas.height = 180;
+                    
+                    // Draw the cropped preview
+                    const outputCanvas = document.createElement('canvas');
+                    const outputCtx = outputCanvas.getContext('2d');
+                    outputCanvas.width = crop.width;
+                    outputCanvas.height = crop.height;
+                    
+                    outputCtx.drawImage(
+                      img,
+                      crop.x, crop.y, crop.width, crop.height,
+                      0, 0, crop.width, crop.height
+                    );
+                    
+                    // Draw preview
+                    ctx.fillStyle = '#f5f5f5';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    const scale = Math.min(canvas.width / crop.width, canvas.height / crop.height);
+                    const x = (canvas.width - crop.width * scale) / 2;
+                    const y = (canvas.height - crop.height * scale) / 2;
+                    
+                    ctx.drawImage(outputCanvas, x, y, crop.width * scale, crop.height * scale);
+                  }}
+                  className="w-full h-auto"
+                />
+              )}
+              <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
+                {crop.width}×{crop.height}px
+              </div>
+            </div>
+            <p className="text-xs text-amber-700 mt-2 text-center">
+              This is how your cropped image will appear in the app
+            </p>
+          </div>
+
           <div 
             ref={containerRef}
             className="relative bg-stone-900 rounded-lg overflow-hidden touch-none"

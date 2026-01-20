@@ -215,6 +215,69 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Preview Reference Frame */}
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold text-amber-900">Final Profile Picture Preview</span>
+            </div>
+            <div className="flex justify-center">
+              <div className={`relative ${cropShape === "round" ? "rounded-full" : "rounded-lg"} border-4 border-dashed border-amber-400 bg-white overflow-hidden`} style={{ width: '120px', height: '120px' }}>
+                {imageLoaded && (
+                  <canvas
+                    ref={(canvas) => {
+                      if (!canvas) return;
+                      const ctx = canvas.getContext('2d');
+                      const img = imageRef.current;
+                      if (!img) return;
+                      
+                      canvas.width = 120;
+                      canvas.height = 120;
+                      
+                      ctx.save();
+                      if (cropShape === "round") {
+                        ctx.beginPath();
+                        ctx.arc(60, 60, 60, 0, Math.PI * 2);
+                        ctx.clip();
+                      }
+                      
+                      const canvasWidth = 400;
+                      const canvasHeight = 400;
+                      const scale = Math.min(canvasWidth / img.width, canvasHeight / img.height) * zoom;
+                      const x = (canvasWidth - img.width * scale) / 2 + position.x;
+                      const y = (canvasHeight - img.height * scale) / 2 + position.y;
+                      const cropSize = Math.min(canvasWidth, canvasHeight) * 0.7;
+                      const cropX = (canvasWidth - cropSize) / 2;
+                      const cropY = (canvasHeight - cropSize) / 2;
+                      
+                      ctx.translate(60, 60);
+                      ctx.rotate((rotation * Math.PI) / 180);
+                      ctx.translate(-60, -60);
+                      
+                      const scaleRatio = 120 / canvasWidth;
+                      ctx.drawImage(
+                        img, 
+                        (x - cropX) / scale, 
+                        (y - cropY) / scale, 
+                        cropSize / scale, 
+                        cropSize / scale, 
+                        0, 
+                        0, 
+                        120, 
+                        120
+                      );
+                      ctx.restore();
+                    }}
+                    className="w-full h-full"
+                  />
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-amber-700 mt-2 text-center">
+              This is how your profile picture will appear
+            </p>
+          </div>
+
           <div 
             className="relative bg-stone-900 rounded-lg overflow-hidden touch-none flex items-center justify-center"
             onMouseDown={handleMouseDown}
