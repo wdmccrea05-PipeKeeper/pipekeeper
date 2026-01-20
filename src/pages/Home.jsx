@@ -404,7 +404,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+            className="bg-[#223447] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0D8C8]/15"
           >
             <div className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] p-6 text-white">
               <div className="flex items-start justify-between">
@@ -426,10 +426,10 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
               </div>
             </div>
             <div className="p-6">
-              <p className="text-stone-700 text-lg leading-relaxed mb-4">
-                During testing, <span className="font-semibold text-stone-900">no subscription fees will be charged until after January 15, 2026</span>.
+              <p className="text-[#E0D8C8] text-lg leading-relaxed mb-4">
+                During testing, <span className="font-semibold text-white">no subscription fees will be charged until after January 15, 2026</span>.
               </p>
-              <p className="text-stone-600 text-sm">
+              <p className="text-[#E0D8C8]/70 text-sm">
                 All premium features are available free of charge during this period. Thank you for helping us test PipeKeeper!
               </p>
               <Button
@@ -532,7 +532,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             >
             <a href={createPageUrl('Pipes')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/70 via-[#6d2e2e]/60 to-[#5a2525]/70 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/80 via-[#6d2e2e]/70 to-[#5a2525]/80 z-10" />
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
                   style={{
