@@ -17,7 +17,8 @@ export default function CellarAgingDashboard({ user }) {
   const cellarBlends = blends.filter(b => {
     const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
                         (b.bulk_cellared || 0) > 0 || 
-                        (b.pouch_pouches_cellared || 0) > 0;
+                        (b.pouch_pouches_cellared || 0) > 0 ||
+                        (b.bulk_cellared_date && (b.bulk_cellared || 0) > 0);
     return hasCellared;
   });
 
