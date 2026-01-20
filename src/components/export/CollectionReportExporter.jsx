@@ -316,7 +316,7 @@ export default function CollectionReportExporter({ user }) {
             <Button
               disabled={isExporting}
               variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
               Pipe Collection Report
@@ -340,7 +340,7 @@ export default function CollectionReportExporter({ user }) {
             <Button
               disabled={isExporting}
               variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
               Tobacco Collection Report
@@ -364,7 +364,7 @@ export default function CollectionReportExporter({ user }) {
             <Button
               disabled={isExporting}
               variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
               Insurance Report
@@ -388,7 +388,7 @@ export default function CollectionReportExporter({ user }) {
             <Button
               disabled={isExporting}
               variant="outline"
-              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
               Collection Stats Report
