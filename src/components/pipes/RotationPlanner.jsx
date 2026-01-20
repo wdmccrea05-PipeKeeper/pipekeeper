@@ -7,15 +7,17 @@ import { CalendarClock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 
-export default function RotationPlanner() {
+export default function RotationPlanner({ user }) {
   const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes'],
-    queryFn: () => base44.entities.Pipe.list('-updated_date', 500),
+    queryKey: ['pipes', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
+    enabled: !!user?.email,
   });
 
   const { data: logs = [] } = useQuery({
-    queryKey: ['smoking-logs'],
-    queryFn: () => base44.entities.SmokingLog.list('-date', 1000),
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
+    enabled: !!user?.email,
   });
 
   // Calculate last smoked date for each pipe

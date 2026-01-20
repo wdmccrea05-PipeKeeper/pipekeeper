@@ -104,7 +104,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="rotation" className="mt-0">
-                <RotationPlanner />
+                <RotationPlanner user={user} />
               </TabsContent>
 
               <TabsContent value="reports" className="mt-0">
