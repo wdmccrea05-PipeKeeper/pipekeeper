@@ -10,7 +10,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Heart, DollarSign, 
-  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
+  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle, Cigarette
 } from "lucide-react";
 import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
@@ -470,7 +470,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             <a href={createPageUrl('Pipes')}>
               <PkCard>
                 <PkCardContent className="p-3 sm:p-6 text-center">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'invert(1) sepia(0.7) hue-rotate(25deg) saturate(1.5) brightness(0.95)' }} />
+                  <Cigarette className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <PkSubtext>Pipes</PkSubtext>
                   </PkCardContent>
