@@ -295,6 +295,73 @@ export default function FAQFull() {
           Receive ongoing AI-powered recommendations as your collection grows. The system learns from your smoking logs and preferences to continuously improve pairing suggestions and collection insights.
         </Q>
 
+        <Q id="premium-condition-tracking" q="Premium: Advanced Pipe Condition Tracking">
+          Monitor your pipes' condition over time with detailed tracking metrics:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Record condition changes and restoration work</li>
+            <li>Track maintenance history with dates and costs</li>
+            <li>Document professional restoration vs. personal care</li>
+            <li>Monitor pipe rest periods and usage frequency</li>
+            <li>Impact on valuation estimates</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-maintenance-logs" q="Premium: Pipe Maintenance & Restoration Logs">
+          Keep detailed records of all work done on your pipes:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Log cleaning, restoration, reaming, polishing, and stem work</li>
+            <li>Track who performed the work (self, professional, etc.)</li>
+            <li>Record dates, costs, and before/after photos</li>
+            <li>Build a complete pipe history for collector value</li>
+            <li>Export maintenance history for insurance documentation</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-rotation-planner" q="Premium: Pipe Rotation Planner">
+          Optimize pipe health with the rotation planner:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Tracks mandatory 24-hour rest periods between sessions</li>
+            <li>Recommends which pipes are ready to smoke</li>
+            <li>Prevents overuse and burnout of favorite pipes</li>
+            <li>Helps balance collection usage</li>
+            <li>Integrates with smoking logs for automated tracking</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-cellar-aging" q="Premium: Aging Dashboard & Recommendations">
+          Monitor and manage your cellar with intelligent aging tracking:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Visual dashboard showing all cellared tobacco by age</li>
+            <li>Automatic aging recommendations based on blend type</li>
+            <li>Track time since cellaring for each blend</li>
+            <li>Progress indicators showing aging status vs. potential</li>
+            <li>Aging readiness suggestions (ready to smoke, continue aging, etc.)</li>
+            <li>Integration with cellar log for transaction history</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-inventory-forecast" q="Premium: Inventory Forecasting">
+          Project your tobacco consumption and predict when supplies will run out:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Analyze smoking frequency from your logs</li>
+            <li>Estimate depletion dates for open tobacco</li>
+            <li>Alert when cellared stock is ready for rotation</li>
+            <li>Help plan future purchases</li>
+            <li>Track consumption trends over time</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-blend-journal" q="Premium: Blend Journal & Tasting Notes">
+          Create detailed records of your tobacco experiences:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Add tasting notes and personal impressions to each session</li>
+            <li>Track flavor evolution as tobacco ages</li>
+            <li>Record pipe pairings and recommended combinations</li>
+            <li>Document smoking conditions (temperature, time, mood)</li>
+            <li>Build a personal tobacco reference database</li>
+          </ul>
+        </Q>
+
         <Q id="premium-bulk-operations" q="Premium: Bulk Operations">
           Perform bulk updates on multiple pipes or tobacco entries at once. Quickly update quantities, apply tags, or modify settings across your entire collection efficiently.
         </Q>
