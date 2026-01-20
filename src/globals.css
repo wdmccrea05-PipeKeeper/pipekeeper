@@ -161,9 +161,7 @@
   
   button:focus-visible {
     outline: none;
-    ring: 2px;
-    ring-color: rgb(var(--pk-gold));
-    ring-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(var(--pk-bg-primary)), 0 0 0 4px rgb(var(--pk-gold));
   }
   
   button:active {
@@ -178,9 +176,7 @@
   /* Link styling */
   a:focus-visible {
     outline: none;
-    ring: 2px;
-    ring-color: rgb(var(--pk-gold));
-    ring-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(var(--pk-bg-primary)), 0 0 0 4px rgb(var(--pk-gold));
     border-radius: 0.25rem;
   }
   

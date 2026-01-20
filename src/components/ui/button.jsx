@@ -38,7 +38,10 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
   const Comp = asChild ? Slot : "button"
   return (
     (<Comp
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D1A75D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A2B3A]"
+      )}
       ref={ref}
       {...props} />)
   );
