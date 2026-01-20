@@ -109,7 +109,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
 
               <TabsContent value="reports" className="mt-0">
                 <div className="space-y-4">
-                  <div className="text-sm text-[#1e3a5f] mb-4">
+                  <div className="text-sm text-white mb-4">
                     Download collection reports, exports, and comprehensive analysis documents.
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
