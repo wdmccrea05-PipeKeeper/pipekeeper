@@ -454,10 +454,10 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
           <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
             Pipe & Tobacco Collection
           </PkPageTitle>
-          <PkText className="max-w-2xl mx-auto px-2 text-opacity-70">
+          <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
             Manage your pipes and tobacco blends with AI-powered search, photo identification, 
             pairing suggestions, and market valuations.
-          </PkText>
+          </p>
         </motion.div>
 
         {/* Stats */}
