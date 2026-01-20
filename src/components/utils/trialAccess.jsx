@@ -46,3 +46,19 @@ export function getTrialInfo(user) {
 export function hasTrialAccess(user) {
   return getTrialInfo(user).inTrial;
 }
+
+export function isTrialWindow(user) {
+  return getTrialInfo(user).inTrial;
+}
+
+export function getTrialDaysRemaining(user) {
+  const info = getTrialInfo(user);
+  if (!info.inTrial || !info.trialEndsAt) return 0;
+  
+  const now = new Date();
+  const end = new Date(info.trialEndsAt);
+  const msRemaining = end.getTime() - now.getTime();
+  const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
+  
+  return Math.max(0, daysRemaining);
+}
