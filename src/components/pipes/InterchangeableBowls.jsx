@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit, Layers } from "lucide-react";
+import { Plus, Trash2, Edit, Layers, Camera, X } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
@@ -37,9 +38,28 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
     chamber_volume: "",
     focus: [],
     notes: "",
+    photo: "",
   });
 
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
   const interchangeableBowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPhoto(true);
+      const { data } = await base44.integrations.Core.UploadFile({ file });
+      setBowlForm({ ...bowlForm, photo: data.file_url });
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      alert("Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleOpenDialog = (bowl = null, index = null) => {
     if (bowl) {
@@ -55,6 +75,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         chamber_volume: bowl.chamber_volume || "",
         focus: Array.isArray(bowl.focus) ? bowl.focus : [],
         notes: bowl.notes || "",
+        photo: bowl.photo || "",
       });
       setEditingIndex(index);
     } else {
@@ -70,6 +91,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         chamber_volume: "",
         focus: [],
         notes: "",
+        photo: "",
       });
       setEditingIndex(null);
     }
@@ -229,6 +251,42 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                 </div>
 
                 <div className="space-y-2">
+                  <Label>Bowl Photo</Label>
+                  <div className="flex gap-3 items-start">
+                    {bowlForm.photo ? (
+                      <div className="relative">
+                        <img src={bowlForm.photo} alt="Bowl" className="w-24 h-24 object-cover rounded-lg border border-amber-200" />
+                        <button
+                          type="button"
+                          onClick={() => setBowlForm({ ...bowlForm, photo: "" })}
+                          className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1 hover:bg-rose-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : null}
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        id="bowl-photo-upload"
+                      />
+                      <label htmlFor="bowl-photo-upload">
+                        <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
+                          <span className="cursor-pointer">
+                            <Camera className="w-4 h-4 mr-2" />
+                            {uploadingPhoto ? "Uploading..." : bowlForm.photo ? "Change Photo" : "Add Photo"}
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <Label>Notes</Label>
                   <Input
                     value={bowlForm.notes}
@@ -260,11 +318,15 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
           <div className="space-y-3">
             {interchangeableBowls.map((bowl, idx) => (
               <div key={bowl.bowl_variant_id || idx} className="flex items-start justify-between p-4 bg-white rounded-lg border border-amber-200 hover:border-amber-300 transition-colors">
-                <div className="flex-1">
-                  <div className="flex items-center_seq gap-2 mb-2">
-                    <h4 className="font-semibold text-stone-800">{bowl.name || `Bowl ${idx + 1}`}</h4>
-                    {bowl.shape ? <Badge variant="outline" className="text-xs">{bowl.shape}</Badge> : null}
-                  </div>
+                <div className="flex gap-3 flex-1">
+                  {bowl.photo ? (
+                    <img src={bowl.photo} alt={bowl.name || "Bowl"} className="w-16 h-16 object-cover rounded-lg border border-amber-200 flex-shrink-0" />
+                  ) : null}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold text-stone-800">{bowl.name || `Bowl ${idx + 1}`}</h4>
+                      {bowl.shape ? <Badge variant="outline" className="text-xs">{bowl.shape}</Badge> : null}
+                    </div>
 
                   <div className="flex flex-wrap gap-2 text-xs">
                     {bowl.bowl_material ? <Badge className="bg-stone-100 text-stone-700">{bowl.bowl_material}</Badge> : null}
@@ -278,10 +340,11 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     ) : null}
                   </div>
 
-                  {bowl.notes ? <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p> : null}
+                    {bowl.notes ? <p className="text-xs text-stone-600 mt-2">{bowl.notes}</p> : null}
+                  </div>
                 </div>
 
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-shrink-0">
                   <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(bowl, idx)}>
                     <Edit className="w-4 h-4" />
                   </Button>
