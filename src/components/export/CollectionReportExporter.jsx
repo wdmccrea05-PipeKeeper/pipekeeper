@@ -1,263 +1,422 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Table, Eye, X } from "lucide-react";
+import { FileText, Table, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function CollectionReportExporter({ user }) {
   const [isExporting, setIsExporting] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
-  const [previewType, setPreviewType] = useState(null);
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
-  const generateCollectionCSV = async () => {
+  // Pipe Collection Report
+  const generatePipeCSV = async () => {
+    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    
+    let csv = "Pipe Collection Report\n";
+    csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+    csv += `Total Pipes: ${pipes.length}\n\n`;
+    csv += "Name,Maker,Country,Shape,Bowl Material,Stem Material,Length (mm),Weight (g),Chamber Volume,Condition,Purchase Price,Estimated Value,Year Made,Notes\n";
+    
+    pipes.forEach(p => {
+      csv += `"${p.name || ''}","${p.maker || ''}","${p.country_of_origin || ''}","${p.shape || ''}","${p.bowl_material || ''}","${p.stem_material || ''}",${p.length_mm || ''},${p.weight_grams || ''},"${p.chamber_volume || ''}","${p.condition || ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.year_made || ''}","${(p.notes || '').replace(/"/g, '""')}"\n`;
+    });
+
+    return { csv, filename: `Pipe-Collection-${new Date().toISOString().split('T')[0]}.csv` };
+  };
+
+  const generatePipePDF = async () => {
+    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+      <h1 style="color: #1a2c42;">Pipe Collection Report</h1>
+      <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>Total Pipes:</strong> ${pipes.length}</p>
+      <p><strong>Total Value:</strong> $${totalValue.toLocaleString()}</p>
+      <hr style="margin: 20px 0;">`;
+    
+    pipes.forEach(p => {
+      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
+        <h3 style="color: #8b3a3a; margin-bottom: 10px;">${p.name || 'Unnamed Pipe'}</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 5px; width: 150px;"><strong>Maker:</strong></td><td>${p.maker || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Shape:</strong></td><td>${p.shape || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Materials:</strong></td><td>${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Condition:</strong></td><td>${p.condition || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Value:</strong></td><td>$${p.estimated_value || 0}</td></tr>
+        </table>
+      </div>`;
+    });
+    
+    html += `</div>`;
+    return html;
+  };
+
+  // Tobacco Collection Report
+  const generateTobaccoCSV = async () => {
+    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    
+    let csv = "Tobacco Collection Report\n";
+    csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+    csv += `Total Blends: ${blends.length}\n\n`;
+    csv += "Name,Manufacturer,Blend Type,Cut,Strength,Room Note,Aging Potential,Rating,Tin Quantity (oz),Bulk Quantity (oz),Pouch Quantity (oz),Total (oz),Cellared (oz),Notes\n";
+    
+    blends.forEach(b => {
+      const tinOz = b.tin_total_quantity_oz || 0;
+      const bulkOz = b.bulk_total_quantity_oz || 0;
+      const pouchOz = b.pouch_total_quantity_oz || 0;
+      const totalOz = tinOz + bulkOz + pouchOz;
+      const cellarOz = ((b.tin_tins_cellared || 0) * (b.tin_size_oz || 0)) + (b.bulk_cellared || 0) + ((b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0));
+      csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}","${b.cut || ''}","${b.strength || ''}","${b.room_note || ''}","${b.aging_potential || ''}",${b.rating || ''},${tinOz},${bulkOz},${pouchOz},${totalOz},${cellarOz},"${(b.notes || '').replace(/"/g, '""')}"\n`;
+    });
+
+    return { csv, filename: `Tobacco-Collection-${new Date().toISOString().split('T')[0]}.csv` };
+  };
+
+  const generateTobaccoPDF = async () => {
+    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+      <h1 style="color: #1a2c42;">Tobacco Collection Report</h1>
+      <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>Total Blends:</strong> ${blends.length}</p>
+      <hr style="margin: 20px 0;">`;
+    
+    blends.forEach(b => {
+      const totalOz = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
+      html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
+        <h3 style="color: #3d5a4d; margin-bottom: 10px;">${b.name || 'Unnamed Blend'}</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 5px; width: 150px;"><strong>Manufacturer:</strong></td><td>${b.manufacturer || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Type:</strong></td><td>${b.blend_type || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Strength:</strong></td><td>${b.strength || '-'}</td></tr>
+          <tr><td style="padding: 5px;"><strong>Total Quantity:</strong></td><td>${totalOz} oz</td></tr>
+          <tr><td style="padding: 5px;"><strong>Rating:</strong></td><td>${b.rating || '-'} / 5</td></tr>
+        </table>
+      </div>`;
+    });
+    
+    html += `</div>`;
+    return html;
+  };
+
+  // Insurance Report
+  const generateInsuranceCSV = async () => {
+    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    
+    let csv = "Insurance Valuation Report\n";
+    csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+    csv += `Owner: ${user?.full_name || user?.email}\n`;
+    csv += `Total Collection Value: $${totalValue.toLocaleString()}\n\n`;
+    csv += "Item,Maker,Year,Condition,Purchase Date,Purchase Price,Current Value,Description\n";
+    
+    pipes.forEach(p => {
+      csv += `"${p.name || ''}","${p.maker || ''}","${p.year_made || ''}","${p.condition || ''}","${p.created_date ? new Date(p.created_date).toLocaleDateString() : ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.shape || ''} pipe, ${p.bowl_material || ''} bowl, ${p.stem_material || ''} stem"\n`;
+    });
+
+    return { csv, filename: `Insurance-Report-${new Date().toISOString().split('T')[0]}.csv` };
+  };
+
+  const generateInsurancePDF = async () => {
+    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+      <h1 style="color: #1a2c42;">Insurance Valuation Report</h1>
+      <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>Owner:</strong> ${user?.full_name || user?.email}</p>
+      <p><strong>Total Collection Value:</strong> $${totalValue.toLocaleString()}</p>
+      <hr style="margin: 20px 0;">
+      <p style="font-style: italic; color: #666;">This report provides an itemized valuation of the pipe collection for insurance purposes.</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="background-color: #f0f0f0;">
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Maker</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Condition</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Value</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    
+    pipes.forEach(p => {
+      html += `<tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">${p.name || 'Unnamed'}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${p.maker || '-'}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${p.condition || '-'}</td>
+        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">$${(p.estimated_value || 0).toLocaleString()}</td>
+      </tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    return html;
+  };
+
+  // Stats Report
+  const generateStatsCSV = async () => {
     const [pipes, blends, logs] = await Promise.all([
       base44.entities.Pipe.filter({ created_by: user?.email }),
       base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
       base44.entities.SmokingLog.filter({ created_by: user?.email })
     ]);
 
-    let csv = "Collection Summary\n";
+    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    const totalOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0), 0);
+
+    let csv = "Collection Statistics Report\n";
+    csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+    csv += "PIPE COLLECTION\n";
     csv += `Total Pipes,${pipes.length}\n`;
+    csv += `Total Value,$${totalValue.toLocaleString()}\n`;
+    csv += `Average Value per Pipe,$${pipes.length > 0 ? Math.round(totalValue / pipes.length) : 0}\n\n`;
+    
+    csv += "TOBACCO COLLECTION\n";
     csv += `Total Blends,${blends.length}\n`;
-    csv += `Total Smoking Sessions,${logs.length}\n\n`;
+    csv += `Total Quantity,${totalOz.toFixed(1)} oz\n\n`;
+    
+    csv += "SMOKING ACTIVITY\n";
+    csv += `Total Sessions,${logs.length}\n`;
+    csv += `Break-In Sessions,${logs.filter(l => l.is_break_in).length}\n`;
 
-    csv += "Pipes\n";
-    csv += "Name,Maker,Shape,Bowl Material,Stem Material,Condition,Estimated Value,Purchase Price,Notes\n";
-    pipes.forEach(p => {
-      csv += `"${p.name || ''}","${p.maker || ''}","${p.shape || ''}","${p.bowl_material || ''}","${p.stem_material || ''}","${p.condition || ''}",${p.estimated_value || ''},${p.purchase_price || ''},"${(p.notes || '').replace(/"/g, '""')}"\n`;
-    });
-
-    csv += "\n\nTobacco Blends\n";
-    csv += "Name,Manufacturer,Blend Type,Cut,Strength,Room Note,Aging Potential,Rating,Total Tins,Cellared,Notes\n";
-    blends.forEach(b => {
-      const totalOz = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
-      const cellarOz = ((b.tin_tins_cellared || 0) * (b.tin_size_oz || 0)) + (b.bulk_cellared || 0) + ((b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0));
-      csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}","${b.cut || ''}","${b.strength || ''}","${b.room_note || ''}","${b.aging_potential || ''}",${b.rating || ''},${totalOz},${cellarOz},"${(b.notes || '').replace(/"/g, '""')}"\n`;
-    });
-
-    return { csv, filename: `PipeKeeper-Collection-${new Date().toISOString().split('T')[0]}.csv` };
+    return { csv, filename: `Collection-Stats-${new Date().toISOString().split('T')[0]}.csv` };
   };
 
-  const previewCollectionReport = async () => {
-    try {
-      setIsExporting(true);
-      const { csv } = await generateCollectionCSV();
-      setPreviewData(csv);
-      setPreviewType('collection');
-      setIsExporting(false);
-    } catch (error) {
-      toast.error("Preview failed: " + error.message);
-      setIsExporting(false);
-    }
-  };
+  const generateStatsPDF = async () => {
+    const [pipes, blends, logs] = await Promise.all([
+      base44.entities.Pipe.filter({ created_by: user?.email }),
+      base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+      base44.entities.SmokingLog.filter({ created_by: user?.email })
+    ]);
 
-  const downloadCollectionReport = async () => {
-    try {
-      const { csv, filename } = await generateCollectionCSV();
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success("CSV export downloaded");
-      setPreviewData(null);
-    } catch (error) {
-      toast.error("Download failed: " + error.message);
-    }
+    const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+    const totalOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0), 0);
+    
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+      <h1 style="color: #1a2c42;">Collection Statistics Report</h1>
+      <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+      <hr style="margin: 20px 0;">
+      
+      <h2 style="color: #8b3a3a;">Pipe Collection</h2>
+      <ul>
+        <li>Total Pipes: ${pipes.length}</li>
+        <li>Total Value: $${totalValue.toLocaleString()}</li>
+        <li>Average Value: $${pipes.length > 0 ? Math.round(totalValue / pipes.length) : 0}</li>
+      </ul>
+      
+      <h2 style="color: #3d5a4d;">Tobacco Collection</h2>
+      <ul>
+        <li>Total Blends: ${blends.length}</li>
+        <li>Total Quantity: ${totalOz.toFixed(1)} oz</li>
+      </ul>
+      
+      <h2 style="color: #1a2c42;">Smoking Activity</h2>
+      <ul>
+        <li>Total Sessions: ${logs.length}</li>
+        <li>Break-In Sessions: ${logs.filter(l => l.is_break_in).length}</li>
+      </ul>
+    </div>`;
+    
+    return html;
   };
 
   const exportPDF = () => {
     window.open('/UserReport', '_blank');
   };
 
-  const generateCellarAgingCSV = async () => {
-    const [blends, logs] = await Promise.all([
-      base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
-      base44.entities.CellarLog.filter({ created_by: user?.email })
-    ]);
-
-    const cellarBlends = blends.filter(b => {
-      const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
-                          (b.bulk_cellared || 0) > 0 || 
-                          (b.pouch_pouches_cellared || 0) > 0;
-      return hasCellared;
-    });
-
-    let csv = "Cellar Aging Report\n";
-    csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
-    csv += "Blend Name,Manufacturer,Blend Type,Cellared Amount (oz),Cellared Date,Age (months),Aging Potential,Recommended Action\n";
-    
-    cellarBlends.forEach(b => {
-      const tinOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0);
-      const bulkOz = b.bulk_cellared || 0;
-      const pouchOz = (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
-      const totalCellared = tinOz + bulkOz + pouchOz;
-      
-      const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-      const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
-      const ageMonths = oldestDate ? Math.floor((Date.now() - oldestDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 0;
-      
-      csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}",${totalCellared},${oldestDate?.toLocaleDateString() || 'N/A'},${ageMonths},"${b.aging_potential || 'N/A'}","Continue aging"\n`;
-    });
-
-    csv += "\n\nCellar Transaction History\n";
-    csv += "Date,Blend Name,Transaction Type,Amount (oz),Container Type,Notes\n";
-    logs.forEach(log => {
-      csv += `${new Date(log.date).toLocaleDateString()},"${log.blend_name || ''}",${log.transaction_type},${log.amount_oz || 0},"${log.container_type || ''}","${(log.notes || '').replace(/"/g, '""')}"\n`;
-    });
-
-    return { csv, filename: `PipeKeeper-Cellar-Aging-${new Date().toISOString().split('T')[0]}.csv` };
+  // Generic download handlers
+  const downloadCSV = (csv, filename) => {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    toast.success("CSV downloaded");
   };
 
-  const previewCellarAging = async () => {
+  const previewPDF = (html, title) => {
+    setPdfPreview(html);
+    setPreviewTitle(title);
+  };
+
+  const downloadPDF = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfPreview);
+    printWindow.document.close();
+    printWindow.print();
+    setPdfPreview(null);
+  };
+
+  // Report handlers
+  const handleReport = async (type, format) => {
     try {
       setIsExporting(true);
-      const { csv } = await generateCellarAgingCSV();
-      setPreviewData(csv);
-      setPreviewType('cellar');
-      setIsExporting(false);
+      
+      if (type === 'pipe') {
+        if (format === 'csv') {
+          const { csv, filename } = await generatePipeCSV();
+          downloadCSV(csv, filename);
+        } else {
+          const html = await generatePipePDF();
+          previewPDF(html, 'Pipe Collection Report');
+        }
+      } else if (type === 'tobacco') {
+        if (format === 'csv') {
+          const { csv, filename } = await generateTobaccoCSV();
+          downloadCSV(csv, filename);
+        } else {
+          const html = await generateTobaccoPDF();
+          previewPDF(html, 'Tobacco Collection Report');
+        }
+      } else if (type === 'insurance') {
+        if (format === 'csv') {
+          const { csv, filename } = await generateInsuranceCSV();
+          downloadCSV(csv, filename);
+        } else {
+          const html = await generateInsurancePDF();
+          previewPDF(html, 'Insurance Valuation Report');
+        }
+      } else if (type === 'stats') {
+        if (format === 'csv') {
+          const { csv, filename } = await generateStatsCSV();
+          downloadCSV(csv, filename);
+        } else {
+          const html = await generateStatsPDF();
+          previewPDF(html, 'Collection Statistics Report');
+        }
+      }
     } catch (error) {
-      toast.error("Preview failed: " + error.message);
-      setIsExporting(false);
-    }
-  };
-
-  const downloadCellarAging = async () => {
-    try {
-      const { csv, filename } = await generateCellarAgingCSV();
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success("Cellar aging report downloaded");
-      setPreviewData(null);
-    } catch (error) {
-      toast.error("Download failed: " + error.message);
-    }
-  };
-
-  const generateSmokingHistoryCSV = async () => {
-    const logs = await base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date');
-
-    let csv = "Smoking History Report\n";
-    csv += `Generated: ${new Date().toLocaleDateString()}\n`;
-    csv += `Total Sessions: ${logs.length}\n\n`;
-    csv += "Date,Pipe Name,Blend Name,Bowls Smoked,Break-In Session,Notes\n";
-    
-    logs.forEach(log => {
-      csv += `${new Date(log.date).toLocaleDateString()},"${log.pipe_name || ''}","${log.blend_name || ''}",${log.bowls_smoked || 1},${log.is_break_in ? 'Yes' : 'No'},"${(log.notes || '').replace(/"/g, '""')}"\n`;
-    });
-
-    return { csv, filename: `PipeKeeper-Smoking-History-${new Date().toISOString().split('T')[0]}.csv` };
-  };
-
-  const previewSmokingHistory = async () => {
-    try {
-      setIsExporting(true);
-      const { csv } = await generateSmokingHistoryCSV();
-      setPreviewData(csv);
-      setPreviewType('smoking');
-      setIsExporting(false);
-    } catch (error) {
-      toast.error("Preview failed: " + error.message);
+      toast.error("Export failed: " + error.message);
+    } finally {
       setIsExporting(false);
     }
   };
 
-  const downloadSmokingHistory = async () => {
-    try {
-      const { csv, filename } = await generateSmokingHistoryCSV();
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success("Smoking history report downloaded");
-      setPreviewData(null);
-    } catch (error) {
-      toast.error("Download failed: " + error.message);
-    }
-  };
 
-  const handleDownload = () => {
-    if (previewType === 'collection') downloadCollectionReport();
-    else if (previewType === 'cellar') downloadCellarAging();
-    else if (previewType === 'smoking') downloadSmokingHistory();
-  };
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Button
-          onClick={() => window.open('/UserReport', '_blank')}
-          variant="outline"
-          className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          PDF Report
-        </Button>
-        
-        <Button
-          onClick={previewCollectionReport}
-          disabled={isExporting}
-          variant="outline"
-          className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          {isExporting ? "Loading..." : "CSV Export"}
-        </Button>
+        {/* Pipe Collection Report */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={isExporting}
+              variant="outline"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Pipe Collection Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleReport('pipe', 'csv')}>
+              <Table className="w-4 h-4 mr-2" />
+              Download CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReport('pipe', 'pdf')}>
+              <FileText className="w-4 h-4 mr-2" />
+              Preview PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <Button
-          onClick={previewCellarAging}
-          disabled={isExporting}
-          variant="outline"
-          className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          {isExporting ? "Loading..." : "Cellar Aging Report"}
-        </Button>
+        {/* Tobacco Collection Report */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={isExporting}
+              variant="outline"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Tobacco Collection Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleReport('tobacco', 'csv')}>
+              <Table className="w-4 h-4 mr-2" />
+              Download CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReport('tobacco', 'pdf')}>
+              <FileText className="w-4 h-4 mr-2" />
+              Preview PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <Button
-          onClick={previewSmokingHistory}
-          disabled={isExporting}
-          variant="outline"
-          className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
-        >
-          <Eye className="w-4 h-4 mr-2" />
-          {isExporting ? "Loading..." : "Smoking History"}
-        </Button>
+        {/* Insurance Report */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={isExporting}
+              variant="outline"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Insurance Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleReport('insurance', 'csv')}>
+              <Table className="w-4 h-4 mr-2" />
+              Download CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReport('insurance', 'pdf')}>
+              <FileText className="w-4 h-4 mr-2" />
+              Preview PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Stats Report */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={isExporting}
+              variant="outline"
+              className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Collection Stats Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleReport('stats', 'csv')}>
+              <Table className="w-4 h-4 mr-2" />
+              Download CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReport('stats', 'pdf')}>
+              <FileText className="w-4 h-4 mr-2" />
+              Preview PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <Dialog open={!!previewData} onOpenChange={() => setPreviewData(null)}>
+      {/* PDF Preview Dialog */}
+      <Dialog open={!!pdfPreview} onOpenChange={() => setPdfPreview(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <span>
-                Report Preview - {
-                  previewType === 'collection' ? 'Collection CSV' :
-                  previewType === 'cellar' ? 'Cellar Aging' :
-                  'Smoking History'
-                }
-              </span>
+              <span>{previewTitle}</span>
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => setPreviewData(null)}
+                onClick={() => setPdfPreview(null)}
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -265,16 +424,16 @@ export default function CollectionReportExporter({ user }) {
           </DialogHeader>
           
           <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-            <pre className="text-xs font-mono whitespace-pre">{previewData}</pre>
+            <div dangerouslySetInnerHTML={{ __html: pdfPreview }} />
           </ScrollArea>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPreviewData(null)}>
+            <Button variant="outline" onClick={() => setPdfPreview(null)}>
               Cancel
             </Button>
-            <Button onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download CSV
+            <Button onClick={downloadPDF}>
+              <FileText className="w-4 h-4 mr-2" />
+              Print/Download PDF
             </Button>
           </DialogFooter>
         </DialogContent>
