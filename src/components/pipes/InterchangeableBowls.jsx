@@ -25,6 +25,7 @@ function toNumberOrNull(v) {
 export default function InterchangeableBowls({ pipe, onUpdate }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [useMetric, setUseMetric] = useState(true);
 
   const [bowlForm, setBowlForm] = useState({
     bowl_variant_id: "",
@@ -42,6 +43,20 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const convertToImperial = (mm) => {
+    if (!mm) return null;
+    return (mm / 25.4).toFixed(2);
+  };
+
+  const formatMeasurement = (mm, label) => {
+    if (!mm) return null;
+    if (useMetric) {
+      return `${label} ${mm}mm`;
+    } else {
+      return `${label} ${convertToImperial(mm)}"`;
+    }
+  };
 
   const interchangeableBowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
 
@@ -138,7 +153,17 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
             Interchangeable Bowls
           </CardTitle>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUseMetric(!useMetric)}
+              className="text-xs"
+            >
+              {useMetric ? "mm" : "in"}
+            </Button>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-1" />
@@ -303,7 +328,8 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
 
@@ -331,10 +357,10 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   <div className="flex flex-wrap gap-2 text-xs">
                     {bowl.bowl_material ? <Badge className="bg-stone-100 text-stone-700">{bowl.bowl_material}</Badge> : null}
                     {bowl.chamber_volume ? <Badge className="bg-amber-100 text-amber-800">{bowl.chamber_volume}</Badge> : null}
-                    {bowl.bowl_height_mm ? <span className="text-stone-600">H {bowl.bowl_height_mm}mm</span> : null}
-                    {bowl.bowl_width_mm ? <span className="text-stone-600">W {bowl.bowl_width_mm}mm</span> : null}
-                    {bowl.bowl_diameter_mm ? <span className="text-stone-600">Ø {bowl.bowl_diameter_mm}mm</span> : null}
-                    {bowl.bowl_depth_mm ? <span className="text-stone-600">D {bowl.bowl_depth_mm}mm</span> : null}
+                    {formatMeasurement(bowl.bowl_height_mm, "H") ? <span className="text-stone-600">{formatMeasurement(bowl.bowl_height_mm, "H")}</span> : null}
+                    {formatMeasurement(bowl.bowl_width_mm, "W") ? <span className="text-stone-600">{formatMeasurement(bowl.bowl_width_mm, "W")}</span> : null}
+                    {formatMeasurement(bowl.bowl_diameter_mm, "Ø") ? <span className="text-stone-600">{formatMeasurement(bowl.bowl_diameter_mm, "Ø")}</span> : null}
+                    {formatMeasurement(bowl.bowl_depth_mm, "D") ? <span className="text-stone-600">{formatMeasurement(bowl.bowl_depth_mm, "D")}</span> : null}
                     {Array.isArray(bowl.focus) && bowl.focus.length > 0 ? (
                       <span className="text-amber-700 font-medium">🎯 {bowl.focus.join(", ")}</span>
                     ) : null}
