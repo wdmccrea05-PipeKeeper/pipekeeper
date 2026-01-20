@@ -5,7 +5,6 @@ import {
   BookOpen, Plus, Edit, Camera, Package, Archive, Sparkles, 
   Users, FileDown, MessageSquare, Target, Calendar, Info, AlertCircle
 } from "lucide-react";
-import { isAppleBuild } from "@/components/utils/appVariant";
 
 export default function HowTo() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -229,24 +228,24 @@ export default function HowTo() {
       color: "text-purple-400",
       guides: [
         {
-          q: `How to log a ${isAppleBuild ? 'usage session' : 'smoking session'}`,
+          q: "How to log a smoking session",
           steps: [
             "Go to the Home page",
-            `Find the '${isAppleBuild ? 'Usage Log' : 'Smoking Log'}' section`,
+            "Find the 'Smoking Log' section",
             "Tap 'Log Session' or the + button",
-            "Select which pipe you used",
+            "Select which pipe you smoked",
             "Select which tobacco blend",
-            "Enter number of bowls used",
-            "Optionally add session notes",
-            `Add notes about the experience${!isAppleBuild ? ', flavor impressions, etc.' : ', conditions, etc.'}`,
+            "Enter number of bowls smoked",
+            "Optionally mark as 'Break-in session' if applicable",
+            "Add notes about the experience, flavor impressions, etc.",
             "Save - inventory will automatically reduce for open tobacco quantities (Premium)"
           ]
         },
         {
-          q: "How inventory reduction works with usage logs",
+          q: "How inventory reduction works with smoking logs",
           steps: [
-            "When you log a usage session, the system calculates tobacco consumed",
-            "Formula: (Chamber volume in oz) × (Number of bowls used)",
+            "When you log a smoking session, the system calculates tobacco used",
+            "Formula: (Chamber volume in oz) × (Number of bowls smoked)",
             "The system deducts from 'Open' quantities first",
             "Priority order: Open tins → Open bulk → Open pouches",
             "Cellared tobacco is never automatically reduced",

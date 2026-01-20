@@ -1,52 +1,60 @@
-// src/components/utils/companion.jsx
-/**
- * Companion detection:
- * - iOS wrapper should append ?platform=ios (per your current approach)
- * - Optional: user agent contains markers like "PipeKeeperiOS" / "PipeKeeperCompanion"
- */
-
-export function getCompanionPlatform() {
-  try {
-    if (typeof window === "undefined") return null;
-
-    const url = new URL(window.location.href);
-    const platformParam = (url.searchParams.get("platform") || "").toLowerCase();
-
-    if (platformParam === "ios") return "ios";
-
-    const ua = (navigator.userAgent || "").toLowerCase();
-    if (ua.includes("pipekeeperios") || ua.includes("pipekeeper-companion") || ua.includes("pipekeepercompanion")) {
-      return "ios";
-    }
-
-    // If you later add Android wrapper markers, detect them here.
-    // Example:
-    // if (platformParam === "android") return "android";
-    // if (ua.includes("pipekeeperandroid")) return "android";
-
-    return null;
-  } catch {
-    return null;
-  }
-}
+// Companion detection: rely ONLY on explicit UA flags set by the native wrappers.
+// Do NOT use URL query params (like ?platform=ios) because that breaks the web UI.
 
 export function isIOSCompanion() {
-  return getCompanionPlatform() === "ios";
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+  
+  // URL query flag set by iOS wrapper (?platform=ios)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const p = (params.get("platform") || "").toLowerCase();
+    if (p === "ios") return true;
+  } catch (_e) {}
+
+  // UA suffix (set by iOS wrapper customUserAgent)
+  const ua = (navigator.userAgent || "").toLowerCase();
+  if (ua.includes("pipekeepercompanionios") || ua.includes("pipekeeperios")) return true;
+
+  return false;
+}
+
+export function isAndroidCompanion() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+  
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const p = (params.get("platform") || "").toLowerCase();
+    if (p === "android") return true;
+  } catch (_e) {}
+
+  const ua = (navigator.userAgent || "").toLowerCase();
+  if (ua.includes("pipekeepercompanionandroid") || ua.includes("pipekeeperandroid")) return true;
+  return false;
 }
 
 export function isCompanionApp() {
-  return !!getCompanionPlatform();
+  return isIOSCompanion() || isAndroidCompanion();
 }
 
-/**
- * IMPORTANT (Apple compliance):
- * If running inside iOS companion wrapper, do NOT show external purchase UI
- * (Stripe checkout, billing portal, external upgrade links).
- */
 export function shouldShowPurchaseUI() {
-  // iOS companion -> purchases must be Apple IAP, handled natively
+  // iOS companion MUST NOT show any purchase UI (App Store compliance)
   if (isIOSCompanion()) return false;
-
-  // Web / Android web app can show Stripe purchase UI (if you still use Stripe there)
+  // Android can show purchase UI
   return true;
+}
+
+export function getPremiumGateMessage() {
+  return isCompanionApp()
+    ? "Premium feature. Available for Premium accounts."
+    : "Premium feature. Upgrade to unlock this feature.";
+}
+
+export function getSubscriptionManagementMessage() {
+  return isCompanionApp()
+    ? "Subscription management isn't available in the companion app."
+    : "Manage your subscription from your Profile page.";
 }

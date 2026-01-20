@@ -1,58 +1,69 @@
 // src/components/utils/appVariant.jsx
-import { isIOSCompanion } from "./companion";
+//
+// Variant resolution order:
+// 1) window.__PIPEKEEPER_VARIANT__ (set by iOS WKWebView wrapper)
+// 2) ?variant=apple|full
+// 3) localStorage pipekeeper_variant
+// 4) VITE_APP_VARIANT env var (Base44 deployment config)
+// 5) default: full
 
-/**
- * App Variant / Feature Flags
- *
- * Apple build policy (recommended):
- * - iOS companion build should not include:
- *   - Stripe purchase flows
- *   - “tobacco recommendation / pairing encouragement” AI that could be interpreted as promotion
- * - Keep iOS build focused on cataloging, inventory, exports, and organization tools.
- *
- * You can force Apple build using an env var:
- *   VITE_APPLE_BUILD=true
- *
- * Otherwise, we infer it from iOS companion detection (?platform=ios)
- */
+function norm(v) {
+  const s = String(v || "").toLowerCase().trim();
+  if (s === "apple" || s === "ios") return "apple";
+  if (s === "full" || s === "web" || s === "android") return "full";
+  return "";
+}
 
-function readBoolEnv(key) {
+function getQueryParam(name) {
   try {
-    // Vite-style envs
-    const v = (import.meta?.env?.[key] || "").toString().toLowerCase();
-    return v === "true" || v === "1" || v === "yes";
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
   } catch {
-    return false;
+    return null;
   }
 }
 
-export const isAppleBuild = (() => {
-  // Hard override first (useful for testing)
-  if (readBoolEnv("VITE_APPLE_BUILD")) return true;
+function getLS(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 
-  // Otherwise infer from iOS wrapper
-  return isIOSCompanion();
-})();
+export function resolveAppVariant() {
+  // 1) iOS wrapper injection
+  if (typeof window !== "undefined") {
+    const injected = norm(window.__PIPEKEEPER_VARIANT__);
+    if (injected) return injected;
+  }
 
-/**
- * Feature gates used across the UI.
- * Keep keys stable—your code already references FEATURES.community, etc.
- */
-export const FEATURES = {
-  // Community / social
-  community: !isAppleBuild,     // disable for iOS build unless you intentionally add moderation & policy work
-  messaging: !isAppleBuild,
+  // 2) URL param
+  const qp = typeof window !== "undefined" ? norm(getQueryParam("variant")) : "";
+  if (qp) return qp;
 
-  // AI features
-  ai_tobacconist_chat: !isAppleBuild,
-  ai_pairing_matrix: !isAppleBuild,
-  ai_optimizer: !isAppleBuild,
-  ai_web_autofill: !isAppleBuild,
+  // 3) localStorage override
+  const ls = typeof window !== "undefined" ? norm(getLS("pipekeeper_variant")) : "";
+  if (ls) return ls;
 
-  // Safe / “utility” features that should be fine for iOS
-  csv_import_export: true,
-  pdf_exports: true,
-  inventory_tools: true,
-  pipe_photos: true,
-  pipe_identification: true, // pipe-centric ID ok; if it touches tobacco recommendations, gate separately above
-};
+  // 4) Base44 env var
+  const env = norm(import.meta?.env?.VITE_APP_VARIANT || "");
+  if (env) return env;
+
+  return "full";
+}
+
+export const APP_VARIANT = resolveAppVariant();
+export const isAppleBuild = APP_VARIANT === "apple";
+
+export const FEATURES = Object.freeze({
+  recommendations: !isAppleBuild,
+  optimization: !isAppleBuild,
+  breakInSchedules: !isAppleBuild,
+  smokingLogs: !isAppleBuild,
+  community: !isAppleBuild,
+});
+
+export function isFeatureEnabled(key) {
+  return FEATURES?.[key] !== false;
+}
