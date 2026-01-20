@@ -266,23 +266,23 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">Loading user...</p>
+          <p className={PK_THEME.textBody}>Loading user...</p>
         </div>
       </div>
     );
   }
-  
+
   if (userError) {
     console.error('[Home] User error:', userError);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
@@ -297,7 +297,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
 
   if (!user?.email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
@@ -363,7 +363,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
   // Error state
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
@@ -379,17 +379,17 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
   return (
     <>
       {isInitialLoading ? (
-        <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-          <div className="text-center">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-              alt="PipeKeeper"
-              className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-            />
-            <p className="text-[#e8d5b7]">Loading your collection...</p>
-          </div>
-        </div>
-      ) : null}
+         <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+           <div className="text-center">
+             <img 
+               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+               alt="PipeKeeper"
+               className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+             />
+             <p className={PK_THEME.textBody}>Loading your collection...</p>
+           </div>
+         </div>
+       ) : null}
 
       {showOnboarding && user?.email ? (
         <OnboardingFlow 

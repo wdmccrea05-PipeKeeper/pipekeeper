@@ -21,6 +21,7 @@ import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
+import { PK_THEME } from "@/components/utils/pkTheme";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -277,17 +278,17 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
         <div className="text-center">
           <div className="text-4xl mb-4">⚙️</div>
-          <p className="text-stone-600">Loading profile...</p>
+          <p className={PK_THEME.textMuted}>Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       {showCropper && imageToCrop && (
         <AvatarCropper
           image={imageToCrop}
