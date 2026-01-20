@@ -1,4 +1,5 @@
 import AIUpdates from './pages/AIUpdates';
+import AdminReports from './pages/AdminReports';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
@@ -27,12 +28,12 @@ import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import index from './pages/index';
-import AdminReports from './pages/AdminReports';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIUpdates": AIUpdates,
+    "AdminReports": AdminReports,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
@@ -61,7 +62,6 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "index": index,
-    "AdminReports": AdminReports,
 }
 
 export const pagesConfig = {

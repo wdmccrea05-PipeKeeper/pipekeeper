@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Wine } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
+import CollectionReportExporter from "@/components/export/CollectionReportExporter";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
@@ -120,26 +121,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <div className="text-sm text-white mb-4">
                     Download collection reports, exports, and comprehensive analysis documents.
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <a href={createPageUrl('UserReport')} target="_blank">
-                      <Button variant="outline" className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10">
-                        <Download className="w-4 h-4 mr-2" />
-                        Full Collection Report
-                      </Button>
-                    </a>
-                    <Button variant="outline" className="w-full justify-start border-[#1e3a5f]/30 text-[#2c4f7c] hover:bg-[#1e3a5f]/10" disabled>
-                      <Download className="w-4 h-4 mr-2" />
-                      Cellar Aging Report
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start border-[#1e3a5f]/30 text-[#2c4f7c] hover:bg-[#1e3a5f]/10" disabled>
-                      <Download className="w-4 h-4 mr-2" />
-                      Pipe Valuation PDF
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start border-[#1e3a5f]/30 text-[#2c4f7c] hover:bg-[#1e3a5f]/10" disabled>
-                      <Download className="w-4 h-4 mr-2" />
-                      Smoking History
-                    </Button>
-                  </div>
+                  <CollectionReportExporter user={user} />
                   <p className="text-xs text-white/80 mt-4">
                     Additional report formats coming soon.
                   </p>
