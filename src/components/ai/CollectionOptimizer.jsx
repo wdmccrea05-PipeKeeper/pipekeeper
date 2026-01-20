@@ -1752,8 +1752,8 @@ Provide concrete, actionable steps with specific field values.`,
                             )}
                             
                             <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                              <p className="text-xs font-medium text-blue-700">Usage Pattern:</p>
-                              <p className="text-xs text-stone-600">{displaySpec.usage_pattern}</p>
+                              <p className="text-xs font-medium text-blue-900">Usage Pattern:</p>
+                              <p className="text-xs text-stone-700">{displaySpec.usage_pattern}</p>
                             </div>
 
                             <div className="flex flex-wrap gap-2 mt-2">
