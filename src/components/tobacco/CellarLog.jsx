@@ -151,18 +151,19 @@ export default function CellarLog({ blend }) {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Package className="w-5 h-5 text-[#D1A75D]" />
-          <h3 className="font-semibold text-[#E0D8C8]">Cellared Tobacco</h3>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="bg-[#D1A75D] hover:bg-[#D1A75D]/90 text-[#1a2c42]">
-              <Plus className="w-4 h-4 mr-1" />
-              Add Entry
-            </Button>
-          </DialogTrigger>
+      <div className="bg-white rounded-lg p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Package className="w-5 h-5 text-[#1a2c42]" />
+            <h3 className="font-semibold text-[#1a2c42]">Cellared Tobacco</h3>
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-[#D1A75D] hover:bg-[#D1A75D]/90 text-[#1a2c42] font-semibold">
+                <Plus className="w-4 h-4 mr-1" />
+                Add Entry
+              </Button>
+            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add Cellar Transaction</DialogTitle>
@@ -272,34 +273,34 @@ export default function CellarLog({ blend }) {
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
-              <ArrowDownToLine className="w-4 h-4 text-green-400" />
-              <span className="text-xs text-green-400 font-medium">Added</span>
+              <ArrowDownToLine className="w-4 h-4 text-green-600" />
+              <span className="text-xs text-green-700 font-medium">Added</span>
             </div>
-            <p className="text-lg font-bold text-white">{totalAdded.toFixed(1)} oz</p>
+            <p className="text-lg font-bold text-[#1a2c42]">{totalAdded.toFixed(1)} oz</p>
           </div>
 
           <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
-              <ArrowUpFromLine className="w-4 h-4 text-red-400" />
-              <span className="text-xs text-red-400 font-medium">Removed</span>
+              <ArrowUpFromLine className="w-4 h-4 text-red-600" />
+              <span className="text-xs text-red-700 font-medium">Removed</span>
             </div>
-            <p className="text-lg font-bold text-white">{totalRemoved.toFixed(1)} oz</p>
+            <p className="text-lg font-bold text-[#1a2c42]">{totalRemoved.toFixed(1)} oz</p>
           </div>
 
           <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
-              <Package className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-amber-400 font-medium">Net</span>
+              <Package className="w-4 h-4 text-amber-600" />
+              <span className="text-xs text-amber-700 font-medium">Net</span>
             </div>
-            <p className="text-lg font-bold text-white">{netCellared.toFixed(1)} oz</p>
+            <p className="text-lg font-bold text-[#1a2c42]">{netCellared.toFixed(1)} oz</p>
           </div>
         </div>
 
         {/* Log Entries */}
         {isLoading ? (
-          <p className="text-sm text-[#E0D8C8]/60 text-center py-4">Loading...</p>
+          <p className="text-sm text-[#1a2c42]/60 text-center py-4">Loading...</p>
         ) : logs.length === 0 ? (
-          <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
+          <p className="text-sm text-[#1a2c42]/60 text-center py-4">
             No cellar transactions recorded yet
           </p>
         ) : (
@@ -307,12 +308,12 @@ export default function CellarLog({ blend }) {
             {logs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-[#A35C5C]/30 hover:bg-[#A35C5C]/10 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-[#1a2c42]/20 hover:bg-gray-50 transition-colors"
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   log.transaction_type === 'added' 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
+                    ? 'bg-green-500/20 text-green-600' 
+                    : 'bg-red-500/20 text-red-600'
                 }`}>
                   {log.transaction_type === 'added' ? (
                     <ArrowDownToLine className="w-5 h-5" />
@@ -324,24 +325,24 @@ export default function CellarLog({ blend }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div>
-                      <p className="font-semibold text-[#E0D8C8]">
+                      <p className="font-semibold text-[#1a2c42]">
                         {log.transaction_type === 'added' ? 'Added to Cellar' : 'Removed from Cellar'}
                       </p>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <Badge variant="outline" className="text-xs bg-[#A35C5C]/20 text-[#E0D8C8] border-[#A35C5C]/30">
+                        <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
                           {log.amount_oz} oz
                         </Badge>
-                        <Badge variant="outline" className="text-xs bg-[#A35C5C]/20 text-[#E0D8C8] border-[#A35C5C]/30">
+                        <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
                           {log.container_type}
                         </Badge>
                         {log.removal_destination && (
-                          <Badge className="text-xs bg-blue-500/20 text-blue-300 border-blue-500/30">
+                          <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                             {log.removal_destination === 'open_collection' && 'To Open'}
                             {log.removal_destination === 'exchanged' && 'Exchanged'}
                             {log.removal_destination === 'discarded' && 'Discarded'}
                           </Badge>
                         )}
-                        <span className="flex items-center gap-1 text-xs text-[#E0D8C8]/60">
+                        <span className="flex items-center gap-1 text-xs text-[#1a2c42]/60">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(log.date), 'MMM d, yyyy')}
                         </span>
@@ -355,20 +356,21 @@ export default function CellarLog({ blend }) {
                           deleteLogMutation.mutate(log.id);
                         }
                       }}
-                      className="text-[#E0D8C8]/40 hover:text-red-400"
+                      className="text-[#1a2c42]/40 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                   {log.notes && (
-                    <p className="text-xs text-[#E0D8C8]/70 mt-1">{log.notes}</p>
+                    <p className="text-xs text-[#1a2c42]/70 mt-1">{log.notes}</p>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+              ))}
+              </div>
+              )}
+              </div>
+              </div>
+              </>
   );
 }

@@ -19,7 +19,7 @@ export default function OpenInventorySummary({ blend }) {
 
   if (!hasOpenInventory) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8 bg-white rounded-lg p-4">
         <Package className="w-12 h-12 mx-auto mb-3 text-[#1a2c42]/40" />
         <p className="text-sm font-semibold text-[#1a2c42]">No open tobacco yet</p>
         <p className="text-xs mt-1 text-[#1a2c42]/80">Update the Inventory tab to track open quantities</p>
@@ -28,7 +28,7 @@ export default function OpenInventorySummary({ blend }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white rounded-lg p-4">
       {/* Summary Card */}
       <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
         <div className="flex items-center gap-2 mb-2">
@@ -41,69 +41,69 @@ export default function OpenInventorySummary({ blend }) {
 
       {/* Breakdown */}
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide mb-3">Open Inventory</p>
+        <p className="text-xs font-semibold text-[#1a2c42] uppercase tracking-wide mb-3">Open Inventory</p>
         
         {tinOpen > 0 && (
-          <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-stone-200">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-[#1a2c42]/20">
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                   Tins
                 </Badge>
-                <span className="text-sm font-medium text-stone-700">
+                <span className="text-sm font-medium text-[#1a2c42]">
                   {tinOpen} {tinOpen === 1 ? 'tin' : 'tins'} open
                 </span>
               </div>
               {tinSize > 0 && (
-                <p className="text-xs text-stone-500 mt-1">
+                <p className="text-xs text-[#1a2c42]/70 mt-1">
                   {tinSize} oz per tin
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="font-semibold text-stone-800">{tinOpenOz} oz</p>
-              <p className="text-xs text-stone-500">{(tinOpenOz * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{tinOpenOz} oz</p>
+              <p className="text-xs text-[#1a2c42]/60">{(tinOpenOz * 28.35).toFixed(2)}g</p>
             </div>
           </div>
         )}
 
         {bulkOpen > 0 && (
-          <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-stone-200">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-[#1a2c42]/20">
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
                   Bulk
                 </Badge>
-                <span className="text-sm font-medium text-stone-700">Open quantity</span>
+                <span className="text-sm font-medium text-[#1a2c42]">Open quantity</span>
               </div>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-stone-800">{parseFloat(bulkOpen).toFixed(2)} oz</p>
-              <p className="text-xs text-stone-500">{(bulkOpen * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{parseFloat(bulkOpen).toFixed(2)} oz</p>
+              <p className="text-xs text-[#1a2c42]/60">{(bulkOpen * 28.35).toFixed(2)}g</p>
             </div>
           </div>
         )}
 
         {pouchOpen > 0 && (
-          <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-stone-200">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-[#1a2c42]/20">
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                   Pouches
                 </Badge>
-                <span className="text-sm font-medium text-stone-700">
+                <span className="text-sm font-medium text-[#1a2c42]">
                   {pouchOpen} {pouchOpen === 1 ? 'pouch' : 'pouches'} open
                 </span>
               </div>
               {pouchSize > 0 && (
-                <p className="text-xs text-stone-500 mt-1">
+                <p className="text-xs text-[#1a2c42]/70 mt-1">
                   {pouchSize} oz per pouch
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="font-semibold text-stone-800">{pouchOpenOz} oz</p>
-              <p className="text-xs text-stone-500">{(pouchOpenOz * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{pouchOpenOz} oz</p>
+              <p className="text-xs text-[#1a2c42]/60">{(pouchOpenOz * 28.35).toFixed(2)}g</p>
             </div>
           </div>
         )}
