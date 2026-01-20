@@ -19,10 +19,10 @@ export default function OpenInventorySummary({ blend }) {
 
   if (!hasOpenInventory) {
     return (
-      <div className="text-center py-8 text-stone-500">
-        <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No open tobacco yet</p>
-        <p className="text-xs mt-1">Update the Inventory tab to track open quantities</p>
+      <div className="text-center py-8">
+        <Package className="w-12 h-12 mx-auto mb-3 text-[#1a2c42]/40" />
+        <p className="text-sm font-semibold text-[#1a2c42]">No open tobacco yet</p>
+        <p className="text-xs mt-1 text-[#1a2c42]/80">Update the Inventory tab to track open quantities</p>
       </div>
     );
   }

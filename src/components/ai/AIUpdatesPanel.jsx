@@ -401,12 +401,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
   return (
     <div className="space-y-4">
       {/* ✅ NEW: Reclassify Blends card (this is what was missing) */}
-      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#5a6a7a]/80">
         <div className="flex items-start gap-3 mb-3">
-          <Tags className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+          <Tags className="w-5 h-5 text-blue-300 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#e8d5b7]">Tobacco Blend Classification</h3>
-            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+            <h3 className="font-semibold text-white">Tobacco Blend Classification</h3>
+            <p className="text-sm text-white/90 mt-1">
               Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
             </p>
           </div>
@@ -426,20 +426,20 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </Button>
       </div>
 
-      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#5a6a7a]/80">
         <div className="flex items-start gap-3 mb-3">
           {pairingsStale ? (
-            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-300 mt-0.5 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
           )}
           <div className="flex-1">
-            <h3 className="font-semibold text-[#e8d5b7]">Pairing Matrix</h3>
-            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+            <h3 className="font-semibold text-white">Pairing Matrix</h3>
+            <p className="text-sm text-white/90 mt-1">
               {pairingsStale ? (
-                <span className="text-amber-400 font-medium">Out of date - regeneration recommended</span>
+                <span className="text-amber-200 font-bold">Out of date - regeneration recommended</span>
               ) : (
-                <span className="text-emerald-400 font-medium">Up to date</span>
+                <span className="text-emerald-200 font-bold">Up to date</span>
               )}
             </p>
           </div>
@@ -467,20 +467,20 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
       </div>
 
-      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#5a6a7a]/80">
         <div className="flex items-start gap-3 mb-3">
           {optStale ? (
-            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-300 mt-0.5 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
           )}
           <div className="flex-1">
-            <h3 className="font-semibold text-[#e8d5b7]">Collection Optimization</h3>
-            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+            <h3 className="font-semibold text-white">Collection Optimization</h3>
+            <p className="text-sm text-white/90 mt-1">
               {optStale ? (
-                <span className="text-amber-400 font-medium">Out of date - regeneration recommended</span>
+                <span className="text-amber-200 font-bold">Out of date - regeneration recommended</span>
               ) : (
-                <span className="text-emerald-400 font-medium">Up to date</span>
+                <span className="text-emerald-200 font-bold">Up to date</span>
               )}
             </p>
           </div>
@@ -508,12 +508,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </div>
       </div>
 
-      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#5a6a7a]/80">
         <div className="flex items-start gap-3 mb-3">
-          <Ruler className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <Ruler className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#e8d5b7]">Pipe Measurements</h3>
-            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+            <h3 className="font-semibold text-white">Pipe Measurements</h3>
+            <p className="text-sm text-white/90 mt-1">
               Fill missing dimensions with verified manufacturer specs
             </p>
           </div>
@@ -529,12 +529,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         </Button>
       </div>
 
-      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#1a2c42]/60">
+      <div className="border border-[#e8d5b7]/30 rounded-lg p-4 bg-[#5a6a7a]/80">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#e8d5b7]">Break-In Schedules</h3>
-            <p className="text-sm text-[#e8d5b7]/70 mt-1">
+            <h3 className="font-semibold text-white">Break-In Schedules</h3>
+            <p className="text-sm text-white/90 mt-1">
               Regeneration is handled per pipe on the Pipe detail page (with undo/history).
             </p>
           </div>

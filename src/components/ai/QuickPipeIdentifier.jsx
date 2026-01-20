@@ -304,9 +304,9 @@ Provide analysis as JSON:
         {clarificationNeeded && !identified ? (
           <div className="space-y-4">
             {/* Initial Observations */}
-            <div className="bg-[#243548]/50 rounded-lg p-4">
-              <p className="text-xs text-[#e8d5b7]/60 mb-2">Initial Analysis</p>
-              <p className="text-sm text-[#e8d5b7]">{clarificationNeeded.initial_observations}</p>
+            <div className="bg-[#5a6a7a]/70 rounded-lg p-4">
+              <p className="text-xs text-white/90 font-semibold mb-2">Initial Analysis</p>
+              <p className="text-sm text-white">{clarificationNeeded.initial_observations}</p>
             </div>
 
             {/* Clarification Questions */}
@@ -360,13 +360,13 @@ Provide analysis as JSON:
           </div>
         ) : !identified ? (
           <div className="space-y-4">
-            {/* Photo Upload Section */}
-            <div className="grid grid-cols-2 gap-3">
-              <label className="cursor-pointer">
-                <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#e8d5b7]/30 rounded-lg hover:border-purple-400/50 transition-colors bg-[#243548]/50">
-                  <Upload className="w-5 h-5 text-[#e8d5b7]/60 mb-1" />
-                  <span className="text-xs text-[#e8d5b7]/70">Upload Photos</span>
-                </div>
+          {/* Photo Upload Section */}
+          <div className="grid grid-cols-2 gap-3">
+            <label className="cursor-pointer">
+              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#e8d5b7]/50 rounded-lg hover:border-purple-400/70 transition-colors bg-[#5a6a7a]/50">
+                <Upload className="w-5 h-5 text-white/90 mb-1" />
+                <span className="text-xs text-white/80 font-medium">Upload Photos</span>
+              </div>
                 <input
                   type="file"
                   className="hidden"
@@ -378,9 +378,9 @@ Provide analysis as JSON:
               </label>
 
               <label className="cursor-pointer">
-                <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#e8d5b7]/30 rounded-lg hover:border-purple-400/50 transition-colors bg-[#243548]/50">
-                  <Camera className="w-5 h-5 text-[#e8d5b7]/60 mb-1" />
-                  <span className="text-xs text-[#e8d5b7]/70">Take Photo</span>
+                <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#e8d5b7]/50 rounded-lg hover:border-purple-400/70 transition-colors bg-[#5a6a7a]/50">
+                  <Camera className="w-5 h-5 text-white/90 mb-1" />
+                  <span className="text-xs text-white/80 font-medium">Take Photo</span>
                 </div>
                 <input
                   type="file"

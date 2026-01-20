@@ -107,32 +107,32 @@ export default function CellarAgingDashboard({ user }) {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-[#1A2B3A]/80 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
           <div className="flex items-center gap-3">
-            <Package className="w-8 h-8 text-[#A35C5C]" />
+            <Package className="w-8 h-8 text-[#E0D8C8]" />
             <div>
-              <div className="text-2xl font-bold text-[#E0D8C8]">{cellarBlends.length}</div>
-              <div className="text-xs text-[#E0D8C8]/70">Cellared Blends</div>
+              <div className="text-2xl font-bold text-white">{cellarBlends.length}</div>
+              <div className="text-xs text-white/90 font-medium">Cellared Blends</div>
             </div>
           </div>
         </Card>
         
-        <Card className="bg-[#1A2B3A]/80 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-[#A35C5C]" />
+            <TrendingUp className="w-8 h-8 text-[#E0D8C8]" />
             <div>
-              <div className="text-2xl font-bold text-[#E0D8C8]">{totalWeight.toFixed(1)} oz</div>
-              <div className="text-xs text-[#E0D8C8]/70">Total Cellared</div>
+              <div className="text-2xl font-bold text-white">{totalWeight.toFixed(1)} oz</div>
+              <div className="text-xs text-white/90 font-medium">Total Cellared</div>
             </div>
           </div>
         </Card>
         
-        <Card className="bg-[#1A2B3A]/80 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
           <div className="flex items-center gap-3">
-            <Clock className="w-8 h-8 text-[#A35C5C]" />
+            <Clock className="w-8 h-8 text-[#E0D8C8]" />
             <div>
-              <div className="text-2xl font-bold text-[#E0D8C8]">{Math.round(avgMonths)}m</div>
-              <div className="text-xs text-[#E0D8C8]/70">Avg Age</div>
+              <div className="text-2xl font-bold text-white">{Math.round(avgMonths)}m</div>
+              <div className="text-xs text-white/90 font-medium">Avg Age</div>
             </div>
           </div>
         </Card>
@@ -156,11 +156,11 @@ export default function CellarAgingDashboard({ user }) {
             const progress = Math.min((aging.months / maxMonths) * 100, 100);
             
             return (
-              <Card key={blend.id} className="bg-[#1A2B3A]/60 border-[#A35C5C]/30 p-4">
+              <Card key={blend.id} className="bg-[#5a6a7a]/70 border-[#A35C5C]/30 p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-[#E0D8C8] mb-1">{blend.name}</h4>
-                    <div className="flex flex-wrap gap-2 items-center text-xs text-[#E0D8C8]/70">
+                    <h4 className="font-semibold text-white mb-1">{blend.name}</h4>
+                    <div className="flex flex-wrap gap-2 items-center text-xs text-white/80 font-medium">
                       <span>{totalOz.toFixed(1)} oz cellared</span>
                       {aging.oldestDate && (
                         <>
@@ -186,7 +186,7 @@ export default function CellarAgingDashboard({ user }) {
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-[#E0D8C8]/60">
+                  <div className="flex justify-between text-xs text-white/80 font-medium">
                     <span>Aging Progress</span>
                     <span>{Math.round(progress)}%</span>
                   </div>

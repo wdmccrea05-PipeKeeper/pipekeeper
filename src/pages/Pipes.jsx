@@ -154,7 +154,7 @@ export default function PipesPage() {
         >
           <div>
             <h1 className="text-3xl font-bold text-[#E0D8C8]">My Pipes</h1>
-            <p className="text-[#E0D8C8]/70 mt-1">
+            <p className="text-white/90 font-medium mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
             </p>
           </div>
