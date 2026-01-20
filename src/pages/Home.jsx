@@ -21,6 +21,9 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import { PK_THEME } from "@/components/utils/pkTheme";
+import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
+import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
 
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
@@ -441,21 +444,20 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
       ) : null}
 
       {!isInitialLoading && (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
         {/* Hero */}
         <motion.div 
           className="text-center mb-8 sm:mb-12 px-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#e8d5b7] mb-3 sm:mb-4 leading-tight">
+          <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
             Pipe & Tobacco Collection
-          </h1>
-          <p className="text-base sm:text-lg text-[#e8d5b7]/70 max-w-2xl mx-auto px-2">
+          </PkPageTitle>
+          <PkText className="max-w-2xl mx-auto px-2 text-opacity-70">
             Manage your pipes and tobacco blends with AI-powered search, photo identification, 
             pairing suggestions, and market valuations.
-          </p>
+          </PkText>
         </motion.div>
 
         {/* Stats */}
@@ -466,13 +468,13 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             transition={{ delay: 0.1 }}
           >
             <a href={createPageUrl('Pipes')}>
-              <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-3 sm:p-6 text-center">
+              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow">
+                <PkCardContent className="p-3 sm:p-6 text-center">
                   <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
-                  <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
-                  <p className="text-xs sm:text-sm text-white/80">Pipes</p>
-                  </CardContent>
-                  </Card>
+                  <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.accentText}`}>{safePipes.length}</p>
+                  <PkSubtext>Pipes</PkSubtext>
+                  </PkCardContent>
+                  </PkCard>
                   </a>
           </motion.div>
           <motion.div
@@ -480,13 +482,13 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] border-[#e8d5b7]/30">
-              <CardContent className="p-3 sm:p-6 text-center">
-                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                <p className="text-xl sm:text-3xl font-bold text-white break-words">${totalPipeValue.toLocaleString()}</p>
-                <p className="text-xs sm:text-sm text-white/80">Value</p>
-              </CardContent>
-            </Card>
+            <PkCard>
+              <PkCardContent className="p-3 sm:p-6 text-center">
+                <DollarSign className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
+                <p className={`text-xl sm:text-3xl font-bold ${PK_THEME.textTitle} break-words`}>${totalPipeValue.toLocaleString()}</p>
+                <PkSubtext>Value</PkSubtext>
+              </PkCardContent>
+            </PkCard>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -494,13 +496,13 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             transition={{ delay: 0.3 }}
             >
             <a href={createPageUrl('Tobacco')}>
-              <Card className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-3 sm:p-6 text-center">
-                  <Leaf className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                  <p className="text-2xl sm:text-3xl font-bold text-white">{safeBlends.length}</p>
-                  <p className="text-xs sm:text-sm text-white/80">Blends</p>
-                  </CardContent>
-                  </Card>
+              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow">
+                <PkCardContent className="p-3 sm:p-6 text-center">
+                  <Leaf className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
+                  <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{safeBlends.length}</p>
+                  <PkSubtext>Blends</PkSubtext>
+                  </PkCardContent>
+                  </PkCard>
                   </a>
           </motion.div>
           <motion.div
@@ -508,16 +510,16 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card 
-              className="bg-gradient-to-br from-[#3d5a4d] to-[#2d4a3d] border-[#e8d5b7]/30 cursor-pointer hover:shadow-lg transition-shadow"
+            <PkCard 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => setShowCellarDialog(true)}
             >
-              <CardContent className="p-3 sm:p-6 text-center">
-                <Package className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 text-white" />
-                <p className="text-2xl sm:text-3xl font-bold text-white">{totalCellaredOz.toFixed(1)}</p>
-                <p className="text-xs sm:text-sm text-white/80">Cellared (oz)</p>
-              </CardContent>
-            </Card>
+              <PkCardContent className="p-3 sm:p-6 text-center">
+                <Package className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
+                <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
+                <PkSubtext>Cellared (oz)</PkSubtext>
+              </PkCardContent>
+            </PkCard>
           </motion.div>
         </div>
 
