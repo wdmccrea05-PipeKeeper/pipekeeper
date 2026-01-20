@@ -646,9 +646,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             transition={{ delay: 0.7 }}
             className="mb-12"
           >
-            <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-white">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-rose-800">
+                <CardTitle className="flex items-center gap-2">
                   <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
                   Favorites
                 </CardTitle>
@@ -657,14 +657,14 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                 <div className="flex flex-wrap gap-3">
                   {favoritePipes.map(pipe => (
                     <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 cursor-pointer px-3 py-1.5">
+                      <Badge className="cursor-pointer px-3 py-1.5">
                         🪈 {pipe.name}
                       </Badge>
                     </a>
                   ))}
                   {favoriteBlends.map(blend => (
                     <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                      <Badge className="bg-stone-100 text-stone-800 border-stone-200 hover:bg-stone-200 cursor-pointer px-3 py-1.5">
+                      <Badge className="cursor-pointer px-3 py-1.5">
                         🍂 {blend.name}
                       </Badge>
                     </a>
@@ -724,9 +724,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
               transition={{ delay: 0.9 }}
               className="w-full"
             >
-              <Card className="border-stone-200 w-full">
+              <Card className="w-full">
                 <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                  <CardTitle className="text-stone-800 text-lg">Recent Pipes</CardTitle>
+                  <CardTitle className="text-lg">Recent Pipes</CardTitle>
                   <a href={createPageUrl('Pipes')}>
                     <Button variant="ghost" size="sm">
                       View All <ArrowRight className="w-4 h-4 ml-1" />
@@ -737,8 +737,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                   <div className="space-y-2 sm:space-y-3">
                     {recentPipes.map(pipe => (
                       <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#1A2B3A] overflow-hidden flex items-center justify-center flex-shrink-0">
                             {pipe.photos?.[0] ? (
                               <img src={pipe.photos[0]} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -746,11 +746,11 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-stone-800 truncate text-sm sm:text-base">{pipe.name}</p>
-                            <p className="text-xs sm:text-sm text-stone-500 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
+                            <p className="font-medium truncate text-sm sm:text-base">{pipe.name}</p>
+                            <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
                           </div>
                           {pipe.estimated_value && (
-                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs sm:text-sm flex-shrink-0">
+                            <Badge variant="success" className="text-xs sm:text-sm flex-shrink-0">
                               ${pipe.estimated_value}
                             </Badge>
                           )}
@@ -770,9 +770,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
               transition={{ delay: 1.0 }}
               className="w-full"
             >
-              <Card className="border-stone-200 w-full">
+              <Card className="w-full">
                 <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                  <CardTitle className="text-stone-800 text-lg">Recent Tobacco</CardTitle>
+                  <CardTitle className="text-lg">Recent Tobacco</CardTitle>
                   <a href={createPageUrl('Tobacco')}>
                     <Button variant="ghost" size="sm">
                       View All <ArrowRight className="w-4 h-4 ml-1" />
@@ -783,8 +783,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                   <div className="space-y-2 sm:space-y-3">
                     {recentBlends.map(blend => (
                       <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-stone-50 transition-colors cursor-pointer">
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#1A2B3A] overflow-hidden flex items-center justify-center flex-shrink-0">
                             {blend.logo || blend.photo ? (
                               <img 
                                 src={blend.logo || blend.photo} 
@@ -796,11 +796,11 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-stone-800 truncate text-sm sm:text-base">{blend.name}</p>
-                            <p className="text-xs sm:text-sm text-stone-500 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
+                            <p className="font-medium truncate text-sm sm:text-base">{blend.name}</p>
+                            <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
                           </div>
                           {blend.quantity_owned > 0 && (
-                            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
+                            <Badge className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
                               {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
                             </Badge>
                           )}
@@ -892,7 +892,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
           </DialogHeader>
           <div className="mt-4">
             {cellarBreakdown.length === 0 ? (
-              <p className="text-center text-stone-500 py-8">No tobacco currently cellared</p>
+              <p className="text-center text-[#E0D8C8]/60 py-8">No tobacco currently cellared</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {cellarBreakdown.map((item) => (
@@ -901,13 +901,13 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
                     href={createPageUrl(`TobaccoDetail?id=${item.blend_id}`)}
                     onClick={() => setShowCellarDialog(false)}
                   >
-                    <Card className="hover:bg-stone-50 transition-colors cursor-pointer">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="font-medium text-stone-800">{item.blend_name}</p>
+                    <Card className="hover:bg-white/5 transition-colors cursor-pointer">
+                       <CardContent className="p-4 flex items-center justify-between">
+                         <div className="flex-1">
+                           <p className="font-medium">{item.blend_name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-emerald-700">{item.totalOz.toFixed(1)} oz</p>
+                          <p className="text-lg font-bold text-emerald-400">{item.totalOz.toFixed(1)} oz</p>
                         </div>
                       </CardContent>
                     </Card>
