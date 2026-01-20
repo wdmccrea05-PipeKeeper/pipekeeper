@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
+import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -29,6 +29,10 @@ const navItems = [
   ...(FEATURES.community ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }] : []),
   { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
   { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
+];
+
+const adminNavItems = [
+  { name: "Reports", page: "AdminReports", icon: AlertCircle, isIconComponent: true },
 ];
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
@@ -170,7 +174,7 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess } = useCurrentUser();
+  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin } = useCurrentUser();
 
   React.useEffect(() => {
     const handleStorageChange = (e) => {
@@ -294,6 +298,14 @@ export default function Layout({ children, currentPageName }) {
                     hasPaidAccess={hasPaidAccess}
                   />
                 ))}
+                {isAdmin && adminNavItems.map((item) => (
+                  <NavLink
+                    key={item.page}
+                    item={item}
+                    currentPage={currentPageName}
+                    hasPaidAccess={hasPaidAccess}
+                  />
+                ))}
               </div>
 
               <div className="flex items-center gap-2">
@@ -344,6 +356,16 @@ export default function Layout({ children, currentPageName }) {
         >
           <div className="flex flex-col gap-2 p-4">
             {navItems.map((item) => (
+              <NavLink
+                key={item.page}
+                item={item}
+                currentPage={currentPageName}
+                onClick={() => setMobileOpen(false)}
+                hasPaidAccess={hasPaidAccess}
+                isMobile={true}
+              />
+            ))}
+            {isAdmin && adminNavItems.map((item) => (
               <NavLink
                 key={item.page}
                 item={item}
