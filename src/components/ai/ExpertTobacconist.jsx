@@ -29,8 +29,8 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
   });
 
   return (
-    <Card className="border-[#e8d5b7]/30 bg-[#243548]/80 backdrop-blur-sm rounded-2xl shadow-xl">
-      <CardHeader className="border-b border-[#e8d5b7]/20">
+    <Card>
+      <CardHeader className="border-b border-[#1a2c42]/20">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg">
             <img 
@@ -40,57 +40,45 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
             />
           </div>
           <div>
-            <CardTitle className="text-2xl text-[#e8d5b7]">Expert Tobacconist</CardTitle>
-            <p className="text-sm text-[#e8d5b7]/70">AI-powered collection analysis and recommendations</p>
+            <CardTitle className="text-2xl">Expert Tobacconist</CardTitle>
+            <p className="text-sm opacity-70">AI-powered collection analysis and recommendations</p>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        <Tabs defaultValue="identifier" className="space-y-6">
-          <TabsList className="grid grid-cols-4 bg-[#1a2c42]/60 border border-[#e8d5b7]/30 p-1 rounded-xl shadow-inner">
-            <TabsTrigger 
-              value="identifier"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
-            >
+        <Tabs defaultValue="identifier">
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="identifier" className="flex items-center justify-center gap-1 md:gap-2">
               <Camera className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Identify</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="optimizer"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
-            >
+            <TabsTrigger value="optimizer" className="flex items-center justify-center gap-1 md:gap-2">
               <TrendingUp className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Optimize</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="whatif"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
-            >
+            <TabsTrigger value="whatif" className="flex items-center justify-center gap-1 md:gap-2">
               <Lightbulb className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">What If</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="updates"
-              className="data-[state=active]:bg-[#8b3a3a] data-[state=active]:text-[#e8d5b7] data-[state=active]:shadow-md text-[#e8d5b7]/60 hover:text-[#e8d5b7] rounded-lg transition-all flex items-center justify-center gap-1 md:gap-2"
-            >
+            <TabsTrigger value="updates" className="flex items-center justify-center gap-1 md:gap-2">
               <RefreshCw className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">AI Updates</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="identifier" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
+          <TabsContent value="identifier" className="mt-6">
             <QuickPipeIdentifier pipes={pipes} blends={blends} />
           </TabsContent>
 
-          <TabsContent value="optimizer" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
+          <TabsContent value="optimizer" className="mt-6">
             <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
           </TabsContent>
 
-          <TabsContent value="whatif" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
+          <TabsContent value="whatif" className="mt-6">
             <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
           </TabsContent>
 
-          <TabsContent value="updates" className="space-y-4 bg-[#1a2c42]/40 p-4 rounded-xl border border-[#e8d5b7]/20">
+          <TabsContent value="updates" className="mt-6">
             <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />
           </TabsContent>
         </Tabs>
