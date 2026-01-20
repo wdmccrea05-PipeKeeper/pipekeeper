@@ -429,49 +429,49 @@ export default function PipeDetailPage() {
             </div>
 
             {/* Badges */}
-            <div className="flex flex-wrap gap-2">
-              {pipe.shape && (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                  {pipe.shape}
-                </Badge>
-              )}
-              {pipe.bowl_material && (
-                <Badge className="bg-stone-100 text-stone-700 border-stone-200">
-                  {pipe.bowl_material}
-                </Badge>
-              )}
-              {pipe.chamber_volume && (
-                <Badge className="bg-amber-50 text-amber-700 border-amber-200">
-                  {pipe.chamber_volume} chamber
-                </Badge>
-              )}
-              {pipe.condition && (
-                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                  {pipe.condition}
-                </Badge>
-              )}
-            </div>
+             <div className="flex flex-wrap gap-2">
+               {pipe.shape && (
+                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
+                   {pipe.shape}
+                 </Badge>
+               )}
+               {pipe.bowl_material && (
+                 <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
+                   {pipe.bowl_material}
+                 </Badge>
+               )}
+               {pipe.chamber_volume && (
+                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
+                   {pipe.chamber_volume} chamber
+                 </Badge>
+               )}
+               {pipe.condition && (
+                 <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
+                   {pipe.condition}
+                 </Badge>
+               )}
+             </div>
 
             {/* Details Grid */}
-            <Card className="border-white/10">
-              <CardContent className="p-6">
-                <div className="flex justify-end mb-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setUseImperial(!useImperial)}
-                  >
-                    <ArrowLeftRight className="w-3 h-3 mr-2" />
-                    {useImperial ? 'mm' : 'inches'}
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {pipe.length_mm && (
-                    <div className="flex items-center gap-2">
-                      <Ruler className="w-4 h-4 text-stone-400" />
-                      <div>
-                        <p className="text-xs text-stone-500">Length</p>
-                        <p className="font-medium text-stone-800">
+             <Card className="border-white/10">
+               <CardContent className="p-6">
+                 <div className="flex justify-end mb-3">
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     onClick={() => setUseImperial(!useImperial)}
+                   >
+                     <ArrowLeftRight className="w-3 h-3 mr-2" />
+                     {useImperial ? 'mm' : 'inches'}
+                   </Button>
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   {pipe.length_mm && (
+                     <div className="flex items-center gap-2">
+                       <Ruler className="w-4 h-4 text-[#E0D8C8]/60" />
+                       <div>
+                         <p className="text-xs text-[#E0D8C8]/60">Length</p>
+                         <p className="font-medium text-[#E0D8C8]">
                           {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${(pipe.length_mm).toFixed(2)}mm`}
                         </p>
                       </div>
@@ -479,10 +479,10 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.weight_grams && (
                     <div className="flex items-center gap-2">
-                      <Weight className="w-4 h-4 text-stone-400" />
+                      <Weight className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-stone-500">Weight</p>
-                        <p className="font-medium text-stone-800">
+                        <p className="text-xs text-[#E0D8C8]/60">Weight</p>
+                        <p className="font-medium text-[#E0D8C8]">
                           {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)}oz` : `${(pipe.weight_grams).toFixed(2)}g`}
                         </p>
                       </div>
@@ -490,70 +490,70 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.bowl_height_mm && (
                     <div>
-                      <p className="text-xs text-stone-500">Bowl Height</p>
-                      <p className="font-medium text-stone-800">
+                      <p className="text-xs text-[#E0D8C8]/60">Bowl Height</p>
+                      <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_height_mm).toFixed(2)}mm`}
                       </p>
                     </div>
                   )}
                   {pipe.bowl_width_mm && (
                     <div>
-                      <p className="text-xs text-stone-500">Bowl Width</p>
-                      <p className="font-medium text-stone-800">
+                      <p className="text-xs text-[#E0D8C8]/60">Bowl Width</p>
+                      <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_width_mm).toFixed(2)}mm`}
                       </p>
                     </div>
                   )}
                   {pipe.bowl_diameter_mm && (
                     <div>
-                      <p className="text-xs text-stone-500">Chamber Diameter</p>
-                      <p className="font-medium text-stone-800">
+                      <p className="text-xs text-[#E0D8C8]/60">Chamber Diameter</p>
+                      <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_diameter_mm).toFixed(2)}mm`}
                       </p>
                     </div>
                   )}
                   {pipe.bowl_depth_mm && (
                     <div>
-                      <p className="text-xs text-stone-500">Chamber Depth</p>
-                      <p className="font-medium text-stone-800">
+                      <p className="text-xs text-[#E0D8C8]/60">Chamber Depth</p>
+                      <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_depth_mm).toFixed(2)}mm`}
                       </p>
                     </div>
                   )}
                   {pipe.country_of_origin && (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-stone-400" />
+                      <MapPin className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-stone-500">Origin</p>
-                        <p className="font-medium text-stone-800">{pipe.country_of_origin}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">Origin</p>
+                        <p className="font-medium text-[#E0D8C8]">{pipe.country_of_origin}</p>
                       </div>
                     </div>
                   )}
                   {pipe.year_made && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-stone-400" />
+                      <Calendar className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-stone-500">Year</p>
-                        <p className="font-medium text-stone-800">{pipe.year_made}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">Year</p>
+                        <p className="font-medium text-[#E0D8C8]">{pipe.year_made}</p>
                       </div>
                     </div>
                   )}
                   {pipe.stem_material && (
                     <div>
-                      <p className="text-xs text-stone-500">Stem</p>
-                      <p className="font-medium text-stone-800">{pipe.stem_material}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">Stem</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.stem_material}</p>
                     </div>
                   )}
                   {pipe.finish && (
                     <div>
-                      <p className="text-xs text-stone-500">Finish</p>
-                      <p className="font-medium text-stone-800">{pipe.finish}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">Finish</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.finish}</p>
                     </div>
                   )}
                   {pipe.filter_type && (
                     <div>
-                      <p className="text-xs text-stone-500">Filter</p>
-                      <p className="font-medium text-stone-800">{pipe.filter_type}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">Filter</p>
+                      <p className="font-medium text-[#E0D8C8]">{pipe.filter_type}</p>
                     </div>
                   )}
                 </div>
@@ -572,11 +572,11 @@ export default function PipeDetailPage() {
             </Card>
 
             {/* Stamping */}
-            {pipe.stamping && (
-              <Card className="border-white/10">
-                <CardContent className="p-6">
-                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Stamping</p>
-                  <p className="font-medium text-[#E0D8C8]">{pipe.stamping}</p>
+             {pipe.stamping && (
+               <Card className="border-white/10">
+                 <CardContent className="p-6">
+                   <p className="text-xs text-[#E0D8C8]/60 mb-1">Stamping</p>
+                   <p className="font-medium text-[#E0D8C8]">{pipe.stamping}</p>
                 </CardContent>
               </Card>
             )}
