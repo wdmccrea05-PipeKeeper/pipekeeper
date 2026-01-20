@@ -46,10 +46,14 @@ export default function CellarLog({ blend }) {
 
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.CellarLog.create(data),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Sync the blend's cellared quantities based on logs
+      await syncBlendCellarQuantities();
+      
       queryClient.invalidateQueries({ queryKey: ['cellar-logs'] });
       queryClient.invalidateQueries({ queryKey: ['blends'] });
       queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
+      queryClient.invalidateQueries({ queryKey: ['blend', blend.id] });
       setDialogOpen(false);
       setFormData({
         transaction_type: 'added',
@@ -64,10 +68,14 @@ export default function CellarLog({ blend }) {
 
   const deleteLogMutation = useMutation({
     mutationFn: (id) => base44.entities.CellarLog.delete(id),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Sync the blend's cellared quantities based on logs
+      await syncBlendCellarQuantities();
+      
       queryClient.invalidateQueries({ queryKey: ['cellar-logs'] });
       queryClient.invalidateQueries({ queryKey: ['blends'] });
       queryClient.invalidateQueries({ queryKey: ['tobacco-blends'] });
+      queryClient.invalidateQueries({ queryKey: ['blend', blend.id] });
     },
   });
 
@@ -94,6 +102,41 @@ export default function CellarLog({ blend }) {
     .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
 
   const netCellared = totalAdded - totalRemoved;
+
+  // Sync blend's cellared quantities based on logs
+  const syncBlendCellarQuantities = async () => {
+    try {
+      // Calculate net cellared from logs
+      const allLogs = await base44.entities.CellarLog.filter({ 
+        blend_id: blend.id, 
+        created_by: user?.email 
+      });
+      
+      const added = allLogs
+        .filter(l => l.transaction_type === 'added')
+        .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
+      
+      const removed = allLogs
+        .filter(l => l.transaction_type === 'removed')
+        .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
+      
+      const net = Math.max(0, added - removed);
+      
+      // Find oldest cellared date
+      const addedLogs = allLogs.filter(l => l.transaction_type === 'added' && l.date);
+      const oldestDate = addedLogs.length > 0 
+        ? addedLogs.sort((a, b) => new Date(a.date) - new Date(b.date))[0].date
+        : null;
+      
+      // Update blend with bulk_cellared since we're tracking in ounces
+      await base44.entities.TobaccoBlend.update(blend.id, {
+        bulk_cellared: net,
+        bulk_cellared_date: net > 0 ? oldestDate : null,
+      });
+    } catch (error) {
+      console.error('Failed to sync blend cellar quantities:', error);
+    }
+  };
 
   const isPaidUser = hasPremiumAccess(user);
 
