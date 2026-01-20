@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Wine } from "lucide-react";
+import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
@@ -14,9 +14,45 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Download } from "lucide-react";
+import { differenceInMonths } from "date-fns";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
+
+  // Check for aging alerts
+  const { data: agingAlertCount = 0 } = useQuery({
+    queryKey: ["aging-alerts", user?.email],
+    queryFn: async () => {
+      const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      
+      const cellarBlends = tobaccoBlends.filter(b => {
+        const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
+                            (b.bulk_cellared || 0) > 0 || 
+                            (b.pouch_pouches_cellared || 0) > 0;
+        return hasCellared;
+      });
+
+      let alertCount = 0;
+      cellarBlends.forEach(b => {
+        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+        const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
+        
+        if (oldestDate) {
+          const months = differenceInMonths(new Date(), oldestDate);
+          const potential = b.aging_potential;
+          
+          // Alert if tobacco has reached optimal aging
+          if (potential === "Excellent" && months >= 24) alertCount++;
+          else if (potential === "Good" && months >= 12) alertCount++;
+          else if (potential === "Fair" && months >= 3) alertCount++;
+        }
+      });
+      
+      return alertCount;
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
 
   // ✅ Fetch the same user profile used by the AI Updates panel
   const { data: userProfile } = useQuery({
@@ -81,10 +117,16 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="aging"
-                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white"
+                  className="flex items-center gap-2 text-[#666666] data-[state=active]:text-[#000000] data-[state=active]:bg-white relative"
                 >
-                  <Wine className="w-4 h-4" />
+                  <Clock className="w-4 h-4" />
                   <span className="hidden sm:inline">Aging</span>
+                  {agingAlertCount > 0 && (
+                    <div className="absolute -top-1 -right-1 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="absolute text-[10px] font-bold text-white">{agingAlertCount}</span>
+                    </div>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="reports"
