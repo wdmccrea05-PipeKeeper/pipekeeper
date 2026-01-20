@@ -16,6 +16,7 @@ import {
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useMeasurement } from "@/components/utils/measurementConversion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,10 +50,10 @@ export default function PipeDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(0);
-  const [useImperial, setUseImperial] = useState(false);
   const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
+  const { useImperial, setUseImperial } = useMeasurement();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
