@@ -77,14 +77,10 @@ export default function TopPipeMatches({ blend, pipes }) {
   // Auto-trigger matching when blend is first loaded
   useEffect(() => {
     if (blend && pipes.length > 0 && !matches && !loading) {
-      if (savedPairings) {
-        updateMatchesFromData();
-      } else {
-        // Use fallback scoring immediately even if no saved pairings yet
-        updateMatchesFromData();
-      }
+      // Always auto-trigger on load
+      updateMatchesFromData();
     }
-  }, [blend?.id, pipes.length, savedPairings]);
+  }, [blend?.id, pipes.length]);
 
 
 
@@ -178,7 +174,7 @@ export default function TopPipeMatches({ blend, pipes }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#8b3a3a]" />
-              <span className="text-sm text-[#e8d5b7]/90 font-medium">Find best pipe matches for this blend</span>
+              <span className="text-sm text-white font-bold">Find best pipe matches for this blend</span>
             </div>
             <Button
               size="sm"
