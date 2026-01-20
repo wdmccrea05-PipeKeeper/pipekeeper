@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PK_THEME } from "@/components/theme/pkTheme";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -229,10 +230,10 @@ export default function SubscriptionFull() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <a href={createPageUrl('Profile')}>
-          <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
+          <Button variant="ghost" className={`mb-6 ${PK_THEME.textSubtle} hover:${PK_THEME.textBody}`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Profile
           </Button>
@@ -242,12 +243,12 @@ export default function SubscriptionFull() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">
             <Crown className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Premium</h1>
-          <p className="text-stone-600">Unlock the full power of AI-driven pipe and tobacco management</p>
+          <h1 className={`text-3xl font-bold ${PK_THEME.textTitle} mb-2`}>PipeKeeper Premium</h1>
+          <p className={PK_THEME.textSubtle}>Unlock the full power of AI-driven pipe and tobacco management</p>
         </div>
 
         {/* Current Status */}
-        <Card className="mb-8 border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+        <Card className={`mb-8 ${PK_THEME.card}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {userHasPaidAccess ? (
@@ -339,7 +340,7 @@ export default function SubscriptionFull() {
         {/* Features List */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Free Features */}
-          <Card className="border-stone-200 bg-[#243548]">
+          <Card className={PK_THEME.card}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -375,7 +376,7 @@ export default function SubscriptionFull() {
           </Card>
 
           {/* Premium Features */}
-          <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
+          <Card className={PK_THEME.card}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>

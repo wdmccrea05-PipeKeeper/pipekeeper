@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { PK_THEME } from "@/components/theme/pkTheme";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Grid3X3, List, Sparkles, Edit3, Leaf } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
@@ -231,7 +232,7 @@ export default function TobaccoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
