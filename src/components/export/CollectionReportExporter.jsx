@@ -65,6 +65,102 @@ export default function CollectionReportExporter({ user }) {
     window.open('/UserReport', '_blank');
   };
 
+  const exportCellarAging = async () => {
+    try {
+      setIsExporting(true);
+      toast.loading("Generating cellar aging report...");
+
+      const [blends, logs] = await Promise.all([
+        base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+        base44.entities.CellarLog.filter({ created_by: user?.email })
+      ]);
+
+      const cellarBlends = blends.filter(b => {
+        const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
+                            (b.bulk_cellared || 0) > 0 || 
+                            (b.pouch_pouches_cellared || 0) > 0;
+        return hasCellared;
+      });
+
+      let csv = "Cellar Aging Report\n";
+      csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+      csv += "Blend Name,Manufacturer,Blend Type,Cellared Amount (oz),Cellared Date,Age (months),Aging Potential,Recommended Action\n";
+      
+      cellarBlends.forEach(b => {
+        const tinOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0);
+        const bulkOz = b.bulk_cellared || 0;
+        const pouchOz = (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
+        const totalCellared = tinOz + bulkOz + pouchOz;
+        
+        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+        const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
+        const ageMonths = oldestDate ? Math.floor((Date.now() - oldestDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 0;
+        
+        csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}",${totalCellared},${oldestDate?.toLocaleDateString() || 'N/A'},${ageMonths},"${b.aging_potential || 'N/A'}","Continue aging"\n`;
+      });
+
+      csv += "\n\nCellar Transaction History\n";
+      csv += "Date,Blend Name,Transaction Type,Amount (oz),Container Type,Notes\n";
+      logs.forEach(log => {
+        csv += `${new Date(log.date).toLocaleDateString()},"${log.blend_name || ''}",${log.transaction_type},${log.amount_oz || 0},"${log.container_type || ''}","${(log.notes || '').replace(/"/g, '""')}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PipeKeeper-Cellar-Aging-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.dismiss();
+      toast.success("Cellar aging report downloaded");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Export failed: " + error.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const exportSmokingHistory = async () => {
+    try {
+      setIsExporting(true);
+      toast.loading("Generating smoking history report...");
+
+      const logs = await base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date');
+
+      let csv = "Smoking History Report\n";
+      csv += `Generated: ${new Date().toLocaleDateString()}\n`;
+      csv += `Total Sessions: ${logs.length}\n\n`;
+      csv += "Date,Pipe Name,Blend Name,Bowls Smoked,Break-In Session,Notes\n";
+      
+      logs.forEach(log => {
+        csv += `${new Date(log.date).toLocaleDateString()},"${log.pipe_name || ''}","${log.blend_name || ''}",${log.bowls_smoked || 1},${log.is_break_in ? 'Yes' : 'No'},"${(log.notes || '').replace(/"/g, '""')}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PipeKeeper-Smoking-History-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.dismiss();
+      toast.success("Smoking history report downloaded");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Export failed: " + error.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <Button
@@ -87,21 +183,23 @@ export default function CollectionReportExporter({ user }) {
       </Button>
 
       <Button
+        onClick={exportCellarAging}
+        disabled={isExporting}
         variant="outline"
-        className="w-full justify-start border-[#1e3a5f]/30 text-[#2c4f7c] hover:bg-[#1e3a5f]/10"
-        disabled
+        className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
       >
         <Download className="w-4 h-4 mr-2" />
-        Cellar Aging Report
+        {isExporting ? "Exporting..." : "Cellar Aging Report"}
       </Button>
 
       <Button
+        onClick={exportSmokingHistory}
+        disabled={isExporting}
         variant="outline"
-        className="w-full justify-start border-[#1e3a5f]/30 text-[#2c4f7c] hover:bg-[#1e3a5f]/10"
-        disabled
+        className="w-full justify-start border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/10"
       >
         <Download className="w-4 h-4 mr-2" />
-        Smoking History
+        {isExporting ? "Exporting..." : "Smoking History"}
       </Button>
     </div>
   );
