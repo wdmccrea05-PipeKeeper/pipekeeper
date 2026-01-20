@@ -138,7 +138,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
                 placeholder="e.g., 1.75"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -149,7 +149,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.tin_total_tins}
                 onChange={(e) => handleChange('tin_total_tins', e.target.value)}
                 placeholder="e.g., 5"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -172,7 +172,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.tin_tins_open}
                 onChange={(e) => handleChange('tin_tins_open', e.target.value)}
                 placeholder="e.g., 1"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -183,7 +183,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.tin_tins_cellared}
                 onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
                 placeholder="e.g., 4"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -192,7 +192,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 type="date"
                 value={formData.tin_cellared_date}
                 onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder="e.g., 16"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -222,7 +222,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder="e.g., 2"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -234,7 +234,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_cellared', e.target.value)}
                 placeholder="e.g., 14"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -261,7 +261,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder="e.g., 1.5"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -272,7 +272,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_total_pouches}
                 onChange={(e) => handleChange('pouch_total_pouches', e.target.value)}
                 placeholder="e.g., 3"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -295,7 +295,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_pouches_open}
                 onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
                 placeholder="e.g., 1"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
@@ -306,7 +306,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_pouches_cellared}
                 onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
                 placeholder="e.g., 2"
-                className="border-stone-200"
+                className="border-[#1a2c42]/20 text-[#1a2c42]"
               />
             </div>
             <div className="space-y-2">
