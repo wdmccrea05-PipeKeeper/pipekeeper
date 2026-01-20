@@ -244,7 +244,29 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  // Fetch subscription entity for premium gating
+  const { data: subscription } = useQuery({
+    queryKey: ["subscription", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      try {
+        const subs = await base44.entities.Subscription.filter(
+          { user_email: user.email },
+          "-current_period_end",
+          5
+        );
+        if (!subs?.length) return null;
+        // Prefer active/trialing
+        return subs.find((s) => s.status === "active" || s.status === "trialing") || subs[0];
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!user?.email,
+    staleTime: 30_000,
+  });
+
+  const hasPaidAccess = hasPremiumAccess(user, subscription);
 
   React.useEffect(() => {
     if (userLoading) return;

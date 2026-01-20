@@ -79,18 +79,31 @@ export default function SubscriptionFull() {
     staleTime: 5000,
   });
 
-  // Check for success/cancel in URL params
+  // Check for success/cancel in URL params + instant sync
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
       setCheckingSession(true);
-      // Refresh subscription data
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
-        queryClient.invalidateQueries({ queryKey: ['current-user'] });
-        setCheckingSession(false);
-        navigate(createPageUrl('Subscription'), { replace: true });
-      }, 2000);
+      
+      // Instant sync on return from checkout
+      (async () => {
+        try {
+          await base44.functions.invoke('syncSubscriptionForMe');
+          // Force refresh queries after sync
+          await queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
+          await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+          await queryClient.refetchQueries({ queryKey: ['subscription', user?.email] });
+          await queryClient.refetchQueries({ queryKey: ['current-user'] });
+        } catch (error) {
+          console.error('Post-checkout sync error:', error);
+          // Still refresh even if sync fails - webhook might have worked
+          await queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
+          await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+        } finally {
+          setCheckingSession(false);
+          navigate(createPageUrl('Subscription'), { replace: true });
+        }
+      })();
     }
   }, [queryClient, user?.email, navigate]);
 
