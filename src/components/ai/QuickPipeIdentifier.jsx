@@ -295,8 +295,8 @@ Provide analysis as JSON:
               <Sparkles className="w-5 h-5 text-purple-400" />
             </div>
             <div>
-              <p className="font-semibold text-[#e8d5b7]">AI Pipe Identifier</p>
-              <p className="text-xs text-[#e8d5b7]/70">Upload photos to identify and add pipes instantly</p>
+              <p className="font-semibold text-white">AI Pipe Identifier</p>
+              <p className="text-xs text-white/90 font-medium">Upload photos to identify and add pipes instantly</p>
             </div>
           </div>
         </div>
@@ -406,7 +406,7 @@ Provide analysis as JSON:
 
             {/* Optional Hint Fields */}
             <div className="space-y-3 pt-2">
-              <Label className="text-xs text-[#e8d5b7]/70">
+              <Label className="text-xs text-white/90 font-semibold">
                 Optional: Provide hints to improve identification
               </Label>
               <div className="grid grid-cols-2 gap-2">
