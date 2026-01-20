@@ -277,7 +277,7 @@ export default function Layout({ children, currentPageName }) {
       <Toaster position="top-center" />
       <MeasurementProvider>
         <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
-        <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="flex items-center justify-between h-16 gap-4">
               <Link to={createPageUrl("Home")} className="flex items-center gap-3 flex-shrink-0">
@@ -303,10 +303,10 @@ export default function Layout({ children, currentPageName }) {
                 ) : null}
               </div>
             </div>
-          </div>
-        </nav>
+            </div>
+          </nav>
 
-        <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="flex items-center justify-between h-14 px-4">
             <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
               <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
@@ -325,18 +325,18 @@ export default function Layout({ children, currentPageName }) {
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-        </nav>
+          </nav>
 
-        <div
-          className={cn(
-            "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
-            mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          )}
-          onClick={() => setMobileOpen(false)}
-          style={{ top: "56px" }}
-        />
+          <div
+            className={cn(
+              "md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity duration-200",
+              mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}
+            onClick={() => setMobileOpen(false)}
+            style={{ top: "56px" }}
+          />
 
-        <div
+          <div
           className={cn(
             "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
             mobileOpen ? "translate-x-0" : "translate-x-full"
@@ -354,11 +354,11 @@ export default function Layout({ children, currentPageName }) {
               />
             ))}
           </div>
-        </div>
+          </div>
 
-        <main className="pt-16 md:pt-16 pb-20">{children}</main>
+          <main className="pt-16 md:pt-16 pb-20">{children}</main>
 
-        <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
+          <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -381,62 +381,35 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
           </div>
-        </footer>
-      </div>
-
-      <TermsGate user={user} />
-
-      {showSubscribePrompt && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-            <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
-            <p className="text-[#E0D8C8]/80 mb-5">
-              To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                Continue Free
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowSubscribePrompt(false);
-                  navigate(createPageUrl("Subscription"));
-                }}
-              >
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </div>
-        )}
+          </footer>
         </div>
 
         <TermsGate user={user} />
 
         {showSubscribePrompt && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-          <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
-          <p className="text-[#E0D8C8]/80 mb-5">
-            To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
-          </p>
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-              Continue Free
-            </Button>
-            <Button
-              onClick={() => {
-                setShowSubscribePrompt(false);
-                navigate(createPageUrl("Subscription"));
-              }}
-            >
-              Subscribe
-            </Button>
+          <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+            <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
+              <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
+              <p className="text-[#E0D8C8]/80 mb-5">
+                To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
+                  Continue Free
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowSubscribePrompt(false);
+                    navigate(createPageUrl("Subscription"));
+                  }}
+                >
+                  Subscribe
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-        </div>
         )}
-        </MeasurementProvider>
-        </>
-        );
-        }
+      </MeasurementProvider>
+    </>
+  );
+}
