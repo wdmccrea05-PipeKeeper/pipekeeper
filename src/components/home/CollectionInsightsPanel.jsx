@@ -132,7 +132,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                       Smoking History
                     </Button>
                   </div>
-                  <p className="text-xs text-[#2c4f7c]/80 mt-4">
+                  <p className="text-xs text-white/80 mt-4">
                     Additional report formats coming soon.
                   </p>
                 </div>
