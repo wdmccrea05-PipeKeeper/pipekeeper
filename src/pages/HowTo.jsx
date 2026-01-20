@@ -304,6 +304,43 @@ export default function HowTo() {
             "Tap 'Regenerate' for each feature that needs updating",
             "All AI features can be undone if you're not happy with results"
           ]
+        },
+        {
+          q: "How to track pipe condition and maintenance",
+          steps: [
+            "Open the pipe detail page",
+            "Find the 'Condition Tracking' or 'Maintenance' section",
+            "Add maintenance records: cleaning, restoration, repair, reaming, polishing",
+            "Record date, description, cost (if applicable), and who performed the work",
+            "Upload before/after photos for documentation",
+            "Maintenance history helps establish collection value and care documentation"
+          ]
+        },
+        {
+          q: "How to log pipe maintenance work",
+          steps: [
+            "Open pipe detail page → Maintenance Log section",
+            "Tap 'Add Entry' to log maintenance",
+            "Select maintenance type: cleaning, restoration, repair, reaming, polishing, stem work",
+            "Enter the date of work",
+            "Describe what was done in detail",
+            "Record cost if applicable",
+            "Add notes: did it yourself or professional work?",
+            "Upload before/after photos for before/after documentation",
+            "Save to keep complete pipe history"
+          ]
+        },
+        {
+          q: "How to use the pipe rotation planner",
+          steps: [
+            "Log smoking sessions regularly to track pipe usage",
+            "Go to Home page → find 'Pipe Rotation' or similar section",
+            "The planner shows which pipes are rested and ready to smoke",
+            "The system enforces 24-hour mandatory rest between sessions",
+            "Log a session as break-in to track new pipe conditioning",
+            "Tap on a pipe to see its rest status and recommended smoking schedule",
+            "Use this to prevent overuse and burning out favorite pipes"
+          ]
         }
       ]
     },
