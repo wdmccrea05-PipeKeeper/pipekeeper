@@ -6,7 +6,6 @@ import PairingGrid from "@/components/home/PairingGrid";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
-import CellarAgingSummary from "@/components/tobacco/CellarAgingSummary";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
