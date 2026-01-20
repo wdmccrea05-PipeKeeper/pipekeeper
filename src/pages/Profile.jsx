@@ -17,7 +17,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
 import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
-import { isAppleBuild } from "@/components/utils/appVariant";
+import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
@@ -395,16 +395,16 @@ export default function ProfilePage() {
           <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl text-violet-900">Smoking Profile</CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1">
-                    <Sparkles className="w-4 h-4 text-violet-600" />
-                    Personalize your AI recommendations
-                  </CardDescription>
-                </div>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  {!isAppleBuild && <Sparkles className="w-4 h-4 text-violet-600" />}
+                  {isAppleBuild ? 'Organize your collection preferences' : 'Personalize your AI recommendations'}
+                </CardDescription>
+              </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -545,6 +545,7 @@ export default function ProfilePage() {
                       Enable instant messaging with friends (Premium)
                     </Label>
                   </div>
+                  {!isAppleBuild && (
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -558,6 +559,7 @@ export default function ProfilePage() {
                       Allow AI to use external web lookups for enrichment
                     </Label>
                   </div>
+                  )}
                   <div className="space-y-2 pt-2 border-t">
                     <h4 className="text-sm font-semibold text-stone-700">Public Profile Privacy</h4>
                     <div className="flex items-center gap-2">

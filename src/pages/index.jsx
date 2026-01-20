@@ -51,6 +51,7 @@ const ROUTES = {
 // Route → feature mapping for Apple compliance
 const ROUTE_FEATURE_REQUIREMENTS = {
   "/Community": "community",
+  "/AIUpdates": "recommendations",
   // Add future gated routes here if needed:
   // "/Pairings": "recommendations",
   // "/Optimize": "optimization",
