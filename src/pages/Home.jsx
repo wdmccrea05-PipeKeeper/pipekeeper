@@ -878,8 +878,6 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             </div>
           </motion.div>
         )}
-
-        </div>
       </div>
       )}
 
