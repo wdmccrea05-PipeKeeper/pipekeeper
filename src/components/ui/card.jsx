@@ -11,11 +11,11 @@ import { cn } from "@/lib/utils";
 const Card = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
   const variants = {
     default:
-      "rounded-2xl border border-white/10 bg-[#243548]/70 text-[#E0D8C8] shadow-lg backdrop-blur-md",
+      "rounded-2xl border border-[#E0D8C8]/15 bg-[#243548]/70 backdrop-blur-md text-[#E0D8C8] shadow-lg",
     elevated:
-      "rounded-2xl border border-white/12 bg-[#2B3E55]/70 text-[#E0D8C8] shadow-lg backdrop-blur-md",
+      "rounded-2xl border border-[#E0D8C8]/15 bg-[#2B3E55]/70 backdrop-blur-md text-[#E0D8C8] shadow-lg",
     subtle:
-      "rounded-2xl border border-white/8 bg-[#1A2B3A]/40 text-[#E0D8C8] backdrop-blur-md",
+      "rounded-2xl border border-[#E0D8C8]/10 bg-[#1A2B3A]/40 backdrop-blur-md text-[#E0D8C8]",
   };
 
   return (
