@@ -288,7 +288,38 @@ export default function FAQFull() {
         </Q>
 
         <Q id="premium-advanced-exports" q="Premium: Advanced Export & Reporting">
-          Generate comprehensive PDF reports of your collection with photos, detailed analytics, valuation summaries, and pairing guides. Export your data in multiple formats for insurance documentation or personal records.
+          Generate comprehensive PDF reports of your collection with photos, detailed analytics, valuation summaries, and pairing guides. Export your data in multiple formats for insurance documentation or personal records:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>PDF pipe valuations with detailed specs and photos</li>
+            <li>CSV/Excel exports for all collection data</li>
+            <li>Year-in-review reports with statistics and trends</li>
+            <li>Smoking history summaries</li>
+            <li>Cellar inventory reports</li>
+            <li>Insurance-ready documentation with valuations</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-community-safety" q="Premium: Community Safety Features">
+          Safely connect with the PipeKeeper community with robust moderation:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Private-by-default profiles (choose to make public)</li>
+            <li>Block and report tools for objectionable content</li>
+            <li>Abuse reporting queue reviewed by moderators</li>
+            <li>Comment moderation and removal capabilities</li>
+            <li>Share cards for selective profile visibility</li>
+            <li>Privacy controls over what others can see</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-share-cards" q="Premium: Shareable Collection Cards">
+          Create custom share cards to showcase your collection:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Generate beautiful shareable cards of pipes and blends</li>
+            <li>Choose what details to display (hide values, photos, notes)</li>
+            <li>Share via direct link with friends or online</li>
+            <li>Create collection showcase without making full profile public</li>
+            <li>Track shares and engagement</li>
+          </ul>
         </Q>
 
         <Q id="premium-ai-updates" q="Premium: AI Updates & Recommendations">
