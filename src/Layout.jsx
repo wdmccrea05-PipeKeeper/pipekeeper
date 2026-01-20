@@ -16,6 +16,7 @@ import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion";
+import { PK_THEME } from "@/components/utils/pkTheme";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -280,7 +281,7 @@ export default function Layout({ children, currentPageName }) {
       <DocumentTitle title="PipeKeeper" />
       <Toaster position="top-center" />
       <MeasurementProvider>
-        <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+        <div className={`min-h-screen ${PK_THEME.pageBg}`}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <div className="flex items-center justify-between h-16 gap-4">
@@ -378,7 +379,11 @@ export default function Layout({ children, currentPageName }) {
           </div>
           </div>
 
-          <main className="pt-16 md:pt-16 pb-20">{children}</main>
+          <main className="pt-16 md:pt-16 pb-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              {children}
+            </div>
+          </main>
 
           <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
           <div className="max-w-7xl mx-auto px-6 py-6">
