@@ -67,17 +67,9 @@ export default function TopPipeMatches({ blend, pipes }) {
     [pipes]
   );
 
-  // Auto-update matches when pairings, optimizations, or pipe focus changes
-  useEffect(() => {
-    if (savedPairings && !loading) {
-      updateMatchesFromData();
-    }
-  }, [savedPairings?.generated_date, collectionOptimization?.generated_date, pipesFocusFingerprint]);
-
   // Auto-trigger matching when blend is first loaded or when data changes
   useEffect(() => {
-    if (blend && pipes.length > 0 && !loading) {
-      // Always auto-trigger on load or when data changes
+    if (blend && pipes.length > 0 && userProfile) {
       updateMatchesFromData();
     }
   }, [blend?.id, pipes.length, savedPairings?.pairings, userProfile?.id]);
