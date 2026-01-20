@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { PKCard } from "@/components/ui/pk-surface";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
@@ -14,11 +14,11 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <Card 
-        className="overflow-hidden cursor-pointer bg-gradient-to-br from-[#f5ead8] to-[#e8d5b7]/30 border-[#e8d5b7]/60 hover:shadow-xl hover:shadow-[#8b3a3a]/10 transition-all duration-300"
+      <PKCard 
+        className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
         onClick={onClick}
       >
-        <div className="relative aspect-[16/9] bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
+        <div className="relative aspect-[16/9] bg-gradient-to-br from-[#1A2B3A] to-[#243548] overflow-hidden">
           {mainPhoto ? (
             <img 
               src={mainPhoto} 
@@ -27,7 +27,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-stone-400 text-center">
+            <div className="text-[#E0D8C8]/50 text-center">
                 <PipeShapeIcon shape={pipe.shape} className="text-5xl mb-2" />
                 <p className="text-xs">{pipe.shape || 'No photo'}</p>
               </div>
@@ -55,9 +55,9 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             </div>
           )}
         </div>
-        <CardContent className="p-4 bg-[#f5ead8]/50">
-          <h3 className="font-semibold text-stone-800 truncate">{pipe.name}</h3>
-          <p className="text-sm text-stone-500 truncate">{pipe.maker || 'Unknown maker'}</p>
+        <div className="p-4">
+         <h3 className="font-semibold text-[#E0D8C8] truncate">{pipe.name}</h3>
+         <p className="text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || 'Unknown maker'}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
               <Badge variant="secondary" className="bg-amber-100/80 text-amber-800 border-amber-200/50 text-xs">
@@ -75,8 +75,8 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
               </Badge>
             )}
           </div>
-        </CardContent>
-      </Card>
+          </div>
+          </PKCard>
     </motion.div>
   );
 }
