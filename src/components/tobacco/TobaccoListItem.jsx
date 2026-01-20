@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -22,6 +23,14 @@ const BLEND_COLORS = {
 
 export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-stone-100 text-stone-800 border-stone-200";
+  const agingRec = getAgingRecommendation(blend);
+  
+  const agingColorClass = agingRec 
+    ? agingRec.color === "green" ? "bg-green-500/20 text-green-700 border-green-500/30"
+    : agingRec.color === "yellow" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30"
+    : agingRec.color === "blue" ? "bg-blue-500/20 text-blue-700 border-blue-500/30"
+    : "bg-gray-500/20 text-gray-700 border-gray-500/30"
+    : "";
   
   return (
     <Card 
@@ -94,6 +103,11 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
             </div>
 
             <div className="flex flex-wrap gap-2 mb-2">
+              {agingRec && (
+                <Badge className={`${agingColorClass} border text-xs font-medium`}>
+                  {agingRec.message}
+                </Badge>
+              )}
               {blend.blend_type && (
                 <Badge variant="secondary" className={`${colorClass} text-xs`}>
                   {blend.blend_type}
