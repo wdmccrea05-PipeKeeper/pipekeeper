@@ -1695,7 +1695,7 @@ Provide concrete, actionable steps with specific field values.`,
                                   Specialized
                                 </Badge>
                               ) : displaySpec.recommended_blend_types?.length > 0 ? (
-                                <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                                <Badge className="bg-blue-100 text-blue-900 border-blue-300">
                                   <Star className="w-3 h-3 mr-1" />
                                   Recommended
                                 </Badge>
@@ -1732,7 +1732,7 @@ Provide concrete, actionable steps with specific field values.`,
                               </div>
                             )}
 
-                            <p className="text-sm text-stone-700 mb-2">{displaySpec.reasoning}</p>
+                            <p className="text-sm text-stone-800 mb-2">{displaySpec.reasoning}</p>
                             
                             {displaySpec.score_improvement && (
                               <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
