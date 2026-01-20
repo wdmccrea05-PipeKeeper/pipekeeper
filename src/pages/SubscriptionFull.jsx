@@ -13,8 +13,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
-import { hasPaidAccess as checkPaidAccess, isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
@@ -43,41 +42,15 @@ export default function SubscriptionFull() {
   const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
-
-  const { data: subscription } = useQuery({
-    queryKey: ['subscription', user?.email],
-    queryFn: async () => {
-      try {
-        const subs = await base44.entities.Subscription.filter(
-          { user_email: user?.email },
-          "-current_period_end",
-          25
-        );
-
-        if (!Array.isArray(subs) || subs.length === 0) return null;
-
-        // Prefer active/trialing if present
-        const preferred =
-          subs.find((s) => s?.status === "active") ||
-          subs.find((s) => s?.status === "trialing") ||
-          subs[0];
-
-        return preferred || null;
-      } catch (err) {
-        console.error('Subscription load error:', err);
-        return null;
-      }
-    },
-    enabled: !!user?.email,
-    retry: 1,
-    staleTime: 5000,
-  });
+  const { 
+    user, 
+    subscription, 
+    isLoading: userDataLoading,
+    hasPaid: userHasPaidAccess,
+    isInTrial,
+    trialDaysRemaining,
+    refetch: refetchUserData 
+  } = useCurrentUser();
 
   // Check for success/cancel in URL params + instant sync
   useEffect(() => {
@@ -89,39 +62,30 @@ export default function SubscriptionFull() {
       (async () => {
         try {
           await base44.functions.invoke('syncSubscriptionForMe');
-          // Force refresh queries after sync
-          await queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
-          await queryClient.invalidateQueries({ queryKey: ['current-user'] });
-          await queryClient.refetchQueries({ queryKey: ['subscription', user?.email] });
-          await queryClient.refetchQueries({ queryKey: ['current-user'] });
+          // Use centralized refetch
+          await refetchUserData();
         } catch (error) {
           console.error('Post-checkout sync error:', error);
           // Still refresh even if sync fails - webhook might have worked
-          await queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
-          await queryClient.invalidateQueries({ queryKey: ['current-user'] });
+          await refetchUserData();
         } finally {
           setCheckingSession(false);
           navigate(createPageUrl('Subscription'), { replace: true });
         }
       })();
     }
-  }, [queryClient, user?.email, navigate]);
+  }, [refetchUserData, navigate]);
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('Subscription', id, data, user?.email),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription', user?.email] });
+      refetchUserData();
     },
   });
 
-  // Calculate trial status using centralized helper (7 days from signup)
-  const isInTrial = isTrialWindow(user);
-  const trialExpired = !isInTrial && !checkPaidAccess(user);
-  const daysLeftInTrial = getTrialDaysRemaining(user);
-
+  const trialExpired = !isInTrial && !userHasPaidAccess;
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
-  const userHasPaidAccess = checkPaidAccess(user);
 
   // iOS compliance: Block entire subscription page
   if (isIOSCompanion()) {
@@ -312,7 +276,7 @@ export default function SubscriptionFull() {
               <Alert className="bg-amber-50 border-amber-200">
                 <Sparkles className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>Free Trial:</strong> You have {daysLeftInTrial} days remaining in your 7-day trial. 
+                  <strong>Free Trial:</strong> You have {trialDaysRemaining} days remaining in your 7-day trial. 
                   All premium features are unlocked during this period.
                 </AlertDescription>
               </Alert>

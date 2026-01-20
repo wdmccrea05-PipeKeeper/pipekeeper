@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
@@ -167,69 +167,7 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ["current-user"],
-    queryFn: async () => {
-      const authUser = await base44.auth.me();
-      const email = (authUser?.email || "").trim().toLowerCase();
-
-      const entityUser = await (async () => {
-        try {
-          if (!email) return null;
-          const rows = await base44.entities.User.filter({ email });
-          return rows?.[0] || null;
-        } catch (e) {
-          console.warn("[Layout] Could not load entities.User:", e);
-          return null;
-        }
-      })();
-
-      const subscription = await (async () => {
-        try {
-          if (!email) return null;
-          const subs = await base44.entities.Subscription.filter({ user_email: email });
-          return subs?.[0] || null;
-        } catch (e) {
-          console.warn("[Layout] Could not load Subscription entity:", e);
-          return null;
-        }
-      })();
-
-      const derived = (() => {
-        const baseLevel = (entityUser?.subscription_level || "").toString();
-        const baseStatus = (entityUser?.subscription_status || "").toString();
-
-        if (!subscription) {
-          return { subscription_level: baseLevel, subscription_status: baseStatus };
-        }
-
-        const status = (subscription.status || "").toLowerCase();
-        const periodEnd = subscription.current_period_end
-          ? new Date(subscription.current_period_end)
-          : null;
-
-        const periodOk = !periodEnd || periodEnd > new Date();
-        const isPaid = (status === "active" || status === "trialing") && periodOk;
-
-        return {
-          subscription_level: isPaid ? "paid" : baseLevel,
-          subscription_status: isPaid ? status : baseStatus,
-        };
-      })();
-
-      return {
-        ...authUser,
-        ...(entityUser || {}),
-        ...derived,
-        email: authUser?.email || entityUser?.email,
-      };
-    },
-    staleTime: 30_000,
-    retry: 2,
-    refetchOnMount: false,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
+  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess } = useCurrentUser();
 
   React.useEffect(() => {
     const handleStorageChange = (e) => {
@@ -244,29 +182,7 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [queryClient]);
 
-  // Fetch subscription entity for premium gating
-  const { data: subscription } = useQuery({
-    queryKey: ["subscription", user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      try {
-        const subs = await base44.entities.Subscription.filter(
-          { user_email: user.email },
-          "-current_period_end",
-          5
-        );
-        if (!subs?.length) return null;
-        // Prefer active/trialing
-        return subs.find((s) => s.status === "active" || s.status === "trialing") || subs[0];
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!user?.email,
-    staleTime: 30_000,
-  });
 
-  const hasPaidAccess = hasPremiumAccess(user, subscription);
 
   React.useEffect(() => {
     if (userLoading) return;
