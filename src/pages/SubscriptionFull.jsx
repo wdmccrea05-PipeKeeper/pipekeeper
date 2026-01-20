@@ -12,7 +12,7 @@ import {
   Sparkles, Loader2, ArrowLeft
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { shouldShowPurchaseUI, getPremiumGateMessage, isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
+import { shouldShowPurchaseUI, getPremiumGateMessage, isIOSCompanion } from "@/components/utils/companion";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
@@ -162,10 +162,7 @@ export default function SubscriptionFull() {
       return;
     }
 
-    if (isCompanionApp()) {
-      alert('Subscriptions must be managed on the web.');
-      return;
-    }
+
 
     try {
       const response = await base44.functions.invoke('createCheckoutSession', { priceId: selectedPlan });
