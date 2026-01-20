@@ -316,27 +316,27 @@ export default function TobaccoDetailPage() {
             )}
 
             {/* Inventory & Cellaring Management */}
-            <Card className="bg-white/95 border-[#e8d5b7]/30 overflow-hidden">
+            <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
               <Tabs defaultValue="containers" className="w-full">
-                <div className="border-b border-stone-200 overflow-x-auto">
+                <div className="border-b border-[#A35C5C]/30 overflow-x-auto">
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
                     <TabsTrigger 
                       value="containers" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
                       <span className="hidden sm:inline">Open Tobacco</span>
                       <span className="sm:hidden">Open</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="log" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
                       <span className="hidden sm:inline">Cellared Tobacco</span>
                       <span className="sm:hidden">Cellared</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="inventory" 
-                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
+                      className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
                       Inventory
                     </TabsTrigger>
