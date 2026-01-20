@@ -1,40 +1,43 @@
-
-import * as React from "react";
-import { PKCard } from "@/components/ui/pk-surface";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (
-  <PKCard ref={ref} className={cn(className)} {...props} />
-));
-Card.displayName = "Card";
-
-const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
-));
-CardHeader.displayName = "CardHeader";
-
-const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <h3
+  <div
     ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight text-[#E0D8C8]", className)}
+    className={cn(
+      "rounded-xl border border-white/10 bg-[#223447] text-[#E0D8C8] shadow-sm",
+      className
+    )}
     {...props}
   />
-));
-CardTitle.displayName = "CardTitle";
+))
+Card.displayName = "Card"
 
-const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-[#E0D8C8]/60", className)} {...props} />
-));
-CardDescription.displayName = "CardDescription";
+const CardHeader = ({ className, ...props }) => (
+  <div className={cn("p-5 border-b border-white/10", className)} {...props} />
+)
 
-const CardContent = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-));
-CardContent.displayName = "CardContent";
+const CardTitle = ({ className, ...props }) => (
+  <h3 className={cn("text-lg font-semibold text-[#E0D8C8]", className)} {...props} />
+)
 
-const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
-));
-CardFooter.displayName = "CardFooter";
+const CardDescription = ({ className, ...props }) => (
+  <p className={cn("text-sm text-[#E0D8C8]/70", className)} {...props} />
+)
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+const CardContent = ({ className, ...props }) => (
+  <div className={cn("p-5", className)} {...props} />
+)
+
+const CardFooter = ({ className, ...props }) => (
+  <div className={cn("p-5 border-t border-white/10", className)} {...props} />
+)
+
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+}
