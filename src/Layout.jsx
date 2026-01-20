@@ -3,10 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown } from "lucide-react";
+import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MeasurementProvider } from "@/components/utils/measurementConversion";
+import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import AgeGate from "@/pages/AgeGate";
@@ -271,7 +274,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <>
       <DocumentTitle title="PipeKeeper" />
-
+      <Toaster position="top-center" />
+      <MeasurementProvider>
       <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
         <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 w-full">
@@ -293,6 +297,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="flex items-center gap-2">
+                <GlobalSearchTrigger />
                 {syncing ? (
                   <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
                 ) : null}
