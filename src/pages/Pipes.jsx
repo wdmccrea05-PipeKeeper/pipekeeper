@@ -16,6 +16,8 @@ import PipeListItem from "@/components/pipes/PipeListItem";
 import PipeForm from "@/components/pipes/PipeForm";
 import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 import PipeExporter from "@/components/export/PipeExporter";
+import { PK_THEME } from "@/components/utils/pkTheme";
+import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 
 const SHAPES = ["All Shapes", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["All Materials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
@@ -144,7 +146,7 @@ export default function PipesPage() {
   const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
@@ -153,10 +155,10 @@ export default function PipesPage() {
           className="flex flex-col gap-4 mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold text-[#E0D8C8]">My Pipes</h1>
-            <p className="text-white/90 font-medium mt-1">
+            <PkPageTitle>My Pipes</PkPageTitle>
+            <PkText className="mt-1">
               {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
-            </p>
+            </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
             <PipeExporter />
@@ -198,13 +200,13 @@ export default function PipesPage() {
                 window.pipeSearchTimeout = setTimeout(() => setSearchQuery(value), 300);
               }}
               defaultValue={searchQuery}
-              className="pl-10 bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/50"
+              className={`pl-10 ${PK_THEME.input}`}
               aria-label="Search pipes"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
-              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by shape">
+              <SelectTrigger className={PK_THEME.input} aria-label="Filter by shape">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -212,7 +214,7 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
-              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Filter by material">
+              <SelectTrigger className={PK_THEME.input} aria-label="Filter by material">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -220,7 +222,7 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="bg-[#243548] border-[#E0D8C8]/30 text-[#E0D8C8]" aria-label="Sort by">
+              <SelectTrigger className={PK_THEME.input} aria-label="Sort by">
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
@@ -230,7 +232,7 @@ export default function PipesPage() {
                 <SelectItem value="name">By Name</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex border border-[#E0D8C8]/30 rounded-lg bg-[#243548] w-full sm:w-fit justify-center sm:justify-start" role="group" aria-label="View mode">
+            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label="View mode">
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -238,7 +240,7 @@ export default function PipesPage() {
                   setViewMode('grid');
                   localStorage.setItem('pipesViewMode', 'grid');
                 }}
-                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
+                className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
                 aria-label="Grid view"
                 aria-pressed={viewMode === 'grid'}
               >
@@ -251,7 +253,7 @@ export default function PipesPage() {
                   setViewMode('list');
                   localStorage.setItem('pipesViewMode', 'list');
                 }}
-                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? 'bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8]' : 'text-[#E0D8C8] hover:bg-[#A35C5C]/20'}`}
+                className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
                 aria-label="List view"
                 aria-pressed={viewMode === 'list'}
               >
