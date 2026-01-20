@@ -468,7 +468,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
             transition={{ delay: 0.1 }}
           >
             <a href={createPageUrl('Pipes')}>
-              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow">
+              <PkCard>
                 <PkCardContent className="p-3 sm:p-6 text-center">
                   <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                   <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.accentText}`}>{safePipes.length}</p>
