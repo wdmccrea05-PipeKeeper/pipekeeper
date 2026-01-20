@@ -15,6 +15,7 @@ import ImageCropper from "@/components/pipes/ImageCropper";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
+import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -56,7 +57,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false
   );
-  const [useImperial, setUseImperial] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamping, setUploadingStamping] = useState(false);
   const [cropperImage, setCropperImage] = useState(null);
@@ -71,6 +71,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   });
 
   const isPaidUser = user?.subscription_level === 'paid';
+  
+  const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -479,9 +481,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             variant="outline"
             size="sm"
             onClick={() => setUseImperial(!useImperial)}
+            className="whitespace-nowrap"
           >
             <ArrowLeftRight className="w-4 h-4 mr-2" />
-            {useImperial ? 'Metric' : 'Imperial'}
+            {useImperial ? 'Show Metric' : 'Show Imperial'}
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -564,15 +567,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <div className="space-y-2">
-            <Label>Length {useImperial ? '(in)' : '(mm)'}</Label>
+            <Label>Length ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.length_mm 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.length_mm) / 25.4) * 100) / 100
-                    : Math.round(parseFloat(formData.length_mm) * 100) / 100
+                  ? Math.round(convertLength(parseFloat(formData.length_mm)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -580,8 +581,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('length_mm', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
-                  handleChange('length_mm', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'length') : parseFloat(val);
+                  handleChange('length_mm', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
@@ -589,15 +590,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Weight {useImperial ? '(oz)' : '(g)'}</Label>
+            <Label>Weight ({getWeightUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.weight_grams 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.weight_grams) / 28.35) * 100) / 100
-                    : Math.round(parseFloat(formData.weight_grams) * 100) / 100
+                  ? Math.round(convertWeight(parseFloat(formData.weight_grams)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -605,8 +604,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('weight_grams', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 28.35 : parseFloat(val);
-                  handleChange('weight_grams', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'weight') : parseFloat(val);
+                  handleChange('weight_grams', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
@@ -614,15 +613,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Bowl Height {useImperial ? '(in)' : '(mm)'}</Label>
+            <Label>Bowl Height ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.bowl_height_mm 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.bowl_height_mm) / 25.4) * 100) / 100
-                    : Math.round(parseFloat(formData.bowl_height_mm) * 100) / 100
+                  ? Math.round(convertLength(parseFloat(formData.bowl_height_mm)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -630,8 +627,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('bowl_height_mm', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
-                  handleChange('bowl_height_mm', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'length') : parseFloat(val);
+                  handleChange('bowl_height_mm', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
@@ -639,15 +636,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Bowl Width {useImperial ? '(in)' : '(mm)'}</Label>
+            <Label>Bowl Width ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.bowl_width_mm 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.bowl_width_mm) / 25.4) * 100) / 100
-                    : Math.round(parseFloat(formData.bowl_width_mm) * 100) / 100
+                  ? Math.round(convertLength(parseFloat(formData.bowl_width_mm)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -655,8 +650,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('bowl_width_mm', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
-                  handleChange('bowl_width_mm', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'length') : parseFloat(val);
+                  handleChange('bowl_width_mm', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
@@ -664,15 +659,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Chamber Diameter {useImperial ? '(in)' : '(mm)'}</Label>
+            <Label>Chamber Diameter ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.bowl_diameter_mm 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.bowl_diameter_mm) / 25.4) * 100) / 100
-                    : Math.round(parseFloat(formData.bowl_diameter_mm) * 100) / 100
+                  ? Math.round(convertLength(parseFloat(formData.bowl_diameter_mm)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -680,8 +673,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('bowl_diameter_mm', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
-                  handleChange('bowl_diameter_mm', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'length') : parseFloat(val);
+                  handleChange('bowl_diameter_mm', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
@@ -689,15 +682,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Chamber Depth {useImperial ? '(in)' : '(mm)'}</Label>
+            <Label>Chamber Depth ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
               value={
                 formData.bowl_depth_mm 
-                  ? useImperial 
-                    ? Math.round((parseFloat(formData.bowl_depth_mm) / 25.4) * 100) / 100
-                    : Math.round(parseFloat(formData.bowl_depth_mm) * 100) / 100
+                  ? Math.round(convertLength(parseFloat(formData.bowl_depth_mm)) * 100) / 100
                   : ''
               }
               onChange={(e) => {
@@ -705,8 +696,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 if (val === '') {
                   handleChange('bowl_depth_mm', '');
                 } else {
-                  const converted = useImperial ? parseFloat(val) * 25.4 : parseFloat(val);
-                  handleChange('bowl_depth_mm', String(Math.round(converted * 100) / 100));
+                  const metricVal = useImperial ? imperialToMetric(parseFloat(val), 'length') : parseFloat(val);
+                  handleChange('bowl_depth_mm', String(Math.round(metricVal * 100) / 100));
                 }
               }}
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
