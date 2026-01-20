@@ -286,34 +286,34 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       )}
 
       {/* Photos Section */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">Pipe Photos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-stone-200 group">
+              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={() => editPhoto(idx, false)}
-                    className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                    className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
                   >
-                    <Edit className="w-3.5 h-3.5 text-stone-700" />
+                    <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
                   </button>
                   <button
                     type="button"
                     onClick={() => removePhoto(idx)}
-                    className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                    className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
                   >
-                    <X className="w-3.5 h-3.5 text-white" />
+                    <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
                   </button>
                 </div>
               </div>
             ))}
-            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
               {uploading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
@@ -337,7 +337,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Stamping Photos */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">Stamping Photos</CardTitle>
           <p className="text-sm text-[#E0D8C8]/70">Photos of maker stamps, logos, or markings for identification</p>
@@ -345,27 +345,27 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-3">
             {formData.stamping_photos?.map((photo, idx) => (
-              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-stone-200 group">
+              <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={() => editPhoto(idx, true)}
-                    className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                    className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
                   >
-                    <Edit className="w-3.5 h-3.5 text-stone-700" />
+                    <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
                   </button>
                   <button
                     type="button"
                     onClick={() => removePhoto(idx, true)}
-                    className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                    className="bg-[#E05D5D]/80 rounded-full p-1.5 hover:bg-[#E05D5D]"
                   >
-                    <X className="w-3.5 h-3.5 text-white" />
+                    <X className="w-3.5 h-3.5 text-[#E0D8C8]" />
                   </button>
                 </div>
               </div>
             ))}
-            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
               {uploadingStamping ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
@@ -389,7 +389,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Basic Info */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">Basic Information</CardTitle>
         </CardHeader>
@@ -404,7 +404,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., My Favorite Billiard"
               required
-              className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -415,7 +414,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.maker}
               onChange={(e) => handleChange('maker', e.target.value)}
               placeholder="e.g., Dunhill, Peterson"
-              className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -426,7 +424,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.country_of_origin}
               onChange={(e) => handleChange('country_of_origin', e.target.value)}
               placeholder="e.g., England, Denmark"
-              className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -437,7 +434,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.year_made}
               onChange={(e) => handleChange('year_made', e.target.value)}
               placeholder="e.g., 1970s, 2020"
-              className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -448,7 +444,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.stamping}
               onChange={(e) => handleChange('stamping', e.target.value)}
               placeholder="Text on the pipe"
-              className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -456,7 +451,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="Overall condition of the pipe from mint (perfect) to poor (heavily damaged)."
           >
             <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
               <SelectContent>
@@ -468,7 +463,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Physical Characteristics */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg text-[#E0D8C8]">Physical Characteristics</CardTitle>
@@ -493,7 +488,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="The classic shape category of your pipe (e.g., Billiard, Dublin, Bent)."
           >
             <Select value={formData.shape} onValueChange={(v) => handleChange('shape', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select shape" />
               </SelectTrigger>
               <SelectContent>
@@ -506,7 +501,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool smoking."
           >
             <Select value={formData.bowl_material} onValueChange={(v) => handleChange('bowl_material', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select material" />
               </SelectTrigger>
               <SelectContent>
@@ -519,7 +514,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="What the mouthpiece is made from. Vulcanite is traditional but oxidizes; Acrylic is more durable."
           >
             <Select value={formData.stem_material} onValueChange={(v) => handleChange('stem_material', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select material" />
               </SelectTrigger>
               <SelectContent>
@@ -532,7 +527,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="Surface treatment of the bowl. Smooth shows the wood grain; Sandblast reveals ring grain texture."
           >
             <Select value={formData.finish} onValueChange={(v) => handleChange('finish', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select finish" />
               </SelectTrigger>
               <SelectContent>
@@ -545,7 +540,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="Overall size of the tobacco chamber. Small = 15-30 min smoke, Medium = 30-45 min, Large = 45-60 min, Extra Large = 60+ min."
           >
             <Select value={formData.chamber_volume} onValueChange={(v) => handleChange('chamber_volume', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select volume" />
               </SelectTrigger>
               <SelectContent>
@@ -558,7 +553,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             helpText="Size of removable filter or 'None' if filterless. 9mm filters absorb moisture and cool smoke."
           >
             <Select value={formData.filter_type} onValueChange={(v) => handleChange('filter_type', v)}>
-              <SelectTrigger className="border-stone-200">
+              <SelectTrigger>
                 <SelectValue placeholder="Select filter" />
               </SelectTrigger>
               <SelectContent>
@@ -586,7 +581,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 5.5" : "e.g., 140"}
-              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
@@ -609,7 +603,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 42"}
-              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
@@ -632,7 +625,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 2.0" : "e.g., 50"}
-              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
@@ -655,7 +647,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 1.5" : "e.g., 38"}
-              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
@@ -678,7 +669,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 0.8" : "e.g., 20"}
-              className="border-stone-200"
             />
           </div>
           <div className="space-y-2">
@@ -701,14 +691,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
               placeholder={useImperial ? "e.g., 1.6" : "e.g., 40"}
-              className="border-stone-200"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Value & Notes */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8]">Value & Notes</CardTitle>
         </CardHeader>
@@ -721,7 +710,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 value={formData.purchase_price}
                 onChange={(e) => handleChange('purchase_price', e.target.value)}
                 placeholder="What you paid"
-                className="border-stone-200"
               />
             </div>
             <div className="space-y-2">
@@ -731,7 +719,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 value={formData.estimated_value}
                 onChange={(e) => handleChange('estimated_value', e.target.value)}
                 placeholder="Current market value"
-                className="border-stone-200"
               />
             </div>
           </div>
@@ -741,7 +728,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.smoking_characteristics}
               onChange={(e) => handleChange('smoking_characteristics', e.target.value)}
               placeholder="How does it smoke? Hot/cool, wet/dry, flavor notes..."
-              className="border-stone-200"
               rows={2}
             />
           </div>
@@ -751,7 +737,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder="Any additional notes about this pipe..."
-              className="border-stone-200"
               rows={3}
             />
           </div>
@@ -766,7 +751,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Interchangeable Bowls */}
-      <Card className="border-white/10">
+      <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5" />
@@ -806,7 +791,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="bg-amber-700 hover:bg-amber-800"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           {pipe ? 'Update Pipe' : 'Add Pipe'}
