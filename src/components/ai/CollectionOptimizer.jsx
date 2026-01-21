@@ -1150,13 +1150,13 @@ Provide concrete, actionable steps with specific field values.`,
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col gap-2">
             {conversationMessages.length > 0 ? (
               <>
                 <Button
                   onClick={handleWhatIfFollowUp}
                   disabled={whatIfLoading || !whatIfFollowUp.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 flex-1"
+                  className="bg-indigo-600 hover:bg-indigo-700 w-full"
                 >
                   {whatIfLoading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1165,28 +1165,31 @@ Provide concrete, actionable steps with specific field values.`,
                   )}
                   Send Message
                 </Button>
-                <Button
-                  onClick={analyzeCollectionImpact}
-                  disabled={whatIfLoading}
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  {whatIfLoading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Target className="w-4 h-4 mr-2" />
-                  )}
-                  Analyze Impact
-                </Button>
-                <Button variant="outline" onClick={resetWhatIf} className="sm:w-auto">
-                  Reset
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={analyzeCollectionImpact}
+                    disabled={whatIfLoading}
+                    variant="outline"
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50 flex-1"
+                  >
+                    {whatIfLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Target className="w-4 h-4 mr-2" />
+                    )}
+                    <span className="hidden sm:inline">Analyze Impact</span>
+                    <span className="sm:hidden">Impact</span>
+                  </Button>
+                  <Button variant="outline" onClick={resetWhatIf} className="flex-1">
+                    Reset
+                  </Button>
+                </div>
               </>
             ) : (
               <Button
                 onClick={analyzeWhatIf}
                 disabled={whatIfLoading || !whatIfQuery.trim()}
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-indigo-600 hover:bg-indigo-700 w-full"
               >
                 {whatIfLoading ? (
                   <>
