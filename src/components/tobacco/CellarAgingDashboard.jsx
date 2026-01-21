@@ -103,10 +103,12 @@ export default function CellarAgingDashboard({ user }) {
   const getTotalCellarWeight = () => {
     let total = 0;
     cellarBlends.forEach(b => {
+      const logData = getCellarDataFromLogs(b.id);
       const tinOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0);
       const bulkOz = b.bulk_cellared || 0;
       const pouchOz = (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
-      total += tinOz + bulkOz + pouchOz;
+      const logOz = logData.net;
+      total += tinOz + bulkOz + pouchOz + logOz;
     });
     return total;
   };
