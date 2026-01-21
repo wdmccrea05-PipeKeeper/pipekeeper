@@ -171,7 +171,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
               size="sm"
               onClick={regenPairings}
               disabled={regenerating}
-              className="shrink-0"
+              className="shrink-0 text-stone-800"
             >
               {regenerating ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
