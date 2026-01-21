@@ -2447,37 +2447,55 @@ Provide concrete, actionable steps with specific field values.`,
                     )}
 
                     {conversationMessages.length > 0 && (
-                      <div className="pt-2 border-t border-indigo-100">
-                        <label className="text-xs font-medium text-stone-700 mb-2 block">Ask a follow-up:</label>
-                        <Textarea
-                          placeholder="Continue the discussion..."
-                          value={whatIfFollowUp}
-                          onChange={(e) => setWhatIfFollowUp(e.target.value)}
-                          className="min-h-[50px] text-sm"
-                        />
-                        <div className="flex gap-2 mt-2">
+                      <div className="pt-3 border-t border-indigo-100 space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-stone-700 mb-2 block">Ask a follow-up:</label>
+                          <Textarea
+                            placeholder="Continue the discussion..."
+                            value={whatIfFollowUp}
+                            onChange={(e) => setWhatIfFollowUp(e.target.value)}
+                            className="min-h-[50px] text-sm"
+                          />
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             onClick={handleCollectionFollowUp}
                             disabled={!whatIfFollowUp.trim() || whatIfLoading}
                             variant="outline"
-                            className="flex-1 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                            className="flex-1 border-indigo-300 text-indigo-700 hover:bg-indigo-50 text-sm"
                           >
                             {whatIfLoading ? (
                               <>
-                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                                Thinking...
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                <span className="hidden sm:inline">Thinking...</span>
+                                <span className="sm:hidden">Thinking</span>
                               </>
                             ) : (
                               <>
-                                <Sparkles className="w-3 h-3 mr-2" />
-                                Continue Discussion
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                <span className="hidden sm:inline">Continue Discussion</span>
+                                <span className="sm:hidden">Continue</span>
                               </>
                             )}
                           </Button>
                           <Button
+                            onClick={analyzeCollectionImpact}
+                            disabled={whatIfLoading}
+                            variant="outline"
+                            className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50 text-sm"
+                          >
+                            {whatIfLoading ? (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            ) : (
+                              <Target className="w-3 h-3 mr-1" />
+                            )}
+                            <span className="hidden sm:inline">Analyze Impact</span>
+                            <span className="sm:hidden">Impact</span>
+                          </Button>
+                          <Button
                             onClick={resetWhatIf}
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 text-sm"
                           >
                             Reset
                           </Button>
