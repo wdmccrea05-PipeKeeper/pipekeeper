@@ -1342,7 +1342,10 @@ Provide concrete, actionable steps with specific field values.`,
               </>
             ) : (
               <Button
-                onClick={analyzeWhatIf}
+                onClick={() => {
+                  setConversationMessages([]);
+                  analyzeGeneralQuestion();
+                }}
                 disabled={whatIfLoading || !whatIfQuery.trim()}
                 className="bg-indigo-600 hover:bg-indigo-700 w-full"
               >
