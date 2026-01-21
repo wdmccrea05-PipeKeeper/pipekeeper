@@ -36,12 +36,15 @@ async function safePersistCustomerId(base44, email, customerId) {
 Deno.serve(async (req) => {
   try {
     if (!STRIPE_SECRET_KEY) {
-      return Response.json({ error: "Server misconfigured: STRIPE_SECRET_KEY missing." }, { status: 500 });
+      return Response.json(
+        { error: "Server misconfigured: STRIPE_SECRET_KEY missing." },
+        { status: 500 }
+      );
     }
 
     const platform = getPlatform(req);
 
-    // Apple compliance: billing portal (external purchase management) not available inside iOS companion
+    // Apple compliance: billing portal not available in iOS companion
     if (platform === "ios_companion") {
       return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
     }
