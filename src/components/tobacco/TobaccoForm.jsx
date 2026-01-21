@@ -468,51 +468,50 @@ Return complete and accurate information based on the blend name or description 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tin Photo */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Tin Photo</Label>
-              <div className="flex items-center gap-4">
-                {formData.photo ? (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
-                    <img src={formData.photo} alt="" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={() => editPhoto('photo')}
-                        className="bg-white/90 rounded-full p-1.5 hover:bg-white"
-                      >
-                        <Edit className="w-3.5 h-3.5 text-stone-700" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleChange('photo', '')}
-                        className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
-                      >
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
-                    {uploading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="w-6 h-6" />
-                        <span className="text-xs">Add Photo</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={handlePhotoUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
+             <div className="space-y-2">
+               <Label className="text-sm font-medium">Tin Photo</Label>
+               <div className="flex items-center gap-4">
+                 {formData.photo ? (
+                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
+                     <img src={formData.photo} alt="" className="w-full h-full object-cover" />
+                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                       <button
+                         type="button"
+                         onClick={() => editPhoto('photo')}
+                         className="bg-white/90 rounded-full p-1.5 hover:bg-white"
+                       >
+                         <Edit className="w-3.5 h-3.5 text-stone-700" />
+                       </button>
+                       <button
+                         type="button"
+                         onClick={() => handleChange('photo', '')}
+                         className="bg-rose-500/90 rounded-full p-1.5 hover:bg-rose-600"
+                       >
+                         <X className="w-3.5 h-3.5 text-white" />
+                       </button>
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
+                     <PhotoUploader 
+                       onPhotosSelected={(files) => {
+                         const file = Array.from(files)[0];
+                         if (file) {
+                           const reader = new FileReader();
+                           reader.onload = (event) => {
+                             setCropperImage(event.target.result);
+                             setCropperType('photo');
+                           };
+                           reader.readAsDataURL(file);
+                         }
+                       }}
+                       existingPhotos={[]}
+                       hideExisting
+                     />
+                   </div>
+                 )}
+               </div>
+             </div>
 
             {/* Label/Logo */}
             <div className="space-y-2">
