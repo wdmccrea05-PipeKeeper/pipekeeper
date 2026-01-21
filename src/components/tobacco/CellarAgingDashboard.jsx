@@ -1,11 +1,13 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Wine, Clock, TrendingUp, Package } from "lucide-react";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function CellarAgingDashboard({ user }) {
   const { data: blends = [], isLoading } = useQuery({
