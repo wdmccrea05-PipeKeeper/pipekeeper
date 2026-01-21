@@ -2354,7 +2354,7 @@ Provide concrete, actionable steps with specific field values.`,
                             ) : (
                               <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
                                 <div className="text-sm text-stone-700 space-y-2">
-                                  <p>{msg.content.response}</p>
+                                  <p>{msg.content.response || msg.content.advice}</p>
                                   {msg.content.specific_recommendations?.length > 0 && (
                                     <div className="pt-2 border-t border-stone-300">
                                       <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
