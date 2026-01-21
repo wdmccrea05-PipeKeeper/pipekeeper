@@ -935,27 +935,37 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Pouches Open</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={formData.pouch_pouches_open || ''}
-                    onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
-                    placeholder="e.g., 1"
-                    className="border-stone-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Pouches Cellared</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={formData.pouch_pouches_cellared || ''}
-                    onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
-                    placeholder="e.g., 2"
-                    className="border-stone-200"
-                  />
-                </div>
+                   <Label>Pouches Open</Label>
+                   <Input
+                     type="number"
+                     min="0"
+                     value={formData.pouch_pouches_open || ''}
+                     onChange={(e) => {
+                       handleChange('pouch_pouches_open', e.target.value);
+                       if (e.target.value && formData.pouch_size_oz && formData.pouch_pouches_cellared) {
+                         handleChange('pouch_total_quantity_oz', Number(e.target.value) * Number(formData.pouch_size_oz) + Number(formData.pouch_pouches_cellared) * Number(formData.pouch_size_oz));
+                       }
+                     }}
+                     placeholder="e.g., 1"
+                     className="border-stone-200"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Pouches Cellared</Label>
+                   <Input
+                     type="number"
+                     min="0"
+                     value={formData.pouch_pouches_cellared || ''}
+                     onChange={(e) => {
+                       handleChange('pouch_pouches_cellared', e.target.value);
+                       if (e.target.value && formData.pouch_size_oz && formData.pouch_pouches_open) {
+                         handleChange('pouch_total_quantity_oz', Number(formData.pouch_pouches_open) * Number(formData.pouch_size_oz) + Number(e.target.value) * Number(formData.pouch_size_oz));
+                       }
+                     }}
+                     placeholder="e.g., 2"
+                     className="border-stone-200"
+                   />
+                 </div>
                 <div className="space-y-2">
                   <Label>Date Cellared</Label>
                   <Input
