@@ -221,7 +221,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           </div>
 
           <div className="pt-3 border-t">
-            <div className="text-xs font-semibold text-stone-900 mb-2">Check any blend</div>
+            <div className="text-xs font-semibold text-stone-600 mb-2">Check any blend</div>
             <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Select a blend..." />
