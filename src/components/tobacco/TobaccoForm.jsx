@@ -457,7 +457,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Photo & Logo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Images</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Images</CardTitle>
           {formData.logo && !uploading && !uploadingLogo && (
             <p className="text-xs text-stone-500">
               Logo auto-populated from library. You can upload a custom one to replace it.
@@ -578,7 +578,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Basic Info */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Basic Information</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -663,7 +663,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Tobacco Components */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Tobacco Components</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Tobacco Components</CardTitle>
           <p className="text-sm text-stone-500">List the types of tobacco in this blend</p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -695,7 +695,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Flavor Notes */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Flavor Notes</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Flavor Notes</CardTitle>
           <p className="text-sm text-stone-500">Select all that apply</p>
         </CardHeader>
         <CardContent>
@@ -721,7 +721,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Inventory & Status */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Inventory & Status</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Inventory & Status</CardTitle>
           <p className="text-sm text-stone-500">Track your tobacco across tins, bulk, and pouches</p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -1004,7 +1004,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Notes */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">Notes</CardTitle>
+          <CardTitle className="text-lg text-stone-900 font-semibold">Notes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
