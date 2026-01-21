@@ -368,25 +368,27 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 </div>
               </div>
             ))}
-            <label className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
-              {uploadingStamping ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <>
-                  <Upload className="w-6 h-6" />
-                  <span className="text-xs">Add Stamp</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                className="hidden"
-                onChange={(e) => handlePhotoUpload(e, true)}
-                disabled={uploadingStamping}
+            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
+              <PhotoUploader 
+                onPhotosSelected={(files) => {
+                  const uploadPromises = Array.from(files).map(async (file) => {
+                    try {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setCropperImage(event.target.result);
+                        setCropperType('stamping');
+                      };
+                      reader.readAsDataURL(file);
+                    } catch (err) {
+                      console.error('Error reading file:', err);
+                    }
+                  });
+                  Promise.all(uploadPromises);
+                }}
+                existingPhotos={[]}
+                hideExisting
               />
-            </label>
+            </div>
           </div>
         </CardContent>
       </Card>
