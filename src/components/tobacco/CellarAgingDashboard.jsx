@@ -180,11 +180,13 @@ export default function CellarAgingDashboard({ user }) {
           .map(blend => {
             const aging = getAgingInfo(blend);
             const recommendation = getAgingRecommendation(blend);
+            const logData = getCellarDataFromLogs(blend.id);
             
             const tinOz = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
             const bulkOz = blend.bulk_cellared || 0;
             const pouchOz = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
-            const totalOz = tinOz + bulkOz + pouchOz;
+            const logOz = logData.net;
+            const totalOz = tinOz + bulkOz + pouchOz + logOz;
             
             const maxMonths = blend.aging_potential === "Excellent" ? 24 : 
                              blend.aging_potential === "Good" ? 12 : 6;
