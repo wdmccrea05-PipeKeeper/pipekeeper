@@ -2251,50 +2251,50 @@ Provide concrete, actionable steps with specific field values.`,
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2 text-[0.7rem] sm:text-xs"
                           onClick={() => {
                             setWhatIfQuery("Based on my collection gaps and current pipes, what blend types should I prioritize buying?");
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
                         >
-                          <span className="text-xs leading-snug">What blend types would best fill my collection gaps?</span>
+                          <span className="leading-snug"><span className="sm:hidden">Fill gaps</span><span className="hidden sm:inline">What blend types would best fill my collection gaps?</span></span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2 text-[0.7rem] sm:text-xs"
                           onClick={() => {
                             setWhatIfQuery("Which of my pipes are most versatile and which are too specialized? How should I rebalance them?");
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
                         >
-                          <span className="text-xs leading-snug">How can I rebalance pipe versatility?</span>
+                          <span className="leading-snug"><span className="sm:hidden">Rebalance</span><span className="hidden sm:inline">How can I rebalance pipe versatility?</span></span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2 text-[0.7rem] sm:text-xs"
                           onClick={() => {
                             setWhatIfQuery("Do I have redundant pipe specializations? Which pipes could be safely reassigned?");
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
                         >
-                          <span className="text-xs leading-snug">Which pipes have redundant focuses?</span>
+                          <span className="leading-snug"><span className="sm:hidden">Redundancy</span><span className="hidden sm:inline">Which pipes have redundant focuses?</span></span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2 text-[0.7rem] sm:text-xs"
                           onClick={() => {
                             setWhatIfQuery("Am I missing important pipe shapes, sizes, or materials? What would round out my collection?");
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
                         >
-                          <span className="text-xs leading-snug">What shapes/sizes am I missing?</span>
+                          <span className="leading-snug"><span className="sm:hidden">Missing shapes</span><span className="hidden sm:inline">What shapes/sizes am I missing?</span></span>
                         </Button>
                       </div>
                     </div>
