@@ -67,11 +67,11 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         variant="outline"
         onClick={handleGetRecommendation}
         disabled={isLoading || !isPremiumUser}
-        className="border-purple-300 text-purple-700 hover:bg-purple-50"
+        className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto"
       >
         {!isPremiumUser && <Crown className="w-3 h-3 mr-1 text-amber-500" />}
         <Sparkles className="w-4 h-4 mr-1" />
-        {isLoading ? 'Analyzing...' : 'Get AI Recommendation'}
+        <span className="truncate">{isLoading ? 'Analyzing...' : 'Get AI Recommendation'}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
