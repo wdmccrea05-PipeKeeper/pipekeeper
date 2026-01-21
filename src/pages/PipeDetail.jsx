@@ -283,10 +283,22 @@ export default function PipeDetailPage() {
             <CardContent className="p-6">
               <Tabs defaultValue="specialization">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
-                  <TabsTrigger value="specialization">Specialization</TabsTrigger>
-                  <TabsTrigger value="condition">Condition</TabsTrigger>
-                  <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-                  <TabsTrigger value="breakin">Break-In</TabsTrigger>
+                  <TabsTrigger value="specialization">
+                    <span className="hidden sm:inline">Specialization</span>
+                    <span className="sm:hidden">🎯 Focus</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="condition">
+                    <span className="hidden sm:inline">Condition</span>
+                    <span className="sm:hidden">⚙️ Status</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="maintenance">
+                    <span className="hidden sm:inline">Maintenance</span>
+                    <span className="sm:hidden">🔧 Care</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="breakin">
+                    <span className="hidden sm:inline">Break-In</span>
+                    <span className="sm:hidden">🔥 Break</span>
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="specialization" className="mt-0">
