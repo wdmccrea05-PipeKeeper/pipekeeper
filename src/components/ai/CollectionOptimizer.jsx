@@ -48,6 +48,7 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedChanges, setSelectedChanges] = useState({});
   const [showRegenDialog, setShowRegenDialog] = useState(false);
+  const [showPipesList, setShowPipesList] = useState(true);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
