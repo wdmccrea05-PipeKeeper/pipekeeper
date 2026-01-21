@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import ImageCropper from "@/components/pipes/ImageCropper";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
+import PhotoUploader from "@/components/PhotoUploader";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
