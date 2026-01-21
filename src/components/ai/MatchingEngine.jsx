@@ -205,7 +205,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
         <div className="p-4 space-y-4">
           <div>
-            <div className="text-xs font-bold text-stone-800 mb-2">Top 3 matches (from Pairing Grid)</div>
+            <div className="text-xs font-bold text-stone-600 mb-2">Top 3 matches (from Pairing Grid)</div>
             {top3.length ? (
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
