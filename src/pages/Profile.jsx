@@ -453,38 +453,35 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="user"
-                          onChange={handleAvatarUpload}
-                          id="avatar-upload"
-                          className="hidden"
-                          disabled={uploadingAvatar}
+                        <PhotoUploader 
+                          onPhotosSelected={(files) => {
+                            const uploadPromises = Array.from(files).map(async (file) => {
+                              try {
+                                setUploadingAvatar(true);
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setImageToCrop(event.target.result);
+                                  setShowCropper(true);
+                                };
+                                reader.readAsDataURL(file);
+                              } catch (err) {
+                                console.error('Error reading file:', err);
+                              } finally {
+                                setUploadingAvatar(false);
+                              }
+                            });
+                            Promise.all(uploadPromises);
+                          }}
+                          existingPhotos={formData.avatar_url ? [formData.avatar_url] : []}
+                          maxPhotos={1}
                         />
-                        <label htmlFor="avatar-upload">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={uploadingAvatar}
-                            className="cursor-pointer"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              document.getElementById('avatar-upload')?.click();
-                            }}
-                          >
-                            <Camera className="w-4 h-4 mr-2" />
-                            {uploadingAvatar ? 'Uploading...' : formData.avatar_url ? 'Change Photo' : 'Upload Photo'}
-                          </Button>
-                        </label>
                         {formData.avatar_url && (
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => setFormData({ ...formData, avatar_url: "" })}
-                            className="ml-2 text-rose-600 hover:text-rose-700"
+                            className="mt-2 text-rose-600 hover:text-rose-700 w-full sm:w-auto"
                           >
                             Remove
                           </Button>
