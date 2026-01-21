@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import AvatarCropper from "@/components/pipes/AvatarCropper";
+import PhotoUploader from "@/components/PhotoUploader";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
 import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
