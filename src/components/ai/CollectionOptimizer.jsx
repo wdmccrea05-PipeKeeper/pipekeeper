@@ -2525,6 +2525,55 @@ Provide concrete, actionable steps with specific field values.`,
                             {whatIfResult.recommendation_category}
                           </Badge>
                         </div>
+                        {whatIfResult.trophy_pairings?.length > 0 && (
+                          <Card className="border-amber-200 bg-amber-50">
+                            <CardContent className="p-4">
+                              <p className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
+                                <Trophy className="w-4 h-4" />
+                                Trophy Pairings (9-10 scores):
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {whatIfResult.trophy_pairings.map((blend, idx) => (
+                                  <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
+                                    {blend}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                        {whatIfResult.gaps_filled?.length > 0 && (
+                          <Card className="border-emerald-200 bg-emerald-50">
+                            <CardContent className="p-4">
+                              <p className="text-sm font-medium text-emerald-700 mb-2">Gaps Filled:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {whatIfResult.gaps_filled.map((gap, idx) => (
+                                  <Badge key={idx} className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                                    {gap}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                        <Card className="border-stone-200">
+                          <CardContent className="p-4 space-y-3">
+                            <div>
+                              <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
+                              <p className="text-sm text-stone-600">{whatIfResult.redundancy_analysis}</p>
+                            </div>
+                            {whatIfResult.score_improvements && (
+                              <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                                <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
+                                <p className="text-sm text-emerald-800">{whatIfResult.score_improvements}</p>
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
+                              <p className="text-sm text-stone-600">{whatIfResult.detailed_reasoning}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
                         {whatIfResult.applyable_changes?.length > 0 && (
                           <Button
                             onClick={() => {
@@ -2535,8 +2584,77 @@ Provide concrete, actionable steps with specific field values.`,
                             className="bg-emerald-600 hover:bg-emerald-700 w-full"
                           >
                             <CheckCheck className="w-4 h-4 mr-2" />
-                            Apply Changes
+                            Confirm & Apply Changes
                           </Button>
+                        )}
+                        <Button
+                          onClick={suggestProducts}
+                          disabled={loadingProducts}
+                          variant="outline"
+                          className="w-full border-violet-300 text-violet-700 hover:bg-violet-50"
+                        >
+                          {loadingProducts ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Finding Products...
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              Suggest Specific Products
+                            </>
+                          )}
+                        </Button>
+                        {suggestedProducts?.suggestions && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-4 space-y-3"
+                          >
+                            <h4 className="font-semibold text-stone-800 flex items-center gap-2">
+                              <ShoppingCart className="w-4 h-4" />
+                              Recommended Products
+                            </h4>
+                            {suggestedProducts.suggestions.map((product, idx) => (
+                              <Card key={idx} className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                      <h5 className="font-semibold text-stone-800">{product.name}</h5>
+                                      <p className="text-sm text-stone-600">{product.brand}</p>
+                                      <Badge className="mt-1 bg-violet-100 text-violet-800 border-violet-200">
+                                        {product.type}
+                                      </Badge>
+                                    </div>
+                                    <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                                      {product.price_range}
+                                    </Badge>
+                                  </div>
+                                  <div className="space-y-2 text-sm">
+                                    {product.type === 'Pipe' ? (
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                        {product.shape && <div><span className="text-stone-500">Shape:</span> {product.shape}</div>}
+                                        {product.material && <div><span className="text-stone-500">Material:</span> {product.material}</div>}
+                                        {product.chamber_size && <div><span className="text-stone-500">Chamber:</span> {product.chamber_size}</div>}
+                                        {product.stem_material && <div><span className="text-stone-500">Stem:</span> {product.stem_material}</div>}
+                                        {product.finish && <div><span className="text-stone-500">Finish:</span> {product.finish}</div>}
+                                      </div>
+                                    ) : (
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                        {product.blend_type && <div><span className="text-stone-500">Type:</span> {product.blend_type}</div>}
+                                        {product.strength && <div><span className="text-stone-500">Strength:</span> {product.strength}</div>}
+                                        {product.cut && <div><span className="text-stone-500">Cut:</span> {product.cut}</div>}
+                                        {product.flavor_profile && <div className="col-span-2"><span className="text-stone-500">Flavors:</span> {product.flavor_profile}</div>}
+                                      </div>
+                                    )}
+                                    <div className="bg-indigo-50 rounded p-2 mt-2">
+                                      <p className="text-xs text-indigo-800"><span className="font-medium">Why:</span> {product.why_it_fits}</p>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </motion.div>
                         )}
                       </motion.div>
                     )}
