@@ -15,6 +15,7 @@ import ImageCropper from "@/components/pipes/ImageCropper";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
+import PhotoUploader from "@/components/PhotoUploader";
 import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
