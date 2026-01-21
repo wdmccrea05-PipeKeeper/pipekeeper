@@ -20,6 +20,8 @@ import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
+import SmokingLogReport from "@/components/reports/SmokingLogReport";
+import AgingReport from "@/components/reports/AgingReport";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
