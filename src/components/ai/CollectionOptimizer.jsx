@@ -1309,7 +1309,7 @@ Provide concrete, actionable steps with specific field values.`,
             {conversationMessages.length > 0 ? (
               <>
                 <Button
-                  onClick={handleWhatIfFollowUp}
+                  onClick={handleGeneralFollowUp}
                   disabled={whatIfLoading || !whatIfFollowUp.trim()}
                   className="bg-indigo-600 hover:bg-indigo-700 w-full"
                 >
