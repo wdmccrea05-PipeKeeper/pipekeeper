@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
+  const queryClient = useQueryClient();
+  const [addingToCellar, setAddingToCellar] = useState(null);
+
   // Initialize form data from existing blend data, preserving all values
   const [formData, setFormData] = useState({
     tin_size_oz: blend?.tin_size_oz ?? '',
