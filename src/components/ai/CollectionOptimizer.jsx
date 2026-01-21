@@ -1842,10 +1842,11 @@ Provide concrete, actionable steps with specific field values.`,
                   </motion.div>
                 );
               })}
-            </div>
-          </div>
+              </div>
+              )}
+              </div>
 
-          {/* Collection Gaps */}
+              {/* Collection Gaps */}
           {optimization.collection_gaps && (
             <div>
               <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
