@@ -86,7 +86,8 @@ export default function TopPipeMatches({ blend, pipes }) {
       savedPairings.pairings.forEach((pipePairing) => {
         const recs = pipePairing?.recommendations || pipePairing?.blend_matches || [];
         const blendRec = recs.find(r => 
-          String(r.tobacco_id) === String(blend.id)
+          String(r.tobacco_id) === String(blend.id) ||
+          (r.tobacco_name && blend.name && r.tobacco_name.toLowerCase() === blend.name.toLowerCase())
         );
 
         if (blendRec && blendRec.score > 0) {
