@@ -166,7 +166,8 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               ) : (
                 <Tags className="w-4 h-4 mr-1" />
               )}
-              Standardize Categories ({blends.length} total)
+              <span className="hidden sm:inline">Standardize Categories ({blends.length} total)</span>
+              <span className="sm:hidden">📋 Standardize ({blends.length})</span>
             </Button>
           </CardContent>
         </Card>
@@ -187,7 +188,8 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               className="bg-gradient-to-r from-teal-600 to-teal-700"
               onClick={() => (window.location.href = "/Pipes")}
             >
-              Go to Pipes
+              <span className="hidden sm:inline">Go to Pipes</span>
+              <span className="sm:hidden">🔧 Go to Pipes</span>
             </Button>
           </CardContent>
         </Card>
