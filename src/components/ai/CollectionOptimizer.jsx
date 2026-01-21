@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Checkbox } from "@/components/ui/checkbox";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import PhotoUploader from "@/components/PhotoUploader";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   if (isAppleBuild) return null;
