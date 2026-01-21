@@ -142,14 +142,19 @@ For each of the 3 recommendations, provide:
           const existingMfr = existing.manufacturer.trim();
           const existingFull = existing.fullName.trim();
           
-          // Check for exact or very close matches only
+          // Check for exact or very close matches
+          const fullNameSimilarity = stringSimilarity(matchFullName, existingFull);
+          const nameSimilarity = stringSimilarity(matchName, existingName);
+          
           return (
             // Exact full name match
             matchFullName === existingFull ||
             // Exact blend name match with same manufacturer
             (matchName === existingName && matchMfr === existingMfr) ||
             // Very close match (>80% similarity) on full name
-            (matchFullName && existingFull && matchFullName === existingFull)
+            fullNameSimilarity > 0.8 ||
+            // Very close match (>85% similarity) on blend name alone
+            nameSimilarity > 0.85
           );
         });
       });
