@@ -1226,9 +1226,23 @@ Provide concrete, actionable steps with specific field values.`,
                             </div>
                           )}
                         </div>
+                      ) : msg.content.is_collection_question ? (
+                        <div className="text-sm text-stone-700 space-y-2">
+                          <p>{msg.content.response}</p>
+                          {msg.content.specific_recommendations?.length > 0 && (
+                            <div className="pt-2 border-t border-stone-300">
+                              <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                              <ul className="space-y-1">
+                                {msg.content.specific_recommendations.map((rec, i) => (
+                                  <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <div className="text-sm text-stone-700">
-                          <p>{msg.content.advice_response || msg.content.detailed_reasoning}</p>
+                          <p>Unable to display response</p>
                         </div>
                       )}
                     </div>
