@@ -2351,10 +2351,26 @@ Provide concrete, actionable steps with specific field values.`,
                               <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
                                 <p className="text-sm">{msg.content}</p>
                               </div>
+                            ) : msg.content.is_general_advice ? (
+                              <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
+                                <div className="text-sm text-stone-700 space-y-2">
+                                  <p>{msg.content.advice}</p>
+                                  {msg.content.key_points?.length > 0 && (
+                                    <div className="pt-2 border-t border-stone-300">
+                                      <p className="font-medium text-xs text-stone-600 mb-1">Key Points:</p>
+                                      <ul className="space-y-1">
+                                        {msg.content.key_points.map((pt, i) => (
+                                          <li key={i} className="text-xs text-stone-600">• {pt}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             ) : (
                               <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
                                 <div className="text-sm text-stone-700 space-y-2">
-                                  <p>{msg.content.response || msg.content.advice}</p>
+                                  <p>{msg.content.response}</p>
                                   {msg.content.specific_recommendations?.length > 0 && (
                                     <div className="pt-2 border-t border-stone-300">
                                       <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
