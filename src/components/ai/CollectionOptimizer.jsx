@@ -2331,27 +2331,42 @@ Provide concrete, actionable steps with specific field values.`,
                         onChange={(e) => setWhatIfQuery(e.target.value)}
                         className="min-h-[60px] text-sm"
                       />
-                      <Button
-                        onClick={() => {
-                          setConversationMessages([]);
-                          analyzeCollectionQuestion();
-                        }}
-                        disabled={!whatIfQuery.trim() || whatIfLoading}
-                        className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700"
-                      >
-                        {whatIfLoading ? (
-                          <>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => {
+                            setConversationMessages([]);
+                            analyzeCollectionQuestion();
+                          }}
+                          disabled={!whatIfQuery.trim() || whatIfLoading}
+                          className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                        >
+                          {whatIfLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Ask About My Collection
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={analyzeCollectionImpact}
+                          disabled={!whatIfQuery.trim() || whatIfLoading}
+                          variant="outline"
+                          className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                        >
+                          {whatIfLoading ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Ask About My Collection
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                          ) : (
+                            <Target className="w-4 h-4 mr-2" />
+                          )}
+                          Analyze Impact
+                        </Button>
+                      </div>
+                      </div>
 
                     {conversationMessages.length > 0 && (
                       <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-white">
