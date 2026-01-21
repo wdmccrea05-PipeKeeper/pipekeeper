@@ -1661,31 +1661,31 @@ Provide concrete, actionable steps with specific field values.`,
                )}
              </div>
              {showPipesList && (
-             <div className="space-y-3">
-                {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
-                 const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
-                 const spec = optimization.pipe_specializations?.find(s => {
-                   const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
-                   return k === variantKey;
-                 });
-                const pipe = pipes.find(p => p.id === pv.pipe_id);
-                const displaySpec = spec || {
-                  pipe_id: pv.pipe_id,
-                  bowl_variant_id: pv.bowl_variant_id || null,
-                  pipe_name: pv.name,
-                  recommended_blend_types: [],
-                  reasoning: "No specific recommendation generated. Consider running the optimization again.",
-                  versatility_score: 5,
-                  usage_pattern: "Versatile - suitable for multiple blend types"
-                };
+               <div className="space-y-3">
+                 {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
+                   const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
+                   const spec = optimization.pipe_specializations?.find(s => {
+                     const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
+                     return k === variantKey;
+                   });
+                   const pipe = pipes.find(p => p.id === pv.pipe_id);
+                   const displaySpec = spec || {
+                     pipe_id: pv.pipe_id,
+                     bowl_variant_id: pv.bowl_variant_id || null,
+                     pipe_name: pv.name,
+                     recommended_blend_types: [],
+                     reasoning: "No specific recommendation generated. Consider running the optimization again.",
+                     versatility_score: 5,
+                     usage_pattern: "Versatile - suitable for multiple blend types"
+                   };
 
-                return (
-                  <motion.div
-                    key={variantKey}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
+                   return (
+                     <motion.div
+                       key={variantKey}
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: idx * 0.1 }}
+                     >
                     <Card className="border-stone-200 hover:border-blue-300 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
