@@ -531,7 +531,101 @@ async function undoOptimizationApply(batchId) {
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
   };
 
-  const analyzeWhatIf = async () => {
+  const analyzeCollectionQuestion = async () => {
+    if (!whatIfQuery.trim()) return;
+    
+    setWhatIfLoading(true);
+    
+    // Add user message to conversation
+    setConversationMessages(prev => [...prev, {
+      role: 'user',
+      content: whatIfQuery,
+      timestamp: new Date().toISOString()
+    }]);
+    
+    const currentQuery = whatIfQuery;
+    setWhatIfQuery(''); // Clear input immediately
+    
+    try {
+      const pipesData = pipes.map(p => ({
+        id: p.id,
+        name: p.name,
+        maker: p.maker,
+        shape: p.shape,
+        bowl_material: p.bowl_material,
+        chamber_volume: p.chamber_volume,
+        focus: p.focus,
+        interchangeable_bowls: p.interchangeable_bowls || []
+      }));
+
+      const blendsData = blends.map(b => ({
+        id: b.id,
+        name: b.name,
+        manufacturer: b.manufacturer,
+        blend_type: b.blend_type,
+        strength: b.strength
+      }));
+
+      // Collection-focused advice with optimization context
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `SYSTEM: You are an expert collection strategist for pipe smoking.
+
+User's Collection Analysis:
+${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
+
+User's Question About Their Collection: ${currentQuery}
+
+Provide specific, actionable advice about:
+- Collection coverage and gaps
+- Pipe specialization recommendations
+- Blend-to-pipe matching strategies
+- Redundancies and optimization opportunities
+- Size, shape, and material diversity
+
+Be conversational and specific to their actual pipes and blends. Reference their collection items by name when relevant.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            response: { type: "string" },
+            specific_recommendations: {
+              type: "array",
+              items: { type: "string" }
+            },
+            collection_insights: {
+              type: "array",
+              items: { type: "string" }
+            }
+          }
+        }
+      });
+
+      const aiResponse = {
+        is_collection_question: true,
+        response: result.response,
+        specific_recommendations: result.specific_recommendations,
+        collection_insights: result.collection_insights
+      };
+      
+      setWhatIfResult(aiResponse);
+      
+      // Add AI response to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date().toISOString()
+      }]);
+    } catch (err) {
+      console.error('Error analyzing collection question:', err);
+      toast.error('Failed to analyze question. Please try again.');
+      
+      // Remove the user message if analysis failed
+      setConversationMessages(prev => prev.slice(0, -1));
+    } finally {
+      setWhatIfLoading(false);
+    }
+  };
+
+  const analyzeGeneralQuestion = async () => {
     if (!whatIfQuery.trim()) return;
     
     setWhatIfLoading(true);
@@ -548,78 +642,47 @@ async function undoOptimizationApply(batchId) {
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        focus: p.focus,
-        interchangeable_bowls: p.interchangeable_bowls || []
-      }));
-
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        manufacturer: b.manufacturer,
-        blend_type: b.blend_type,
-        strength: b.strength
-      }));
-
-      let profileContext = "";
-      if (userProfile) {
-        profileContext = `\n\nUser Smoking Preferences:
-      - Preferred Blend Types: ${userProfile.preferred_blend_types?.join(', ') || 'None'}
-      - Strength Preference: ${userProfile.strength_preference}`;
-      }
-
-      // Default to conversational advice mode
-      // General pipe smoking advice from expert tobacconist
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
-
-You are an expert tobacconist and pipe smoking advisor having a friendly conversation with the user. They can ask you anything about pipe smoking, pipe selection, tobacco, maintenance, techniques, or their collection.
+      // General hobby advice from expert tobacconist
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `SYSTEM: You are an expert tobacconist and pipe smoking advisor.
 
 User's Question: ${currentQuery}
 
-Provide clear, expert advice in a conversational tone. Be helpful, knowledgeable, and personable. If they're asking about collection changes or purchases, guide them through the decision-making process with questions and considerations - but let them know they can analyze the specific impact on their collection at any time.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              advice_response: { type: "string" },
-              key_points: {
-                type: "array",
-                items: { type: "string" }
-              },
-              common_mistakes: {
-                type: "array",
-                items: { type: "string" }
-              }
+Provide clear, expert advice about pipe smoking, tobacco, techniques, history, product information, maintenance, or general hobby topics. Be conversational, knowledgeable, and helpful.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            advice: { type: "string" },
+            key_points: {
+              type: "array",
+              items: { type: "string" }
+            },
+            tips: {
+              type: "array",
+              items: { type: "string" }
             }
           }
-        });
+        }
+      });
 
-        const aiResponse = {
-          is_advice_only: true,
-          advice_response: result.advice_response,
-          key_points: result.key_points,
-          common_mistakes: result.common_mistakes
-        };
-        
-        setWhatIfResult(aiResponse);
-        
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
+      const aiResponse = {
+        is_general_advice: true,
+        advice: result.advice,
+        key_points: result.key_points,
+        tips: result.tips
+      };
+      
+      setWhatIfResult(aiResponse);
+      
+      // Add AI response to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date().toISOString()
+      }]);
     } catch (err) {
-      console.error('Error analyzing what-if:', err);
-      toast.error('Failed to analyze scenario. Please try again.');
+      console.error('Error analyzing general question:', err);
+      toast.error('Failed to analyze question. Please try again.');
       
       // Remove the user message if analysis failed
       setConversationMessages(prev => prev.slice(0, -1));
