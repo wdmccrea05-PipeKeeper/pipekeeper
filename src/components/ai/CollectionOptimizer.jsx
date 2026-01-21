@@ -583,6 +583,8 @@ Provide specific, actionable advice about:
 - Redundancies and optimization opportunities
 - Size, shape, and material diversity
 
+IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
+
 Be conversational and specific to their actual pipes and blends. Reference their collection items by name when relevant.`,
         response_json_schema: {
           type: "object",
