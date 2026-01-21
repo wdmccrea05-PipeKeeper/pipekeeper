@@ -6,6 +6,7 @@ import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
+import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -27,7 +28,6 @@ import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import index from './pages/index';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +40,7 @@ export const PAGES = {
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
+    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
     "Invite": Invite,
@@ -61,7 +62,6 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "index": index,
-    "Home": Home,
 }
 
 export const pagesConfig = {

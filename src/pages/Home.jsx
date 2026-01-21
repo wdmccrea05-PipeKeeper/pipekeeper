@@ -135,7 +135,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 50);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err);
@@ -151,7 +151,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date');
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 50);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Blends load error:', err);
@@ -167,7 +167,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.CellarLog.filter({ created_by: user?.email });
+        const result = await base44.entities.CellarLog.filter({ created_by: user?.email }, '-created_date', 100);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Cellar logs load error:', err);
