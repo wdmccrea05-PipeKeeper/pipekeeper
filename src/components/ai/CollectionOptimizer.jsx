@@ -2256,7 +2256,7 @@ Provide concrete, actionable steps with specific field values.`,
             </div>
           )}
 
-          {/* Ask About Your Collection */}
+          {/* Ask About Your Collection & Analyze Impact */}
           {optimization && (
             <div className="space-y-6">
               {/* Collection Questions */}
