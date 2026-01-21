@@ -21,7 +21,7 @@ import { openManageSubscription, shouldShowManageSubscription, getManageSubscrip
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
-import { isTrialWindow, getTrialDaysRemaining } from "@/components/utils/access";
+import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import {
   AlertDialog,
@@ -91,8 +91,7 @@ export default function ProfilePage() {
   });
 
   // Check if user has paid access
-  const isWithinTrial = isTrialWindow(user);
-  const daysLeftInTrial = getTrialDaysRemaining(user);
+  const isWithinTrial = isTrialWindow(user?.created_date);
   const hasActiveSubscription = hasPremiumAccess(user);
 
   const { data: subscription } = useQuery({
@@ -325,7 +324,7 @@ export default function ProfilePage() {
                     ) : isWithinTrial ? (
                       <>
                         <h3 className="font-semibold text-amber-900">Free Trial Active</h3>
-                        <p className="text-sm text-amber-700">{daysLeftInTrial} days remaining</p>
+                        <p className="text-sm text-amber-700">7 days free access</p>
                       </>
                     ) : (
                       <>
