@@ -781,27 +781,37 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tins Open</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={formData.tin_tins_open || ''}
-                    onChange={(e) => handleChange('tin_tins_open', e.target.value)}
-                    placeholder="e.g., 1"
-                    className="border-stone-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tins Cellared</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={formData.tin_tins_cellared || ''}
-                    onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
-                    placeholder="e.g., 4"
-                    className="border-stone-200"
-                  />
-                </div>
+                   <Label>Tins Open</Label>
+                   <Input
+                     type="number"
+                     min="0"
+                     value={formData.tin_tins_open || ''}
+                     onChange={(e) => {
+                       handleChange('tin_tins_open', e.target.value);
+                       if (e.target.value && formData.tin_size_oz && formData.tin_tins_cellared) {
+                         handleChange('tin_total_quantity_oz', Number(e.target.value) * Number(formData.tin_size_oz) + Number(formData.tin_tins_cellared) * Number(formData.tin_size_oz));
+                       }
+                     }}
+                     placeholder="e.g., 1"
+                     className="border-stone-200"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Tins Cellared</Label>
+                   <Input
+                     type="number"
+                     min="0"
+                     value={formData.tin_tins_cellared || ''}
+                     onChange={(e) => {
+                       handleChange('tin_tins_cellared', e.target.value);
+                       if (e.target.value && formData.tin_size_oz && formData.tin_tins_open) {
+                         handleChange('tin_total_quantity_oz', Number(formData.tin_tins_open) * Number(formData.tin_size_oz) + Number(e.target.value) * Number(formData.tin_size_oz));
+                       }
+                     }}
+                     placeholder="e.g., 4"
+                     className="border-stone-200"
+                   />
+                 </div>
                 <div className="space-y-2">
                   <Label>Date Cellared</Label>
                   <Input
