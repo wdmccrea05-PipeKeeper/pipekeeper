@@ -197,7 +197,11 @@ export default function CellarAgingDashboard({ user }) {
             const progress = Math.min((aging.months / maxMonths) * 100, 100);
             
             return (
-              <Card key={blend.id} className="bg-[#5a6a7a]/70 border-[#A35C5C]/30 p-4">
+              <Card 
+                key={blend.id} 
+                className="bg-[#5a6a7a]/70 border-[#A35C5C]/30 p-4 cursor-pointer hover:bg-[#5a6a7a]/90 hover:border-[#A35C5C]/50 transition-all duration-200"
+                onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`))}
+              >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                   <div className="flex-1">
                     <h4 className="font-semibold text-white mb-1">{blend.name}</h4>
