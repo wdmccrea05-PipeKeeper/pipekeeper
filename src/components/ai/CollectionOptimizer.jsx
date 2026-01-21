@@ -1157,10 +1157,10 @@ Provide concrete, actionable steps with specific field values.`,
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
             <Lightbulb className="w-5 h-5" />
-            What If Scenario Analysis
+            Ask the Expert
           </CardTitle>
           <p className="text-sm text-stone-600">
-            Analyze potential changes to your collection before making them
+            Ask questions and discuss the hobby
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
