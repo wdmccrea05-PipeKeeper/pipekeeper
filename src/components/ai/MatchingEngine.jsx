@@ -205,23 +205,23 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
         <div className="p-4 space-y-4">
           <div>
-            <div className="text-xs font-semibold text-stone-700 mb-2">Top 3 matches (from Pairing Grid)</div>
+            <div className="text-xs font-semibold text-stone-900 mb-2">Top 3 matches (from Pairing Grid)</div>
             {top3.length ? (
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
                   <div key={`${variantKey}-top-${idx}`} className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-stone-800 truncate">{r.tobacco_name}</span>
-                    <Badge className="bg-stone-200 text-stone-800">{r.score ?? "—"}</Badge>
+                    <span className="text-sm text-stone-900 truncate font-medium">{r.tobacco_name}</span>
+                    <Badge className="bg-stone-200 text-stone-900 font-semibold">{r.score ?? "—"}</Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-stone-600">No pairing data yet. Regenerate Pairings.</div>
+              <div className="text-sm text-stone-700">No pairing data yet. Regenerate Pairings.</div>
             )}
           </div>
 
           <div className="pt-3 border-t">
-            <div className="text-xs font-semibold text-stone-700 mb-2">Check any blend</div>
+            <div className="text-xs font-semibold text-stone-900 mb-2">Check any blend</div>
             <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Select a blend..." />
@@ -237,8 +237,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
             {selectedBlend ? (
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-stone-800 truncate">{selectedBlend.name}</span>
-                <span className="text-sm text-stone-600">{selectedBlendScore ?? "No score"}</span>
+                <span className="text-sm text-stone-900 truncate font-medium">{selectedBlend.name}</span>
+                <span className="text-sm text-stone-800 font-semibold">{selectedBlendScore ?? "No score"}</span>
               </div>
             ) : null}
           </div>
