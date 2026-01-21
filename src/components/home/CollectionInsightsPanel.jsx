@@ -5,6 +5,8 @@ import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } fr
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
+import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
+import AgingReportExporter from "@/components/export/AgingReportExporter";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
