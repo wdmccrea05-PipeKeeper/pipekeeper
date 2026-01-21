@@ -82,26 +82,45 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     });
   };
 
-  const handleSave = () => {
-    const cleanedData = {
-      tin_size_oz: formData.tin_size_oz ? parseFloat(Number(formData.tin_size_oz).toFixed(2)) : null,
-      tin_total_tins: formData.tin_total_tins ? Number(formData.tin_total_tins) : null,
-      tin_total_quantity_oz: formData.tin_total_quantity_oz ? parseFloat(Number(formData.tin_total_quantity_oz).toFixed(2)) : null,
-      tin_tins_open: formData.tin_tins_open ? Number(formData.tin_tins_open) : null,
-      tin_tins_cellared: formData.tin_tins_cellared ? Number(formData.tin_tins_cellared) : null,
-      tin_cellared_date: formData.tin_cellared_date || null,
-      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? parseFloat(Number(formData.bulk_total_quantity_oz).toFixed(2)) : null,
-      bulk_open: formData.bulk_open ? parseFloat(Number(formData.bulk_open).toFixed(2)) : null,
-      bulk_cellared: formData.bulk_cellared ? parseFloat(Number(formData.bulk_cellared).toFixed(2)) : null,
-      bulk_cellared_date: formData.bulk_cellared_date || null,
-      pouch_size_oz: formData.pouch_size_oz ? parseFloat(Number(formData.pouch_size_oz).toFixed(2)) : null,
-      pouch_total_pouches: formData.pouch_total_pouches ? Number(formData.pouch_total_pouches) : null,
-      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? parseFloat(Number(formData.pouch_total_quantity_oz).toFixed(2)) : null,
-      pouch_pouches_open: formData.pouch_pouches_open ? Number(formData.pouch_pouches_open) : null,
-      pouch_pouches_cellared: formData.pouch_pouches_cellared ? Number(formData.pouch_pouches_cellared) : null,
-      pouch_cellared_date: formData.pouch_cellared_date || null,
-    };
-    onUpdate(cleanedData);
+  const addToCellarLog = async (type, amount, date) => {
+    if (!amount || !date || !blend?.id) return;
+
+    setAddingToCellar(type);
+    try {
+      const containerType = type === 'tin' ? 'tin' : type === 'bulk' ? 'bulk' : 'pouch';
+      
+      await base44.entities.CellarLog.create({
+        blend_id: blend.id,
+        blend_name: blend.name,
+        transaction_type: 'added',
+        date,
+        amount_oz: parseFloat(amount),
+        container_type: containerType,
+        notes: `Added to cellar from inventory`
+      });
+
+      // Clear the cellared field
+      const fieldMap = {
+        tin: 'tin_tins_cellared',
+        bulk: 'bulk_cellared',
+        pouch: 'pouch_pouches_cellared'
+      };
+      
+      const updatedFormData = {
+        ...formData,
+        [fieldMap[type]]: '',
+        [`${type === 'tin' ? 'tin' : type === 'bulk' ? 'bulk' : 'pouch'}_cellared_date`]: ''
+      };
+      
+      setFormData(updatedFormData);
+      queryClient.invalidateQueries({ queryKey: ['cellar-logs', blend.id] });
+      toast.success(`${amount} oz added to cellar log`);
+    } catch (err) {
+      console.error('Error adding to cellar log:', err);
+      toast.error('Failed to add to cellar log');
+    } finally {
+      setAddingToCellar(null);
+    }
   };
 
   return (
