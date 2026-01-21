@@ -96,11 +96,14 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
 
   // Show regen dialog when stale (only once until user interacts)
   const [staleDismissedId, setStaleDismissedId] = React.useState(null);
+  const [lastShownOptId, setLastShownOptId] = React.useState(null);
   useEffect(() => {
-    if (isStale && optimization && staleDismissedId !== optimization.id) {
+    // Only show dialog if data has actually become stale AND we haven't shown it for this optimization yet
+    if (isStale && optimization && lastShownOptId !== optimization.id) {
       setShowRegenDialog(true);
+      setLastShownOptId(optimization.id);
     }
-  }, [isStale, optimization, staleDismissedId]);
+  }, [isStale]);
 
   useEffect(() => {
     if (activeOpt?.id) setOptimization(activeOpt);
