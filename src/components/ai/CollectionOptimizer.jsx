@@ -2375,42 +2375,67 @@ Provide concrete, actionable steps with specific field values.`,
                     {conversationMessages.length > 0 && (
                       <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-white">
                         {conversationMessages.map((msg, idx) => (
-                          <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                            {msg.role === 'user' ? (
-                              <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
-                                <p className="text-sm">{msg.content}</p>
-                              </div>
-                            ) : msg.content.is_general_advice ? (
-                              <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
-                                <div className="text-sm text-stone-700 space-y-2">
-                                  <p>{msg.content.advice}</p>
-                                  {msg.content.key_points?.length > 0 && (
-                                    <div className="pt-2 border-t border-stone-300">
-                                      <p className="font-medium text-xs text-stone-600 mb-1">Key Points:</p>
-                                      <ul className="space-y-1">
-                                        {msg.content.key_points.map((pt, i) => (
-                                          <li key={i} className="text-xs text-stone-600">• {pt}</li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
+                          <div key={idx}>
+                            <div className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                              {msg.role === 'user' ? (
+                                <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
+                                  <p className="text-sm">{msg.content}</p>
                                 </div>
-                              </div>
-                            ) : (
-                              <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
-                                <div className="text-sm text-stone-700 space-y-2">
-                                  <p>{msg.content.response}</p>
-                                  {msg.content.specific_recommendations?.length > 0 && (
-                                    <div className="pt-2 border-t border-stone-300">
-                                      <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
-                                      <ul className="space-y-1">
-                                        {msg.content.specific_recommendations.map((rec, i) => (
-                                          <li key={i} className="text-xs text-stone-600">• {rec}</li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
+                              ) : msg.content.is_general_advice ? (
+                                <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
+                                  <div className="text-sm text-stone-700 space-y-2">
+                                    <p>{msg.content.advice}</p>
+                                    {msg.content.key_points?.length > 0 && (
+                                      <div className="pt-2 border-t border-stone-300">
+                                        <p className="font-medium text-xs text-stone-600 mb-1">Key Points:</p>
+                                        <ul className="space-y-1">
+                                          {msg.content.key_points.map((pt, i) => (
+                                            <li key={i} className="text-xs text-stone-600">• {pt}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
+                              ) : (
+                                <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
+                                  <div className="text-sm text-stone-700 space-y-2">
+                                    <p>{msg.content.response}</p>
+                                    {msg.content.specific_recommendations?.length > 0 && (
+                                      <div className="pt-2 border-t border-stone-300">
+                                        <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                        <ul className="space-y-1">
+                                          {msg.content.specific_recommendations.map((rec, i) => (
+                                            <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            {msg.role === 'assistant' && !msg.content.is_impact_analysis && (
+                              <div className="mt-2 text-left">
+                                <Button
+                                  size="sm"
+                                  onClick={analyzeCollectionImpact}
+                                  disabled={whatIfLoading}
+                                  variant="outline"
+                                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                >
+                                  {whatIfLoading ? (
+                                    <>
+                                      <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                      Analyzing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Target className="w-3 h-3 mr-2" />
+                                      Analyze Impact
+                                    </>
+                                  )}
+                                </Button>
                               </div>
                             )}
                           </div>
