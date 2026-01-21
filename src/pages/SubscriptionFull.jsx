@@ -87,31 +87,45 @@ export default function SubscriptionFull() {
   const hasActiveSubscription = subscription?.status === 'active';
   const subscriptionCanceled = subscription?.cancel_at_period_end;
 
-  // iOS compliance: Block entire subscription page
+  // iOS compliance: Use Apple IAP instead of Stripe
   if (isIOSCompanion()) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-6">
         <div className="max-w-2xl mx-auto mt-12">
           <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#e8d5b7]">Premium on Web</CardTitle>
+              <CardTitle className="text-2xl text-[#e8d5b7]">Manage Premium Subscription</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-[#e8d5b7]/80 leading-relaxed">
-                Premium subscriptions are available on the web. The iOS companion app does not sell or unlock paid digital features.
-              </p>
-              <p className="text-[#e8d5b7]/80 leading-relaxed">
-                Visit{" "}
-                <a 
-                  href="https://pipekeeper.app/Subscription" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="text-amber-400 underline hover:text-amber-300"
-                >
-                  pipekeeper.app
-                </a>{" "}
-                to subscribe or manage billing.
-              </p>
+              {userHasPaidAccess ? (
+                <>
+                  <p className="text-[#e8d5b7]/80 leading-relaxed">
+                    You have an active PipeKeeper Premium subscription. All premium features are unlocked.
+                  </p>
+                  <p className="text-[#e8d5b7]/80 leading-relaxed">
+                    To change or cancel your subscription, open the iOS Settings app and navigate to your Apple Account subscription settings.
+                  </p>
+                </>
+              ) : isInTrial ? (
+                <>
+                  <p className="text-[#e8d5b7]/80 leading-relaxed">
+                    You're in your 7-day free trial with {trialDaysRemaining} days remaining. All premium features are unlocked during this period.
+                  </p>
+                  <p className="text-[#e8d5b7]/80 leading-relaxed">
+                    When your trial ends, subscribe via your device's App Store to continue using premium features.
+                  </p>
+                </>
+              ) : (
+                <p className="text-[#e8d5b7]/80 leading-relaxed">
+                  PipeKeeper Premium is available through in-app purchase and automatically syncs across your Apple devices. Your subscription is managed through your Apple Account.
+                </p>
+              )}
+              <Button 
+                onClick={() => window.location.href = "https://apps.apple.com/account/subscriptions"}
+                className="w-full bg-[#A35C5C] hover:bg-[#8B4A4A] mt-4"
+              >
+                Manage Subscriptions in Settings
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -232,18 +246,18 @@ export default function SubscriptionFull() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <a href={createPageUrl('Profile')}>
-          <Button variant="ghost" className="mb-6 text-stone-600 hover:text-stone-800">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Profile
-          </Button>
-        </a>
+           <Button variant="ghost" className="mb-6 text-[#e8d5b7]/70 hover:text-[#e8d5b7]">
+             <ArrowLeft className="w-4 h-4 mr-2" />
+             Back to Profile
+           </Button>
+         </a>
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">
             <Crown className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Premium</h1>
-          <p className="text-stone-600">Unlock the full power of AI-driven pipe and tobacco management</p>
+          <p className="text-[#e8d5b7]/70">Unlock the full power of AI-driven pipe and tobacco management</p>
         </div>
 
         {/* Current Status */}
@@ -441,9 +455,9 @@ export default function SubscriptionFull() {
           </Card>
         </div>
 
-        {/* Payment Form */}
-        {!userHasPaidAccess && (
-          <Card>
+        {/* Payment Form - Web Only (Stripe) */}
+         {!userHasPaidAccess && (
+          <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
             <CardHeader>
               <CardTitle>Subscribe to Premium</CardTitle>
               <CardDescription>
