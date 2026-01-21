@@ -473,7 +473,7 @@ export default function PipeDetailPage() {
              <Card className="border-white/10">
                <CardContent className="p-6">
                  <div className="flex items-center justify-between mb-4">
-                   <h3 className="text-sm font-semibold text-[#E0D8C8]">Measurements</h3>
+                   <h3 className="text-sm font-semibold text-[#E0D8C8]">Details & Measurements</h3>
                    <Button
                      variant="ghost"
                      size="sm"
