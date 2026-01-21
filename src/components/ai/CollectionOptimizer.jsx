@@ -2408,33 +2408,78 @@ Provide concrete, actionable steps with specific field values.`,
                           onChange={(e) => setWhatIfFollowUp(e.target.value)}
                           className="min-h-[50px] text-sm"
                         />
-                        <Button
-                          onClick={handleCollectionFollowUp}
-                          disabled={!whatIfFollowUp.trim() || whatIfLoading}
-                          variant="outline"
-                          className="mt-2 w-full border-indigo-300 text-indigo-700 hover:bg-indigo-50"
-                        >
-                          {whatIfLoading ? (
-                            <>
-                              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                              Thinking...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-3 h-3 mr-2" />
-                              Continue Discussion
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            onClick={handleCollectionFollowUp}
+                            disabled={!whatIfFollowUp.trim() || whatIfLoading}
+                            variant="outline"
+                            className="flex-1 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                          >
+                            {whatIfLoading ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                Thinking...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 mr-2" />
+                                Continue Discussion
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={resetWhatIf}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            Reset
+                          </Button>
+                        </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </div>
+
+                    {/* Impact Analysis Results in Optimize */}
+                    {whatIfResult?.is_impact_analysis && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 space-y-3"
+                      >
+                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-lg border border-indigo-200">
+                          <div>
+                            <p className="text-xs font-medium text-indigo-700">Impact Score</p>
+                            <p className="text-2xl font-bold text-indigo-900">{whatIfResult.impact_score}/10</p>
+                          </div>
+                          <Badge className={
+                            whatIfResult.recommendation_category?.includes('ESSENTIAL') ? 'bg-emerald-600 text-white' :
+                            whatIfResult.recommendation_category?.includes('STRONG') ? 'bg-blue-600 text-white' :
+                            'bg-amber-500 text-white'
+                          }>
+                            {whatIfResult.recommendation_category}
+                          </Badge>
+                        </div>
+                        {whatIfResult.applyable_changes?.length > 0 && (
+                          <Button
+                            onClick={() => {
+                              applyOptimizationChangesWithUndo(whatIfResult.applyable_changes);
+                              toast.success('Changes applied to your collection');
+                              resetWhatIf();
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 w-full"
+                          >
+                            <CheckCheck className="w-4 h-4 mr-2" />
+                            Apply Changes
+                          </Button>
+                        )}
+                      </motion.div>
+                    )}
+                    </CardContent>
+                    </Card>
+                    </div>
 
 
-            </div>
-          )}
+                    </div>
+                    )}
 
           <div className="text-center pt-2 text-xs text-stone-500">
               {optimization?.generated_date && (
