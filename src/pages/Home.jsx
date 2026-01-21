@@ -678,16 +678,38 @@ const isPaidUser = isAdmin || hasPremiumAccess(user);
         )}
 
         {/* Collection Insights - Combined Panel */}
-        {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75 }}
-            className="mb-12"
-          >
-            <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
-          </motion.div>
-        ) : null}
+         {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.75 }}
+             className="mb-12"
+           >
+             <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
+           </motion.div>
+         ) : null}
+
+        {/* Reports Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          {user && (
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.78 }}
+              >
+                <SmokingLogReport user={user} />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <AgingReport user={user} />
+              </motion.div>
+            </>
+          )}
+        </div>
 
 
 
