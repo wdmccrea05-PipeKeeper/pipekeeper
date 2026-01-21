@@ -121,9 +121,18 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
 
       <Tabs defaultValue="tins" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
-          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Tins</TabsTrigger>
-          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Bulk</TabsTrigger>
-          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Pouches</TabsTrigger>
+          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+            <span className="hidden sm:inline">Tins</span>
+            <span className="sm:hidden">🥫 Tins</span>
+          </TabsTrigger>
+          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+            <span className="hidden sm:inline">Bulk</span>
+            <span className="sm:hidden">📦 Bulk</span>
+          </TabsTrigger>
+          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+            <span className="hidden sm:inline">Pouches</span>
+            <span className="sm:hidden">👝 Pouches</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Tins Tab */}
