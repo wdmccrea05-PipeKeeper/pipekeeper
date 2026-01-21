@@ -840,29 +840,39 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Bulk Open (oz)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.bulk_open || ''}
-                    onChange={(e) => handleChange('bulk_open', e.target.value)}
-                    placeholder="e.g., 2"
-                    className="border-stone-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bulk Cellared (oz)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.bulk_cellared || ''}
-                    onChange={(e) => handleChange('bulk_cellared', e.target.value)}
-                    placeholder="e.g., 14"
-                    className="border-stone-200"
-                  />
-                </div>
+                   <Label>Bulk Open (oz)</Label>
+                   <Input
+                     type="number"
+                     step="0.01"
+                     min="0"
+                     value={formData.bulk_open || ''}
+                     onChange={(e) => {
+                       handleChange('bulk_open', e.target.value);
+                       if (e.target.value && formData.bulk_cellared !== undefined && formData.bulk_cellared !== '') {
+                         handleChange('bulk_total_quantity_oz', Number(e.target.value) + Number(formData.bulk_cellared));
+                       }
+                     }}
+                     placeholder="e.g., 2"
+                     className="border-stone-200"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Bulk Cellared (oz)</Label>
+                   <Input
+                     type="number"
+                     step="0.01"
+                     min="0"
+                     value={formData.bulk_cellared || ''}
+                     onChange={(e) => {
+                       handleChange('bulk_cellared', e.target.value);
+                       if (e.target.value && formData.bulk_open !== undefined && formData.bulk_open !== '') {
+                         handleChange('bulk_total_quantity_oz', Number(formData.bulk_open) + Number(e.target.value));
+                       }
+                     }}
+                     placeholder="e.g., 14"
+                     className="border-stone-200"
+                   />
+                 </div>
                 <div className="space-y-2">
                   <Label>Date Cellared</Label>
                   <Input
