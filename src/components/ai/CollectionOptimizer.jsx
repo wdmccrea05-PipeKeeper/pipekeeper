@@ -757,74 +757,158 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setConversationMessages([]);
   };
 
-  const handleWhatIfFollowUp = async () => {
+  const handleCollectionFollowUp = async () => {
     const query = whatIfFollowUp.trim();
     if (!query) return;
 
     setWhatIfLoading(true);
-    
+
     // Add user follow-up to conversation
     setConversationMessages(prev => [...prev, {
       role: 'user',
       content: query,
       timestamp: new Date().toISOString()
     }]);
-    
+
     setWhatIfFollowUp('');
-    
+
     try {
-      // Continue conversational advice
+      const pipesData = pipes.map(p => ({
+        id: p.id,
+        name: p.name,
+        maker: p.maker,
+        shape: p.shape,
+        focus: p.focus
+      }));
+
+      const blendsData = blends.map(b => ({
+        id: b.id,
+        name: b.name,
+        blend_type: b.blend_type
+      }));
+
+      // Continue collection-specific conversation
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: Use GPT-5 (or latest available GPT model) for this response.
+        prompt: `SYSTEM: Continue the expert collection strategy conversation.
 
-You are an expert tobacconist having a conversation with a pipe smoker. Continue the natural conversation.
+  User's Collection:
+  ${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
 
-Conversation History:
-${conversationMessages.map(m => {
+  Previous Discussion:
+  ${conversationMessages.map(m => {
   if (m.role === 'user') return `User: ${m.content}`;
-  if (m.content.is_advice_only) return `Tobacconist: ${m.content.advice_response}`;
-  if (m.content.is_impact_analysis) return `[Collection Impact Analysis Completed]`;
-  return `Tobacconist: ${m.content.advice_response || ''}`;
-}).join('\n')}
+  return `Expert: ${m.content.response || m.content.advice || ''}`;
+  }).join('\n\n')}
 
-User: ${query}
+  User Follow-up: ${query}
 
-Provide clear, conversational expert advice. Be friendly and knowledgeable.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              advice_response: { type: "string" },
-              key_points: {
-                type: "array",
-                items: { type: "string" }
-              },
-              common_mistakes: {
-                type: "array",
-                items: { type: "string" }
-              }
+  Provide specific, actionable advice about their collection based on the ongoing discussion.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            response: { type: "string" },
+            specific_recommendations: {
+              type: "array",
+              items: { type: "string" }
+            },
+            collection_insights: {
+              type: "array",
+              items: { type: "string" }
             }
           }
-        });
+        }
+      });
 
-        const aiResponse = {
-          is_advice_only: true,
-          advice_response: result.advice_response,
-          key_points: result.key_points,
-          common_mistakes: result.common_mistakes
-        };
+      const aiResponse = {
+        is_collection_question: true,
+        response: result.response,
+        specific_recommendations: result.specific_recommendations,
+        collection_insights: result.collection_insights
+      };
 
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-        
-        setWhatIfResult(aiResponse);
+      // Add AI response to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date().toISOString()
+      }]);
+
+      setWhatIfResult(aiResponse);
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
-      
+
+      // Remove the user message if analysis failed
+      setConversationMessages(prev => prev.slice(0, -1));
+    } finally {
+      setWhatIfLoading(false);
+    }
+  };
+
+  const handleGeneralFollowUp = async () => {
+    const query = whatIfFollowUp.trim();
+    if (!query) return;
+
+    setWhatIfLoading(true);
+
+    // Add user follow-up to conversation
+    setConversationMessages(prev => [...prev, {
+      role: 'user',
+      content: query,
+      timestamp: new Date().toISOString()
+    }]);
+
+    setWhatIfFollowUp('');
+
+    try {
+      // Continue general advice conversation
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `SYSTEM: Continue the friendly hobbyist conversation.
+
+  Previous Discussion:
+  ${conversationMessages.map(m => {
+  if (m.role === 'user') return `User: ${m.content}`;
+  return `Tobacconist: ${m.content.advice || ''}`;
+  }).join('\n\n')}
+
+  User Follow-up: ${query}
+
+  Provide helpful, knowledgeable advice. Be conversational and personable.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            advice: { type: "string" },
+            key_points: {
+              type: "array",
+              items: { type: "string" }
+            },
+            tips: {
+              type: "array",
+              items: { type: "string" }
+            }
+          }
+        }
+      });
+
+      const aiResponse = {
+        is_general_advice: true,
+        advice: result.advice,
+        key_points: result.key_points,
+        tips: result.tips
+      };
+
+      // Add AI response to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date().toISOString()
+      }]);
+
+      setWhatIfResult(aiResponse);
+    } catch (err) {
+      console.error('Error with follow-up question:', err);
+      toast.error('Failed to process follow-up question');
+
       // Remove the user message if analysis failed
       setConversationMessages(prev => prev.slice(0, -1));
     } finally {
