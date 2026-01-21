@@ -2067,6 +2067,89 @@ Provide concrete, actionable steps with specific field values.`,
             </div>
           )}
 
+          {/* Ask Follow-Up Questions */}
+          {optimization && (
+            <div>
+              <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-indigo-600" />
+                Ask Questions About Your Collection
+              </h3>
+              <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white mb-6">
+                <CardContent className="p-4 space-y-3">
+                  <p className="text-sm text-stone-600">Get personalized advice on your collection gaps, individual pipe specializations, and strategic recommendations.</p>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-stone-700 mb-3">Common Questions:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                        onClick={() => {
+                          setWhatIfQuery("Based on my collection analysis, which gaps are most critical to fill first? What should I prioritize buying?");
+                          setShowWhatIf(true);
+                        }}
+                      >
+                        <span className="text-xs leading-snug">Which gaps are most critical to fill first?</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                        onClick={() => {
+                          setWhatIfQuery("Which of my pipes are the most versatile and could handle multiple blend types? Which ones are too specialized?");
+                          setShowWhatIf(true);
+                        }}
+                      >
+                        <span className="text-xs leading-snug">Which pipes are most/least versatile?</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                        onClick={() => {
+                          setWhatIfQuery("What specific blend types should I look for to maximize my collection's potential? Any specific recommendations?");
+                          setShowWhatIf(true);
+                        }}
+                      >
+                        <span className="text-xs leading-snug">What blend types should I prioritize?</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                        onClick={() => {
+                          setWhatIfQuery("Do I have any pipes with redundant focuses? Which pipes could be safely reassigned to different blend types?");
+                          setShowWhatIf(true);
+                        }}
+                      >
+                        <span className="text-xs leading-snug">Which pipes have redundant focuses?</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-indigo-100">
+                    <label className="text-xs font-medium text-stone-700 mb-2 block">Or ask your own question:</label>
+                    <Textarea
+                      placeholder="e.g., 'Should I buy a churchwarden for English blends?' or 'How can I better specialize my collection?'"
+                      value={whatIfQuery}
+                      onChange={(e) => setWhatIfQuery(e.target.value)}
+                      className="min-h-[60px] text-sm"
+                    />
+                    <Button
+                      onClick={() => setShowWhatIf(true)}
+                      disabled={!whatIfQuery.trim()}
+                      className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Get Advice
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* What If Analysis */}
           <div>
             <Button
