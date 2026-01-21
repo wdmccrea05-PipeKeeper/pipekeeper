@@ -1850,31 +1850,32 @@ Provide concrete, actionable steps with specific field values.`,
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
                               {pipe?.id ? (
                                    <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pv.pipe_id)}&bowl=${encodeURIComponent(pv.bowl_variant_id || "")}`)}>
-                                     <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors">
+                                     <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors text-sm sm:text-base">
                                        {pv.name || displaySpec.pipe_name}
                                      </h4>
                                    </a>
                                  ) : (
-                                   <h4 className="font-semibold text-stone-500" title="Pipe not found in collection.">
+                                   <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title="Pipe not found in collection.">
                                      {displaySpec.pipe_name}
                                    </h4>
                                  )}
                               {(pv?.focus?.length > 0 || pipe?.focus?.length > 0) ? (
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Specialized
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-xs gap-1 flex-shrink-0">
+                                  <Star className="w-3 h-3" />
+                                  <span className="hidden sm:inline">Specialized</span>
                                 </Badge>
                               ) : displaySpec.recommended_blend_types?.length > 0 ? (
-                                <Badge className="bg-blue-100 text-blue-900 border-blue-300">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Recommended
+                                <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-xs gap-1 flex-shrink-0">
+                                  <Star className="w-3 h-3" />
+                                  <span className="hidden sm:inline">Recommended</span>
                                 </Badge>
                               ) : (
-                                <Badge className={getVersatilityColor(displaySpec.versatility_score)}>
-                                  Versatility {displaySpec.versatility_score}/10
+                                <Badge className={`${getVersatilityColor(displaySpec.versatility_score)} text-xs flex-shrink-0`}>
+                                  <span className="hidden sm:inline">Ver. {displaySpec.versatility_score}/10</span>
+                                  <span className="sm:hidden">{displaySpec.versatility_score}/10</span>
                                 </Badge>
                               )}
                             </div>
