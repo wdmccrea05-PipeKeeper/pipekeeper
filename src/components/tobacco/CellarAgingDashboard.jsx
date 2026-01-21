@@ -10,6 +10,8 @@ import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function CellarAgingDashboard({ user }) {
+  const navigate = useNavigate();
+  
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ["tobacco-blends", user?.email],
     queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
