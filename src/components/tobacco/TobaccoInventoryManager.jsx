@@ -273,16 +273,26 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Bulk Cellared (oz)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
-                onChange={(e) => handleChange('bulk_cellared', e.target.value)}
-                placeholder="e.g., 14"
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
-              />
+              <Label className="text-[#E0D8C8] font-semibold">Bulk to Cellar (oz)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
+                  onChange={(e) => handleChange('bulk_cellared', e.target.value)}
+                  placeholder="e.g., 14"
+                  className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => addToCellarLog('bulk', formData.bulk_cellared, formData.bulk_cellared_date)}
+                  disabled={!formData.bulk_cellared || !formData.bulk_cellared_date || addingToCellar === 'bulk'}
+                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
+                >
+                  {addingToCellar === 'bulk' ? '...' : <Plus className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
