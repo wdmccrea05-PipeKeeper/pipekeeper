@@ -99,38 +99,38 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   };
 
   return (
-    <div className="space-y-4 bg-white rounded-lg p-4">
+    <div className="space-y-4 bg-[#223447] rounded-lg p-4 border border-white/10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Package className="w-5 h-5 text-[#1a2c42]" />
-          <h3 className="font-semibold text-[#1a2c42]">Inventory & Status</h3>
+          <Package className="w-5 h-5 text-[#E0D8C8]" />
+          <h3 className="font-semibold text-[#E0D8C8]">Inventory & Status</h3>
         </div>
         <Button 
           size="sm" 
           onClick={handleSave}
           disabled={isUpdating}
-          className="bg-[#D1A75D] hover:bg-[#D1A75D]/90 text-[#1a2c42] font-semibold"
+          className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold"
         >
           {isUpdating ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
 
-      <p className="text-sm text-[#1a2c42]/70">
+      <p className="text-sm text-[#E0D8C8]/70">
         Track your tobacco across tins, bulk, and pouches. Automatic reductions (e.g., smoking logs) deduct from Open quantities first.
       </p>
 
       <Tabs defaultValue="tins" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white border-b border-[#1a2c42]/20">
-          <TabsTrigger value="tins" className="text-[#1a2c42] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Tins</TabsTrigger>
-          <TabsTrigger value="bulk" className="text-[#1a2c42] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Bulk</TabsTrigger>
-          <TabsTrigger value="pouches" className="text-[#1a2c42] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Pouches</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
+          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Tins</TabsTrigger>
+          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Bulk</TabsTrigger>
+          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">Pouches</TabsTrigger>
         </TabsList>
 
         {/* Tins Tab */}
         <TabsContent value="tins" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Tin Size (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Tin Size (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -138,61 +138,61 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
                 placeholder="e.g., 1.75"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Total Tins</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Total Tins</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.tin_total_tins}
                 onChange={(e) => handleChange('tin_total_tins', e.target.value)}
                 placeholder="e.g., 5"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Total Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Total Quantity (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
                 placeholder="Auto-calculated"
-                className="border-[#1a2c42]/20 bg-gray-50 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
                 readOnly
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Tins Open</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Tins Open</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.tin_tins_open}
                 onChange={(e) => handleChange('tin_tins_open', e.target.value)}
                 placeholder="e.g., 1"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Tins Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Tins Cellared</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.tin_tins_cellared}
                 onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
                 placeholder="e.g., 4"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label>Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
               <Input
                 type="date"
                 value={formData.tin_cellared_date}
                 onChange={(e) => handleChange('tin_cellared_date', e.target.value)}
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsContent value="bulk" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Total Bulk Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Total Bulk Quantity (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -210,11 +210,11 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
                 placeholder="e.g., 16"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Bulk Open (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Bulk Open (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -222,11 +222,11 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
                 placeholder="e.g., 2"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Bulk Cellared (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Bulk Cellared (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -234,16 +234,16 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_cellared', e.target.value)}
                 placeholder="e.g., 14"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
               <Input
                 type="date"
                 value={formData.bulk_cellared_date}
                 onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             </div>
@@ -253,7 +253,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsContent value="pouches" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Pouch Size (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Pouch Size (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -261,61 +261,61 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                 value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
                 placeholder="e.g., 1.5"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Total Pouches</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Total Pouches</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.pouch_total_pouches}
                 onChange={(e) => handleChange('pouch_total_pouches', e.target.value)}
                 placeholder="e.g., 3"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Total Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Total Quantity (oz)</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
                 placeholder="Auto-calculated"
-                className="border-[#1a2c42]/20 bg-gray-50 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
                 readOnly
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Pouches Open</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Pouches Open</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.pouch_pouches_open}
                 onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
                 placeholder="e.g., 1"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Pouches Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Pouches Cellared</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.pouch_pouches_cellared}
                 onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
                 placeholder="e.g., 2"
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#1a2c42] font-semibold">Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
               <Input
                 type="date"
                 value={formData.pouch_cellared_date}
                 onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
-                className="border-[#1a2c42]/20 text-[#1a2c42]"
+                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             </div>
