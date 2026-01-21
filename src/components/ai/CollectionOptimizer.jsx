@@ -1624,34 +1624,42 @@ Provide concrete, actionable steps with specific field values.`,
       </CardHeader>
 
       {!isCollapsed && optimization && (
-        <CardContent className="space-y-6">
-          {/* Pipe Specializations */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-stone-800 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                Recommended Pipe Specializations
-              </h3>
-              {showAcceptAll && (
-                <Button
-                  onClick={handleAcceptAll}
-                  disabled={acceptingAll}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {acceptingAll ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Applying...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCheck className="w-4 h-4 mr-2" />
-                      Accept All Recommendations
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+         <CardContent className="space-y-6">
+           {/* Pipe Specializations - Collapsible */}
+           <div>
+             <div className="flex items-center justify-between mb-4">
+               <button
+                 onClick={() => setShowPipesList(!showPipesList)}
+                 className="flex-1 flex items-center justify-between hover:bg-stone-100 rounded-lg px-2 py-1 transition-colors"
+               >
+                 <h3 className="font-semibold text-stone-800 flex items-center gap-2">
+                   <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                   Recommended Pipe Specializations
+                 </h3>
+                 <div className="text-blue-600">
+                   {showPipesList ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                 </div>
+               </button>
+               {showAcceptAll && showPipesList && (
+                 <Button
+                   onClick={handleAcceptAll}
+                   disabled={acceptingAll}
+                   className="bg-emerald-600 hover:bg-emerald-700 ml-2 flex-shrink-0"
+                 >
+                   {acceptingAll ? (
+                     <>
+                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                       Applying...
+                     </>
+                   ) : (
+                     <>
+                       <CheckCheck className="w-4 h-4 mr-2" />
+                       Accept All Recommendations
+                     </>
+                   )}
+                 </Button>
+               )}
+             </div>
             <div className="space-y-3">
                {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
                  const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
