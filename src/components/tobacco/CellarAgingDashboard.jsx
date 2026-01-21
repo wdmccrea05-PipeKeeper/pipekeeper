@@ -53,10 +53,12 @@ export default function CellarAgingDashboard({ user }) {
   });
 
   const getAgingInfo = (blend) => {
+    const logData = getCellarDataFromLogs(blend.id);
     const dates = [
       blend.tin_cellared_date,
       blend.bulk_cellared_date,
-      blend.pouch_cellared_date
+      blend.pouch_cellared_date,
+      logData.oldestDate
     ].filter(Boolean);
     
     const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
