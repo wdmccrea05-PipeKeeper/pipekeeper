@@ -9,6 +9,13 @@ function json(status, body) {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "GET" || req.method === "OPTIONS") {
+    return new Response("ok", { status: 200 });
+  }
+  if (req.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+
   try {
     const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
