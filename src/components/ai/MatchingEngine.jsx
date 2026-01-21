@@ -210,7 +210,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
                   <div key={`${variantKey}-top-${idx}`} className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-stone-900 truncate font-medium">{r.tobacco_name}</span>
+                    <span className="text-sm text-stone-400 truncate font-medium">{r.tobacco_name}</span>
                     <Badge className="bg-stone-200 text-stone-900 font-semibold">{r.score ?? "—"}</Badge>
                   </div>
                 ))}
@@ -237,7 +237,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
             {selectedBlend ? (
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-stone-900 truncate font-medium">{selectedBlend.name}</span>
+                <span className="text-sm text-stone-400 truncate font-medium">{selectedBlend.name}</span>
                 <span className="text-sm text-stone-800 font-semibold">{selectedBlendScore ?? "No score"}</span>
               </div>
             ) : null}
