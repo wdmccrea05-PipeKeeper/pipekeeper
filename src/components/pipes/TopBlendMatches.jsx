@@ -6,6 +6,26 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
+// Simple string similarity function (Levenshtein-based)
+const stringSimilarity = (str1, str2) => {
+  const s1 = str1.toLowerCase().trim();
+  const s2 = str2.toLowerCase().trim();
+  
+  if (s1 === s2) return 1;
+  if (s1.length === 0 || s2.length === 0) return 0;
+  
+  const longer = s1.length > s2.length ? s1 : s2;
+  const shorter = s1.length > s2.length ? s2 : s1;
+  
+  if (longer.includes(shorter)) return 0.9;
+  
+  let matches = 0;
+  for (let i = 0; i < shorter.length; i++) {
+    if (longer.includes(shorter[i])) matches++;
+  }
+  return matches / longer.length;
+};
+
 export default function TopBlendMatches({ pipe, blends, userProfile }) {
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState(null);
