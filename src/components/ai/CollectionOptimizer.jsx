@@ -2387,7 +2387,83 @@ Provide concrete, actionable steps with specific field values.`,
                             Confirm & Apply Changes
                           </Button>
                         </div>
-                        )}
+                      )}
+
+                      {/* Product Suggestions */}
+                      <div className="mt-4">
+                        <Button
+                          onClick={suggestProducts}
+                          disabled={loadingProducts}
+                          variant="outline"
+                          className="w-full border-violet-300 text-violet-700 hover:bg-violet-50"
+                        >
+                          {loadingProducts ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Finding Products...
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              Suggest Specific Products
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
+                      {suggestedProducts?.suggestions && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-4 space-y-3"
+                        >
+                          <h4 className="font-semibold text-stone-800 flex items-center gap-2">
+                            <ShoppingCart className="w-4 h-4" />
+                            Recommended Products
+                          </h4>
+                          {suggestedProducts.suggestions.map((product, idx) => (
+                            <Card key={idx} className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h5 className="font-semibold text-stone-800">{product.name}</h5>
+                                    <p className="text-sm text-stone-600">{product.brand}</p>
+                                    <Badge className="mt-1 bg-violet-100 text-violet-800 border-violet-200">
+                                      {product.type}
+                                    </Badge>
+                                  </div>
+                                  <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                                    {product.price_range}
+                                  </Badge>
+                                </div>
+
+                                <div className="space-y-2 text-sm">
+                                  {product.type === 'Pipe' ? (
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      {product.shape && <div><span className="text-stone-500">Shape:</span> {product.shape}</div>}
+                                      {product.material && <div><span className="text-stone-500">Material:</span> {product.material}</div>}
+                                      {product.chamber_size && <div><span className="text-stone-500">Chamber:</span> {product.chamber_size}</div>}
+                                      {product.stem_material && <div><span className="text-stone-500">Stem:</span> {product.stem_material}</div>}
+                                      {product.finish && <div><span className="text-stone-500">Finish:</span> {product.finish}</div>}
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      {product.blend_type && <div><span className="text-stone-500">Type:</span> {product.blend_type}</div>}
+                                      {product.strength && <div><span className="text-stone-500">Strength:</span> {product.strength}</div>}
+                                      {product.cut && <div><span className="text-stone-500">Cut:</span> {product.cut}</div>}
+                                      {product.flavor_profile && <div className="col-span-2"><span className="text-stone-500">Flavors:</span> {product.flavor_profile}</div>}
+                                    </div>
+                                  )}
+
+                                  <div className="bg-indigo-50 rounded p-2 mt-2">
+                                    <p className="text-xs text-indigo-800"><span className="font-medium">Why:</span> {product.why_it_fits}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </motion.div>
+                      )}
                       </motion.div>
                       )}
                       </CardContent>
