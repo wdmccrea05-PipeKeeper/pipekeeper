@@ -356,15 +356,25 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Pouches Cellared</Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.pouch_pouches_cellared}
-                onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
-                placeholder="e.g., 2"
-                className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
-              />
+              <Label className="text-[#E0D8C8] font-semibold">Pouches to Cellar</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  value={formData.pouch_pouches_cellared}
+                  onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
+                  placeholder="e.g., 2"
+                  className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => addToCellarLog('pouch', formData.pouch_pouches_cellared, formData.pouch_cellared_date)}
+                  disabled={!formData.pouch_pouches_cellared || !formData.pouch_cellared_date || addingToCellar === 'pouch'}
+                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
+                >
+                  {addingToCellar === 'pouch' ? '...' : <Plus className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
