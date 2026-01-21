@@ -14,12 +14,16 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
 
   const [formData, setFormData] = useState({
     pipe_id: log.pipe_id || '',
+    bowl_variant_id: log.bowl_variant_id || '',
     blend_id: log.blend_id || '',
     bowls_smoked: log.bowls_smoked || 1,
     is_break_in: log.is_break_in || false,
     date: log.date ? new Date(log.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     notes: log.notes || ''
   });
+
+  const selectedPipe = pipes.find(p => p.id === formData.pipe_id);
+  const hasMultipleBowls = selectedPipe?.interchangeable_bowls?.length > 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -28,10 +32,19 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
     
     if (!pipe || !blend) return;
 
+    let bowl_name = null;
+    if (formData.bowl_variant_id && hasMultipleBowls) {
+      const bowl = selectedPipe.interchangeable_bowls.find(
+        b => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
+      );
+      bowl_name = bowl?.name || null;
+    }
+
     onSave({
       ...formData,
       pipe_name: pipe.name,
       blend_name: blend.name,
+      bowl_name: bowl_name,
       date: new Date(formData.date).toISOString(),
       bowls_smoked: parseInt(formData.bowls_smoked) || 1
     });
@@ -55,21 +68,43 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
         </Select>
       </div>
 
+      {hasMultipleBowls && (
+        <div className="space-y-2">
+          <Label>Bowl Used (Optional)</Label>
+          <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select bowl variant" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={null}>No specific bowl selected</SelectItem>
+              {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
+                const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
+                return (
+                  <SelectItem key={bowlId} value={bowlId}>
+                    {bowl.name || `Bowl ${idx + 1}`}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="space-y-2">
-        <Label>Tobacco Blend</Label>
-        <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select blend" />
-          </SelectTrigger>
-          <SelectContent>
-            {blends.map(b => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+         <Label>Tobacco Blend</Label>
+         <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v })}>
+           <SelectTrigger>
+             <SelectValue placeholder="Select blend" />
+           </SelectTrigger>
+           <SelectContent>
+             {blends.map(b => (
+               <SelectItem key={b.id} value={b.id}>
+                 {b.name}
+               </SelectItem>
+             ))}
+           </SelectContent>
+         </Select>
+       </div>
 
       <div className="space-y-2">
         <Label>Number of Bowls</Label>
