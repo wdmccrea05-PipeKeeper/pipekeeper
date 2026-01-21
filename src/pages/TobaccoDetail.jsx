@@ -236,9 +236,9 @@ export default function TobaccoDetailPage() {
 
 
         {/* Desktop layout: logo + cellaring side-by-side, details below */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Left column: Photo + Cellaring */}
-          <div className="space-y-6">
+          <div className="space-y-6 flex flex-col">
             {/* Photo */}
             <motion.div 
               className="aspect-square rounded-2xl overflow-hidden bg-white shadow-xl cursor-pointer"
@@ -272,8 +272,8 @@ export default function TobaccoDetailPage() {
             </motion.div>
 
             {/* Inventory & Cellaring Management */}
-            <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
-              <Tabs defaultValue="containers" className="w-full">
+            <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden flex-1 flex flex-col">
+              <Tabs defaultValue="containers" className="w-full h-full flex flex-col">
                 <div className="border-b border-[#A35C5C]/30 overflow-x-auto">
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
                     <TabsTrigger 
@@ -325,7 +325,7 @@ export default function TobaccoDetailPage() {
           </div>
 
           {/* Right column: Blend Details */}
-          <div className="space-y-6">
+          <div className="space-y-6 flex flex-col">
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-[#e8d5b7]">{blend.name}</h1>
@@ -368,7 +368,9 @@ export default function TobaccoDetailPage() {
 
             {/* Top Pipe Matches */}
             {pipes.length > 0 && (
-              <TopPipeMatches blend={blend} pipes={pipes} />
+              <div className="flex-1 flex flex-col min-h-0">
+                <TopPipeMatches blend={blend} pipes={pipes} />
+              </div>
             )}
 
             {/* Badges */}
