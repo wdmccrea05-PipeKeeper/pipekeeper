@@ -1660,8 +1660,9 @@ Provide concrete, actionable steps with specific field values.`,
                  </Button>
                )}
              </div>
-            <div className="space-y-3">
-               {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
+             {showPipesList && (
+             <div className="space-y-3">
+                {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
                  const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
                  const spec = optimization.pipe_specializations?.find(s => {
                    const k = getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null);
