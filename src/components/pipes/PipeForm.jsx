@@ -785,7 +785,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* Actions */}
       <div className="flex gap-3 justify-end">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} className="text-stone-800">
           Cancel
         </Button>
         <Button 
