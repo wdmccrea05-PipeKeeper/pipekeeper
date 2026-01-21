@@ -12,7 +12,8 @@ import {
   ArrowRight, Heart, DollarSign, 
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
 } from "lucide-react";
-import { isTrialWindowNow, hasPremiumAccess } from "@/components/utils/access";
+import { isTrialWindowNow } from "@/components/utils/access";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
@@ -180,7 +181,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
 
   // Check if user has paid access
 const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-const isPaidUser = isAdmin || hasPremiumAccess(user);
+const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
