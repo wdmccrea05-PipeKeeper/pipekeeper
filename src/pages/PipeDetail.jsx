@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   ArrowLeft, Edit, Trash2, Heart, DollarSign, 
-  Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight, CheckCircle2 
+  Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight, CheckCircle2,
+  Target, Activity, Wrench, Flame
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
@@ -283,21 +284,25 @@ export default function PipeDetailPage() {
             <CardContent className="p-6">
               <Tabs defaultValue="specialization">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
-                  <TabsTrigger value="specialization">
+                  <TabsTrigger value="specialization" className="flex items-center gap-1.5">
+                    <Target className="w-4 h-4" />
                     <span className="hidden sm:inline">Specialization</span>
-                    <span className="sm:hidden">🎯 Focus</span>
+                    <span className="sm:hidden">Focus</span>
                   </TabsTrigger>
-                  <TabsTrigger value="condition">
+                  <TabsTrigger value="condition" className="flex items-center gap-1.5">
+                    <Activity className="w-4 h-4" />
                     <span className="hidden sm:inline">Condition</span>
-                    <span className="sm:hidden">⚙️ Status</span>
+                    <span className="sm:hidden">Status</span>
                   </TabsTrigger>
-                  <TabsTrigger value="maintenance">
+                  <TabsTrigger value="maintenance" className="flex items-center gap-1.5">
+                    <Wrench className="w-4 h-4" />
                     <span className="hidden sm:inline">Maintenance</span>
-                    <span className="sm:hidden">🔧 Care</span>
+                    <span className="sm:hidden">Care</span>
                   </TabsTrigger>
-                  <TabsTrigger value="breakin">
+                  <TabsTrigger value="breakin" className="flex items-center gap-1.5">
+                    <Flame className="w-4 h-4" />
                     <span className="hidden sm:inline">Break-In</span>
-                    <span className="sm:hidden">🔥 Break</span>
+                    <span className="sm:hidden">Break</span>
                   </TabsTrigger>
                 </TabsList>
 

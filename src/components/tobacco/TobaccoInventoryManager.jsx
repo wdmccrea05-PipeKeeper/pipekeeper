@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package } from "lucide-react";
+import { Package, Box, Briefcase } from "lucide-react";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
   // Initialize form data from existing blend data, preserving all values
@@ -121,17 +121,20 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
 
       <Tabs defaultValue="tins" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
-          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+          <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
+            <Package className="w-4 h-4" />
             <span className="hidden sm:inline">Tins</span>
-            <span className="sm:hidden">🥫 Tins</span>
+            <span className="sm:hidden">Tins</span>
           </TabsTrigger>
-          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+          <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
+            <Box className="w-4 h-4" />
             <span className="hidden sm:inline">Bulk</span>
-            <span className="sm:hidden">📦 Bulk</span>
+            <span className="sm:hidden">Bulk</span>
           </TabsTrigger>
-          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D]">
+          <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
+            <Briefcase className="w-4 h-4" />
             <span className="hidden sm:inline">Pouches</span>
-            <span className="sm:hidden">👝 Pouches</span>
+            <span className="sm:hidden">Pouches</span>
           </TabsTrigger>
         </TabsList>
 
