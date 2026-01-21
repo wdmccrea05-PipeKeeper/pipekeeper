@@ -596,7 +596,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 onChange={(e) => setFormData({ ...formData, bowls_smoked: e.target.value })}
               />
               {formData.pipe_id && formData.bowls_smoked && (
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#E0D8C8]/60">
                   Est. tobacco usage: ~{estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1).toFixed(2)} oz
                 </p>
               )}
@@ -627,7 +627,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 />
                 <Label className="flex items-center gap-2">
                   Automatically reduce tobacco inventory
-                  <Badge className="bg-amber-600 text-white text-xs">
+                  <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     Premium
                   </Badge>
