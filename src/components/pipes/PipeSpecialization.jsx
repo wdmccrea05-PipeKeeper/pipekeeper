@@ -133,7 +133,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               size="sm"
               variant="ghost"
               onClick={() => setEditing(!editing)}
-              className="shrink-0"
+              className="shrink-0 text-blue-900 hover:text-blue-950"
             >
               {editing ? 'Done' : 'Edit'}
             </Button>
