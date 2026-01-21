@@ -1182,13 +1182,9 @@ Provide concrete, actionable steps with specific field values.`,
                     </div>
                   ) : (
                     <div className="inline-block bg-white border rounded-lg px-4 py-3 max-w-[80%] text-left">
-                      {msg.content.is_advice_only ? (
+                      {msg.content.is_general_advice ? (
                         <div className="text-sm text-stone-700 space-y-3">
-                          <div className="space-y-3">
-                            {msg.content.advice_response?.split(/\n\n+/).map((paragraph, i) => (
-                              <p key={i} className="leading-relaxed">{paragraph.trim()}</p>
-                            ))}
-                          </div>
+                          <p>{msg.content.advice}</p>
                           {msg.content.key_points?.length > 0 && (
                             <div className="pt-3 border-t">
                               <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
