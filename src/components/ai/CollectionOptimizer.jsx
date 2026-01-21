@@ -1728,45 +1728,48 @@ Provide concrete, actionable steps with specific field values.`,
 
     <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <CardTitle className="flex items-center gap-2 text-blue-800">
-                <Target className="w-5 h-5" />
-                Collection Optimization
+              <CardTitle className="flex items-center gap-2 text-blue-800 text-lg sm:text-base">
+                <Target className="w-5 h-5 flex-shrink-0" />
+                <span className="truncate">Collection Optimization</span>
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleCollapse}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-blue-600 hover:text-blue-800 flex-shrink-0"
               >
                 {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </Button>
             </div>
-            <CardDescription className="mt-2 text-stone-700">
+            <CardDescription className="mt-2 text-stone-700 text-xs sm:text-sm">
               Maximize your collection's potential with strategic pipe specializations
             </CardDescription>
           </div>
           {!isCollapsed && <Button
             onClick={analyzeCollection}
             disabled={loading}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 w-full sm:w-auto flex-shrink-0"
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing...
+                <span className="hidden sm:inline">Analyzing...</span>
+                <span className="sm:hidden">Analyzing</span>
               </>
             ) : optimization ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Update Analysis
+                <span className="hidden sm:inline">Update Analysis</span>
+                <span className="sm:hidden">Update</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Optimize Collection
+                <span className="hidden sm:inline">Optimize Collection</span>
+                <span className="sm:hidden">Optimize</span>
               </>
             )}
           </Button>}
