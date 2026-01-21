@@ -69,7 +69,7 @@ export default function TopPipeMatches({ blend, pipes }) {
 
   // Auto-trigger matching when blend is first loaded or when data changes
   useEffect(() => {
-    if (blend && pipes.length > 0 && userProfile) {
+    if (blend && pipes.length > 0) {
       updateMatchesFromData();
     }
   }, [blend?.id, pipes.length, savedPairings?.pairings, userProfile?.id]);
