@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PKCard, PKHeader } from "@/components/ui/pk-surface";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -174,27 +174,25 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
 
   if (!isPaidUser) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            Break-In Schedule
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <PKCard>
+        <div className="p-6">
+          <PKHeader 
+            title={<span className="flex items-center gap-2"><Sparkles className="w-5 h-5" />Break-In Schedule</span>}
+            className="mb-4"
+          />
           <UpgradePrompt 
             featureName="Break-In Schedule"
             description="Get AI-generated break-in schedules tailored to your pipe's characteristics. Track your progress with recommended tobacco blends and bowl counts for optimal pipe conditioning."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </PKCard>
     );
   }
 
   return (
     <>
-      {/* Staleness Dialog */}
-      <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
+       {/* Staleness Dialog */}
+       <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -243,14 +241,13 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
         </DialogContent>
       </Dialog>
 
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <PKCard>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              Break-In Schedule
-            </CardTitle>
+            <PKHeader 
+              title={<span className="flex items-center gap-2"><Sparkles className="w-5 h-5" />Break-In Schedule</span>}
+            />
             {schedule.length > 0 && (
               <p className="text-sm text-[#E0D8C8]/60 mt-1">
                 {completedBowls} / {totalBowls} bowls completed ({progress}%)
@@ -296,9 +293,9 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
            </div>
           )}
         </div>
-      </CardHeader>
+      </div>
       {schedule.length > 0 && !collapsed && (
-        <CardContent>
+        <div className="px-6 pb-6">
           {progress < 100 && (
             <div className="mb-4 bg-[#223447]/10 rounded-full h-2 overflow-hidden">
               <div 
@@ -360,16 +357,16 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
               );
             })}
           </div>
-        </CardContent>
+        </div>
       )}
       {blends.length === 0 && (
-        <CardContent>
+        <div className="px-6 pb-6">
           <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
             Add tobacco blends to your collection to generate a break-in schedule
           </p>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </PKCard>
     </>
   );
 }

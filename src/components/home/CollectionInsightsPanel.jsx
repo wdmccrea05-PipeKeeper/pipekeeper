@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PKCard, PKHeader } from "@/components/ui/pk-surface";
 import { BarChart3, Grid3x3, BookOpen, CalendarClock, FileText, Clock, Star } from "lucide-react";
 import PairingGrid from "@/components/home/PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
@@ -66,13 +66,12 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   });
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="font-bold text-lg">
-          {isAppleBuild ? "Inventory Insights" : "Collection Insights"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <PKCard>
+      <div className="p-6">
+        <PKHeader 
+          title={isAppleBuild ? "Inventory Insights" : "Collection Insights"}
+          className="mb-4"
+        />
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
             {isAppleBuild ? (
@@ -153,7 +152,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             </>
           )}
         </Tabs>
-      </CardContent>
-    </Card>
+      </div>
+    </PKCard>
   );
 }
