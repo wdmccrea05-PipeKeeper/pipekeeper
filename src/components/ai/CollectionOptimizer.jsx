@@ -805,6 +805,8 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
 
   User Follow-up: ${query}
 
+  IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
+
   Provide specific, actionable advice about their collection based on the ongoing discussion.`,
         response_json_schema: {
           type: "object",
