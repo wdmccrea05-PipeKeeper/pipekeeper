@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
 import { Download, FileJson, Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import * as XLSX from "xlsx";
 
 export default function SmokingLogReportExporter({ user }) {
   const [startDate, setStartDate] = useState(() => {
