@@ -2376,22 +2376,22 @@ Provide concrete, actionable steps with specific field values.`,
                       </div>
 
                     {conversationMessages.length > 0 && (
-                      <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-white">
+                      <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 sm:p-4 bg-white">
                         {conversationMessages.map((msg, idx) => (
-                          <div key={idx}>
+                          <div key={idx} className="space-y-2">
                             <div className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
                               {msg.role === 'user' ? (
-                                <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
-                                  <p className="text-sm">{msg.content}</p>
+                                <div className="inline-block bg-indigo-600 text-white rounded-lg px-3 sm:px-4 py-2 max-w-[85%] sm:max-w-[80%]">
+                                  <p className="text-xs sm:text-sm break-words">{msg.content}</p>
                                 </div>
                               ) : msg.content.is_general_advice ? (
-                                <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
-                                  <div className="text-sm text-stone-700 space-y-2">
-                                    <p>{msg.content.advice}</p>
+                                <div className="inline-block bg-stone-100 rounded-lg px-3 sm:px-4 py-2 sm:py-3 max-w-[85%] sm:max-w-[80%] text-left">
+                                  <div className="text-xs sm:text-sm text-stone-700 space-y-1.5 sm:space-y-2">
+                                    <p className="leading-relaxed">{msg.content.advice}</p>
                                     {msg.content.key_points?.length > 0 && (
-                                      <div className="pt-2 border-t border-stone-300">
+                                      <div className="pt-1.5 sm:pt-2 border-t border-stone-300">
                                         <p className="font-medium text-xs text-stone-600 mb-1">Key Points:</p>
-                                        <ul className="space-y-1">
+                                        <ul className="space-y-0.5 sm:space-y-1">
                                           {msg.content.key_points.map((pt, i) => (
                                             <li key={i} className="text-xs text-stone-600">• {pt}</li>
                                           ))}
@@ -2401,13 +2401,13 @@ Provide concrete, actionable steps with specific field values.`,
                                   </div>
                                 </div>
                               ) : (
-                                <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
-                                  <div className="text-sm text-stone-700 space-y-2">
-                                    <p>{msg.content.response}</p>
+                                <div className="inline-block bg-stone-100 rounded-lg px-3 sm:px-4 py-2 sm:py-3 max-w-[85%] sm:max-w-[80%] text-left">
+                                  <div className="text-xs sm:text-sm text-stone-700 space-y-1.5 sm:space-y-2">
+                                    <p className="leading-relaxed">{msg.content.response}</p>
                                     {msg.content.specific_recommendations?.length > 0 && (
-                                      <div className="pt-2 border-t border-stone-300">
+                                      <div className="pt-1.5 sm:pt-2 border-t border-stone-300">
                                         <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
-                                        <ul className="space-y-1">
+                                        <ul className="space-y-0.5 sm:space-y-1">
                                           {msg.content.specific_recommendations.map((rec, i) => (
                                             <li key={i} className="text-xs text-stone-600">• {rec}</li>
                                           ))}
@@ -2419,23 +2419,25 @@ Provide concrete, actionable steps with specific field values.`,
                               )}
                             </div>
                             {msg.role === 'assistant' && !msg.content.is_impact_analysis && (
-                              <div className="mt-2 text-left">
+                              <div className="text-left ml-0 sm:ml-0">
                                 <Button
                                   size="sm"
                                   onClick={analyzeCollectionImpact}
                                   disabled={whatIfLoading}
                                   variant="outline"
-                                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                                  className="border-blue-300 text-blue-700 hover:bg-blue-50 text-xs sm:text-sm h-8 sm:h-9"
                                 >
                                   {whatIfLoading ? (
                                     <>
-                                      <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                                      Analyzing...
+                                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                      <span className="hidden sm:inline">Analyzing</span>
+                                      <span className="sm:hidden">Analyzing</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Target className="w-3 h-3 mr-2" />
-                                      Analyze Impact
+                                      <Target className="w-3 h-3 mr-1" />
+                                      <span className="hidden sm:inline">Analyze Impact</span>
+                                      <span className="sm:hidden">Impact</span>
                                     </>
                                   )}
                                 </Button>
