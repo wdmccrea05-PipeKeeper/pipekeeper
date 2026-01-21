@@ -1282,13 +1282,26 @@ Provide concrete, actionable steps with specific field values.`,
             <label className="text-sm font-medium text-stone-700 mb-2 block">
               Upload Photos (Optional)
             </label>
-            <Input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handlePhotoUpload}
-              className="mb-2"
-            />
+            <div onDrop={(e) => { e.preventDefault(); handlePhotoUpload({ target: { files: e.dataTransfer.files } }); }} onDragOver={(e) => e.preventDefault()}>
+              <PhotoUploader 
+                onPhotosSelected={(files) => {
+                  const uploadPromises = Array.from(files).map(async (file) => {
+                    try {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      return file_url;
+                    } catch (err) {
+                      console.error('Error uploading photo:', err);
+                      return null;
+                    }
+                  });
+                  Promise.all(uploadPromises).then((urls) => {
+                    const validUrls = urls.filter(Boolean);
+                    setWhatIfPhotos([...whatIfPhotos, ...validUrls]);
+                  });
+                }}
+                existingPhotos={whatIfPhotos}
+              />
+            </div>
             {whatIfPhotos.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {whatIfPhotos.map((url, idx) => (
