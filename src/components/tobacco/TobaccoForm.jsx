@@ -1028,7 +1028,7 @@ Return complete and accurate information based on the blend name or description 
 
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} className="text-stone-800">
           Cancel
         </Button>
         <Button 
