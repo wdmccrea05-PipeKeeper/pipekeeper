@@ -115,12 +115,12 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
   return (
     <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-blue-600" />
             <span className="font-semibold text-blue-800">Pipe Specialization</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <SpecializationRecommender 
               pipe={pipe} 
               onApplyRecommendation={(data) => {
@@ -133,6 +133,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               size="sm"
               variant="ghost"
               onClick={() => setEditing(!editing)}
+              className="shrink-0"
             >
               {editing ? 'Done' : 'Edit'}
             </Button>
