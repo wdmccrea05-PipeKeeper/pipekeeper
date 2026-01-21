@@ -2225,16 +2225,333 @@ Provide concrete, actionable steps with specific field values.`,
             </div>
           )}
 
+          {/* Ask About Your Collection */}
+          {optimization && (
+            <div className="space-y-6">
+              {/* Collection Questions */}
+              <div>
+                <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  Discuss Your Collection Strategy
+                </h3>
+                <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                  <CardContent className="p-4 space-y-3">
+                    <p className="text-sm text-stone-600">Get personalized advice on gaps, specializations, blend coverage, size diversity, and optimization strategies specific to your pipes and blends.</p>
 
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-stone-700 mb-3">Common Collection Questions:</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("Based on my collection gaps and current pipes, what blend types should I prioritize buying?");
+                            setConversationMessages([]);
+                            analyzeCollectionQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">What blend types would best fill my collection gaps?</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("Which of my pipes are most versatile and which are too specialized? How should I rebalance them?");
+                            setConversationMessages([]);
+                            analyzeCollectionQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">How can I rebalance pipe versatility?</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("Do I have redundant pipe specializations? Which pipes could be safely reassigned?");
+                            setConversationMessages([]);
+                            analyzeCollectionQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">Which pipes have redundant focuses?</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-indigo-200 hover:bg-indigo-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("Am I missing important pipe shapes, sizes, or materials? What would round out my collection?");
+                            setConversationMessages([]);
+                            analyzeCollectionQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">What shapes/sizes am I missing?</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-indigo-100">
+                      <label className="text-xs font-medium text-stone-700 mb-2 block">Or ask your own collection question:</label>
+                      <Textarea
+                        placeholder="e.g., 'Should I dedicate this pipe to Latakia blends?' or 'How do I improve my English blend coverage?'"
+                        value={whatIfQuery}
+                        onChange={(e) => setWhatIfQuery(e.target.value)}
+                        className="min-h-[60px] text-sm"
+                      />
+                      <Button
+                        onClick={() => {
+                          setConversationMessages([]);
+                          analyzeCollectionQuestion();
+                        }}
+                        disabled={!whatIfQuery.trim() || whatIfLoading}
+                        className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700"
+                      >
+                        {whatIfLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Ask About My Collection
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {conversationMessages.length > 0 && (
+                      <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-white">
+                        {conversationMessages.map((msg, idx) => (
+                          <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                            {msg.role === 'user' ? (
+                              <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
+                                <p className="text-sm">{msg.content}</p>
+                              </div>
+                            ) : (
+                              <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
+                                <div className="text-sm text-stone-700 space-y-2">
+                                  <p>{msg.content.response}</p>
+                                  {msg.content.specific_recommendations?.length > 0 && (
+                                    <div className="pt-2 border-t border-stone-300">
+                                      <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                      <ul className="space-y-1">
+                                        {msg.content.specific_recommendations.map((rec, i) => (
+                                          <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {conversationMessages.length > 0 && (
+                      <div className="pt-2 border-t border-indigo-100">
+                        <label className="text-xs font-medium text-stone-700 mb-2 block">Ask a follow-up:</label>
+                        <Textarea
+                          placeholder="Continue the discussion..."
+                          value={whatIfFollowUp}
+                          onChange={(e) => setWhatIfFollowUp(e.target.value)}
+                          className="min-h-[50px] text-sm"
+                        />
+                        <Button
+                          onClick={handleCollectionFollowUp}
+                          disabled={!whatIfFollowUp.trim() || whatIfLoading}
+                          variant="outline"
+                          className="mt-2 w-full border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                        >
+                          {whatIfLoading ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                              Thinking...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3 mr-2" />
+                              Continue Discussion
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* General Hobby Questions */}
+              <div>
+                <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-violet-600" />
+                  General Pipe & Tobacco Questions
+                </h3>
+                <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+                  <CardContent className="p-4 space-y-3">
+                    <p className="text-sm text-stone-600">Ask about smoking techniques, product information, maintenance, tobacco types, pipe care, and general hobby advice.</p>
+
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-stone-700 mb-3">Common Questions:</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-violet-200 hover:bg-violet-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("What's the best technique for breaking in a new pipe?");
+                            setConversationMessages([]);
+                            analyzeGeneralQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">How do I break in a new pipe?</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-violet-200 hover:bg-violet-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("How do I properly clean and maintain my pipes?");
+                            setConversationMessages([]);
+                            analyzeGeneralQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">How do I maintain my pipes?</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-violet-200 hover:bg-violet-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("What's the difference between English, Aromatic, and Latakia blends?");
+                            setConversationMessages([]);
+                            analyzeGeneralQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">Explain tobacco blend types</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-left justify-start border-violet-200 hover:bg-violet-50 text-stone-700 h-auto py-2"
+                          onClick={() => {
+                            setWhatIfQuery("How do I smoke a pipe properly to get the best experience?");
+                            setConversationMessages([]);
+                            analyzeGeneralQuestion();
+                          }}
+                        >
+                          <span className="text-xs leading-snug">What's the proper smoking technique?</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-violet-100">
+                      <label className="text-xs font-medium text-stone-700 mb-2 block">Or ask a hobby question:</label>
+                      <Textarea
+                        placeholder="e.g., 'How do I fix a cracked stem?' or 'What's a good estate pipe?'"
+                        value={whatIfQuery}
+                        onChange={(e) => setWhatIfQuery(e.target.value)}
+                        className="min-h-[60px] text-sm"
+                      />
+                      <Button
+                        onClick={() => {
+                          setConversationMessages([]);
+                          analyzeGeneralQuestion();
+                        }}
+                        disabled={!whatIfQuery.trim() || whatIfLoading}
+                        className="mt-2 w-full bg-violet-600 hover:bg-violet-700"
+                      >
+                        {whatIfLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Thinking...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Ask the Expert
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {conversationMessages.length > 0 && (
+                      <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-white">
+                        {conversationMessages.map((msg, idx) => (
+                          <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                            {msg.role === 'user' ? (
+                              <div className="inline-block bg-violet-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
+                                <p className="text-sm">{msg.content}</p>
+                              </div>
+                            ) : (
+                              <div className="inline-block bg-stone-100 rounded-lg px-4 py-3 max-w-[80%] text-left">
+                                <div className="text-sm text-stone-700 space-y-2">
+                                  <p>{msg.content.advice}</p>
+                                  {msg.content.tips?.length > 0 && (
+                                    <div className="pt-2 border-t border-stone-300">
+                                      <p className="font-medium text-xs text-stone-600 mb-1">Tips:</p>
+                                      <ul className="space-y-1">
+                                        {msg.content.tips.map((tip, i) => (
+                                          <li key={i} className="text-xs text-stone-600">• {tip}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {conversationMessages.length > 0 && (
+                      <div className="pt-2 border-t border-violet-100">
+                        <label className="text-xs font-medium text-stone-700 mb-2 block">Ask another question:</label>
+                        <Textarea
+                          placeholder="Continue asking..."
+                          value={whatIfFollowUp}
+                          onChange={(e) => setWhatIfFollowUp(e.target.value)}
+                          className="min-h-[50px] text-sm"
+                        />
+                        <Button
+                          onClick={handleGeneralFollowUp}
+                          disabled={!whatIfFollowUp.trim() || whatIfLoading}
+                          variant="outline"
+                          className="mt-2 w-full border-violet-300 text-violet-700 hover:bg-violet-50"
+                        >
+                          {whatIfLoading ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                              Thinking...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3 mr-2" />
+                              Continue
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
           <div className="text-center pt-2 text-xs text-stone-500">
               {optimization?.generated_date && (
                 <p>Last updated: {new Date(optimization.generated_date).toLocaleDateString()}</p>
               )}
             </div>
-        </CardContent>
-      )}
-    </Card>
+          </CardContent>
+          )}
+          </Card>
     </>
   );
 }
