@@ -2335,24 +2335,26 @@ Provide concrete, actionable steps with specific field values.`,
                         onChange={(e) => setWhatIfQuery(e.target.value)}
                         className="min-h-[60px] text-sm"
                       />
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <Button
                           onClick={() => {
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
                           disabled={!whatIfQuery.trim() || whatIfLoading}
-                          className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                          className="flex-1 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
                         >
                           {whatIfLoading ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Analyzing...
+                              <span className="hidden sm:inline">Analyzing...</span>
+                              <span className="sm:hidden">Analyzing</span>
                             </>
                           ) : (
                             <>
                               <Sparkles className="w-4 h-4 mr-2" />
-                              Ask About My Collection
+                              <span className="hidden sm:inline">Ask About My Collection</span>
+                              <span className="sm:hidden">Ask Collection</span>
                             </>
                           )}
                         </Button>
@@ -2360,14 +2362,15 @@ Provide concrete, actionable steps with specific field values.`,
                           onClick={analyzeCollectionImpact}
                           disabled={!whatIfQuery.trim() || whatIfLoading}
                           variant="outline"
-                          className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                          className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50 w-full sm:w-auto"
                         >
                           {whatIfLoading ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           ) : (
                             <Target className="w-4 h-4 mr-2" />
                           )}
-                          Analyze Impact
+                          <span className="hidden sm:inline">Analyze Impact</span>
+                          <span className="sm:hidden">Impact</span>
                         </Button>
                       </div>
                       </div>
