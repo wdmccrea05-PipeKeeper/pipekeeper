@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const [photos, setPhotos] = useState([]);
@@ -287,6 +288,11 @@ Provide analysis as JSON:
   };
 
   return (
+    <FeatureGate 
+      feature="AI_IDENTIFY"
+      featureName="Quick Pipe Identifier"
+      description="Identify and add pipes to your collection instantly using AI photo analysis. Available in Pro tier or for grandfathered Premium users."
+    >
     <Card className="bg-[#223447] border-[#E0D8C8]/15">
       <CardContent className="p-6">
         <div className="flex items-start gap-3 mb-6">
@@ -601,5 +607,6 @@ Provide analysis as JSON:
         )}
       </CardContent>
     </Card>
+    </FeatureGate>
   );
 }

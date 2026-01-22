@@ -290,14 +290,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </CardContent>
           </Card>
 
-          {isPaidUser ? (
-            <PhotoIdentifier onIdentify={handlePhotoIdentify} />
-          ) : (
-            <UpgradePrompt 
-              featureName="AI Photo Identification"
-              description="Upload photos of your pipe's stampings to instantly identify the maker, model, and approximate value using advanced AI."
-            />
-          )}
+          <PhotoIdentifier onIdentify={handlePhotoIdentify} />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
