@@ -17,6 +17,8 @@ import PhotoUploader from "@/components/PhotoUploader";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "English Aromatic", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
@@ -75,13 +77,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
+  const { user } = useCurrentUser();
 
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
@@ -268,16 +264,16 @@ Return complete and accurate information based on the blend name or description 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check free tier limits for new blends
+    // Check free tier limits for new blends only
     if (!blend && entitlements.tier === "free") {
-      try {
-        const existingBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
-        if (existingBlends.length >= entitlements.limits.tobaccos) {
-          toast.error(`Free tier limited to ${entitlements.limits.tobaccos} tobacco blends. Upgrade to add more.`);
-          return;
-        }
-      } catch (err) {
-        console.error('Failed to check tobacco limit:', err);
+      const canAdd = await canCreateTobacco(user?.email, entitlements.limits.tobaccos);
+      if (!canAdd) {
+        toast.error(
+          entitlements.isFreeGrandfathered
+            ? "You've reached the free limit. Upgrade to add more tobacco, or delete some existing ones."
+            : `Free tier limited to ${entitlements.limits.tobaccos} tobacco blends. Upgrade to add more.`
+        );
+        return;
       }
     }
 
