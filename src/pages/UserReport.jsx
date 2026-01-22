@@ -85,12 +85,13 @@ export default function UserReport() {
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
 
-  if (user?.role !== 'admin') {
+  if (!user || user?.role !== 'admin') {
     return (
       <div className="max-w-7xl mx-auto p-6">
-        <Card className="border-rose-200 bg-rose-50">
+        <Card className="bg-white/95 border-rose-200">
           <CardContent className="p-6">
-            <p className="text-rose-800">Admin access required to view this page.</p>
+            <p className="text-rose-800 font-semibold">Unauthorized</p>
+            <p className="text-rose-700 text-sm mt-2">Admin access required to view this page.</p>
           </CardContent>
         </Card>
       </div>
