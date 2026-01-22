@@ -17,6 +17,8 @@ import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PhotoUploader from "@/components/PhotoUploader";
 import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { toast } from "sonner";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -71,6 +73,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     retry: 1,
   });
 
+  const entitlements = useEntitlements();
   const isPaidUser = user?.subscription_level === 'paid';
   
   const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
@@ -217,8 +220,29 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     setCropperType(isStamping ? 'stamping' : 'photo');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check free tier limits for new pipes
+    if (!pipe && entitlements.tier === "free") {
+      try {
+        const existingPipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+        if (existingPipes.length >= entitlements.limits.pipes) {
+          toast.error(`Free tier limited to ${entitlements.limits.pipes} pipes. Upgrade to add more.`);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to check pipe limit:', err);
+      }
+    }
+
+    // Check photo limits
+    const totalPhotos = (formData.photos?.length || 0) + (formData.stamping_photos?.length || 0);
+    if (totalPhotos > entitlements.limits.photosPerItem) {
+      toast.error(`Free tier limited to ${entitlements.limits.photosPerItem} photo per pipe. Upgrade for unlimited.`);
+      return;
+    }
+
     const cleanedData = {
       ...formData,
       length_mm: formData.length_mm ? Number(formData.length_mm) : null,

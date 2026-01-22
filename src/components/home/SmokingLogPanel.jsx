@@ -20,11 +20,14 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { toast } from "sonner";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   if (isAppleBuild) return null;
 
   const hasPaidAccess = hasPremiumAccess(user);
+  const entitlements = useEntitlements();
 
   if (!hasPaidAccess) {
     return (
@@ -376,8 +379,18 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check free tier limits
+    if (entitlements.tier === "free") {
+      const existingLogs = await base44.entities.SmokingLog.filter({ created_by: user?.email });
+      if (existingLogs.length >= entitlements.limits.smokingLogs) {
+        toast.error(`Free tier limited to ${entitlements.limits.smokingLogs} smoking logs. Upgrade for unlimited.`);
+        return;
+      }
+    }
+
     const pipe = pipes.find(p => p.id === formData.pipe_id);
     const blend = blends.find(b => b.id === formData.blend_id);
     

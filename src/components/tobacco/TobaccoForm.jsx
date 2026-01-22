@@ -16,6 +16,8 @@ import FieldWithInfo from "@/components/forms/FieldWithInfo";
 import PhotoUploader from "@/components/PhotoUploader";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { toast } from "sonner";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "English Aromatic", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -72,6 +74,14 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const [logoBrowserSearch, setLogoBrowserSearch] = useState('');
   
   const queryClient = useQueryClient();
+  const entitlements = useEntitlements();
+
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5000,
+    retry: 1,
+  });
 
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
@@ -255,8 +265,22 @@ Return complete and accurate information based on the blend name or description 
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check free tier limits for new blends
+    if (!blend && entitlements.tier === "free") {
+      try {
+        const existingBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+        if (existingBlends.length >= entitlements.limits.tobaccos) {
+          toast.error(`Free tier limited to ${entitlements.limits.tobaccos} tobacco blends. Upgrade to add more.`);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to check tobacco limit:', err);
+      }
+    }
+
     const cleanedData = {
       ...formData,
       tin_size_oz: formData.tin_size_oz ? Number(formData.tin_size_oz) : null,
