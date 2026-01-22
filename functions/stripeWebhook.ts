@@ -69,6 +69,20 @@ Deno.serve(async (req) => {
       return { ok: true };
     }
 
+    async function ensureUserExists(email, customerId) {
+      let userRow = await findUserByEmail(email);
+      if (!userRow) {
+        // Create user from Stripe customer
+        await base44.asServiceRole.entities.User.create({
+          email,
+          full_name: "User from Stripe",
+          subscription_level: "paid",
+          stripe_customer_id: customerId || null,
+        });
+      }
+      return userRow;
+    }
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -138,6 +152,11 @@ Deno.serve(async (req) => {
         }
 
         if (!user_email) break;
+
+        // For new subscriptions, ensure user exists in app
+        if (event.type === "customer.subscription.created") {
+          await ensureUserExists(user_email, customerId);
+        }
 
         const periodEnd = sub.current_period_end
           ? new Date(sub.current_period_end * 1000).toISOString()
