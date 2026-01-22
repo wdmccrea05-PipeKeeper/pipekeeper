@@ -366,19 +366,6 @@ export default function FAQFull() {
         </Q>
 
         <Q id="pro-pipe-specialization" q="Pro: AI Pipe Specialization">
-          Generate customized break-in schedules for new pipes:
-          <ul className="list-disc ml-6 mt-2 space-y-1">
-            <li><b>Smart Tobacco Selection:</b> Recommends specific blends from your collection for each break-in stage</li>
-            <li><b>Progressive Conditioning:</b> Starts with mild, forgiving blends then transitions to your pipe's intended focus</li>
-            <li><b>Bowl Count Tracking:</b> Track progress bowl-by-bowl with automated checkmarks</li>
-            <li><b>Interchangeable Bowl Support:</b> Generate separate break-in schedules for each bowl variant</li>
-            <li><b>Smoking Log Integration:</b> Sessions marked as "break-in" automatically update your schedule</li>
-            <li><b>Regeneration:</b> Update schedules as your tobacco collection changes</li>
-          </ul>
-          Break-in schedules help you build proper cake without risking burnout or ghosting in new pipes.
-        </Q>
-
-        <Q id="pro-pipe-specialization" q="Pro: AI Pipe Specialization">
           AI-powered recommendations for pipe specialization:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>Analyzes pipe characteristics and smoking properties</li>
