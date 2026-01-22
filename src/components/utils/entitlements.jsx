@@ -21,42 +21,34 @@ export function buildEntitlements(input) {
       ? { pipes: 5, tobaccos: 10, photosPerItem: 1, smokingLogs: 10 }
       : { pipes: Infinity, tobaccos: Infinity, photosPerItem: Infinity, smokingLogs: Infinity };
 
-  const canUse = (feature) => {
-    // Free - very limited features
-    if (tier === "free") {
-      // Free users get nothing except basic collection with limits
-      return false;
-    }
-
-    // Premium
-    if (tier === "premium") {
-      if (feature === "UNLIMITED_COLLECTION") return true;
-      if (feature === "PAIRING_BASIC") return true;
-
-      // These are future-Pro features; allow if legacy premium user.
+  // Helper to check if feature is available for current tier + legacy status
+  const featureAvailable = (featureKey) => {
+    if (tier === "pro") return true;
+    if (tier === "premium" && isPremiumLegacy) {
+      // Legacy premium gets Pro features
       const legacyProFeatures = [
         "AI_UPDATES",
+        "AI_IDENTIFY",
         "PAIRING_ADVANCED",
         "PAIRING_REGEN",
         "ANALYTICS_STATS",
         "ANALYTICS_INSIGHTS",
         "BULK_EDIT",
         "EXPORT_REPORTS",
-        "AI_IDENTIFY",
+        "COLLECTION_OPTIMIZATION",
+        "BREAK_IN_SCHEDULE",
       ];
-
-      if (legacyProFeatures.includes(feature)) return isPremiumLegacy;
-
-      // Messaging can be Premium (your choice)
-      if (feature === "MESSAGING") return true;
-
-      return false;
+      return legacyProFeatures.includes(featureKey);
     }
-
-    // Pro
-    if (tier === "pro") return true;
-
+    if (tier === "premium") {
+      // New premium users get basic features only
+      return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "ANALYTICS_STATS", "MESSAGING"].includes(featureKey);
+    }
     return false;
+  };
+
+  const canUse = (feature) => {
+    return featureAvailable(feature);
   };
 
   return { tier, isPremiumLegacy, limits, canUse };

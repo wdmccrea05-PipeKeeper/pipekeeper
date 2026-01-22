@@ -210,7 +210,7 @@ export const TIER_LIMITS = {
  * Backfill Existing Users as Premium Legacy:
  * ------------------------------------------
  * Call functions/backfillSubscriptionStartedAt (admin only)
- * Sets started_at to 2024-12-31 for all active subscriptions
+ * Sets started_at to 2026-01-31 for all active subscriptions without started_at
  * 
  * Deprecation Path:
  * -----------------

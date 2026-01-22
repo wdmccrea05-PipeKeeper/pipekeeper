@@ -10,20 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, CheckSquare, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
-import { useEntitlements } from "@/components/hooks/useEntitlements";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
 export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoading }) {
-  const entitlements = useEntitlements();
-
-  if (!entitlements.canUse("BULK_EDIT")) {
-    return (
-      <UpgradePrompt 
-        featureName="Bulk Tobacco Edit"
-        description="Update multiple tobacco blends at once with bulk editing tools. Requires Pro tier."
-      />
-    );
-  }
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [updateFields, setUpdateFields] = useState({
@@ -86,6 +75,11 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
   };
 
   return (
+    <FeatureGate 
+      feature="BULK_EDIT"
+      featureName="Bulk Tobacco Edit"
+      description="Update multiple tobacco blends at once with bulk editing tools. Available in Pro tier or for grandfathered Premium users."
+    >
     <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
       {/* Instructions */}
       <Card className="border-amber-200 bg-amber-50">
@@ -276,5 +270,6 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
         </Button>
       </div>
     </form>
+    </FeatureGate>
   );
 }
