@@ -26,6 +26,11 @@ export function buildEntitlements(input) {
     // Pro tier gets everything
     if (tier === "pro") return true;
     
+    // Trial users (free tier but in 7-day window) cannot use Pro-only features
+    if (input.isOnTrial && tier === "free") {
+      return false;
+    }
+    
     // Legacy Premium (subscribed before Feb 1, 2026) gets ALL features
     if (tier === "premium" && isPremiumLegacy) {
       return true;
