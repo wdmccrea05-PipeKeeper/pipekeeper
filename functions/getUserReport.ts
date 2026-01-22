@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     
     // Pick best subscription for each user (ignore incomplete/incomplete_expired)
     subsByEmail.forEach((subs, email) => {
+      // Filter out incomplete and incomplete_expired
       const validSubs = subs.filter(s => {
         const status = (s.status || '').toLowerCase();
         return status !== 'incomplete' && status !== 'incomplete_expired';
@@ -48,11 +49,12 @@ Deno.serve(async (req) => {
         return 2;
       };
       
-      const best = validSubs.sort((a, b) => {
+      // Sort and pick best
+      const best = [...validSubs].sort((a, b) => {
         const rDiff = rank(b) - rank(a);
         if (rDiff !== 0) return rDiff;
         
-        // If same rank, pick newest by created_date (not period_end)
+        // If same rank, pick newest by created_date
         const ca = new Date(a.created_date || 0).getTime();
         const cb = new Date(b.created_date || 0).getTime();
         return cb - ca;
