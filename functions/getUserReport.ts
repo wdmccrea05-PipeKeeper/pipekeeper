@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       
       // Rank: active > trialing > past_due > others
       const rank = (s) => {
-        const st = (s.status || '').toLowerCase();
+        const st = (s.data?.status || s.status || '').toLowerCase();
         if (st === 'active') return 5;
         if (st === 'trialing') return 4;
         if (st === 'past_due') return 3;
