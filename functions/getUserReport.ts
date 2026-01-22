@@ -17,10 +17,47 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Subscription.list()
     ]);
 
-    // Create a map of user email to subscription
+    // Create a map of user email to best subscription (filter out incomplete)
     const subscriptionMap = new Map();
+    
+    // Group subscriptions by user email
+    const subsByEmail = new Map();
     allSubscriptions.forEach(sub => {
-      subscriptionMap.set(sub.user_email, sub);
+      const email = sub.user_email;
+      if (!subsByEmail.has(email)) {
+        subsByEmail.set(email, []);
+      }
+      subsByEmail.get(email).push(sub);
+    });
+    
+    // Pick best subscription for each user (ignore incomplete/incomplete_expired)
+    subsByEmail.forEach((subs, email) => {
+      const validSubs = subs.filter(s => {
+        const status = (s.status || '').toLowerCase();
+        return status !== 'incomplete' && status !== 'incomplete_expired';
+      });
+      
+      if (validSubs.length === 0) return;
+      
+      // Rank: active > trialing > past_due > others
+      const rank = (s) => {
+        const st = (s.status || '').toLowerCase();
+        if (st === 'active') return 5;
+        if (st === 'trialing') return 4;
+        if (st === 'past_due') return 3;
+        return 2;
+      };
+      
+      const best = validSubs.sort((a, b) => {
+        const rDiff = rank(b) - rank(a);
+        if (rDiff !== 0) return rDiff;
+        
+        const ea = new Date(a.current_period_end || 0).getTime();
+        const eb = new Date(b.current_period_end || 0).getTime();
+        return eb - ea;
+      })[0];
+      
+      subscriptionMap.set(email, best);
     });
 
     // Categorize users
