@@ -105,7 +105,13 @@ function AppleSubscription() {
 
       <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
         <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">Pro Plan</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-[#e8d5b7]">Pro Plan</CardTitle>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-[#e8d5b7]">$2.99</p>
+              <p className="text-xs text-[#e8d5b7]/70">per month • $29.99/year</p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <FeatureList items={proFeatures} />
