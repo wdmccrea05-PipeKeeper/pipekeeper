@@ -2,56 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const PRO_LAUNCH_CUTOFF = "2026-02-01T00:00:00.000Z";
 
-interface AdminMetrics {
-  userCounts: {
-    total: number;
-    free: number;
-    premium: number;
-    pro: number;
-    legacyPremium: number;
-    foundingMembers: number;
-  };
-  subscriptionBreakdown: {
-    activePremium: number;
-    activePro: number;
-    onTrial: number;
-    cancelledButActive: number;
-    expired30d: number;
-    expired60d: number;
-    expired90d: number;
-    monthlyCount: number;
-    annualCount: number;
-  };
-  trialMetrics: {
-    currentlyOnTrial: number;
-    avgDaysRemaining: number;
-    endingIn3Days: number;
-    endingIn7Days: number;
-    convertedLast30d: number;
-    dropoffLast30d: number;
-  };
-  growthMetrics: {
-    lastEightWeeks: Array<{
-      week: string;
-      newUsers: number;
-      newPaidSubscribers: number;
-      newProSubscribers: number;
-      netGrowth: number;
-    }>;
-  };
-  churnMetrics: {
-    premiumChurn30d: number;
-    proChurn30d: number;
-    proToPremiumDowngrade: number;
-    premiumToFreeDowngrade: number;
-  };
-  usageMetrics: {
-    avgPipesPerUser: { free: number; premium: number; pro: number };
-    avgTobaccosPerUser: { free: number; premium: number; pro: number };
-    communityEngagement: number;
-  };
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -106,7 +56,7 @@ Deno.serve(async (req) => {
 
       // Find best subscription
       const best = [...validSubs].sort((a, b) => {
-        const rankFn = (s: any) => {
+        const rankFn = (s) => {
           const st = (s.status || '').toLowerCase();
           if (st === 'active') return 5;
           if (st === 'trialing') return 4;
@@ -339,8 +289,8 @@ Deno.serve(async (req) => {
     };
 
     // 6. USAGE METRICS
-    const pipesByUser = new Map<string, number>();
-    const tobaccosByUser = new Map<string, number>();
+    const pipesByUser = new Map();
+    const tobaccosByUser = new Map();
 
     allPipes.forEach(p => {
       const creator = p.created_by;
@@ -379,16 +329,14 @@ Deno.serve(async (req) => {
       communityEngagement,
     };
 
-    const metrics: AdminMetrics = {
+    return Response.json({
       userCounts,
       subscriptionBreakdown,
       trialMetrics,
       growthMetrics,
       churnMetrics,
       usageMetrics,
-    };
-
-    return Response.json(metrics);
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
