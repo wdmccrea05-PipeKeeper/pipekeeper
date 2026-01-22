@@ -32,7 +32,7 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 sm:flex-none"
+          className="flex-1 sm:flex-none text-stone-700"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Choose from Gallery</span>
@@ -44,7 +44,7 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           size="sm"
           onClick={() => cameraInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 sm:flex-none"
+          className="flex-1 sm:flex-none text-stone-700"
         >
           <Camera className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Take Photo</span>
