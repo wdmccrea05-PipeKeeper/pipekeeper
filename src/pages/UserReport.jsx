@@ -261,36 +261,57 @@ export default function UserReport() {
         </Card>
       </div>
 
-      {/* Metrics Section */}
+      {/* Additional Metrics Cards */}
       {adminMetrics && !metricsLoading && (
-        <div className="mt-8 mb-8">
-          <h2 className="text-2xl font-bold text-[#e8d5b7] mb-4">Growth & Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-white/95 border-[#e8d5b7]/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-indigo-600">Premium Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-indigo-700">{adminMetrics.userCounts.premium}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/95 border-[#e8d5b7]/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-amber-600">Pro Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-amber-700">{adminMetrics.userCounts.pro}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/95 border-[#e8d5b7]/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-rose-600">On Trial</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-rose-700">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-indigo-600">Premium Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-indigo-700">{adminMetrics.userCounts.premium}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-amber-600">Pro Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-amber-700">{adminMetrics.userCounts.pro}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-rose-600">On Trial</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-rose-700">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-cyan-600">Active Premium</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.subscriptionBreakdown.activePremium}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-orange-600">Active Pro</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-orange-700">{adminMetrics.subscriptionBreakdown.activePro}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-fuchsia-600">Legacy Premium</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-fuchsia-700">{adminMetrics.userCounts.legacyPremium}</p>
+            </CardContent>
+          </Card>
         </div>
       )}
 
