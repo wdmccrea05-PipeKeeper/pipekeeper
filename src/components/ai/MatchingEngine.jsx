@@ -236,11 +236,11 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
             </Select>
 
             {selectedBlend ? (
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-stone-400 truncate font-medium">{selectedBlend.name}</span>
-                <span className="text-sm text-stone-800 font-semibold">{selectedBlendScore ?? "No score"}</span>
-              </div>
-            ) : null}
+               <div className="mt-2 flex items-center justify-between">
+                 <span className="text-sm text-stone-400 truncate font-medium">{selectedBlend.name}</span>
+                 <span className="text-sm text-stone-200 font-semibold">{selectedBlendScore ?? "No score"}</span>
+               </div>
+             ) : null}
           </div>
         </div>
       </CardContent>
