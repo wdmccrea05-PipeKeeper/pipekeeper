@@ -5,8 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ScanSearch, Info, Camera, Upload, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function PipeIdentifier({ pipe, onUpdatePipe }) {
+  const entitlements = useEntitlements();
+
+  if (!entitlements.canUse("AI_IDENTIFY")) {
+    return (
+      <UpgradePrompt 
+        featureName="AI Pipe Identification"
+        description="Identify pipes from photos using AI analysis of stamps, hallmarks, and physical characteristics. Requires Pro tier."
+      />
+    );
+  }
   const [loading, setLoading] = useState(false);
   const [identification, setIdentification] = useState(null);
   const [collapsed, setCollapsed] = useState(false);

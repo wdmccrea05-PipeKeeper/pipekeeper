@@ -11,8 +11,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function CollectionReportExporter({ user }) {
+  const entitlements = useEntitlements();
+
+  if (!entitlements.canUse("EXPORT_REPORTS")) {
+    return (
+      <div className="space-y-4">
+        <UpgradePrompt 
+          featureName="Collection Reports"
+          description="Export detailed collection reports including pipe inventory, tobacco cellar, insurance valuations, and statistics. Requires Pro tier."
+        />
+      </div>
+    );
+  }
   const [isExporting, setIsExporting] = useState(false);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [previewTitle, setPreviewTitle] = useState("");

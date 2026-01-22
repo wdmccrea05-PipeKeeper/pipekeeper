@@ -4,8 +4,20 @@ import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
 import { Download, FileJson, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function AgingReportExporter({ user }) {
+  const entitlements = useEntitlements();
+
+  if (!entitlements.canUse("EXPORT_REPORTS")) {
+    return (
+      <UpgradePrompt 
+        featureName="Export Reports"
+        description="Export aging reports as PDF or Excel. Requires Pro tier."
+      />
+    );
+  }
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 1);
