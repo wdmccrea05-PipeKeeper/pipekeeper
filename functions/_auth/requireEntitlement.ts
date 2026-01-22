@@ -1,4 +1,4 @@
-import { buildEntitlements } from '../../components/utils/entitlements.js';
+import { buildEntitlements } from './entitlements.ts';
 
 /**
  * Checks if the user has a given entitlement.
@@ -26,6 +26,7 @@ export async function requireEntitlement(base44, user, feature) {
     isPaidSubscriber,
     isProSubscriber,
     subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
+    isFreeGrandfathered: user?.isFreeGrandfathered || false,
   });
 
   // Check the feature

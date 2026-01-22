@@ -20,6 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import PhotoUploader from "@/components/PhotoUploader";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   if (isAppleBuild) return null;
@@ -52,15 +54,8 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
   const [showPipesList, setShowPipesList] = useState(true);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  // Check if user has paid access (subscription or 7-day trial)
-  const isWithinTrial = user?.created_date && 
-    new Date().getTime() - new Date(user.created_date).getTime() < 7 * 24 * 60 * 60 * 1000;
-  const isPaidUser = user?.subscription_level === 'paid' || isWithinTrial;
+  const { user } = useCurrentUser();
+  const entitlements = useEntitlements();
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],

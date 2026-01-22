@@ -12,20 +12,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Target, CheckCircle2, AlertCircle, Lightbulb, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
-import { useQuery } from "@tanstack/react-query";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function SpecializationRecommender({ pipe, onApplyRecommendation }) {
   const [isOpen, setIsOpen] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const isPremiumUser = hasPremiumAccess(user);
+  const entitlements = useEntitlements();
+  const hasAccess = entitlements.canUse('PAIRING_ADVANCED');
 
   const handleGetRecommendation = async () => {
     setIsLoading(true);
@@ -60,16 +56,26 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
     }
   };
 
+  if (!hasAccess) {
+    return (
+      <div className="w-full">
+        <UpgradePrompt 
+          featureName="AI Pipe Specialization"
+          description="Get AI-powered recommendations for dedicating pipes to specific tobacco types with Pro or legacy Premium access."
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <Button
         size="sm"
         variant="outline"
         onClick={handleGetRecommendation}
-        disabled={isLoading || !isPremiumUser}
+        disabled={isLoading}
         className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto"
       >
-        {!isPremiumUser && <Crown className="w-3 h-3 mr-1 text-amber-500" />}
         <Sparkles className="w-4 h-4 mr-1" />
         <span className="truncate">{isLoading ? 'Analyzing...' : 'Get AI Recommendation'}</span>
       </Button>

@@ -13,8 +13,9 @@ import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
-export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
+export default function BreakInSchedule({ pipe, blends }) {
   if (isAppleBuild) return null;
 
   const [generating, setGenerating] = useState(false);
@@ -172,24 +173,12 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
   const completedBowls = schedule.reduce((sum, s) => sum + (s.bowls_completed || 0), 0);
   const progress = totalBowls > 0 ? Math.round((completedBowls / totalBowls) * 100) : 0;
 
-  if (!isPaidUser) {
-    return (
-      <PKCard>
-        <div className="p-6">
-          <PKHeader 
-            title={<span className="flex items-center gap-2"><Sparkles className="w-5 h-5" />Break-In Schedule</span>}
-            className="mb-4"
-          />
-          <UpgradePrompt 
-            featureName="Break-In Schedule"
-            description="Get AI-generated break-in schedules tailored to your pipe's characteristics. Track your progress with recommended tobacco blends and bowl counts for optimal pipe conditioning."
-          />
-        </div>
-      </PKCard>
-    );
-  }
-
   return (
+    <FeatureGate 
+      feature="BREAK_IN_SCHEDULE"
+      featureName="Break-In Schedules"
+      description="Get AI-generated break-in schedules tailored to your pipe's characteristics with Pro or legacy Premium access. Track your progress with recommended tobacco blends and bowl counts for optimal pipe conditioning."
+    >
     <>
        {/* Staleness Dialog */}
        <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
@@ -367,6 +356,6 @@ export default function BreakInSchedule({ pipe, blends, isPaidUser }) {
         </div>
       )}
     </PKCard>
-    </>
+    </FeatureGate>
   );
 }

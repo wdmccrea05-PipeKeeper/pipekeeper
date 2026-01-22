@@ -22,6 +22,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
 import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
