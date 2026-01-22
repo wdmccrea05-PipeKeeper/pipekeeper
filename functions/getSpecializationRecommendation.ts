@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { buildEntitlements } from '../components/utils/entitlements.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -7,6 +8,22 @@ Deno.serve(async (req) => {
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check entitlements for PAIRING_ADVANCED feature
+    const subscriptions = await base44.entities.Subscription.filter({ user_email: user.email });
+    const subscription = subscriptions?.[0];
+    
+    const entitlements = buildEntitlements({
+      isPaidSubscriber: !!(subscription?.status === 'active' || subscription?.status === 'trialing'),
+      isProSubscriber: false, // TODO: Add Pro tier detection
+      subscriptionStartedAt: subscription?.current_period_start || user?.created_date || null,
+    });
+
+    if (!entitlements.canUse("PAIRING_ADVANCED")) {
+      return Response.json({ 
+        error: 'This feature requires Pro tier or legacy Premium access' 
+      }, { status: 403 });
     }
 
     const { pipeId } = await req.json();

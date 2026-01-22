@@ -17,8 +17,20 @@ import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
+  const entitlements = useEntitlements();
+
+  if (!entitlements.canUse("AI_UPDATES")) {
+    return (
+      <UpgradePrompt 
+        featureName="AI Updates & Regeneration"
+        description="Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier."
+      />
+    );
+  }
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [reclassifyBusy, setReclassifyBusy] = useState(false);

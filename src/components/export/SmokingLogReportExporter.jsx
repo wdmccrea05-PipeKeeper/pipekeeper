@@ -3,8 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
 import { Download, FileJson, Loader2 } from "lucide-react";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function SmokingLogReportExporter({ user }) {
+  const entitlements = useEntitlements();
+
+  if (!entitlements.canUse("EXPORT_REPORTS")) {
+    return (
+      <UpgradePrompt 
+        featureName="Export Reports"
+        description="Export your smoking logs and data as PDF or Excel files. Requires Pro tier."
+      />
+    );
+  }
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 3);

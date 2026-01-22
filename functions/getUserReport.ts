@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { buildEntitlements } from '../components/utils/entitlements.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -9,6 +10,9 @@ Deno.serve(async (req) => {
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
+
+    // Additional entitlement check for non-admins using this feature
+    // (If you want to allow Pro users, add that logic here)
 
     // Fetch all users and subscriptions
     const [allUsers, allSubscriptions] = await Promise.all([
