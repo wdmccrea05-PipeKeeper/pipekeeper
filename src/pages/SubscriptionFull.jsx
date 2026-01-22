@@ -407,7 +407,7 @@ export default function SubscriptionFull() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-stone-900">$1.99</p>
-                  <p className="text-xs text-stone-700">per month</p>
+                  <p className="text-xs text-stone-700">per month • $19.99/year</p>
                 </div>
               </div>
             </CardHeader>
