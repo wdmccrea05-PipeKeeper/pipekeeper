@@ -177,7 +177,7 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin } = useCurrentUser();
+  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription } = useCurrentUser();
 
   React.useEffect(() => {
     const handleStorageChange = (e) => {
