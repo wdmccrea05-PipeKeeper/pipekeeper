@@ -72,9 +72,11 @@ Deno.serve(async (req) => {
       
       // Check if subscription grants premium access
       // 1. Check Subscription entity first
+      const subStatus = subscription?.data?.status || subscription?.status;
+      const subPeriodEnd = subscription?.data?.current_period_end || subscription?.current_period_end;
       let isPaid = subscription && 
-        (subscription.status === 'active' || subscription.status === 'trialing') &&
-        (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+        (subStatus === 'active' || subStatus === 'trialing') &&
+        (!subPeriodEnd || new Date(subPeriodEnd) > new Date());
       
       // 2. Fallback to User entity fields (set by webhook)
       if (!isPaid && user.subscription_level === 'paid') {
