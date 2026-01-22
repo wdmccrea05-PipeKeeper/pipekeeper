@@ -87,6 +87,24 @@ export function useCurrentUser() {
     }
   }, [isLoading, rawUser, hasPaid]);
 
+  // Dev-only tier/entitlement debug output
+  useEffect(() => {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && !isLoading && rawUser?.email) {
+      const debugInfo = {
+        email: rawUser.email,
+        tier: subscription?.tier || 'free',
+        isOnTrial: isInTrial,
+        isLegacyPremium: subscription?.tier === 'premium' && subscription?.subscriptionStartedAt && 
+          new Date(subscription.subscriptionStartedAt) < new Date('2026-02-01T00:00:00.000Z'),
+        isFoundingMember: rawUser.isFoundingMember === true,
+        subscriptionStartedAt: subscription?.subscriptionStartedAt || subscription?.started_at || 'N/A',
+        hasPaid,
+        hasPremium,
+      };
+      console.log('[PipeKeeper Dev] Entitlements:', debugInfo);
+    }
+  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium]);
+
   return {
     user: rawUser,
     subscription,
