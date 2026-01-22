@@ -426,7 +426,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[100vh] overflow-hidden flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Crop & Adjust Image</DialogTitle>
           <p className="text-xs sm:text-sm text-stone-500">
@@ -434,7 +434,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </p>
         </DialogHeader>
         
-        <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1">
+        <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0">
           {/* Preview Reference Frame */}
           <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-2">
