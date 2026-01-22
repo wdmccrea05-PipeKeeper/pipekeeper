@@ -17,6 +17,7 @@ import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
 import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion";
 import { PK_THEME } from "@/components/utils/pkTheme";
+import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -156,6 +157,7 @@ export default function Layout({ children, currentPageName }) {
   });
   const [showSubscribePrompt, setShowSubscribePrompt] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
+  const [showFoundingMemberPopup, setShowFoundingMemberPopup] = React.useState(false);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -233,6 +235,25 @@ export default function Layout({ children, currentPageName }) {
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
   }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
+
+  // Founding Member popup for early supporters
+  React.useEffect(() => {
+    if (userLoading) return;
+    if (!user?.email) return;
+    if (!hasPaidAccess) return;
+    if (user?.foundingMemberAcknowledged) return;
+    
+    // Check if subscription started before Feb 1, 2026
+    const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
+    const startedAt = subscription?.started_at || subscription?.current_period_start;
+    
+    if (!startedAt) return;
+    
+    const subscriptionDate = new Date(startedAt);
+    if (subscriptionDate < foundingCutoff) {
+      setShowFoundingMemberPopup(true);
+    }
+  }, [userLoading, user, hasPaidAccess, subscription]);
 
   if (!ageConfirmed) {
     return (
@@ -412,6 +433,19 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         <TermsGate user={user} />
+
+        <FoundingMemberPopup
+          isOpen={showFoundingMemberPopup}
+          onClose={async () => {
+            setShowFoundingMemberPopup(false);
+            try {
+              await base44.auth.updateMe({ foundingMemberAcknowledged: true });
+              await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+            } catch (err) {
+              console.error("Failed to update founding member status:", err);
+            }
+          }}
+        />
 
         {showSubscribePrompt && (
           <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
