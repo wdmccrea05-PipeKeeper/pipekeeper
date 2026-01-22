@@ -605,7 +605,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 border-t mt-4 pt-4">
+        <DialogFooter className="flex-shrink-0 border-t mt-4 pt-4 gap-2">
           <Button variant="outline" onClick={onCancel}>
             <X className="w-4 h-4 mr-2" />
             Cancel
