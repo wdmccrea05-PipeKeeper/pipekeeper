@@ -139,30 +139,38 @@ Deno.serve(async (req) => {
         const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
         const isPaid = (status === "active" || status === "trialing") && endOk;
 
-        await base44.asServiceRole.entities.User.create({
-          email: customerEmail,
-          full_name: customer.name || "User from Stripe",
-          subscription_level: isPaid ? "paid" : "free",
-          subscription_status: best.status,
-          stripe_customer_id: customer.id,
-        });
-
-        created++;
-        appEmailSet.add(customerEmail);
-      } else {
-        // Update existing user
-        const users = await base44.asServiceRole.entities.User.filter({ email: customerEmail });
-        if (users?.length) {
-          const status = String(best.status || "").toLowerCase();
-          const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
-          const isPaid = (status === "active" || status === "trialing") && endOk;
-
-          await base44.asServiceRole.entities.User.update(users[0].id, {
-            subscription_level: isPaid ? "paid" : (users[0].subscription_level || "free"),
+        try {
+          await base44.asServiceRole.entities.User.create({
+            email: customerEmail,
+            full_name: customer.name || "User from Stripe",
+            subscription_level: isPaid ? "paid" : "free",
             subscription_status: best.status,
             stripe_customer_id: customer.id,
           });
-          updated++;
+
+          created++;
+          appEmailSet.add(customerEmail);
+        } catch (e) {
+          console.log(`[backfillStripeCustomers] Could not create user ${customerEmail}: ${e?.message}`);
+        }
+      } else {
+        // Update existing user
+        try {
+          const users = await base44.asServiceRole.entities.User.filter({ email: customerEmail });
+          if (users?.length) {
+            const status = String(best.status || "").toLowerCase();
+            const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
+            const isPaid = (status === "active" || status === "trialing") && endOk;
+
+            await base44.asServiceRole.entities.User.update(users[0].id, {
+              subscription_level: isPaid ? "paid" : (users[0].subscription_level || "free"),
+              subscription_status: best.status,
+              stripe_customer_id: customer.id,
+            });
+            updated++;
+          }
+        } catch (e) {
+          console.log(`[backfillStripeCustomers] Could not update user ${customerEmail}: ${e?.message}`);
         }
       }
 
