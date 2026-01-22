@@ -136,15 +136,15 @@ export default function UserReport() {
             onClick={async () => {
               try {
                 setIsSyncing(true);
-                const res = await base44.functions.invoke('syncStripeSubscriptions', {});
+                const res = await base44.functions.invoke('backfillStripeCustomers', {});
                 if (res?.data?.ok) {
-                  toast.success(`Stripe sync complete: ${res.data.updatedUsers} users updated`);
+                  toast.success(`Backfill complete: ${res.data.created} created, ${res.data.updated} updated`);
                 } else {
-                  toast.error(res?.data?.error || 'Stripe sync failed');
+                  toast.error(res?.data?.error || 'Backfill failed');
                 }
                 await refetch();
               } catch (e) {
-                toast.error(e?.message || 'Stripe sync failed');
+                toast.error(e?.message || 'Backfill failed');
               } finally {
                 setIsSyncing(false);
               }
@@ -154,7 +154,7 @@ export default function UserReport() {
             disabled={isSyncing}
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing…' : 'Sync from Stripe'}
+            {isSyncing ? 'Syncing…' : 'Backfill from Stripe'}
           </Button>
 
           <Button
