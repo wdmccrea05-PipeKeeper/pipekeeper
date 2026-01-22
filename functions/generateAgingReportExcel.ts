@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import XLSX from 'npm:xlsx@0.18.5';
 import { differenceInMonths } from 'npm:date-fns@3.6.0';
+import { requireEntitlement } from './_auth/requireEntitlement.js';
 
 Deno.serve(async (req) => {
   try {
@@ -10,6 +11,8 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    await requireEntitlement(base44, user, 'EXPORT_REPORTS');
 
     const payload = await req.json();
     const { startDate, endDate } = payload;

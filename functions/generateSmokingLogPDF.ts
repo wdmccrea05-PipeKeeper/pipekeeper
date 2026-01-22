@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
+import { requireEntitlement } from './_auth/requireEntitlement.js';
 
 Deno.serve(async (req) => {
   try {
@@ -9,6 +10,8 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    await requireEntitlement(base44, user, 'EXPORT_REPORTS');
 
     const payload = await req.json();
     const { startDate, endDate } = payload;
