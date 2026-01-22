@@ -18,6 +18,7 @@ import TermsGate from "@/components/TermsGate";
 import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/companion";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
+import EntitlementDebug from "@/components/debug/EntitlementDebug";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -264,9 +265,9 @@ export default function Layout({ children, currentPageName }) {
     if (!hasPaidAccess) return;
     if (user?.foundingMemberAcknowledged) return;
     
-    // Check if subscription started before Feb 1, 2026
+    // Check if subscription started before Feb 1, 2026 using normalized date
     const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
-    const startedAt = subscription?.started_at || subscription?.current_period_start;
+    const startedAt = subscription?.subscriptionStartedAt || subscription?.started_at || subscription?.current_period_start;
     
     if (!startedAt) return;
     
@@ -469,29 +470,31 @@ export default function Layout({ children, currentPageName }) {
         />
 
         {showSubscribePrompt && (
-          <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-              <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
-              <p className="text-[#E0D8C8]/80 mb-5">
-                To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                  Continue Free
-                </Button>
-                <Button
-                  onClick={() => {
-                    setShowSubscribePrompt(false);
-                    navigate(createPageUrl("Subscription"));
-                  }}
-                >
-                  Subscribe
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </MeasurementProvider>
-    </>
-  );
-}
+           <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+             <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
+               <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
+               <p className="text-[#E0D8C8]/80 mb-5">
+                 To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
+               </p>
+               <div className="flex gap-3 justify-end">
+                 <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
+                   Continue Free
+                 </Button>
+                 <Button
+                   onClick={() => {
+                     setShowSubscribePrompt(false);
+                     navigate(createPageUrl("Subscription"));
+                   }}
+                 >
+                   Subscribe
+                 </Button>
+               </div>
+             </div>
+           </div>
+         )}
+
+        <EntitlementDebug />
+        </MeasurementProvider>
+        </>
+        );
+        }
