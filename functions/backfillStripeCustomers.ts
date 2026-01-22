@@ -61,10 +61,10 @@ Deno.serve(async (req) => {
     let startingAfter = null;
 
     while (hasMore) {
-      const page = await stripe.customers.list({ 
-        limit: 100,
-        starting_after: startingAfter 
-      });
+      const params = { limit: 100 };
+      if (startingAfter) params.starting_after = startingAfter;
+      
+      const page = await stripe.customers.list(params);
       allCustomers.push(...(page.data || []));
       hasMore = page.has_more;
       startingAfter = page.data?.[page.data.length - 1]?.id;
