@@ -111,12 +111,24 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     try {
       const containerType = type === 'tin' ? 'tin' : type === 'bulk' ? 'bulk' : 'pouch';
       
+      // Calculate actual ounces based on container size
+      let totalOunces = parseFloat(amount);
+      
+      if (type === 'tin' && formData.tin_size_oz) {
+        // For tins: multiply number of tins by tin size
+        totalOunces = parseFloat(amount) * parseFloat(formData.tin_size_oz);
+      } else if (type === 'pouch' && formData.pouch_size_oz) {
+        // For pouches: multiply number of pouches by pouch size
+        totalOunces = parseFloat(amount) * parseFloat(formData.pouch_size_oz);
+      }
+      // For bulk, amount is already in ounces
+      
       await base44.entities.CellarLog.create({
         blend_id: blend.id,
         blend_name: blend.name,
         transaction_type: 'added',
         date,
-        amount_oz: parseFloat(amount),
+        amount_oz: totalOunces,
         container_type: containerType,
         notes: `Added to cellar from inventory`
       });
