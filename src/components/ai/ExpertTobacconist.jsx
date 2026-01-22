@@ -8,6 +8,7 @@ import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
@@ -71,11 +72,23 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           </TabsContent>
 
           <TabsContent value="optimizer" className="mt-6">
-            <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
+            <FeatureGate 
+              feature="COLLECTION_OPTIMIZATION"
+              featureName="Collection Optimization"
+              description="Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access."
+            >
+              <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
+            </FeatureGate>
           </TabsContent>
 
           <TabsContent value="whatif" className="mt-6">
-            <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
+            <FeatureGate 
+              feature="COLLECTION_OPTIMIZATION"
+              featureName="What-If Analysis"
+              description="Ask collection strategy questions and run what-if scenarios with AI assistance. Available with Pro or legacy Premium access."
+            >
+              <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
+            </FeatureGate>
           </TabsContent>
 
           <TabsContent value="updates" className="mt-6">
