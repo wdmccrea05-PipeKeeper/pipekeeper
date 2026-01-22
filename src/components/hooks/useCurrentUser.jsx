@@ -7,6 +7,8 @@ import { hasPremiumAccess, hasPaidAccess } from "@/components/utils/premiumAcces
 import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/components/utils/trialAccess";
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
+import { useEffect } from "react";
 
 export function useCurrentUser() {
   // Fetch auth user + entity User + Subscription in parallel
@@ -77,6 +79,13 @@ export function useCurrentUser() {
   const isCompanion = isCompanionApp();
   const isApple = isAppleBuild;
   const isAdmin = (rawUser?.role || "").toLowerCase() === "admin";
+
+  // Auto-grandfather free users who exceed limits
+  useEffect(() => {
+    if (!isLoading && rawUser && !hasPaid) {
+      ensureFreeGrandfatherFlag(rawUser);
+    }
+  }, [isLoading, rawUser, hasPaid]);
 
   return {
     user: rawUser,
