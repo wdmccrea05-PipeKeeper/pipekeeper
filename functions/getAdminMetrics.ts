@@ -94,9 +94,8 @@ Deno.serve(async (req) => {
     };
 
     // 2. SUBSCRIPTION BREAKDOWN
-    let activePremium = 0,
-      activePro = 0,
-      onTrial = 0,
+    let activeOrTrialPremium = 0,
+      activeOrTrialPro = 0,
       cancelledButActive = 0,
       expired30d = 0,
       expired60d = 0,
@@ -109,12 +108,11 @@ Deno.serve(async (req) => {
       const tier = sub.tier || 'premium';
       const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
 
-      if (status === 'active') {
-        if (tier === 'pro') activePro++;
-        else activePremium++;
+      // Count active or trialing subscriptions
+      if (status === 'active' || status === 'trialing') {
+        if (tier === 'pro') activeOrTrialPro++;
+        else activeOrTrialPremium++;
       }
-
-      if (status === 'trialing') onTrial++;
 
       if (status === 'canceled' && periodEnd && periodEnd > now) {
         cancelledButActive++;
@@ -131,9 +129,8 @@ Deno.serve(async (req) => {
     });
 
     const subscriptionBreakdown = {
-      activePremium,
-      activePro,
-      onTrial,
+      activeOrTrialPremium,
+      activeOrTrialPro,
       cancelledButActive,
       expired30d,
       expired60d,
@@ -143,6 +140,7 @@ Deno.serve(async (req) => {
     };
 
     // 3. TRIAL METRICS
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const trialSubs = allSubscriptions.filter(s => (s.status || '').toLowerCase() === 'trialing');
     const trialEndDates = trialSubs
       .map(s => s.trial_end_date)
@@ -186,13 +184,20 @@ Deno.serve(async (req) => {
       return subs.length === 0;
     }).length;
 
+    // New signups in last 7 days
+    const newSignupsLast7d = allUsers.filter(u => {
+      const created = new Date(u.created_date);
+      return created >= sevenDaysAgo && created <= now;
+    }).length;
+
     const trialMetrics = {
-      currentlyOnTrial: onTrial,
+      currentlyOnTrial: trialSubs.length,
       avgDaysRemaining: Math.round(avgDaysRemaining * 10) / 10,
       endingIn3Days,
       endingIn7Days,
       convertedLast30d,
       dropoffLast30d,
+      newSignupsLast7d,
     };
 
     // 4. GROWTH METRICS (last 8 weeks)
