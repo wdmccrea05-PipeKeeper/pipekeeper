@@ -117,11 +117,11 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               {recommendation.reasoning && (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-900 mb-2 flex items-center gap-2">
+                    <h3 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-amber-600" />
                       Why This Works
                     </h3>
-                    <p className="text-sm text-stone-700 leading-relaxed">
+                    <p className="text-sm text-stone-300 leading-relaxed">
                       {recommendation.reasoning}
                     </p>
                   </CardContent>
