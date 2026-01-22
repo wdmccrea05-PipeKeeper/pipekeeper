@@ -256,10 +256,43 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-purple-700">{newUsersLoading ? '...' : newUsersData?.count || 0}</p>
+            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : adminMetrics?.userCounts?.free || 0}</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Metrics Section */}
+      {adminMetrics && !metricsLoading && (
+        <div className="mt-8 mb-8">
+          <h2 className="text-2xl font-bold text-[#e8d5b7] mb-4">Growth & Metrics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-white/95 border-[#e8d5b7]/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-indigo-600">Premium Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-indigo-700">{adminMetrics.userCounts.premium}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/95 border-[#e8d5b7]/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-amber-600">Pro Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-amber-700">{adminMetrics.userCounts.pro}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/95 border-[#e8d5b7]/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-rose-600">On Trial</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-rose-700">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="mb-6">
