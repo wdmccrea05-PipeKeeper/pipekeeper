@@ -234,6 +234,36 @@ export default function FAQFull() {
           </div>
         </Q>
 
+        <Q id="free-getting-started" q="Free: Getting Started">
+          The Free tier provides essential collection management features:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Add up to <b>5 pipes</b></li>
+            <li>Add up to <b>10 tobacco blends</b></li>
+            <li>View, edit, and organize your collection</li>
+            <li>Basic notes and ratings</li>
+            <li>Search pipes and tobaccos</li>
+            <li>Multilingual support (10 languages)</li>
+            <li>Cloud sync</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
+          </p>
+        </Q>
+
+        <Q id="free-community" q="Free: Community (Browse & Share)">
+          Community features are available to all users:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Browse public profiles and collections</li>
+            <li>Follow other collectors</li>
+            <li>Share basic collection cards</li>
+            <li>Comment on public pipes and tobacco</li>
+            <li>Search and discover new collectors</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            <b>Note:</b> Direct messaging is available with Premium.
+          </p>
+        </Q>
+
         <Q id="premium-smoking-log" q="Premium: Smoking Log">
           Track your smoking sessions with detailed logging capabilities:
           <ul className="list-disc ml-6 mt-2 space-y-1">
@@ -252,7 +282,49 @@ export default function FAQFull() {
           Track detailed cellaring transactions with the dedicated cellaring log. Record when tobacco is added to or removed from your cellar with precise amounts in ounces, container types (tin, jar, bulk, pouch), dates, and notes. View net cellared amounts for each blend and drill down into cellar inventory from the home page.
         </Q>
 
-        <Q id="premium-pairing-matrix" q="Premium: Advanced Pairing Matrix">
+        <Q id="premium-manual-pairing" q="Premium: Manual Pipe ↔ Tobacco Pairing">
+          Create and manage your own custom pipe-tobacco pairings:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Link specific pipes to your favorite tobacco blends</li>
+            <li>Track which combinations work well for you</li>
+            <li>Quick access to your preferred pairings</li>
+            <li>Notes on each pairing for future reference</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-filters" q="Premium: Advanced Filters & Sorting">
+          Organize and find items in your collection with powerful filtering:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Multi-criteria filtering (shape, material, blend type, etc.)</li>
+            <li>Custom sort options (value, date added, rating, etc.)</li>
+            <li>Saved filter presets for quick access</li>
+            <li>Batch operations on filtered results</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-tobacco-library" q="Premium: Tobacco Library Sync">
+          Access and synchronize with comprehensive tobacco databases:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Auto-fill blend information from curated libraries</li>
+            <li>Keep your collection data up-to-date</li>
+            <li>Access manufacturer specs and descriptions</li>
+            <li>Community-contributed tasting notes</li>
+          </ul>
+        </Q>
+
+        <Q id="premium-messaging" q="Premium: Community Messaging">
+          Connect directly with friends and fellow collectors:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Send and receive instant messages with connections</li>
+            <li>Share photos and collection details privately</li>
+            <li>Discuss blends and coordinate trades</li>
+            <li>Message notifications and history</li>
+            <li>Edit or delete sent messages as needed</li>
+          </ul>
+          Direct messaging is a Premium feature, enabling private communication within the PipeKeeper community.
+        </Q>
+
+        <Q id="pro-pairing-intelligence" q="Pro: Smart Pairing Intelligence">
           The enhanced Pairing Matrix generates detailed compatibility scores (0-10) for every pipe-tobacco combination in your collection:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><b>Smart Focus Matching:</b> Pipes with "Aromatic" focus only match aromatic blends; "Virginia" or "English" focus matches non-aromatic families</li>
@@ -265,7 +337,7 @@ export default function FAQFull() {
           The system uses deterministic scoring logic for consistency—no randomness, always the same result for the same inputs.
         </Q>
 
-        <Q id="premium-collection-optimizer" q="Premium: Collection Optimization">
+        <Q id="pro-collection-optimizer" q="Pro: Collection Optimization">
           This AI feature analyzes your collection to identify gaps, redundancies, and specialization opportunities:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><b>Specialization Suggestions:</b> Recommends dedicating pipes to specific blend families (Virginias, Latakia blends, Aromatics)</li>
@@ -278,7 +350,22 @@ export default function FAQFull() {
           The optimizer works with your pairing matrix to ensure every pipe is used optimally.
         </Q>
 
-        <Q id="premium-break-in" q="Premium: AI Break-in Schedules">
+        <Q id="pro-break-in" q="Pro: AI Break-in Schedules">
+          Generate customized break-in schedules for new pipes:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li><b>Smart Tobacco Selection:</b> Recommends specific blends from your collection for each break-in stage</li>
+            <li><b>Progressive Conditioning:</b> Starts with mild, forgiving blends then transitions to your pipe's intended focus</li>
+            <li><b>Bowl Count Tracking:</b> Track progress bowl-by-bowl with automated checkmarks</li>
+            <li><b>Interchangeable Bowl Support:</b> Generate separate break-in schedules for each bowl variant</li>
+            <li><b>Smoking Log Integration:</b> Sessions marked as "break-in" automatically update your schedule</li>
+            <li><b>Regeneration:</b> Update schedules as your tobacco collection changes</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Pro is active starting <b>February 1, 2026</b>. If you subscribed to Premium before February 1, 2026, you keep AI-powered features like break-in schedules.
+          </p>
+        </Q>
+
+        <Q id="pro-pipe-specialization" q="Pro: AI Pipe Specialization">
           Generate customized break-in schedules for new pipes:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><b>Smart Tobacco Selection:</b> Recommends specific blends from your collection for each break-in stage</li>
@@ -291,15 +378,69 @@ export default function FAQFull() {
           Break-in schedules help you build proper cake without risking burnout or ghosting in new pipes.
         </Q>
 
-        <Q id="premium-pipe-specialization" q="Premium: Pipe Specialization">
-          The system can recommend which pipes to dedicate to specific tobacco types (Virginias, Latakia blends, Aromatics, etc.) based on each pipe's smoking characteristics and your collection composition.
+        <Q id="pro-pipe-specialization" q="Pro: AI Pipe Specialization">
+          AI-powered recommendations for pipe specialization:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Analyzes pipe characteristics and smoking properties</li>
+            <li>Recommends which pipes to dedicate to specific tobacco types</li>
+            <li>Suggestions based on collection composition and usage patterns</li>
+            <li>Helps optimize each pipe for Virginias, Latakia blends, Aromatics, etc.</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Pro is active starting <b>February 1, 2026</b>. If you subscribed to Premium before February 1, 2026, you keep AI-powered specialization recommendations.
+          </p>
         </Q>
 
-        <Q id="premium-community" q="Premium: Community Features">
-          Access the full Community section to make your profile public, follow other collectors, view and comment on their collections, and send direct messages to friends. Find collectors near you or with similar interests.
+        <Q id="pro-ai-updates" q="Pro: AI Updates">
+          Receive ongoing AI-powered insights and recommendations:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Continuous learning from your smoking logs and preferences</li>
+            <li>Evolving pairing suggestions as your collection grows</li>
+            <li>Personalized collection insights and trends</li>
+            <li>Smart notifications for optimal pipe rotation and cellar management</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Pro is active starting <b>February 1, 2026</b>. If you subscribed to Premium before February 1, 2026, you keep AI Updates.
+          </p>
         </Q>
 
-        <Q id="premium-advanced-exports" q="Premium: Advanced Export & Reporting">
+        <Q id="pro-ai-identification" q="Pro: AI Identification Tools">
+          Advanced AI-powered identification and analysis:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Photo identification for pipes (stamps, shapes, makers)</li>
+            <li>AI market value lookup and automated tracking</li>
+            <li>Measurement calculator from photos</li>
+            <li>Web search for auto-filling pipe & tobacco details</li>
+            <li>Visual analysis of condition and authenticity</li>
+          </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Pro is active starting <b>February 1, 2026</b>. If you subscribed to Premium before February 1, 2026, you keep AI Identification tools.
+          </p>
+        </Q>
+
+        <Q id="pro-analytics" q="Pro: Analytics & Insights">
+          Comprehensive analytics and data visualization:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Detailed collection statistics and trends</li>
+            <li>Smoking pattern analysis and insights</li>
+            <li>Value tracking and investment performance</li>
+            <li>Usage heatmaps and rotation recommendations</li>
+            <li>Predictive analytics for inventory planning</li>
+          </ul>
+        </Q>
+
+        <Q id="pro-bulk-editing" q="Pro: Bulk Editing Tools">
+          Efficiently manage large collections with powerful bulk operations:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Batch update multiple pipes or tobacco entries at once</li>
+            <li>Quickly apply tags, categories, and metadata changes</li>
+            <li>Bulk photo uploads and organization</li>
+            <li>Mass price updates and value adjustments</li>
+            <li>Streamlined data correction and standardization</li>
+          </ul>
+        </Q>
+
+        <Q id="pro-export-reporting" q="Pro: Export & Reporting">
           Generate comprehensive PDF reports of your collection with photos, detailed analytics, valuation summaries, and pairing guides. Export your data in multiple formats for insurance documentation or personal records:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>PDF pipe valuations with detailed specs and photos</li>
@@ -308,18 +449,6 @@ export default function FAQFull() {
             <li>Smoking history summaries</li>
             <li>Cellar inventory reports</li>
             <li>Insurance-ready documentation with valuations</li>
-          </ul>
-        </Q>
-
-        <Q id="premium-community-safety" q="Premium: Community Safety Features">
-          Safely connect with the PipeKeeper community with robust moderation:
-          <ul className="list-disc ml-6 mt-2 space-y-1">
-            <li>Private-by-default profiles (choose to make public)</li>
-            <li>Block and report tools for objectionable content</li>
-            <li>Abuse reporting queue reviewed by moderators</li>
-            <li>Comment moderation and removal capabilities</li>
-            <li>Share cards for selective profile visibility</li>
-            <li>Privacy controls over what others can see</li>
           </ul>
         </Q>
 
@@ -334,8 +463,16 @@ export default function FAQFull() {
           </ul>
         </Q>
 
-        <Q id="premium-ai-updates" q="Premium: AI Updates & Recommendations">
-          Receive ongoing AI-powered recommendations as your collection grows. The system learns from your smoking logs and preferences to continuously improve pairing suggestions and collection insights.
+        <Q id="premium-community-safety" q="Premium: Community Safety Features">
+          Safely connect with the PipeKeeper community with robust moderation:
+          <ul className="list-disc ml-6 mt-2 space-y-1">
+            <li>Private-by-default profiles (choose to make public)</li>
+            <li>Block and report tools for objectionable content</li>
+            <li>Abuse reporting queue reviewed by moderators</li>
+            <li>Comment moderation and removal capabilities</li>
+            <li>Share cards for selective profile visibility</li>
+            <li>Privacy controls over what others can see</li>
+          </ul>
         </Q>
 
         <Q id="premium-condition-tracking" q="Premium: Advanced Pipe Condition Tracking">
@@ -405,17 +542,7 @@ export default function FAQFull() {
           </ul>
         </Q>
 
-        <Q id="premium-bulk-operations" q="Premium: Bulk Operations">
-          Perform bulk updates on multiple pipes or tobacco entries at once. Quickly update quantities, apply tags, or modify settings across your entire collection efficiently.
-        </Q>
 
-        <Q id="premium-value-tracking" q="Premium: Enhanced Value Tracking">
-          Track estimated market values for your collection over time, receive alerts on market trends for rare pipes or tobaccos you own, and generate valuation reports for insurance purposes.
-        </Q>
-
-        <Q id="premium-messaging" q="Premium: Direct Messaging">
-          Send and receive instant messages with friends in the PipeKeeper community. Share photos, discuss blends, coordinate trades, and connect with fellow enthusiasts privately. Edit or delete sent messages as needed.
-        </Q>
       </Section>
 
       <Section title="Accounts & Data">
