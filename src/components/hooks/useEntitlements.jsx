@@ -3,7 +3,7 @@ import { useCurrentUser } from "./useCurrentUser";
 import { buildEntitlements } from "@/components/utils/entitlements";
 
 export function useEntitlements() {
-  const { user, subscription, hasPaid, isLoading } = useCurrentUser();
+  const { user, subscription, hasPaid, isLoading, isInTrial } = useCurrentUser();
 
   return useMemo(() => {
     if (isLoading || !user) {
@@ -11,6 +11,7 @@ export function useEntitlements() {
         isPaidSubscriber: false,
         isProSubscriber: false,
         subscriptionStartedAt: null,
+        isOnTrial: false,
       });
     }
 
@@ -22,6 +23,7 @@ export function useEntitlements() {
       isProSubscriber,
       subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
       isFreeGrandfathered: user?.isFreeGrandfathered || false,
+      isOnTrial: isInTrial,
     });
-  }, [user, subscription, hasPaid, isLoading]);
+  }, [user, subscription, hasPaid, isLoading, isInTrial]);
 }
