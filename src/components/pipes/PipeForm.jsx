@@ -18,6 +18,8 @@ import InterchangeableBowls from "@/components/pipes/InterchangeableBowls";
 import PhotoUploader from "@/components/PhotoUploader";
 import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
@@ -66,13 +68,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [cropperType, setCropperType] = useState(null);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
-
+  const { user } = useCurrentUser();
   const entitlements = useEntitlements();
   const isPaidUser = user?.subscription_level === 'paid';
   
@@ -223,16 +219,16 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check free tier limits for new pipes
+    // Check free tier limits for new pipes only
     if (!pipe && entitlements.tier === "free") {
-      try {
-        const existingPipes = await base44.entities.Pipe.filter({ created_by: user?.email });
-        if (existingPipes.length >= entitlements.limits.pipes) {
-          toast.error(`Free tier limited to ${entitlements.limits.pipes} pipes. Upgrade to add more.`);
-          return;
-        }
-      } catch (err) {
-        console.error('Failed to check pipe limit:', err);
+      const canAdd = await canCreatePipe(user?.email, entitlements.limits.pipes);
+      if (!canAdd) {
+        toast.error(
+          entitlements.isFreeGrandfathered
+            ? "You've reached the free limit. Upgrade to add more pipes, or delete some existing ones."
+            : `Free tier limited to ${entitlements.limits.pipes} pipes. Upgrade to add more.`
+        );
+        return;
       }
     }
 
