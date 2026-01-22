@@ -33,10 +33,10 @@ export default function UserReport() {
     retry: false,
   });
 
-  const { data: newUsersData, isLoading: newUsersLoading } = useQuery({
-    queryKey: ['new-users-7days'],
+  const { data: adminMetrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['admin-metrics'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getNewUsersCount', {});
+      const response = await base44.functions.invoke('getAdminMetrics', {});
       return response.data;
     },
     enabled: user?.role === 'admin',
