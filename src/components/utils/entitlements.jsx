@@ -22,16 +22,9 @@ export function buildEntitlements(input) {
       : { pipes: Infinity, tobaccos: Infinity, photosPerItem: Infinity, smokingLogs: Infinity };
 
   const canUse = (feature) => {
-    // Free
+    // Free - very limited features
     if (tier === "free") {
-      if (feature === "PAIRING_BASIC") return true;
-      if (feature === "ANALYTICS_STATS") return false;
-      if (feature === "AI_UPDATES") return false;
-      if (feature === "AI_IDENTIFY") return false;
-      if (feature === "EXPORT_REPORTS") return false;
-      if (feature === "BULK_EDIT") return false;
-      if (feature === "MESSAGING") return false;
-      if (feature === "UNLIMITED_COLLECTION") return false;
+      // Free users get nothing except basic collection with limits
       return false;
     }
 

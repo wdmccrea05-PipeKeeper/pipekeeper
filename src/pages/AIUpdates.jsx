@@ -7,6 +7,7 @@ import { Loader2, Tags, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
 export default function AIUpdates() {
   const queryClient = useQueryClient();
@@ -131,6 +132,11 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
   });
 
   return (
+    <FeatureGate 
+      feature="AI_UPDATES"
+      featureName="AI Updates"
+      description="Automatically standardize tobacco categories, regenerate pairing matrices, and update collection optimization using advanced AI. Available in Pro tier or for grandfathered Premium users."
+    >
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">
@@ -195,5 +201,6 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
         </Card>
       </div>
     </div>
+    </FeatureGate>
   );
 }

@@ -177,5 +177,6 @@ Provide detailed identification results that can be used to fill out a pipe inve
         )}
       </CardContent>
     </Card>
+    </FeatureGate>
   );
 }
