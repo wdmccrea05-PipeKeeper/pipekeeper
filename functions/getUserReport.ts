@@ -88,9 +88,9 @@ Deno.serve(async (req) => {
         full_name: user.full_name,
         role: user.role,
         created_date: user.created_date,
-        subscription_status: subscription?.status || user.subscription_status || 'none',
-        subscription_end: subscription?.current_period_end || null,
-        billing_interval: subscription?.billing_interval || null
+        subscription_status: subscription?.data?.status || subscription?.status || user.subscription_status || 'none',
+        subscription_end: subscription?.data?.current_period_end || subscription?.current_period_end || null,
+        billing_interval: subscription?.data?.billing_interval || subscription?.billing_interval || null
       };
 
       if (isPaid) {
