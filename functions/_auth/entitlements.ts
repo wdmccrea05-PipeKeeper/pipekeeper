@@ -26,7 +26,7 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
   };
 
   // Legacy Pro features for Premium subscribers before Feb 1, 2026
-  const legacyProFeatures = ['AI_UPDATES', 'AI_IDENTIFY'];
+  const legacyProFeatures = ['AI_UPDATES', 'AI_IDENTIFY', 'BULK_EDIT', 'EXPORT_REPORTS'];
 
   const canUse = (feature) => {
     const featureTiers = {
@@ -60,8 +60,8 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
       AI_UPDATES: ['pro'],
       AI_IDENTIFY: ['pro'],
       ANALYTICS_INSIGHTS: ['pro'],
-      BULK_EDITING: ['pro'],
-      EXPORT_REPORTING: ['pro'],
+      BULK_EDIT: ['pro'],
+      EXPORT_REPORTS: ['pro'],
     };
 
     const allowedTiers = featureTiers[feature] || [];

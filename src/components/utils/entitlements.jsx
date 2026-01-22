@@ -7,9 +7,10 @@ function isBeforeProCutoff(iso) {
 }
 
 export function buildEntitlements(input) {
+  // Trial users get Premium tier access
   const tier = input.isProSubscriber
     ? "pro"
-    : input.isPaidSubscriber
+    : input.isPaidSubscriber || input.isOnTrial
       ? "premium"
       : "free";
 
@@ -26,17 +27,12 @@ export function buildEntitlements(input) {
     // Pro tier gets everything
     if (tier === "pro") return true;
     
-    // Trial users (free tier but in 7-day window) cannot use Pro-only features
-    if (input.isOnTrial && tier === "free") {
-      return false;
-    }
-    
     // Legacy Premium (subscribed before Feb 1, 2026) gets ALL features
     if (tier === "premium" && isPremiumLegacy) {
       return true;
     }
     
-    // New Premium (post Feb 1, 2026) gets only core Premium features
+    // Premium tier (including trial) gets core Premium features
     // Pro-only features: BULK_EDIT, AI_IDENTIFY, AI_VALUE_LOOKUP, EXPORT_REPORTS, etc.
     if (tier === "premium") {
       return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "MATCHING_ENGINE", "MESSAGING"].includes(featureKey);
