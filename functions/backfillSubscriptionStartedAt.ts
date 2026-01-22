@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     // Date before PRO launch to grandfather existing users
-    const legacyDate = '2024-12-31T23:59:59Z';
+    const legacyDate = '2026-01-31T23:59:59.000Z';
     
     // Get all subscriptions
     const subscriptions = await base44.asServiceRole.entities.Subscription.list();

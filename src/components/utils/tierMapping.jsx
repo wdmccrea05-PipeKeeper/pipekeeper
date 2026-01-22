@@ -28,8 +28,8 @@
  *   - Advanced analytics insights
  * 
  * Premium Legacy: Grandfathered early adopters
- *   - Users who subscribed before 2025-01-15
- *   - Get all Pro features at Premium pricing
+ *   - Users who subscribed before 2026-02-01
+ *   - Get all Pro features (including AI Updates + AI Identify) at Premium pricing
  *   - Permanent grandfathered status
  */
 
@@ -38,7 +38,7 @@
  * ================
  * Users with subscription.started_at before this date are Premium Legacy
  */
-export const PRO_LAUNCH_CUTOFF_ISO = '2025-01-15T00:00:00Z';
+export const PRO_LAUNCH_CUTOFF_ISO = '2026-02-01T00:00:00.000Z';
 
 /**
  * FEATURE MATRIX
@@ -57,14 +57,15 @@ export const PRO_LAUNCH_CUTOFF_ISO = '2025-01-15T00:00:00Z';
  * --------------------------
  * Feature                  | Free | Premium | Pro | Legacy Premium
  * ------------------------|------|---------|-----|---------------
- * AI Photo Identification | ❌   | ✅      | ✅  | ✅
- * AI Value Lookup         | ❌   | ✅      | ✅  | ✅
- * Bulk Tobacco Update     | ❌   | ✅      | ✅  | ✅
+ * AI Photo Identification | ❌   | ❌      | ✅  | ✅
+ * AI Value Lookup         | ❌   | ❌      | ✅  | ✅
+ * AI Pipe Identification  | ❌   | ❌      | ✅  | ✅
  * 
  * AI Tools - Analytics:
  * ---------------------
  * Feature                  | Free | Premium | Pro | Legacy Premium
  * ------------------------|------|---------|-----|---------------
+ * AI Updates Panel        | ❌   | ❌      | ✅  | ✅
  * Pairing Matrix (Basic)  | ❌   | ✅      | ✅  | ✅
  * Pairing Matrix (Adv)    | ❌   | ❌      | ✅  | ✅
  * Collection Optimization | ❌   | ❌      | ✅  | ✅
@@ -88,10 +89,12 @@ export const PRO_LAUNCH_CUTOFF_ISO = '2025-01-15T00:00:00Z';
  * Use these keys with entitlements.canUse(featureKey)
  */
 export const FEATURE_KEYS = {
-  // Identification features (Premium+)
+  // Identification features (Pro+ or Legacy Premium)
   AI_IDENTIFY: 'AI_IDENTIFY',
   AI_VALUE_LOOKUP: 'AI_VALUE_LOOKUP',
-  BULK_EDIT: 'BULK_EDIT',
+  
+  // AI Updates (Pro+ or Legacy Premium)
+  AI_UPDATES: 'AI_UPDATES',
   
   // Basic analytics (Premium+)
   PAIRING_BASIC: 'PAIRING_BASIC',
@@ -104,6 +107,9 @@ export const FEATURE_KEYS = {
   
   // Reports (Pro+)
   EXPORT_REPORTS: 'EXPORT_REPORTS',
+  
+  // Bulk operations (Pro+)
+  BULK_EDIT: 'BULK_EDIT',
 };
 
 /**
