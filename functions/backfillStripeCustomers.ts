@@ -55,15 +55,6 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(stripeSecret, { apiVersion: "2024-06-20" });
 
-    // Fetch all app users (handle case where User entity doesn't exist yet)
-    let allAppUsers = [];
-    try {
-      allAppUsers = await base44.asServiceRole.entities.User.list();
-    } catch (e) {
-      // User entity doesn't exist yet - first users are being created from Stripe
-      console.log("[backfillStripeCustomers] User entity not yet created");
-    }
-
     // Fetch all Stripe customers
     const allCustomers = [];
     let hasMore = true;
@@ -79,8 +70,14 @@ Deno.serve(async (req) => {
       startingAfter = page.data?.[page.data.length - 1]?.id;
     }
 
-    // Build set of existing app user emails
-    const appEmailSet = new Set(allAppUsers.map(u => normEmail(u.email)));
+    // Try to get existing app users, but don't fail if User entity is custom
+    let appEmailSet = new Set();
+    try {
+      const allAppUsers = await base44.asServiceRole.entities.User.list();
+      appEmailSet = new Set(allAppUsers.map(u => normEmail(u.email)));
+    } catch (e) {
+      // User entity might be custom or not accessible - skip checking existing users
+    }
 
     // Process each Stripe customer
     let created = 0;
