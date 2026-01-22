@@ -3,6 +3,27 @@
 // Subscription entity is the source of truth when present
 import { hasTrialAccess } from "./trialAccess";
 
+const LEGACY_PREMIUM_CUTOFF = "2026-02-01T00:00:00.000Z";
+
+export function isLegacyPremium(subscription = null) {
+  if (!subscription) return false;
+  
+  const tier = (subscription.tier || "").toLowerCase();
+  if (tier === "pro") return false; // Pro is never legacy
+  
+  // Use normalized subscriptionStartedAt, fall back to started_at
+  const startDate = subscription.subscriptionStartedAt || subscription.started_at;
+  if (!startDate) return false;
+  
+  try {
+    const cutoff = new Date(LEGACY_PREMIUM_CUTOFF);
+    const start = new Date(startDate);
+    return start < cutoff;
+  } catch {
+    return false;
+  }
+}
+
 export function hasPaidAccess(user, subscription = null) {
   if (!user) return false;
 
@@ -61,4 +82,8 @@ export function hasPremiumAccess(user, subscription = null) {
 
 export function getPlanLabel(user) {
   return hasPremiumAccess(user) ? "Premium" : "Free";
+}
+
+export function isFoundingMember(user = null) {
+  return user?.isFoundingMember === true;
 }
