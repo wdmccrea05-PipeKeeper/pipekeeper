@@ -23,19 +23,20 @@ export function buildEntitlements(input) {
 
   // Helper to check if feature is available for current tier + legacy status
   const featureAvailable = (featureKey) => {
+    // Pro tier gets everything
     if (tier === "pro") return true;
+    
+    // Legacy Premium (subscribed before Feb 1, 2026) gets ALL features
     if (tier === "premium" && isPremiumLegacy) {
-      // Legacy premium gets ONLY AI_UPDATES and AI_IDENTIFY
-      const legacyProFeatures = [
-        "AI_UPDATES",
-        "AI_IDENTIFY",
-      ];
-      return legacyProFeatures.includes(featureKey);
+      return true;
     }
+    
+    // New Premium (post Feb 1, 2026) gets only core Premium features
     if (tier === "premium") {
-      // New premium users get basic features only
-      return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "ANALYTICS_STATS", "MESSAGING"].includes(featureKey);
+      return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "MATCHING_ENGINE", "MESSAGING"].includes(featureKey);
     }
+    
+    // Free tier gets nothing special
     return false;
   };
 
