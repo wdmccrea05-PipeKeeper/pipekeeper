@@ -132,8 +132,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               {recommendation.collection_fit && (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-900 mb-2">Collection Fit</h3>
-                    <p className="text-sm text-stone-700 leading-relaxed">
+                    <h3 className="font-semibold text-stone-300 mb-2">Collection Fit</h3>
+                    <p className="text-sm text-stone-400 leading-relaxed">
                       {recommendation.collection_fit}
                     </p>
                   </CardContent>
