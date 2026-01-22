@@ -51,5 +51,11 @@ export function buildEntitlements(input) {
     return featureAvailable(feature);
   };
 
-  return { tier, isPremiumLegacy, limits, canUse };
+  return { 
+    tier, 
+    isPremiumLegacy, 
+    isFreeGrandfathered: !!input.isFreeGrandfathered,
+    limits, 
+    canUse 
+  };
 }
