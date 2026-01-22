@@ -158,13 +158,13 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Considerations */}
               {recommendation.considerations && (
-                <Card className="border-amber-200 bg-amber-50/30">
+                <Card className="border-amber-700 bg-amber-950/40">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-amber-900 mb-1">Important Considerations</h3>
-                        <p className="text-sm text-amber-800 leading-relaxed">
+                        <h3 className="font-semibold text-amber-400 mb-1">Important Considerations</h3>
+                        <p className="text-sm text-amber-300 leading-relaxed">
                           {recommendation.considerations}
                         </p>
                       </div>
