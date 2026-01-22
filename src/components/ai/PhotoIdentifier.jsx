@@ -5,20 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Camera, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEntitlements } from "@/components/hooks/useEntitlements";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import FeatureGate from "@/components/subscription/FeatureGate";
 
 export default function PhotoIdentifier({ onIdentify }) {
-  const entitlements = useEntitlements();
-
-  if (!entitlements.canUse("AI_IDENTIFY")) {
-    return (
-      <UpgradePrompt 
-        featureName="AI Photo Identification"
-        description="Automatically identify pipes from photos using advanced AI. Requires Pro tier."
-      />
-    );
-  }
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState([]);
@@ -113,6 +102,11 @@ Provide detailed identification results that can be used to fill out a pipe inve
   };
 
   return (
+    <FeatureGate 
+      feature="AI_IDENTIFY"
+      featureName="AI Photo Identification"
+      description="Upload photos of your pipe's stampings to instantly identify the maker, model, and approximate value using advanced AI. Available in Pro tier or for grandfathered Premium users."
+    >
     <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2 text-violet-800">
