@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     subsByEmail.forEach((subs, email) => {
       // Filter out incomplete and incomplete_expired
       const validSubs = subs.filter(s => {
-        const status = (s.status || '').toLowerCase();
+        const status = (s.data?.status || s.status || '').toLowerCase();
         return status !== 'incomplete' && status !== 'incomplete_expired';
       });
       
