@@ -21,15 +21,21 @@ function isoFromUnixSeconds(sec) {
 function pickBestSubscription(subs) {
   if (!Array.isArray(subs) || subs.length === 0) return null;
 
-  // Prefer active, then trialing, then anything else (latest period end)
+  // Prefer active, then trialing, then past_due, then anything else (latest period end)
   const rank = (s) => {
     const st = (s?.status || "").toLowerCase();
-    if (st === "active") return 3;
-    if (st === "trialing") return 2;
-    return 1;
+    if (st === "active") return 5;
+    if (st === "trialing") return 4;
+    if (st === "past_due") return 3;
+    // Filter out incomplete/incomplete_expired as they're not real subscriptions
+    if (st === "incomplete" || st === "incomplete_expired") return 0;
+    return 2;
   };
 
-  return [...subs].sort((a, b) => {
+  const validSubs = subs.filter(s => rank(s) > 0);
+  if (validSubs.length === 0) return null;
+
+  return [...validSubs].sort((a, b) => {
     const ra = rank(a);
     const rb = rank(b);
     if (rb !== ra) return rb - ra;
