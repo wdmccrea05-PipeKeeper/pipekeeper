@@ -33,6 +33,16 @@ export default function UserReport() {
     retry: false,
   });
 
+  const { data: newUsersData, isLoading: newUsersLoading } = useQuery({
+    queryKey: ['new-users-7days'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getNewUsersCount', {});
+      return response.data;
+    },
+    enabled: user?.role === 'admin',
+    retry: false,
+  });
+
   // Filter and search logic - moved before early returns to avoid hook rule violation
   const filteredData = useMemo(() => {
     if (!report) return { paid: [], free: [] };
