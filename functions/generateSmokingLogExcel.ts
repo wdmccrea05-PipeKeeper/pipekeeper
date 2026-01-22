@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import XLSX from 'npm:xlsx@0.18.5';
-import { requireEntitlement } from './_auth/requireEntitlement.js';
+import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 Deno.serve(async (req) => {
   try {

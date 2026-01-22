@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
 import { differenceInMonths } from 'npm:date-fns@3.6.0';
-import { requireEntitlement } from './_auth/requireEntitlement.js';
+import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 Deno.serve(async (req) => {
   try {
