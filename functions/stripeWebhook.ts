@@ -8,6 +8,11 @@ function json(status, body) {
   });
 }
 
+function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
+  // Normalize subscription start date: prefer started_at, fall back to current_period_start, then created_at
+  return startedAt || periodStart || createdAt || null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "GET" || req.method === "OPTIONS") {
     return new Response("ok", { status: 200 });
@@ -107,29 +112,40 @@ Deno.serve(async (req) => {
         });
 
         if (subscriptionId) {
-          const sub = await stripe.subscriptions.retrieve(subscriptionId);
-          const periodEnd = sub.current_period_end
-            ? new Date(sub.current_period_end * 1000).toISOString()
-            : null;
+           const sub = await stripe.subscriptions.retrieve(subscriptionId);
+           const periodStart = sub.current_period_start
+             ? new Date(sub.current_period_start * 1000).toISOString()
+             : null;
+           const periodEnd = sub.current_period_end
+             ? new Date(sub.current_period_end * 1000).toISOString()
+             : null;
+           const createdAt = sub.created
+             ? new Date(sub.created * 1000).toISOString()
+             : null;
 
-          await upsertSubscription({
-            user_email,
-            status: sub.status,
-            stripe_subscription_id: sub.id,
-            stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
-            current_period_start: sub.current_period_start
-              ? new Date(sub.current_period_start * 1000).toISOString()
-              : null,
-            current_period_end: periodEnd,
-            started_at: new Date().toISOString(),
-            tier: 'premium',
-            cancel_at_period_end: !!sub.cancel_at_period_end,
-            billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
-            amount: sub.items?.data?.[0]?.price?.unit_amount
-              ? sub.items.data[0].price.unit_amount / 100
-              : null,
-          });
-        }
+           const subscriptionStartedAt = normalizeSubscriptionStartDate(
+             new Date().toISOString(),
+             periodStart,
+             createdAt
+           );
+
+           await upsertSubscription({
+             user_email,
+             status: sub.status,
+             stripe_subscription_id: sub.id,
+             stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
+             current_period_start: periodStart,
+             current_period_end: periodEnd,
+             started_at: new Date().toISOString(),
+             subscriptionStartedAt,
+             tier: 'premium',
+             cancel_at_period_end: !!sub.cancel_at_period_end,
+             billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
+             amount: sub.items?.data?.[0]?.price?.unit_amount
+               ? sub.items.data[0].price.unit_amount / 100
+               : null,
+           });
+         }
 
         break;
       }
@@ -158,8 +174,14 @@ Deno.serve(async (req) => {
           await ensureUserExists(user_email, customerId);
         }
 
+        const periodStart = sub.current_period_start
+          ? new Date(sub.current_period_start * 1000).toISOString()
+          : null;
         const periodEnd = sub.current_period_end
           ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
+        const createdAt = sub.created
+          ? new Date(sub.created * 1000).toISOString()
           : null;
 
         // Check if subscription exists
@@ -173,9 +195,7 @@ Deno.serve(async (req) => {
           status: sub.status,
           stripe_subscription_id: sub.id,
           stripe_customer_id: customerId || null,
-          current_period_start: sub.current_period_start
-            ? new Date(sub.current_period_start * 1000).toISOString()
-            : null,
+          current_period_start: periodStart,
           current_period_end: periodEnd,
           cancel_at_period_end: !!sub.cancel_at_period_end,
           billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
@@ -188,6 +208,14 @@ Deno.serve(async (req) => {
         if (!existing?.started_at) {
           payload.started_at = new Date().toISOString();
         }
+
+        // Normalize subscription start date
+        const subscriptionStartedAt = normalizeSubscriptionStartDate(
+          payload.started_at || existing?.started_at,
+          periodStart,
+          createdAt
+        );
+        payload.subscriptionStartedAt = subscriptionStartedAt;
 
         // Default tier to premium
         if (!existing?.tier) {

@@ -12,6 +12,11 @@ function isoFromUnixSeconds(sec) {
   return new Date(ms).toISOString();
 }
 
+function normalizeSubscriptionStartDate(startedAt, periodStart, createdDate) {
+  // Normalize subscription start date: prefer started_at, fall back to current_period_start, then created_date
+  return startedAt || periodStart || createdDate || null;
+}
+
 function pickBestSubscription(subs) {
   if (!Array.isArray(subs) || subs.length === 0) return null;
 
@@ -115,6 +120,12 @@ Deno.serve(async (req) => {
         stripe_subscription_id: best.id,
       });
 
+      const subscriptionStartedAt = normalizeSubscriptionStartDate(
+        isoFromUnixSeconds(best.metadata?.started_at_unix) || isoFromUnixSeconds(best.start_date),
+        periodStart,
+        isoFromUnixSeconds(best.created)
+      );
+
       const subPayload = {
         user_email: customerEmail,
         status: best.status,
@@ -122,6 +133,7 @@ Deno.serve(async (req) => {
         stripe_customer_id: customer.id,
         current_period_start: periodStart,
         current_period_end: periodEnd,
+        subscriptionStartedAt,
         cancel_at_period_end: !!best.cancel_at_period_end,
         billing_interval: billingInterval,
         amount,
