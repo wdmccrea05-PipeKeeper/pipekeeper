@@ -69,6 +69,7 @@ export function useCurrentUser() {
   const isLoading = userLoading || subLoading;
   const hasPremium = hasPremiumAccess(rawUser, subscription);
   const hasPaid = hasPaidAccess(rawUser, subscription);
+  const isPro = hasPaid && subscription?.tier === 'pro';
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
   const trialDaysRemaining = getTrialDaysRemaining(rawUser);
@@ -84,6 +85,7 @@ export function useCurrentUser() {
     error: userError,
     hasPremium,
     hasPaid,
+    isPro,
     hasTrial,
     isInTrial,
     trialDaysRemaining,

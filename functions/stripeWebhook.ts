@@ -107,6 +107,8 @@ Deno.serve(async (req) => {
               ? new Date(sub.current_period_start * 1000).toISOString()
               : null,
             current_period_end: periodEnd,
+            started_at: new Date().toISOString(),
+            tier: 'premium',
             cancel_at_period_end: !!sub.cancel_at_period_end,
             billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
             amount: sub.items?.data?.[0]?.price?.unit_amount
@@ -141,7 +143,13 @@ Deno.serve(async (req) => {
           ? new Date(sub.current_period_end * 1000).toISOString()
           : null;
 
-        await upsertSubscription({
+        // Check if subscription exists
+        const existingRes = await base44.asServiceRole.entities.Subscription.filter({
+          stripe_subscription_id: sub.id,
+        });
+        const existing = existingRes?.[0];
+
+        const payload = {
           user_email,
           status: sub.status,
           stripe_subscription_id: sub.id,
@@ -155,7 +163,19 @@ Deno.serve(async (req) => {
           amount: sub.items?.data?.[0]?.price?.unit_amount
             ? sub.items.data[0].price.unit_amount / 100
             : null,
-        });
+        };
+
+        // Set started_at for new subscriptions or when reactivating
+        if (!existing?.started_at) {
+          payload.started_at = new Date().toISOString();
+        }
+
+        // Default tier to premium
+        if (!existing?.tier) {
+          payload.tier = 'premium';
+        }
+
+        await upsertSubscription(payload);
 
         const isPaid = sub.status === "active" || sub.status === "trialing";
         await setUserEntitlement(user_email, {
