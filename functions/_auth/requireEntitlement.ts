@@ -19,13 +19,13 @@ export async function requireEntitlement(base44, user, feature) {
   const isPaidSubscriber = !!(
     subscription?.status === 'active' || subscription?.status === 'trialing'
   );
-  const isProSubscriber = false; // TODO: Add Pro tier detection when implemented
+  const isProSubscriber = !!(isPaidSubscriber && subscription?.tier === 'pro');
 
   // Build entitlements
   const entitlements = buildEntitlements({
     isPaidSubscriber,
     isProSubscriber,
-    subscriptionStartedAt: subscription?.current_period_start || user?.created_date || null,
+    subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
   });
 
   // Check the feature

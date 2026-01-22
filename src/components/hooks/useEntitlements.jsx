@@ -14,13 +14,13 @@ export function useEntitlements() {
       });
     }
 
-    // Check for Pro tier (future expansion)
-    const isProSubscriber = false; // TODO: Add Pro tier detection when implemented
+    // Check for Pro tier
+    const isProSubscriber = !!(hasPaid && subscription?.tier === 'pro');
 
     return buildEntitlements({
       isPaidSubscriber: hasPaid,
       isProSubscriber,
-      subscriptionStartedAt: subscription?.current_period_start || user?.created_date || null,
+      subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
     });
   }, [user, subscription, hasPaid, isLoading]);
 }
