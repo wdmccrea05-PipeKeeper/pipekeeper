@@ -32,6 +32,7 @@ export function buildEntitlements(input) {
     }
     
     // New Premium (post Feb 1, 2026) gets only core Premium features
+    // Pro-only features: BULK_EDIT, AI_IDENTIFY, AI_VALUE_LOOKUP, EXPORT_REPORTS, etc.
     if (tier === "premium") {
       return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "MATCHING_ENGINE", "MESSAGING"].includes(featureKey);
     }
