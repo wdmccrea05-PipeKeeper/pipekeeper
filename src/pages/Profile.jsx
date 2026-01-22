@@ -412,7 +412,7 @@ export default function ProfilePage() {
                     </Badge>
                   )}
                 </div>
-                <CardDescription className="flex items-center gap-2 mt-1">
+                <CardDescription className="flex items-center gap-2 mt-1 text-stone-700">
                   {!isAppleBuild && <Sparkles className="w-4 h-4 text-violet-600" />}
                   {isAppleBuild ? 'Organize your collection preferences' : 'Personalize your AI recommendations'}
                 </CardDescription>
