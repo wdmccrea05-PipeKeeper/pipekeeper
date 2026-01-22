@@ -802,7 +802,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end">
+      <div className="sticky bottom-0 bg-gradient-to-t from-[#243548] to-[#243548]/80 backdrop-blur-sm border-t border-[#E0D8C8]/15 p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
         <Button type="button" variant="outline" onClick={onCancel} className="text-stone-800">
           Cancel
         </Button>

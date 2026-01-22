@@ -136,7 +136,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 50);
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 10000);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err);
@@ -152,7 +152,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 50);
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 10000);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Blends load error:', err);
