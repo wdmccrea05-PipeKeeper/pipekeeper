@@ -256,7 +256,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : adminMetrics?.userCounts?.free || 0}</p>
+            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : adminMetrics?.trialMetrics?.newSignupsLast7d || 0}</p>
           </CardContent>
         </Card>
       </div>
@@ -290,18 +290,18 @@ export default function UserReport() {
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-cyan-600">Active Premium</CardTitle>
+              <CardTitle className="text-sm font-medium text-cyan-600">Active/Trial Premium</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.subscriptionBreakdown.activePremium}</p>
+              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.subscriptionBreakdown.activeOrTrialPremium}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-orange-600">Active Pro</CardTitle>
+              <CardTitle className="text-sm font-medium text-orange-600">Active/Trial Pro</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-orange-700">{adminMetrics.subscriptionBreakdown.activePro}</p>
+              <p className="text-3xl font-bold text-orange-700">{adminMetrics.subscriptionBreakdown.activeOrTrialPro}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
