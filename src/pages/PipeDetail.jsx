@@ -330,7 +330,7 @@ export default function PipeDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="breakin" className="mt-0">
-                  <BreakInSchedule pipe={pipe} blends={blends} isPaidUser={isPaidUser} />
+                  <BreakInSchedule pipe={pipe} blends={blends} />
                 </TabsContent>
               </Tabs>
             </CardContent>
