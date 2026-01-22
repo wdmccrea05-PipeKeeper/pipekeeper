@@ -25,18 +25,10 @@ export function buildEntitlements(input) {
   const featureAvailable = (featureKey) => {
     if (tier === "pro") return true;
     if (tier === "premium" && isPremiumLegacy) {
-      // Legacy premium gets Pro features
+      // Legacy premium gets ONLY AI_UPDATES and AI_IDENTIFY
       const legacyProFeatures = [
         "AI_UPDATES",
         "AI_IDENTIFY",
-        "PAIRING_ADVANCED",
-        "PAIRING_REGEN",
-        "ANALYTICS_STATS",
-        "ANALYTICS_INSIGHTS",
-        "BULK_EDIT",
-        "EXPORT_REPORTS",
-        "COLLECTION_OPTIMIZATION",
-        "BREAK_IN_SCHEDULE",
       ];
       return legacyProFeatures.includes(featureKey);
     }
