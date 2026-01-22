@@ -9,9 +9,11 @@ Deno.serve(async (req) => {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const cutoffDate = sevenDaysAgo.toISOString();
 
-    // Use service role to query users created in past 7 days
-    const newUsers = await base44.asServiceRole.entities.User.filter({
-      created_date: { "$gte": cutoffDate }
+    // Fetch all users and filter client-side
+    const allUsers = await base44.asServiceRole.entities.User.list();
+    const newUsers = allUsers.filter(u => {
+      const userDate = new Date(u.created_date);
+      return userDate >= sevenDaysAgo;
     });
 
     return Response.json({ 
