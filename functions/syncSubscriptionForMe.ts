@@ -149,17 +149,41 @@ Deno.serve(async (req) => {
     const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     const isPaid = (status === "active" || status === "trialing") && endOk;
 
+    // Determine if user is a founding member (subscribed before Feb 1, 2026)
+    const FOUNDING_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
+    const trialEnd = isoFromUnixSeconds(best.trial_end);
+    const startedAt = periodStart || (trialEnd ? new Date(trialEnd).toISOString() : null);
+    
+    let isFoundingMember = false;
+    let foundingMemberSince = null;
+    
+    if (isPaid && startedAt) {
+      const subDate = new Date(startedAt);
+      if (subDate < FOUNDING_CUTOFF) {
+        isFoundingMember = true;
+        foundingMemberSince = startedAt;
+      }
+    }
+
     // Update User entity
     const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
 
     let updatedUser = false;
     if (users?.length) {
       const userRec = users[0];
-      await base44.asServiceRole.entities.User.update(userRec.id, {
+      const userUpdate = {
         subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
         subscription_status: best.status,
         stripe_customer_id: customerId,
-      });
+      };
+      
+      // Set founding member status (only if not already set - sticky flag)
+      if (isFoundingMember && !userRec.isFoundingMember) {
+        userUpdate.isFoundingMember = true;
+        userUpdate.foundingMemberSince = foundingMemberSince;
+      }
+      
+      await base44.asServiceRole.entities.User.update(userRec.id, userUpdate);
       updatedUser = true;
     }
 

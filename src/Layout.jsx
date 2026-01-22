@@ -225,6 +225,27 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [userLoading, user?.email, hasPaidAccess, queryClient]);
 
+  // Backfill founding member status for early subscribers
+  React.useEffect(() => {
+    if (userLoading) return;
+    if (!user?.email) return;
+    if (user?.isFoundingMember) return;
+    if (!hasPaidAccess) return;
+    if (!subscription) return;
+
+    (async () => {
+      try {
+        const { ensureFoundingMemberStatus } = await import("@/components/utils/foundingMemberBackfill");
+        const updated = await ensureFoundingMemberStatus(user, subscription);
+        if (updated) {
+          await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        }
+      } catch (e) {
+        console.warn("[Layout] Founding member backfill failed (non-fatal):", e?.message || e);
+      }
+    })();
+  }, [userLoading, user, subscription, hasPaidAccess, queryClient]);
+
   React.useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;

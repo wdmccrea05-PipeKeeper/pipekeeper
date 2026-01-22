@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe, Plus, Trash2 } from "lucide-react";
+import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe, Plus, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -399,8 +399,19 @@ export default function ProfilePage() {
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
                 <User className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
+                  {user?.isFoundingMember && (
+                    <Badge 
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 flex items-center gap-1 text-xs"
+                      title="Early supporter of PipeKeeper"
+                    >
+                      <Star className="w-3 h-3 fill-current" />
+                      Founding Member
+                    </Badge>
+                  )}
+                </div>
                 <CardDescription className="flex items-center gap-2 mt-1">
                   {!isAppleBuild && <Sparkles className="w-4 h-4 text-violet-600" />}
                   {isAppleBuild ? 'Organize your collection preferences' : 'Personalize your AI recommendations'}

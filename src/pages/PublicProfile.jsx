@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings, Flag, ShieldOff } from "lucide-react";
+import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings, Flag, ShieldOff, Star } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CommentSection from "@/components/community/CommentSection";
@@ -44,6 +44,21 @@ export default function PublicProfilePage() {
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     staleTime: 5000,
+    retry: 1,
+  });
+
+  const { data: profileOwner } = useQuery({
+    queryKey: ['profile-owner-user', profileEmail],
+    queryFn: async () => {
+      try {
+        const users = await base44.entities.User.filter({ email: profileEmail });
+        return Array.isArray(users) ? users[0] : null;
+      } catch (err) {
+        console.error('Profile owner load error:', err);
+        return null;
+      }
+    },
+    enabled: !!profileEmail,
     retry: 1,
   });
 
@@ -284,9 +299,20 @@ export default function PublicProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-stone-800 mb-2">
-                  {profile.display_name || 'Anonymous User'}
-                </h1>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <h1 className="text-2xl font-bold text-stone-800">
+                    {profile.display_name || 'Anonymous User'}
+                  </h1>
+                  {profileOwner?.isFoundingMember && (
+                    <Badge 
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 flex items-center gap-1 text-xs"
+                      title="Early supporter of PipeKeeper"
+                    >
+                      <Star className="w-3 h-3 fill-current" />
+                      Founding Member
+                    </Badge>
+                  )}
+                </div>
                 {profile.show_location && (profile.city || profile.state_province || profile.country) && (
                   <p className="text-sm text-stone-500 mb-2">
                     📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
