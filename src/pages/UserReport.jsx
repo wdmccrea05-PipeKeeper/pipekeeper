@@ -267,6 +267,7 @@ export default function UserReport() {
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-indigo-600">Premium Users</CardTitle>
+              <p className="text-xs text-stone-500 mt-1">Post Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-indigo-700">{adminMetrics.userCounts.premium}</p>
@@ -307,6 +308,7 @@ export default function UserReport() {
           <Card className="bg-white/95 border-[#e8d5b7]/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-fuchsia-600">Legacy Premium</CardTitle>
+              <p className="text-xs text-stone-500 mt-1">Subscribed before Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-fuchsia-700">{adminMetrics.userCounts.legacyPremium}</p>
