@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { buildEntitlements } from '../components/utils/entitlements.ts';
+import { buildEntitlements } from '../components/utils/entitlements.js';
 
 Deno.serve(async (req) => {
   try {
