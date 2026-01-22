@@ -247,6 +247,18 @@ export default function UserReport() {
             <p className="text-3xl font-bold text-blue-700">{report?.summary?.paid_percentage || 0}%</p>
           </CardContent>
         </Card>
+
+        <Card className="bg-white/95 border-[#e8d5b7]/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-purple-600 flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              New (7 days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-purple-700">{newUsersLoading ? '...' : newUsersData?.count || 0}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search Bar */}
