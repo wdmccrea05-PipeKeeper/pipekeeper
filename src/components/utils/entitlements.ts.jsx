@@ -21,50 +21,35 @@ export function buildEntitlements(input) {
       ? { pipes: 5, tobaccos: 10, photosPerItem: 1, smokingLogs: 10 }
       : { pipes: Infinity, tobaccos: Infinity, photosPerItem: Infinity, smokingLogs: Infinity };
 
-  const canUse = (feature) => {
-    // Free
-    if (tier === "free") {
-      if (feature === "PAIRING_BASIC") return true;
-      if (feature === "ANALYTICS_STATS") return false;
-      if (feature === "AI_UPDATES") return false;
-      if (feature === "AI_IDENTIFY") return false;
-      if (feature === "EXPORT_REPORTS") return false;
-      if (feature === "BULK_EDIT") return false;
-      if (feature === "MESSAGING") return false;
-      if (feature === "UNLIMITED_COLLECTION") return false;
-      return false;
-    }
-
-    // Premium
-    if (tier === "premium") {
-      if (feature === "UNLIMITED_COLLECTION") return true;
-      if (feature === "PAIRING_BASIC") return true;
-
-      // These are future-Pro features; allow if legacy premium user.
+  // Helper to check if feature is available for current tier + legacy status
+  const featureAvailable = (featureKey) => {
+    if (tier === "pro") return true;
+    if (tier === "premium" && isPremiumLegacy) {
+      // Legacy premium gets Pro features
       const legacyProFeatures = [
         "AI_UPDATES",
+        "AI_IDENTIFY",
         "PAIRING_ADVANCED",
         "PAIRING_REGEN",
         "ANALYTICS_STATS",
         "ANALYTICS_INSIGHTS",
         "BULK_EDIT",
         "EXPORT_REPORTS",
-        "AI_IDENTIFY",
+        "COLLECTION_OPTIMIZATION",
+        "BREAK_IN_SCHEDULE",
       ];
-
-      if (legacyProFeatures.includes(feature)) return isPremiumLegacy;
-
-      // Messaging can be Premium (your choice)
-      if (feature === "MESSAGING") return true;
-
-      return false;
+      return legacyProFeatures.includes(featureKey);
     }
-
-    // Pro
-    if (tier === "pro") return true;
-
+    if (tier === "premium") {
+      // New premium users get basic features only
+      return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "ANALYTICS_STATS", "MESSAGING"].includes(featureKey);
+    }
     return false;
   };
 
-  return { tier, isPremiumLegacy, limits, canUse };
+  const canUse = (feature) => {
+    return featureAvailable(feature);
+  };
+
+  return { tier, isPremiumLegacy, isFreeGrandfathered: !!input.isFreeGrandfathered, limits, canUse };
 }
