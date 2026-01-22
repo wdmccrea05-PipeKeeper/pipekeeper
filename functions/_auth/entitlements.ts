@@ -1,5 +1,5 @@
-// Pro launch cutoff - users who subscribed before this date keep AI features
-const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00Z";
+// Pro launch cutoff - must match frontend exactly
+const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
 
 function isBeforeProLaunch(isoDate) {
   if (!isoDate) return false;
@@ -9,14 +9,14 @@ function isBeforeProLaunch(isoDate) {
 export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscriptionStartedAt, isFreeGrandfathered = false }) {
   // Determine tier
   let tier = 'free';
-  let hasLegacyPremiumAI = false;
+  let isLegacyPremium = false;
 
   if (isProSubscriber) {
     tier = 'pro';
   } else if (isPaidSubscriber) {
     tier = 'premium';
-    // Legacy Premium users (subscribed before Feb 1, 2026) keep AI features
-    hasLegacyPremiumAI = isBeforeProLaunch(subscriptionStartedAt);
+    // Legacy Premium users (subscribed before Feb 1, 2026) get ALL features
+    isLegacyPremium = isBeforeProLaunch(subscriptionStartedAt);
   }
 
   // Define limits
@@ -25,53 +25,60 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     blends: tier === 'free' && !isFreeGrandfathered ? 10 : Infinity,
   };
 
-  // Legacy Pro features for Premium subscribers before Feb 1, 2026
-  const legacyProFeatures = ['AI_UPDATES', 'AI_IDENTIFY', 'BULK_EDIT', 'EXPORT_REPORTS'];
+  // Core Premium features (new premium users post Feb 1, 2026)
+  const corePremiumFeatures = [
+    'UNLIMITED_COLLECTION',
+    'SMOKING_LOG',
+    'CELLAR_LOG',
+    'PAIRING_MANUAL',
+    'ADVANCED_FILTERS',
+    'TOBACCO_LIBRARY_SYNC',
+    'MESSAGING',
+    'SHARE_CARDS',
+    'COMMUNITY_SAFETY',
+    'CONDITION_TRACKING',
+    'MAINTENANCE_LOGS',
+    'ROTATION_PLANNER',
+    'CELLAR_AGING',
+    'INVENTORY_FORECAST',
+    'BLEND_JOURNAL',
+  ];
+
+  // Free tier features
+  const freeTierFeatures = [
+    'BASIC_COLLECTION',
+    'SEARCH',
+    'COMMUNITY_BROWSE',
+    'MULTILINGUAL',
+  ];
+
+  // Pro-only features
+  const proOnlyFeatures = [
+    'PAIRING_ADVANCED',
+    'COLLECTION_OPTIMIZATION',
+    'BREAK_IN_SCHEDULE',
+    'AI_UPDATES',
+    'AI_IDENTIFY',
+    'ANALYTICS_INSIGHTS',
+    'BULK_EDIT',
+    'EXPORT_REPORTS',
+  ];
 
   const canUse = (feature) => {
-    const featureTiers = {
-      // Free tier features
-      BASIC_COLLECTION: ['free', 'premium', 'pro'],
-      SEARCH: ['free', 'premium', 'pro'],
-      COMMUNITY_BROWSE: ['free', 'premium', 'pro'],
-      MULTILINGUAL: ['free', 'premium', 'pro'],
+    // Pro tier gets everything
+    if (tier === 'pro') return true;
 
-      // Premium tier features
-      UNLIMITED_COLLECTION: ['premium', 'pro'],
-      SMOKING_LOG: ['premium', 'pro'],
-      CELLAR_LOG: ['premium', 'pro'],
-      PAIRING_MANUAL: ['premium', 'pro'],
-      ADVANCED_FILTERS: ['premium', 'pro'],
-      TOBACCO_LIBRARY_SYNC: ['premium', 'pro'],
-      MESSAGING: ['premium', 'pro'],
-      SHARE_CARDS: ['premium', 'pro'],
-      COMMUNITY_SAFETY: ['premium', 'pro'],
-      CONDITION_TRACKING: ['premium', 'pro'],
-      MAINTENANCE_LOGS: ['premium', 'pro'],
-      ROTATION_PLANNER: ['premium', 'pro'],
-      CELLAR_AGING: ['premium', 'pro'],
-      INVENTORY_FORECAST: ['premium', 'pro'],
-      BLEND_JOURNAL: ['premium', 'pro'],
+    // Legacy Premium (subscribed before Feb 1, 2026) gets ALL features
+    if (tier === 'premium' && isLegacyPremium) return true;
 
-      // Pro tier features
-      PAIRING_ADVANCED: ['pro'],
-      COLLECTION_OPTIMIZATION: ['pro'],
-      BREAK_IN_SCHEDULE: ['pro'],
-      AI_UPDATES: ['pro'],
-      AI_IDENTIFY: ['pro'],
-      ANALYTICS_INSIGHTS: ['pro'],
-      BULK_EDIT: ['pro'],
-      EXPORT_REPORTS: ['pro'],
-    };
+    // New Premium (post Feb 1, 2026) gets only core premium features
+    if (tier === 'premium' && !isLegacyPremium) {
+      return corePremiumFeatures.includes(feature);
+    }
 
-    const allowedTiers = featureTiers[feature] || [];
-
-    // Check if user's tier includes this feature
-    if (allowedTiers.includes(tier)) return true;
-
-    // Legacy Premium AI access (grandfathered)
-    if (tier === 'premium' && hasLegacyPremiumAI && legacyProFeatures.includes(feature)) {
-      return true;
+    // Free tier gets free-tier features
+    if (tier === 'free') {
+      return freeTierFeatures.includes(feature);
     }
 
     return false;
@@ -79,7 +86,7 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
 
   return {
     tier,
-    hasLegacyPremiumAI,
+    isLegacyPremium,
     limits,
     canUse,
   };
