@@ -137,14 +137,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="reports" className="mt-0">
-                <div className="space-y-4">
-                  <div className="text-sm mb-4">
-                    Download collection reports, exports, and comprehensive analysis documents.
-                  </div>
-                  <SmokingLogReportExporter user={user} />
-                  <AgingReportExporter user={user} />
-                  <CollectionReportExporter user={user} />
-                </div>
+                <SmokingLogReportExporter user={user} />
+                <AgingReportExporter user={user} />
+                <CollectionReportExporter user={user} />
               </TabsContent>
 
               <TabsContent value="aging" className="mt-0">
