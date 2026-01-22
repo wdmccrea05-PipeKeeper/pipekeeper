@@ -52,9 +52,10 @@ Deno.serve(async (req) => {
         const rDiff = rank(b) - rank(a);
         if (rDiff !== 0) return rDiff;
         
-        const ea = new Date(a.current_period_end || 0).getTime();
-        const eb = new Date(b.current_period_end || 0).getTime();
-        return eb - ea;
+        // If same rank, pick newest by created_date (not period_end)
+        const ca = new Date(a.created_date || 0).getTime();
+        const cb = new Date(b.created_date || 0).getTime();
+        return cb - ca;
       })[0];
       
       subscriptionMap.set(email, best);
