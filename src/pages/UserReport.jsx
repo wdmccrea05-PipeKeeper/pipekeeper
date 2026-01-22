@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus } from "lucide-react";
+import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDown, ChevronUp, UserPlus, Clock, Zap, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function UserReport() {
   const [viewFilter, setViewFilter] = useState('all'); // 'all', 'paid', 'free'
@@ -127,10 +128,15 @@ export default function UserReport() {
     }
   };
 
+  const lastUpdated = new Date().toLocaleString();
+
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-[#e8d5b7]">User Subscription Report</h1>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-3xl font-bold text-[#e8d5b7]">User Subscription Report</h1>
+          <p className="text-xs text-[#e8d5b7]/60 mt-1">Last updated: {lastUpdated}</p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={async () => {
@@ -170,6 +176,7 @@ export default function UserReport() {
           </Button>
         </div>
       </div>
+      <div className="mb-6" />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -261,6 +268,104 @@ export default function UserReport() {
         </Card>
       </div>
 
+      {/* Trials Panel */}
+      {adminMetrics && !metricsLoading && (
+        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-stone-800 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-orange-600" />
+              Trial Metrics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
+                <p className="text-xs text-orange-600 font-medium">Currently on Trial</p>
+                <p className="text-2xl font-bold text-orange-800">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
+              </div>
+              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                <p className="text-xs text-red-600 font-medium">Ending in 3 Days</p>
+                <p className="text-2xl font-bold text-red-800">{adminMetrics.trialMetrics.endingIn3Days}</p>
+              </div>
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                <p className="text-xs text-yellow-600 font-medium">Ending in 7 Days</p>
+                <p className="text-2xl font-bold text-yellow-800">{adminMetrics.trialMetrics.endingIn7Days}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-xs text-blue-600 font-medium">Avg Days Remaining</p>
+                <p className="text-2xl font-bold text-blue-800">{adminMetrics.trialMetrics.avgDaysRemaining}</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                <p className="text-xs text-green-600 font-medium">Converted (30d)</p>
+                <p className="text-2xl font-bold text-green-800">{adminMetrics.trialMetrics.convertedLast30d}</p>
+              </div>
+              <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
+                <p className="text-xs text-rose-600 font-medium">Drop-offs (30d)</p>
+                <p className="text-2xl font-bold text-rose-800">{adminMetrics.trialMetrics.dropoffLast30d}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Growth Chart */}
+      {adminMetrics?.growthMetrics?.lastEightWeeks && !metricsLoading && (
+        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-stone-800 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+              Weekly Growth (Last 8 Weeks)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={adminMetrics.growthMetrics.lastEightWeeks}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e8d5b7/20" />
+                <XAxis dataKey="week" tick={{ fill: '#5a5a5a', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#5a5a5a', fontSize: 12 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd' }} />
+                <Legend />
+                <Bar dataKey="newUsers" fill="#3b82f6" name="New Users" />
+                <Bar dataKey="newPaidSubscribers" fill="#10b981" name="New Paid" />
+                <Bar dataKey="newProSubscribers" fill="#f59e0b" name="New Pro" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Churn Panel */}
+      {adminMetrics?.churnMetrics && !metricsLoading && (
+        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-stone-800 flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-red-600" />
+              Churn & Downgrades (Last 30 Days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                <p className="text-xs text-red-600 font-medium">Premium Churn Rate</p>
+                <p className="text-2xl font-bold text-red-800">{adminMetrics.churnMetrics.premiumChurn30d}%</p>
+              </div>
+              <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
+                <p className="text-xs text-rose-600 font-medium">Pro Churn Rate</p>
+                <p className="text-2xl font-bold text-rose-800">{adminMetrics.churnMetrics.proChurn30d}%</p>
+              </div>
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                <p className="text-xs text-purple-600 font-medium">Pro → Premium</p>
+                <p className="text-2xl font-bold text-purple-800">{adminMetrics.churnMetrics.proToPremiumDowngrade}</p>
+              </div>
+              <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
+                <p className="text-xs text-pink-600 font-medium">Premium → Free</p>
+                <p className="text-2xl font-bold text-pink-800">{adminMetrics.churnMetrics.premiumToFreeDowngrade}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Additional Metrics Cards */}
       {adminMetrics && !metricsLoading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -312,6 +417,63 @@ export default function UserReport() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-fuchsia-700">{adminMetrics.userCounts.legacyPremium}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Usage Metrics */}
+      {adminMetrics?.usageMetrics && !metricsLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-indigo-600">Avg Pipes per User</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Free</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.free}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Premium</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.premium}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Pro</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.pro}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-amber-600">Avg Tobaccos per User</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Free</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.free}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Premium</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.premium}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-stone-600">Pro</span>
+                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.pro}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/95 border-[#e8d5b7]/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-cyan-600">Community Engagement</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.usageMetrics.communityEngagement}%</p>
+              <p className="text-xs text-stone-500 mt-1">Users with comments</p>
             </CardContent>
           </Card>
         </div>
