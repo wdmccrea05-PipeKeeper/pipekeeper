@@ -197,11 +197,11 @@ export default function ImportPage() {
 
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
-            <CardTitle className="text-3xl text-stone-900 flex items-center gap-3">
+            <CardTitle className="text-3xl text-stone-100 flex items-center gap-3">
               <FileSpreadsheet className="w-8 h-8 text-[#8b3a3a]" />
               Bulk Import
             </CardTitle>
-            <CardDescription className="text-stone-600">
+            <CardDescription className="text-stone-300">
               Import multiple pipes and tobacco blends at once using CSV templates
             </CardDescription>
           </CardHeader>
