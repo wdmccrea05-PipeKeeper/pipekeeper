@@ -19,22 +19,48 @@ function FeatureList({ items }) {
 }
 
 function AppleSubscription() {
-  const premiumFeatures = [
-    "Unlimited pipes and cellar inventory items",
-    "Inventory Tools: category standardization and metadata cleanup",
-    "Photo documentation and notes for each item",
-    "Advanced search, filters, and tag organization",
-    "Exportable inventory reports for documentation (where available)",
-    "Priority customer support",
-  ];
+  const proLaunchDateLabel = "February 1, 2026";
 
   const freeFeatures = [
-    "Add and manage a personal pipe collection",
-    "Track cellar inventory quantities and jar dates",
-    "Basic search and filters",
-    "Notes and photos for documentation",
-    "Brand logo library with custom uploads",
+    "Add up to 5 pipes",
+    "Add up to 10 tobacco blends",
+    "View, edit, and organize your collection",
+    "Basic notes and ratings",
+    "Search pipes and tobaccos",
+    "Multilingual support (10 languages)",
+    "Cloud sync",
   ];
+
+  const premiumFeatures = [
+    "Unlimited pipes and tobacco blends",
+    "Unlimited notes and photos",
+    "Cellar tracking and aging logs",
+    "Smoking logs and history",
+    "Pipe maintenance and condition tracking",
+    "Advanced filters and sorting",
+    "Manual pipe ↔ tobacco pairings",
+    "Tobacco library sync",
+    "Multilingual support (10 languages)",
+    "Cloud sync across devices",
+  ];
+
+  const proFeatures = [
+    "Everything in Premium",
+    "AI Updates (Pro for new users starting Feb 1, 2026)",
+    "AI Identification tools (Pro for new users starting Feb 1, 2026)",
+    "Advanced analytics & insights",
+    "Bulk editing tools",
+    "Export & reports (CSV / PDF)",
+    "Collection optimization tools",
+    "Early access to new advanced features",
+  ];
+
+  const openSubscription = () => {
+    if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
+      // Apple subscription sheet should list available tiers.
+      window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscription" });
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -51,6 +77,9 @@ function AppleSubscription() {
         </CardHeader>
         <CardContent className="space-y-4">
           <FeatureList items={freeFeatures} />
+          <p className="text-xs text-[#e8d5b7]/60">
+            Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
+          </p>
         </CardContent>
       </Card>
 
@@ -60,20 +89,43 @@ function AppleSubscription() {
         </CardHeader>
         <CardContent className="space-y-4">
           <FeatureList items={premiumFeatures} />
-
           <div className="pt-2">
-            <Button 
+            <Button
               className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-              onClick={() => {
-                if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
-                  window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscription" });
-                }
-              }}
+              onClick={openSubscription}
             >
               Upgrade to Premium
             </Button>
             <p className="text-xs text-[#e8d5b7]/60 mt-2">
-              Premium features vary by platform and plan. This iOS build does not include recommendation or usage-guidance features.
+              Premium features vary by platform and plan.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <CardHeader>
+          <CardTitle className="text-[#e8d5b7]">Pro Plan</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <FeatureList items={proFeatures} />
+          <div className="text-xs text-[#e8d5b7]/60 space-y-1">
+            <p>
+              PipeKeeper Pro is active starting <b>{proLaunchDateLabel}</b>.
+            </p>
+            <p>
+              If you subscribed to Premium before {proLaunchDateLabel}, you keep AI Updates and AI Identification tools.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Button
+              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+              onClick={openSubscription}
+            >
+              Upgrade to Pro
+            </Button>
+            <p className="text-xs text-[#e8d5b7]/60 mt-2">
+              Pro tiers and pricing are managed through Apple in-app purchase.
             </p>
           </div>
         </CardContent>
@@ -85,8 +137,7 @@ function AppleSubscription() {
         </CardHeader>
         <CardContent className="text-sm text-[#e8d5b7]/80 space-y-2">
           <p>
-            The iOS build is intentionally designed for collection and cellar inventory management. Some features available
-            on other platforms are not included in this version.
+            The iOS build is intentionally designed for collection and cellar inventory management.
           </p>
         </CardContent>
       </Card>

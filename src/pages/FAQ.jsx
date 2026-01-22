@@ -4,6 +4,8 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function AppleFAQ() {
+  const proLaunchDateLabel = "February 1, 2026";
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
       <div className="mb-2">
@@ -22,9 +24,7 @@ function AppleFAQ() {
             This iOS version helps you catalog and manage a personal collection and cellar inventory:
             items owned, quantities, jar/lot details, dates, notes, photos, and organization.
           </p>
-          <p>
-            It does not provide usage guidance or recommendation-style features.
-          </p>
+          <p>It does not provide usage guidance or recommendation-style features.</p>
         </CardContent>
       </Card>
 
@@ -45,27 +45,34 @@ function AppleFAQ() {
 
       <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
         <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">What is "Inventory Tools"?</CardTitle>
-        </CardHeader>
-        <CardContent className="text-[#e8d5b7]/80 text-sm space-y-2">
-          <p>
-            Inventory Tools help standardize your existing data so searching and filtering are more accurate
-            (for example, normalizing categories).
-          </p>
-          <p className="text-[#e8d5b7]/70">
-            Note: These tools are for metadata organization only and do not provide recommendations or usage guidance.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-        <CardHeader>
           <CardTitle className="text-[#e8d5b7]">Why are some features missing on iOS?</CardTitle>
         </CardHeader>
         <CardContent className="text-[#e8d5b7]/80 text-sm space-y-2">
           <p>
             The iOS build is intentionally limited to collection and inventory management. Features that could be
             interpreted as encouraging consumption are not included in this version.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <CardHeader>
+          <CardTitle className="text-[#e8d5b7]">What are Free, Premium, and Pro?</CardTitle>
+        </CardHeader>
+        <CardContent className="text-[#e8d5b7]/80 text-sm space-y-2">
+          <ul className="list-disc pl-5 space-y-1">
+            <li>
+              <b>Free:</b> Up to 5 pipes and 10 tobacco blends. You can still view and manage anything you&apos;ve already added.
+            </li>
+            <li>
+              <b>Premium:</b> Unlimited collection features for dedicated tracking and organization.
+            </li>
+            <li>
+              <b>Pro:</b> Advanced AI tools, analytics, and exports. Pro is active starting <b>{proLaunchDateLabel}</b>.
+            </li>
+          </ul>
+          <p className="text-[#e8d5b7]/70">
+            If you subscribed to Premium before {proLaunchDateLabel}, you keep AI Updates and AI Identification tools.
           </p>
         </CardContent>
       </Card>

@@ -36,6 +36,8 @@ const PRICING_OPTIONS = [
   }
 ];
 
+const PRO_LAUNCH_DATE_LABEL = "February 1, 2026";
+
 export default function SubscriptionFull() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -351,14 +353,16 @@ export default function SubscriptionFull() {
         </Card>
 
         {/* Features List */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* Free Features */}
           <Card className="border-stone-200 bg-[#243548]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-[#e8d5b7]">Free Version</CardTitle>
-                  <CardDescription className="text-[#e8d5b7]/70">What's included with your free PipeKeeper account</CardDescription>
+                  <CardDescription className="text-[#e8d5b7]/70">
+                    What's included with your free PipeKeeper account
+                  </CardDescription>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-[#e8d5b7]">$0</p>
@@ -369,15 +373,14 @@ export default function SubscriptionFull() {
             <CardContent>
               <div className="space-y-3">
                 {[
-                  "Manual pipe and tobacco entry",
-                  "Organize and browse your collection",
-                  "Track dimensions, materials, and basic details",
-                  "Manual cellar log for inventory tracking",
-                  "Rate and favorite your pipes and tobacco",
-                  "View recent additions",
-                  "Basic collection statistics",
-                  "Brand logo library with custom uploads",
-                  "7-day free trial of Premium features for new accounts"
+                  "Add up to 5 pipes",
+                  "Add up to 10 tobacco blends",
+                  "View, edit, and organize your collection",
+                  "Basic notes and ratings",
+                  "Search pipes and tobaccos",
+                  "Multilingual support (10 languages)",
+                  "Cloud sync",
+                  "Access to community features",
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -385,6 +388,9 @@ export default function SubscriptionFull() {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-[#e8d5b7]/60 mt-4">
+                Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
+              </p>
             </CardContent>
           </Card>
 
@@ -407,50 +413,68 @@ export default function SubscriptionFull() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {(isAppleBuild
-                  ? [
-                      "AI photo identification for pipes (stamps, shapes, makers)",
-                      "AI web search for auto-filling pipe & blend metadata",
-                      "AI market value lookup and automated tracking",
-                      "AI measurement calculator from photos",
-                      "Bulk CSV import/export for pipes & inventory",
-                      "Quick Edit: Batch update multiple items at once",
-                      "Advanced PDF exports for inventory/insurance documentation",
-                      "Category standardization tools (metadata cleanup)",
-                      "Unlimited pipes and inventory items",
-                      "Priority customer support",
-                    ]
-                  : [
-                      "AI Expert Tobacconist chat for personalized recommendations",
-                      "AI pipe-tobacco pairing matrix with scoring",
-                      "AI tobacco matching engine for each pipe",
-                      "AI collection optimizer with gap analysis",
-                      "AI photo identification for pipes (stamps, shapes, makers)",
-                      "AI market value lookup and automated tracking",
-                      "AI break-in schedule generator for new pipes",
-                      "AI pipe specialization recommendations",
-                      "AI measurement calculator from photos",
-                      "AI web search for auto-filling pipe & tobacco details",
-                      "AI What-If scenario analysis for collection changes",
-                      "Bulk CSV import/export for pipes & tobacco",
-                      "Quick Edit: Batch update multiple blends at once",
-                      "Advanced PDF exports for insurance documentation",
-                      "Smoking log with auto inventory reduction",
-                      "Pipe rest status tracking with recommendations",
-                      "Cellar log with transaction history",
-                      "Community: Public profiles, search, follow collections",
-                      "Comments on pipes, tobacco, and smoking logs",
-                      "Instant messaging with friends (real-time chat)",
-                      "Unlimited pipes and tobacco blends",
-                      "Priority customer support",
-                    ]
-                ).map((feature, idx) => (
+                {[
+                  "Unlimited pipes and tobacco blends",
+                  "Unlimited notes and photos",
+                  "Cellar tracking and aging logs",
+                  "Smoking logs and history",
+                  "Pipe maintenance and condition tracking",
+                  "Advanced filters and sorting",
+                  "Manual pipe ↔ tobacco pairings",
+                  "Tobacco library sync",
+                  "Multilingual support (10 languages)",
+                  "Cloud sync across devices",
+                ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <span className="text-stone-700">{feature}</span>
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Pro Features */}
+          <Card className="border-purple-300 bg-gradient-to-br from-purple-50 to-white">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-700" />
+                    Pro Version
+                  </CardTitle>
+                  <CardDescription>
+                    Advanced AI tools, analytics, and exports (active {PRO_LAUNCH_DATE_LABEL})
+                  </CardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-stone-800">$4.99</p>
+                  <p className="text-xs text-stone-600">per month</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  "Everything in Premium",
+                  "AI Updates",
+                  "AI Identification tools",
+                  "Advanced analytics & insights",
+                  "Smart pairing intelligence",
+                  "Bulk editing tools",
+                  "Export & reports (CSV / PDF)",
+                  "Collection optimization tools",
+                  "Early access to new advanced features",
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-700 shrink-0 mt-0.5" />
+                    <span className="text-stone-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-stone-600 mt-4">
+                If you subscribed to Premium before {PRO_LAUNCH_DATE_LABEL}, you keep AI Updates and AI Identification tools.
+              </p>
             </CardContent>
           </Card>
         </div>

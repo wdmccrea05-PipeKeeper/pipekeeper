@@ -175,49 +175,61 @@ export default function FAQFull() {
         </Q>
       </Section>
 
-      <Section title="Premium Feature Definitions">
-        <Q id="free-vs-premium" q="What's the difference between Free and Premium?">
-          <div className="space-y-4">
+      <Section title="Plans & Subscriptions">
+        <Q id="free-vs-premium" q="What's the difference between Free, Premium, and Pro?">
+          <div className="space-y-6">
             <div>
-              <h4 className="font-semibold text-[#1a2c42] mb-2">Free Features:</h4>
+              <h4 className="font-semibold text-[#1a2c42] mb-2">Free</h4>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Manual pipe and tobacco entry</li>
-                <li>Organize and browse your collection</li>
-                <li>Track dimensions, materials, and basic details</li>
-                <li>Manual cellar log for inventory tracking</li>
-                <li>Rate and favorite your pipes and tobacco</li>
-                <li>View recent additions</li>
-                <li>Basic collection statistics</li>
-                <li>Brand logo library with custom uploads</li>
-                <li>7-day free trial of Premium features</li>
+                <li>Add up to <b>5 pipes</b></li>
+                <li>Add up to <b>10 tobacco blends</b></li>
+                <li>View, edit, and organize your collection</li>
+                <li>Basic notes and ratings</li>
+                <li>Search pipes and tobaccos</li>
+                <li>Multilingual support (10 languages)</li>
+                <li>Cloud sync</li>
+                <li>Access to community features</li>
+              </ul>
+              <p className="text-sm text-stone-600 mt-2">
+                Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-[#1a2c42] mb-2">Premium</h4>
+              <ul className="space-y-1 list-disc list-inside">
+                <li><b>Unlimited</b> pipes and tobacco blends</li>
+                <li>Unlimited notes and photos</li>
+                <li>Cellar tracking and aging logs</li>
+                <li>Smoking logs and history</li>
+                <li>Pipe maintenance and condition tracking</li>
+                <li>Advanced filters and sorting</li>
+                <li>Manual pipe ↔ tobacco pairings</li>
+                <li>Tobacco library sync</li>
+                <li>Multilingual support (10 languages)</li>
+                <li>Cloud sync across devices</li>
               </ul>
             </div>
+
             <div>
-              <h4 className="font-semibold text-[#1a2c42] mb-2">Premium Features:</h4>
+              <h4 className="font-semibold text-[#1a2c42] mb-2">Pro</h4>
+              <p className="text-sm text-stone-600 mb-2">
+                Pro is active starting <b>February 1, 2026</b>.
+              </p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>AI Expert Tobacconist chat for personalized recommendations</li>
-                <li>AI pipe-tobacco pairing matrix with scoring</li>
-                <li>AI tobacco matching engine for each pipe</li>
-                <li>AI collection optimizer with gap analysis</li>
-                <li>AI photo identification for pipes (stamps, shapes, makers)</li>
-                <li>AI market value lookup and automated tracking</li>
-                <li>AI break-in schedule generator for new pipes</li>
-                <li>AI pipe specialization recommendations</li>
-                <li>AI measurement calculator from photos</li>
-                <li>AI web search for auto-filling pipe & tobacco details</li>
-                <li>AI What-If scenario analysis for collection changes</li>
-                <li>Bulk CSV import/export for pipes & tobacco</li>
-                <li>Quick Edit: Batch update multiple blends at once</li>
-                <li>Advanced PDF exports for insurance documentation</li>
-                <li>Smoking log with auto inventory reduction</li>
-                <li>Pipe rest status tracking with recommendations</li>
-                <li>Cellar log with transaction history</li>
-                <li>Community: Public profiles, search, follow collections</li>
-                <li>Comments on pipes, tobacco, and smoking logs</li>
-                <li>Instant messaging with friends (real-time chat)</li>
-                <li>Unlimited pipes and tobacco blends</li>
-                <li>Priority customer support</li>
+                <li>Everything in Premium</li>
+                <li><b>AI Updates</b></li>
+                <li><b>AI Identification tools</b> (identify pipes and tobaccos from photos)</li>
+                <li>Advanced analytics & insights</li>
+                <li>Smart pairing intelligence</li>
+                <li>Bulk editing tools</li>
+                <li>Export & reports (CSV / PDF)</li>
+                <li>Collection optimization tools</li>
+                <li>Early access to new advanced features</li>
               </ul>
+              <p className="text-sm text-stone-600 mt-2">
+                If you subscribed to Premium before <b>February 1, 2026</b>, you keep AI Updates and AI Identification tools.
+              </p>
             </div>
           </div>
         </Q>
