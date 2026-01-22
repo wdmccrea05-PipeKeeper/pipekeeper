@@ -399,15 +399,15 @@ export default function SubscriptionFull() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-stone-900">
                     <Crown className="w-5 h-5 text-amber-600" />
                     Premium Version
                   </CardTitle>
-                  <CardDescription>Everything you get with PipeKeeper Premium</CardDescription>
+                  <CardDescription className="text-stone-700">Everything you get with PipeKeeper Premium</CardDescription>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-stone-800">$1.99</p>
-                  <p className="text-xs text-stone-600">per month</p>
+                  <p className="text-2xl font-bold text-stone-900">$1.99</p>
+                  <p className="text-xs text-stone-700">per month</p>
                 </div>
               </div>
             </CardHeader>
@@ -427,7 +427,7 @@ export default function SubscriptionFull() {
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <span className="text-stone-700">{feature}</span>
+                    <span className="text-stone-900">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -439,17 +439,17 @@ export default function SubscriptionFull() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-stone-900">
                     <Sparkles className="w-5 h-5 text-purple-700" />
                     Pro Version
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-stone-700">
                     Advanced AI tools, analytics, and exports (active {PRO_LAUNCH_DATE_LABEL})
                   </CardDescription>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-stone-800">$2.99</p>
-                  <p className="text-xs text-stone-600">per month • $29.99/year</p>
+                  <p className="text-2xl font-bold text-stone-900">$2.99</p>
+                  <p className="text-xs text-stone-700">per month • $29.99/year</p>
                 </div>
               </div>
             </CardHeader>
@@ -468,11 +468,11 @@ export default function SubscriptionFull() {
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Sparkles className="w-5 h-5 text-purple-700 shrink-0 mt-0.5" />
-                    <span className="text-stone-700">{feature}</span>
+                    <span className="text-stone-900">{feature}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-stone-600 mt-4">
+              <p className="text-xs text-stone-700 mt-4">
                 If you subscribed to Premium before {PRO_LAUNCH_DATE_LABEL}, you keep AI Updates and AI Identification tools.
               </p>
             </CardContent>
