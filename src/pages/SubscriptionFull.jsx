@@ -77,7 +77,8 @@ export default function SubscriptionFull() {
   // Check for success/cancel in URL params + instant sync
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
+    const successParam = urlParams.get('success');
+    if (successParam === 'true' || successParam === '1') {
       setCheckingSession(true);
       
       // Instant sync on return from checkout
