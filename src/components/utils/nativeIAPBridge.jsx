@@ -27,9 +27,8 @@ export const openAppleSubscriptions = () => {
   return safePost({ action: "openAppleSubscriptions" });
 };
 
-// ✅ REQUIRED by Layout.jsx (was missing in your build)
+// ✅ REQUIRED: Layout.jsx calls this. Native handles action "debugToast".
 export const nativeDebugPing = (label = "ping") => {
-  // Also useful for native-side confirmation/logging
   return safePost({ action: "debugToast", label });
 };
 
@@ -43,15 +42,4 @@ export const registerNativeSubscriptionListener = (onStatus) => {
 
   window.addEventListener("pipekeeper_subscription_status", handler);
   return () => window.removeEventListener("pipekeeper_subscription_status", handler);
-};
-
-// Optional helper (kept)
-export const isStripePortalUrl = (url) => {
-  try {
-    const u = new URL(url);
-    const host = (u.host || "").toLowerCase();
-    return host.includes("stripe.com") || host.includes("billing.stripe.com");
-  } catch {
-    return false;
-  }
 };
