@@ -1,6 +1,5 @@
-// src/pages/SubscriptionFull.jsx
-
 import React, { useEffect, useMemo, useState } from "react";
+import { base44 } from "@/api/base44Client";
 import {
   isIOSWebView,
   openNativePaywall,
@@ -8,11 +7,7 @@ import {
   requestNativeSubscriptionStatus,
   registerNativeSubscriptionListener,
 } from "@/components/utils/nativeIAPBridge";
-
-// If you have your existing Stripe helpers, keep them.
-// If not, this file will still compile as long as you replace these placeholders
-// with your existing checkout/portal functions or UI.
-import { createCheckoutSession, openCustomerPortal } from "@/components/utils/stripe"; // <-- if this path differs in your project, Base44 should map it to your current Stripe helpers.
+import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 
 export default function SubscriptionFull() {
   const isIOSApp = useMemo(() => isIOSWebView(), []);
@@ -45,7 +40,16 @@ export default function SubscriptionFull() {
 
     // Non-iOS: keep existing Stripe checkout
     try {
-      await createCheckoutSession();
+      const response = await base44.functions.invoke('createCheckoutSession', { 
+        tier: 'premium', 
+        interval: 'annual' 
+      });
+      
+      if (response?.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        setMessage("Could not start checkout. Please try again.");
+      }
     } catch (e) {
       setMessage("Could not start checkout. Please try again.");
     }
@@ -62,7 +66,7 @@ export default function SubscriptionFull() {
 
     // Non-iOS: keep existing Stripe customer portal
     try {
-      await openCustomerPortal();
+      await openManageSubscription();
     } catch (e) {
       setMessage("Could not open subscription management. Please try again.");
     }
