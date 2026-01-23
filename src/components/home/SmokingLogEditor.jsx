@@ -53,7 +53,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label>Pipe</Label>
+        <Label className="text-[#E0D8C8]">Pipe</Label>
         <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v })}>
           <SelectTrigger>
             <SelectValue placeholder="Select pipe" />
@@ -70,7 +70,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
 
       {hasMultipleBowls && (
         <div className="space-y-2">
-          <Label>Bowl Used (Optional)</Label>
+          <Label className="text-[#E0D8C8]">Bowl Used (Optional)</Label>
           <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
             <SelectTrigger>
               <SelectValue placeholder="Select bowl variant" />
@@ -91,7 +91,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
       )}
 
       <div className="space-y-2">
-         <Label>Tobacco Blend</Label>
+         <Label className="text-[#E0D8C8]">Tobacco Blend</Label>
          <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v })}>
            <SelectTrigger>
              <SelectValue placeholder="Select blend" />
@@ -107,7 +107,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
        </div>
 
       <div className="space-y-2">
-        <Label>Number of Bowls</Label>
+        <Label className="text-[#E0D8C8]">Number of Bowls</Label>
         <Input
           type="number"
           min="1"
@@ -117,7 +117,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
       </div>
 
       <div className="space-y-2">
-        <Label>Date</Label>
+        <Label className="text-[#E0D8C8]">Date</Label>
         <Input
           type="date"
           value={formData.date}
@@ -130,11 +130,11 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
           checked={formData.is_break_in}
           onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
         />
-        <Label>Part of break-in schedule</Label>
+        <Label className="text-[#E0D8C8]">Part of break-in schedule</Label>
       </div>
 
       <div className="space-y-2">
-        <Label>Notes (Optional)</Label>
+        <Label className="text-[#E0D8C8]">Notes (Optional)</Label>
         <Textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
