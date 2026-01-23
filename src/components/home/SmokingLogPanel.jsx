@@ -510,7 +510,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           </SheetHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Pipe</Label>
+              <Label className="text-[#E0D8C8]">Pipe</Label>
               <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select pipe" />
@@ -545,7 +545,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
               {hasMultipleBowls && (
               <div className="space-y-2">
-                <Label>Bowl Used (Optional)</Label>
+                <Label className="text-[#E0D8C8]">Bowl Used (Optional)</Label>
                 <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select bowl variant" />
@@ -566,7 +566,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               )}
 
               <div className="space-y-2">
-              <Label>Tobacco Blend</Label>
+              <Label className="text-[#E0D8C8]">Tobacco Blend</Label>
               <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: '' })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select blend" />
@@ -583,7 +583,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
             {formData.blend_id && containers.length > 0 && (
               <div className="space-y-2">
-                <Label>Container (Optional)</Label>
+                <Label className="text-[#E0D8C8]">Container (Optional)</Label>
                 <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Auto / None" />
@@ -601,7 +601,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             )}
 
             <div className="space-y-2">
-              <Label>Number of Bowls</Label>
+              <Label className="text-[#E0D8C8]">Number of Bowls</Label>
               <Input
                 type="number"
                 min="1"
@@ -616,7 +616,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             </div>
 
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label className="text-[#E0D8C8]">Date</Label>
               <Input
                 type="date"
                 value={formData.date}
@@ -630,7 +630,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   checked={formData.is_break_in}
                   onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
                 />
-                <Label>Part of break-in schedule</Label>
+                <Label className="text-[#E0D8C8]">Part of break-in schedule</Label>
               </div>
               
               <div className="flex items-center gap-3">
@@ -638,7 +638,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   checked={autoReduceInventory}
                   onCheckedChange={setAutoReduceInventory}
                 />
-                <Label className="flex items-center gap-2">
+                <Label className="flex items-center gap-2 text-[#E0D8C8]">
                   Automatically reduce tobacco inventory
                   <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
                     <Crown className="w-3 h-3 mr-1" />
@@ -649,7 +649,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             </div>
 
             <div className="space-y-2">
-              <Label>Notes (Optional)</Label>
+              <Label className="text-[#E0D8C8]">Notes (Optional)</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
