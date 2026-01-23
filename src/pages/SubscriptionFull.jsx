@@ -17,6 +17,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
+import { isIOSWebView, openNativePaywall, requestNativeSubscriptionStatus, registerNativeSubscriptionListener } from "@/components/utils/nativeIAPBridge";
 
 const PRICING_OPTIONS = {
   premium: [
@@ -63,6 +64,8 @@ export default function SubscriptionFull() {
   const [selectedTier, setSelectedTier] = useState('premium');
   const [selectedInterval, setSelectedInterval] = useState('annual'); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
+  const [nativeSubscriptionActive, setNativeSubscriptionActive] = useState(false);
+  const isIOSApp = isIOSWebView();
 
   const { 
     user, 
@@ -97,7 +100,20 @@ export default function SubscriptionFull() {
         }
       })();
     }
-  }, [refetchUserData, navigate]);
+
+    // iOS: Request native subscription status and listen for updates
+    if (isIOSApp) {
+      requestNativeSubscriptionStatus();
+      
+      const cleanup = registerNativeSubscriptionListener((status) => {
+        setNativeSubscriptionActive(status.active);
+        // Refetch user data to sync with backend
+        refetchUserData();
+      });
+      
+      return cleanup;
+    }
+  }, [refetchUserData, navigate, isIOSApp]);
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('Subscription', id, data, user?.email),
@@ -193,12 +209,22 @@ export default function SubscriptionFull() {
   }
 
   const handleSubscribe = async () => {
+    // iOS WKWebView: Open native StoreKit paywall
+    if (isIOSApp) {
+      const success = openNativePaywall();
+      if (!success) {
+        alert("Unable to open App Store paywall. Please try again.");
+      }
+      return;
+    }
+
+    // Apple build but not WKWebView: Use Apple settings
     if (isAppleBuild) {
-      // iOS uses Apple IAP instead
       await openAppleSettings();
       return;
     }
 
+    // Web/Android: Use Stripe
     try {
       const response = await base44.functions.invoke('createCheckoutSession', { 
         tier: selectedTier, 
@@ -599,7 +625,7 @@ export default function SubscriptionFull() {
                     className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Continue to Checkout
+                    {isIOSApp ? "Upgrade in App Store" : "Continue to Checkout"}
                   </Button>
                 </div>
               )}
