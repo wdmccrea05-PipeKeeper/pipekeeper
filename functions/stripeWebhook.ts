@@ -1,6 +1,11 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
 
+const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
+const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
+const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
+const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
+
 function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,
@@ -11,6 +16,20 @@ function json(status, body) {
 function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
   // Normalize subscription start date: prefer started_at, fall back to current_period_start, then created_at
   return startedAt || periodStart || createdAt || null;
+}
+
+function getTierFromPriceId(priceId) {
+  if (!priceId) return null;
+  
+  if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
+    return "pro";
+  }
+  
+  if (priceId === PRICE_ID_PREMIUM_MONTHLY || priceId === PRICE_ID_PREMIUM_ANNUAL) {
+    return "premium";
+  }
+  
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -129,6 +148,13 @@ Deno.serve(async (req) => {
              createdAt
            );
 
+           const priceId = sub.items?.data?.[0]?.price?.id;
+           const tier = getTierFromPriceId(priceId) || 'premium';
+           
+           if (!getTierFromPriceId(priceId) && priceId) {
+             console.warn(`[stripeWebhook] Unknown price ID in checkout: ${priceId}. Defaulting to premium.`);
+           }
+
            await upsertSubscription({
              user_email,
              status: sub.status,
@@ -138,7 +164,7 @@ Deno.serve(async (req) => {
              current_period_end: periodEnd,
              started_at: new Date().toISOString(),
              subscriptionStartedAt,
-             tier: 'premium',
+             tier,
              cancel_at_period_end: !!sub.cancel_at_period_end,
              billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
              amount: sub.items?.data?.[0]?.price?.unit_amount
@@ -217,9 +243,15 @@ Deno.serve(async (req) => {
         );
         payload.subscriptionStartedAt = subscriptionStartedAt;
 
-        // Default tier to premium
-        if (!existing?.tier) {
-          payload.tier = 'premium';
+        // Determine tier from price ID
+        const priceId = sub.items?.data?.[0]?.price?.id;
+        const detectedTier = getTierFromPriceId(priceId);
+        
+        // Use detected tier, fallback to existing, then default to premium
+        payload.tier = detectedTier || existing?.tier || 'premium';
+        
+        if (!detectedTier && priceId) {
+          console.warn(`[stripeWebhook] Unknown price ID in subscription event: ${priceId}. Using tier: ${payload.tier}`);
         }
 
         await upsertSubscription(payload);
