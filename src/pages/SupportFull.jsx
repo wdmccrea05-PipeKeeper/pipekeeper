@@ -53,7 +53,7 @@ ${formData.message}
       `;
 
       await base44.integrations.Core.SendEmail({
-        to: 'wmccrea@indario.com',
+        to: 'admin@pipekeeperapp.com',
         subject: `PipeKeeper Support - ${formData.topic}`,
         body: emailBody,
         from_name: 'PipeKeeper Support'
