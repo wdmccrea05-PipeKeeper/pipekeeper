@@ -147,13 +147,13 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2 text-amber-800">
             <Layers className="w-5 h-5" />
             Interchangeable Bowls
           </CardTitle>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
@@ -165,7 +165,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => handleOpenDialog()}>
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 flex-1 sm:flex-none" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-1" />
                 Add Bowl
               </Button>
@@ -349,22 +349,40 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                         </button>
                       </div>
                     ) : null}
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="hidden"
-                        id="bowl-photo-upload"
-                      />
-                      <label htmlFor="bowl-photo-upload">
-                        <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
-                          <span className="cursor-pointer">
-                            <Camera className="w-4 h-4 mr-2" />
-                            {uploadingPhoto ? "Uploading..." : bowlForm.photo ? "Change Photo" : "Add Photo"}
-                          </span>
-                        </Button>
-                      </label>
+                    <div className="flex-1">
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          id="bowl-photo-camera"
+                        />
+                        <label htmlFor="bowl-photo-camera">
+                          <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
+                            <span className="cursor-pointer">
+                              <Camera className="w-4 h-4 mr-2" />
+                              {uploadingPhoto ? "Uploading..." : "Camera"}
+                            </span>
+                          </Button>
+                        </label>
+                        
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          id="bowl-photo-gallery"
+                        />
+                        <label htmlFor="bowl-photo-gallery">
+                          <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
+                            <span className="cursor-pointer">
+                              📷 Gallery
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
                       <p className="text-xs text-stone-500 mt-1">Square photos work best</p>
                     </div>
                   </div>
