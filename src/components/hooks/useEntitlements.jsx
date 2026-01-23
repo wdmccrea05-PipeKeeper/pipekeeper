@@ -21,7 +21,7 @@ export function useEntitlements() {
     return buildEntitlements({
       isPaidSubscriber: hasPaid,
       isProSubscriber,
-      subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
+      subscriptionStartedAt: subscription?.subscriptionStartedAt || subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
       isFreeGrandfathered: user?.isFreeGrandfathered || false,
       isOnTrial: isInTrial,
     });
