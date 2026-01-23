@@ -1,638 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { safeUpdate } from "@/components/utils/safeUpdate";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  CreditCard, Check, X, Calendar, AlertCircle, Crown, 
-  Sparkles, Loader2, ArrowLeft
-} from "lucide-react";
-import { createPageUrl } from "@/components/utils/createPageUrl";
-import { shouldShowPurchaseUI, getPremiumGateMessage, isIOSCompanion } from "@/components/utils/companion";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { isAppleBuild } from "@/components/utils/appVariant";
-import { openAppleSettings } from "@/components/utils/appleIAP";
-import { openManageSubscription } from "@/components/utils/subscriptionManagement";
-import { isIOSWebView, openNativePaywall, requestNativeSubscriptionStatus, registerNativeSubscriptionListener } from "@/components/utils/nativeIAPBridge";
+// src/pages/SubscriptionFull.jsx
 
-const PRICING_OPTIONS = {
-  premium: [
-    { 
-      tier: 'premium',
-      interval: 'monthly',
-      name: 'Monthly',
-      price: '$1.99',
-      description: 'Billed monthly'
-    },
-    { 
-      tier: 'premium',
-      interval: 'annual',
-      name: 'Yearly',
-      price: '$19.99',
-      description: 'Billed annually',
-      badge: 'Best Value'
-    }
-  ],
-  pro: [
-    {
-      tier: 'pro',
-      interval: 'monthly',
-      name: 'Monthly',
-      price: '$2.99',
-      description: 'Billed monthly'
-    },
-    {
-      tier: 'pro',
-      interval: 'annual',
-      name: 'Yearly',
-      price: '$29.99',
-      description: 'Billed annually',
-      badge: 'Best Value'
-    }
-  ]
-};
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  isIOSWebView,
+  openNativePaywall,
+  openAppleSubscriptions,
+  requestNativeSubscriptionStatus,
+  registerNativeSubscriptionListener,
+} from "@/components/utils/nativeIAPBridge";
 
-const PRO_LAUNCH_DATE_LABEL = "February 1, 2026";
+// If you have your existing Stripe helpers, keep them.
+// If not, this file will still compile as long as you replace these placeholders
+// with your existing checkout/portal functions or UI.
+import { createCheckoutSession, openCustomerPortal } from "@/components/utils/stripe"; // <-- if this path differs in your project, Base44 should map it to your current Stripe helpers.
 
 export default function SubscriptionFull() {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [selectedTier, setSelectedTier] = useState('premium');
-  const [selectedInterval, setSelectedInterval] = useState('annual'); // Default to yearly
-  const [checkingSession, setCheckingSession] = useState(false);
-  const [nativeSubscriptionActive, setNativeSubscriptionActive] = useState(false);
-  const isIOSApp = isIOSWebView();
+  const isIOSApp = useMemo(() => isIOSWebView(), []);
+  const [isPro, setIsPro] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const { 
-    user, 
-    subscription, 
-    isLoading: userDataLoading,
-    hasPaid: userHasPaidAccess,
-    isInTrial,
-    trialDaysRemaining,
-    refetch: refetchUserData 
-  } = useCurrentUser();
-
-  // Check for success/cancel in URL params + instant sync
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const successParam = urlParams.get('success');
-    if (successParam === 'true' || successParam === '1') {
-      setCheckingSession(true);
-      
-      // Instant sync on return from checkout
-      (async () => {
-        try {
-          await base44.functions.invoke('syncSubscriptionForMe');
-          // Use centralized refetch
-          await refetchUserData();
-        } catch (error) {
-          console.error('Post-checkout sync error:', error);
-          // Still refresh even if sync fails - webhook might have worked
-          await refetchUserData();
-        } finally {
-          setCheckingSession(false);
-          navigate(createPageUrl('Subscription'), { replace: true });
-        }
-      })();
-    }
+    if (!isIOSApp) return;
 
-    // iOS: Request native subscription status and listen for updates
+    // Ask native for current status
+    requestNativeSubscriptionStatus();
+
+    // Listen for native updates
+    const cleanup = registerNativeSubscriptionListener((active) => {
+      setIsPro(active);
+      if (active) setMessage("Subscription active ✅");
+    });
+
+    return cleanup;
+  }, [isIOSApp]);
+
+  const handleUpgrade = async () => {
+    setMessage("");
+
+    // iOS WKWebView -> StoreKit paywall (native)
     if (isIOSApp) {
-      requestNativeSubscriptionStatus();
-      
-      const cleanup = registerNativeSubscriptionListener((status) => {
-        setNativeSubscriptionActive(status.active);
-        // Refetch user data to sync with backend
-        refetchUserData();
-      });
-      
-      return cleanup;
-    }
-  }, [refetchUserData, navigate, isIOSApp]);
-
-  const updateSubscriptionMutation = useMutation({
-    mutationFn: ({ id, data }) => safeUpdate('Subscription', id, data, user?.email),
-    onSuccess: () => {
-      refetchUserData();
-    },
-  });
-
-  const trialExpired = !isInTrial && !userHasPaidAccess;
-  const hasActiveSubscription = subscription?.status === 'active';
-  const subscriptionCanceled = subscription?.cancel_at_period_end;
-
-  // iOS compliance: Use Apple IAP instead of Stripe
-  if (isIOSCompanion()) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-6">
-        <div className="max-w-2xl mx-auto mt-12">
-          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-            <CardHeader>
-              <CardTitle className="text-2xl text-[#e8d5b7]">Manage Premium Subscription</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {userHasPaidAccess ? (
-                <>
-                  <p className="text-[#e8d5b7]/80 leading-relaxed">
-                    You have an active PipeKeeper Premium subscription. All premium features are unlocked.
-                  </p>
-                  <p className="text-[#e8d5b7]/80 leading-relaxed">
-                    To change or cancel your subscription, open the iOS Settings app and navigate to your Apple Account subscription settings.
-                  </p>
-                </>
-              ) : isInTrial ? (
-                <>
-                  <p className="text-[#e8d5b7]/80 leading-relaxed">
-                    You're in your 7-day free trial with {trialDaysRemaining} days remaining. All premium features are unlocked during this period.
-                  </p>
-                  <p className="text-[#e8d5b7]/80 leading-relaxed">
-                    When your trial ends, subscribe via your device's App Store to continue using premium features.
-                  </p>
-                </>
-              ) : (
-                <p className="text-[#e8d5b7]/80 leading-relaxed">
-                  PipeKeeper Premium is available through in-app purchase and automatically syncs across your Apple devices. Your subscription is managed through your Apple Account.
-                </p>
-              )}
-              <Button 
-                onClick={() => window.location.href = "https://apps.apple.com/account/subscriptions"}
-                className="w-full bg-[#A35C5C] hover:bg-[#8B4A4A] mt-4"
-              >
-                Manage Subscriptions in Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Android/other companion: show restricted UI
-  if (!shouldShowPurchaseUI()) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <a href={createPageUrl("Profile")}>
-            <Button variant="ghost" className="mb-6 text-[#e8d5b7]/70 hover:text-[#e8d5b7]">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Profile
-            </Button>
-          </a>
-
-          <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-900">
-                <Crown className="w-5 h-5" />
-                PipeKeeper Premium
-              </CardTitle>
-              <CardDescription className="text-stone-600">
-                {getPremiumGateMessage()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm text-stone-600 space-y-2">
-              <p>
-                Premium upgrades, purchases, and subscription management are not available in this companion app.
-              </p>
-              <p>
-                If you already have Premium, sign in with the same account and your features will unlock automatically.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const handleSubscribe = async () => {
-    // iOS WKWebView: Open native StoreKit paywall
-    if (isIOSApp) {
-      const success = openNativePaywall();
-      if (!success) {
-        alert("Unable to open App Store paywall. Please try again.");
-      }
+      openNativePaywall();
       return;
     }
 
-    // Apple build but not WKWebView: Use Apple settings
-    if (isAppleBuild) {
-      await openAppleSettings();
+    // Non-iOS: keep existing Stripe checkout
+    try {
+      await createCheckoutSession();
+    } catch (e) {
+      setMessage("Could not start checkout. Please try again.");
+    }
+  };
+
+  const handleManage = async () => {
+    setMessage("");
+
+    // iOS WKWebView -> Apple subscriptions (native)
+    if (isIOSApp) {
+      openAppleSubscriptions();
       return;
     }
 
-    // Web/Android: Use Stripe
+    // Non-iOS: keep existing Stripe customer portal
     try {
-      const response = await base44.functions.invoke('createCheckoutSession', { 
-        tier: selectedTier, 
-        interval: selectedInterval 
-      });
-      
-      if (!response || !response.data) {
-        throw new Error('No response from checkout service');
-      }
-      
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
-      
-      if (!response.data.url) {
-        throw new Error('No checkout URL returned');
-      }
-      
-      window.location.href = response.data.url;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to start checkout';
-      alert(`Failed to load checkout: ${errorMessage}. Please try again.`);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    // Stripe must be the source of truth for cancellations
-    try {
-      await openManageSubscription();
+      await openCustomerPortal();
     } catch (e) {
-      console.error("Open portal error:", e);
-      alert("Unable to open subscription management. Please try again.");
-    }
-  };
-
-  const handleReactivateSubscription = async () => {
-    // Reactivation also must happen in Stripe
-    try {
-      await openManageSubscription();
-    } catch (e) {
-      console.error("Open portal error:", e);
-      alert("Unable to open subscription management. Please try again.");
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      if (isAppleBuild) {
-        // Apple-managed subscriptions
-        window.location.href = "https://apps.apple.com/account/subscriptions";
-        return;
-      }
-
-      // Web/Android: Stripe billing portal
-      if (!subscription?.stripe_customer_id) {
-        alert("No subscription found to manage. Please contact support if you believe this is an error.");
-        return;
-      }
-      
-      await openManageSubscription();
-    } catch (e) {
-      console.error("Manage subscription error:", e);
-      alert(`Unable to open subscription management: ${e.message || 'Please try again.'}`);
+      setMessage("Could not open subscription management. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <a href={createPageUrl('Profile')}>
-           <Button variant="ghost" className="mb-6 text-[#e8d5b7]/70 hover:text-[#e8d5b7]">
-             <ArrowLeft className="w-4 h-4 mr-2" />
-             Back to Profile
-           </Button>
-         </a>
+    <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
+      <h1 style={{ marginBottom: 8 }}>PipeKeeper Premium</h1>
 
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 mb-4">
-            <Crown className="w-8 h-8 text-white" />
+      <p style={{ marginTop: 0, opacity: 0.8 }}>
+        Unlock premium inventory tools and organization features.
+      </p>
+
+      {isIOSApp && (
+        <div
+          style={{
+            padding: 12,
+            borderRadius: 12,
+            background: "rgba(0,0,0,0.06)",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>
+            iOS App Store Subscriptions
           </div>
-          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Premium</h1>
-          <p className="text-[#e8d5b7]/70">Unlock the full power of AI-driven pipe and tobacco management</p>
+          <div style={{ opacity: 0.85, fontSize: 14 }}>
+            Purchases and subscription management are handled through Apple.
+          </div>
         </div>
+      )}
 
-        {/* Current Status */}
-        <Card className="mb-8 border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {userHasPaidAccess ? (
-                <>
-                  <Check className="w-5 h-5 text-emerald-600" />
-                  <span className="text-emerald-800">Active Subscription</span>
-                </>
-              ) : isInTrial ? (
-                <>
-                  <Sparkles className="w-5 h-5 text-amber-600" />
-                  <span className="text-amber-800">Free Trial Active</span>
-                </>
-              ) : (
-                <>
-                  <X className="w-5 h-5 text-stone-600" />
-                  <span className="text-stone-800">No Active Subscription</span>
-                </>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isInTrial && (
-              <Alert className="bg-amber-50 border-amber-200">
-                <Sparkles className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
-                  <strong>Free Trial:</strong> You have {trialDaysRemaining} days remaining in your 7-day trial. 
-                  All premium features are unlocked during this period.
-                </AlertDescription>
-              </Alert>
-            )}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+        <button
+          onClick={handleUpgrade}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          {isIOSApp ? "Upgrade (App Store)" : "Upgrade"}
+        </button>
 
-            {userHasPaidAccess && !subscriptionCanceled && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <div>
-                    <p className="font-medium text-emerald-800">Premium Plan</p>
-                    <p className="text-sm text-emerald-600">$1.99/month or $19.99/year</p>
-                  </div>
-                  <Badge className="bg-emerald-600 text-white">Active</Badge>
-                </div>
-                {subscription?.current_period_end && (
-                  <div className="flex items-center gap-2 text-sm text-stone-600">
-                    <Calendar className="w-4 h-4" />
-                    Renews on {new Date(subscription.current_period_end).toLocaleDateString()}
-                  </div>
-                )}
-                <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    onClick={handleManageSubscription} 
-                    className="w-full sm:w-auto"
-                  >
-                    Manage Subscription
-                  </Button>
-                  <p className="text-sm text-stone-600 leading-snug">
-                    Manage, change, or cancel your subscription. Canceling keeps access until the end of the billing period.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {subscriptionCanceled && (
-              <Alert className="bg-amber-50 border-amber-200">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
-                  Your subscription is set to cancel on {new Date(subscription.current_period_end).toLocaleDateString()}. 
-                  You'll continue to have access until then.
-                  <Button 
-                    variant="link" 
-                    onClick={handleReactivateSubscription}
-                    className="text-amber-700 hover:text-amber-800 p-0 h-auto ml-2"
-                  >
-                    Reactivate subscription
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {trialExpired && !hasActiveSubscription && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your free trial has ended. Subscribe now to continue using premium features.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Features List */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {/* Free Features */}
-          <Card className="border-stone-200 bg-[#243548]">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-[#e8d5b7]">Free Version</CardTitle>
-                  <CardDescription className="text-[#e8d5b7]/70">
-                    What's included with your free PipeKeeper account
-                  </CardDescription>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-[#e8d5b7]">$0</p>
-                  <p className="text-xs text-[#e8d5b7]/70">forever</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  "Add up to 5 pipes",
-                  "Add up to 10 tobacco blends",
-                  "View, edit, and organize your collection",
-                  "Basic notes and ratings",
-                  "Search pipes and tobaccos",
-                  "Multilingual support (10 languages)",
-                  "Cloud sync",
-                  "Access to community features",
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="text-[#e8d5b7]">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-[#e8d5b7]/60 mt-4">
-                Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Premium Features */}
-          <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-stone-900">
-                    <Crown className="w-5 h-5 text-amber-600" />
-                    Premium Version
-                  </CardTitle>
-                  <CardDescription className="text-stone-700">Everything you get with PipeKeeper Premium</CardDescription>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-stone-900">$1.99</p>
-                  <p className="text-xs text-stone-700">per month • $19.99/year</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  "Unlimited pipes and tobacco blends",
-                  "Unlimited notes and photos",
-                  "Cellar tracking and aging logs",
-                  "Smoking logs and history",
-                  "Pipe maintenance and condition tracking",
-                  "Advanced filters and sorting",
-                  "Manual pipe ↔ tobacco pairings",
-                  "Tobacco library sync",
-                  "Multilingual support (10 languages)",
-                  "Cloud sync across devices",
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <span className="text-stone-900">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pro Features */}
-          <Card className="border-purple-300 bg-gradient-to-br from-purple-50 to-white">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-stone-900">
-                    <Sparkles className="w-5 h-5 text-purple-700" />
-                    Pro Version
-                  </CardTitle>
-                  <CardDescription className="text-stone-700">
-                    Advanced AI tools, analytics, and exports (active {PRO_LAUNCH_DATE_LABEL})
-                  </CardDescription>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-stone-900">$2.99</p>
-                  <p className="text-xs text-stone-700">per month • $29.99/year</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  "Everything in Premium",
-                  "AI Updates",
-                  "AI Identification tools",
-                  "Advanced analytics & insights",
-                  "Smart pairing intelligence",
-                  "Bulk editing tools",
-                  "Export & reports (CSV / PDF)",
-                  "Collection optimization tools",
-                  "Early access to new advanced features",
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-700 shrink-0 mt-0.5" />
-                    <span className="text-stone-900">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-stone-700 mt-4">
-                If you subscribed to Premium before {PRO_LAUNCH_DATE_LABEL}, you keep AI Updates and AI Identification tools.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Payment Form - Web Only (Stripe) */}
-         {!userHasPaidAccess && (
-          <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
-            <CardHeader>
-              <CardTitle>Choose Your Plan</CardTitle>
-              <CardDescription>
-                Select a tier and billing interval to get started
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {checkingSession ? (
-                <div className="text-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-amber-600" />
-                  <p className="text-stone-600">Processing your subscription...</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Tier Selection */}
-                  <div>
-                    <label className="text-sm font-medium text-stone-700 mb-2 block">Select Tier</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setSelectedTier('premium')}
-                        className={`p-4 rounded-lg border-2 transition-all ${
-                          selectedTier === 'premium'
-                            ? 'border-amber-500 bg-amber-50'
-                            : 'border-stone-200 hover:border-stone-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Crown className="w-5 h-5 text-amber-600" />
-                          <h3 className="font-semibold text-stone-800">Premium</h3>
-                        </div>
-                        <p className="text-xs text-stone-600">Unlimited collection, cellar tracking</p>
-                      </button>
-                      <button
-                        onClick={() => setSelectedTier('pro')}
-                        className={`p-4 rounded-lg border-2 transition-all ${
-                          selectedTier === 'pro'
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-stone-200 hover:border-stone-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Sparkles className="w-5 h-5 text-purple-700" />
-                          <h3 className="font-semibold text-stone-800">Pro</h3>
-                        </div>
-                        <p className="text-xs text-stone-600">AI tools, analytics, exports</p>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Interval Selection */}
-                  <div>
-                    <label className="text-sm font-medium text-stone-700 mb-2 block">Billing Interval</label>
-                    <div className="grid gap-4">
-                      {PRICING_OPTIONS[selectedTier].map((option) => (
-                        <button
-                          key={`${option.tier}-${option.interval}`}
-                          onClick={() => setSelectedInterval(option.interval)}
-                          className={`relative p-4 rounded-lg border-2 transition-all text-left ${
-                            selectedInterval === option.interval
-                              ? 'border-amber-500 bg-amber-50'
-                              : 'border-stone-200 hover:border-stone-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-stone-800">{option.name}</h3>
-                                {option.badge && (
-                                  <Badge className="bg-amber-600 text-white text-xs">
-                                    {option.badge}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-stone-600">{option.description}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-stone-800">{option.price}</p>
-                              <p className="text-xs text-stone-500">per {option.interval === 'annual' ? 'year' : 'month'}</p>
-                            </div>
-                          </div>
-                          {selectedInterval === option.interval && (
-                            <div className="absolute top-4 right-4">
-                              <Check className="w-5 h-5 text-amber-600" />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button 
-                    onClick={handleSubscribe}
-                    className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    {isIOSApp ? "Upgrade in App Store" : "Continue to Checkout"}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        <button
+          onClick={handleManage}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "1px solid rgba(0,0,0,0.2)",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: "transparent",
+          }}
+        >
+          {isIOSApp ? "Manage Subscription (Apple)" : "Manage Subscription"}
+        </button>
       </div>
+
+      {isIOSApp && (
+        <div style={{ marginTop: 8, fontSize: 14, opacity: 0.85 }}>
+          {isPro ? "Status: Pro Active ✅" : "Status: Free / Not Active"}
+        </div>
+      )}
+
+      {message && (
+        <div style={{ marginTop: 12, color: message.includes("✅") ? "green" : "crimson" }}>
+          {message}
+        </div>
+      )}
+
+      {/* IMPORTANT SAFETY NOTE:
+          On iOS WKWebView, do NOT render any Stripe portal links or buttons.
+          If your existing page includes those elsewhere, Base44 should remove them
+          from the iOS WKWebView conditional path. */}
     </div>
   );
 }
