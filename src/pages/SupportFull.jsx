@@ -108,18 +108,18 @@ ${formData.message}
 
         <Card className="border-[#e8d5b7]/30">
           <CardHeader>
-            <CardTitle className="text-3xl text-stone-900 flex items-center gap-3">
-              <Mail className="w-8 h-8 text-[#8b3a3a]" />
+            <CardTitle className="text-3xl text-[#E0D8C8] flex items-center gap-3">
+              <Mail className="w-8 h-8 text-[#A35C5C]" />
               Contact Support
             </CardTitle>
-            <CardDescription className="text-stone-600">
+            <CardDescription className="text-[#E0D8C8]/80">
               Have a question or need help? Send us a message and we'll get back to you soon.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="topic" className="text-stone-700 font-medium">
+                <Label htmlFor="topic" className="text-[#E0D8C8] font-medium">
                   What can we help you with? *
                 </Label>
                 <Select
@@ -141,7 +141,7 @@ ${formData.message}
               </div>
 
               <div>
-                <Label htmlFor="name" className="text-stone-700 font-medium">
+                <Label htmlFor="name" className="text-[#E0D8C8] font-medium">
                   Your Name *
                 </Label>
                 <Input
@@ -155,7 +155,7 @@ ${formData.message}
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-stone-700 font-medium">
+                <Label htmlFor="email" className="text-[#E0D8C8] font-medium">
                   Your Email *
                 </Label>
                 <Input
@@ -170,7 +170,7 @@ ${formData.message}
               </div>
 
               <div>
-                <Label htmlFor="message" className="text-stone-700 font-medium">
+                <Label htmlFor="message" className="text-[#E0D8C8] font-medium">
                   Message *
                 </Label>
                 <Textarea
