@@ -19,6 +19,7 @@ import { shouldShowPurchaseUI, isIOSCompanion } from "@/components/utils/compani
 import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
+import { isIOSWebView, registerNativeSubscriptionListener, requestNativeSubscriptionStatus } from "@/components/utils/nativeIAPBridge";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -246,6 +247,23 @@ export default function Layout({ children, currentPageName }) {
       }
     })();
   }, [userLoading, user, subscription, hasPaidAccess, queryClient]);
+
+  // Listen for native iOS subscription status updates
+  React.useEffect(() => {
+    if (!isIOSWebView()) return;
+
+    // Request initial status
+    requestNativeSubscriptionStatus();
+
+    // Listen for updates
+    const cleanup = registerNativeSubscriptionListener((status) => {
+      console.log("[Layout] Native subscription status:", status);
+      // Refetch user data to sync with backend
+      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+    });
+
+    return cleanup;
+  }, [queryClient]);
 
   React.useEffect(() => {
     if (userLoading) return;
