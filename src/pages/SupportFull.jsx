@@ -62,7 +62,8 @@ ${formData.message}
       setSubmitted(true);
       setFormData({ topic: "", name: "", email: "", message: "" });
     } catch (error) {
-      alert('Failed to send support request. Please try again.');
+      console.error('Support email error:', error);
+      alert(`Failed to send support request: ${error?.message || 'Unknown error'}. Please try again or email admin@pipekeeperapp.com directly.`);
     } finally {
       setIsSubmitting(false);
     }
