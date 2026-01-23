@@ -5,8 +5,21 @@ import Stripe from "npm:stripe@17.4.0";
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
-const PRICE_ID_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || "").trim();
-const PRICE_ID_YEARLY = (Deno.env.get("STRIPE_PRICE_ID_YEARLY") || "").trim();
+// Price ID mapping (tier + interval -> Stripe Price ID)
+const PRICE_MAP = {
+  premium: {
+    monthly: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim(),
+    annual: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim(),
+  },
+  pro: {
+    monthly: (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim(),
+    annual: (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim(),
+  }
+};
+
+// Legacy fallback support
+const LEGACY_PRICE_ID_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || "").trim();
+const LEGACY_PRICE_ID_YEARLY = (Deno.env.get("STRIPE_PRICE_ID_YEARLY") || "").trim();
 
 const ALLOWED_PRICE_IDS = (Deno.env.get("ALLOWED_PRICE_IDS") || "")
   .split(",")
@@ -59,17 +72,41 @@ async function safePersistCustomerId(base44, email, customerId) {
   }
 }
 
-function pickPriceId(billingInterval) {
-  const interval = String(billingInterval || "").toLowerCase();
-  if (interval === "month" || interval === "monthly") return PRICE_ID_MONTHLY;
-  if (interval === "year" || interval === "annual" || interval === "yearly") return PRICE_ID_YEARLY;
-  return "";
+function getPriceIdFromTierAndInterval(tier, interval) {
+  const normalizedTier = String(tier || "").toLowerCase();
+  const normalizedInterval = String(interval || "").toLowerCase();
+  
+  // Normalize interval variants
+  let intervalKey = normalizedInterval;
+  if (normalizedInterval === "month" || normalizedInterval === "monthly") {
+    intervalKey = "monthly";
+  } else if (normalizedInterval === "year" || normalizedInterval === "yearly") {
+    intervalKey = "annual";
+  }
+  
+  const priceId = PRICE_MAP[normalizedTier]?.[intervalKey];
+  return priceId || "";
 }
 
 function isAllowedPriceId(priceId) {
   if (!priceId) return false;
-  if (!ALLOWED_PRICE_IDS.length) return true;
-  return ALLOWED_PRICE_IDS.includes(priceId);
+  
+  // Check against all valid price IDs in the map
+  const validPriceIds = [
+    PRICE_MAP.premium.monthly,
+    PRICE_MAP.premium.annual,
+    PRICE_MAP.pro.monthly,
+    PRICE_MAP.pro.annual,
+    LEGACY_PRICE_ID_MONTHLY,
+    LEGACY_PRICE_ID_YEARLY,
+  ].filter(Boolean);
+  
+  // Add ALLOWED_PRICE_IDS if configured
+  if (ALLOWED_PRICE_IDS.length) {
+    return ALLOWED_PRICE_IDS.includes(priceId);
+  }
+  
+  return validPriceIds.includes(priceId);
 }
 
 // ---- Handler ----
@@ -99,20 +136,47 @@ Deno.serve(async (req) => {
     const origin = safeOrigin(req);
 
     const body = await req.json().catch(() => ({}));
-    const billingInterval = body?.billingInterval;
-    const explicitPriceId = (body?.priceId || "").trim();
-
-    const priceId = explicitPriceId || pickPriceId(billingInterval);
-
-    if (!priceId) {
+    
+    // Primary path: tier + interval
+    const tier = body?.tier;
+    const interval = body?.interval;
+    
+    // Legacy path: priceId (for backward compatibility)
+    const legacyPriceId = (body?.priceId || "").trim();
+    
+    let priceId = "";
+    
+    // Prefer tier + interval approach
+    if (tier && interval) {
+      priceId = getPriceIdFromTierAndInterval(tier, interval);
+      
+      if (!priceId) {
+        return Response.json(
+          { error: `Invalid tier/interval combination: ${tier}/${interval}. Supported: premium/pro + monthly/annual.` },
+          { status: 400 }
+        );
+      }
+    } else if (legacyPriceId) {
+      // Backward compatibility: validate priceId against allowlist
+      if (!isAllowedPriceId(legacyPriceId)) {
+        return Response.json(
+          { error: "Invalid priceId. Please use tier and interval parameters instead." },
+          { status: 400 }
+        );
+      }
+      priceId = legacyPriceId;
+    } else {
       return Response.json(
-        { error: "Missing priceId or billingInterval (month/year)." },
+        { error: "Missing required parameters: tier + interval (or legacy priceId)." },
         { status: 400 }
       );
     }
 
-    if (!isAllowedPriceId(priceId)) {
-      return Response.json({ error: "Invalid priceId." }, { status: 400 });
+    if (!priceId) {
+      return Response.json(
+        { error: "Failed to determine price. Please check tier and interval." },
+        { status: 400 }
+      );
     }
 
     // Customer resolution

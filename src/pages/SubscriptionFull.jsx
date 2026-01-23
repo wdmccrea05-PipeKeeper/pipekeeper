@@ -18,30 +18,50 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 
-const PRICING_OPTIONS = [
-  { 
-    id: 'price_1SjqONDycvQWC88PUli0dllA',
-    name: 'Monthly',
-    price: '$1.99',
-    interval: 'month',
-    description: 'Billed monthly'
-  },
-  { 
-    id: 'price_1SjqMzDycvQWC88PzxEeD4ov',
-    name: 'Yearly',
-    price: '$19.99',
-    interval: 'year',
-    description: 'Billed annually',
-    badge: 'Best Value'
-  }
-];
+const PRICING_OPTIONS = {
+  premium: [
+    { 
+      tier: 'premium',
+      interval: 'monthly',
+      name: 'Monthly',
+      price: '$1.99',
+      description: 'Billed monthly'
+    },
+    { 
+      tier: 'premium',
+      interval: 'annual',
+      name: 'Yearly',
+      price: '$19.99',
+      description: 'Billed annually',
+      badge: 'Best Value'
+    }
+  ],
+  pro: [
+    {
+      tier: 'pro',
+      interval: 'monthly',
+      name: 'Monthly',
+      price: '$2.99',
+      description: 'Billed monthly'
+    },
+    {
+      tier: 'pro',
+      interval: 'annual',
+      name: 'Yearly',
+      price: '$29.99',
+      description: 'Billed annually',
+      badge: 'Best Value'
+    }
+  ]
+};
 
 const PRO_LAUNCH_DATE_LABEL = "February 1, 2026";
 
 export default function SubscriptionFull() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState(PRICING_OPTIONS[1].id); // Default to yearly
+  const [selectedTier, setSelectedTier] = useState('premium');
+  const [selectedInterval, setSelectedInterval] = useState('annual'); // Default to yearly
   const [checkingSession, setCheckingSession] = useState(false);
 
   const { 
@@ -178,10 +198,11 @@ export default function SubscriptionFull() {
       return;
     }
 
-
-
     try {
-      const response = await base44.functions.invoke('createCheckoutSession', { priceId: selectedPlan });
+      const response = await base44.functions.invoke('createCheckoutSession', { 
+        tier: selectedTier, 
+        interval: selectedInterval 
+      });
       
       if (!response || !response.data) {
         throw new Error('No response from checkout service');
@@ -483,9 +504,9 @@ export default function SubscriptionFull() {
          {!userHasPaidAccess && (
           <Card className="border-amber-300 bg-gradient-to-br from-amber-50 to-white">
             <CardHeader>
-              <CardTitle>Subscribe to Premium</CardTitle>
+              <CardTitle>Choose Your Plan</CardTitle>
               <CardDescription>
-                Choose your plan and get instant access to all premium features
+                Select a tier and billing interval to get started
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -496,41 +517,80 @@ export default function SubscriptionFull() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="grid gap-4">
-                    {PRICING_OPTIONS.map((option) => (
+                  {/* Tier Selection */}
+                  <div>
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">Select Tier</label>
+                    <div className="grid grid-cols-2 gap-3">
                       <button
-                        key={option.id}
-                        onClick={() => setSelectedPlan(option.id)}
-                        className={`relative p-4 rounded-lg border-2 transition-all text-left ${
-                          selectedPlan === option.id
+                        onClick={() => setSelectedTier('premium')}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          selectedTier === 'premium'
                             ? 'border-amber-500 bg-amber-50'
                             : 'border-stone-200 hover:border-stone-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-stone-800">{option.name}</h3>
-                              {option.badge && (
-                                <Badge className="bg-amber-600 text-white text-xs">
-                                  {option.badge}
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-stone-600">{option.description}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-stone-800">{option.price}</p>
-                            <p className="text-xs text-stone-500">per {option.interval}</p>
-                          </div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Crown className="w-5 h-5 text-amber-600" />
+                          <h3 className="font-semibold text-stone-800">Premium</h3>
                         </div>
-                        {selectedPlan === option.id && (
-                          <div className="absolute top-4 right-4">
-                            <Check className="w-5 h-5 text-amber-600" />
-                          </div>
-                        )}
+                        <p className="text-xs text-stone-600">Unlimited collection, cellar tracking</p>
                       </button>
-                    ))}
+                      <button
+                        onClick={() => setSelectedTier('pro')}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          selectedTier === 'pro'
+                            ? 'border-purple-500 bg-purple-50'
+                            : 'border-stone-200 hover:border-stone-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Sparkles className="w-5 h-5 text-purple-700" />
+                          <h3 className="font-semibold text-stone-800">Pro</h3>
+                        </div>
+                        <p className="text-xs text-stone-600">AI tools, analytics, exports</p>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Interval Selection */}
+                  <div>
+                    <label className="text-sm font-medium text-stone-700 mb-2 block">Billing Interval</label>
+                    <div className="grid gap-4">
+                      {PRICING_OPTIONS[selectedTier].map((option) => (
+                        <button
+                          key={`${option.tier}-${option.interval}`}
+                          onClick={() => setSelectedInterval(option.interval)}
+                          className={`relative p-4 rounded-lg border-2 transition-all text-left ${
+                            selectedInterval === option.interval
+                              ? 'border-amber-500 bg-amber-50'
+                              : 'border-stone-200 hover:border-stone-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-stone-800">{option.name}</h3>
+                                {option.badge && (
+                                  <Badge className="bg-amber-600 text-white text-xs">
+                                    {option.badge}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-stone-600">{option.description}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-stone-800">{option.price}</p>
+                              <p className="text-xs text-stone-500">per {option.interval === 'annual' ? 'year' : 'month'}</p>
+                            </div>
+                          </div>
+                          {selectedInterval === option.interval && (
+                            <div className="absolute top-4 right-4">
+                              <Check className="w-5 h-5 text-amber-600" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <Button 
@@ -540,8 +600,6 @@ export default function SubscriptionFull() {
                     <CreditCard className="w-4 h-4 mr-2" />
                     Continue to Checkout
                   </Button>
-
-
                 </div>
               )}
             </CardContent>
