@@ -160,9 +160,11 @@ export default function Layout({ children, currentPageName }) {
   const [showSubscribePrompt, setShowSubscribePrompt] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
   const [showFoundingMemberPopup, setShowFoundingMemberPopup] = React.useState(false);
+  const [iapToast, setIapToast] = React.useState("");
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isIOSApp = React.useMemo(() => isIOSWebView(), []);
 
   const PUBLIC_PAGES = React.useMemo(
     () =>
@@ -250,7 +252,7 @@ export default function Layout({ children, currentPageName }) {
 
   // Listen for native iOS subscription status updates
   React.useEffect(() => {
-    if (!isIOSWebView()) return;
+    if (!isIOSApp) return;
 
     // Request initial status
     requestNativeSubscriptionStatus();
@@ -263,7 +265,59 @@ export default function Layout({ children, currentPageName }) {
     });
 
     return cleanup;
-  }, [queryClient]);
+  }, [isIOSApp, queryClient]);
+
+  // iOS WKWebView: Intercept subscription management clicks globally
+  React.useEffect(() => {
+    if (!isIOSApp) return;
+
+    const showIAPToast = (msg) => {
+      setIapToast(msg);
+      clearTimeout(showIAPToast._timer);
+      showIAPToast._timer = setTimeout(() => setIapToast(""), 2600);
+    };
+
+    const handler = (e) => {
+      const target = e.target;
+      const el = target?.closest?.("button, a, [role='button']");
+      if (!el) return;
+
+      const text = (el.innerText || el.textContent || "").trim().toLowerCase();
+
+      const isManage =
+        text.includes("manage subscription") ||
+        text.includes("update subscription") ||
+        text.includes("cancel subscription") ||
+        text.includes("manage plan") ||
+        text.includes("manage billing");
+
+      const isUpgrade =
+        text === "upgrade" ||
+        text.includes("upgrade to pro") ||
+        text.includes("upgrade (app store)") ||
+        text.includes("subscribe") ||
+        text.includes("go pro");
+
+      if (isManage) {
+        e.preventDefault();
+        e.stopPropagation();
+        const success = openAppleSubscriptions();
+        if (!success) showIAPToast("Unable to open Apple subscriptions. Please try again.");
+        return;
+      }
+
+      if (isUpgrade) {
+        e.preventDefault();
+        e.stopPropagation();
+        const success = openNativePaywall();
+        if (!success) showIAPToast("Unable to open upgrade screen. Please try again.");
+        return;
+      }
+    };
+
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [isIOSApp]);
 
   React.useEffect(() => {
     if (userLoading) return;
@@ -512,6 +566,28 @@ export default function Layout({ children, currentPageName }) {
          )}
 
         <EntitlementDebug />
+
+        {/* iOS IAP Toast */}
+        {iapToast && (
+          <div
+            style={{
+              position: "fixed",
+              left: "50%",
+              bottom: "24px",
+              transform: "translateX(-50%)",
+              padding: "10px 14px",
+              borderRadius: "12px",
+              background: "rgba(0,0,0,0.85)",
+              color: "white",
+              zIndex: 999999,
+              fontSize: "14px",
+              maxWidth: "340px",
+              textAlign: "center",
+            }}
+          >
+            {iapToast}
+          </div>
+        )}
         </MeasurementProvider>
         </>
         );
