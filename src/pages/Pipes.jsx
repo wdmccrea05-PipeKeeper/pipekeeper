@@ -19,7 +19,7 @@ import PipeExporter from "@/components/export/PipeExporter";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 
-const SHAPES = ["All Shapes", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const SHAPES = ["All Shapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["All Materials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
 
 export default function PipesPage() {

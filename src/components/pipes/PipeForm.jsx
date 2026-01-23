@@ -22,7 +22,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 
-const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const STEM_MATERIALS = ["Acrylic", "Amber", "Bone", "Cumberland", "Ebonite", "Horn", "Lucite", "Metal", "Other", "Vulcanite"];
 const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Partially Rusticated", "Carved", "Natural", "Other"];
