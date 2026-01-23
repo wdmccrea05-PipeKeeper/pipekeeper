@@ -171,7 +171,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-xl">
+            <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingIndex !== null ? "Edit Bowl" : "Add Interchangeable Bowl"}</DialogTitle>
               </DialogHeader>
@@ -218,46 +218,94 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Bowl Height (mm)</Label>
+                    <Label>Bowl Height ({useMetric ? 'mm' : 'in'})</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_height_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_height_mm: e.target.value })}
-                      placeholder="e.g., 50"
+                      step="0.01"
+                      value={
+                        bowlForm.bowl_height_mm 
+                          ? useMetric ? bowlForm.bowl_height_mm : convertToImperial(bowlForm.bowl_height_mm)
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setBowlForm({ ...bowlForm, bowl_height_mm: '' });
+                        } else {
+                          const metricVal = useMetric ? val : (parseFloat(val) * 25.4).toFixed(1);
+                          setBowlForm({ ...bowlForm, bowl_height_mm: metricVal });
+                        }
+                      }}
+                      placeholder={useMetric ? "e.g., 50" : "e.g., 2.0"}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Bowl Width (mm)</Label>
+                    <Label>Bowl Width ({useMetric ? 'mm' : 'in'})</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_width_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_width_mm: e.target.value })}
-                      placeholder="e.g., 38"
+                      step="0.01"
+                      value={
+                        bowlForm.bowl_width_mm 
+                          ? useMetric ? bowlForm.bowl_width_mm : convertToImperial(bowlForm.bowl_width_mm)
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setBowlForm({ ...bowlForm, bowl_width_mm: '' });
+                        } else {
+                          const metricVal = useMetric ? val : (parseFloat(val) * 25.4).toFixed(1);
+                          setBowlForm({ ...bowlForm, bowl_width_mm: metricVal });
+                        }
+                      }}
+                      placeholder={useMetric ? "e.g., 38" : "e.g., 1.5"}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Chamber Diameter (mm)</Label>
+                    <Label>Chamber Diameter ({useMetric ? 'mm' : 'in'})</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_diameter_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_diameter_mm: e.target.value })}
-                      placeholder="e.g., 20"
+                      step="0.01"
+                      value={
+                        bowlForm.bowl_diameter_mm 
+                          ? useMetric ? bowlForm.bowl_diameter_mm : convertToImperial(bowlForm.bowl_diameter_mm)
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setBowlForm({ ...bowlForm, bowl_diameter_mm: '' });
+                        } else {
+                          const metricVal = useMetric ? val : (parseFloat(val) * 25.4).toFixed(1);
+                          setBowlForm({ ...bowlForm, bowl_diameter_mm: metricVal });
+                        }
+                      }}
+                      placeholder={useMetric ? "e.g., 20" : "e.g., 0.8"}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Chamber Depth (mm)</Label>
+                    <Label>Chamber Depth ({useMetric ? 'mm' : 'in'})</Label>
                     <Input
                       type="number"
-                      step="0.1"
-                      value={bowlForm.bowl_depth_mm}
-                      onChange={(e) => setBowlForm({ ...bowlForm, bowl_depth_mm: e.target.value })}
-                      placeholder="e.g., 40"
+                      step="0.01"
+                      value={
+                        bowlForm.bowl_depth_mm 
+                          ? useMetric ? bowlForm.bowl_depth_mm : convertToImperial(bowlForm.bowl_depth_mm)
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          setBowlForm({ ...bowlForm, bowl_depth_mm: '' });
+                        } else {
+                          const metricVal = useMetric ? val : (parseFloat(val) * 25.4).toFixed(1);
+                          setBowlForm({ ...bowlForm, bowl_depth_mm: metricVal });
+                        }
+                      }}
+                      placeholder={useMetric ? "e.g., 40" : "e.g., 1.6"}
                     />
                   </div>
                 </div>
@@ -305,7 +353,6 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                       <input
                         type="file"
                         accept="image/*"
-                        capture="environment"
                         onChange={handlePhotoUpload}
                         className="hidden"
                         id="bowl-photo-upload"
