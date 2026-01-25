@@ -83,29 +83,29 @@ export default function HowTo() {
           ]
         },
         {
-          q: "How to auto-fill pipe measurements from verified sources",
-          steps: [
-            "Go to AI Updates page from Home",
-            "Find 'Find Verified Measurements' section",
-            "Select a pipe from the dropdown",
-            "Tap 'Find Verified Measurements' button",
-            "The AI searches manufacturer specs, databases, and estate listings",
-            "If verified data is found, missing measurements and geometry fields auto-fill",
-            "Review the updates applied - only empty or 'Unknown' fields are changed",
-            "Check pipe detail page to see updated measurements and classifications"
-          ]
-        },
-        {
           q: "How to analyze pipe geometry from photos",
           steps: [
-            "Go to AI Updates page → 'Pipe Measurements & Geometry' section",
-            "Tap 'Analyze Geometry from Photos'",
+            "Go to AI Updates page from Home or Expert Tobacconist → AI Updates tab",
+            "Find 'Analyze Pipe Geometry' section",
             "Select a pipe from your collection",
-            "Tap 'Analyze Pipe Geometry' - AI analyzes photos and dimensions",
+            "Tap 'Analyze Geometry' - AI analyzes photos and dimensions",
             "Review proposed geometry classifications: shape, bowl style, shank shape, bend, size class",
             "Each suggestion shows confidence level (High/Medium/Low) and reasoning",
             "Apply individual suggestions or 'Apply All High Confidence'",
             "Geometry fields update immediately with your approved classifications"
+          ]
+        },
+        {
+          q: "How to find verified manufacturer specs (optional)",
+          steps: [
+            "Go to AI Updates page → 'Find Verified Manufacturer Specs' section",
+            "This is a secondary tool that only works for some production pipes",
+            "Select a pipe from the dropdown",
+            "Tap 'Find Specs' button",
+            "The AI searches manufacturer catalogs and verified databases",
+            "If verified data is found, missing measurements auto-fill",
+            "If not found, use 'Analyze Geometry from Photos' instead (primary tool)",
+            "Check pipe detail page to see any updates applied"
           ]
         },
         {
@@ -375,16 +375,16 @@ export default function HowTo() {
           ]
         },
         {
-          q: "How to use the new pipe geometry analysis tools",
+          q: "How to use pipe geometry analysis tools",
           steps: [
-            "Go to AI Updates → 'Pipe Measurements & Geometry'",
-            "Two tools available:",
-            "1. Find Verified Measurements - searches manufacturer specs and databases",
-            "2. Analyze Geometry from Photos - uses AI to classify shape, bowl style, bend, etc.",
+            "Go to AI Updates → 'Analyze Pipe Geometry' section",
+            "Primary tool: 'Analyze Geometry from Photos' - uses uploaded photos and dimensions",
+            "Select a pipe and the AI proposes: shape, bowl style, shank shape, bend, size class",
+            "Results always appear with confidence levels (High/Medium/Low) and reasoning",
+            "Even without photos, the tool provides results with warnings about missing data",
+            "Secondary tool (optional): 'Find Verified Manufacturer Specs' for production pipes only",
             "Both tools only update missing or 'Unknown' fields - never overwrite your data",
-            "Results show which sources were used and confidence levels",
-            "Applied changes refresh immediately - no app restart needed",
-            "Use geometry analysis for pipes with photos but unknown classifications"
+            "Applied changes refresh immediately - no app restart needed"
           ]
         },
         {
