@@ -247,7 +247,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
                 >
                   <option value="">Select a pipe...</option>
                   {pipes.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option key={p.id} value={String(p.id)}>
                       {p.name} {p.maker ? `(${p.maker})` : ""}
                     </option>
                   ))}
@@ -261,7 +261,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
                       return;
                     }
 
-                    const pipe = pipes.find((p) => p.id === measurementLookupState.selectedPipeId);
+                    const pipe = pipes.find((p) => String(p.id) === String(measurementLookupState.selectedPipeId));
                     if (!pipe) return;
 
                     setMeasurementLookupState({

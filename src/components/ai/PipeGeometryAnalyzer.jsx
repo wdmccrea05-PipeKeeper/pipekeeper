@@ -19,7 +19,7 @@ export default function PipeGeometryAnalyzer({ pipes, user, onComplete }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
 
-  const selectedPipe = pipes.find((p) => p.id === selectedPipeId);
+  const selectedPipe = pipes.find((p) => String(p.id) === String(selectedPipeId));
 
   const handleAnalyze = async () => {
     if (!selectedPipe) return;
@@ -321,7 +321,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
             </SelectTrigger>
             <SelectContent>
               {pipes.map((pipe) => (
-                <SelectItem key={pipe.id} value={pipe.id}>
+                <SelectItem key={pipe.id} value={String(pipe.id)}>
                   {pipe.name} {pipe.maker ? `(${pipe.maker})` : ""}
                 </SelectItem>
               ))}
@@ -364,7 +364,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         </CardContent>
       </Card>
 
-      {results && results.pipeId === selectedPipeId && (
+      {results && String(results.pipeId) === String(selectedPipeId) && (
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
