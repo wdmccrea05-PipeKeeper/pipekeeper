@@ -10,10 +10,22 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
 
+// Helper functions for field state detection
+const isBlank = (v) => v === null || v === undefined || v === "";
+const isUnknown = (v) => typeof v === "string" && v.trim().toLowerCase() === "unknown";
+const isMissingMeasurement = (v) => isBlank(v);
+const isMissingGeometry = (v) => isBlank(v) || isUnknown(v);
+
 export default function AIUpdates() {
   const queryClient = useQueryClient();
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showPipeAnalyzer, setShowPipeAnalyzer] = useState(false);
+  const [measurementLookupState, setMeasurementLookupState] = useState({
+    status: "idle", // idle | running | completed | none_found | error
+    selectedPipeId: null,
+    results: null,
+    message: "",
+  });
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -190,30 +202,262 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
-              <Ruler className="w-5 h-5 text-teal-400" />
-              Pipe Geometry Analysis
+              <Ruler className="w-5 h-5 text-blue-400" />
+              Pipe Measurements & Geometry
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Analyze pipe photos and dimensions to auto-fill geometry fields (shape, bowl style, bend, etc.)
-            </p>
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-teal-600 to-teal-700"
-              onClick={() => setShowPipeAnalyzer(!showPipeAnalyzer)}
-              disabled={pipes.length === 0}
-            >
-              {showPipeAnalyzer ? (
-                <>Hide Analyzer</>
-              ) : (
-                <>
-                  <Ruler className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Analyze Pipe Geometry ({pipes.length} total)</span>
-                  <span className="sm:hidden">🔧 Analyze ({pipes.length})</span>
-                </>
-              )}
-            </Button>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold text-[#e8d5b7] mb-2">Find Verified Measurements</h4>
+              <p className="text-sm text-[#e8d5b7]/80 mb-3">
+                Search verified manufacturer specs and databases to auto-fill missing measurements.
+              </p>
+              <div className="flex gap-2">
+                <select
+                  className="flex-1 bg-[#1a2c42] border border-[#e8d5b7]/20 rounded-lg px-3 py-2 text-[#e8d5b7] text-sm"
+                  value={measurementLookupState.selectedPipeId || ""}
+                  onChange={(e) =>
+                    setMeasurementLookupState({ ...measurementLookupState, selectedPipeId: e.target.value })
+                  }
+                  disabled={measurementLookupState.status === "running"}
+                >
+                  <option value="">Select a pipe...</option>
+                  {pipes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} {p.maker ? `(${p.maker})` : ""}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700"
+                  onClick={async () => {
+                    if (!measurementLookupState.selectedPipeId) {
+                      toast.error("Please select a pipe first");
+                      return;
+                    }
+
+                    const pipe = pipes.find((p) => p.id === measurementLookupState.selectedPipeId);
+                    if (!pipe) return;
+
+                    setMeasurementLookupState({
+                      ...measurementLookupState,
+                      status: "running",
+                      results: null,
+                      message: "",
+                    });
+
+                    try {
+                      // Count what we have
+                      const photosCount = (pipe.photos || []).length;
+                      const measurementFields = [
+                        "length_mm",
+                        "weight_grams",
+                        "bowl_height_mm",
+                        "bowl_width_mm",
+                        "bowl_diameter_mm",
+                        "bowl_depth_mm",
+                      ];
+                      const existingMeasurements = measurementFields.filter((f) => !isMissingMeasurement(pipe[f]));
+                      const geometryFields = ["shape", "bowlStyle", "shankShape", "bend", "sizeClass"];
+                      const existingGeometry = geometryFields.filter((f) => !isMissingGeometry(pipe[f]));
+
+                      // Build lookup prompt
+                      const prompt = `You are searching verified manufacturer specifications and pipe databases to find measurements for a tobacco pipe.
+
+**Pipe Identity:**
+- Name: ${pipe.name || "Unknown"}
+- Maker/Brand: ${pipe.maker || "Unknown"}
+- Country: ${pipe.country_of_origin || "Unknown"}
+- Shape: ${pipe.shape || "Unknown"}
+- Year Made: ${pipe.year_made || "Unknown"}
+- Stamping: ${pipe.stamping || "None"}
+
+**Task:**
+Search verified sources (manufacturer catalogs, pipe databases, estate listings with verified specs) to find reliable measurements and geometry classifications for this specific pipe model.
+
+**Fields to Look Up (only if missing):**
+
+Measurements (update only if currently missing):
+${measurementFields.map((f) => `- ${f}: ${isMissingMeasurement(pipe[f]) ? "MISSING - search for this" : `Current: ${pipe[f]} - SKIP`}`).join("\n")}
+
+Geometry (update only if missing or "Unknown"):
+${geometryFields.map((f) => `- ${f}: ${isMissingGeometry(pipe[f]) ? "MISSING/UNKNOWN - search for this" : `Current: ${pipe[f]} - SKIP`}`).join("\n")}
+
+**Constraints:**
+- Only return data from VERIFIED sources (manufacturer specs, authorized dealers, established pipe databases)
+- Do NOT estimate or guess
+- Use exact enum values for geometry fields:
+  * shape: Billiard, Bent Billiard, Apple, Dublin, Bulldog, Rhodesian, etc. (see previous instructions)
+  * bowlStyle: Cylindrical (Straight Wall), Conical (Tapered), Rounded / Ball, etc.
+  * shankShape: Round, Diamond, Square, Oval, etc.
+  * bend: Straight, 1/4 Bent, 1/2 Bent, etc.
+  * sizeClass: Vest Pocket, Small, Standard, Large, etc.
+
+**Output Format:**
+Return JSON with:
+- found: true/false
+- updates: { field: value, ... } (only fields with verified data)
+- sources: [domain names of sources used]
+- message: explanation of what was/wasn't found`;
+
+                      const result = await base44.integrations.Core.InvokeLLM({
+                        prompt,
+                        add_context_from_internet: true,
+                        response_json_schema: {
+                          type: "object",
+                          properties: {
+                            found: { type: "boolean" },
+                            updates: {
+                              type: "object",
+                              additionalProperties: true,
+                            },
+                            sources: {
+                              type: "array",
+                              items: { type: "string" },
+                            },
+                            message: { type: "string" },
+                          },
+                        },
+                      });
+
+                      if (!result.found || !result.updates || Object.keys(result.updates).length === 0) {
+                        setMeasurementLookupState({
+                          ...measurementLookupState,
+                          status: "none_found",
+                          results: {
+                            pipe,
+                            photosCount,
+                            existingMeasurements,
+                            existingGeometry,
+                            sources: result.sources || [],
+                          },
+                          message:
+                            result.message ||
+                            "No verified specs found for this pipe. You can add measurements manually or run Analyze Pipe Geometry from Photos.",
+                        });
+                        return;
+                      }
+
+                      // Apply updates
+                      await safeUpdate("Pipe", pipe.id, result.updates, user?.email);
+                      queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+
+                      toast.success(`Updated ${Object.keys(result.updates).length} field(s)`);
+
+                      setMeasurementLookupState({
+                        ...measurementLookupState,
+                        status: "completed",
+                        results: {
+                          pipe,
+                          photosCount,
+                          existingMeasurements,
+                          existingGeometry,
+                          updates: result.updates,
+                          sources: result.sources || [],
+                        },
+                        message: result.message || `Successfully updated ${Object.keys(result.updates).length} fields`,
+                      });
+                    } catch (err) {
+                      console.error("Measurement lookup error:", err);
+                      setMeasurementLookupState({
+                        ...measurementLookupState,
+                        status: "error",
+                        message: err.message || "Failed to search for verified measurements",
+                      });
+                      toast.error("Lookup failed");
+                    }
+                  }}
+                  disabled={!measurementLookupState.selectedPipeId || measurementLookupState.status === "running"}
+                >
+                  {measurementLookupState.status === "running" ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>Find Verified Measurements</>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Measurement Lookup Results */}
+            {measurementLookupState.status !== "idle" && measurementLookupState.results && (
+              <div className="border border-[#e8d5b7]/20 rounded-lg p-4 bg-[#1a2c42]/50 space-y-3">
+                <div className="text-xs text-[#e8d5b7]/70 space-y-1">
+                  <p>
+                    <strong>Pipe:</strong> {measurementLookupState.results.pipe?.name}
+                  </p>
+                  <p>
+                    <strong>Photos found:</strong> {measurementLookupState.results.photosCount}
+                  </p>
+                  <p>
+                    <strong>Measurements present:</strong>{" "}
+                    {measurementLookupState.results.existingMeasurements?.length > 0
+                      ? measurementLookupState.results.existingMeasurements.join(", ")
+                      : "None"}
+                  </p>
+                  <p>
+                    <strong>Geometry present:</strong>{" "}
+                    {measurementLookupState.results.existingGeometry?.length > 0
+                      ? measurementLookupState.results.existingGeometry.join(", ")
+                      : "None"}
+                  </p>
+                  {measurementLookupState.results.sources && measurementLookupState.results.sources.length > 0 && (
+                    <p>
+                      <strong>Sources:</strong> {measurementLookupState.results.sources.join(", ")}
+                    </p>
+                  )}
+                </div>
+
+                {measurementLookupState.status === "completed" && measurementLookupState.results.updates && (
+                  <div className="border-t border-[#e8d5b7]/10 pt-3">
+                    <p className="text-sm font-semibold text-green-400 mb-2">
+                      ✓ Updated {Object.keys(measurementLookupState.results.updates).length} field(s):
+                    </p>
+                    <div className="text-xs text-[#e8d5b7]/80 space-y-1">
+                      {Object.entries(measurementLookupState.results.updates).map(([key, value]) => (
+                        <p key={key}>
+                          • {key}: <strong>{value}</strong>
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {measurementLookupState.status === "none_found" && (
+                  <p className="text-sm text-[#e8d5b7]/70">{measurementLookupState.message}</p>
+                )}
+
+                {measurementLookupState.status === "error" && (
+                  <p className="text-sm text-red-400">Error: {measurementLookupState.message}</p>
+                )}
+              </div>
+            )}
+
+            <div className="border-t border-[#e8d5b7]/10 pt-4">
+              <h4 className="text-sm font-semibold text-[#e8d5b7] mb-2">Analyze Pipe Geometry from Photos</h4>
+              <p className="text-sm text-[#e8d5b7]/80 mb-3">
+                Use AI to analyze pipe photos and dimensions to suggest geometry classifications (shape, bowl style,
+                bend, etc.)
+              </p>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-teal-600 to-teal-700"
+                onClick={() => setShowPipeAnalyzer(!showPipeAnalyzer)}
+                disabled={pipes.length === 0}
+              >
+                {showPipeAnalyzer ? (
+                  <>Hide Analyzer</>
+                ) : (
+                  <>
+                    <Ruler className="w-4 h-4 mr-1" />
+                    Analyze Geometry from Photos
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
