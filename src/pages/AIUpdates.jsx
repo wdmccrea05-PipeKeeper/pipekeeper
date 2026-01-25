@@ -3,15 +3,17 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Tags, CheckCircle2 } from "lucide-react";
+import { Loader2, Tags, CheckCircle2, Ruler } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
 
 export default function AIUpdates() {
   const queryClient = useQueryClient();
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
+  const [showPipeAnalyzer, setShowPipeAnalyzer] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -23,6 +25,13 @@ export default function AIUpdates() {
     queryKey: ["blends", user?.email],
     queryFn: async () =>
       (await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
+    enabled: !!user?.email,
+  });
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ["pipes", user?.email],
+    queryFn: async () =>
+      (await base44.entities.Pipe.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
     enabled: !!user?.email,
   });
 
@@ -181,24 +190,42 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
-              <CheckCircle2 className="w-5 h-5 text-teal-400" />
-              Pipe Measurements
+              <Ruler className="w-5 h-5 text-teal-400" />
+              Pipe Geometry Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Fill missing dimensions with verified manufacturer specs (inventory metadata only).
+              Analyze pipe photos and dimensions to auto-fill geometry fields (shape, bowl style, bend, etc.)
             </p>
             <Button
               size="sm"
               className="bg-gradient-to-r from-teal-600 to-teal-700"
-              onClick={() => (window.location.href = "/Pipes")}
+              onClick={() => setShowPipeAnalyzer(!showPipeAnalyzer)}
+              disabled={pipes.length === 0}
             >
-              <span className="hidden sm:inline">Go to Pipes</span>
-              <span className="sm:hidden">🔧 Go to Pipes</span>
+              {showPipeAnalyzer ? (
+                <>Hide Analyzer</>
+              ) : (
+                <>
+                  <Ruler className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Analyze Pipe Geometry ({pipes.length} total)</span>
+                  <span className="sm:hidden">🔧 Analyze ({pipes.length})</span>
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
+
+        {showPipeAnalyzer && pipes.length > 0 && (
+          <PipeGeometryAnalyzer
+            pipes={pipes}
+            user={user}
+            onComplete={() => {
+              queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+            }}
+          />
+        )}
       </div>
     </div>
     </FeatureGate>

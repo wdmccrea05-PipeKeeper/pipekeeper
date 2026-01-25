@@ -4,6 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
+import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -447,10 +448,13 @@ export default function Layout({ children, currentPageName }) {
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
             <div className="max-w-7xl mx-auto px-6 w-full">
               <div className="flex items-center justify-between h-16 gap-4">
-                <Link to={createPageUrl("Home")} className="flex items-center gap-3 flex-shrink-0">
-                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-8 h-8 object-contain" />
-                  <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
-                </Link>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <BackButton currentPageName={currentPageName} />
+                  <Link to={createPageUrl("Home")} className="flex items-center gap-2">
+                    <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-8 h-8 object-contain" />
+                    <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
+                  </Link>
+                </div>
 
                 <div className="flex items-center gap-2 flex-1 justify-center max-w-3xl">
                   {navItems.map((item) => (
@@ -483,10 +487,13 @@ export default function Layout({ children, currentPageName }) {
 
           <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
             <div className="flex items-center justify-between h-14 px-4">
-              <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
-                <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <BackButton currentPageName={currentPageName} />
+                <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
+                  <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
+                </Link>
+              </div>
 
               <button
                 onClick={(e) => {
