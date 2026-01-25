@@ -24,18 +24,19 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
   const canAddMore = remainingSlots > 0;
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-      <div className="flex flex-col gap-2 w-full">
+    <div className="w-full">
+      <div className="flex gap-2 w-full">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMore}
-          className="w-full text-white hover:text-white border-[#E0D8C8]/30 hover:bg-white/10"
+          className="flex-1 bg-white/10 border-white/30 text-white hover:bg-white/20"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
-          <span className="text-xs">Gallery</span>
+          <span className="hidden sm:inline">From Gallery</span>
+          <span className="sm:hidden">Gallery</span>
         </Button>
         <Button
           type="button"
@@ -43,10 +44,11 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           size="sm"
           onClick={() => cameraInputRef.current?.click()}
           disabled={!canAddMore}
-          className="w-full text-white hover:text-white border-[#E0D8C8]/30 hover:bg-white/10"
+          className="flex-1 bg-white/10 border-white/30 text-white hover:bg-white/20"
         >
           <Camera className="w-4 h-4 mr-2" />
-          <span className="text-xs">Camera</span>
+          <span className="hidden sm:inline">Take Photo</span>
+          <span className="sm:hidden">Camera</span>
         </Button>
       </div>
 
@@ -69,7 +71,7 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
       />
 
       {existingPhotos.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 mt-3">
           {existingPhotos.map((url, idx) => (
             <div key={idx} className="relative">
               <img src={url} alt="" className="w-20 h-20 object-cover rounded border" />
@@ -79,7 +81,7 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
       )}
 
       {!canAddMore && (
-        <p className="text-xs text-stone-500">Maximum photos reached</p>
+        <p className="text-xs text-[#E0D8C8]/70 mt-2">Maximum photos reached</p>
       )}
     </div>
   );

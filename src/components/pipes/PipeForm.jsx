@@ -336,7 +336,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 </div>
               </div>
             ))}
-            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
+            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
               <PhotoUploader 
                 onPhotosSelected={(files) => {
                   const uploadPromises = Array.from(files).map(async (file) => {
@@ -390,7 +390,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 </div>
               </div>
             ))}
-            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-[#E0D8C8]/60 hover:text-[#A35C5C]">
+            <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
               <PhotoUploader 
                 onPhotosSelected={(files) => {
                   const uploadPromises = Array.from(files).map(async (file) => {
