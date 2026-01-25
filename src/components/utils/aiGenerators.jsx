@@ -117,6 +117,10 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
 
           maker: p.maker || null,
           shape: bowl.shape || p.shape || null,
+          bowlStyle: bowl.bowlStyle || p.bowlStyle || null,
+          shankShape: bowl.shankShape || p.shankShape || null,
+          bend: bowl.bend || p.bend || null,
+          sizeClass: bowl.sizeClass || p.sizeClass || null,
 
           bowl_material: bowl.bowl_material ?? p.bowl_material ?? null,
           chamber_volume: bowl.chamber_volume ?? p.chamber_volume ?? null,
@@ -137,6 +141,10 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
 
         maker: p.maker || null,
         shape: p.shape || null,
+        bowlStyle: p.bowlStyle || null,
+        shankShape: p.shankShape || null,
+        bend: p.bend || null,
+        sizeClass: p.sizeClass || null,
 
         bowl_material: p.bowl_material ?? null,
         chamber_volume: p.chamber_volume ?? null,
@@ -220,6 +228,10 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
 
           maker: p.maker,
           shape: bowl.shape || p.shape,
+          bowlStyle: bowl.bowlStyle || p.bowlStyle,
+          shankShape: bowl.shankShape || p.shankShape,
+          bend: bowl.bend || p.bend,
+          sizeClass: bowl.sizeClass || p.sizeClass,
 
           bowl_material: bowl.bowl_material ?? p.bowl_material,
           chamber_volume: bowl.chamber_volume ?? p.chamber_volume,
@@ -231,15 +243,19 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
           focus: Array.isArray(bowl.focus) ? bowl.focus : [],
           notes: bowl.notes || "",
         });
-      });
-    } else {
-      pipesData.push({
+        });
+        } else {
+        pipesData.push({
         pipe_id: pid,
         pipe_name: p.name,
         bowl_variant_id: null,
 
         maker: p.maker,
         shape: p.shape,
+        bowlStyle: p.bowlStyle,
+        shankShape: p.shankShape,
+        bend: p.bend,
+        sizeClass: p.sizeClass,
 
         bowl_material: p.bowl_material,
         chamber_volume: p.chamber_volume,
@@ -248,7 +264,7 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
 
         focus: Array.isArray(p.focus) ? p.focus : [],
         notes: p.notes || "",
-      });
+        });
     }
   }
 
@@ -274,14 +290,17 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     : null;
 
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Analyze the user's pipe and tobacco collection. Provide optimization recommendations.
+    prompt: `Analyze the user's pipe and tobacco collection considering pipe geometry. Provide optimization recommendations.
 
   Rules:
   - Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
   - When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
+  - Consider pipe geometry (shape, bowlStyle, shankShape, bend, sizeClass) when making recommendations
+  - Bend degree affects smoking characteristics (straight smokes different than full bent)
+  - Bowl style and shank shape affect heat retention and moisture handling
   - Recommend specialization updates (bowl focus changes) only when justified
   - Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
-  - Include "collection_gaps" and "next_additions" suggestions
+  - Include "collection_gaps" and "next_additions" suggestions considering geometry diversity
   - If what-if is advice-only, give advice and keep applyable_changes empty
 
   CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
@@ -366,6 +385,10 @@ export async function generateBreakInScheduleAI({ pipe, blends, profile }) {
     name: pipe?.name,
     maker: pipe?.maker,
     shape: pipe?.shape,
+    bowlStyle: pipe?.bowlStyle,
+    shankShape: pipe?.shankShape,
+    bend: pipe?.bend,
+    sizeClass: pipe?.sizeClass,
     bowl_material: pipe?.bowl_material,
     focus: pipe?.focus || [],
     chamber_volume: pipe?.chamber_volume ?? null,
