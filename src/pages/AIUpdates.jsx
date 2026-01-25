@@ -3,12 +3,13 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Tags, CheckCircle2, Ruler } from "lucide-react";
+import { Loader2, Tags, CheckCircle2, Ruler, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
+import BatchPipeMeasurements from "@/components/ai/BatchPipeMeasurements";
 
 // Helper functions for field state detection
 const isBlank = (v) => v === null || v === undefined || v === "";
@@ -20,6 +21,7 @@ export default function AIUpdates() {
   const queryClient = useQueryClient();
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showPipeAnalyzer, setShowPipeAnalyzer] = useState(false);
+  const [showBatchProcessor, setShowBatchProcessor] = useState(false);
   const [measurementLookupState, setMeasurementLookupState] = useState({
     status: "idle", // idle | running | completed | none_found | error
     selectedPipeId: null,
@@ -464,6 +466,45 @@ Return JSON with:
         {showPipeAnalyzer && pipes.length > 0 && (
           <PipeGeometryAnalyzer
             pipes={pipes}
+            user={user}
+            onComplete={() => {
+              queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+            }}
+          />
+        )}
+
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <Layers className="w-5 h-5 text-purple-400" />
+              Batch Process All Pipes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
+              Automatically analyze and update geometry for ALL pipes with missing or "Unknown" fields. Processes
+              your entire collection in one batch.
+            </p>
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-purple-700"
+              onClick={() => setShowBatchProcessor(!showBatchProcessor)}
+              disabled={pipes.length === 0}
+            >
+              {showBatchProcessor ? (
+                <>Hide Batch Processor</>
+              ) : (
+                <>
+                  <Layers className="w-4 h-4 mr-1" />
+                  Batch Process ({pipes.length} total)
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {showBatchProcessor && pipes.length > 0 && (
+          <BatchPipeMeasurements
             user={user}
             onComplete={() => {
               queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
