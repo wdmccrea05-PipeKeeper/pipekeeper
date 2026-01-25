@@ -446,28 +446,48 @@ export default function PipeDetailPage() {
             </div>
 
             {/* Badges */}
-             <div className="flex flex-wrap gap-2">
-               {pipe.shape && (
-                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                   {pipe.shape}
-                 </Badge>
-               )}
-               {pipe.bowl_material && (
-                 <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
-                   {pipe.bowl_material}
-                 </Badge>
-               )}
-               {pipe.chamber_volume && (
-                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                   {pipe.chamber_volume} chamber
-                 </Badge>
-               )}
-               {pipe.condition && (
-                 <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
-                   {pipe.condition}
-                 </Badge>
-               )}
-             </div>
+            <div className="flex flex-wrap gap-2">
+              {pipe.shape && pipe.shape !== 'Unknown' && (
+                <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
+                  {pipe.shape}
+                </Badge>
+              )}
+              {pipe.bowlStyle && pipe.bowlStyle !== 'Unknown' && (
+                <Badge className="bg-purple-700 text-purple-100 border-purple-600/50">
+                  {pipe.bowlStyle}
+                </Badge>
+              )}
+              {pipe.shankShape && pipe.shankShape !== 'Unknown' && (
+                <Badge className="bg-teal-700 text-teal-100 border-teal-600/50">
+                  Shank: {pipe.shankShape}
+                </Badge>
+              )}
+              {pipe.bend && pipe.bend !== 'Unknown' && (
+                <Badge className="bg-indigo-700 text-indigo-100 border-indigo-600/50">
+                  {pipe.bend}
+                </Badge>
+              )}
+              {pipe.sizeClass && pipe.sizeClass !== 'Unknown' && pipe.sizeClass !== 'Standard' && (
+                <Badge className="bg-orange-700 text-orange-100 border-orange-600/50">
+                  {pipe.sizeClass}
+                </Badge>
+              )}
+              {pipe.bowl_material && (
+                <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
+                  {pipe.bowl_material}
+                </Badge>
+              )}
+              {pipe.chamber_volume && (
+                <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
+                  {pipe.chamber_volume} chamber
+                </Badge>
+              )}
+              {pipe.condition && (
+                <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
+                  {pipe.condition}
+                </Badge>
+              )}
+            </div>
 
             {/* Details Grid */}
              <Card className="border-white/10">

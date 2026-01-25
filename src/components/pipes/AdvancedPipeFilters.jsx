@@ -7,10 +7,9 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from "lucide-react";
 
-const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", 
-  "Cherry Wood", "Chimney", "Churchwarden", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", 
-  "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", 
-  "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
+const BENDS = ["Straight", "1/4 Bent", "1/2 Bent", "3/4 Bent", "Full Bent", "S-Bend", "Unknown"];
+const SIZE_CLASSES = ["Vest Pocket", "Small", "Standard", "Large", "Magnum / XL", "Churchwarden", "MacArthur", "Unknown"];
 
 const MATERIALS = ["Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
 const FINISHES = ["Carved", "Natural", "Other", "Partially Rusticated", "Rusticated", "Sandblast", "Smooth"];
@@ -137,6 +136,42 @@ export default function AdvancedPipeFilters({ filters, onFilterChange, onReset }
                 <SelectItem value="__ALL__">All Sizes</SelectItem>
                 {CHAMBER_VOLUMES.map(volume => (
                   <SelectItem key={volume} value={volume}>{volume}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Bend</Label>
+            <Select 
+              value={filters.bend || "__ALL__"}
+              onValueChange={(value) => onFilterChange('bend', value === "__ALL__" ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All bends" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__ALL__">All Bends</SelectItem>
+                {BENDS.map(bend => (
+                  <SelectItem key={bend} value={bend}>{bend}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Size Class</Label>
+            <Select 
+              value={filters.sizeClass || "__ALL__"}
+              onValueChange={(value) => onFilterChange('sizeClass', value === "__ALL__" ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All sizes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__ALL__">All Sizes</SelectItem>
+                {SIZE_CLASSES.map(size => (
+                  <SelectItem key={size} value={size}>{size}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

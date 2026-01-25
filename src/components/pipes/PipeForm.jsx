@@ -22,7 +22,11 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 
-const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
+const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
+const SHANK_SHAPES = ["Round", "Diamond", "Square", "Oval", "Paneled / Faceted", "Military / Army Mount", "Freeform", "Unknown"];
+const BENDS = ["Straight", "1/4 Bent", "1/2 Bent", "3/4 Bent", "Full Bent", "S-Bend", "Unknown"];
+const SIZE_CLASSES = ["Vest Pocket", "Small", "Standard", "Large", "Magnum / XL", "Churchwarden", "MacArthur", "Unknown"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const STEM_MATERIALS = ["Acrylic", "Amber", "Bone", "Cumberland", "Ebonite", "Horn", "Lucite", "Metal", "Other", "Vulcanite"];
 const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Partially Rusticated", "Carved", "Natural", "Other"];
@@ -36,6 +40,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     maker: '',
     country_of_origin: '',
     shape: '',
+    bowlStyle: '',
+    shankShape: '',
+    bend: '',
+    sizeClass: '',
     length_mm: '',
     weight_grams: '',
     bowl_height_mm: '',
@@ -48,6 +56,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     finish: '',
     filter_type: '',
     year_made: '',
+    purchase_date: '',
     stamping: '',
     condition: '',
     purchase_price: '',
@@ -445,14 +454,24 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Year Made" 
-            helpText="Year or era the pipe was made. Can be approximate (e.g., '1970s', 'c. 2005')."
+          label="Year Made" 
+          helpText="Year or era the pipe was made. Can be approximate (e.g., '1970s', 'c. 2005')."
           >
-            <Input
-              value={formData.year_made}
-              onChange={(e) => handleChange('year_made', e.target.value)}
-              placeholder="e.g., 1970s, 2020"
-            />
+          <Input
+            value={formData.year_made}
+            onChange={(e) => handleChange('year_made', e.target.value)}
+            placeholder="e.g., 1970s, 2020"
+          />
+          </FieldWithInfo>
+          <FieldWithInfo 
+          label="Purchase Date" 
+          helpText="Date when you acquired this pipe"
+          >
+          <Input
+            type="date"
+            value={formData.purchase_date}
+            onChange={(e) => handleChange('purchase_date', e.target.value)}
+          />
           </FieldWithInfo>
           <FieldWithInfo 
             label="Stamping / Markings" 
@@ -480,6 +499,82 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* Pipe Geometry */}
+      <Card className="border-[#E0D8C8]/15">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-[#E0D8C8]">Pipe Geometry</CardTitle>
+          <p className="text-sm text-[#E0D8C8]/70">Detailed shape and structural classification</p>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FieldWithInfo 
+            label="Shape" 
+            required
+            helpText="Primary shape classification of your pipe"
+          >
+            <Select value={formData.shape || "Unknown"} onValueChange={(v) => handleChange('shape', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select shape" />
+              </SelectTrigger>
+              <SelectContent>
+                {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Bowl Style" 
+            helpText="Internal bowl shape classification"
+          >
+            <Select value={formData.bowlStyle || "Unknown"} onValueChange={(v) => handleChange('bowlStyle', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select bowl style" />
+              </SelectTrigger>
+              <SelectContent>
+                {BOWL_STYLES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Shank Shape" 
+            helpText="Cross-sectional shape of the shank"
+          >
+            <Select value={formData.shankShape || "Unknown"} onValueChange={(v) => handleChange('shankShape', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select shank shape" />
+              </SelectTrigger>
+              <SelectContent>
+                {SHANK_SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Bend" 
+            helpText="Degree of bend from stem to bowl"
+          >
+            <Select value={formData.bend || "Unknown"} onValueChange={(v) => handleChange('bend', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select bend" />
+              </SelectTrigger>
+              <SelectContent>
+                {BENDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+          <FieldWithInfo 
+            label="Size Class" 
+            helpText="Overall size classification"
+          >
+            <Select value={formData.sizeClass || "Standard"} onValueChange={(v) => handleChange('sizeClass', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select size class" />
+              </SelectTrigger>
+              <SelectContent>
+                {SIZE_CLASSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FieldWithInfo>
+        </CardContent>
+      </Card>
+
       {/* Physical Characteristics */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -501,19 +596,6 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FieldWithInfo 
-            label="Shape" 
-            helpText="The classic shape category of your pipe (e.g., Billiard, Dublin, Bent)."
-          >
-            <Select value={formData.shape} onValueChange={(v) => handleChange('shape', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select shape" />
-              </SelectTrigger>
-              <SelectContent>
-                {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </FieldWithInfo>
           <FieldWithInfo 
             label="Bowl Material" 
             helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool smoking."
