@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Tags, CheckCircle2, Ruler, Layers } from "lucide-react";
+import { Loader2, Tags, Ruler, Layers, Info } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -23,7 +23,7 @@ export default function AIUpdates() {
   const [showBatchProcessor, setShowBatchProcessor] = useState(false);
   const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
   const [measurementLookupState, setMeasurementLookupState] = useState({
-    status: "idle", // idle | running | completed | none_found | error
+    status: "idle",
     selectedPipeId: null,
     results: null,
     message: "",
@@ -201,7 +201,259 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           </CardContent>
         </Card>
 
-  const [showBatchProcessor, setShowBatchProcessor] = useState(false);
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+              <Ruler className="w-5 h-5 text-blue-400" />
+              Analyze Pipe Geometry
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[#e8d5b7]/80 mb-4">
+              Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
+            </p>
+          </CardContent>
+        </Card>
+
+        <PipeGeometryAnalyzer
+          pipes={pipes}
+          user={user}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+          }}
+        />
+
+        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]/70 text-base">
+              <Info className="w-4 h-4 text-[#e8d5b7]/50" />
+              Find Verified Manufacturer Specs (optional)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-[#e8d5b7]/60">
+              Only works for some production pipes. Searches manufacturer catalogs and databases.
+            </p>
+            
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setShowVerifiedLookup(!showVerifiedLookup)}
+            >
+              {showVerifiedLookup ? "Hide Lookup" : "Show Verified Specs Lookup"}
+            </Button>
+
+            {showVerifiedLookup && (
+              <div className="space-y-3 pt-2 border-t border-[#e8d5b7]/10">
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 bg-[#1a2c42] border border-[#e8d5b7]/20 rounded-lg px-3 py-2 text-[#e8d5b7] text-sm"
+                    value={measurementLookupState.selectedPipeId || ""}
+                    onChange={(e) =>
+                      setMeasurementLookupState({ ...measurementLookupState, selectedPipeId: e.target.value })
+                    }
+                    disabled={measurementLookupState.status === "running"}
+                  >
+                    <option value="">Select a pipe...</option>
+                    {pipes.map((p) => (
+                      <option key={p.id} value={String(p.id)}>
+                        {p.name} {p.maker ? `(${p.maker})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={async () => {
+                      if (!measurementLookupState.selectedPipeId) {
+                        toast.error("Please select a pipe first");
+                        return;
+                      }
+
+                      const pipe = pipes.find((p) => String(p.id) === String(measurementLookupState.selectedPipeId));
+                      if (!pipe) return;
+
+                      setMeasurementLookupState({
+                        ...measurementLookupState,
+                        status: "running",
+                        results: null,
+                        message: "",
+                      });
+
+                      try {
+                        const photosCount = (pipe.photos || []).length;
+                        const measurementFields = [
+                          "length_mm",
+                          "weight_grams",
+                          "bowl_height_mm",
+                          "bowl_width_mm",
+                          "bowl_diameter_mm",
+                          "bowl_depth_mm",
+                        ];
+                        const existingMeasurements = measurementFields.filter((f) => !isMissingMeasurement(pipe[f]));
+                        const geometryFields = ["shape", "bowlStyle", "shankShape", "bend", "sizeClass"];
+                        const existingGeometry = geometryFields.filter((f) => !isMissingGeometry(pipe[f]));
+
+                        const prompt = `You are searching verified manufacturer specifications and pipe databases to find measurements for a tobacco pipe.
+
+**Pipe Identity:**
+- Name: ${pipe.name || "Unknown"}
+- Maker/Brand: ${pipe.maker || "Unknown"}
+- Country: ${pipe.country_of_origin || "Unknown"}
+- Shape: ${pipe.shape || "Unknown"}
+- Year Made: ${pipe.year_made || "Unknown"}
+- Stamping: ${pipe.stamping || "None"}
+
+**Task:**
+Search verified sources (manufacturer catalogs, pipe databases, estate listings with verified specs) to find reliable measurements and geometry classifications for this specific pipe model.
+
+**Fields to Look Up (only if missing):**
+
+Measurements (update only if currently missing):
+${measurementFields.map((f) => `- ${f}: ${isMissingMeasurement(pipe[f]) ? "MISSING - search for this" : `Current: ${pipe[f]} - SKIP`}`).join("\n")}
+
+Geometry (update only if missing or "Unknown"):
+${geometryFields.map((f) => `- ${f}: ${isMissingGeometry(pipe[f]) ? "MISSING/UNKNOWN - search for this" : `Current: ${pipe[f]} - SKIP`}`).join("\n")}
+
+**Constraints:**
+- Only return data from VERIFIED sources (manufacturer specs, authorized dealers, established pipe databases)
+- Do NOT estimate or guess
+- Use exact enum values for geometry fields
+
+**Output Format:**
+Return JSON with:
+- found: true/false
+- updates: { field: value, ... } (only fields with verified data)
+- sources: [domain names of sources used]
+- message: explanation of what was/wasn't found`;
+
+                        const result = await base44.integrations.Core.InvokeLLM({
+                          prompt,
+                          add_context_from_internet: true,
+                          response_json_schema: {
+                            type: "object",
+                            properties: {
+                              found: { type: "boolean" },
+                              updates: {
+                                type: "object",
+                                additionalProperties: true,
+                              },
+                              sources: {
+                                type: "array",
+                                items: { type: "string" },
+                              },
+                              message: { type: "string" },
+                            },
+                          },
+                        });
+
+                        if (!result.found || !result.updates || Object.keys(result.updates).length === 0) {
+                          setMeasurementLookupState({
+                            ...measurementLookupState,
+                            status: "none_found",
+                            results: {
+                              pipe,
+                              photosCount,
+                              existingMeasurements,
+                              existingGeometry,
+                              sources: result.sources || [],
+                            },
+                            message: "No published manufacturer specs found for this pipe. This is common for artisan/estate pipes.",
+                          });
+                          return;
+                        }
+
+                        await safeUpdate("Pipe", pipe.id, result.updates, user?.email);
+                        queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+
+                        toast.success(`Updated ${Object.keys(result.updates).length} field(s)`);
+
+                        setMeasurementLookupState({
+                          ...measurementLookupState,
+                          status: "completed",
+                          results: {
+                            pipe,
+                            photosCount,
+                            existingMeasurements,
+                            existingGeometry,
+                            updates: result.updates,
+                            sources: result.sources || [],
+                          },
+                          message: result.message || `Successfully updated ${Object.keys(result.updates).length} fields`,
+                        });
+                      } catch (err) {
+                        console.error("Measurement lookup error:", err);
+                        setMeasurementLookupState({
+                          ...measurementLookupState,
+                          status: "error",
+                          message: err.message || "Failed to search for verified measurements",
+                        });
+                        toast.error("Lookup failed");
+                      }
+                    }}
+                    disabled={!measurementLookupState.selectedPipeId || measurementLookupState.status === "running"}
+                  >
+                    {measurementLookupState.status === "running" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>Find Specs</>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Lookup Results */}
+                {measurementLookupState.status !== "idle" && measurementLookupState.results && (
+                  <div className="border border-[#e8d5b7]/20 rounded-lg p-4 bg-[#1a2c42]/50 space-y-3">
+                    {measurementLookupState.status === "completed" && measurementLookupState.results.updates && (
+                      <div>
+                        <p className="text-sm font-semibold text-green-400 mb-2">
+                          ✓ Updated {Object.keys(measurementLookupState.results.updates).length} field(s)
+                        </p>
+                        <div className="text-xs text-[#e8d5b7]/80 space-y-1">
+                          {Object.entries(measurementLookupState.results.updates).map(([key, value]) => (
+                            <p key={key}>
+                              • {key}: <strong>{value}</strong>
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {measurementLookupState.status === "none_found" && (
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-2 text-sm text-[#e8d5b7]/70">
+                          <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400" />
+                          <p>{measurementLookupState.message}</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#e8d5b7]/10">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const pipe = measurementLookupState.results.pipe;
+                              if (pipe) {
+                                window.location.href = `/PipeDetail?id=${pipe.id}`;
+                              }
+                            }}
+                          >
+                            Enter Measurements Manually
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {measurementLookupState.status === "error" && (
+                      <p className="text-sm text-red-400">Error: {measurementLookupState.message}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
