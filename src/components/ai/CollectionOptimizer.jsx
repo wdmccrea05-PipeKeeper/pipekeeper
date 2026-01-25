@@ -548,6 +548,10 @@ async function undoOptimizationApply(batchId) {
         name: p.name,
         maker: p.maker,
         shape: p.shape,
+        bowlStyle: p.bowlStyle,
+        shankShape: p.shankShape,
+        bend: p.bend,
+        sizeClass: p.sizeClass,
         bowl_material: p.bowl_material,
         chamber_volume: p.chamber_volume,
         focus: p.focus,
@@ -573,10 +577,10 @@ User's Question About Their Collection: ${currentQuery}
 
 Provide specific, actionable advice about:
 - Collection coverage and gaps
-- Pipe specialization recommendations
-- Blend-to-pipe matching strategies
+- Pipe specialization recommendations considering geometry (shape, bend, bowl style, size)
+- Blend-to-pipe matching strategies based on pipe geometry and characteristics
 - Redundancies and optimization opportunities
-- Size, shape, and material diversity
+- Size, shape, bend, and material diversity
 
 IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
 
@@ -776,6 +780,10 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
         name: p.name,
         maker: p.maker,
         shape: p.shape,
+        bowlStyle: p.bowlStyle,
+        shankShape: p.shankShape,
+        bend: p.bend,
+        sizeClass: p.sizeClass,
         focus: p.focus
       }));
 
