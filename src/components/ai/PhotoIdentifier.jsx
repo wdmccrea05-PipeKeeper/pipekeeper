@@ -35,23 +35,27 @@ export default function PhotoIdentifier({ onIdentify }) {
     setAnalyzing(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze these pipe images to identify and extract all possible details.
+        prompt: `Analyze these pipe images to identify and extract all possible details including geometry.
 
 Look for:
 1. Maker stamps, hallmarks, or brand markings
-2. Pipe shape and style
-3. Materials (briar, meerschaum, etc.)
-4. Finish type (smooth, sandblast, rusticated)
-5. Stem material
-6. Overall condition
-7. Any visible dimensions or size indicators
-8. Era/age indicators
-9. Country of origin clues
-10. Model numbers or series names
+2. Pipe shape classification (Billiard, Dublin, Bent, etc.)
+3. Bowl style (Cylindrical, Conical, Rounded, etc.)
+4. Shank shape (Round, Diamond, Square, Oval, etc.)
+5. Bend degree (Straight, 1/4 Bent, 1/2 Bent, 3/4 Bent, Full Bent, S-Bend)
+6. Size class (Vest Pocket, Small, Standard, Large, Magnum/XL, etc.)
+7. Materials (briar, meerschaum, etc.)
+8. Finish type (smooth, sandblast, rusticated)
+9. Stem material
+10. Overall condition
+11. Any visible dimensions or size indicators
+12. Era/age indicators
+13. Country of origin clues
+14. Model numbers or series names
 
 Search the web for information about any stamps or hallmarks you can identify.
 
-Provide detailed identification results that can be used to fill out a pipe inventory form.`,
+Provide detailed identification results including geometry fields that can be used to fill out a pipe inventory form.`,
         add_context_from_internet: true,
         file_urls: uploadedPhotos,
         response_json_schema: {
@@ -61,6 +65,10 @@ Provide detailed identification results that can be used to fill out a pipe inve
             model_or_series: { type: "string" },
             country_of_origin: { type: "string" },
             shape: { type: "string" },
+            bowlStyle: { type: "string" },
+            shankShape: { type: "string" },
+            bend: { type: "string" },
+            sizeClass: { type: "string" },
             bowl_material: { type: "string" },
             stem_material: { type: "string" },
             finish: { type: "string" },
@@ -81,6 +89,10 @@ Provide detailed identification results that can be used to fill out a pipe inve
         name: result.model_or_series ? `${result.identified_maker || ''} ${result.model_or_series}`.trim() : '',
         country_of_origin: result.country_of_origin || '',
         shape: result.shape || '',
+        bowlStyle: result.bowlStyle || '',
+        shankShape: result.shankShape || '',
+        bend: result.bend || '',
+        sizeClass: result.sizeClass || '',
         bowl_material: result.bowl_material || '',
         stem_material: result.stem_material || '',
         finish: result.finish || '',

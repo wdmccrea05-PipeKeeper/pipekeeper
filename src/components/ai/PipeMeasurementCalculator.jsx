@@ -13,12 +13,16 @@ export default function PipeMeasurementCalculator({ pipe, onUpdate }) {
     setCalculating(true);
     
     try {
-      const prompt = `You are analyzing a pipe to calculate missing measurements.
+      const prompt = `You are analyzing a pipe to calculate missing measurements and geometry details.
 
 Pipe Information:
 - Maker: ${pipe.maker || 'Unknown'}
 - Name: ${pipe.name || 'Unknown'}
 - Shape: ${pipe.shape || 'Unknown'}
+- Bowl Style: ${pipe.bowlStyle || 'Unknown'}
+- Shank Shape: ${pipe.shankShape || 'Unknown'}
+- Bend: ${pipe.bend || 'Unknown'}
+- Size Class: ${pipe.sizeClass || 'Unknown'}
 - Existing measurements:
   ${pipe.length_mm ? `Length: ${pipe.length_mm}mm` : ''}
   ${pipe.weight_grams ? `Weight: ${pipe.weight_grams}g` : ''}
@@ -33,9 +37,10 @@ CRITICAL RULES:
 2. Search for exact specifications from official sources (manufacturer catalogs, authorized retailers)
 3. DO NOT estimate, guess, or calculate based on similar pipes
 4. If no verified data exists, return null for that measurement
-5. Only include measurements that are explicitly missing from the existing data
+5. Only include measurements AND geometry fields that are explicitly missing or marked as "Unknown"
+6. For geometry fields (shape, bowlStyle, shankShape, bend, sizeClass), provide classification if identifiable from verified sources
 
-Return JSON with ONLY the missing measurements you found verified data for. Include dimensions_found=true and dimensions_source if you found any verified measurements.`;
+Return JSON with ONLY the missing measurements and geometry details you found verified data for. Include dimensions_found=true and dimensions_source if you found any verified measurements.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -50,6 +55,11 @@ Return JSON with ONLY the missing measurements you found verified data for. Incl
             bowl_diameter_mm: { type: ["number", "null"] },
             bowl_depth_mm: { type: ["number", "null"] },
             chamber_volume: { type: ["string", "null"], enum: ["Small", "Medium", "Large", "Extra Large", null] },
+            shape: { type: ["string", "null"] },
+            bowlStyle: { type: ["string", "null"] },
+            shankShape: { type: ["string", "null"] },
+            bend: { type: ["string", "null"] },
+            sizeClass: { type: ["string", "null"] },
             dimensions_found: { type: "boolean" },
             dimensions_source: { type: ["string", "null"] },
             notes: { type: ["string", "null"] }

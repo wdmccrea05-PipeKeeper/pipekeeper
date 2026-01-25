@@ -63,13 +63,17 @@ export default function PipeIdentifier({ pipe, onUpdatePipe }) {
     setLoading(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert pipe identifier with extensive knowledge of pipe makers, stamps, and hallmarks. Analyze these images to identify this pipe.
+        prompt: `You are an expert pipe identifier with extensive knowledge of pipe makers, stamps, and hallmarks. Analyze these images to identify this pipe and its geometry.
 
 Known information:
 - Name: ${pipe.name || 'Not specified'}
 - Claimed Maker: ${pipe.maker || 'Unknown'}
 - Stamping Text: ${pipe.stamping || 'Not specified'}
 - Shape: ${pipe.shape || 'Unknown'}
+- Bowl Style: ${pipe.bowlStyle || 'Unknown'}
+- Shank Shape: ${pipe.shankShape || 'Unknown'}
+- Bend: ${pipe.bend || 'Unknown'}
+- Size Class: ${pipe.sizeClass || 'Unknown'}
 - Material: ${pipe.bowl_material || 'Unknown'}
 
 Based on the images (especially any stamping/hallmarks visible), identify:
@@ -77,7 +81,8 @@ Based on the images (especially any stamping/hallmarks visible), identify:
 2. The production era/date range
 3. The specific model or line if identifiable
 4. Country of origin
-5. Any notable features or authenticity indicators
+5. Pipe geometry: shape, bowl style, shank shape, bend degree, size class
+6. Any notable features or authenticity indicators
 
 Search for information about pipe stamps, hallmarks, and maker marks to accurately identify this pipe.
 
@@ -92,7 +97,7 @@ Provide the identification in JSON format with:
 - identification_basis: what led to this identification (no sources or links)
 - authenticity_notes: any concerns or confirmations about authenticity (no sources or links)
 - additional_info: interesting facts about this maker or model (no sources or links)
-- suggested_updates: object with any fields that should be updated on the pipe record`,
+- suggested_updates: object with any fields that should be updated on the pipe record (including geometry fields)`,
         add_context_from_internet: true,
         file_urls: allPhotos,
         response_json_schema: {
@@ -111,7 +116,12 @@ Provide the identification in JSON format with:
               properties: {
                 maker: { type: "string" },
                 year_made: { type: "string" },
-                country_of_origin: { type: "string" }
+                country_of_origin: { type: "string" },
+                shape: { type: "string" },
+                bowlStyle: { type: "string" },
+                shankShape: { type: "string" },
+                bend: { type: "string" },
+                sizeClass: { type: "string" }
               }
             }
           }
