@@ -58,16 +58,20 @@ export default function TroubleshootingFull() {
           a: "Update your User Profile with preferred blend types and strength preferences. Also ensure your pipe focus tags accurately describe each pipe's purpose."
         },
         {
-          q: "Find Verified Measurements returns 'No verified specs found'",
-          a: "This means the AI couldn't find manufacturer specs or verified data for your pipe. Try: 1) Add more details (maker, model, year), 2) Use 'Analyze Geometry from Photos' instead which works from your images, or 3) Enter measurements manually."
+          q: "Which tool should I use: Geometry Analysis or Verified Specs?",
+          a: "'Analyze Geometry from Photos' is the primary tool - it works for all pipes and always provides results. Use it first. 'Find Verified Manufacturer Specs' is optional and only works for some production pipes (often returns no results for artisan/estate pipes)."
         },
         {
-          q: "Pipe geometry analysis shows low confidence",
-          a: "Low confidence means the AI is uncertain. This happens when: photos are unclear/missing, pipe is a unique freehand design, or dimensions are missing. You can still apply suggestions or enter data manually."
+          q: "Geometry analysis shows low confidence",
+          a: "Low confidence means the AI is uncertain. This happens when: photos are unclear/missing, pipe is a unique freehand design, or dimensions are missing. Results still appear so you can review and decide. You can apply suggestions or enter data manually."
+        },
+        {
+          q: "Find Verified Specs returns 'No specs found'",
+          a: "This is normal for artisan pipes, estate pipes, or uncommon models. The tool only finds data from manufacturer catalogs. Use 'Analyze Geometry from Photos' instead - it's the primary tool and works from your uploaded images and dimensions."
         },
         {
           q: "Geometry analysis won't update fields set to 'Unknown'",
-          a: "If you're seeing this, it's a bug. Geometry analysis should update 'Unknown' fields. Try: 1) Hard refresh the page, 2) Clear browser cache, or 3) Contact support with pipe ID."
+          a: "If you're seeing this, it's a bug. Geometry analysis should update 'Unknown' fields just like empty fields. Try: 1) Hard refresh the page, 2) Clear browser cache, or 3) Contact support with pipe ID."
         }
       ]
     },
