@@ -205,14 +205,14 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Ruler className="w-5 h-5 text-blue-400" />
-              Pipe Geometry Analysis
+              Analyze Pipe Measurements & Geometry
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <h4 className="text-sm font-semibold text-[#e8d5b7] mb-2">Analyze Geometry from Photos</h4>
               <p className="text-sm text-[#e8d5b7]/80 mb-3">
-                Uses your uploaded pipe photos + any saved dimensions to propose shape, bowl style, shank shape, bend, and size class.
+                Uses your uploaded pipe photos + any saved dimensions to propose shape, bowl style, shank shape, bend, and size class. Always provides results.
               </p>
               <Button
                 size="sm"
@@ -232,8 +232,14 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
             </div>
 
             <div className="border-t border-[#e8d5b7]/10 pt-4">
-              <h4 className="text-sm font-semibold text-[#e8d5b7]/70 mb-2">Find Verified Specs (optional)</h4>
-              <p className="text-sm text-[#e8d5b7]/60 mb-3">
+              <details className="group">
+                <summary className="text-sm font-semibold text-[#e8d5b7]/70 mb-2 cursor-pointer hover:text-[#e8d5b7] flex items-center gap-2">
+                  <span>Find Verified Manufacturer Specs (optional)</span>
+                  <span className="text-xs text-[#e8d5b7]/50 group-open:hidden">▼</span>
+                  <span className="text-xs text-[#e8d5b7]/50 hidden group-open:inline">▲</span>
+                </summary>
+                <div className="mt-2 space-y-3">
+              <p className="text-sm text-[#e8d5b7]/60">
                 Only works for some production pipes. Searches manufacturer catalogs and databases.
               </p>
               <div className="flex gap-2">
@@ -254,7 +260,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
                 </select>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={async () => {
                     if (!measurementLookupState.selectedPipeId) {
                       toast.error("Please select a pipe first");
@@ -349,9 +355,7 @@ Return JSON with:
                             existingGeometry,
                             sources: result.sources || [],
                           },
-                          message:
-                            result.message ||
-                            "No published specs found for this pipe.",
+                          message: "No published manufacturer specs found for this pipe. This is common for artisan/estate pipes.",
                         });
                         return;
                       }
@@ -396,6 +400,8 @@ Return JSON with:
                   )}
                 </Button>
               </div>
+                </div>
+              </details>
             </div>
 
             {/* Lookup Results */}
@@ -417,9 +423,37 @@ Return JSON with:
                 )}
 
                 {measurementLookupState.status === "none_found" && (
-                  <p className="text-sm text-[#e8d5b7]/70">
-                    ℹ️ {measurementLookupState.message}
-                  </p>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2 text-sm text-[#e8d5b7]/70">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400" />
+                      <p>{measurementLookupState.message}</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#e8d5b7]/10">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-teal-600 to-teal-700"
+                        onClick={() => {
+                          setShowPipeAnalyzer(true);
+                          setMeasurementLookupState({ ...measurementLookupState, status: "idle" });
+                        }}
+                      >
+                        <Ruler className="w-4 h-4 mr-1" />
+                        Analyze Geometry from Photos
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const pipe = measurementLookupState.results.pipe;
+                          if (pipe) {
+                            window.location.href = `/PipeDetail?id=${pipe.id}`;
+                          }
+                        }}
+                      >
+                        Enter Measurements Manually
+                      </Button>
+                    </div>
+                  </div>
                 )}
 
                 {measurementLookupState.status === "error" && (
