@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
@@ -12,6 +13,7 @@ import {
   Loader2,
   Ruler,
   Tags,
+  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -22,6 +24,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const entitlements = useEntitlements();
+  const navigate = useNavigate();
 
   if (!entitlements.canUse("AI_UPDATES")) {
     return (
@@ -34,6 +37,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
+  const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -524,21 +528,51 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         <div className="flex items-start gap-3 mb-3">
           <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Pipe Measurements</h3>
+            <h3 className="font-semibold text-[#1a2c42]">Analyze Pipe Geometry</h3>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              Fill missing dimensions with verified manufacturer specs
+              Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
             </p>
           </div>
         </div>
-        <Button
-          size="sm"
-          disabled={anyBusy}
-          onClick={() => fillMeasurements.mutate()}
-          className="bg-gradient-to-r from-emerald-600 to-emerald-700"
-        >
-          {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
-          Fill Measurements
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            size="sm"
+            disabled={anyBusy}
+            onClick={() => navigate("/AIUpdates?focus=geometry")}
+            className="bg-gradient-to-r from-emerald-600 to-emerald-700"
+          >
+            <Ruler className="w-3 h-3 mr-1" />
+            Analyze Geometry from Photos
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowVerifiedLookup(!showVerifiedLookup)}
+            className="border-gray-300 text-[#1a2c42]"
+          >
+            <Info className="w-3 h-3 mr-1" />
+            {showVerifiedLookup ? "Hide" : "Find"} Verified Manufacturer Specs (optional)
+          </Button>
+
+          {showVerifiedLookup && (
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <p className="text-xs text-[#1a2c42]/70 mb-2">
+                Only works for some production pipes. Searches manufacturer catalogs and databases.
+              </p>
+              <Button
+                size="sm"
+                disabled={anyBusy}
+                onClick={() => fillMeasurements.mutate()}
+                variant="outline"
+                className="border-gray-300 text-[#1a2c42] w-full"
+              >
+                {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
+                Find Specs
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="border border-gray-200 rounded-lg p-4 bg-white">

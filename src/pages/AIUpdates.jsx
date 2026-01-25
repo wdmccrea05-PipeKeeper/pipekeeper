@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,16 @@ export default function AIUpdates() {
     results: null,
     message: "",
   });
+
+  // Scroll to geometry section if focus param is present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("focus") === "geometry") {
+      setTimeout(() => {
+        document.getElementById("geometry-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -201,27 +211,29 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           </CardContent>
         </Card>
 
-        <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
-              <Ruler className="w-5 h-5 text-blue-400" />
-              Analyze Pipe Geometry
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
-            </p>
-          </CardContent>
-        </Card>
+        <div id="geometry-section">
+          <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
+                <Ruler className="w-5 h-5 text-blue-400" />
+                Analyze Pipe Geometry
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-[#e8d5b7]/80 mb-4">
+                Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
+              </p>
+            </CardContent>
+          </Card>
 
-        <PipeGeometryAnalyzer
-          pipes={pipes}
-          user={user}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
-          }}
-        />
+          <PipeGeometryAnalyzer
+            pipes={pipes}
+            user={user}
+            onComplete={() => {
+              queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
+            }}
+          />
+        </div>
 
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
