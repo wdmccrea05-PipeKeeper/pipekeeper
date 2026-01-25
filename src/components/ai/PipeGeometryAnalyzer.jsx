@@ -167,19 +167,43 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         response_json_schema: {
           type: "object",
           properties: {
-            suggestions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  field: { type: "string" },
-                  current_value: { type: "string" },
-                  suggested_value: { type: "string" },
-                  confidence: { type: "string" },
-                  reasoning: { type: "string" },
-                },
-                required: ["field", "suggested_value", "confidence"],
+            proposed: {
+              type: "object",
+              properties: {
+                shape: { type: "string" },
+                bowlStyle: { type: "string" },
+                shankShape: { type: "string" },
+                bend: { type: "string" },
+                sizeClass: { type: "string" },
               },
+            },
+            confidence: {
+              type: "object",
+              properties: {
+                shape: { type: "string" },
+                bowlStyle: { type: "string" },
+                shankShape: { type: "string" },
+                bend: { type: "string" },
+                sizeClass: { type: "string" },
+              },
+            },
+            reasons: {
+              type: "object",
+              additionalProperties: {
+                type: "array",
+                items: { type: "string" },
+              },
+            },
+            alternatives: {
+              type: "object",
+              additionalProperties: {
+                type: "array",
+                items: { type: "string" },
+              },
+            },
+            warnings: {
+              type: "array",
+              items: { type: "string" },
             },
             photos_analyzed: { type: "integer" },
             dimensions_used: { type: "boolean" },
@@ -187,8 +211,37 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         },
       });
 
+      // Convert to suggestions format for UI
+      const suggestions = [];
+      const fields = ["shape", "bowlStyle", "shankShape", "bend", "sizeClass"];
+      
+      fields.forEach((field) => {
+        const proposedValue = result?.proposed?.[field];
+        const confidenceLevel = result?.confidence?.[field];
+        const reasonList = result?.reasons?.[field] || [];
+        const alternativeList = result?.alternatives?.[field] || [];
+        
+        if (proposedValue && proposedValue !== "Unknown") {
+          suggestions.push({
+            field,
+            current_value: selectedPipe[field] || "Unknown",
+            suggested_value: proposedValue,
+            confidence: confidenceLevel || "Low",
+            reasoning: reasonList.join(" • "),
+            alternatives: alternativeList,
+          });
+        }
+      });
+
+      const finalResult = {
+        suggestions,
+        photos_analyzed: result?.photos_analyzed || 0,
+        dimensions_used: result?.dimensions_used || false,
+        warnings: result?.warnings || [],
+      };
+
       setResults({
-        ...result,
+        ...finalResult,
         timestamp: new Date().toISOString(),
         pipeId: selectedPipe.id,
         applied: {},
@@ -326,11 +379,26 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
+            {results.warnings && results.warnings.length > 0 && (
+              <div className="border border-yellow-500/30 bg-yellow-500/10 rounded-lg p-3 mb-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-[#e8d5b7]/80 space-y-1">
+                    {results.warnings.map((warning, idx) => (
+                      <p key={idx}>• {warning}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {results.suggestions?.length === 0 && (
               <div className="text-center py-8">
                 <Info className="w-12 h-12 mx-auto mb-3 text-[#e8d5b7]/50" />
                 <p className="text-[#e8d5b7]/70">
-                  All geometry fields appear correctly set or insufficient data to suggest changes.
+                  {results.warnings?.length > 0
+                    ? "Unable to suggest changes due to missing data."
+                    : "All geometry fields appear correctly set or insufficient data to suggest changes."}
                 </p>
               </div>
             )}

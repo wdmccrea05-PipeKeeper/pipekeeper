@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,9 +44,27 @@ const ROOT_PAGES = new Set([
   "AgeGate",
 ]);
 
+// Track navigation depth to detect if we can go back
+let navigationDepth = 0;
+
 export default function BackButton({ currentPageName, className = "" }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  useEffect(() => {
+    // Check if we have state indicating we navigated here from within the app
+    const fromInternalNav = location.state?.fromInternal || navigationDepth > 0;
+    setCanGoBack(fromInternalNav);
+    
+    // Increment depth when component mounts (new page)
+    navigationDepth++;
+    
+    return () => {
+      // Decrement when unmounting
+      if (navigationDepth > 0) navigationDepth--;
+    };
+  }, [location]);
 
   // Don't show back button on root pages
   if (ROOT_PAGES.has(currentPageName)) {
@@ -54,11 +72,12 @@ export default function BackButton({ currentPageName, className = "" }) {
   }
 
   const handleBack = () => {
-    // Try to go back in history
-    if (window.history.length > 1) {
+    // Always try navigate(-1) first - it's the most reliable
+    // React Router will handle it gracefully even if no history
+    try {
       navigate(-1);
-    } else {
-      // Use fallback map
+    } catch (err) {
+      // Fallback only if navigate(-1) fails
       const fallbackPage = FALLBACK_MAP[currentPageName] || "Home";
       navigate(createPageUrl(fallbackPage));
     }
