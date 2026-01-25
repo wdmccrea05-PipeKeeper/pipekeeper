@@ -24,19 +24,18 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
   const canAddMore = remainingSlots > 0;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row gap-2">
+    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col gap-2 w-full">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 sm:flex-none text-stone-700"
+          className="w-full text-white hover:text-white border-[#E0D8C8]/30 hover:bg-white/10"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Choose from Gallery</span>
-          <span className="sm:hidden">Gallery</span>
+          <span className="text-xs">Gallery</span>
         </Button>
         <Button
           type="button"
@@ -44,11 +43,10 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           size="sm"
           onClick={() => cameraInputRef.current?.click()}
           disabled={!canAddMore}
-          className="flex-1 sm:flex-none text-stone-700"
+          className="w-full text-white hover:text-white border-[#E0D8C8]/30 hover:bg-white/10"
         >
           <Camera className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Take Photo</span>
-          <span className="sm:hidden">Camera</span>
+          <span className="text-xs">Camera</span>
         </Button>
       </div>
 
