@@ -166,6 +166,14 @@ export default function FAQFull() {
           Upload photos of your pipe and the AI will analyze markings, shape, and other visual characteristics to identify the maker, model, and approximate value. You can also manually search a database of known pipe makers.
         </Q>
 
+        <Q id="pipe-measurements" q="How do I auto-fill pipe measurements?">
+          Go to AI Updates → 'Find Verified Measurements'. Select a pipe and the system searches manufacturer catalogs, authorized dealers, and verified databases for accurate specs. It only updates missing fields - never overwrites your existing data. For geometry classifications (shape, bowl style, bend), use 'Analyze Geometry from Photos' which analyzes your pipe photos and dimensions to suggest accurate classifications with confidence levels.
+        </Q>
+
+        <Q id="geometry-analysis" q="What is pipe geometry analysis?">
+          This AI tool analyzes your pipe photos and stored dimensions to classify geometry attributes: shape (Billiard, Dublin, etc.), bowl style (cylindrical, conical, etc.), shank shape (round, diamond, etc.), bend (straight, 1/4 bent, etc.), and size class (small, standard, large, etc.). It uses visual cues like bowl silhouette, shank profile, stem alignment, and dimensional ratios. Each suggestion includes confidence level (High/Medium/Low) and detailed reasoning so you can decide what to apply.
+        </Q>
+
         <Q id="value-lookup" q="Can PipeKeeper estimate pipe values?">
           Yes. The AI can provide estimated market values based on maker, condition, and current market trends. These are estimates only and should not be relied upon for insurance or sales purposes.
         </Q>
@@ -486,7 +494,8 @@ export default function FAQFull() {
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>Photo identification for pipes (stamps, shapes, makers)</li>
             <li>AI market value lookup and automated tracking</li>
-            <li>Measurement calculator from photos</li>
+            <li>Find verified measurements from manufacturer specs and databases</li>
+            <li>Analyze pipe geometry from photos (shape, bowl style, bend classification)</li>
             <li>Web search for auto-filling pipe & tobacco details</li>
             <li>Visual analysis of condition and authenticity</li>
           </ul>

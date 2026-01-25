@@ -56,6 +56,18 @@ export default function TroubleshootingFull() {
         {
           q: "What if AI recommendations don't match my preferences?",
           a: "Update your User Profile with preferred blend types and strength preferences. Also ensure your pipe focus tags accurately describe each pipe's purpose."
+        },
+        {
+          q: "Find Verified Measurements returns 'No verified specs found'",
+          a: "This means the AI couldn't find manufacturer specs or verified data for your pipe. Try: 1) Add more details (maker, model, year), 2) Use 'Analyze Geometry from Photos' instead which works from your images, or 3) Enter measurements manually."
+        },
+        {
+          q: "Pipe geometry analysis shows low confidence",
+          a: "Low confidence means the AI is uncertain. This happens when: photos are unclear/missing, pipe is a unique freehand design, or dimensions are missing. You can still apply suggestions or enter data manually."
+        },
+        {
+          q: "Geometry analysis won't update fields set to 'Unknown'",
+          a: "If you're seeing this, it's a bug. Geometry analysis should update 'Unknown' fields. Try: 1) Hard refresh the page, 2) Clear browser cache, or 3) Contact support with pipe ID."
         }
       ]
     },
@@ -160,6 +172,14 @@ export default function TroubleshootingFull() {
         {
           q: "Where can I review the Terms of Service or Privacy Policy?",
           a: "Both documents are accessible from the Help menu, your Profile page, and the footer links at the bottom of every page. You can review them anytime."
+        },
+        {
+          q: "How do I know which measurement fields will be updated?",
+          a: "The measurement lookup tool shows a preview before applying: it lists which photos/dimensions exist, which fields are missing, and which sources were used. Only blank or 'Unknown' fields get updated - your existing data is never overwritten."
+        },
+        {
+          q: "Can I undo measurement or geometry updates?",
+          a: "Measurement updates are immediate and can't be undone automatically. To revert: go to pipe detail page, tap Edit, and manually change fields back. Consider exporting your collection before running bulk updates."
         }
       ]
     }
