@@ -38,6 +38,10 @@ Deno.serve(async (req) => {
     const pipeContext = {
       name: pipe.name,
       shape: pipe.shape,
+      bowlStyle: pipe.bowlStyle,
+      shankShape: pipe.shankShape,
+      bend: pipe.bend,
+      sizeClass: pipe.sizeClass,
       chamber_volume: pipe.chamber_volume,
       bowl_diameter_mm: pipe.bowl_diameter_mm,
       bowl_depth_mm: pipe.bowl_depth_mm,
@@ -78,13 +82,15 @@ ${JSON.stringify(blendContext.slice(0, 20), null, 2)}
 ${blends.length > 20 ? `... and ${blends.length - 20} more blends` : ''}
 
 Based on:
-1. The pipe's physical characteristics (size, shape, material, chamber dimensions)
-2. The pipe's current smoking characteristics
-3. The user's preferences and collection
-4. Best practices for pipe specialization
+1. The pipe's physical characteristics (size, shape, bowl style, shank shape, bend, material, chamber dimensions)
+2. The pipe's geometry details (bowlStyle, shankShape, bend, sizeClass)
+3. The pipe's current smoking characteristics
+4. The user's preferences and collection
+5. Best practices for pipe specialization
 
 Provide a comprehensive specialization recommendation for this specific pipe. Consider:
-- What tobacco types would perform best in this pipe given its chamber size and shape
+- What tobacco types would perform best in this pipe given its chamber size, shape, and geometry
+- How the bend degree and bowl style affect smoking characteristics and tobacco performance
 - Whether the pipe should be dedicated to specific blends to avoid ghosting
 - How the pipe's characteristics align with the user's collection and preferences
 - Specific blend recommendations from the user's collection
