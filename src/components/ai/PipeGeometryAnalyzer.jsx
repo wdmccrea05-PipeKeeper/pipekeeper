@@ -40,7 +40,7 @@ export default function PipeGeometryAnalyzer({ pipes, user, onComplete }) {
     setAnalyzing(true);
 
     try {
-      const prompt = `You are analyzing a tobacco pipe to classify its geometry attributes based on photos and dimensions.
+      const prompt = `You are the "Pipe Measurements" classifier for PipeKeeper. Your job is to infer and propose shape, bowlStyle, shankShape, bend, and sizeClass using photos and dimensions. Output must be enum-safe, explainable, and conservative when uncertain.
 
 **Pipe Information:**
 - Name: ${selectedPipe.name || "Unknown"}
@@ -48,22 +48,100 @@ export default function PipeGeometryAnalyzer({ pipes, user, onComplete }) {
 ${selectedPipe.length_mm ? `- Overall Length: ${selectedPipe.length_mm}mm` : ""}
 ${selectedPipe.weight_grams ? `- Weight: ${selectedPipe.weight_grams}g` : ""}
 ${selectedPipe.bowl_height_mm ? `- Bowl Height: ${selectedPipe.bowl_height_mm}mm` : ""}
-${selectedPipe.bowl_width_mm ? `- Bowl Width: ${selectedPipe.bowl_width_mm}mm` : ""}
+${selectedPipe.bowl_width_mm ? `- Bowl Width (outer): ${selectedPipe.bowl_width_mm}mm` : ""}
 ${selectedPipe.bowl_diameter_mm ? `- Chamber Diameter: ${selectedPipe.bowl_diameter_mm}mm` : ""}
 ${selectedPipe.bowl_depth_mm ? `- Chamber Depth: ${selectedPipe.bowl_depth_mm}mm` : ""}
 
-**Current Classifications (may be Unknown):**
+**Current Values:**
 - Shape: ${selectedPipe.shape || "Unknown"}
 - Bowl Style: ${selectedPipe.bowlStyle || "Unknown"}
 - Shank Shape: ${selectedPipe.shankShape || "Unknown"}
 - Bend: ${selectedPipe.bend || "Unknown"}
 - Size Class: ${selectedPipe.sizeClass || "Standard"}
 
-**Task:**
-Analyze the pipe photos (if provided) and dimensions to suggest values for these geometry fields. Use visual cues like bowl silhouette, shank profile, stem alignment, and dimensional ratios.
+**Analysis Method:**
 
-**Strict Enum Values (ONLY use these exact values):**
+STEP 1 - Extract evidence from photos (if provided):
+- profileSilhouette: straight/conical/rounded/squat/tall/irregular
+- beadlinesPresent: true/false (bulldog/rhodesian indicator)
+- shankCrossSection: round/diamond/square/oval/paneled/unclear
+- bendAngle: straight/mild/medium/deep/s-curve/unclear
+- stemShankProportion: normal/long-shank/short-stem/unclear
+- flatBottom: true/false (poker/tankard indicator)
 
+STEP 2 - Compute dimension ratios (if available):
+- heightToOuterDia = bowl_height_mm / bowl_width_mm
+- Use overallLength for size classification
+
+STEP 3 - Score each field:
+
+**Bend** (from photos):
+- Straight: +3 if bendAngle straight
+- 1/4 Bent: +3 if mild
+- 1/2 Bent: +3 if medium
+- 3/4 Bent: +3 if deep
+- Full Bent: +3 if very deep/bowl under shank
+- S-Bend: +4 if clear s-curve
+- High confidence only if clear side profile
+
+**Shank Shape** (from photos):
+- Diamond: +4 if sharp corners visible
+- Square: +4 if square clear
+- Round: +3 if round
+- Oval: +3 if flattened round
+- Paneled / Faceted: +4 if facets visible
+- High confidence requires clear cross-section view
+
+**Bowl Style** (photos + ratios):
+- Cylindrical (Straight Wall): +3 if straight; +2 if heightToOuterDia 1.0-1.4
+- Conical (Tapered): +4 if flared; +2 if heightToOuterDia > 1.2
+- Rounded / Ball: +4 if ball-like
+- Squat / Pot: +4 if squat; +3 if heightToOuterDia < 0.9
+- Chimney (Tall): +4 if tall; +3 if heightToOuterDia ≥ 1.6
+- Paneled/Faceted: +4 if facets on bowl
+- Freeform: +3 if irregular artisan
+
+**Shape** (decision-first, then scoring):
+Strong ID rules (apply first):
+1. If flatBottom + upright: Poker/Tankard/Cherrywood
+2. If beadlinesPresent:
+   - Diamond shank = Bulldog (High)
+   - Otherwise = Rhodesian (High/Med)
+3. If very deep bend + tall = Oom Paul (Hungarian)
+4. If calabash bowl visible = Calabash (High)
+5. If extremely long stem = Churchwarden (High if clear)
+6. If irregular artisan = Freehand (Med/High)
+
+Scoring fallback:
+- Billiard: +3 if classic straight walls
+- Apple: +3 if rounder bowl
+- Dublin: +3 if conical/flared
+- Brandy: +3 if brandy flare
+- Pot: +3 if squat pot
+- Prince: +3 if low squat round
+- Canadian/Liverpool/Lovat/Lumberman: +4 if long-shank proportion
+  (Canadian: oval shank+short stem; Liverpool: round shank+short stem)
+- Cutty/Devil Anse: +3 if forward-leaning old-school
+- Hawkbill: +3 if tight sweep + rounded
+
+**Size Class** (dimensions first):
+Thresholds from overallLength:
+- ≤110mm: Vest Pocket
+- 111-135mm: Small
+- 136-160mm: Standard
+- 161-185mm: Large
+- ≥186mm: Magnum / XL
+- ≥240mm: Churchwarden
+- ≥300mm: MacArthur
+Default to Standard if uncertain but typical.
+
+**Confidence Rules:**
+- High: Strong evidence, clear photos/dimensions, winner leads by ≥2 points
+- Medium: Moderate evidence, okay clarity, close scores
+- Low: Unclear, conflicting, or insufficient data
+- For fields already non-Unknown: only suggest High confidence changes
+
+**Strict Enum Values:**
 Shape: Billiard, Bent Billiard, Apple, Bent Apple, Dublin, Bent Dublin, Bulldog, Rhodesian, Canadian, Liverpool, Lovat, Lumberman, Prince, Author, Brandy, Pot, Tomato, Egg, Acorn, Pear, Cutty, Devil Anse, Hawkbill, Diplomat, Poker, Cherrywood, Duke, Don, Tankard, Churchwarden, Nosewarmer, Vest Pocket, MacArthur, Calabash, Reverse Calabash, Cavalier, Freehand, Blowfish, Volcano, Horn, Nautilus, Tomahawk, Bullmoose, Bullcap, Oom Paul (Hungarian), Tyrolean, Unknown, Other
 
 Bowl Style: Cylindrical (Straight Wall), Conical (Tapered), Rounded / Ball, Oval / Egg, Squat / Pot, Chimney (Tall), Paneled, Faceted / Multi-Panel, Horn-Shaped, Freeform, Unknown
@@ -74,15 +152,14 @@ Bend: Straight, 1/4 Bent, 1/2 Bent, 3/4 Bent, Full Bent, S-Bend, Unknown
 
 Size Class: Vest Pocket, Small, Standard, Large, Magnum / XL, Churchwarden, MacArthur, Unknown
 
-**Rules:**
-- Only return High confidence if you're very certain based on strong visual or dimensional evidence
-- Use Medium for probable matches with some uncertainty
-- Use Low when insufficient data or ambiguous features
-- Default to Unknown when truly unclear
-- For fields already set to non-Unknown values, only suggest changes if you have High confidence
-- NEVER return values not in the exact enum lists above
+**Output Format:**
+Provide detailed reasoning bullets for each suggestion explaining:
+- What visual/dimensional evidence supports this classification
+- Which scoring rules triggered
+- Why confidence is High/Medium/Low
+- What data is missing if Unknown
 
-Return JSON with suggestions for each field and confidence level (High, Medium, Low).`;
+NEVER invent values outside the strict enums. Default to Unknown with explanation when uncertain.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
