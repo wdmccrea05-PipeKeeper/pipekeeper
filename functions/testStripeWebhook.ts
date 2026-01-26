@@ -170,16 +170,16 @@ Deno.serve(async (req) => {
       user_email: user.email
     });
 
+    // Verify test subscription
+    const testSub = await base44.asServiceRole.entities.Subscription.filter({
+      stripe_subscription_id: "sub_test_123"
+    });
+
     // Check if event was recorded for deduplication
-    let deduplicationCheck = null;
-    try {
-      const processedEvents = await base44.asServiceRole.entities.ProcessedStripeEvents.filter({
-        event_id: testEvent.id
-      });
-      deduplicationCheck = processedEvents.length > 0 ? "✅ Event recorded" : "⚠️ Event not recorded";
-    } catch (err) {
-      deduplicationCheck = "⚠️ ProcessedStripeEvents entity not available";
-    }
+    const processedEvents = await base44.asServiceRole.entities.ProcessedStripeEvents.filter({
+      event_id: testEvent.id
+    });
+    const deduplicationCheck = processedEvents.length > 0 ? "✅ Event recorded for deduplication" : "⚠️ Event not recorded";
 
     return Response.json({
       ok: true,
