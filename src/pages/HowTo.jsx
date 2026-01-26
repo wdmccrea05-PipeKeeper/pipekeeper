@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   BookOpen, Plus, Edit, Camera, Package, Archive, Sparkles, 
-  Users, FileDown, MessageSquare, Target, Calendar, Info, AlertCircle
+  Users, FileDown, MessageSquare, Target, Calendar, Info, AlertCircle, Crown, TrendingUp
 } from "lucide-react";
 
 export default function HowTo() {
@@ -489,6 +489,28 @@ export default function HowTo() {
             "Tap 'Submit Report'",
             "The report is reviewed promptly",
             "You can also block users to prevent future interactions"
+          ]
+        }
+      ]
+    },
+    {
+      id: "pro-features",
+      icon: Crown,
+      title: "Pro Features",
+      color: "text-amber-400",
+      guides: [
+        {
+          q: "How to view your Trends Report",
+          steps: [
+            "Trends Report is a Pro feature showing Spotify Wrapped-style insights",
+            "Go to the Home page",
+            "Scroll to the 'Tobacco Collection Stats' card",
+            "Click the 'Trends' button in the card header (gold button with sparkles)",
+            "If you see a lock icon (🔒), upgrade to Pro in Profile → Subscription",
+            "Select time window: Last 7/30/90 days, Year-to-Date, Last 12 Months, or All-Time",
+            "View tabs: Overview (summary + discoveries), Usage (top pipes/blends), Taste (categories/cuts/strength), Geometry (shapes/bowls/bends)",
+            "Use Share button to create shareable image or Download PDF to save report",
+            "Note: Trends requires smoking log data - if empty, log some sessions first"
           ]
         }
       ]
