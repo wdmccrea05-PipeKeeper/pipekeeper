@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown } from "lucide-react";
+import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function TobaccoCollectionStats() {
@@ -19,6 +19,7 @@ export default function TobaccoCollectionStats() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [showTrends, setShowTrends] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ['current-user'],
@@ -37,6 +38,20 @@ export default function TobaccoCollectionStats() {
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
+    initialData: [],
+  });
+
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ['smoking-logs-all', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 500),
+    enabled: !!user?.email,
+    initialData: [],
+  });
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ['pipes-all', user?.email],
+    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
     enabled: !!user?.email,
     initialData: [],
   });
@@ -121,13 +136,23 @@ export default function TobaccoCollectionStats() {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
         <CardHeader className="pb-3">
-          <CollapsibleTrigger className="w-full">
-            <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
-              <BarChart3 className="w-6 h-6" />
-              Tobacco Collection Stats
-              <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </CardTitle>
-          </CollapsibleTrigger>
+          <div className="flex items-center justify-between gap-4">
+            <CollapsibleTrigger className="flex-1">
+              <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <BarChart3 className="w-6 h-6" />
+                Tobacco Collection Stats
+                <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </CardTitle>
+            </CollapsibleTrigger>
+            <Button
+              size="sm"
+              onClick={() => setShowTrends(true)}
+              className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Trends
+            </Button>
+          </div>
         </CardHeader>
         <CollapsibleContent>
           <CardContent>
@@ -577,6 +602,21 @@ export default function TobaccoCollectionStats() {
               </>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Trends Dialog */}
+      <Dialog open={showTrends} onOpenChange={setShowTrends}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Trends Report</DialogTitle>
+          </DialogHeader>
+          {React.createElement(require('@/components/tobacco/TrendsReport').default, {
+            logs: smokingLogs,
+            pipes: pipes,
+            blends: blends,
+            user: user
+          })}
         </DialogContent>
       </Dialog>
 
