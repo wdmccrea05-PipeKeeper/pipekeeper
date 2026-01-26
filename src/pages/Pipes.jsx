@@ -18,6 +18,9 @@ import QuickSearchPipe from "@/components/ai/QuickSearchPipe";
 import PipeExporter from "@/components/export/PipeExporter";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
+import { canCreatePipe } from "@/components/utils/limitChecks";
+import { toast } from "sonner";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const SHAPES = ["All Shapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["All Materials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
@@ -36,13 +39,7 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const { user, hasPaidAccess, isTrialing } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -61,11 +58,22 @@ export default function PipesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Pipe.create(data),
+    mutationFn: async (data) => {
+      // Check limits before creating
+      const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+      if (!limitCheck.canCreate) {
+        throw new Error(limitCheck.reason || 'Cannot create pipe');
+      }
+      return base44.entities.Pipe.create(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowForm(false);
+      toast.success('Pipe added successfully!');
     },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add pipe');
+    }
   });
 
   const updateMutation = useMutation({
@@ -172,7 +180,20 @@ export default function PipesPage() {
               <span className="sm:hidden">Quick Search</span>
             </Button>
             <Button 
-              onClick={() => { setEditingPipe(null); setShowForm(true); }}
+              onClick={async () => {
+                const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+                if (!limitCheck.canCreate) {
+                  toast.error(limitCheck.reason, {
+                    action: {
+                      label: 'Upgrade',
+                      onClick: () => window.location.href = createPageUrl('Subscription')
+                    }
+                  });
+                  return;
+                }
+                setEditingPipe(null);
+                setShowForm(true);
+              }}
               className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-md hover:shadow-lg flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />

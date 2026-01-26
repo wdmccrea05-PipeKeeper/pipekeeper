@@ -22,6 +22,8 @@ import { safeUpdate, safeBatchUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
+import { canCreateTobacco } from "@/components/utils/limitChecks";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const BLEND_TYPES = [
   "All Types",
@@ -80,13 +82,7 @@ export default function TobaccoPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const { user, hasPaidAccess, isTrialing } = useCurrentUser();
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
@@ -114,11 +110,22 @@ export default function TobaccoPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.TobaccoBlend.create(data),
+    mutationFn: async (data) => {
+      // Check limits before creating
+      const limitCheck = await canCreateTobacco(user?.email, hasPaidAccess, isTrialing);
+      if (!limitCheck.canCreate) {
+        throw new Error(limitCheck.reason || 'Cannot create tobacco blend');
+      }
+      return base44.entities.TobaccoBlend.create(data);
+    },
     onSuccess: () => {
       invalidateBlendQueries(queryClient, user?.email);
       setShowForm(false);
+      toast.success('Blend added successfully!');
     },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add blend');
+    }
   });
 
   const updateMutation = useMutation({
@@ -273,7 +280,20 @@ export default function TobaccoPage() {
               Quick Search & Add
             </Button>
             <Button 
-              onClick={() => { setEditingBlend(null); setShowForm(true); }}
+              onClick={async () => {
+                const limitCheck = await canCreateTobacco(user?.email, hasPaidAccess, isTrialing);
+                if (!limitCheck.canCreate) {
+                  toast.error(limitCheck.reason, {
+                    action: {
+                      label: 'Upgrade',
+                      onClick: () => window.location.href = createPageUrl('Subscription')
+                    }
+                  });
+                  return;
+                }
+                setEditingBlend(null);
+                setShowForm(true);
+              }}
               className={PK_THEME.buttonPrimary}
             >
               <Plus className="w-4 h-4 mr-2" />
