@@ -107,6 +107,8 @@ export default function SubscriptionFull() {
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
+            flex: "1 1 auto",
+            minWidth: 0,
           }}
         >
           {isIOSApp ? "Upgrade (App Store)" : "Upgrade"}
@@ -121,9 +123,11 @@ export default function SubscriptionFull() {
             cursor: "pointer",
             fontWeight: 600,
             background: "transparent",
+            flex: "1 1 auto",
+            minWidth: 0,
           }}
         >
-          {isIOSApp ? "Manage Subscription (Apple)" : "Manage Subscription"}
+          {isIOSApp ? "Manage (Apple)" : "Manage Subscription"}
         </button>
       </div>
 

@@ -469,11 +469,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                       <span className="text-[#E0D8C8]/50">+</span>
                       <p className="font-medium text-[#E0D8C8]">{log.blend_name}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/70">
+                    <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/90 font-medium">
                       <Calendar className="w-3 h-3" />
                       {format(new Date(log.date), 'MMM d, yyyy')}
                       <span>•</span>
-                      <span>{log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}</span>
+                      <span className="text-[#E0D8C8]">{log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}</span>
                     </div>
                     {log.notes && (
                       <p className="text-xs text-[#E0D8C8]/70 mt-1">{log.notes}</p>
@@ -610,7 +610,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               />
               {formData.pipe_id && formData.bowls_smoked && (
                 <p className="text-xs text-[#E0D8C8]/60">
-                  Est. tobacco usage: ~{estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1).toFixed(2)} oz
+                  Est. tobacco usage: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1)).toFixed(2)} oz
                 </p>
               )}
             </div>

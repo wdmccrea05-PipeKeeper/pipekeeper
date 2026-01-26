@@ -72,12 +72,11 @@ export default function BackButton({ currentPageName, className = "" }) {
   }
 
   const handleBack = () => {
-    // Always try navigate(-1) first - it's the most reliable
-    // React Router will handle it gracefully even if no history
-    try {
+    // Check if there's actual browser history to go back to
+    if (window.history.length > 1) {
       navigate(-1);
-    } catch (err) {
-      // Fallback only if navigate(-1) fails
+    } else {
+      // No history - use fallback map
       const fallbackPage = FALLBACK_MAP[currentPageName] || "Home";
       navigate(createPageUrl(fallbackPage));
     }

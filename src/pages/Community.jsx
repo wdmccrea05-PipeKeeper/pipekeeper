@@ -447,14 +447,14 @@ export default function CommunityPage() {
                             </p>
                           )}
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                        <div className="flex flex-col gap-2 flex-shrink-0 min-w-0">
                           {isFriend(profile.user_email) ? (
-                            <Badge variant="outline" className="text-emerald-700 border-emerald-300 whitespace-nowrap">
+                            <Badge variant="outline" className="text-emerald-700 border-emerald-300 whitespace-nowrap text-center">
                               <UserCheck className="w-3 h-3 mr-1" />
                               Friends
                             </Badge>
                           ) : hasPendingRequest(profile.user_email) ? (
-                            <Badge variant="outline" className="text-amber-700 border-amber-300 whitespace-nowrap">
+                            <Badge variant="outline" className="text-amber-700 border-amber-300 whitespace-nowrap text-center">
                               <Clock className="w-3 h-3 mr-1" />
                               Pending
                             </Badge>
@@ -464,7 +464,7 @@ export default function CommunityPage() {
                               variant="outline"
                               onClick={() => sendFriendRequestMutation.mutate(profile.user_email)}
                               disabled={sendFriendRequestMutation.isPending}
-                              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 whitespace-nowrap"
+                              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 whitespace-nowrap w-full"
                             >
                               <UserPlus className="w-4 h-4 mr-1" />
                               Friend
@@ -476,7 +476,7 @@ export default function CommunityPage() {
                               size="sm"
                               onClick={() => unfollowMutation.mutate(getConnection(profile.user_email)?.id)}
                               disabled={unfollowMutation.isPending}
-                              className="whitespace-nowrap"
+                              className="whitespace-nowrap w-full"
                             >
                               <UserCheck className="w-4 h-4 mr-1" />
                               Following
@@ -486,7 +486,7 @@ export default function CommunityPage() {
                               size="sm"
                               onClick={() => followMutation.mutate(profile.user_email)}
                               disabled={followMutation.isPending}
-                              className="whitespace-nowrap"
+                              className="whitespace-nowrap w-full"
                             >
                               <UserPlus className="w-4 h-4 mr-1" />
                               Follow
@@ -568,16 +568,16 @@ export default function CommunityPage() {
                     return (
                       <Card key={friendship.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
                         <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
                               <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(friendEmail)}`)}>
-                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
                                   {profile?.display_name || friendEmail}
                                 </h3>
                               </a>
@@ -585,7 +585,7 @@ export default function CommunityPage() {
                                 <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
                               )}
                               {profile?.show_location && (profile?.city || profile?.state_province || profile?.country) && (
-                                <p className="text-xs text-[#E0D8C8]/60 mt-1">
+                                <p className="text-xs text-[#E0D8C8]/60 mt-1 truncate">
                                   📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
                                 </p>
                               )}
@@ -599,10 +599,10 @@ export default function CommunityPage() {
                                 }
                               }}
                               disabled={removeFriendMutation.isPending}
-                              className="text-rose-600 hover:bg-rose-50"
+                              className="text-rose-600 hover:bg-rose-50 flex-shrink-0"
                             >
-                              <UserX className="w-4 h-4 mr-2" />
-                              Remove
+                              <UserX className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Remove</span>
                             </Button>
                           </div>
                         </CardContent>
@@ -634,40 +634,40 @@ export default function CommunityPage() {
                     return (
                       <Card key={request.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
                         <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
                               <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || request.requester_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(request.requester_email)}`)}>
-                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
                                   {profile?.display_name || request.requester_email}
                                 </h3>
                               </a>
                               <p className="text-xs text-[#E0D8C8]/60">Wants to be friends</p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2 flex-shrink-0">
                               <Button
                                 size="sm"
                                 onClick={() => acceptFriendRequestMutation.mutate(request.id)}
                                 disabled={acceptFriendRequestMutation.isPending}
-                                className="bg-emerald-600 hover:bg-emerald-700"
+                                className="bg-emerald-600 hover:bg-emerald-700 whitespace-nowrap"
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Accept
+                                <CheckCircle className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Accept</span>
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => declineFriendRequestMutation.mutate(request.id)}
                                 disabled={declineFriendRequestMutation.isPending}
-                                className="text-rose-600 hover:bg-rose-50"
+                                className="text-rose-600 hover:bg-rose-50 whitespace-nowrap"
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Decline
+                                <XCircle className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Decline</span>
                               </Button>
                             </div>
                           </div>
@@ -695,21 +695,26 @@ export default function CommunityPage() {
                 return (
                   <Card key={connection.id} className="bg-[#223447] border-[#E0D8C8]/15">
                     <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="w-12 h-12">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile?.avatar_url} />
                           <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
                             {profile?.display_name?.[0] || connection.following_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(connection.following_email)}`)}>
-                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]">
+                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
                               {profile?.display_name || connection.following_email}
                             </h3>
                           </a>
                           {profile?.bio && (
                             <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
+                          )}
+                          {profile?.show_location && (profile?.city || profile?.state_province || profile?.country) && (
+                            <p className="text-xs text-[#E0D8C8]/60 mt-1 truncate">
+                              📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}
+                            </p>
                           )}
                         </div>
                         <Button
@@ -717,9 +722,10 @@ export default function CommunityPage() {
                           size="sm"
                           onClick={() => unfollowMutation.mutate(connection.id)}
                           disabled={unfollowMutation.isPending}
+                          className="flex-shrink-0"
                         >
-                          <UserX className="w-4 h-4 mr-2" />
-                          Unfollow
+                          <UserX className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Remove</span>
                         </Button>
                       </div>
                     </CardContent>

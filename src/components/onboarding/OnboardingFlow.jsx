@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, ArrowLeft, Check, X, Sparkles, 
-  Camera, Search, Star, Users, ChevronRight, Leaf
+  Camera, Search, Star, Users, ChevronRight, Leaf, HelpCircle
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -175,6 +175,59 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
+      title: "Get Help When You Need It",
+      description: "Comprehensive guides and support resources",
+      icon: HelpCircle,
+      content: (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                    <HelpCircle className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold mb-1">Help Section</h4>
+                    <p className="text-sm text-[#E0D8C8]/70 mb-3">
+                      Access comprehensive help resources from the main navigation menu
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 ml-13 pl-4 border-l-2 border-[#E0D8C8]/20">
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">FAQ</h5>
+                    <p className="text-xs text-[#E0D8C8]/70">
+                      Quick answers to common questions about features, subscriptions, and functionality
+                    </p>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">How-To Guides</h5>
+                    <p className="text-xs text-[#E0D8C8]/70">
+                      Step-by-step instructions for using AI tools, managing inventory, analyzing geometry from photos, and more
+                    </p>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">Troubleshooting</h5>
+                    <p className="text-xs text-[#E0D8C8]/70">
+                      Solutions for common issues with AI features, inventory updates, search, and data sync
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    💡 Tip: Click "Help" in the navigation menu anytime to access these resources
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    },
+    {
       title: "Key Features",
       description: "Everything you can do with PipeKeeper",
       icon: Sparkles,
@@ -185,9 +238,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Camera className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Photo Identification</h4>
+                   <h4 className="font-semibold">Photo Identification & Geometry Analysis</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Upload stamping photos and let AI identify maker, era, and authenticity
+                     Upload photos to identify pipes and analyze geometry (shape, bowl style, measurements)
                    </p>
                  </div>
                </div>
@@ -199,9 +252,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Search className="w-6 h-6 text-emerald-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Market Valuation</h4>
+                   <h4 className="font-semibold">Market Valuation & Verified Specs</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     AI-powered price lookups from recent sales and market data
+                     AI-powered price lookups and manufacturer specification searches
                    </p>
                  </div>
                </div>
@@ -213,9 +266,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Star className="w-6 h-6 text-violet-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Tobacco Matching</h4>
+                   <h4 className="font-semibold">Smart Tobacco Pairing</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Get personalized blend recommendations for each pipe
+                     AI matches pipes with tobacco based on geometry, focus, and your preferences
                    </p>
                  </div>
                </div>
@@ -229,7 +282,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                  <div>
                    <h4 className="font-semibold">Collection Optimization</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Analyze your collection for gaps and get recommendations for your next pipe
+                     Analyze gaps, get specialization recommendations, and plan your next purchase
                    </p>
                  </div>
                </div>
@@ -241,9 +294,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Leaf className="w-6 h-6 text-purple-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Quick Edit & Bulk Actions</h4>
+                   <h4 className="font-semibold">Inventory & Cellar Management</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Update multiple tobacco blends at once with Quick Edit mode
+                     Track containers, aging logs, and manage tobacco inventory with Quick Edit mode
                    </p>
                  </div>
                </div>
