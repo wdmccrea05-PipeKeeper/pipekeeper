@@ -61,6 +61,30 @@ export default function FAQFull() {
         </div>
 
       <Section title="General">
+        <Card className="bg-[#A35C5C]/10 border-[#A35C5C]/40 mb-6">
+          <button
+            onClick={() => toggleItem('verification-help')}
+            className="w-full text-left p-4 flex items-center justify-between hover:bg-[#A35C5C]/5 transition-colors"
+          >
+            <span className="font-semibold text-[#E0D8C8] pr-4">🔒 I can't log in / My verification code expired - What do I do?</span>
+            <ChevronDown 
+              className={`w-5 h-5 text-[#E0D8C8]/70 flex-shrink-0 transition-transform ${openItems['verification-help'] ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {openItems['verification-help'] && (
+            <CardContent className="px-4 pb-4 pt-0 text-[#E0D8C8]/80 leading-relaxed space-y-3">
+              <p>If you're having trouble with email verification or login:</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Try logging in again - the system will send a new verification code automatically</li>
+                <li>Check your spam/junk folder for the verification email</li>
+                <li>Visit our <a href={createPageUrl('VerificationHelp')} className="text-[#E0D8C8] hover:underline font-semibold">Verification Help page</a> for detailed instructions</li>
+                <li>Contact support directly at <a href="mailto:support@pipekeeper.app" className="text-[#E0D8C8] hover:underline font-semibold">support@pipekeeper.app</a></li>
+              </ol>
+              <p className="text-sm mt-3">Include your email address when contacting support so we can help you quickly.</p>
+            </CardContent>
+          )}
+        </Card>
+
         <Q id="what-is" q="What is PipeKeeper?">
           PipeKeeper is a collection-management and informational app designed for pipe-smoking enthusiasts. It helps you track pipes, tobacco blends, cellared tins, and related notes, and provides optional AI-assisted insights and valuation estimates.
           <div className="mt-2 font-semibold">

@@ -116,6 +116,18 @@ ${formData.message}
             <CardDescription className="text-[#E0D8C8]/80">
               Have a question or need help? Send us a message and we'll get back to you soon.
             </CardDescription>
+            <div className="mt-4 p-4 bg-[#A35C5C]/10 border border-[#A35C5C]/30 rounded-lg">
+              <h3 className="font-semibold text-[#E0D8C8] mb-2">Email Verification Issues?</h3>
+              <p className="text-sm text-[#E0D8C8]/70 mb-3">
+                If you're having trouble with email verification or can't log in, please contact us directly at:
+              </p>
+              <a
+                href="mailto:support@pipekeeper.app"
+                className="block text-center px-4 py-2 bg-[#A35C5C] text-[#E0D8C8] rounded-lg hover:bg-[#8F4E4E] transition-colors font-semibold"
+              >
+                support@pipekeeper.app
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
