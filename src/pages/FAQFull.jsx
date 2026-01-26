@@ -508,11 +508,16 @@ export default function FAQFull() {
           Comprehensive analytics and data visualization:
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>Detailed collection statistics and trends</li>
-            <li>Smoking pattern analysis and insights</li>
+            <li><b>Trends Report:</b> Spotify Wrapped-style insights with rolling time windows (7/30/90 days, YTD, 12 months, all-time) showing top pipes, top blends, frequency patterns, taste profiles, geometry insights, and discoveries</li>
+            <li>Smoking pattern analysis with day/time preferences</li>
             <li>Value tracking and investment performance</li>
             <li>Usage heatmaps and rotation recommendations</li>
             <li>Predictive analytics for inventory planning</li>
+            <li>Shareable trend summaries and PDF exports</li>
           </ul>
+          <p className="text-sm text-stone-600 mt-2">
+            Pro is active starting <b>February 1, 2026</b>. If you subscribed to Premium before February 1, 2026, you keep all analytics features.
+          </p>
         </Q>
 
         <Q id="pro-bulk-editing" q="Pro: Bulk Editing Tools">

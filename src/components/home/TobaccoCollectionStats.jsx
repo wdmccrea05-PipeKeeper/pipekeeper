@@ -12,6 +12,7 @@ import { base44 } from "@/api/base44Client";
 import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function TobaccoCollectionStats() {
   const [drillDown, setDrillDown] = useState(null);
@@ -22,12 +23,7 @@ export default function TobaccoCollectionStats() {
   const [isOpen, setIsOpen] = useState(true);
   const [showTrends, setShowTrends] = useState(false);
   
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
+  const { user, isPro } = useCurrentUser();
 
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
@@ -147,11 +143,17 @@ export default function TobaccoCollectionStats() {
             </CollapsibleTrigger>
             <Button
               size="sm"
-              onClick={() => setShowTrends(true)}
+              onClick={() => {
+                if (!isPro) {
+                  window.location.href = createPageUrl('Subscription');
+                  return;
+                }
+                setShowTrends(true);
+              }}
               className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Trends
+              Trends {!isPro && '🔒'}
             </Button>
           </div>
         </CardHeader>
