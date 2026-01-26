@@ -74,9 +74,9 @@ export default function SubscriptionFull() {
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
-      <h1 style={{ marginBottom: 8, color: "#E0D8C8" }}>PipeKeeper Premium</h1>
+      <h1 style={{ marginBottom: 8, color: "#E0D8C8", fontSize: 32, fontWeight: "bold" }}>PipeKeeper Premium</h1>
 
-      <p style={{ marginTop: 0, opacity: 0.9, lineHeight: 1.5, color: "#E0D8C8" }}>
+      <p style={{ marginTop: 0, lineHeight: 1.5, color: "#E0D8C8", fontSize: 16 }}>
         Unlock unlimited pipes and tobacco blends, cellar tracking, smoking logs, AI-powered insights, and advanced collection management tools.
       </p>
 
