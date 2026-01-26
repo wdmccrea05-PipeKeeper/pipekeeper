@@ -7,9 +7,12 @@ const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "")
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
 function json(status, body) {
-  return new Response(JSON.stringify(body), {
+  return new Response(JSON.stringify({ ...body, version: "v22-async" }), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { 
+      "content-type": "application/json",
+      "X-PipeKeeper-Webhook-Version": "v22-async"
+    },
   });
 }
 
