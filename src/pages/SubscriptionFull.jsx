@@ -74,9 +74,9 @@ export default function SubscriptionFull() {
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
-      <h1 style={{ marginBottom: 8 }}>PipeKeeper Premium</h1>
+      <h1 style={{ marginBottom: 8, color: "#E0D8C8" }}>PipeKeeper Premium</h1>
 
-      <p style={{ marginTop: 0, opacity: 0.8, lineHeight: 1.5 }}>
+      <p style={{ marginTop: 0, opacity: 0.9, lineHeight: 1.5, color: "#E0D8C8" }}>
         Unlock unlimited pipes and tobacco blends, cellar tracking, smoking logs, AI-powered insights, and advanced collection management tools.
       </p>
 
@@ -89,10 +89,10 @@ export default function SubscriptionFull() {
             marginBottom: 12,
           }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ fontWeight: 600, marginBottom: 6, color: "#E0D8C8" }}>
             iOS App Store Subscriptions
           </div>
-          <div style={{ opacity: 0.85, fontSize: 14 }}>
+          <div style={{ opacity: 0.85, fontSize: 14, color: "#E0D8C8" }}>
             Purchases and subscription management are handled through Apple.
           </div>
         </div>
@@ -109,6 +109,8 @@ export default function SubscriptionFull() {
             fontWeight: 600,
             flex: "1 1 auto",
             minWidth: 0,
+            background: "#A35C5C",
+            color: "#E0D8C8",
           }}
         >
           {isIOSApp ? "Upgrade (App Store)" : "Upgrade"}
@@ -119,12 +121,13 @@ export default function SubscriptionFull() {
           style={{
             padding: "10px 14px",
             borderRadius: 10,
-            border: "1px solid rgba(0,0,0,0.2)",
+            border: "1px solid rgba(224, 216, 200, 0.3)",
             cursor: "pointer",
             fontWeight: 600,
             background: "transparent",
             flex: "1 1 auto",
             minWidth: 0,
+            color: "#E0D8C8",
           }}
         >
           {isIOSApp ? "Manage (Apple)" : "Manage Subscription"}
@@ -132,7 +135,7 @@ export default function SubscriptionFull() {
       </div>
 
       {isIOSApp && (
-        <div style={{ marginTop: 8, fontSize: 14, opacity: 0.85 }}>
+        <div style={{ marginTop: 8, fontSize: 14, opacity: 0.85, color: "#E0D8C8" }}>
           {isPro ? "Status: Pro Active ✅" : "Status: Free / Not Active"}
         </div>
       )}
