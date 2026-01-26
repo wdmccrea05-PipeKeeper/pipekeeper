@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     const signature = await generateStripeSignature(payload, webhookSecret);
 
     // Call the actual webhook endpoint
-    const webhookUrl = `${appUrl}/api/stripeWebhook`;
+    const webhookUrl = `${appUrl}/api/functions/stripeWebhook`;
     
     const webhookResponse = await fetch(webhookUrl, {
       method: "POST",
