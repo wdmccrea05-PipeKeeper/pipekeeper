@@ -28,6 +28,7 @@ import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import index from './pages/index';
+import VerificationHelp from './pages/VerificationHelp';
 import __Layout from './Layout.jsx';
 
 
@@ -62,6 +63,7 @@ export const PAGES = {
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "index": index,
+    "VerificationHelp": VerificationHelp,
 }
 
 export const pagesConfig = {
