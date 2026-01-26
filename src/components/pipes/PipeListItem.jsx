@@ -54,7 +54,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
               {pipe.estimated_value && (
                 <div className="text-right shrink-0">
                   <p className="text-xs text-emerald-400">Value</p>
-                  <p className="font-semibold text-emerald-300">${pipe.estimated_value.toLocaleString()}</p>
+                  <p className="font-semibold text-emerald-300">${(+pipe.estimated_value).toFixed(2)}</p>
                 </div>
               )}
             </div>

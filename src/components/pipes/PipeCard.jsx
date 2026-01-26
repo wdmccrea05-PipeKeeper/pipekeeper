@@ -49,8 +49,8 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
           </div>
           {pipe.estimated_value && (
             <div className="absolute bottom-3 left-3">
-              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm">
-                ${Number(pipe.estimated_value).toFixed(2)}
+              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm">
+                ${(+pipe.estimated_value).toFixed(2)}
               </Badge>
             </div>
           )}

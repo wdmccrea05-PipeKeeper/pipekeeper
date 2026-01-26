@@ -91,12 +91,12 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
                 {blend.rating && (
                   <div className="flex items-center gap-0.5">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <span className="text-sm font-medium text-amber-300">{blend.rating.toFixed(1)}/5</span>
+                    <span className="text-sm font-medium text-amber-300">{(+blend.rating).toFixed(1)}/5</span>
                   </div>
                 )}
                 {blend.quantity_owned > 0 && (
                   <Badge className="bg-amber-600/90 text-white border-0">
-                    {Number(blend.quantity_owned).toFixed(2)} oz
+                    {(+blend.quantity_owned).toFixed(2)} oz
                   </Badge>
                 )}
               </div>
@@ -124,18 +124,18 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
                </Badge>
               )}
               {(blend.tin_total_quantity_oz || 0) > 0 && (
-                <Badge className="bg-amber-600/90 text-white border-0 text-xs">
-                  Tin: {Number(blend.tin_total_quantity_oz).toFixed(2)}oz
+                <Badge className="bg-amber-600/90 text-white border-0 text-xs font-semibold">
+                  Tin: {(+(blend.tin_total_quantity_oz || 0)).toFixed(2)}oz
                 </Badge>
               )}
               {(blend.bulk_total_quantity_oz || 0) > 0 && (
-                <Badge className="bg-blue-600/90 text-white border-0 text-xs">
-                  Bulk: {Number(blend.bulk_total_quantity_oz).toFixed(2)}oz
+                <Badge className="bg-blue-600/90 text-white border-0 text-xs font-semibold">
+                  Bulk: {(+(blend.bulk_total_quantity_oz || 0)).toFixed(2)}oz
                 </Badge>
               )}
               {(blend.pouch_total_quantity_oz || 0) > 0 && (
-                <Badge className="bg-purple-600/90 text-white border-0 text-xs">
-                  Pouch: {Number(blend.pouch_total_quantity_oz).toFixed(2)}oz
+                <Badge className="bg-purple-600/90 text-white border-0 text-xs font-semibold">
+                  Pouch: {(+(blend.pouch_total_quantity_oz || 0)).toFixed(2)}oz
                 </Badge>
               )}
             </div>

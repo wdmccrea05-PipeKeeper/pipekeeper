@@ -405,7 +405,7 @@ export default function PublicProfilePage() {
                             )}
                             {!profile.privacy_hide_values && pipe.estimated_value && (
                               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
-                                ${pipe.estimated_value.toLocaleString()}
+                                ${(+pipe.estimated_value).toFixed(2)}
                               </Badge>
                             )}
                           </div>
@@ -501,12 +501,12 @@ export default function PublicProfilePage() {
                               <>
                                 {(blend.tin_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
-                                    {blend.tin_total_quantity_oz}oz tins
+                                    {(+blend.tin_total_quantity_oz).toFixed(2)}oz tins
                                   </Badge>
                                 )}
                                 {(blend.bulk_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
-                                    {blend.bulk_total_quantity_oz}oz bulk
+                                    {(+blend.bulk_total_quantity_oz).toFixed(2)}oz bulk
                                   </Badge>
                                 )}
                               </>
@@ -576,7 +576,7 @@ export default function PublicProfilePage() {
                         {new Date(log.date).toLocaleDateString()}
                       </p>
                       {log.bowls_smoked && (
-                        <Badge variant="outline" className="text-xs mt-1">
+                        <Badge variant="outline" className="text-xs mt-1 font-semibold text-stone-700">
                           {log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}
                         </Badge>
                       )}
