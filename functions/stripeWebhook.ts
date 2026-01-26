@@ -257,6 +257,15 @@ Deno.serve(async (req) => {
         await upsertSubscription(payload);
 
         const isPaid = sub.status === "active" || sub.status === "trialing";
+        
+        // Find or create user
+        let userRow = await findUserByEmail(user_email);
+        if (!userRow) {
+          await ensureUserExists(user_email, customerId);
+          userRow = await findUserByEmail(user_email);
+        }
+        
+        // Update entitlement
         await setUserEntitlement(user_email, {
           subscription_level: isPaid ? "paid" : "free",
           subscription_status: sub.status,
