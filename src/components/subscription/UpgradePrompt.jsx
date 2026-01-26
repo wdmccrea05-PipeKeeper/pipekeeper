@@ -20,8 +20,8 @@ export default function UpgradePrompt({ featureName, description }) {
 
       <CardContent className="space-y-4">
         <div>
-          <p className="font-semibold text-[#E0D8C8] mb-1">{featureName}</p>
-          <p className="text-sm text-[#E0D8C8]/70">{description}</p>
+          <p className="font-semibold text-[#E0D8C8] mb-2 text-lg">{featureName}</p>
+          <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">{description}</p>
         </div>
 
         {shouldShowPurchaseUI() ? (
@@ -32,8 +32,8 @@ export default function UpgradePrompt({ featureName, description }) {
                 Upgrade to Premium
               </Button>
             </a>
-            <p className="text-xs text-center text-[#E0D8C8]/60">
-              Unlock premium tools and advanced analytics
+            <p className="text-xs text-center text-[#E0D8C8]/70 leading-relaxed">
+              Get unlimited collection tools, AI-powered insights, cellar tracking, and comprehensive analytics
             </p>
           </>
         ) : (
