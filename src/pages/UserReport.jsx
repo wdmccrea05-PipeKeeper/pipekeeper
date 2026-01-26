@@ -267,106 +267,66 @@ export default function UserReport() {
             <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : adminMetrics?.trialMetrics?.newSignupsLast7d || 0}</p>
           </CardContent>
         </Card>
+
+        {/* Platform Cards */}
+        {adminMetrics?.platformBreakdown && !metricsLoading && (
+          <>
+            <Card className="bg-white/95 border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-gray-700">Apple</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-600">Paid:</span>
+                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.apple?.paid || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Free:</span>
+                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.apple?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/95 border-green-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-green-700">Android</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-600">Paid:</span>
+                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.android?.paid || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Free:</span>
+                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.android?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/95 border-blue-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-blue-700">Web</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-600">Paid:</span>
+                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.web?.paid || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Free:</span>
+                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.web?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
-
-      {/* Platform Breakdown */}
-      {adminMetrics?.platformBreakdown && !metricsLoading && (
-        <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-stone-800 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-blue-600" />
-              Platform Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Apple Users */}
-              <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-                    <span className="text-white font-bold text-xs"></span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800">Apple Users</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Paid</span>
-                    <span className="text-lg font-bold text-emerald-700">{adminMetrics.platformBreakdown.apple?.paid || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Free</span>
-                    <span className="text-lg font-bold text-gray-700">{adminMetrics.platformBreakdown.apple?.free || 0}</span>
-                  </div>
-                  <div className="pt-2 mt-2 border-t border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Total</span>
-                      <span className="text-xl font-bold text-gray-900">
-                        {(adminMetrics.platformBreakdown.apple?.paid || 0) + (adminMetrics.platformBreakdown.apple?.free || 0)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Android Users */}
-              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg border border-green-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">A</span>
-                  </div>
-                  <h3 className="font-semibold text-green-800">Android Users</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-green-700">Paid</span>
-                    <span className="text-lg font-bold text-emerald-700">{adminMetrics.platformBreakdown.android?.paid || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-green-700">Free</span>
-                    <span className="text-lg font-bold text-green-800">{adminMetrics.platformBreakdown.android?.free || 0}</span>
-                  </div>
-                  <div className="pt-2 mt-2 border-t border-green-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-green-600">Total</span>
-                      <span className="text-xl font-bold text-green-900">
-                        {(adminMetrics.platformBreakdown.android?.paid || 0) + (adminMetrics.platformBreakdown.android?.free || 0)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Web Users */}
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg border border-blue-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">W</span>
-                  </div>
-                  <h3 className="font-semibold text-blue-800">Web Users</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-blue-700">Paid</span>
-                    <span className="text-lg font-bold text-emerald-700">{adminMetrics.platformBreakdown.web?.paid || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-blue-700">Free</span>
-                    <span className="text-lg font-bold text-blue-800">{adminMetrics.platformBreakdown.web?.free || 0}</span>
-                  </div>
-                  <div className="pt-2 mt-2 border-t border-blue-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-blue-600">Total</span>
-                      <span className="text-xl font-bold text-blue-900">
-                        {(adminMetrics.platformBreakdown.web?.paid || 0) + (adminMetrics.platformBreakdown.web?.free || 0)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Trials Panel */}
       {adminMetrics && !metricsLoading && (
