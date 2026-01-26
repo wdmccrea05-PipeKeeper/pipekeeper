@@ -1,23 +1,108 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
 
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
+// Timestamp tolerance: 5 minutes
+const TIMESTAMP_TOLERANCE_SECONDS = 300;
+
 function json(status, body) {
-  return new Response(JSON.stringify({ ...body, version: "v22-async" }), {
+  return new Response(JSON.stringify({ ...body, version: "v23-no-sdk" }), {
     status,
     headers: { 
       "content-type": "application/json",
-      "X-PipeKeeper-Webhook-Version": "v22-async"
+      "X-PipeKeeper-Webhook-Version": "v23-no-sdk"
     },
   });
 }
 
+/**
+ * Verify Stripe webhook signature using WebCrypto (no Stripe SDK)
+ * Returns { valid: true, event } or { valid: false, error }
+ */
+async function verifyStripeSignature(rawBody, signature, secret) {
+  if (!signature) {
+    return { valid: false, error: "Missing signature" };
+  }
+
+  // Parse signature header: t=timestamp,v1=signature1,v1=signature2,...
+  const parts = signature.split(",").map(p => p.trim());
+  let timestamp = null;
+  const v1Signatures = [];
+
+  for (const part of parts) {
+    const [key, value] = part.split("=");
+    if (key === "t") {
+      timestamp = parseInt(value, 10);
+    } else if (key === "v1") {
+      v1Signatures.push(value);
+    }
+  }
+
+  if (!timestamp || v1Signatures.length === 0) {
+    return { valid: false, error: "Invalid signature format" };
+  }
+
+  // Check timestamp tolerance (5 minutes)
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - timestamp) > TIMESTAMP_TOLERANCE_SECONDS) {
+    return { valid: false, error: "Timestamp outside tolerance window" };
+  }
+
+  // Compute expected signature: HMAC-SHA256(secret, timestamp + "." + rawBody)
+  const encoder = new TextEncoder();
+  const signedPayload = `${timestamp}.${rawBody}`;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signatureBytes = await crypto.subtle.sign("HMAC", key, encoder.encode(signedPayload));
+  const expectedSignature = Array.from(new Uint8Array(signatureBytes))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Timing-safe compare against all v1 signatures
+  let isValid = false;
+  for (const v1Sig of v1Signatures) {
+    if (timingSafeEqual(expectedSignature, v1Sig)) {
+      isValid = true;
+      break;
+    }
+  }
+
+  if (!isValid) {
+    return { valid: false, error: "Signature verification failed" };
+  }
+
+  // Parse event
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch (err) {
+    return { valid: false, error: "Invalid JSON" };
+  }
+
+  return { valid: true, event };
+}
+
+/**
+ * Timing-safe string comparison
+ */
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
-  // Normalize subscription start date: prefer started_at, fall back to current_period_start, then created_at
   return startedAt || periodStart || createdAt || null;
 }
 
@@ -36,39 +121,47 @@ function getTierFromPriceId(priceId) {
 }
 
 Deno.serve(async (req) => {
+  // Quick exit for health checks
   if (req.method === "GET" || req.method === "OPTIONS") {
     return new Response("ok", { status: 200 });
   }
+  
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
   try {
-    const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-
-    if (!stripeSecret) return json(500, { ok: false, error: "Missing STRIPE_SECRET_KEY" });
-    if (!webhookSecret) return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
-
-    const stripe = new Stripe(stripeSecret, { apiVersion: "2024-06-20" });
-
-    const sig = req.headers.get("stripe-signature");
-    if (!sig) return json(400, { ok: false, error: "Missing stripe-signature header" });
-
-    const rawBody = await req.text();
-
-    let event;
-    try {
-      event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
-    } catch (err) {
-      return json(400, {
-        ok: false,
-        error: `Webhook signature verification failed: ${err?.message || err}`,
-      });
+    if (!webhookSecret) {
+      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
     }
 
+    const sig = req.headers.get("stripe-signature");
+    const rawBody = await req.text();
+
+    // Verify signature (no Stripe SDK)
+    const verification = await verifyStripeSignature(rawBody, sig, webhookSecret);
+    if (!verification.valid) {
+      return json(400, { ok: false, error: verification.error });
+    }
+
+    const event = verification.event;
     const base44 = createClientFromRequest(req);
 
+    // Deduplication: Check if event already processed
+    try {
+      const existing = await base44.asServiceRole.entities.ProcessedStripeEvents?.filter({
+        event_id: event.id
+      });
+      if (existing && existing.length > 0) {
+        return json(200, { ok: true, deduped: true });
+      }
+    } catch (err) {
+      // If ProcessedStripeEvents entity doesn't exist, continue without dedup
+      // (Non-fatal - this is just an optimization)
+    }
+
+    // Helper functions
     async function findUserByEmail(email) {
       const rows = await base44.asServiceRole.entities.User.filter({ email });
       return rows && rows.length ? rows[0] : null;
@@ -99,7 +192,6 @@ Deno.serve(async (req) => {
     async function ensureUserExists(email, customerId) {
       let userRow = await findUserByEmail(email);
       if (!userRow) {
-        // Create user from Stripe customer
         await base44.asServiceRole.entities.User.create({
           email,
           full_name: "User from Stripe",
@@ -110,6 +202,7 @@ Deno.serve(async (req) => {
       return userRow;
     }
 
+    // Process event based on type
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -133,48 +226,11 @@ Deno.serve(async (req) => {
           stripe_customer_id: customerId || null,
         });
 
+        // NOTE: We cannot fetch subscription details without Stripe SDK
+        // The subscription update will come via subscription.created/updated events
         if (subscriptionId) {
-           const sub = await stripe.subscriptions.retrieve(subscriptionId);
-           const periodStart = sub.current_period_start
-             ? new Date(sub.current_period_start * 1000).toISOString()
-             : null;
-           const periodEnd = sub.current_period_end
-             ? new Date(sub.current_period_end * 1000).toISOString()
-             : null;
-           const createdAt = sub.created
-             ? new Date(sub.created * 1000).toISOString()
-             : null;
-
-           const subscriptionStartedAt = normalizeSubscriptionStartDate(
-             new Date().toISOString(),
-             periodStart,
-             createdAt
-           );
-
-           const priceId = sub.items?.data?.[0]?.price?.id;
-           const tier = getTierFromPriceId(priceId) || 'premium';
-           
-           if (!getTierFromPriceId(priceId) && priceId) {
-             console.warn(`[stripeWebhook] Unknown price ID in checkout: ${priceId}. Defaulting to premium.`);
-           }
-
-           await upsertSubscription({
-             user_email,
-             status: sub.status,
-             stripe_subscription_id: sub.id,
-             stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
-             current_period_start: periodStart,
-             current_period_end: periodEnd,
-             started_at: new Date().toISOString(),
-             subscriptionStartedAt,
-             tier,
-             cancel_at_period_end: !!sub.cancel_at_period_end,
-             billing_interval: sub.items?.data?.[0]?.price?.recurring?.interval || "year",
-             amount: sub.items?.data?.[0]?.price?.unit_amount
-               ? sub.items.data[0].price.unit_amount / 100
-               : null,
-           });
-         }
+          console.log(`[webhook] Checkout completed for subscription ${subscriptionId}, will process via subscription.created event`);
+        }
 
         break;
       }
@@ -189,16 +245,14 @@ Deno.serve(async (req) => {
 
         let user_email = String(sub.metadata?.user_email || "").trim().toLowerCase();
 
-        if (!user_email && customerId) {
-          const cust = await stripe.customers.retrieve(customerId);
-          if (cust && !cust.deleted) {
-            user_email = String(cust.email || "").trim().toLowerCase();
-          }
+        // NOTE: Without Stripe SDK, we cannot fetch customer email
+        // Rely on metadata or skip if not present
+        if (!user_email) {
+          console.warn(`[webhook] No user_email in subscription ${sub.id} metadata, skipping`);
+          break;
         }
 
-        if (!user_email) break;
-
-        // For new subscriptions, ensure user exists in app
+        // For new subscriptions, ensure user exists
         if (event.type === "customer.subscription.created") {
           await ensureUserExists(user_email, customerId);
         }
@@ -213,7 +267,6 @@ Deno.serve(async (req) => {
           ? new Date(sub.created * 1000).toISOString()
           : null;
 
-        // Check if subscription exists
         const existingRes = await base44.asServiceRole.entities.Subscription.filter({
           stripe_subscription_id: sub.id,
         });
@@ -233,12 +286,10 @@ Deno.serve(async (req) => {
             : null,
         };
 
-        // Set started_at for new subscriptions or when reactivating
         if (!existing?.started_at) {
           payload.started_at = new Date().toISOString();
         }
 
-        // Normalize subscription start date
         const subscriptionStartedAt = normalizeSubscriptionStartDate(
           payload.started_at || existing?.started_at,
           periodStart,
@@ -246,29 +297,25 @@ Deno.serve(async (req) => {
         );
         payload.subscriptionStartedAt = subscriptionStartedAt;
 
-        // Determine tier from price ID
         const priceId = sub.items?.data?.[0]?.price?.id;
         const detectedTier = getTierFromPriceId(priceId);
         
-        // Use detected tier, fallback to existing, then default to premium
         payload.tier = detectedTier || existing?.tier || 'premium';
         
         if (!detectedTier && priceId) {
-          console.warn(`[stripeWebhook] Unknown price ID in subscription event: ${priceId}. Using tier: ${payload.tier}`);
+          console.warn(`[webhook] Unknown price ID: ${priceId}, using tier: ${payload.tier}`);
         }
 
         await upsertSubscription(payload);
 
         const isPaid = sub.status === "active" || sub.status === "trialing";
         
-        // Find or create user
         let userRow = await findUserByEmail(user_email);
         if (!userRow) {
           await ensureUserExists(user_email, customerId);
           userRow = await findUserByEmail(user_email);
         }
         
-        // Update entitlement
         await setUserEntitlement(user_email, {
           subscription_level: isPaid ? "paid" : "free",
           subscription_status: sub.status,
@@ -279,11 +326,25 @@ Deno.serve(async (req) => {
       }
 
       default:
+        // Immediately return 200 for unhandled events (no retries)
         break;
+    }
+
+    // Record processed event (deduplication)
+    try {
+      await base44.asServiceRole.entities.ProcessedStripeEvents?.create({
+        event_id: event.id,
+        event_type: event.type,
+        processed_at: new Date().toISOString()
+      });
+    } catch (err) {
+      // Non-fatal - continue even if we can't record the event
     }
 
     return json(200, { ok: true });
   } catch (err) {
+    console.error("[webhook] Error:", err);
+    // Return 500 but do NOT retry internally
     return json(500, { ok: false, error: err?.message || String(err) });
   }
 });
