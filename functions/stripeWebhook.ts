@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     let event;
     try {
-      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+      event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
     } catch (err) {
       return json(400, {
         ok: false,
