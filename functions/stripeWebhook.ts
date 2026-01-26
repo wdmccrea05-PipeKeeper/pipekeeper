@@ -1,105 +1,19 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import Stripe from "npm:stripe@17.5.0";
 
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
-// Timestamp tolerance: 5 minutes
-const TIMESTAMP_TOLERANCE_SECONDS = 300;
-
 function json(status, body) {
-  return new Response(JSON.stringify({ ...body, version: "v23-no-sdk" }), {
+  return new Response(JSON.stringify({ ...body, version: "v24-sdk" }), {
     status,
     headers: { 
       "content-type": "application/json",
-      "X-PipeKeeper-Webhook-Version": "v23-no-sdk"
+      "X-PipeKeeper-Webhook-Version": "v24-sdk"
     },
   });
-}
-
-/**
- * Verify Stripe webhook signature using WebCrypto (no Stripe SDK)
- * Returns { valid: true, event } or { valid: false, error }
- */
-async function verifyStripeSignature(rawBody, signature, secret) {
-  if (!signature) {
-    return { valid: false, error: "Missing signature" };
-  }
-
-  // Parse signature header: t=timestamp,v1=signature1,v1=signature2,...
-  const parts = signature.split(",").map(p => p.trim());
-  let timestamp = null;
-  const v1Signatures = [];
-
-  for (const part of parts) {
-    const [key, value] = part.split("=");
-    if (key === "t") {
-      timestamp = parseInt(value, 10);
-    } else if (key === "v1") {
-      v1Signatures.push(value);
-    }
-  }
-
-  if (!timestamp || v1Signatures.length === 0) {
-    return { valid: false, error: "Invalid signature format" };
-  }
-
-  // Check timestamp tolerance (5 minutes)
-  const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - timestamp) > TIMESTAMP_TOLERANCE_SECONDS) {
-    return { valid: false, error: "Timestamp outside tolerance window" };
-  }
-
-  // Compute expected signature: HMAC-SHA256(secret, timestamp + "." + rawBody)
-  const encoder = new TextEncoder();
-  const signedPayload = `${timestamp}.${rawBody}`;
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const signatureBytes = await crypto.subtle.sign("HMAC", key, encoder.encode(signedPayload));
-  const expectedSignature = Array.from(new Uint8Array(signatureBytes))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  // Timing-safe compare against all v1 signatures
-  let isValid = false;
-  for (const v1Sig of v1Signatures) {
-    if (timingSafeEqual(expectedSignature, v1Sig)) {
-      isValid = true;
-      break;
-    }
-  }
-
-  if (!isValid) {
-    return { valid: false, error: "Signature verification failed" };
-  }
-
-  // Parse event
-  let event;
-  try {
-    event = JSON.parse(rawBody);
-  } catch (err) {
-    return { valid: false, error: "Invalid JSON" };
-  }
-
-  return { valid: true, event };
-}
-
-/**
- * Timing-safe string comparison
- */
-function timingSafeEqual(a, b) {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
 }
 
 function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
@@ -132,20 +46,31 @@ Deno.serve(async (req) => {
 
   try {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
     if (!webhookSecret) {
       return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
     }
+    if (!stripeSecretKey) {
+      return json(500, { ok: false, error: "Missing STRIPE_SECRET_KEY" });
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: "2024-12-18.acacia",
+    });
 
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();
 
-    // Verify signature (no Stripe SDK)
-    const verification = await verifyStripeSignature(rawBody, sig, webhookSecret);
-    if (!verification.valid) {
-      return json(400, { ok: false, error: verification.error });
+    // Verify signature using Stripe SDK (async for Deno WebCrypto compatibility)
+    let event;
+    try {
+      event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
+    } catch (err) {
+      console.error("[webhook] Signature verification failed:", err.message);
+      return json(400, { ok: false, error: `Webhook signature verification failed: ${err.message}` });
     }
 
-    const event = verification.event;
     const base44 = createClientFromRequest(req);
 
     // Deduplication: Check if event already processed
