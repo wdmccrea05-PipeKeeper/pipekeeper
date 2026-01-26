@@ -343,7 +343,12 @@ Deno.serve(async (req) => {
 
     allUsers.forEach(u => {
       const subs = subMap.get(u.email) || [];
-      const hasPaidSub = subs.some(s => {
+      const validSubs = subs.filter(s => {
+        const st = (s.status || '').toLowerCase();
+        return st !== 'incomplete' && st !== 'incomplete_expired';
+      });
+      
+      const hasPaidSub = validSubs.some(s => {
         const st = (s.status || '').toLowerCase();
         return st === 'active' || st === 'trialing';
       });
