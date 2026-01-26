@@ -334,6 +334,30 @@ Deno.serve(async (req) => {
       communityEngagement,
     };
 
+    // 7. PLATFORM BREAKDOWN
+    const platformBreakdown = {
+      apple: { paid: 0, free: 0 },
+      android: { paid: 0, free: 0 },
+      web: { paid: 0, free: 0 },
+    };
+
+    allUsers.forEach(u => {
+      const subs = subMap.get(u.email) || [];
+      const hasPaidSub = subs.some(s => {
+        const st = (s.status || '').toLowerCase();
+        return st === 'active' || st === 'trialing';
+      });
+
+      const platform = u.platform || 'web';
+      const platformKey = platform === 'ios' ? 'apple' : platform === 'android' ? 'android' : 'web';
+
+      if (hasPaidSub) {
+        platformBreakdown[platformKey].paid++;
+      } else {
+        platformBreakdown[platformKey].free++;
+      }
+    });
+
     return Response.json({
       userCounts,
       subscriptionBreakdown,
@@ -341,6 +365,7 @@ Deno.serve(async (req) => {
       growthMetrics,
       churnMetrics,
       usageMetrics,
+      platformBreakdown,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
