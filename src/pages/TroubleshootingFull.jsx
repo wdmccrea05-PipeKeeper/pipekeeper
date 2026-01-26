@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen } from "lucide-react";
+import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen, Crown } from "lucide-react";
 
 export default function TroubleshootingFull() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -136,6 +136,26 @@ export default function TroubleshootingFull() {
         {
           q: "What if I don't know what to focus my pipe on?",
           a: "Use Collection Optimization on the Home page - AI will suggest ideal specializations based on your collection balance."
+        }
+      ]
+    },
+    {
+      id: "pro-features",
+      icon: Crown,
+      title: "Pro Features",
+      color: "text-amber-400",
+      questions: [
+        {
+          q: "Trends Report shows no data or is empty",
+          a: "The Trends Report requires smoking log data to display insights. If you see 'No sessions logged', you need to log some smoking sessions first. Go to Home → Log a Session to start tracking. Once you have logs, return to Home → Tobacco Collection Stats → Trends to view your insights. If logs exist but trends are empty, try switching to 'All-Time' time window."
+        },
+        {
+          q: "Trends button is locked (🔒)",
+          a: "Trends Report is a Pro-tier feature. If you see a lock icon, you need to upgrade to Pro to access it. Go to Profile → Subscription to view upgrade options. If you subscribed to Premium before February 1, 2026, you should have access—try refreshing the page or contact support if the lock persists."
+        },
+        {
+          q: "Trends data seems incorrect or outdated",
+          a: "Trends are computed from your smoking logs in real-time. If data seems wrong: 1) Check that your smoking logs have accurate dates and pipe/blend selections, 2) Verify time window selection matches what you expect, 3) Refresh the page to recalculate, 4) Compare with your actual smoking log entries on the Home page."
         }
       ]
     },
