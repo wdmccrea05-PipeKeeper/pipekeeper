@@ -35,14 +35,19 @@ export default function VerificationHelp() {
                 <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
                   <h4 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
                     <RefreshCw className="w-4 h-4" />
-                    Option 1: Try Logging In Again
+                    Option 1: Request a New Verification Code
                   </h4>
                   <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                    Attempt to log in with your email. The system will send a new verification code automatically.
+                    Click below to return to the login page. Enter your email again and a fresh verification code will be sent automatically with a new 10-minute window.
                   </p>
                   <Button onClick={handleResendVerification} className="w-full">
-                    Go to Login
+                    Request New Code
                   </Button>
+                  <p className="text-xs text-[#E0D8C8]/60 mt-2">
+                    ✓ This will send a new 6-digit code to your email<br/>
+                    ✓ You'll have 10 minutes to enter the new code<br/>
+                    ✓ Check your spam folder if you don't see it
+                  </p>
                 </div>
 
                 <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
@@ -55,10 +60,10 @@ export default function VerificationHelp() {
                   </p>
                   <div className="space-y-2">
                     <a
-                      href="mailto:support@pipekeeper.app"
+                      href="mailto:admin@pipekeeperapp.com"
                       className="block w-full text-center px-4 py-2 bg-[#A35C5C] text-[#E0D8C8] rounded-lg hover:bg-[#8F4E4E] transition-colors"
                     >
-                      support@pipekeeper.app
+                      admin@pipekeeperapp.com
                     </a>
                     <p className="text-xs text-[#E0D8C8]/60 text-center">
                       Include your email address and describe the issue you're experiencing

@@ -78,7 +78,7 @@ export default function FAQFull() {
                 <li>Try logging in again - the system will send a new verification code automatically</li>
                 <li>Check your spam/junk folder for the verification email</li>
                 <li>Visit our <a href={createPageUrl('VerificationHelp')} className="text-[#E0D8C8] hover:underline font-semibold">Verification Help page</a> for detailed instructions</li>
-                <li>Contact support directly at <a href="mailto:support@pipekeeper.app" className="text-[#E0D8C8] hover:underline font-semibold">support@pipekeeper.app</a></li>
+                <li>Contact support directly at <a href="mailto:admin@pipekeeperapp.com" className="text-[#E0D8C8] hover:underline font-semibold">admin@pipekeeperapp.com</a></li>
               </ol>
               <p className="text-sm mt-3">Include your email address when contacting support so we can help you quickly.</p>
             </CardContent>

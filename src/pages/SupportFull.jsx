@@ -122,10 +122,10 @@ ${formData.message}
                 If you're having trouble with email verification or can't log in, please contact us directly at:
               </p>
               <a
-                href="mailto:support@pipekeeper.app"
+                href="mailto:admin@pipekeeperapp.com"
                 className="block text-center px-4 py-2 bg-[#A35C5C] text-[#E0D8C8] rounded-lg hover:bg-[#8F4E4E] transition-colors font-semibold"
               >
-                support@pipekeeper.app
+                admin@pipekeeperapp.com
               </a>
             </div>
           </CardHeader>
