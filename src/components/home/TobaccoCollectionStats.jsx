@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import TrendsReport from "@/components/tobacco/TrendsReport";
 
 export default function TobaccoCollectionStats() {
   const [drillDown, setDrillDown] = useState(null);
@@ -611,12 +612,12 @@ export default function TobaccoCollectionStats() {
           <DialogHeader>
             <DialogTitle className="sr-only">Trends Report</DialogTitle>
           </DialogHeader>
-          {React.createElement(require('@/components/tobacco/TrendsReport').default, {
-            logs: smokingLogs,
-            pipes: pipes,
-            blends: blends,
-            user: user
-          })}
+          <TrendsReport
+            logs={smokingLogs}
+            pipes={pipes}
+            blends={blends}
+            user={user}
+          />
         </DialogContent>
       </Dialog>
 
