@@ -76,8 +76,8 @@ export default function SubscriptionFull() {
     <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
       <h1 style={{ marginBottom: 8 }}>PipeKeeper Premium</h1>
 
-      <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Unlock premium inventory tools and organization features.
+      <p style={{ marginTop: 0, opacity: 0.8, lineHeight: 1.5 }}>
+        Unlock unlimited pipes and tobacco blends, cellar tracking, smoking logs, AI-powered insights, and advanced collection management tools.
       </p>
 
       {isIOSApp && (
