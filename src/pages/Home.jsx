@@ -470,8 +470,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
             transition={{ delay: 0.1 }}
           >
             <a href={createPageUrl('Pipes')}>
-              <PkCard>
-                <PkCardContent className="p-3 sm:p-6 text-center">
+              <PkCard className="h-full">
+                <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
                   <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'invert(0.7) sepia(0.6) hue-rotate(355deg) saturate(1.2) brightness(1.1)' }} />
                   <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
                   <PkSubtext>Pipes</PkSubtext>
@@ -484,8 +484,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <PkCard>
-              <PkCardContent className="p-3 sm:p-6 text-center">
+            <PkCard className="h-full">
+              <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
                 <DollarSign className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
                 <p className={`text-xl sm:text-3xl font-bold ${PK_THEME.textTitle} break-words`}>${totalPipeValue.toLocaleString()}</p>
                 <PkSubtext>Pipe Collection Value</PkSubtext>
@@ -498,8 +498,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
             transition={{ delay: 0.3 }}
             >
             <a href={createPageUrl('Tobacco')}>
-              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow">
-                <PkCardContent className="p-3 sm:p-6 text-center">
+              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow h-full">
+                <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
                   <Leaf className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
                   <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{safeBlends.length}</p>
                   <PkSubtext>Blends</PkSubtext>
@@ -513,24 +513,26 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
             transition={{ delay: 0.4 }}
           >
             <PkCard 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
+              className="cursor-pointer hover:shadow-lg transition-shadow h-full"
               onClick={() => setShowCellarDialog(true)}
             >
-              <PkCardContent className="p-3 sm:p-6">
-                <div className="text-center mb-3 pb-3 border-b border-[#e8d5b7]/10">
+              <PkCardContent className="p-3 sm:p-6 flex flex-col justify-center min-h-[140px]">
+                <div className="text-center">
                   <Package className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
                   <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
                   <PkSubtext>Cellared (oz)</PkSubtext>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-[#e8d5b7]/50 mb-1">Tobacco Value</p>
-                  {isPaidUser ? (
-                    <div className="space-y-1">
-                      <p className="text-sm text-[#e8d5b7]/70">Track value in blend details</p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-[#e8d5b7]/60">Upgrade to Premium to track tobacco value</p>
-                  )}
+                  {isPaidUser && (() => {
+                    const totalValue = safeBlends.reduce((sum, b) => {
+                      const cellaredOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0) + 
+                                        (b.bulk_cellared || 0) + 
+                                        (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
+                      const value = b.manual_market_value || b.ai_estimated_value || 0;
+                      return sum + (value * cellaredOz);
+                    }, 0);
+                    return totalValue > 0 ? (
+                      <p className="text-sm text-emerald-400 mt-1">≈ ${totalValue.toFixed(0)}</p>
+                    ) : null;
+                  })()}
                 </div>
               </PkCardContent>
             </PkCard>
