@@ -25,11 +25,17 @@ export function isLegacyPremium(subscription = null) {
 }
 
 export function hasPaidAccess(user, subscription = null) {
-  if (!user) return false;
+  if (!user) {
+    console.warn('[hasPaidAccess] No user provided');
+    return false;
+  }
 
   // Admin override
   const role = (user.role || "").toLowerCase();
-  if (role === "admin" || role === "owner" || user.is_admin === true) return true;
+  if (role === "admin" || role === "owner" || user.is_admin === true) {
+    console.log('[hasPaidAccess] Admin user detected:', user.email);
+    return true;
+  }
 
   // PRIORITY 1: Subscription entity wins (source of truth)
   if (subscription) {
@@ -40,7 +46,18 @@ export function hasPaidAccess(user, subscription = null) {
     const isActiveStatus = subStatus === "active" || subStatus === "trialing";
     const isNotExpired = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     
-    return isActiveStatus && isNotExpired;
+    const hasPaid = isActiveStatus && isNotExpired;
+    
+    console.log('[hasPaidAccess] Subscription check:', {
+      email: user.email,
+      status: subStatus,
+      periodEnd,
+      isActiveStatus,
+      isNotExpired,
+      result: hasPaid
+    });
+    
+    return hasPaid;
   }
 
   // PRIORITY 2: User entity fields (synced from Subscription by webhooks)
@@ -67,7 +84,18 @@ export function hasPaidAccess(user, subscription = null) {
     // ignore
   }
 
-  return isPaid || hasFuturePeriod;
+  const result = isPaid || hasFuturePeriod;
+  
+  console.log('[hasPaidAccess] User entity check:', {
+    email: user.email,
+    level,
+    status,
+    isPaidStatus,
+    hasFuturePeriod,
+    result
+  });
+
+  return result;
 }
 
 export function hasPremiumAccess(user, subscription = null) {
