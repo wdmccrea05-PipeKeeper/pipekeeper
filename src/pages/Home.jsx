@@ -462,104 +462,13 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
           </p>
         </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <a href={createPageUrl('Pipes')}>
-              <PkCard className="h-full">
-                <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
-                  <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 object-contain" style={{ filter: 'invert(0.7) sepia(0.6) hue-rotate(355deg) saturate(1.2) brightness(1.1)' }} />
-                  <p className="text-2xl sm:text-3xl font-bold text-white">{safePipes.length}</p>
-                  <PkSubtext>Pipes</PkSubtext>
-                  </PkCardContent>
-                  </PkCard>
-                  </a>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <PkCard className="h-full">
-              <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
-                <DollarSign className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
-                <p className={`text-xl sm:text-3xl font-bold ${PK_THEME.textTitle} break-words`}>${totalPipeValue.toLocaleString()}</p>
-                <PkSubtext>Pipe Collection Value</PkSubtext>
-              </PkCardContent>
-            </PkCard>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            >
-            <a href={createPageUrl('Tobacco')}>
-              <PkCard className="cursor-pointer hover:shadow-lg transition-shadow h-full">
-                <PkCardContent className="p-3 sm:p-6 text-center flex flex-col justify-center min-h-[140px]">
-                  <Leaf className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
-                  <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{safeBlends.length}</p>
-                  <PkSubtext>Blends</PkSubtext>
-                  </PkCardContent>
-                  </PkCard>
-                  </a>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <PkCard 
-              className="cursor-pointer hover:shadow-lg transition-shadow h-full"
-              onClick={() => setShowCellarDialog(true)}
-            >
-              <PkCardContent className="p-3 sm:p-6 flex flex-col justify-center min-h-[140px]">
-                <div className="text-center">
-                  <Package className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
-                  <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
-                  <PkSubtext>Cellared (oz)</PkSubtext>
-                  {isPaidUser && (() => {
-                    // Calculate value based on cellar logs
-                    const cellarByBlend = {};
-                    safeCellarLogs.forEach(log => {
-                      if (!cellarByBlend[log.blend_id]) {
-                        cellarByBlend[log.blend_id] = 0;
-                      }
-                      if (log.transaction_type === 'added') {
-                        cellarByBlend[log.blend_id] += (log.amount_oz || 0);
-                      } else if (log.transaction_type === 'removed') {
-                        cellarByBlend[log.blend_id] -= (log.amount_oz || 0);
-                      }
-                    });
-                    
-                    const totalValue = Object.entries(cellarByBlend).reduce((sum, [blendId, oz]) => {
-                      if (oz <= 0) return sum;
-                      const blend = safeBlends.find(b => b.id === blendId);
-                      if (!blend) return sum;
-                      const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
-                      return sum + (valuePerOz * oz);
-                    }, 0);
-                    
-                    return totalValue > 0 ? (
-                      <p className="text-sm text-emerald-400 mt-1">≈ ${totalValue.toFixed(0)}</p>
-                    ) : null;
-                  })()}
-                </div>
-              </PkCardContent>
-            </PkCard>
-          </motion.div>
-        </div>
-
-        {/* Quick Actions */}
+        {/* Hero Cards */}
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            >
+            transition={{ delay: 0.3 }}
+          >
             <a href={createPageUrl('Pipes')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/80 via-[#6d2e2e]/70 to-[#5a2525]/80 z-10" />
@@ -573,33 +482,23 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                   <div className="flex items-start justify-between mb-4 sm:mb-6">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
-                      <p className="text-white text-sm sm:text-base">Track and value your pipes</p>
+                      <p className="text-white/90 text-sm sm:text-base">Track and value your pipes</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
                       <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                     </div>
                   </div>
 
-                  <div className="flex-1 mb-4 sm:mb-6">
-                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
+                  <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                       <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safePipes.length}</p>
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
                     </div>
-
-                    <ul className="space-y-2 sm:space-y-2.5 text-[#e8d5b7] text-sm sm:text-base">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>AI web search to auto-fill details</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>Photo identification from stamps</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>Market value lookup</span>
-                      </li>
-                    </ul>
+                    
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">${totalPipeValue.toLocaleString()}</p>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
@@ -614,8 +513,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-            >
+            transition={{ delay: 0.4 }}
+          >
             <a href={createPageUrl('Tobacco')}>
               <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/70 via-[#2d4a3d]/60 to-[#1d3a2d]/70 z-10" />
@@ -629,33 +528,56 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                   <div className="flex items-start justify-between mb-4 sm:mb-6">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
-                      <p className="text-white text-sm sm:text-base">Manage your blends</p>
+                      <p className="text-white/90 text-sm sm:text-base">Manage your blends</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
                       <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                   </div>
 
-                  <div className="flex-1 mb-4 sm:mb-6">
-                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-2 sm:mb-3">
+                  <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                       <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
                       <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
                     </div>
+                    
+                    <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4" onClick={(e) => {
+                      e.preventDefault();
+                      setShowCellarDialog(true);
+                    }}>
+                      <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalCellaredOz.toFixed(1)} oz</p>
+                      <p className="text-[#e8d5b7] text-sm sm:text-base">Cellared</p>
+                    </div>
 
-                    <ul className="space-y-2 sm:space-y-2.5 text-[#e8d5b7] text-sm sm:text-base">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>AI web search for blend info</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>Track inventory quantities</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#e8d5b7] flex-shrink-0" />
-                        <span>Flavor profiles & ratings</span>
-                      </li>
-                    </ul>
+                    {(() => {
+                      // Calculate tobacco value based on cellar logs
+                      const cellarByBlend = {};
+                      safeCellarLogs.forEach(log => {
+                        if (!cellarByBlend[log.blend_id]) {
+                          cellarByBlend[log.blend_id] = 0;
+                        }
+                        if (log.transaction_type === 'added') {
+                          cellarByBlend[log.blend_id] += (log.amount_oz || 0);
+                        } else if (log.transaction_type === 'removed') {
+                          cellarByBlend[log.blend_id] -= (log.amount_oz || 0);
+                        }
+                      });
+                      
+                      const totalValue = Object.entries(cellarByBlend).reduce((sum, [blendId, oz]) => {
+                        if (oz <= 0) return sum;
+                        const blend = safeBlends.find(b => b.id === blendId);
+                        if (!blend) return sum;
+                        const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
+                        return sum + (valuePerOz * oz);
+                      }, 0);
+                      
+                      return isPaidUser && totalValue > 0 ? (
+                        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+                          <p className="text-3xl sm:text-4xl font-bold text-white mb-1">≈ ${totalValue.toFixed(0)}</p>
+                          <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
 
                   <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
