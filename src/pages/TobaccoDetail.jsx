@@ -32,6 +32,7 @@ import OpenInventorySummary from "@/components/tobacco/OpenInventorySummary";
 import CommentSection from "@/components/community/CommentSection";
 import ImageModal from "@/components/ui/ImageModal";
 import CellarLog from "@/components/tobacco/CellarLog";
+import TobaccoValuation from "@/components/tobacco/TobaccoValuation";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -455,6 +456,13 @@ export default function TobaccoDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Tobacco Valuation */}
+            <TobaccoValuation 
+              blend={blend}
+              onUpdate={(data) => updateMutation.mutate(data)}
+              isUpdating={updateMutation.isPending}
+            />
           </div>
         </div>
 
