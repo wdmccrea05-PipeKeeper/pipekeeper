@@ -468,6 +468,14 @@ Return JSON with:
           </CardContent>
         </Card>
 
+        <TobaccoValueEstimator 
+          blends={blends}
+          user={user}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+          }}
+        />
+
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
@@ -497,14 +505,6 @@ Return JSON with:
             </Button>
           </CardContent>
         </Card>
-
-        <TobaccoValueEstimator 
-          blends={blends}
-          user={user}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
-          }}
-        />
 
         {showBatchProcessor && pipes.length > 0 && (
           <BatchPipeMeasurements
