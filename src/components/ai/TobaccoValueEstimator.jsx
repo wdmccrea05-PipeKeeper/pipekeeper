@@ -69,26 +69,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
     }
   };
 
-  if (!hasProAccess) {
-    return (
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
-            AI Tobacco Valuation
-            <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30 ml-auto">
-              Pro
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-[#e8d5b7]/70 mb-4">
-            Upgrade to Pro to unlock AI-assisted tobacco valuation with market estimates, value ranges, confidence levels, and predictive projections.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const showLocked = !hasProAccess;
 
   return (
     <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
@@ -96,14 +77,25 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
         <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
           <DollarSign className="w-5 h-5 text-emerald-400" />
           AI Tobacco Valuation
+          {showLocked && (
+            <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30 ml-auto">
+              Pro
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-[#e8d5b7]/80">
-          Automatically estimate market values for your tobacco blends using AI analysis of public marketplace listings.
-        </p>
+        {showLocked ? (
+          <p className="text-sm text-[#e8d5b7]/70">
+            Upgrade to Pro to unlock AI-assisted tobacco valuation with market estimates, value ranges, confidence levels, and predictive projections.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-[#e8d5b7]/80">
+              Automatically estimate market values for your tobacco blends using AI analysis of public marketplace listings.
+            </p>
 
-        {blendsNeedingValuation.length === 0 ? (
+            {blendsNeedingValuation.length === 0 ? (
           <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4 text-center">
             <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
             <p className="text-sm text-[#e8d5b7]/70">
