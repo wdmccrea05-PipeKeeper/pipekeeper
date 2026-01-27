@@ -168,6 +168,14 @@ export default function TroubleshootingFull() {
         {
           q: "How is tobacco value calculated on the Home page?",
           a: "The cellared card multiplies each blend's value (manual_market_value or ai_estimated_value) by its cellared quantity from the Cellar Log. Value is per-ounce, so total value = value_per_oz × cellared_oz."
+        },
+        {
+          q: "Valuation card doesn't appear on tobacco detail page",
+          a: "The Tobacco Valuation card should always be visible. If missing, try: 1) Hard refresh (Ctrl+Shift+R), 2) Clear browser cache, 3) Open in incognito mode. If still missing, contact support."
+        },
+        {
+          q: "Can't add inventory - button is locked",
+          a: "Inventory management is FREE for all users. If you see a lock on Add Lot, Edit Lot, or Log Consumption buttons, this is a bug. Try refreshing the page. Inventory features should never be gated."
         }
       ]
     },
