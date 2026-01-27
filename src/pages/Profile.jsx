@@ -495,39 +495,82 @@ export default function ProfilePage() {
                             <User className="w-10 h-10 text-amber-700" />
                           )}
                         </div>
+                        {uploadingAvatar && (
+                          <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <PhotoUploader 
-                          onPhotosSelected={(files) => {
-                            const uploadPromises = Array.from(files).map(async (file) => {
-                              try {
-                                setUploadingAvatar(true);
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  setImageToCrop(event.target.result);
-                                  setShowCropper(true);
-                                };
-                                reader.readAsDataURL(file);
-                              } catch (err) {
-                                console.error('Error reading file:', err);
-                              } finally {
-                                setUploadingAvatar(false);
-                              }
-                            });
-                            Promise.all(uploadPromises);
-                          }}
-                          existingPhotos={formData.avatar_url ? [formData.avatar_url] : []}
-                          maxPhotos={1}
-                        />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.capture = 'environment';
+                              input.onchange = (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setUploadingAvatar(true);
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    setImageToCrop(event.target.result);
+                                    setShowCropper(true);
+                                    setUploadingAvatar(false);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              };
+                              input.click();
+                            }}
+                            className="flex-1"
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            Camera
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setUploadingAvatar(true);
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    setImageToCrop(event.target.result);
+                                    setShowCropper(true);
+                                    setUploadingAvatar(false);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              };
+                              input.click();
+                            }}
+                            className="flex-1"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload
+                          </Button>
+                        </div>
                         {formData.avatar_url && (
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => setFormData({ ...formData, avatar_url: "" })}
-                            className="mt-2 text-rose-600 hover:text-rose-700 w-full sm:w-auto"
+                            className="text-rose-600 hover:text-rose-700 w-full"
                           >
-                            Remove
+                            <X className="w-4 h-4 mr-2" />
+                            Remove Photo
                           </Button>
                         )}
                       </div>
