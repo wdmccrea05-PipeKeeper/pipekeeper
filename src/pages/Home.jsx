@@ -488,7 +488,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
               <PkCardContent className="p-3 sm:p-6 text-center">
                 <DollarSign className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
                 <p className={`text-xl sm:text-3xl font-bold ${PK_THEME.textTitle} break-words`}>${totalPipeValue.toLocaleString()}</p>
-                <PkSubtext>Value</PkSubtext>
+                <PkSubtext>Pipe Collection Value</PkSubtext>
               </PkCardContent>
             </PkCard>
           </motion.div>

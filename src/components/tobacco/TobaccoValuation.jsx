@@ -1,0 +1,265 @@
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Lock, TrendingUp, DollarSign, Info, Sparkles } from "lucide-react";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { isLegacyPremium } from "@/components/utils/premiumAccess";
+import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
+import { useTranslation } from "react-i18next";
+
+export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
+  const { t } = useTranslation();
+  const { user, subscription, isPro, hasPremium } = useCurrentUser();
+  const [showProModal, setShowProModal] = useState(false);
+  const [estimating, setEstimating] = useState(false);
+
+  // Legacy Premium (before Feb 1, 2026) gets Pro features
+  const hasProAccess = isPro || isLegacyPremium(subscription);
+
+  const handleManualValueChange = (field, value) => {
+    if (!hasPremium) {
+      setShowProModal(true);
+      return;
+    }
+    onUpdate({ [field]: value });
+  };
+
+  const handleAIEstimate = async () => {
+    if (!hasProAccess) {
+      setShowProModal(true);
+      return;
+    }
+    
+    setEstimating(true);
+    try {
+      // Placeholder for AI estimation logic
+      // This would call a backend function that uses AI to estimate value
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated delay
+      
+      // Mock data - replace with actual AI estimation
+      onUpdate({
+        ai_estimated_value: 45.00,
+        ai_value_range_low: 35.00,
+        ai_value_range_high: 55.00,
+        ai_confidence: "Medium",
+        ai_evidence_sources: ["smokingpipes.com", "pipesandcigars.com", "tobaccoreviews.com"],
+        ai_projection_12m: 50.00,
+        ai_projection_36m: 60.00,
+        ai_last_updated: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("AI estimation failed:", err);
+    } finally {
+      setEstimating(false);
+    }
+  };
+
+  return (
+    <>
+      <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30">
+        <CardHeader>
+          <CardTitle className="text-[#e8d5b7] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Tobacco Valuation
+            </div>
+            {!hasProAccess && (
+              <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
+                <Lock className="w-3 h-3 mr-1" />
+                Pro
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Manual Market Value - Premium */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-[#e8d5b7] font-medium">Manual Market Value</Label>
+              {!hasPremium && (
+                <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                  Premium
+                </Badge>
+              )}
+            </div>
+            <Input
+              type="number"
+              step="0.01"
+              value={blend?.manual_market_value || ""}
+              onChange={(e) => handleManualValueChange("manual_market_value", parseFloat(e.target.value) || null)}
+              placeholder={hasPremium ? "Enter market value..." : "—"}
+              disabled={!hasPremium || isUpdating}
+              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
+            />
+            <p className="text-xs text-[#e8d5b7]/50">
+              Your assessment of current market value (Premium)
+            </p>
+          </div>
+
+          {/* Cost Basis - Premium */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-[#e8d5b7] font-medium">Cost Basis</Label>
+              {!hasPremium && (
+                <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                  Premium
+                </Badge>
+              )}
+            </div>
+            <Input
+              type="number"
+              step="0.01"
+              value={blend?.cost_basis || ""}
+              onChange={(e) => handleManualValueChange("cost_basis", parseFloat(e.target.value) || null)}
+              placeholder={hasPremium ? "Enter purchase cost..." : "—"}
+              disabled={!hasPremium || isUpdating}
+              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
+            />
+            <p className="text-xs text-[#e8d5b7]/50">
+              What you paid for this blend (Premium)
+            </p>
+          </div>
+
+          {/* AI Assisted Valuation - Pro */}
+          <div className="border-t border-[#e8d5b7]/10 pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <Label className="text-[#e8d5b7] font-medium">AI Assisted Valuation</Label>
+              </div>
+              <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
+                <Lock className="w-3 h-3 mr-1" />
+                Pro
+              </Badge>
+            </div>
+
+            <Button
+              onClick={handleAIEstimate}
+              disabled={!hasProAccess || estimating || isUpdating}
+              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:opacity-50"
+            >
+              {!hasProAccess && <Lock className="w-4 h-4 mr-2" />}
+              {estimating ? "Estimating..." : "Run AI Valuation"}
+            </Button>
+
+            {blend?.ai_estimated_value && hasProAccess && (
+              <div className="space-y-4 bg-[#243548]/50 rounded-lg p-4">
+                {/* Estimated Value */}
+                <div>
+                  <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Value</p>
+                  <p className="text-2xl font-bold text-[#e8d5b7]">
+                    ${blend.ai_estimated_value.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-[#e8d5b7]/40 mt-1">
+                    AI-assisted estimate based on public listings. Not a guarantee.
+                  </p>
+                </div>
+
+                {/* Value Range */}
+                {blend.ai_value_range_low && blend.ai_value_range_high && (
+                  <div>
+                    <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Range</p>
+                    <p className="text-lg text-[#e8d5b7]">
+                      ${blend.ai_value_range_low.toFixed(2)} - ${blend.ai_value_range_high.toFixed(2)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Confidence */}
+                {blend.ai_confidence && (
+                  <div>
+                    <p className="text-xs text-[#e8d5b7]/50 mb-1">Confidence</p>
+                    <Badge
+                      className={
+                        blend.ai_confidence === "High"
+                          ? "bg-emerald-600/20 text-emerald-400"
+                          : blend.ai_confidence === "Medium"
+                          ? "bg-yellow-600/20 text-yellow-400"
+                          : "bg-rose-600/20 text-rose-400"
+                      }
+                    >
+                      {blend.ai_confidence}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Evidence Sources */}
+                {blend.ai_evidence_sources?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-[#e8d5b7]/50 mb-2">Evidence Sources</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {blend.ai_evidence_sources.map((source, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs border-[#e8d5b7]/20 text-[#e8d5b7]/60">
+                          {source}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Predictive Projections */}
+                {(blend.ai_projection_12m || blend.ai_projection_36m) && (
+                  <div className="border-t border-[#e8d5b7]/10 pt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingUp className="w-4 h-4 text-amber-400" />
+                      <p className="text-sm font-semibold text-[#e8d5b7]">Predictive Value Projections</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {blend.ai_projection_12m && (
+                        <div className="bg-[#243548]/70 rounded-lg p-3">
+                          <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Projection (12 months)</p>
+                          <p className="text-lg font-bold text-emerald-400">
+                            ${blend.ai_projection_12m.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-[#e8d5b7]/30 mt-1">
+                            AI-assisted estimate. Not guaranteed.
+                          </p>
+                        </div>
+                      )}
+                      {blend.ai_projection_36m && (
+                        <div className="bg-[#243548]/70 rounded-lg p-3">
+                          <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Projection (36 months)</p>
+                          <p className="text-lg font-bold text-emerald-400">
+                            ${blend.ai_projection_36m.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-[#e8d5b7]/30 mt-1">
+                            AI-assisted estimate. Not guaranteed.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Last Updated */}
+                {blend.ai_last_updated && (
+                  <p className="text-xs text-[#e8d5b7]/40 pt-2 border-t border-[#e8d5b7]/10">
+                    Last updated: {new Date(blend.ai_last_updated).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!hasProAccess && (
+              <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 text-center">
+                <Lock className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                <p className="text-sm text-[#e8d5b7]/70">
+                  Upgrade to Pro to unlock AI-assisted valuation and predictive insights.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <ProUpgradeModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName="AI-assisted valuation"
+      />
+    </>
+  );
+}
