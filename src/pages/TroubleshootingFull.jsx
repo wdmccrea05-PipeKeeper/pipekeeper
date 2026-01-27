@@ -156,6 +156,18 @@ export default function TroubleshootingFull() {
         {
           q: "Trends data seems incorrect or outdated",
           a: "Trends are computed from your smoking logs in real-time. If data seems wrong: 1) Check that your smoking logs have accurate dates and pipe/blend selections, 2) Verify time window selection matches what you expect, 3) Refresh the page to recalculate, 4) Compare with your actual smoking log entries on the Home page."
+        },
+        {
+          q: "AI tobacco valuation shows no value",
+          a: "AI valuation must be manually triggered for each blend. Go to the tobacco detail page → Tobacco Valuation section → click 'Run AI Valuation'. This analyzes public marketplace data to estimate value. Legacy Premium users (subscribed before Feb 1, 2026) keep this feature."
+        },
+        {
+          q: "Tobacco valuation fields are locked",
+          a: "Manual Market Value and Cost Basis require Premium tier. AI Assisted Valuation requires Pro tier (or legacy Premium). Free users can track inventory and aging but not valuation."
+        },
+        {
+          q: "How is tobacco value calculated on the Home page?",
+          a: "The cellared card multiplies each blend's value (manual_market_value or ai_estimated_value) by its cellared quantity from the Cellar Log. Value is per-ounce, so total value = value_per_oz × cellared_oz."
         }
       ]
     },

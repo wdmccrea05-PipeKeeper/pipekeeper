@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Lock, TrendingUp, DollarSign, Info, Sparkles } from "lucide-react";
+import { Lock, TrendingUp, DollarSign, Info, Sparkles, Loader2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
 import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
-import { useTranslation } from "react-i18next";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
-  const { t } = useTranslation();
   const { user, subscription, isPro, hasPremium } = useCurrentUser();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
@@ -42,18 +42,15 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
       const data = response.data;
       
       if (data.success && data.results?.length > 0) {
-        const result = data.results[0];
-        // The backend already updated the entity, just refresh the UI
-        onUpdate({
-          ai_estimated_value: result.estimated_value,
-          ai_last_updated: new Date().toISOString(),
-        });
+        toast.success("AI valuation complete");
+        // Backend already updated the entity, force refresh
+        onUpdate({ ai_last_updated: new Date().toISOString() });
       } else {
         throw new Error(data.error || "Estimation failed");
       }
     } catch (err) {
       console.error("AI estimation failed:", err);
-      alert("Failed to estimate value. Please try again.");
+      toast.error("Failed to estimate value. Please try again.");
     } finally {
       setEstimating(false);
     }
@@ -68,12 +65,6 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               <DollarSign className="w-5 h-5" />
               Tobacco Valuation
             </div>
-            {!hasProAccess && (
-              <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
-                <Lock className="w-3 h-3 mr-1" />
-                Pro
-              </Badge>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -144,14 +135,15 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:opacity-50"
             >
               {!hasProAccess && <Lock className="w-4 h-4 mr-2" />}
-              {estimating ? "Estimating..." : "Run AI Valuation"}
+              {estimating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {estimating ? "Estimating..." : hasProAccess ? "Run AI Valuation" : "Upgrade to Pro"}
             </Button>
 
-            {blend?.ai_estimated_value && hasProAccess && (
+            {blend?.ai_estimated_value && (
               <div className="space-y-4 bg-[#243548]/50 rounded-lg p-4">
                 {/* Estimated Value */}
                 <div>
-                  <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Value</p>
+                  <p className="text-xs text-[#e8d5b7]/50 mb-1">Estimated Value (per oz)</p>
                   <p className="text-2xl font-bold text-[#e8d5b7]">
                     ${blend.ai_estimated_value.toFixed(2)}
                   </p>
@@ -245,12 +237,23 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               </div>
             )}
 
-            {!hasProAccess && (
+            {!hasProAccess && !blend?.ai_estimated_value && (
               <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 text-center">
                 <Lock className="w-8 h-8 text-amber-400 mx-auto mb-2" />
                 <p className="text-sm text-[#e8d5b7]/70">
                   Upgrade to Pro to unlock AI-assisted valuation and predictive insights.
                 </p>
+              </div>
+            )}
+            
+            {!hasProAccess && blend?.ai_estimated_value && (
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-[#e8d5b7]/70">
+                    This blend was valued when you had Pro access. Upgrade to Pro to run new valuations.
+                  </p>
+                </div>
               </div>
             )}
           </div>
