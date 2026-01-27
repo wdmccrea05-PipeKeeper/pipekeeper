@@ -160,6 +160,28 @@ export default function FAQFull() {
         </Q>
       </Section>
 
+      <Section title="Tobacco Valuation">
+        <Q id="valuation-calc" q="How is tobacco value calculated?">
+          Tobacco value can be tracked in two ways: (1) Manual Market Value - you enter the current market price (Premium), or (2) AI Assisted Valuation - AI analyzes public listings to estimate value, range, and confidence (Pro). AI estimates are not guarantees.
+        </Q>
+
+        <Q id="manual-vs-ai" q="What's the difference between manual and AI valuation?">
+          Manual valuation lets you track your own research (Premium). AI valuation uses machine learning to scan marketplace data and provide estimates, ranges, confidence levels, and projections (Pro).
+        </Q>
+
+        <Q id="estimated-label" q="Why is value labeled as 'estimated'?">
+          AI-generated values are predictions based on available marketplace data. Actual prices vary by condition, age, seller, and market demand. Estimates are educational tools, not investment advice.
+        </Q>
+
+        <Q id="confidence-meaning" q="What does confidence mean?">
+          Confidence indicates how much marketplace data supports the estimate. High = strong data. Medium = moderate data. Low = limited data. Low confidence means the estimate is less reliable.
+        </Q>
+
+        <Q id="locked-valuation" q="Why are some valuation features locked?">
+          AI-assisted valuation and predictive projections require Pro. Premium users can track manual market values and cost basis. Free users can track inventory and aging only.
+        </Q>
+      </Section>
+
       <Section title="Features & Tools">
         <Q id="interchangeable-bowls" q="What are interchangeable bowls?">
           Some pipe systems (Falcon, Gabotherm, Yello-Bole, Viking, etc.) allow you to swap different bowls on the same stem/shank assembly. PipeKeeper treats each bowl as a distinct "pipe variant" with its own:
