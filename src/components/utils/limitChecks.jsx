@@ -28,6 +28,9 @@ export function shouldApplyTrialRestrictions() {
  */
 export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
   try {
+    // Debug logging
+    console.log('[canCreatePipe]', { userEmail, hasPaidAccess, isTrialing });
+
     // Paid subscribers have unlimited access
     if (hasPaidAccess) {
       return { canCreate: true, currentCount: 0, limit: null };
@@ -70,6 +73,9 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
  */
 export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
   try {
+    // Debug logging
+    console.log('[canCreateTobacco]', { userEmail, hasPaidAccess, isTrialing });
+
     // Paid subscribers have unlimited access
     if (hasPaidAccess) {
       return { canCreate: true, currentCount: 0, limit: null };
