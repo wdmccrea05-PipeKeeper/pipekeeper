@@ -56,9 +56,27 @@ export function useCurrentUser() {
         );
         if (!subs?.length) return null;
         
+        // Filter out incomplete/incomplete_expired
+        const validSubs = subs.filter(s => {
+          const status = (s.status || '').toLowerCase();
+          return status !== 'incomplete' && status !== 'incomplete_expired';
+        });
+        
+        if (!validSubs.length) return null;
+        
         // Prefer active/trialing
-        return subs.find((s) => s.status === "active" || s.status === "trialing") || subs[0];
-      } catch {
+        const bestSub = validSubs.find((s) => s.status === "active" || s.status === "trialing") || validSubs[0];
+        
+        console.log('[useCurrentUser] Loaded subscription:', {
+          email: rawUser.email,
+          status: bestSub?.status,
+          periodEnd: bestSub?.current_period_end,
+          tier: bestSub?.tier
+        });
+        
+        return bestSub;
+      } catch (err) {
+        console.error('[useCurrentUser] Subscription fetch error:', err);
         return null;
       }
     },
