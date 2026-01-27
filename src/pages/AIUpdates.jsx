@@ -166,11 +166,6 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
   });
 
   return (
-    <FeatureGate 
-      feature="AI_UPDATES"
-      featureName="AI Updates"
-      description="Automatically standardize tobacco categories, regenerate pairing matrices, and update collection optimization using advanced AI. Available in Pro tier or for grandfathered Premium users."
-    >
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">
@@ -515,6 +510,5 @@ Return JSON with:
         )}
       </div>
     </div>
-    </FeatureGate>
   );
 }
