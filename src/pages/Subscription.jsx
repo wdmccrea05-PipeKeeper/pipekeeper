@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 function FeatureList({ items }) {
   return (
     <div className="space-y-2">
-      {items.map((t, idx) => (
+      {items.map((text, idx) => (
         <div key={idx} className="flex items-start gap-2">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-          <span className="text-[#e8d5b7]/85">{t}</span>
+          <span className="text-[#e8d5b7]/85">{text}</span>
         </div>
       ))}
     </div>
@@ -22,10 +22,39 @@ function FeatureList({ items }) {
 function AppleSubscription() {
   const { t } = useTranslation();
 
-  // Pull feature arrays from i18n (English has full arrays; other languages fall back to EN automatically)
-  const freeFeatures = t("subscription.features.free", { returnObjects: true, defaultValue: [] });
-  const premiumFeatures = t("subscription.features.premium", { returnObjects: true, defaultValue: [] });
-  const proFeatures = t("subscription.features.pro", { returnObjects: true, defaultValue: [] });
+  const freeFeatures = [
+    "Add up to 5 pipes",
+    "Add up to 10 tobacco blends",
+    "View, edit, and organize your collection",
+    "Basic notes and ratings",
+    "Search pipes and tobaccos",
+    "Multilingual support (10 languages)",
+    "Cloud sync",
+  ];
+
+  const premiumFeatures = [
+    "Unlimited pipes and tobacco blends",
+    "Unlimited notes and photos",
+    "Cellar tracking and aging logs",
+    "Smoking logs and history",
+    "Pipe maintenance and condition tracking",
+    "Advanced filters and sorting",
+    "Manual pipe ↔ tobacco pairings",
+    "Tobacco library sync",
+    "Multilingual support (10 languages)",
+    "Cloud sync across devices",
+  ];
+
+  const proFeatures = [
+    "Everything in Premium",
+    "AI Updates (Pro for new users starting Feb 1, 2026)",
+    "AI Identification tools (Pro for new users starting Feb 1, 2026)",
+    "Advanced analytics & insights",
+    "Bulk editing tools",
+    "Export & reports (CSV / PDF)",
+    "Collection optimization tools",
+    "Early access to new advanced features",
+  ];
 
   const openSubscription = () => {
     if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
@@ -50,7 +79,7 @@ function AppleSubscription() {
             <CardTitle className="text-[#e8d5b7]">Free</CardTitle>
           </CardHeader>
           <CardContent>
-            <FeatureList items={Array.isArray(freeFeatures) ? freeFeatures : []} />
+            <FeatureList items={freeFeatures} />
             <div className="mt-4">
               <Button className="w-full" variant="outline" onClick={() => {}}>
                 {t("subscription.continueFree")}
@@ -64,7 +93,7 @@ function AppleSubscription() {
             <CardTitle className="text-[#e8d5b7]">Premium</CardTitle>
           </CardHeader>
           <CardContent>
-            <FeatureList items={Array.isArray(premiumFeatures) ? premiumFeatures : []} />
+            <FeatureList items={premiumFeatures} />
             <div className="mt-4">
               <Button className="w-full" onClick={openSubscription}>
                 {t("subscription.subscribe")}
@@ -78,7 +107,7 @@ function AppleSubscription() {
             <CardTitle className="text-[#e8d5b7]">Pro</CardTitle>
           </CardHeader>
           <CardContent>
-            <FeatureList items={Array.isArray(proFeatures) ? proFeatures : []} />
+            <FeatureList items={proFeatures} />
             <div className="mt-4">
               <Button className="w-full" onClick={openSubscription}>
                 {t("subscription.subscribe")}
@@ -88,7 +117,6 @@ function AppleSubscription() {
         </Card>
       </div>
 
-      {/* Trial ended message (localized) */}
       <Card className="bg-black/30 border-white/10">
         <CardHeader>
           <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>

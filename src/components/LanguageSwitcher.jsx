@@ -14,16 +14,16 @@ const LANGS = [
   { code: "zh-Hans", label: "中文（简体）" },
 ];
 
-export default function LanguageSwitcher({ compact = false }) {
+export default function LanguageSwitcher({ className = "" }) {
   const { i18n } = useTranslation();
 
   const current = useMemo(() => {
-    // Normalize to our supported codes
     const raw = (i18n.language || "en").replace("_", "-");
     if (raw.startsWith("pt")) return "pt-BR";
     if (raw.startsWith("zh")) return "zh-Hans";
+    if (LANGS.some((l) => l.code === raw)) return raw;
     const base = raw.split("-")[0];
-    return LANGS.some((l) => l.code === raw) ? raw : base;
+    return LANGS.some((l) => l.code === base) ? base : "en";
   }, [i18n.language]);
 
   const setLang = async (lng) => {
@@ -34,16 +34,29 @@ export default function LanguageSwitcher({ compact = false }) {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {!compact && <span className="text-xs text-muted-foreground">Language</span>}
+    <div className={`flex items-center ${className}`}>
       <select
-        className="h-9 rounded-md border bg-background px-2 text-sm"
         value={current}
         onChange={(e) => setLang(e.target.value)}
-        aria-label="Language selector"
+        aria-label="Language"
+        className="
+          h-9
+          rounded-lg
+          px-3
+          text-sm
+          bg-black/40
+          border border-white/10
+          text-[#e8d5b7]
+          shadow-sm
+          outline-none
+          hover:bg-black/50
+          focus:ring-2 focus:ring-[#e8d5b7]/30
+          focus:border-[#e8d5b7]/30
+          transition
+        "
       >
         {LANGS.map((l) => (
-          <option key={l.code} value={l.code}>
+          <option key={l.code} value={l.code} className="bg-[#0b0b0b] text-[#e8d5b7]">
             {l.label}
           </option>
         ))}

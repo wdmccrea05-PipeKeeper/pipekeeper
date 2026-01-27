@@ -489,7 +489,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <LanguageSwitcher compact />
+                  <LanguageSwitcher />
                   <GlobalSearchTrigger />
                   {syncing ? (
                     <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
