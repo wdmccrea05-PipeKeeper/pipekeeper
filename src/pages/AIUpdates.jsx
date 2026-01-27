@@ -10,6 +10,7 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
 import BatchPipeMeasurements from "@/components/ai/BatchPipeMeasurements";
+import TobaccoValueEstimator from "@/components/ai/TobaccoValueEstimator";
 
 // Helper functions for field state detection
 const isBlank = (v) => v === null || v === undefined || v === "";
@@ -496,6 +497,14 @@ Return JSON with:
             </Button>
           </CardContent>
         </Card>
+
+        <TobaccoValueEstimator 
+          blends={blends}
+          user={user}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+          }}
+        />
 
         {showBatchProcessor && pipes.length > 0 && (
           <BatchPipeMeasurements
