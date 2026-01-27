@@ -71,7 +71,10 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
           {/* Manual Market Value - Premium */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-[#e8d5b7] font-medium">Manual Market Value</Label>
+              <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
+                Manual Market Value (per oz)
+                {!hasPremium && <Lock className="w-3 h-3 text-amber-400" />}
+              </Label>
               {!hasPremium && (
                 <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
                   Premium
@@ -83,19 +86,23 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               step="0.01"
               value={blend?.manual_market_value || ""}
               onChange={(e) => handleManualValueChange("manual_market_value", parseFloat(e.target.value) || null)}
-              placeholder={hasPremium ? "Enter market value..." : "—"}
+              placeholder={hasPremium ? "Enter value per oz..." : "Upgrade to Premium"}
               disabled={!hasPremium || isUpdating}
-              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
+              onClick={() => !hasPremium && setShowProModal(true)}
+              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7] cursor-pointer"
             />
             <p className="text-xs text-[#e8d5b7]/50">
-              Your assessment of current market value (Premium)
+              Your assessment of current market value per ounce
             </p>
           </div>
 
           {/* Cost Basis - Premium */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-[#e8d5b7] font-medium">Cost Basis</Label>
+              <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
+                Cost Basis (per oz)
+                {!hasPremium && <Lock className="w-3 h-3 text-amber-400" />}
+              </Label>
               {!hasPremium && (
                 <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
                   Premium
@@ -107,12 +114,13 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               step="0.01"
               value={blend?.cost_basis || ""}
               onChange={(e) => handleManualValueChange("cost_basis", parseFloat(e.target.value) || null)}
-              placeholder={hasPremium ? "Enter purchase cost..." : "—"}
+              placeholder={hasPremium ? "Enter cost per oz..." : "Upgrade to Premium"}
               disabled={!hasPremium || isUpdating}
-              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7]"
+              onClick={() => !hasPremium && setShowProModal(true)}
+              className="bg-[#243548] border-[#e8d5b7]/20 text-[#e8d5b7] cursor-pointer"
             />
             <p className="text-xs text-[#e8d5b7]/50">
-              What you paid for this blend (Premium)
+              What you paid per ounce
             </p>
           </div>
 
@@ -121,12 +129,16 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <Label className="text-[#e8d5b7] font-medium">AI Assisted Valuation</Label>
+                <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
+                  AI Assisted Valuation
+                  {!hasProAccess && <Lock className="w-3 h-3 text-amber-400" />}
+                </Label>
               </div>
-              <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
-                <Lock className="w-3 h-3 mr-1" />
-                Pro
-              </Badge>
+              {!hasProAccess && (
+                <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
+                  Pro
+                </Badge>
+              )}
             </div>
 
             <Button
