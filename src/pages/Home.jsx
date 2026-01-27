@@ -522,13 +522,27 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                   <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
                   <PkSubtext>Cellared (oz)</PkSubtext>
                   {isPaidUser && (() => {
-                    const totalValue = safeBlends.reduce((sum, b) => {
-                      const cellaredOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0) + 
-                                        (b.bulk_cellared || 0) + 
-                                        (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
-                      const value = b.manual_market_value || b.ai_estimated_value || 0;
-                      return sum + (value * cellaredOz);
+                    // Calculate value based on cellar logs
+                    const cellarByBlend = {};
+                    safeCellarLogs.forEach(log => {
+                      if (!cellarByBlend[log.blend_id]) {
+                        cellarByBlend[log.blend_id] = 0;
+                      }
+                      if (log.transaction_type === 'added') {
+                        cellarByBlend[log.blend_id] += (log.amount_oz || 0);
+                      } else if (log.transaction_type === 'removed') {
+                        cellarByBlend[log.blend_id] -= (log.amount_oz || 0);
+                      }
+                    });
+                    
+                    const totalValue = Object.entries(cellarByBlend).reduce((sum, [blendId, oz]) => {
+                      if (oz <= 0) return sum;
+                      const blend = safeBlends.find(b => b.id === blendId);
+                      if (!blend) return sum;
+                      const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
+                      return sum + (valuePerOz * oz);
                     }, 0);
+                    
                     return totalValue > 0 ? (
                       <p className="text-sm text-emerald-400 mt-1">≈ ${totalValue.toFixed(0)}</p>
                     ) : null;

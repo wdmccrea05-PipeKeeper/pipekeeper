@@ -35,23 +35,25 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
     
     setEstimating(true);
     try {
-      // Placeholder for AI estimation logic
-      // This would call a backend function that uses AI to estimate value
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated delay
-      
-      // Mock data - replace with actual AI estimation
-      onUpdate({
-        ai_estimated_value: 45.00,
-        ai_value_range_low: 35.00,
-        ai_value_range_high: 55.00,
-        ai_confidence: "Medium",
-        ai_evidence_sources: ["smokingpipes.com", "pipesandcigars.com", "tobaccoreviews.com"],
-        ai_projection_12m: 50.00,
-        ai_projection_36m: 60.00,
-        ai_last_updated: new Date().toISOString(),
+      const response = await base44.functions.invoke('estimateTobaccoValues', {
+        blend_ids: [blend.id]
       });
+
+      const data = response.data;
+      
+      if (data.success && data.results?.length > 0) {
+        const result = data.results[0];
+        // The backend already updated the entity, just refresh the UI
+        onUpdate({
+          ai_estimated_value: result.estimated_value,
+          ai_last_updated: new Date().toISOString(),
+        });
+      } else {
+        throw new Error(data.error || "Estimation failed");
+      }
     } catch (err) {
       console.error("AI estimation failed:", err);
+      alert("Failed to estimate value. Please try again.");
     } finally {
       setEstimating(false);
     }
