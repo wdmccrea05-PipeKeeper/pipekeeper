@@ -123,6 +123,7 @@ export function useCurrentUser() {
     error: userError,
     hasPremium,
     hasPaid,
+    hasPaidAccess: hasPaid, // Alias for compatibility
     isPro,
     hasTrial,
     isInTrial,
