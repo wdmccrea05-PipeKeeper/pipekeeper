@@ -226,8 +226,11 @@ export default function Layout({ children, currentPageName }) {
         markStripeSyncRan(user.email);
 
         if (!cancelled && result.ok) {
+          // Invalidate both current-user and subscription queries
           await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
           await queryClient.refetchQueries({ queryKey: ["current-user"] });
+          await queryClient.refetchQueries({ queryKey: ["subscription"] });
         }
       } catch (e) {
         console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);

@@ -64,15 +64,8 @@ export function useCurrentUser() {
         
         if (!validSubs.length) return null;
         
-        // Prefer active/trialing
+        // Prefer active/trialing, then most recent by period_end
         const bestSub = validSubs.find((s) => s.status === "active" || s.status === "trialing") || validSubs[0];
-        
-        console.log('[useCurrentUser] Loaded subscription:', {
-          email: rawUser.email,
-          status: bestSub?.status,
-          periodEnd: bestSub?.current_period_end,
-          tier: bestSub?.tier
-        });
         
         return bestSub;
       } catch (err) {
@@ -81,7 +74,7 @@ export function useCurrentUser() {
       }
     },
     enabled: !!rawUser?.email,
-    staleTime: 30_000,
+    staleTime: 5_000, // Reduced from 30s to 5s for faster refresh
     retry: 1,
   });
 

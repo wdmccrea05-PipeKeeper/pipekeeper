@@ -98,9 +98,11 @@ Deno.serve(async (req) => {
       });
 
       if (existing && existing.length) {
+        console.log(`[webhook] Updating existing subscription ${payload.stripe_subscription_id} for ${payload.user_email}`);
         await base44.asServiceRole.entities.Subscription.update(existing[0].id, payload);
         return existing[0].id;
       } else {
+        console.log(`[webhook] Creating new subscription ${payload.stripe_subscription_id} for ${payload.user_email}`);
         const created = await base44.asServiceRole.entities.Subscription.create(payload);
         return created?.id;
       }
@@ -145,6 +147,7 @@ Deno.serve(async (req) => {
         const user_email = String(emailRaw || "").trim().toLowerCase();
         if (!user_email) break;
 
+        console.log(`[webhook] checkout.session.completed for ${user_email}, setting paid status`);
         await setUserEntitlement(user_email, {
           subscription_level: "paid",
           subscription_status: "active",
@@ -241,6 +244,7 @@ Deno.serve(async (req) => {
           userRow = await findUserByEmail(user_email);
         }
         
+        console.log(`[webhook] ${event.type} for ${user_email}: status=${sub.status}, isPaid=${isPaid}`);
         await setUserEntitlement(user_email, {
           subscription_level: isPaid ? "paid" : "free",
           subscription_status: sub.status,
