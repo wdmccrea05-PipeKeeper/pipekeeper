@@ -516,10 +516,22 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => setShowCellarDialog(true)}
             >
-              <PkCardContent className="p-3 sm:p-6 text-center">
-                <Package className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
-                <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
-                <PkSubtext>Cellared (oz)</PkSubtext>
+              <PkCardContent className="p-3 sm:p-6">
+                <div className="text-center mb-3 pb-3 border-b border-[#e8d5b7]/10">
+                  <Package className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-2 ${PK_THEME.accentText}`} />
+                  <p className={`text-2xl sm:text-3xl font-bold ${PK_THEME.textTitle}`}>{totalCellaredOz.toFixed(1)}</p>
+                  <PkSubtext>Cellared (oz)</PkSubtext>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-[#e8d5b7]/50 mb-1">Tobacco Value</p>
+                  {isPaidUser ? (
+                    <div className="space-y-1">
+                      <p className="text-sm text-[#e8d5b7]/70">Track value in blend details</p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#e8d5b7]/60">Upgrade to Premium to track tobacco value</p>
+                  )}
+                </div>
               </PkCardContent>
             </PkCard>
           </motion.div>
