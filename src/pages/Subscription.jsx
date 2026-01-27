@@ -4,6 +4,7 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function FeatureList({ items }) {
   return (
@@ -19,138 +20,81 @@ function FeatureList({ items }) {
 }
 
 function AppleSubscription() {
-  const proLaunchDateLabel = "February 1, 2026";
+  const { t } = useTranslation();
 
-  const freeFeatures = [
-    "Add up to 5 pipes",
-    "Add up to 10 tobacco blends",
-    "View, edit, and organize your collection",
-    "Basic notes and ratings",
-    "Search pipes and tobaccos",
-    "Multilingual support (10 languages)",
-    "Cloud sync",
-  ];
-
-  const premiumFeatures = [
-    "Unlimited pipes and tobacco blends",
-    "Unlimited notes and photos",
-    "Cellar tracking and aging logs",
-    "Smoking logs and history",
-    "Pipe maintenance and condition tracking",
-    "Advanced filters and sorting",
-    "Manual pipe ↔ tobacco pairings",
-    "Tobacco library sync",
-    "Multilingual support (10 languages)",
-    "Cloud sync across devices",
-  ];
-
-  const proFeatures = [
-    "Everything in Premium",
-    "AI Updates (Pro for new users starting Feb 1, 2026)",
-    "AI Identification tools (Pro for new users starting Feb 1, 2026)",
-    "Advanced analytics & insights",
-    "Bulk editing tools",
-    "Export & reports (CSV / PDF)",
-    "Collection optimization tools",
-    "Early access to new advanced features",
-  ];
+  // Pull feature arrays from i18n (English has full arrays; other languages fall back to EN automatically)
+  const freeFeatures = t("subscription.features.free", { returnObjects: true, defaultValue: [] });
+  const premiumFeatures = t("subscription.features.premium", { returnObjects: true, defaultValue: [] });
+  const proFeatures = t("subscription.features.pro", { returnObjects: true, defaultValue: [] });
 
   const openSubscription = () => {
     if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
-      // Apple subscription sheet should list available tiers.
-      window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscription" });
+      window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscriptionSheet" });
+      return;
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <div className="mb-2">
-        <h1 className="text-3xl font-bold text-[#e8d5b7]">Subscription</h1>
-        <p className="text-sm text-[#e8d5b7]/70 mt-2">
-          This iOS build focuses on collection and cellar inventory management.
-        </p>
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
+
+        <Button variant="secondary" onClick={openSubscription}>
+          {t("subscription.manage")}
+        </Button>
       </div>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-        <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">Free Plan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FeatureList items={freeFeatures} />
-          <p className="text-xs text-[#e8d5b7]/60">
-            Already have more than the Free limits? You&apos;ll keep everything you&apos;ve added — Free limits only apply when adding new items.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-[#e8d5b7]">Premium Plan</CardTitle>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-[#e8d5b7]">$1.99</p>
-              <p className="text-xs text-[#e8d5b7]/70">per month • $19.99/year</p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="bg-black/40 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">Free</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FeatureList items={Array.isArray(freeFeatures) ? freeFeatures : []} />
+            <div className="mt-4">
+              <Button className="w-full" variant="outline" onClick={() => {}}>
+                {t("subscription.continueFree")}
+              </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FeatureList items={premiumFeatures} />
-          <div className="pt-2">
-            <Button
-              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-              onClick={openSubscription}
-            >
-              Upgrade to Premium
-            </Button>
-            <p className="text-xs text-[#e8d5b7]/60 mt-2">
-              Premium features vary by platform and plan.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-[#e8d5b7]">Pro Plan</CardTitle>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-[#e8d5b7]">$2.99</p>
-              <p className="text-xs text-[#e8d5b7]/70">per month • $29.99/year</p>
+        <Card className="bg-black/40 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">Premium</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FeatureList items={Array.isArray(premiumFeatures) ? premiumFeatures : []} />
+            <div className="mt-4">
+              <Button className="w-full" onClick={openSubscription}>
+                {t("subscription.subscribe")}
+              </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FeatureList items={proFeatures} />
-          <div className="text-xs text-[#e8d5b7]/60 space-y-1">
-            <p>
-              PipeKeeper Pro is active starting <b>{proLaunchDateLabel}</b>.
-            </p>
-            <p>
-              If you subscribed to Premium before {proLaunchDateLabel}, you keep AI Updates and AI Identification tools.
-            </p>
-          </div>
-          <div className="pt-2">
-            <Button
-              className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-              onClick={openSubscription}
-            >
-              Upgrade to Pro
-            </Button>
-            <p className="text-xs text-[#e8d5b7]/60 mt-2">
-              Pro tiers and pricing are managed through Apple in-app purchase.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
+        <Card className="bg-black/40 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">Pro</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FeatureList items={Array.isArray(proFeatures) ? proFeatures : []} />
+            <div className="mt-4">
+              <Button className="w-full" onClick={openSubscription}>
+                {t("subscription.subscribe")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trial ended message (localized) */}
+      <Card className="bg-black/30 border-white/10">
         <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">Why is iOS different?</CardTitle>
+          <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-[#e8d5b7]/80 space-y-2">
-          <p>
-            The iOS build is intentionally designed for collection and cellar inventory management.
-          </p>
+        <CardContent className="text-[#e8d5b7]/80">
+          {t("subscription.trialEndedBody")}
         </CardContent>
       </Card>
     </div>
@@ -158,6 +102,6 @@ function AppleSubscription() {
 }
 
 export default function Subscription() {
-  if (isAppleBuild) return <AppleSubscription />;
-  return <SubscriptionFull />;
+  if (!isAppleBuild) return <SubscriptionFull />;
+  return <AppleSubscription />;
 }

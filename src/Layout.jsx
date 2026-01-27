@@ -27,24 +27,13 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
-
-const navItems = [
-  { name: "Home", page: "Home", icon: Home, isIconComponent: true },
-  { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
-  { name: isAppleBuild ? "Cellar" : "Tobacco", page: "Tobacco", icon: Leaf, isIconComponent: true },
-  ...(FEATURES.community ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }] : []),
-  { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
-  { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
-];
-
-const adminNavItems = [
-  { name: "Reports", page: "AdminReports", icon: AlertCircle, isIconComponent: true },
-];
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
   const isActive = currentPage === item.page;
@@ -173,6 +162,27 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
+  const { t } = useTranslation();
+
+  const navItems = [
+    { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
+    { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
+    {
+      name: isAppleBuild ? t("nav.cellar") : t("nav.tobacco"),
+      page: "Tobacco",
+      icon: Leaf,
+      isIconComponent: true,
+    },
+    ...(FEATURES.community
+      ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
+      : []),
+    { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
+    { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
+  ];
+
+  const adminNavItems = [
+    { name: "Reports", page: "AdminReports", icon: AlertCircle, isIconComponent: true },
+  ];
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -478,7 +488,8 @@ export default function Layout({ children, currentPageName }) {
                   ))}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <LanguageSwitcher compact />
                   <GlobalSearchTrigger />
                   {syncing ? (
                     <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
@@ -566,16 +577,16 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                    FAQ
+                    {t("nav.faq")}
                   </a>
                   <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                    Support
+                    {t("nav.support")}
                   </a>
                   <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                    Terms of Service
+                    {t("nav.terms")}
                   </a>
                   <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
-                    Privacy Policy
+                    {t("nav.privacy")}
                   </a>
                 </div>
               </div>
@@ -601,13 +612,13 @@ export default function Layout({ children, currentPageName }) {
         {showSubscribePrompt && (
           <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
             <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-              <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your free trial has ended</h3>
+              <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
               <p className="text-[#E0D8C8]/80 mb-5">
-                To continue using Premium features, please start a subscription. You can keep using free collection features anytime.
+                {t("subscription.trialEndedBody")}
               </p>
               <div className="flex gap-3 justify-end">
                 <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                  Continue Free
+                  {t("subscription.continueFree")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -615,7 +626,7 @@ export default function Layout({ children, currentPageName }) {
                     navigate(createPageUrl("Subscription"));
                   }}
                 >
-                  Subscribe
+                  {t("subscription.subscribe")}
                 </Button>
               </div>
             </div>

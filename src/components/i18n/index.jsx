@@ -4,9 +4,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 // English translations
 const enCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Home",
     pipes: "Pipes",
@@ -18,7 +16,7 @@ const enCommon = {
     faq: "FAQ",
     support: "Support",
     terms: "Terms of Service",
-    privacy: "Privacy Policy"
+    privacy: "Privacy Policy",
   },
   subscription: {
     title: "Subscription",
@@ -26,21 +24,53 @@ const enCommon = {
     subscribe: "Subscribe",
     continueFree: "Continue Free",
     trialEndedTitle: "Your free trial has ended",
-    trialEndedBody: "To continue using Premium features, please start a subscription. You can keep using free collection features anytime."
+    trialEndedBody:
+      "To continue using Premium features, please start a subscription. You can keep using free collection features anytime.",
+    features: {
+      free: [
+        "Add up to 5 pipes",
+        "Add up to 10 tobacco blends",
+        "View, edit, and organize your collection",
+        "Basic notes and ratings",
+        "Search pipes and tobaccos",
+        "Multilingual support (10 languages)",
+        "Cloud sync",
+      ],
+      premium: [
+        "Unlimited pipes and tobacco blends",
+        "Unlimited notes and photos",
+        "Cellar tracking and aging logs",
+        "Smoking logs and history",
+        "Pipe maintenance and condition tracking",
+        "Advanced filters and sorting",
+        "Manual pipe ↔ tobacco pairings",
+        "Tobacco library sync",
+        "Multilingual support (10 languages)",
+        "Cloud sync across devices",
+      ],
+      pro: [
+        "Everything in Premium",
+        "AI Updates (Pro for new users starting Feb 1, 2026)",
+        "AI Identification tools (Pro for new users starting Feb 1, 2026)",
+        "Advanced analytics & insights",
+        "Bulk editing tools",
+        "Export & reports (CSV / PDF)",
+        "Collection optimization tools",
+        "Early access to new advanced features",
+      ],
+    },
   },
   common: {
     loading: "Loading…",
     save: "Save",
     cancel: "Cancel",
-    close: "Close"
-  }
+    close: "Close",
+  },
 };
 
 // Spanish translations
 const esCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Inicio",
     pipes: "Pipas",
@@ -52,7 +82,7 @@ const esCommon = {
     faq: "Preguntas frecuentes",
     support: "Soporte",
     terms: "Términos del servicio",
-    privacy: "Política de privacidad"
+    privacy: "Política de privacidad",
   },
   subscription: {
     title: "Suscripción",
@@ -60,21 +90,15 @@ const esCommon = {
     subscribe: "Suscribirse",
     continueFree: "Continuar gratis",
     trialEndedTitle: "Tu prueba gratuita terminó",
-    trialEndedBody: "Para seguir usando las funciones Premium, inicia una suscripción. Puedes seguir usando las funciones gratuitas en cualquier momento."
+    trialEndedBody:
+      "Para seguir usando las funciones Premium, inicia una suscripción. Puedes seguir usando las funciones gratuitas en cualquier momento.",
   },
-  common: {
-    loading: "Cargando…",
-    save: "Guardar",
-    cancel: "Cancelar",
-    close: "Cerrar"
-  }
+  common: { loading: "Cargando…", save: "Guardar", cancel: "Cancelar", close: "Cerrar" },
 };
 
-// French translations
+// French
 const frCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Accueil",
     pipes: "Pipes",
@@ -84,9 +108,9 @@ const frCommon = {
     profile: "Profil",
     help: "Aide",
     faq: "FAQ",
-    support: "Support",
+    support: "Assistance",
     terms: "Conditions d'utilisation",
-    privacy: "Politique de confidentialité"
+    privacy: "Politique de confidentialité",
   },
   subscription: {
     title: "Abonnement",
@@ -94,33 +118,27 @@ const frCommon = {
     subscribe: "S'abonner",
     continueFree: "Continuer gratuitement",
     trialEndedTitle: "Votre essai gratuit est terminé",
-    trialEndedBody: "Pour continuer à utiliser les fonctionnalités Premium, veuillez commencer un abonnement. Vous pouvez continuer à utiliser les fonctionnalités gratuites à tout moment."
+    trialEndedBody:
+      "Pour continuer à utiliser les fonctionnalités Premium, démarrez un abonnement. Vous pouvez continuer à utiliser les fonctionnalités gratuites à tout moment.",
   },
-  common: {
-    loading: "Chargement…",
-    save: "Enregistrer",
-    cancel: "Annuler",
-    close: "Fermer"
-  }
+  common: { loading: "Chargement…", save: "Enregistrer", cancel: "Annuler", close: "Fermer" },
 };
 
-// German translations
+// German
 const deCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
-    home: "Startseite",
+    home: "Start",
     pipes: "Pfeifen",
     tobacco: "Tabak",
     cellar: "Keller",
-    community: "Gemeinschaft",
+    community: "Community",
     profile: "Profil",
     help: "Hilfe",
     faq: "FAQ",
     support: "Support",
     terms: "Nutzungsbedingungen",
-    privacy: "Datenschutzrichtlinie"
+    privacy: "Datenschutzrichtlinie",
   },
   subscription: {
     title: "Abonnement",
@@ -128,55 +146,43 @@ const deCommon = {
     subscribe: "Abonnieren",
     continueFree: "Kostenlos fortfahren",
     trialEndedTitle: "Ihre kostenlose Testversion ist abgelaufen",
-    trialEndedBody: "Um weiterhin Premium-Funktionen zu nutzen, starten Sie bitte ein Abonnement. Sie können die kostenlosen Funktionen jederzeit weiter nutzen."
+    trialEndedBody:
+      "Um Premium-Funktionen weiter zu nutzen, starten Sie bitte ein Abonnement. Die kostenlosen Funktionen können jederzeit weiter genutzt werden.",
   },
-  common: {
-    loading: "Lädt…",
-    save: "Speichern",
-    cancel: "Abbrechen",
-    close: "Schließen"
-  }
+  common: { loading: "Wird geladen…", save: "Speichern", cancel: "Abbrechen", close: "Schließen" },
 };
 
-// Italian translations
+// Italian
 const itCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Home",
     pipes: "Pipe",
     tobacco: "Tabacco",
     cellar: "Cantina",
-    community: "Comunità",
+    community: "Community",
     profile: "Profilo",
     help: "Aiuto",
     faq: "FAQ",
     support: "Supporto",
     terms: "Termini di servizio",
-    privacy: "Informativa sulla privacy"
+    privacy: "Informativa sulla privacy",
   },
   subscription: {
     title: "Abbonamento",
     manage: "Gestisci abbonamento",
     subscribe: "Abbonati",
     continueFree: "Continua gratis",
-    trialEndedTitle: "La tua prova gratuita è terminata",
-    trialEndedBody: "Per continuare a utilizzare le funzionalità Premium, avvia un abbonamento. Puoi continuare a utilizzare le funzionalità gratuite in qualsiasi momento."
+    trialEndedTitle: "La prova gratuita è terminata",
+    trialEndedBody:
+      "Per continuare a usare le funzioni Premium, avvia un abbonamento. Puoi continuare a usare le funzioni gratuite in qualsiasi momento.",
   },
-  common: {
-    loading: "Caricamento…",
-    save: "Salva",
-    cancel: "Annulla",
-    close: "Chiudi"
-  }
+  common: { loading: "Caricamento…", save: "Salva", cancel: "Annulla", close: "Chiudi" },
 };
 
-// Portuguese (Brazil) translations
+// Portuguese (Brazil)
 const ptBRCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Início",
     pipes: "Cachimbos",
@@ -188,97 +194,79 @@ const ptBRCommon = {
     faq: "Perguntas frequentes",
     support: "Suporte",
     terms: "Termos de serviço",
-    privacy: "Política de privacidade"
+    privacy: "Política de privacidade",
   },
   subscription: {
     title: "Assinatura",
     manage: "Gerenciar assinatura",
     subscribe: "Assinar",
     continueFree: "Continuar grátis",
-    trialEndedTitle: "Seu teste gratuito terminou",
-    trialEndedBody: "Para continuar usando os recursos Premium, inicie uma assinatura. Você pode continuar usando os recursos gratuitos a qualquer momento."
+    trialEndedTitle: "Seu teste grátis terminou",
+    trialEndedBody:
+      "Para continuar usando os recursos Premium, inicie uma assinatura. Você pode continuar usando os recursos gratuitos a qualquer momento.",
   },
-  common: {
-    loading: "Carregando…",
-    save: "Salvar",
-    cancel: "Cancelar",
-    close: "Fechar"
-  }
+  common: { loading: "Carregando…", save: "Salvar", cancel: "Cancelar", close: "Fechar" },
 };
 
-// Dutch translations
+// Dutch
 const nlCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Home",
     pipes: "Pijpen",
     tobacco: "Tabak",
     cellar: "Kelder",
-    community: "Gemeenschap",
+    community: "Community",
     profile: "Profiel",
-    help: "Hulp",
-    faq: "Veelgestelde vragen",
-    support: "Ondersteuning",
+    help: "Help",
+    faq: "FAQ",
+    support: "Support",
     terms: "Servicevoorwaarden",
-    privacy: "Privacybeleid"
+    privacy: "Privacybeleid",
   },
   subscription: {
     title: "Abonnement",
     manage: "Abonnement beheren",
     subscribe: "Abonneren",
     continueFree: "Gratis doorgaan",
-    trialEndedTitle: "Uw gratis proefperiode is afgelopen",
-    trialEndedBody: "Om Premium-functies te blijven gebruiken, start u een abonnement. U kunt gratis functies op elk moment blijven gebruiken."
+    trialEndedTitle: "Je gratis proefperiode is afgelopen",
+    trialEndedBody:
+      "Om Premium-functies te blijven gebruiken, start je een abonnement. Je kunt de gratis functies altijd blijven gebruiken.",
   },
-  common: {
-    loading: "Laden…",
-    save: "Opslaan",
-    cancel: "Annuleren",
-    close: "Sluiten"
-  }
+  common: { loading: "Laden…", save: "Opslaan", cancel: "Annuleren", close: "Sluiten" },
 };
 
-// Polish translations
+// Polish
 const plCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "Strona główna",
     pipes: "Fajki",
     tobacco: "Tytoń",
-    cellar: "Piwnica",
+    cellar: "Piwniczka",
     community: "Społeczność",
     profile: "Profil",
     help: "Pomoc",
-    faq: "Najczęściej zadawane pytania",
+    faq: "FAQ",
     support: "Wsparcie",
-    terms: "Warunki korzystania z usługi",
-    privacy: "Polityka prywatności"
+    terms: "Warunki korzystania",
+    privacy: "Polityka prywatności",
   },
   subscription: {
     title: "Subskrypcja",
     manage: "Zarządzaj subskrypcją",
     subscribe: "Subskrybuj",
-    continueFree: "Kontynuuj za darmo",
-    trialEndedTitle: "Twój bezpłatny okres próbny zakończył się",
-    trialEndedBody: "Aby nadal korzystać z funkcji Premium, rozpocznij subskrypcję. Możesz nadal korzystać z darmowych funkcji w dowolnym momencie."
+    continueFree: "Kontynuuj bezpłatnie",
+    trialEndedTitle: "Bezpłatny okres próbny dobiegł końca",
+    trialEndedBody:
+      "Aby dalej korzystać z funkcji Premium, rozpocznij subskrypcję. Możesz nadal korzystać z funkcji bezpłatnych w dowolnym momencie.",
   },
-  common: {
-    loading: "Ładowanie…",
-    save: "Zapisz",
-    cancel: "Anuluj",
-    close: "Zamknij"
-  }
+  common: { loading: "Ładowanie…", save: "Zapisz", cancel: "Anuluj", close: "Zamknij" },
 };
 
-// Japanese translations
+// Japanese
 const jaCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
     home: "ホーム",
     pipes: "パイプ",
@@ -287,10 +275,10 @@ const jaCommon = {
     community: "コミュニティ",
     profile: "プロフィール",
     help: "ヘルプ",
-    faq: "よくある質問",
+    faq: "FAQ",
     support: "サポート",
     terms: "利用規約",
-    privacy: "プライバシーポリシー"
+    privacy: "プライバシーポリシー",
   },
   subscription: {
     title: "サブスクリプション",
@@ -298,33 +286,27 @@ const jaCommon = {
     subscribe: "購読する",
     continueFree: "無料で続ける",
     trialEndedTitle: "無料トライアルが終了しました",
-    trialEndedBody: "プレミアム機能を引き続き使用するには、サブスクリプションを開始してください。無料機能はいつでもご利用いただけます。"
+    trialEndedBody:
+      "Premium 機能を引き続き使用するには、サブスクリプションを開始してください。無料機能はいつでも利用できます。",
   },
-  common: {
-    loading: "読み込み中…",
-    save: "保存",
-    cancel: "キャンセル",
-    close: "閉じる"
-  }
+  common: { loading: "読み込み中…", save: "保存", cancel: "キャンセル", close: "閉じる" },
 };
 
-// Chinese (Simplified) translations
+// Simplified Chinese
 const zhHansCommon = {
-  app: {
-    name: "PipeKeeper"
-  },
+  app: { name: "PipeKeeper" },
   nav: {
-    home: "主页",
+    home: "首页",
     pipes: "烟斗",
     tobacco: "烟草",
-    cellar: "酒窖",
+    cellar: "窖藏",
     community: "社区",
     profile: "个人资料",
     help: "帮助",
     faq: "常见问题",
     support: "支持",
     terms: "服务条款",
-    privacy: "隐私政策"
+    privacy: "隐私政策",
   },
   subscription: {
     title: "订阅",
@@ -332,17 +314,11 @@ const zhHansCommon = {
     subscribe: "订阅",
     continueFree: "继续免费使用",
     trialEndedTitle: "您的免费试用已结束",
-    trialEndedBody: "要继续使用高级功能，请开始订阅。您可以随时继续使用免费功能。"
+    trialEndedBody: "要继续使用高级功能，请开始订阅。您可以随时继续使用免费功能。",
   },
-  common: {
-    loading: "加载中…",
-    save: "保存",
-    cancel: "取消",
-    close: "关闭"
-  }
+  common: { loading: "加载中…", save: "保存", cancel: "取消", close: "关闭" },
 };
 
-// Add more languages by adding new objects and including them in resources
 const resources = {
   en: { common: enCommon },
   es: { common: esCommon },
@@ -356,6 +332,17 @@ const resources = {
   "zh-Hans": { common: zhHansCommon },
 };
 
+// Normalize raw browser languages to our supported list
+function normalizeLng(raw) {
+  const l = (raw || "en").replace("_", "-");
+  if (l.startsWith("pt")) return "pt-BR";
+  if (l.startsWith("zh")) return "zh-Hans";
+  // Prefer exact match, else base language
+  if (resources[l]) return l;
+  const base = l.split("-")[0];
+  return resources[base] ? base : "en";
+}
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -364,18 +351,23 @@ i18n
     fallbackLng: "en",
     defaultNS: "common",
     ns: ["common"],
-    interpolation: {
-      escapeValue: false, // React already escapes by default
-    },
+    interpolation: { escapeValue: false },
     detection: {
       // Detect from localStorage first, then browser
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
       lookupLocalStorage: "pk_lang",
     },
-    react: {
-      useSuspense: false,
-    },
+    react: { useSuspense: false },
   });
+
+// If detector yields something like "en-US", normalize it once at startup
+try {
+  const current = i18n.language;
+  const normalized = normalizeLng(current);
+  if (current && normalized && current !== normalized) {
+    i18n.changeLanguage(normalized);
+  }
+} catch {}
 
 export default i18n;
