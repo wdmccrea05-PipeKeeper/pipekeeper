@@ -188,12 +188,12 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Tags className="w-5 h-5 text-blue-400" />
-              Category Standardization
+              Tobacco Blend Classification
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Standardize your existing inventory categories for improved accuracy and filtering.
+              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
             </p>
             <Button
               size="sm"
@@ -206,11 +206,18 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               ) : (
                 <Tags className="w-4 h-4 mr-1" />
               )}
-              <span className="hidden sm:inline">Standardize Categories ({blends.length} total)</span>
-              <span className="sm:hidden">📋 Standardize ({blends.length})</span>
+              Reclassify Blends ({blends.length} total)
             </Button>
           </CardContent>
         </Card>
+
+        <TobaccoValueEstimator 
+          blends={blends}
+          user={user}
+          onComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+          }}
+        />
 
         <div id="geometry-section">
           <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
@@ -467,14 +474,6 @@ Return JSON with:
             )}
           </CardContent>
         </Card>
-
-        <TobaccoValueEstimator 
-          blends={blends}
-          user={user}
-          onComplete={() => {
-            queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
-          }}
-        />
 
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader>
