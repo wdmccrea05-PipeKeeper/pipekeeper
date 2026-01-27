@@ -421,6 +421,40 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Account Email Section */}
+                <div className="space-y-4 pb-6 border-b">
+                  <h3 className="font-semibold text-violet-800 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Account Information
+                  </h3>
+                  
+                  <div>
+                    <Label className="text-stone-700 font-medium mb-2 block">Email Address</Label>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        value={user?.email || ''}
+                        disabled
+                        className="flex-1 bg-stone-50 text-stone-500 cursor-not-allowed"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const message = `Your email address cannot be changed directly through PipeKeeper.\n\nIf you need to use a different email:\n\n1. Invite your new email as an Admin to this app\n2. Log in with the new email\n3. Clone the app (new email becomes owner)\n\nNote: Cloning copies app structure but not data. You'll need to export/import your collection manually.\n\nContact support@pipekeeper.app for assistance.`;
+                          alert(message);
+                        }}
+                        className="border-violet-300 text-violet-700 whitespace-nowrap"
+                      >
+                        Change Email?
+                      </Button>
+                    </div>
+                    <p className="text-xs text-stone-500 mt-2">
+                      This is your login email address. Contact support for help changing it.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Community Settings */}
                 <div className="space-y-4 pb-6 border-b">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
