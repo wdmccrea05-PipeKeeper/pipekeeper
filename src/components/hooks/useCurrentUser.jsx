@@ -1,6 +1,6 @@
 // components/hooks/useCurrentUser.jsx
-// CANONICAL USER STATE HOOK - Use this everywhere instead of direct base44.auth.me() calls
-// Single source of truth for user data, subscription status, and premium access
+// CANONICAL USER STATE HOOK - Account-linked subscription system
+// Resolves entitlements by user_id first, then email fallback for legacy Stripe
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess, hasPaidAccess } from "@/components/utils/premiumAccess";
@@ -25,7 +25,7 @@ function detectPlatform() {
 export function useCurrentUser() {
   const [ensuredUser, setEnsuredUser] = useState(false);
 
-  // Fetch auth user + entity User + Subscription in parallel
+  // Fetch auth user + entity User in parallel
   const { data: rawUser, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
@@ -59,20 +59,35 @@ export function useCurrentUser() {
   });
 
   const email = normEmail(rawUser?.email || "");
+  const userId = rawUser?.id;
 
+  // Fetch subscriptions by user_id (account-linked) with email fallback
   const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
-    queryKey: ["subscription", email],
+    queryKey: ["subscription", userId, email],
     queryFn: async () => {
       try {
-        if (!email) return null;
-        const subs = await base44.entities.Subscription.filter(
-          { user_email: email },
-          "-current_period_end",
-          5
-        );
-        if (!subs?.length) return null;
+        if (!userId && !email) return null;
         
-        // Filter out only incomplete_expired (incomplete is valid if period_end is in future)
+        let subs = [];
+        
+        // PRIORITY 1: Query by user_id (account-linked - Apple + modern Stripe)
+        if (userId) {
+          const byUserId = await base44.entities.Subscription.filter({ user_id: userId });
+          subs = byUserId || [];
+        }
+        
+        // PRIORITY 2: Fallback to email for legacy Stripe subscriptions
+        if (subs.length === 0 && email) {
+          const byEmail = await base44.entities.Subscription.filter({ 
+            user_email: email,
+            provider: 'stripe'
+          });
+          subs = byEmail || [];
+        }
+        
+        if (!subs.length) return null;
+        
+        // Filter out incomplete_expired
         const validSubs = subs.filter(s => {
           const status = (s.status || '').toLowerCase();
           if (status === 'incomplete_expired') return false;
@@ -88,7 +103,7 @@ export function useCurrentUser() {
         
         if (!validSubs.length) return null;
         
-        // Prefer active/trialing/incomplete (with future period_end), then most recent by period_end
+        // Prefer active/trialing/incomplete, then most recent by period_end
         const bestSub = validSubs.find((s) => 
           s.status === "active" || s.status === "trialing" || s.status === "incomplete"
         ) || validSubs[0];
@@ -99,7 +114,7 @@ export function useCurrentUser() {
         return null;
       }
     },
-    enabled: !!email,
+    enabled: !!(userId || email),
     staleTime: 5_000,
     retry: 1,
   });
@@ -125,7 +140,6 @@ export function useCurrentUser() {
         setEnsuredUser(true);
       } catch (e) {
         console.error('[useCurrentUser] ensureUserRecord failed:', e);
-        // Don't block app, just log
         setEnsuredUser(true);
       }
     })();
@@ -155,9 +169,11 @@ export function useCurrentUser() {
   useEffect(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && !isLoading && rawUser?.email) {
       const debugInfo = {
+        user_id: userId,
         email: rawUser.email,
         emailNormalized: email,
         tier: subscription?.tier || 'free',
+        provider: subscription?.provider || 'none',
         isOnTrial: isInTrial,
         isLegacyPremium: subscription?.tier === 'premium' && subscription?.subscriptionStartedAt && 
           new Date(subscription.subscriptionStartedAt) < new Date('2026-02-01T00:00:00.000Z'),
@@ -169,7 +185,7 @@ export function useCurrentUser() {
       };
       console.log('[PipeKeeper Dev] Entitlements:', debugInfo);
     }
-  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email]);
+  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email, userId]);
 
   return {
     user: rawUser,

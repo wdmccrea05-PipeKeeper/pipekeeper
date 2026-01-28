@@ -12,12 +12,26 @@ Deno.serve(async (req) => {
     }
 
     const emailLower = normEmail(authUser.email);
+    const userId = authUser.id;
+    
+    if (!userId) {
+      return Response.json({ 
+        error: 'User ID not available',
+        code: 'NO_USER_ID'
+      }, { status: 400 });
+    }
+    
     const body = await req.json().catch(() => ({}));
     
     const active = !!body.active;
     const expiresAt = body.expiresAt || null;
     const productId = body.productId || '';
     const originalTransactionId = body.originalTransactionId || '';
+    
+    // Require originalTransactionId for active subscriptions
+    if (active && !originalTransactionId) {
+      console.warn('[syncAppleSubscriptionForMe] Active subscription without originalTransactionId, using fallback');
+    }
     
     // Determine tier
     let tier = body.tier || 'premium';
@@ -26,45 +40,58 @@ Deno.serve(async (req) => {
     }
     
     // Determine status
-    const status = active ? 'active' : 'canceled';
+    const status = active ? 'active' : 'expired';
     
-    // Create stable synthetic subscription ID for Apple purchases
-    const appleKey = `apple_${originalTransactionId || emailLower}`;
+    // Create stable provider subscription ID
+    const providerSubId = originalTransactionId || `apple_${userId}`;
     
     const nowIso = new Date().toISOString();
     
-    // Find existing Apple subscription for this user
+    // Find existing Apple subscription by provider_subscription_id
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
-      user_email: emailLower
+      provider: 'apple',
+      provider_subscription_id: providerSubId
     });
     
-    // Find Apple sub (starts with "apple_" or has no stripe_subscription_id)
-    const appleSub = existingSubs.find(s => 
-      (s.stripe_subscription_id || '').startsWith('apple_') ||
-      !s.stripe_customer_id
-    );
+    const existingAppleSub = existingSubs?.[0];
+    
+    // CONFLICT CHECK: If subscription exists and belongs to different user, deny
+    if (existingAppleSub && existingAppleSub.user_id && existingAppleSub.user_id !== userId) {
+      console.warn(`[syncAppleSubscriptionForMe] Apple subscription ${providerSubId} already linked to user ${existingAppleSub.user_id}, requested by ${userId}`);
+      return Response.json({
+        ok: false,
+        error: 'This Apple subscription is already linked to a different PipeKeeper account',
+        code: 'ALREADY_LINKED',
+        existing_user_id: existingAppleSub.user_id
+      }, { status: 409 });
+    }
     
     const subData = {
+      user_id: userId,
       user_email: emailLower,
-      stripe_subscription_id: appleKey,
+      provider: 'apple',
+      provider_subscription_id: providerSubId,
+      stripe_subscription_id: null,
       stripe_customer_id: null,
       status,
       tier,
       current_period_end: expiresAt,
-      current_period_start: active ? nowIso : (appleSub?.current_period_start || null),
-      started_at: appleSub?.started_at || nowIso,
-      subscriptionStartedAt: appleSub?.subscriptionStartedAt || appleSub?.started_at || nowIso,
+      current_period_start: active ? nowIso : (existingAppleSub?.current_period_start || null),
+      started_at: existingAppleSub?.started_at || nowIso,
+      subscriptionStartedAt: existingAppleSub?.subscriptionStartedAt || existingAppleSub?.started_at || nowIso,
       billing_interval: 'month',
       amount: null,
       cancel_at_period_end: false
     };
     
-    if (appleSub) {
+    if (existingAppleSub) {
       // Update existing Apple subscription
-      await base44.asServiceRole.entities.Subscription.update(appleSub.id, subData);
+      await base44.asServiceRole.entities.Subscription.update(existingAppleSub.id, subData);
+      console.log(`[syncAppleSubscriptionForMe] Updated Apple subscription ${providerSubId} for user ${userId}`);
     } else {
       // Create new Apple subscription
       await base44.asServiceRole.entities.Subscription.create(subData);
+      console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}`);
     }
     
     // Update User entity
@@ -75,6 +102,7 @@ Deno.serve(async (req) => {
         subscription_status: status,
         platform: 'ios'
       });
+      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${active ? 'paid' : 'free'}`);
     }
     
     return Response.json({
@@ -83,11 +111,13 @@ Deno.serve(async (req) => {
       tier,
       status,
       active,
-      email: emailLower
+      user_id: userId,
+      provider_subscription_id: providerSubId
     });
   } catch (error) {
     console.error('[syncAppleSubscriptionForMe] error:', error);
     return Response.json({ 
+      ok: false,
       error: error?.message || 'Failed to sync Apple subscription',
       stack: error?.stack
     }, { status: 500 });

@@ -27,16 +27,26 @@ export const openAppleSubscriptions = () => {
   return safePost({ action: "openAppleSubscriptions" });
 };
 
-// ✅ REQUIRED: Layout.jsx calls this. Native handles action "debugToast".
 export const nativeDebugPing = (label = "ping") => {
   return safePost({ action: "debugToast", label });
 };
 
+/**
+ * Register listener for Apple subscription status updates.
+ * iOS wrapper should dispatch full payload:
+ * {
+ *   active: boolean,
+ *   tier?: "premium" | "pro",
+ *   expiresAt?: ISO date string,
+ *   productId?: string,
+ *   originalTransactionId?: string (REQUIRED for proper account linking)
+ * }
+ */
 export const registerNativeSubscriptionListener = (onStatus) => {
   if (typeof onStatus !== "function") return () => {};
 
   const handler = (e) => {
-    // Pass full payload instead of just boolean
+    // Pass full payload detail object
     const payload = e?.detail || {};
     onStatus(payload);
   };

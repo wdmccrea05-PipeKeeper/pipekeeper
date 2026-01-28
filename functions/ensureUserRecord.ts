@@ -12,10 +12,12 @@ Deno.serve(async (req) => {
     }
 
     const emailLower = normEmail(authUser.email);
+    const userId = authUser.id;
+    
     const body = await req.json().catch(() => ({}));
     const platformFromBody = body.platform || 'web';
 
-    // Check if User entity exists
+    // Check if User entity exists by email
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     
     if (existingUsers && existingUsers.length > 0) {
@@ -28,10 +30,16 @@ Deno.serve(async (req) => {
         return Response.json({ 
           ok: true, 
           user: { ...existing, platform: platformFromBody },
+          user_id: userId,
           updated: true
         });
       }
-      return Response.json({ ok: true, user: existing, updated: false });
+      return Response.json({ 
+        ok: true, 
+        user: existing,
+        user_id: userId, 
+        updated: false 
+      });
     }
 
     // User doesn't exist - create with service role
@@ -44,7 +52,12 @@ Deno.serve(async (req) => {
       role: authUser.role || 'user'
     });
 
-    return Response.json({ ok: true, user: newUser, created: true });
+    return Response.json({ 
+      ok: true, 
+      user: newUser,
+      user_id: userId, 
+      created: true 
+    });
   } catch (error) {
     console.error('[ensureUserRecord] error:', error);
     return Response.json({ 

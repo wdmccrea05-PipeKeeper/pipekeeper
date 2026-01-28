@@ -4,6 +4,7 @@ const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 /**
  * Checks if the user has a given entitlement.
+ * Uses user_id first (account-linked), then email fallback (legacy Stripe).
  * Throws an error with status 402 if not.
  */
 export async function requireEntitlement(base44, user, feature) {
@@ -13,16 +14,45 @@ export async function requireEntitlement(base44, user, feature) {
     throw err;
   }
 
+  const userId = user.id;
   const emailLower = normEmail(user.email);
 
-  // Fetch subscription with normalized email
-  const subscriptions = await base44.entities.Subscription.filter({ user_email: emailLower });
-  const subscription = subscriptions?.[0];
+  // PRIORITY 1: Query by user_id (account-linked subscriptions - Apple + modern Stripe)
+  let subscription = null;
+  
+  if (userId) {
+    const byUserId = await base44.entities.Subscription.filter({ 
+      user_id: userId 
+    });
+    
+    // Find active/trialing subscription
+    subscription = byUserId?.find(s => 
+      s.status === 'active' || s.status === 'trialing' || s.status === 'incomplete'
+    );
+    
+    if (subscription) {
+      console.log(`[requireEntitlement] Found subscription by user_id=${userId}: ${subscription.provider}/${subscription.provider_subscription_id}`);
+    }
+  }
+
+  // PRIORITY 2: Fallback to email for legacy Stripe subscriptions
+  if (!subscription) {
+    const byEmail = await base44.entities.Subscription.filter({ 
+      user_email: emailLower,
+      provider: 'stripe'
+    });
+    
+    subscription = byEmail?.find(s => 
+      s.status === 'active' || s.status === 'trialing' || s.status === 'incomplete'
+    );
+    
+    if (subscription) {
+      console.log(`[requireEntitlement] Found legacy Stripe subscription by email=${emailLower}`);
+    }
+  }
 
   // Determine if paid and pro
-  const isPaidSubscriber = !!(
-    subscription?.status === 'active' || subscription?.status === 'trialing' || subscription?.status === 'incomplete'
-  );
+  const isPaidSubscriber = !!(subscription);
   const isProSubscriber = !!(isPaidSubscriber && subscription?.tier === 'pro');
 
   // Build entitlements

@@ -1,17 +1,19 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
 
+const normEmail = (email) => String(email || "").trim().toLowerCase();
+
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
 function json(status, body) {
-  return new Response(JSON.stringify({ ...body, version: "v24-sdk" }), {
+  return new Response(JSON.stringify({ ...body, version: "v25-account-linked" }), {
     status,
     headers: { 
       "content-type": "application/json",
-      "X-PipeKeeper-Webhook-Version": "v24-sdk"
+      "X-PipeKeeper-Webhook-Version": "v25-account-linked"
     },
   });
 }
@@ -83,7 +85,6 @@ Deno.serve(async (req) => {
       }
     } catch (err) {
       // If ProcessedStripeEvents entity doesn't exist, continue without dedup
-      // (Non-fatal - this is just an optimization)
     }
 
     // Helper functions
@@ -93,16 +94,30 @@ Deno.serve(async (req) => {
     }
 
     async function upsertSubscription(payload) {
-      const existing = await base44.asServiceRole.entities.Subscription.filter({
-        stripe_subscription_id: payload.stripe_subscription_id,
-      });
+      // Try to find by provider_subscription_id first (new way)
+      let existing = null;
+      if (payload.provider_subscription_id) {
+        const byProvider = await base44.asServiceRole.entities.Subscription.filter({
+          provider: 'stripe',
+          provider_subscription_id: payload.provider_subscription_id,
+        });
+        existing = byProvider?.[0];
+      }
+      
+      // Fallback to legacy stripe_subscription_id for backward compatibility
+      if (!existing && payload.stripe_subscription_id) {
+        const byLegacy = await base44.asServiceRole.entities.Subscription.filter({
+          stripe_subscription_id: payload.stripe_subscription_id,
+        });
+        existing = byLegacy?.[0];
+      }
 
-      if (existing && existing.length) {
-        console.log(`[webhook] Updating existing subscription ${payload.stripe_subscription_id} for ${payload.user_email}`);
-        await base44.asServiceRole.entities.Subscription.update(existing[0].id, payload);
-        return existing[0].id;
+      if (existing) {
+        console.log(`[webhook] Updating existing subscription ${payload.provider_subscription_id} for user_id=${payload.user_id || 'null'} email=${payload.user_email}`);
+        await base44.asServiceRole.entities.Subscription.update(existing.id, payload);
+        return existing.id;
       } else {
-        console.log(`[webhook] Creating new subscription ${payload.stripe_subscription_id} for ${payload.user_email}`);
+        console.log(`[webhook] Creating new subscription ${payload.provider_subscription_id} for user_id=${payload.user_id || 'null'} email=${payload.user_email}`);
         const created = await base44.asServiceRole.entities.Subscription.create(payload);
         return created?.id;
       }
@@ -144,17 +159,18 @@ Deno.serve(async (req) => {
           session.customer_email ||
           "";
 
-        const user_email = String(emailRaw || "").trim().toLowerCase();
+        const user_email = normEmail(emailRaw);
+        const user_id = session.metadata?.user_id || null;
+        
         if (!user_email) break;
 
-        console.log(`[webhook] checkout.session.completed for ${user_email}, setting paid status`);
+        console.log(`[webhook] checkout.session.completed for ${user_email}, user_id=${user_id}, setting paid status`);
         await setUserEntitlement(user_email, {
           subscription_level: "paid",
           subscription_status: "active",
           stripe_customer_id: customerId || null,
         });
 
-        // NOTE: We cannot fetch subscription details without Stripe SDK
         // The subscription update will come via subscription.created/updated events
         if (subscriptionId) {
           console.log(`[webhook] Checkout completed for subscription ${subscriptionId}, will process via subscription.created event`);
@@ -171,13 +187,14 @@ Deno.serve(async (req) => {
         const customer = sub.customer;
         const customerId = typeof customer === "string" ? customer : customer?.id;
 
-        let user_email = String(sub.metadata?.user_email || "").trim().toLowerCase();
+        let user_email = normEmail(sub.metadata?.user_email || "");
+        let user_id = sub.metadata?.user_id || null;
 
         // If no email in metadata, fetch customer details from Stripe
         if (!user_email && customerId) {
           try {
             const customerObj = await stripe.customers.retrieve(customerId);
-            user_email = String(customerObj.email || "").trim().toLowerCase();
+            user_email = normEmail(customerObj.email || "");
             console.log(`[webhook] Fetched email from customer ${customerId}: ${user_email}`);
           } catch (err) {
             console.error(`[webhook] Failed to fetch customer ${customerId}:`, err.message);
@@ -204,16 +221,29 @@ Deno.serve(async (req) => {
           ? new Date(sub.created * 1000).toISOString()
           : null;
 
-        const existingRes = await base44.asServiceRole.entities.Subscription.filter({
-          stripe_subscription_id: sub.id,
+        // Find existing by provider_subscription_id or legacy stripe_subscription_id
+        let existing = null;
+        const byProvider = await base44.asServiceRole.entities.Subscription.filter({
+          provider: 'stripe',
+          provider_subscription_id: sub.id,
         });
-        const existing = existingRes?.[0];
+        existing = byProvider?.[0];
+        
+        if (!existing) {
+          const byLegacy = await base44.asServiceRole.entities.Subscription.filter({
+            stripe_subscription_id: sub.id,
+          });
+          existing = byLegacy?.[0];
+        }
 
         const payload = {
+          user_id: user_id || existing?.user_id || null,
           user_email,
-          status: sub.status,
+          provider: 'stripe',
+          provider_subscription_id: sub.id,
           stripe_subscription_id: sub.id,
           stripe_customer_id: customerId || null,
+          status: sub.status,
           current_period_start: periodStart,
           current_period_end: periodEnd,
           cancel_at_period_end: !!sub.cancel_at_period_end,
@@ -253,7 +283,7 @@ Deno.serve(async (req) => {
           userRow = await findUserByEmail(user_email);
         }
         
-        console.log(`[webhook] ${event.type} for ${user_email}: status=${sub.status}, isPaid=${isPaid}`);
+        console.log(`[webhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, isPaid=${isPaid}`);
         await setUserEntitlement(user_email, {
           subscription_level: isPaid ? "paid" : "free",
           subscription_status: sub.status,
@@ -264,7 +294,7 @@ Deno.serve(async (req) => {
       }
 
       default:
-        // Immediately return 200 for unhandled events (no retries)
+        // Immediately return 200 for unhandled events
         break;
     }
 
@@ -276,13 +306,12 @@ Deno.serve(async (req) => {
         processed_at: new Date().toISOString()
       });
     } catch (err) {
-      // Non-fatal - continue even if we can't record the event
+      // Non-fatal
     }
 
     return json(200, { ok: true });
   } catch (err) {
     console.error("[webhook] Error:", err);
-    // Return 500 but do NOT retry internally
     return json(500, { ok: false, error: err?.message || String(err) });
   }
 });

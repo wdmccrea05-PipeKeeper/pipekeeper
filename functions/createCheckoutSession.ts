@@ -136,6 +136,7 @@ Deno.serve(async (req) => {
     }
 
     const emailLower = normEmail(user.email);
+    const userId = user.id;
     const origin = safeOrigin(req);
 
     const body = await req.json().catch(() => ({}));
@@ -208,11 +209,13 @@ Deno.serve(async (req) => {
       cancel_url: `${origin}/Subscription?canceled=1`,
       metadata: {
         user_email: emailLower,
+        user_id: userId,
         platform: platform,
       },
       subscription_data: {
         metadata: {
           user_email: emailLower,
+          user_id: userId,
           platform: platform,
         },
       },

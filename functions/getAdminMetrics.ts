@@ -29,14 +29,27 @@ Deno.serve(async (req) => {
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
     const proLaunchDate = new Date(PRO_LAUNCH_CUTOFF);
 
-    // Build subscription map with normalized emails
-    const subMap = new Map();
+    // Build subscription maps by user_id AND email (for legacy)
+    const subByUserId = new Map();
+    const subByEmail = new Map();
+    
     allSubscriptions.forEach(sub => {
-      const email = normEmail(sub.user_email);
-      if (!subMap.has(email)) {
-        subMap.set(email, []);
+      // Map by user_id (account-linked)
+      if (sub.user_id) {
+        if (!subByUserId.has(sub.user_id)) {
+          subByUserId.set(sub.user_id, []);
+        }
+        subByUserId.get(sub.user_id).push(sub);
       }
-      subMap.get(email).push(sub);
+      
+      // Map by email (legacy Stripe)
+      const email = normEmail(sub.user_email);
+      if (email) {
+        if (!subByEmail.has(email)) {
+          subByEmail.set(email, []);
+        }
+        subByEmail.get(email).push(sub);
+      }
     });
 
     // Categorize users and build user tiers
@@ -45,20 +58,26 @@ Deno.serve(async (req) => {
 
     allUsers.forEach(u => {
       const email = normEmail(u.email);
-      const subs = subMap.get(email) || [];
+      
+      // Try user_id first, then email fallback
+      let subs = subByUserId.get(u.id) || subByEmail.get(email) || [];
+      
       const validSubs = subs.filter(s => {
         const st = (s.status || '').toLowerCase();
         return st !== 'incomplete_expired';
       });
 
-      if (validSubs.length === 0) {
-        // Fallback: check User.subscription_level for Apple users without Subscription entity
-        if (u.subscription_level === 'paid') {
-          // Treat as premium by default unless we can determine tier
-          usersByTier.premium.push(u);
-          return;
-        }
+      // Determine if paid: has active subscription OR User.subscription_level is 'paid'
+      const hasActiveSub = validSubs.some(s => {
+        const st = (s.status || '').toLowerCase();
+        return st === 'active' || st === 'trialing' || st === 'incomplete';
+      });
+      
+      const isPaidByUserEntity = u.subscription_level === 'paid';
+      
+      if (!hasActiveSub && !isPaidByUserEntity) {
         usersByTier.free.push(u);
+        if (u.isFoundingMember) foundingMemberCount++;
         return;
       }
 
@@ -75,8 +94,8 @@ Deno.serve(async (req) => {
         return rankFn(b) - rankFn(a);
       })[0];
 
-      const tier = best.tier || 'premium';
-      const startedAt = best.started_at || best.current_period_start;
+      const tier = best?.tier || 'premium';
+      const startedAt = best?.started_at || best?.current_period_start;
       const isLegacy = startedAt && new Date(startedAt) < proLaunchDate;
 
       if (tier === 'pro') {
@@ -179,7 +198,7 @@ Deno.serve(async (req) => {
       return status === 'active' && startedAt && new Date(startedAt) >= thirtyDaysAgo;
     }).length;
 
-    // Drop-off: trial ended without converting
+    // Drop-off calculation
     const trialEndedEmails = new Set(
       allSubscriptions
         .filter(s => (s.status || '').toLowerCase() === 'canceled')
@@ -188,7 +207,7 @@ Deno.serve(async (req) => {
     );
 
     const dropoffLast30d = Array.from(trialEndedEmails).filter(email => {
-      const subs = (subMap.get(email) || []).filter(s => (s.status || '').toLowerCase() === 'active');
+      const subs = (subByEmail.get(email) || []).filter(s => (s.status || '').toLowerCase() === 'active');
       return subs.length === 0;
     }).length;
 
@@ -341,7 +360,7 @@ Deno.serve(async (req) => {
       communityEngagement,
     };
 
-    // 7. PLATFORM BREAKDOWN (include Apple users even without Subscription)
+    // 7. PLATFORM BREAKDOWN (include Apple users by subscription_level)
     const platformBreakdown = {
       apple: { paid: 0, free: 0 },
       android: { paid: 0, free: 0 },
@@ -349,14 +368,13 @@ Deno.serve(async (req) => {
     };
 
     allUsers.forEach(u => {
-      const email = normEmail(u.email);
-      const subs = subMap.get(email) || [];
+      const subs = subByUserId.get(u.id) || subByEmail.get(normEmail(u.email)) || [];
       const validSubs = subs.filter(s => {
         const st = (s.status || '').toLowerCase();
         return st !== 'incomplete_expired';
       });
       
-      // Determine paid status: either has active/trialing/incomplete subscription OR User.subscription_level = 'paid'
+      // Determine paid: has active sub OR User.subscription_level = 'paid'
       const hasPaidSub = validSubs.some(s => {
         const st = (s.status || '').toLowerCase();
         return st === 'active' || st === 'trialing' || st === 'incomplete';

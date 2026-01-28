@@ -288,22 +288,30 @@ export default function Layout({ children, currentPageName }) {
       setSubActive(active);
       
       try {
-        // Sync Apple subscription to Base44 entities
-        await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
+        // Sync Apple subscription to Base44 entities (account-linked by user_id)
+        const result = await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
+        
+        if (result.data?.code === 'ALREADY_LINKED') {
+          // Show error to user
+          showIAPToast('This Apple subscription is already linked to a different account. Please sign in with the original account or contact support.');
+          return;
+        }
         
         // Invalidate queries to refresh UI
         await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        const userId = user?.id;
         const email = (user?.email || "").trim().toLowerCase();
-        if (email) {
-          await queryClient.invalidateQueries({ queryKey: ["subscription", email] });
+        if (userId || email) {
+          await queryClient.invalidateQueries({ queryKey: ["subscription", userId, email] });
         }
       } catch (e) {
         console.error("[Layout] Apple subscription sync failed:", e);
+        showIAPToast('Failed to sync subscription. Please try again.');
       }
     });
 
     return cleanup;
-  }, [ios, queryClient, user?.email]);
+  }, [ios, queryClient, user?.id, user?.email]);
 
   // iOS WKWebView: Intercept subscription management clicks globally
   useEffect(() => {
