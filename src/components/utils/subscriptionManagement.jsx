@@ -18,21 +18,26 @@ export async function openManageSubscription() {
 
   // Web/Android: Stripe billing portal
   try {
-    const response = await base44.functions.invoke("createBillingPortalSession", {});
+    const response = await base44.functions.invoke("createCustomerPortalSession", {});
+    
+    if (!response?.data?.ok) {
+      const err = response?.data?.error || "UNKNOWN_ERROR";
+      const msg = response?.data?.message || "Failed to create portal session";
+      throw new Error(`${err}: ${msg}`);
+    }
+    
     const url = response?.data?.url;
-
     if (!url) throw new Error("No portal URL returned");
+    
     window.location.href = url;
   } catch (error) {
     console.error("[openManageSubscription] Error:", error);
 
-    const errorMessage =
-      error?.response?.data?.error ||
-      error?.message ||
-      "";
+    const errorMessage = error?.message || "";
 
     // If customer not found, route to Subscription page so they can start checkout
     if (
+      errorMessage.toLowerCase().includes("no_stripe_customer") ||
       errorMessage.toLowerCase().includes("no stripe customer") ||
       errorMessage.toLowerCase().includes("start a subscription")
     ) {

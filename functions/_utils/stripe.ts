@@ -25,6 +25,16 @@ export function assertStripeKeyOrThrow() {
   const key = getStripeSecretKey();
   const prefix = getStripeKeyPrefix();
   
+  // Explicitly reject invalid key types
+  const forbidden = ["mk_", "pk_", "whsec_", "price_", "cus_", "sub_", "prod_", "plan_"];
+  for (const f of forbidden) {
+    if (key.startsWith(f)) {
+      throw new Error(
+        `STRIPE_SECRET_KEY_INVALID: Cannot use ${f} keys. Must be sk_ or rk_. Got: ${maskKey(key)}`
+      );
+    }
+  }
+  
   if (prefix !== "sk" && prefix !== "rk") {
     throw new Error(
       `STRIPE_SECRET_KEY_INVALID: Must start with sk_ or rk_. Got prefix: ${prefix}, masked: ${maskKey(key)}`
