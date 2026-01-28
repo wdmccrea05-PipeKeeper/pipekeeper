@@ -16,7 +16,15 @@ export async function requireEntitlement(req) {
 
   const isActive = (s) => {
     const status = String(s?.status || "").toLowerCase();
-    return status === "active" || status === "trialing" || status === "incomplete";
+    if (status === "active" || status === "trialing") return true;
+    
+    // Allow incomplete ONLY if period_end is in future
+    if (status === "incomplete") {
+      const periodEnd = s?.current_period_end;
+      return periodEnd && new Date(periodEnd).getTime() > Date.now();
+    }
+    
+    return false;
   };
 
   // 1) Preferred: active sub by user_id (either provider)

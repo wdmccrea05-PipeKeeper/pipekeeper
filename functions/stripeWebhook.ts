@@ -134,9 +134,10 @@ Deno.serve(async (req) => {
     async function ensureUserExists(email, customerId) {
       let userRow = await findUserByEmail(email);
       if (!userRow) {
-        await base44.asServiceRole.entities.User.create({
+        userRow = await base44.asServiceRole.entities.User.create({
           email,
           full_name: "User from Stripe",
+          role: "user",
           subscription_level: "paid",
           stripe_customer_id: customerId || null,
         });
@@ -163,6 +164,9 @@ Deno.serve(async (req) => {
         const user_id = session.metadata?.user_id || null;
         
         if (!user_email) break;
+
+        // Ensure user exists before setting entitlement
+        await ensureUserExists(user_email, customerId);
 
         console.log(`[webhook] checkout.session.completed for ${user_email}, user_id=${user_id}, setting paid status`);
         await setUserEntitlement(user_email, {
