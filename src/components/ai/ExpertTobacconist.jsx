@@ -46,7 +46,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 space-y-6">
         <Tabs defaultValue="identifier">
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="identifier" className="flex items-center justify-center gap-1 md:gap-2">
