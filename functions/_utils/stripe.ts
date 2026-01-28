@@ -38,6 +38,11 @@ export function getStripeClient() {
   return new Stripe(key, { apiVersion: "2024-06-20" });
 }
 
+export async function stripeSanityCheck(stripe: Stripe) {
+  await stripe.balance.retrieve();
+  return true;
+}
+
 export function safeStripeError(e: any) {
   const msg = String(e?.message || e || "");
   return msg.replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
