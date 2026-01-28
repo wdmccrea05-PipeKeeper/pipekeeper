@@ -265,17 +265,17 @@ export default function AdminReports() {
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="pending">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6">
+            <TabsTrigger value="pending" className="text-xs sm:text-sm">
               Pending ({pendingReports.length})
             </TabsTrigger>
-            <TabsTrigger value="reviewed">
+            <TabsTrigger value="reviewed" className="text-xs sm:text-sm">
               Reviewed ({reviewedReports.length})
             </TabsTrigger>
-            <TabsTrigger value="actioned">
+            <TabsTrigger value="actioned" className="text-xs sm:text-sm">
               Actioned ({actionedReports.length})
             </TabsTrigger>
-            <TabsTrigger value="dismissed">
+            <TabsTrigger value="dismissed" className="text-xs sm:text-sm">
               Dismissed ({dismissedReports.length})
             </TabsTrigger>
           </TabsList>
