@@ -22,21 +22,34 @@ Deno.serve(async (req) => {
     // Create a map of normalized user email to best subscription (filter out incomplete_expired)
     const subscriptionMap = new Map();
     
-    // Group subscriptions by normalized user email
+    // Group subscriptions by normalized user email OR user_id
     const subsByEmail = new Map();
+    const subsByUserId = new Map();
+    
     allSubscriptions.forEach(sub => {
-      const email = normEmail(sub.user_email);
-      if (!subsByEmail.has(email)) {
-        subsByEmail.set(email, []);
+      // Index by user_id (primary)
+      if (sub.user_id) {
+        if (!subsByUserId.has(sub.user_id)) {
+          subsByUserId.set(sub.user_id, []);
+        }
+        subsByUserId.get(sub.user_id).push(sub);
       }
-      subsByEmail.get(email).push(sub);
+      
+      // Also index by email (legacy fallback)
+      if (sub.user_email) {
+        const email = normEmail(sub.user_email);
+        if (!subsByEmail.has(email)) {
+          subsByEmail.set(email, []);
+        }
+        subsByEmail.get(email).push(sub);
+      }
     });
     
     // Pick best subscription for each user (ignore only incomplete_expired)
-    subsByEmail.forEach((subs, email) => {
+    const processSubs = (subs, key) => {
       // Filter out incomplete_expired only
       const validSubs = subs.filter(s => {
-        const status = (s.data?.status || s.status || '').toLowerCase();
+        const status = (s.status || '').toLowerCase();
         return status !== 'incomplete_expired';
       });
       
@@ -44,7 +57,7 @@ Deno.serve(async (req) => {
       
       // Rank: active > trialing > incomplete > past_due > others
       const rank = (s) => {
-        const st = (s.data?.status || s.status || '').toLowerCase();
+        const st = (s.status || '').toLowerCase();
         if (st === 'active') return 5;
         if (st === 'trialing') return 4;
         if (st === 'incomplete') return 3;
@@ -57,14 +70,26 @@ Deno.serve(async (req) => {
         const rDiff = rank(b) - rank(a);
         if (rDiff !== 0) return rDiff;
         
+        // Prefer pro tier over premium
+        const tierA = (a.tier || '').toLowerCase();
+        const tierB = (b.tier || '').toLowerCase();
+        if (tierB === 'pro' && tierA !== 'pro') return 1;
+        if (tierA === 'pro' && tierB !== 'pro') return -1;
+        
         // If same rank, pick newest by created_date
         const ca = new Date(a.created_date || 0).getTime();
         const cb = new Date(b.created_date || 0).getTime();
         return cb - ca;
       })[0];
       
-      subscriptionMap.set(email, best);
-    });
+      subscriptionMap.set(key, best);
+    };
+    
+    // Process by user_id first
+    subsByUserId.forEach(processSubs);
+    
+    // Then by email as fallback
+    subsByEmail.forEach(processSubs);
 
     // Categorize users
     const paidUsers = [];
@@ -72,15 +97,18 @@ Deno.serve(async (req) => {
 
     allUsers.forEach(user => {
       const email = normEmail(user.email);
-      const subscription = subscriptionMap.get(email);
+      // Check by user ID first, then fall back to email
+      const subscription = subscriptionMap.get(user.id) || subscriptionMap.get(email);
       
       // Check if subscription grants premium access
       // 1. Check Subscription entity first
-      const subStatus = subscription?.data?.status || subscription?.status;
-      const subPeriodEnd = subscription?.data?.current_period_end || subscription?.current_period_end;
+      const subStatus = subscription?.status;
+      const subTier = subscription?.tier;
+      const subPeriodEnd = subscription?.current_period_end;
       let isPaid = subscription && 
         (subStatus === 'active' || subStatus === 'trialing' || subStatus === 'incomplete') &&
-        (!subPeriodEnd || new Date(subPeriodEnd) > new Date());
+        (!subPeriodEnd || new Date(subPeriodEnd) > new Date()) &&
+        (subTier === 'premium' || subTier === 'pro');
       
       // 2. Fallback to User entity fields (for Apple IAP or webhook-synced users)
       if (!isPaid && user.subscription_level === 'paid') {
@@ -93,9 +121,10 @@ Deno.serve(async (req) => {
         role: user.role,
         platform: user.platform || 'unknown',
         created_date: user.created_date,
-        subscription_status: subscription?.data?.status || subscription?.status || user.subscription_status || 'none',
-        subscription_end: subscription?.data?.current_period_end || subscription?.current_period_end || null,
-        billing_interval: subscription?.data?.billing_interval || subscription?.billing_interval || null
+        subscription_status: subscription?.status || user.subscription_status || 'none',
+        subscription_tier: subscription?.tier || user.subscription_tier || 'none',
+        subscription_end: subscription?.current_period_end || null,
+        billing_interval: subscription?.billing_interval || null
       };
 
       if (isPaid) {
