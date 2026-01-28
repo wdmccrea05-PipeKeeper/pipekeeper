@@ -56,16 +56,26 @@ export function useCurrentUser() {
         );
         if (!subs?.length) return null;
         
-        // Filter out incomplete/incomplete_expired
+        // Filter out only incomplete_expired (incomplete is valid if period_end is in future)
         const validSubs = subs.filter(s => {
           const status = (s.status || '').toLowerCase();
-          return status !== 'incomplete' && status !== 'incomplete_expired';
+          if (status === 'incomplete_expired') return false;
+          
+          // Allow incomplete if period_end is in future
+          if (status === 'incomplete') {
+            const periodEnd = s.current_period_end;
+            return periodEnd && new Date(periodEnd).getTime() > Date.now();
+          }
+          
+          return true;
         });
         
         if (!validSubs.length) return null;
         
-        // Prefer active/trialing, then most recent by period_end
-        const bestSub = validSubs.find((s) => s.status === "active" || s.status === "trialing") || validSubs[0];
+        // Prefer active/trialing/incomplete (with future period_end), then most recent by period_end
+        const bestSub = validSubs.find((s) => 
+          s.status === "active" || s.status === "trialing" || s.status === "incomplete"
+        ) || validSubs[0];
         
         return bestSub;
       } catch (err) {

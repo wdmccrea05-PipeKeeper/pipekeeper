@@ -38,8 +38,8 @@ export function hasPaidAccess(user, subscription = null) {
     const subStatus = (subscription.status || "").toLowerCase();
     const periodEnd = subscription.current_period_end;
     
-    // Check if subscription is active/trialing AND not expired
-    const isActiveStatus = subStatus === "active" || subStatus === "trialing";
+    // Check if subscription is active/trialing/incomplete (Stripe checkout may leave status as incomplete) AND not expired
+    const isActiveStatus = subStatus === "active" || subStatus === "trialing" || subStatus === "incomplete";
     const isNotExpired = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     
     return isActiveStatus && isNotExpired;

@@ -13,6 +13,7 @@ export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState(null);
+  const [backfilling, setBackfilling] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['admin-reports'],
@@ -61,6 +62,18 @@ export default function AdminReports() {
     },
     onError: () => toast.error('Failed to block user'),
   });
+
+  const handleBackfillStripe = async () => {
+    setBackfilling(true);
+    try {
+      const result = await base44.functions.invoke('syncStripeSubscriptions');
+      toast.success(result.data?.message || 'Stripe backfill completed');
+    } catch (error) {
+      toast.error('Backfill failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setBackfilling(false);
+    }
+  };
 
   if (!isAdmin) {
     return (
@@ -224,9 +237,19 @@ export default function AdminReports() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
-          <p className="text-[#E0D8C8]/70">Review and manage abuse reports</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
+            <p className="text-[#E0D8C8]/70">Review and manage abuse reports</p>
+          </div>
+          <Button
+            onClick={handleBackfillStripe}
+            disabled={backfilling}
+            variant="outline"
+            className="shrink-0"
+          >
+            {backfilling ? 'Syncing...' : 'Backfill Stripe'}
+          </Button>
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
