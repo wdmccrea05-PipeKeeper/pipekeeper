@@ -150,11 +150,12 @@ Deno.serve(async (req) => {
       await stripe.balance.retrieve();
     } catch (e) {
       console.error("[repairStripeTiers] Stripe auth failed:", e.message);
+      const { safeStripeError } = await import("./_utils/stripe.ts");
       return Response.json({
         ok: false,
         error: "STRIPE_AUTH_FAILED",
         message: "Could not authenticate with Stripe API. Check STRIPE_SECRET_KEY.",
-        details: e.message,
+        details: safeStripeError(e),
       }, { status: 500 });
     }
 
@@ -346,6 +347,11 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[repairStripeTiers] error:", error);
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    const { safeStripeError } = await import("./_utils/stripe.ts");
+    return Response.json({ 
+      ok: false, 
+      error: "FUNCTION_ERROR",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });

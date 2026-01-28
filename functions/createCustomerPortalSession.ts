@@ -73,9 +73,11 @@ Deno.serve(async (req) => {
     return Response.json({ ok: true, url: session.url });
   } catch (error) {
     console.error("[createCustomerPortalSession] error:", error);
+    const { safeStripeError } = await import("./_utils/stripe.ts");
     return Response.json({ 
       ok: false, 
-      error: error?.message || "Failed to create portal session" 
+      error: "PORTAL_CREATION_FAILED",
+      message: safeStripeError(error)
     }, { status: 500 });
   }
 });

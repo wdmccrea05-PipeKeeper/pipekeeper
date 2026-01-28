@@ -359,6 +359,7 @@ Deno.serve(async (req) => {
     return json(200, { ok: true });
   } catch (err) {
     console.error("[webhook] Error:", err);
-    return json(500, { ok: false, error: err?.message || String(err) });
+    const { safeStripeError } = await import("./_utils/stripe.ts");
+    return json(500, { ok: false, error: "WEBHOOK_ERROR", message: safeStripeError(err) });
   }
 });

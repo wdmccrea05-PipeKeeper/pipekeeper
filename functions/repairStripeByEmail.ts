@@ -240,6 +240,11 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[repairStripeByEmail] error:", error);
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    const { safeStripeError } = await import("./_utils/stripe.ts");
+    return Response.json({ 
+      ok: false, 
+      error: "FUNCTION_ERROR",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });

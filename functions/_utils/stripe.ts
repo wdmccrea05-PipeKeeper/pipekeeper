@@ -34,3 +34,26 @@ export function safeStripeError(e: any) {
   const masked = msg.replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
   return masked;
 }
+
+export function stripeKeyErrorResponse(e: any) {
+  const msg = safeStripeError(e);
+  const isKeyError =
+    msg.includes("STRIPE_SECRET_KEY_INVALID") ||
+    msg.toLowerCase().includes("invalid api key") ||
+    msg.toLowerCase().includes("api key provided");
+
+  if (isKeyError) {
+    return {
+      ok: false,
+      error: "STRIPE_SECRET_KEY_INVALID",
+      hint: "Set STRIPE_SECRET_KEY in Base44 env to sk_live_... (live) or sk_test_... (test). Do not use pk_/mk_.",
+      message: msg,
+    };
+  }
+
+  return {
+    ok: false,
+    error: "STRIPE_INIT_FAILED",
+    message: msg,
+  };
+}

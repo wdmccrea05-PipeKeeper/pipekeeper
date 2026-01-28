@@ -107,6 +107,11 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[getMySubscriptionSummary] error:", error);
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    const { safeStripeError } = await import("./_utils/stripe.ts");
+    return Response.json({ 
+      ok: false, 
+      error: "SUBSCRIPTION_FETCH_FAILED",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });

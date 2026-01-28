@@ -231,9 +231,11 @@ Deno.serve(async (req) => {
     return Response.json({ url: session.url });
   } catch (error) {
     console.error("[createCheckoutSession] error:", error);
-    return Response.json(
-      { error: error?.message || "Failed to create checkout session" },
-      { status: 500 }
-    );
+    const { safeStripeError } = await import("./_utils/stripe.ts");
+    return Response.json({
+      ok: false,
+      error: "CHECKOUT_CREATION_FAILED",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });
