@@ -239,19 +239,30 @@ export default function AdminReports() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
-            <p className="text-[#E0D8C8]/70">Review and manage abuse reports</p>
+        <div className="mb-8">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
+              <p className="text-[#E0D8C8]/70">Review and manage abuse reports</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => window.location.href = '/UserReport'}
+                variant="outline"
+                className="shrink-0"
+              >
+                User Subscription Report
+              </Button>
+              <Button
+                onClick={handleBackfillStripe}
+                disabled={backfilling}
+                variant="outline"
+                className="shrink-0"
+              >
+                {backfilling ? 'Syncing...' : 'Backfill Stripe'}
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={handleBackfillStripe}
-            disabled={backfilling}
-            variant="outline"
-            className="shrink-0"
-          >
-            {backfilling ? 'Syncing...' : 'Backfill Stripe'}
-          </Button>
         </div>
 
         {/* Subscription Management */}
