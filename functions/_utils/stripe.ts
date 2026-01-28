@@ -11,11 +11,24 @@ export function getStripeSecretKey() {
   return (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
 }
 
+export function getStripeKeyPrefix(): "sk" | "rk" | "mk" | "pk" | "missing" | "other" {
+  const key = getStripeSecretKey();
+  if (!key) return "missing";
+  if (key.startsWith("sk_")) return "sk";
+  if (key.startsWith("rk_")) return "rk";
+  if (key.startsWith("mk_")) return "mk";
+  if (key.startsWith("pk_")) return "pk";
+  return "other";
+}
+
 export function assertStripeKeyOrThrow() {
   const key = getStripeSecretKey();
-  const ok = key.startsWith("sk_") || key.startsWith("rk_");
-  if (!ok) {
-    throw new Error(`STRIPE_SECRET_KEY_INVALID (expected sk_/rk_). Got ${maskKey(key)}`);
+  const prefix = getStripeKeyPrefix();
+  
+  if (prefix !== "sk" && prefix !== "rk") {
+    throw new Error(
+      `STRIPE_SECRET_KEY_INVALID: Must start with sk_ or rk_. Got prefix: ${prefix}, masked: ${maskKey(key)}`
+    );
   }
   return key;
 }
@@ -32,6 +45,7 @@ export function safeStripeError(e: any) {
 
 export function stripeKeyErrorResponse(e: any) {
   const msg = safeStripeError(e);
+  const prefix = getStripeKeyPrefix();
   const isKeyError =
     msg.includes("STRIPE_SECRET_KEY_INVALID") ||
     msg.toLowerCase().includes("invalid api key") ||
@@ -41,10 +55,11 @@ export function stripeKeyErrorResponse(e: any) {
     return {
       ok: false,
       error: "STRIPE_SECRET_KEY_INVALID",
+      keyPrefix: prefix,
       hint: "Set STRIPE_SECRET_KEY to sk_live_... (live) or sk_test_... (test). Do not use pk_/mk_.",
       message: msg,
     };
   }
 
-  return { ok: false, error: "STRIPE_INIT_FAILED", message: msg };
+  return { ok: false, error: "STRIPE_INIT_FAILED", keyPrefix: prefix, message: msg };
 }

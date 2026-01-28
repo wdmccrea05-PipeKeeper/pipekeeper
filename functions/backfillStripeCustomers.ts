@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, getStripeKeyPrefix, safeStripeError } from "./_utils/stripe.ts";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -43,35 +43,77 @@ function pickBestSubscription(subs) {
 }
 
 Deno.serve(async (req) => {
+  const keyPrefix = getStripeKeyPrefix();
+  
   try {
     const base44 = createClientFromRequest(req);
     const authUser = await base44.auth.me();
 
     if (authUser?.role !== "admin") {
-      return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
+      return Response.json({ 
+        ok: false, 
+        error: "FORBIDDEN", 
+        message: "Admin access required",
+        keyPrefix 
+      }, { status: 403 });
     }
 
+    // Parse request body
+    const body = await req.json().catch(() => ({}));
+    const limit = Math.min(Math.max(body?.limit || 100, 1), 100);
+    const starting_after = body?.starting_after || null;
+    const max_customers = Math.min(body?.max_customers || 100, 100);
+
+    // Initialize and validate Stripe client
     let stripe;
     try {
       stripe = getStripeClient();
     } catch (e) {
-      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
+      return Response.json({
+        ok: false,
+        error: "STRIPE_KEY_INVALID",
+        keyPrefix,
+        message: safeStripeError(e),
+      }, { status: 500 });
     }
 
-    const allCustomers = [];
-    let hasMore = true;
-    let startingAfter = null;
-
-    while (hasMore) {
-      const params = { limit: 100 };
-      if (startingAfter) params.starting_after = startingAfter;
-      
-      const page = await stripe.customers.list(params);
-      allCustomers.push(...(page.data || []));
-      hasMore = page.has_more;
-      startingAfter = page.data?.[page.data.length - 1]?.id;
+    // Sanity check: verify Stripe connection
+    try {
+      await stripe.balance.retrieve();
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_AUTH_FAILED",
+        keyPrefix,
+        stripeSanityOk: false,
+        message: safeStripeError(e),
+      }, { status: 500 });
     }
 
+    // Fetch ONE page of customers
+    const params = { limit };
+    if (starting_after) params.starting_after = starting_after;
+
+    let page;
+    try {
+      page = await stripe.customers.list(params);
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_CALL_FAILED",
+        keyPrefix,
+        stripeSanityOk: true,
+        message: safeStripeError(e),
+      }, { status: 500 });
+    }
+
+    const customers = page.data || [];
+    const hasMore = page.has_more;
+    const nextStartingAfter = hasMore && customers.length > 0 
+      ? customers[customers.length - 1].id 
+      : null;
+
+    // Get existing app users
     let appEmailSet = new Set();
     try {
       const allAppUsers = await base44.asServiceRole.entities.User.list();
@@ -82,11 +124,18 @@ Deno.serve(async (req) => {
 
     let created = 0;
     let updated = 0;
+    let skipped = 0;
+    let errorsCount = 0;
+    const sampleErrors = [];
     const results = [];
 
-    for (const customer of allCustomers) {
+    // Process customers in this batch
+    for (const customer of customers.slice(0, max_customers)) {
       const customerEmail = normEmail(customer.email);
-      if (!customerEmail) continue;
+      if (!customerEmail) {
+        skipped++;
+        continue;
+      }
 
       try {
         const subs = await stripe.subscriptions.list({
@@ -97,7 +146,10 @@ Deno.serve(async (req) => {
         });
 
         const best = pickBestSubscription(subs?.data || []);
-        if (!best) continue;
+        if (!best) {
+          skipped++;
+          continue;
+        }
 
         const periodEnd = isoFromUnixSeconds(best.current_period_end);
         const periodStart = isoFromUnixSeconds(best.current_period_start);
@@ -156,7 +208,10 @@ Deno.serve(async (req) => {
             created++;
             appEmailSet.add(customerEmail);
           } catch (e) {
-            console.log(`[backfillStripeCustomers] Could not create user ${customerEmail}: ${e?.message}`);
+            errorsCount++;
+            if (sampleErrors.length < 5) {
+              sampleErrors.push({ email: customerEmail, error: safeStripeError(e) });
+            }
           }
         } else {
           try {
@@ -174,7 +229,10 @@ Deno.serve(async (req) => {
               updated++;
             }
           } catch (e) {
-            console.log(`[backfillStripeCustomers] Could not update user ${customerEmail}: ${e?.message}`);
+            errorsCount++;
+            if (sampleErrors.length < 5) {
+              sampleErrors.push({ email: customerEmail, error: safeStripeError(e) });
+            }
           }
         }
 
@@ -184,22 +242,33 @@ Deno.serve(async (req) => {
           subscription_status: best.status,
         });
       } catch (e) {
-        console.error(`[backfillStripeCustomers] Error processing customer ${customer.id}:`, safeStripeError(e));
+        errorsCount++;
+        if (sampleErrors.length < 5) {
+          sampleErrors.push({ email: customerEmail, error: safeStripeError(e) });
+        }
       }
     }
 
     return Response.json({
       ok: true,
-      totalCustomers: allCustomers.length,
+      keyPrefix,
+      stripeSanityOk: true,
+      fetchedCustomers: customers.length,
+      hasMore,
+      nextStartingAfter,
       created,
       updated,
+      skipped,
+      errorsCount,
+      sampleErrors,
       results,
     });
   } catch (error) {
     console.error("[backfillStripeCustomers] error:", error);
     return Response.json({
       ok: false,
-      error: "STRIPE_CALL_FAILED",
+      error: "BACKFILL_FAILED",
+      keyPrefix,
       message: safeStripeError(error)
     }, { status: 500 });
   }
