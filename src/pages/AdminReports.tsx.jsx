@@ -376,6 +376,6 @@ export default function AdminReports() {
           <ReconcileEntitlementsBatchCard />
           </div>
           </div>
-    </div>
-  );
-}
+          </div>
+          );
+          }
