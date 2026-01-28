@@ -11,6 +11,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
 import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
+import RepairStripeByEmailCard from '@/components/admin/RepairStripeByEmailCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -279,6 +280,11 @@ export default function AdminReports() {
         {/* Repair Pro Access Card */}
         <div className="mb-6">
           <RepairProAccessCard />
+        </div>
+
+        {/* Repair Stripe by Email Card */}
+        <div className="mb-6">
+          <RepairStripeByEmailCard />
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
