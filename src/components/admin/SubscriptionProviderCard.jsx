@@ -1,66 +1,42 @@
-import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, ExternalLink } from "lucide-react";
+import { AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   isIOSCompanion, 
   openAppleManageSubscriptions, 
   startApplePurchaseFlow 
 } from "@/components/utils/nativeIAPBridge";
-import { pickPrimarySubscription } from "@/components/utils/subscriptionUtils";
 
 export default function SubscriptionProviderCard({ me }) {
+  const qc = useQueryClient();
   const ios = isIOSCompanion();
-  const preferProvider = ios ? "apple" : "stripe";
 
-  const { data: subs } = useQuery({
-    queryKey: ["my-subscriptions", me?.id],
+  const { data: summary, isLoading, refetch } = useQuery({
+    queryKey: ["subscription-summary", me?.id],
     enabled: !!me?.id,
     queryFn: async () => {
-      try {
-        const rows = await base44.entities.Subscription.filter({ user_id: me.id });
-        return rows || [];
-      } catch (e) {
-        console.error("[SubscriptionProviderCard] Failed to fetch subscriptions:", e);
-        return [];
-      }
+      const result = await base44.functions.invoke("getMySubscriptionSummary", {});
+      return result.data;
     },
+    staleTime: 30_000,
   });
-
-  const primary = useMemo(() => pickPrimarySubscription(subs, preferProvider), [subs, preferProvider]);
-
-  const provider = primary?.provider || (me?.subscription_level === "paid" ? "unknown" : "none");
-  const status = primary?.status || me?.subscription_status || "none";
-  const tier = primary?.tier || "premium";
 
   const [showSwitch, setShowSwitch] = useState(false);
   const [switchTier, setSwitchTier] = useState("premium");
   const [doubleBillAck, setDoubleBillAck] = useState(false);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const openStripePortal = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const result = await base44.functions.invoke("createCustomerPortalSession", {});
-      const data = result.data;
-      
-      if (!data?.ok || !data?.url) {
-        setError(data?.error || "Unable to open Stripe portal.");
-        return;
-      }
-      
-      window.open(data.url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      setError(e?.message || "Failed to open Stripe portal");
-    } finally {
-      setLoading(false);
+  const openStripePortal = () => {
+    if (summary?.manage_url) {
+      window.open(summary.manage_url, "_blank", "noopener,noreferrer");
+    } else {
+      setError("Unable to open Stripe portal. Please contact support.");
     }
   };
 
@@ -76,6 +52,31 @@ export default function SubscriptionProviderCard({ me }) {
     setError(null);
     startApplePurchaseFlow(switchTier);
   };
+
+  if (isLoading) {
+    return (
+      <Card className="border-[#A35C5C]/30">
+        <CardContent className="p-6 flex items-center justify-center">
+          <RefreshCw className="w-6 h-6 animate-spin text-[#E0D8C8]" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!summary?.ok) {
+    return (
+      <Card className="border-[#A35C5C]/30">
+        <CardContent className="p-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>Failed to load subscription information</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { paid, provider, tier, status, can_switch_to_apple } = summary;
 
   const providerColors = {
     stripe: "bg-[#635BFF] text-white",
@@ -112,6 +113,9 @@ export default function SubscriptionProviderCard({ me }) {
               )}
             </div>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4" />
+          </Button>
         </div>
 
         {error && (
@@ -130,12 +134,12 @@ export default function SubscriptionProviderCard({ me }) {
 
         {provider === "stripe" && (
           <div className="space-y-3">
-            <Button onClick={openStripePortal} disabled={loading} className="w-full">
+            <Button onClick={openStripePortal} className="w-full">
               <ExternalLink className="w-4 h-4 mr-2" />
-              {loading ? "Opening..." : "Manage on Web (Stripe Portal)"}
+              Manage on Web
             </Button>
 
-            {ios && (
+            {can_switch_to_apple && (
               <div className="border border-white/10 rounded-lg p-4 space-y-3 bg-white/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-[#E0D8C8]">
@@ -150,7 +154,7 @@ export default function SubscriptionProviderCard({ me }) {
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription className="text-xs">
                         Apple subscriptions are separate from web subscriptions. To avoid double billing, 
-                        cancel your web subscription first (or wait until it ends), then purchase through Apple.
+                        cancel your web subscription first, then purchase through Apple.
                       </AlertDescription>
                     </Alert>
 
@@ -183,7 +187,6 @@ export default function SubscriptionProviderCard({ me }) {
                       <Button 
                         variant="outline" 
                         onClick={openStripePortal}
-                        disabled={loading}
                         className="flex-1"
                       >
                         Open Web Management
@@ -226,8 +229,8 @@ export default function SubscriptionProviderCard({ me }) {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              You have an active subscription, but the provider information is not available. 
-              Please contact support if you need assistance.
+              You have an active subscription, but provider information is unavailable. 
+              Please contact support.
             </AlertDescription>
           </Alert>
         )}
