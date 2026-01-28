@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
+import { scanForForbiddenStripeConstructors } from "./_utils/forbidStripeConstructor.ts";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
@@ -123,6 +124,17 @@ Deno.serve(async (req) => {
     // Admin-only
     if (me?.role !== "admin") {
       return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
+    }
+
+    // Hard fail check: detect forbidden Stripe constructors
+    const scan = await scanForForbiddenStripeConstructors();
+    if (scan.ok && scan.forbidden.length > 0) {
+      return Response.json({
+        ok: false,
+        error: "FORBIDDEN_STRIPE_CONSTRUCTOR_REMAINING",
+        message: "Direct Stripe constructor usage detected. All functions must use getStripeClient() from _utils/stripe.ts",
+        files: scan.forbidden,
+      }, { status: 500 });
     }
 
     // Initialize Stripe with validation

@@ -12,6 +12,7 @@ import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationC
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
 import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
 import RepairStripeByEmailCard from '@/components/admin/RepairStripeByEmailCard';
+import StripeDiagnosticsCard from '@/components/admin/StripeDiagnosticsCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -285,6 +286,11 @@ export default function AdminReports() {
         {/* Repair Stripe by Email Card */}
         <div className="mb-6">
           <RepairStripeByEmailCard />
+        </div>
+
+        {/* Stripe Diagnostics Card */}
+        <div className="mb-6">
+          <StripeDiagnosticsCard />
         </div>
 
         <Tabs defaultValue="pending" className="w-full">

@@ -1,10 +1,9 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.4.0";
+import { getStripeClient } from "./_utils/stripe.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 // ---- Config ----
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
 // Price ID mapping (tier + interval -> Stripe Price ID)
@@ -27,8 +26,6 @@ const ALLOWED_PRICE_IDS = (Deno.env.get("ALLOWED_PRICE_IDS") || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
-
-const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 // ---- Helpers ----
 function getPlatform(req) {
@@ -114,19 +111,15 @@ function isAllowedPriceId(priceId) {
 // ---- Handler ----
 Deno.serve(async (req) => {
   try {
-    if (!STRIPE_SECRET_KEY) {
-      return Response.json(
-        { error: "Server misconfigured: STRIPE_SECRET_KEY missing." },
-        { status: 500 }
-      );
-    }
-
     const platform = getPlatform(req);
 
     // Apple compliance: block Stripe checkout inside iOS companion
     if (platform === "ios_companion") {
       return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
     }
+
+    // Initialize Stripe with validation
+    const stripe = getStripeClient();
 
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
