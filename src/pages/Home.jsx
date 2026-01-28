@@ -550,26 +550,31 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                     </div>
 
                     {(() => {
-                      // Calculate tobacco value based on cellar logs
-                      const cellarByBlend = {};
-                      safeCellarLogs.forEach(log => {
-                        if (!cellarByBlend[log.blend_id]) {
-                          cellarByBlend[log.blend_id] = 0;
-                        }
-                        if (log.transaction_type === 'added') {
-                          cellarByBlend[log.blend_id] += (log.amount_oz || 0);
-                        } else if (log.transaction_type === 'removed') {
-                          cellarByBlend[log.blend_id] -= (log.amount_oz || 0);
-                        }
-                      });
-                      
-                      const totalValue = Object.entries(cellarByBlend).reduce((sum, [blendId, oz]) => {
-                        if (oz <= 0) return sum;
-                        const blend = safeBlends.find(b => b.id === blendId);
-                        if (!blend) return sum;
-                        const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
-                        return sum + (valuePerOz * oz);
-                      }, 0);
+                       // Calculate total tobacco value (open + cellared)
+                       const totalValue = safeBlends.reduce((sum, blend) => {
+                         if (!blend) return sum;
+                         const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
+                         if (valuePerOz <= 0) return sum;
+
+                         // Get cellared amount from logs
+                         const cellaredOz = safeCellarLogs.reduce((blendSum, log) => {
+                           if (log.blend_id !== blend.id) return blendSum;
+                           if (log.transaction_type === 'added') {
+                             return blendSum + (log.amount_oz || 0);
+                           } else if (log.transaction_type === 'removed') {
+                             return blendSum - (log.amount_oz || 0);
+                           }
+                           return blendSum;
+                         }, 0);
+
+                         // Total oz = open + cellared
+                         const totalOz = (blend.bulk_open || 0) + (blend.bulk_cellared || 0) + 
+                                        (blend.tin_open_oz || 0) + (blend.tin_cellared_oz || 0) + 
+                                        (blend.pouch_open_oz || 0) + (blend.pouch_cellared_oz || 0) +
+                                        cellaredOz;
+
+                         return sum + (valuePerOz * totalOz);
+                       }, 0);
                       
                       return isPaidUser && totalValue > 0 ? (
                         <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
