@@ -22,17 +22,60 @@ function normalizeSubscriptionStartDate(startedAt, periodStart, createdAt) {
   return startedAt || periodStart || createdAt || null;
 }
 
-function getTierFromPriceId(priceId) {
-  if (!priceId) return null;
-  
-  if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
-    return "pro";
+async function getTier(sub, stripe) {
+  // Priority 1: Subscription metadata.tier (from checkout session)
+  const metadataTier = (sub.metadata?.tier || "").toLowerCase();
+  if (metadataTier === "pro" || metadataTier === "premium") {
+    return metadataTier;
   }
-  
-  if (priceId === PRICE_ID_PREMIUM_MONTHLY || priceId === PRICE_ID_PREMIUM_ANNUAL) {
-    return "premium";
+
+  // Priority 2: Price lookup_key or nickname
+  const priceId = sub.items?.data?.[0]?.price?.id;
+  if (priceId) {
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      
+      const lookupKey = (price.lookup_key || "").toLowerCase();
+      if (lookupKey.includes("pro")) return "pro";
+      if (lookupKey.includes("premium")) return "premium";
+      
+      const nickname = (price.nickname || "").toLowerCase();
+      if (nickname.includes("pro")) return "pro";
+      if (nickname.includes("premium")) return "premium";
+      
+      // Priority 3: Product metadata or name
+      const productId = typeof price.product === "string" ? price.product : price.product?.id;
+      if (productId) {
+        try {
+          const product = await stripe.products.retrieve(productId);
+          
+          const productMetadataTier = (product.metadata?.tier || "").toLowerCase();
+          if (productMetadataTier === "pro" || productMetadataTier === "premium") {
+            return productMetadataTier;
+          }
+          
+          const productName = (product.name || "").toLowerCase();
+          if (productName.includes("pro")) return "pro";
+          if (productName.includes("premium")) return "premium";
+        } catch (err) {
+          console.warn(`[getTier] Failed to retrieve product ${productId}:`, err.message);
+        }
+      }
+    } catch (err) {
+      console.warn(`[getTier] Failed to retrieve price ${priceId}:`, err.message);
+    }
+    
+    // Priority 4: Fallback to env-mapped priceId
+    if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
+      return "pro";
+    }
+    if (priceId === PRICE_ID_PREMIUM_MONTHLY || priceId === PRICE_ID_PREMIUM_ANNUAL) {
+      return "premium";
+    }
   }
-  
+
+  // Priority 5: Return null if tier cannot be determined (do NOT default silently)
+  console.warn(`[getTier] Could not determine tier for subscription ${sub.id}, price ${priceId}`);
   return null;
 }
 
@@ -168,10 +211,15 @@ Deno.serve(async (req) => {
         // Ensure user exists before setting entitlement
         await ensureUserExists(user_email, customerId);
 
-        console.log(`[webhook] checkout.session.completed for ${user_email}, user_id=${user_id}, setting paid status`);
+        // Get tier from session metadata
+        const sessionTier = (session.metadata?.tier || "").toLowerCase();
+        const tierValue = (sessionTier === "pro" || sessionTier === "premium") ? sessionTier : null;
+        
+        console.log(`[webhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}, setting paid status`);
         await setUserEntitlement(user_email, {
           subscription_level: "paid",
           subscription_status: "active",
+          subscription_tier: tierValue,
           stripe_customer_id: customerId || null,
         });
 
@@ -268,13 +316,13 @@ Deno.serve(async (req) => {
         );
         payload.subscriptionStartedAt = subscriptionStartedAt;
 
-        const priceId = sub.items?.data?.[0]?.price?.id;
-        const detectedTier = getTierFromPriceId(priceId);
+        const detectedTier = await getTier(sub, stripe);
         
-        payload.tier = detectedTier || existing?.tier || 'premium';
+        // Keep existing tier if we can't determine new one
+        payload.tier = detectedTier || existing?.tier || null;
         
-        if (!detectedTier && priceId) {
-          console.warn(`[webhook] Unknown price ID: ${priceId}, using tier: ${payload.tier}`);
+        if (!detectedTier) {
+          console.warn(`[webhook] Could not determine tier for subscription ${sub.id}, keeping existing: ${payload.tier || 'null'}`);
         }
 
         await upsertSubscription(payload);
@@ -287,10 +335,11 @@ Deno.serve(async (req) => {
           userRow = await findUserByEmail(user_email);
         }
         
-        console.log(`[webhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, isPaid=${isPaid}`);
+        console.log(`[webhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, tier=${payload.tier}, isPaid=${isPaid}`);
         await setUserEntitlement(user_email, {
           subscription_level: isPaid ? "paid" : "free",
           subscription_status: sub.status,
+          subscription_tier: payload.tier || null,
           stripe_customer_id: customerId || null,
         });
 

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useCurrentUser } from "./useCurrentUser";
 import { buildEntitlements } from "@/components/utils/entitlements";
+import { hasProAccess } from "@/components/utils/premiumAccess";
 
 export function useEntitlements() {
   const { user, subscription, hasPaid, isLoading, isInTrial } = useCurrentUser();
@@ -15,13 +16,17 @@ export function useEntitlements() {
       });
     }
 
-    // Check for Pro tier
-    const isProSubscriber = !!(hasPaid && subscription?.tier === 'pro');
+    const isProSubscriber = hasProAccess(user, subscription);
 
     return buildEntitlements({
       isPaidSubscriber: hasPaid,
       isProSubscriber,
-      subscriptionStartedAt: subscription?.subscriptionStartedAt || subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
+      subscriptionStartedAt:
+        subscription?.subscriptionStartedAt ||
+        subscription?.started_at ||
+        subscription?.current_period_start ||
+        user?.created_date ||
+        null,
       isFreeGrandfathered: user?.isFreeGrandfathered || false,
       isOnTrial: isInTrial,
     });

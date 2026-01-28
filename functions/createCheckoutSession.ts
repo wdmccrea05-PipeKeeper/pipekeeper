@@ -200,6 +200,16 @@ Deno.serve(async (req) => {
       await safePersistCustomerId(base44, emailLower, customerId);
     }
 
+    // Normalize tier and interval for metadata
+    const normalizedTier = String(tier || "premium").toLowerCase();
+    const normalizedInterval = String(interval || "").toLowerCase();
+    let intervalKey = normalizedInterval;
+    if (normalizedInterval === "month" || normalizedInterval === "monthly") {
+      intervalKey = "monthly";
+    } else if (normalizedInterval === "year" || normalizedInterval === "yearly" || normalizedInterval === "annual") {
+      intervalKey = "annual";
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
@@ -211,12 +221,16 @@ Deno.serve(async (req) => {
         user_email: emailLower,
         user_id: userId,
         platform: platform,
+        tier: normalizedTier,
+        interval: intervalKey,
       },
       subscription_data: {
         metadata: {
           user_email: emailLower,
           user_id: userId,
           platform: platform,
+          tier: normalizedTier,
+          interval: intervalKey,
         },
       },
     });
