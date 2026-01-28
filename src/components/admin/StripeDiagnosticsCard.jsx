@@ -72,15 +72,25 @@ export default function StripeDiagnosticsCard() {
           <Alert variant="destructive" className="bg-red-100 border-red-400">
             <XCircle className="h-5 w-5" />
             <AlertDescription>
-              <div className="font-bold text-red-900 mb-1">Stripe Authentication Failed</div>
-              <div className="text-red-800 text-sm">
-                Key Prefix: <span className="font-mono">{result.stripeKeyPrefix}</span>
-              </div>
-              {result.stripeSanityError && (
-                <div className="text-red-800 text-xs mt-1 font-mono bg-red-50 p-2 rounded">
-                  {result.stripeSanityError}
+              <div className="space-y-2">
+                <div className="font-bold text-red-900">Stripe Authentication Failed</div>
+                <div className="text-red-800 text-sm">
+                  <span className="font-semibold">Key Prefix:</span>{" "}
+                  <code className="bg-red-200 px-2 py-0.5 rounded font-mono text-red-900">
+                    {result.keyPrefix || result.stripeKeyPrefix || "unknown"}
+                  </code>
                 </div>
-              )}
+                {result.stripeSanityError && (
+                  <div className="text-red-800 text-xs font-mono bg-red-50 p-2 rounded break-words">
+                    {result.stripeSanityError}
+                  </div>
+                )}
+                {(result.keyPrefix === "mk" || result.keyPrefix === "pk" || result.keyPrefix === "missing" || result.keyPrefix === "other" || !result.stripeKeyValid) && (
+                  <div className="text-sm font-semibold text-red-900 mt-2 bg-yellow-100 border border-yellow-400 p-2 rounded">
+                    ⚠️ STRIPE_SECRET_KEY must start with <code className="font-mono bg-yellow-200 px-1">sk_</code> (secret) or <code className="font-mono bg-yellow-200 px-1">rk_</code> (restricted)
+                  </div>
+                )}
+              </div>
             </AlertDescription>
           </Alert>
         )}
