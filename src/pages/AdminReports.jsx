@@ -240,16 +240,16 @@ export default function AdminReports() {
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
-              <p className="text-[#E0D8C8]/70">Review and manage abuse reports</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
+              <p className="text-sm sm:text-base text-[#E0D8C8]/70">Review and manage abuse reports</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 onClick={() => window.location.href = '/UserReport'}
                 variant="outline"
-                className="shrink-0"
+                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
               >
                 User Subscription Report
               </Button>
@@ -257,7 +257,7 @@ export default function AdminReports() {
                 onClick={handleBackfillStripe}
                 disabled={backfilling}
                 variant="outline"
-                className="shrink-0"
+                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
               >
                 {backfilling ? 'Syncing...' : 'Backfill Stripe'}
               </Button>
