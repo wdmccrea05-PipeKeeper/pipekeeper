@@ -1,43 +1,37 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Stripe from 'npm:stripe@17.5.0';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
 
-const STRIPE_SECRET_KEY = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
 function isActive(sub) {
-  const status = String(sub?.status || "").toLowerCase();
+  if (!sub) return false;
+  const status = (sub.status || "").toLowerCase();
   if (status === "active" || status === "trialing") return true;
-  
-  // Allow incomplete ONLY if period_end is in future
   if (status === "incomplete") {
-    const periodEnd = sub?.current_period_end;
-    return periodEnd && new Date(periodEnd).getTime() > Date.now();
+    const periodEnd = sub.current_period_end;
+    return periodEnd && new Date(periodEnd) > new Date();
   }
-  
   return false;
 }
 
-function pickPrimary(subs, preferProvider) {
-  const activeSubs = subs.filter(isActive);
-  if (!activeSubs.length) return null;
-
-  if (preferProvider) {
-    const preferred = activeSubs.find(s => s.provider === preferProvider);
-    if (preferred) return preferred;
+function pickPrimary(subs, preferredProvider = null) {
+  if (!subs?.length) return null;
+  const active = subs.filter(isActive);
+  if (!active.length) return null;
+  if (preferredProvider) {
+    const pref = active.find((s) => s.provider === preferredProvider);
+    if (pref) return pref;
   }
-
-  const sorted = [...activeSubs].sort((a, b) => {
-    const timeA = a?.current_period_end ? Date.parse(a.current_period_end) : 0;
-    const timeB = b?.current_period_end ? Date.parse(b.current_period_end) : 0;
-    return timeB - timeA;
+  active.sort((a, b) => {
+    const aEnd = new Date(a.current_period_end || 0);
+    const bEnd = new Date(b.current_period_end || 0);
+    return bEnd - aEnd;
   });
-
-  return sorted[0];
+  return active[0];
 }
 
 Deno.serve(async (req) => {
@@ -45,89 +39,74 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
 
-    if (!me?.id) {
+    if (!me?.email) {
       return Response.json({ ok: false, error: "UNAUTHENTICATED" }, { status: 401 });
     }
 
-    const email = normEmail(me.email);
-    
-    // Prefer provider from explicit header, avoid unreliable UA sniffing
-    const preferHeader = req.headers.get("x-pipekeeper-prefer-provider") || "";
-    const preferProvider = preferHeader === "apple" ? "apple" : (preferHeader === "stripe" ? "stripe" : null);
-
-    let subs = [];
-
-    // 1) Fetch by user_id (all providers)
+    // Initialize Stripe with validation
+    let stripe;
     try {
-      const byUserId = await base44.entities.Subscription.filter({ user_id: me.id });
-      if (byUserId?.length) subs = byUserId;
+      stripe = getStripeClient();
     } catch (e) {
-      console.warn("[getMySubscriptionSummary] user_id lookup failed:", e);
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
 
-    // 2) Legacy fallback: Stripe by email
-    if (!subs.length && email) {
-      try {
-        const byEmail = await base44.entities.Subscription.filter({ 
-          provider: "stripe", 
-          user_email: email 
-        });
-        if (byEmail?.length) subs = byEmail;
-      } catch (e) {
-        console.warn("[getMySubscriptionSummary] email lookup failed:", e);
-      }
+    const email = normEmail(me.email);
+    const userId = me.id;
+
+    let allSubs = [];
+    if (userId) {
+      const byUserId = await base44.entities.Subscription.filter({ user_id: userId });
+      allSubs = byUserId || [];
     }
 
-    const primary = pickPrimary(subs, preferProvider);
-    const paid = !!primary || me.subscription_level === "paid";
+    if (allSubs.length === 0 && email) {
+      const byEmail = await base44.entities.Subscription.filter({ 
+        user_email: email,
+        provider: "stripe"
+      });
+      allSubs = byEmail || [];
+    }
 
-    const provider = primary?.provider || (paid ? "unknown" : "none");
-    const tier = primary?.tier || "premium";
-    const status = primary?.status || me.subscription_status || "none";
-    const current_period_end = primary?.current_period_end || null;
+    const stripeSubs = allSubs.filter((s) => s.provider === "stripe");
+    const appleSubs = allSubs.filter((s) => s.provider === "apple");
 
-    let manage_url = null;
-    const can_switch_to_apple = provider === "stripe" && paid && isIOS;
+    const primarySub = pickPrimary(allSubs);
+    const isPaid = !!primarySub;
+    const provider = primarySub?.provider || null;
+    const tier = primarySub?.tier || null;
+    const status = primarySub?.status || null;
+    const expiresAt = primarySub?.current_period_end || null;
 
-    // Generate Stripe portal URL if provider is stripe
-    if (provider === "stripe") {
-      try {
-        let stripeCustomerId = primary?.stripe_customer_id;
+    let stripeCustomerPortalUrl = null;
+    if (stripeSubs.length > 0) {
+      const subWithCustomer = stripeSubs.find((s) => s.stripe_customer_id);
+      const customerId = subWithCustomer?.stripe_customer_id;
 
-        if (!stripeCustomerId && email) {
-          const customers = await stripe.customers.list({ email, limit: 1 });
-          if (customers.data?.length) {
-            stripeCustomerId = customers.data[0].id;
-          }
-        }
-
-        if (stripeCustomerId) {
+      if (customerId) {
+        try {
           const session = await stripe.billingPortal.sessions.create({
-            customer: stripeCustomerId,
+            customer: customerId,
             return_url: APP_URL,
           });
-          manage_url = session.url;
+          stripeCustomerPortalUrl = session.url;
+        } catch (e) {
+          console.warn("[getMySubscriptionSummary] Failed to create portal session:", e.message);
         }
-      } catch (e) {
-        console.warn("[getMySubscriptionSummary] Failed to generate portal URL:", e);
       }
     }
 
     return Response.json({
       ok: true,
-      paid,
+      isPaid,
       provider,
       tier,
       status,
-      current_period_end,
-      manage_url,
-      can_switch_to_apple,
+      expiresAt,
+      stripeCustomerPortalUrl,
     });
   } catch (error) {
     console.error("[getMySubscriptionSummary] error:", error);
-    return Response.json({ 
-      ok: false, 
-      error: error?.message || "Failed to fetch subscription summary" 
-    }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 });

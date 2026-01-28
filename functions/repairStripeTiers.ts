@@ -1,7 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
 
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
@@ -126,11 +125,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    if (!STRIPE_SECRET_KEY) {
-      return Response.json({ ok: false, error: "STRIPE_NOT_CONFIGURED" }, { status: 500 });
+    // Initialize Stripe with validation
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
+    // Sanity check: verify Stripe connection before processing
+    try {
+      await stripe.balance.retrieve();
+    } catch (e) {
+      console.error("[repairStripeTiers] Stripe auth failed:", e.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_AUTH_FAILED",
+        message: "Could not authenticate with Stripe API. Check STRIPE_SECRET_KEY.",
+        details: e.message,
+      }, { status: 500 });
+    }
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default to true

@@ -1,9 +1,7 @@
-import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
 
-const STRIPE_SECRET_KEY = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -16,6 +14,14 @@ Deno.serve(async (req) => {
     
     if (!me?.email) {
       return Response.json({ ok: false, error: "UNAUTHENTICATED" }, { status: 401 });
+    }
+
+    // Initialize Stripe with validation
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
 
     const email = normEmail(me.email);
@@ -40,9 +46,18 @@ Deno.serve(async (req) => {
 
     // Fallback: lookup Stripe customer by email
     if (!stripeCustomerId) {
-      const customers = await stripe.customers.list({ email, limit: 10 });
-      if (customers.data?.length) {
-        stripeCustomerId = customers.data[0].id;
+      try {
+        const customers = await stripe.customers.list({ email, limit: 10 });
+        if (customers.data?.length) {
+          stripeCustomerId = customers.data[0].id;
+        }
+      } catch (e) {
+        console.error("[createCustomerPortalSession] Stripe lookup failed:", e.message);
+        return Response.json({
+          ok: false,
+          error: "STRIPE_LOOKUP_FAILED",
+          message: `Failed to lookup Stripe customer: ${e.message}`,
+        }, { status: 500 });
       }
     }
 

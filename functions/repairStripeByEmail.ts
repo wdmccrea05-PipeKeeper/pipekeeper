@@ -1,7 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
 
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
@@ -63,25 +62,37 @@ Deno.serve(async (req) => {
     const me = await base44.auth.me();
 
     if (me?.role !== "admin") {
-      return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
+      return Response.json({ ok: false, error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    if (!STRIPE_SECRET_KEY) {
-      return Response.json({ ok: false, error: "STRIPE_NOT_CONFIGURED" }, { status: 500 });
+    // Initialize Stripe with validation
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
-
-    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
 
     const body = await req.json().catch(() => ({}));
     const email = normEmail(body.email || "");
     const dryRun = body.dryRun !== false;
 
     if (!email) {
-      return Response.json({ ok: false, error: "Email required" }, { status: 400 });
+      return Response.json({ ok: false, error: "EMAIL_REQUIRED" }, { status: 400 });
     }
 
     // 1. Find Stripe customer
-    const customers = await stripe.customers.list({ email, limit: 3 });
+    let customers;
+    try {
+      customers = await stripe.customers.list({ email, limit: 3 });
+    } catch (e) {
+      console.error("[repairStripeByEmail] Customer lookup failed:", e.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_LOOKUP_FAILED",
+        message: `Failed to lookup Stripe customer: ${e.message}`,
+      }, { status: 500 });
+    }
     
     if (customers.data.length === 0) {
       return Response.json({ 
@@ -94,12 +105,22 @@ Deno.serve(async (req) => {
     const customer = customers.data[0];
 
     // 2. Get subscriptions for customer
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: "all",
-      limit: 10,
-      expand: ["data.items.data.price.product", "data.items.data.price"]
-    });
+    let subscriptions;
+    try {
+      subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 10,
+        expand: ["data.items.data.price.product", "data.items.data.price"]
+      });
+    } catch (e) {
+      console.error("[repairStripeByEmail] Subscription lookup failed:", e.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_LOOKUP_FAILED",
+        message: `Failed to lookup subscriptions: ${e.message}`,
+      }, { status: 500 });
+    }
 
     if (subscriptions.data.length === 0) {
       return Response.json({
