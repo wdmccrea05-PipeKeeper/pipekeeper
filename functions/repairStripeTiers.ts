@@ -7,9 +7,9 @@ const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").t
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-async function resolveTier(stripeSubId, stripe) {
+async function resolveTierFromStripe(stripeSubId, stripe) {
   try {
     const sub = await stripe.subscriptions.retrieve(stripeSubId);
     
@@ -58,139 +58,166 @@ async function resolveTier(stripeSubId, stripe) {
 
     return null;
   } catch (err) {
-    console.error(`[resolveTier] Failed to resolve tier for ${stripeSubId}:`, err.message);
-    return null;
+    console.error(`[resolveTierFromStripe] Failed for ${stripeSubId}:`, err.message);
+    throw err;
   }
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const me = await base44.auth.me();
 
     // Admin-only
-    if (user?.role !== "admin") {
+    if (me?.role !== "admin") {
       return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const dryRun = body.dryRun !== false; // Default to dry run for safety
-    const limit = body.limit || 50;
+    if (!STRIPE_SECRET_KEY) {
+      return Response.json({ ok: false, error: "STRIPE_NOT_CONFIGURED" }, { status: 500 });
+    }
 
-    console.log(`[repairStripeTiers] Starting repair (dryRun=${dryRun}, limit=${limit})`);
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
+
+    const body = await req.json().catch(() => ({}));
+    const dryRun = body.dryRun !== false; // Default to true
+    const limit = body.limit || 200;
+
+    console.log(`[repairStripeTiers] Starting (dryRun=${dryRun}, limit=${limit})`);
 
     // Fetch active Stripe subscriptions
     const allSubs = await base44.asServiceRole.entities.Subscription.filter({
       provider: "stripe",
     });
 
-    const activeSubs = allSubs.filter((sub) => {
+    // Filter to active/trialing or future-dated
+    const eligibleSubs = allSubs.filter((sub) => {
       const status = (sub.status || "").toLowerCase();
-      return status === "active" || status === "trialing";
+      if (status === "active" || status === "trialing") return true;
+      
+      const periodEnd = sub.current_period_end;
+      if (periodEnd && new Date(periodEnd) > new Date()) return true;
+      
+      return false;
     });
 
-    const subsToRepair = activeSubs.slice(0, limit);
+    const subsToRepair = eligibleSubs.slice(0, limit);
 
     const results = {
-      total: subsToRepair.length,
-      repaired: 0,
-      skipped: 0,
-      errors: 0,
-      details: [],
+      scanned: subsToRepair.length,
+      updatedSubscriptions: 0,
+      updatedUsers: 0,
+      unknownTier: 0,
+      missingStripeSubscription: 0,
+      samples: {
+        updated: [],
+        unknown: [],
+        missing: [],
+      },
     };
 
     for (const sub of subsToRepair) {
-      try {
-        const stripeSubId = sub.provider_subscription_id || sub.stripe_subscription_id;
-        if (!stripeSubId) {
-          results.skipped++;
-          results.details.push({
+      const stripeSubId = sub.provider_subscription_id || sub.stripe_subscription_id;
+      if (!stripeSubId) {
+        results.missingStripeSubscription++;
+        if (results.samples.missing.length < 5) {
+          results.samples.missing.push({
             subscription_id: sub.id,
             user_email: sub.user_email,
-            status: "skipped",
             reason: "No Stripe subscription ID",
           });
-          continue;
         }
+        continue;
+      }
 
-        const currentTier = sub.tier;
-        const resolvedTier = await resolveTier(stripeSubId, stripe);
+      try {
+        const resolvedTier = await resolveTierFromStripe(stripeSubId, stripe);
 
         if (!resolvedTier) {
-          results.skipped++;
-          results.details.push({
-            subscription_id: sub.id,
-            user_email: sub.user_email,
-            stripe_sub_id: stripeSubId,
-            status: "skipped",
-            reason: "Could not resolve tier",
-          });
-          continue;
-        }
-
-        if (currentTier === resolvedTier) {
-          results.skipped++;
-          results.details.push({
-            subscription_id: sub.id,
-            user_email: sub.user_email,
-            stripe_sub_id: stripeSubId,
-            status: "skipped",
-            reason: `Tier already correct: ${currentTier}`,
-          });
-          continue;
-        }
-
-        // Update subscription tier
-        if (!dryRun) {
-          await base44.asServiceRole.entities.Subscription.update(sub.id, {
-            tier: resolvedTier,
-          });
-
-          // Update user tier
-          if (sub.user_email) {
-            const users = await base44.asServiceRole.entities.User.filter({
-              email: sub.user_email,
+          results.unknownTier++;
+          if (results.samples.unknown.length < 5) {
+            results.samples.unknown.push({
+              subscription_id: sub.id,
+              user_email: sub.user_email,
+              stripe_sub_id: stripeSubId,
+              current_tier: sub.tier,
+              reason: "Could not resolve tier from Stripe",
             });
-            if (users?.length) {
-              await base44.asServiceRole.entities.User.update(users[0].id, {
-                subscription_tier: resolvedTier,
+          }
+          continue;
+        }
+
+        const needsUpdate = sub.tier !== resolvedTier;
+        
+        if (needsUpdate) {
+          if (!dryRun) {
+            // Update subscription tier
+            await base44.asServiceRole.entities.Subscription.update(sub.id, {
+              tier: resolvedTier,
+            });
+            results.updatedSubscriptions++;
+
+            // Update user tier - try user_id first, then email
+            let userRow = null;
+            if (sub.user_id) {
+              const byUserId = await base44.asServiceRole.entities.User.filter({
+                id: sub.user_id,
               });
+              userRow = byUserId?.[0];
             }
+            
+            if (!userRow && sub.user_email) {
+              const byEmail = await base44.asServiceRole.entities.User.filter({
+                email: normEmail(sub.user_email),
+              });
+              userRow = byEmail?.[0];
+            }
+
+            if (userRow) {
+              const isPaid = sub.status === "active" || sub.status === "trialing";
+              await base44.asServiceRole.entities.User.update(userRow.id, {
+                subscription_tier: resolvedTier,
+                subscription_level: isPaid ? "paid" : "free",
+                subscription_status: sub.status,
+              });
+              results.updatedUsers++;
+            }
+          } else {
+            results.updatedSubscriptions++;
+            results.updatedUsers++;
+          }
+
+          if (results.samples.updated.length < 10) {
+            results.samples.updated.push({
+              subscription_id: sub.id,
+              user_email: sub.user_email,
+              user_id: sub.user_id,
+              stripe_sub_id: stripeSubId,
+              old_tier: sub.tier,
+              new_tier: resolvedTier,
+            });
           }
         }
-
-        results.repaired++;
-        results.details.push({
-          subscription_id: sub.id,
-          user_email: sub.user_email,
-          user_id: sub.user_id,
-          stripe_sub_id: stripeSubId,
-          status: "repaired",
-          old_tier: currentTier,
-          new_tier: resolvedTier,
-          dry_run: dryRun,
-        });
       } catch (err) {
-        results.errors++;
-        results.details.push({
-          subscription_id: sub.id,
-          user_email: sub.user_email,
-          status: "error",
-          error: err.message,
-        });
+        results.missingStripeSubscription++;
+        if (results.samples.missing.length < 5) {
+          results.samples.missing.push({
+            subscription_id: sub.id,
+            user_email: sub.user_email,
+            stripe_sub_id: stripeSubId,
+            reason: `Stripe API error: ${err.message}`,
+          });
+        }
       }
     }
 
     return Response.json({
       ok: true,
-      dry_run: dryRun,
-      results,
-      message: dryRun
-        ? "Dry run complete - set dryRun: false to apply changes"
-        : "Repair complete",
+      dryRun,
+      ...results,
     });
   } catch (error) {
     console.error("[repairStripeTiers] error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 });
