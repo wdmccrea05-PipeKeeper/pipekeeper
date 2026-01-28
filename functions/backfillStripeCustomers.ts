@@ -17,7 +17,7 @@ function maskError(msg: string) {
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   const keyPrefix = getStripeKeyPrefix();
   
   try {
@@ -172,4 +172,4 @@ export default async (req: Request) => {
       headers: { "content-type": "application/json" },
     });
   }
-};
+});

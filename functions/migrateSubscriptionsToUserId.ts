@@ -17,7 +17,7 @@ function maskError(msg: string) {
   return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   const keyPrefix = getStripeKeyPrefix();
   
   try {
@@ -241,4 +241,4 @@ export default async (req: Request) => {
       headers: { "content-type": "application/json" }
     });
   }
-};
+});

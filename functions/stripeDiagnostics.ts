@@ -36,7 +36,7 @@ async function scanForForbiddenConstructors() {
   }
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   const keyPrefix = getStripeKeyPrefix();
   
   try {
@@ -103,4 +103,4 @@ export default async (req: Request) => {
       headers: { "content-type": "application/json" },
     });
   }
-};
+});

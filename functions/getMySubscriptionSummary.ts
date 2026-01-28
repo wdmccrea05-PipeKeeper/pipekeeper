@@ -33,7 +33,7 @@ function pickPrimary(subs, preferredProvider = null) {
   return active[0];
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
@@ -124,4 +124,4 @@ export default async (req: Request) => {
       headers: { "content-type": "application/json" }
     });
   }
-};
+});
