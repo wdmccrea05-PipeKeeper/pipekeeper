@@ -1,3 +1,8 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { getStripeClient, safeStripeError } from "./stripe.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
