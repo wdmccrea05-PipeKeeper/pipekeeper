@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
+import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -273,6 +274,11 @@ export default function AdminReports() {
         {/* Subscription Migration Card */}
         <div className="mb-6">
           <SubscriptionMigrationCard />
+        </div>
+
+        {/* Repair Pro Access Card */}
+        <div className="mb-6">
+          <RepairProAccessCard />
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
