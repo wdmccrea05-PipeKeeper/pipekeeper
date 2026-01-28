@@ -35,6 +35,8 @@ export async function reconcileUserEntitlements(
 ): Promise<ReconcileResult> {
   const email = normEmail(user.email);
   
+  console.log(`[reconcileUserEntitlements] Start: ${email}, forceStripeCheck=${options.forceStripeCheck}`);
+  
   let currentTier = user.subscription_tier || "free";
   let currentLevel = user.subscription_level || "free";
   let currentStatus = user.subscription_status || "";
@@ -177,6 +179,8 @@ export async function reconcileUserEntitlements(
     finalLevel !== currentLevel ||
     finalStatus !== currentStatus ||
     (stripeCustomerId && !user.stripe_customer_id);
+
+  console.log(`[reconcileUserEntitlements] Complete: ${email}, tier=${currentTier}→${finalTier}, level=${currentLevel}→${finalLevel}, changed=${changed}, provider=${providerUsed}`);
 
   return {
     finalTier,
