@@ -210,12 +210,23 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 {blend.ai_evidence_sources?.length > 0 && hasProAccess && (
                   <div>
                     <p className="text-xs text-[#e8d5b7]/50 mb-2">Evidence Sources</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {blend.ai_evidence_sources.map((source, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs border-[#e8d5b7]/20 text-[#e8d5b7]/60">
-                          {source}
-                        </Badge>
-                      ))}
+                    <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
+                      {blend.ai_evidence_sources.map((source, idx) => {
+                        // Extract domain from URL if it's a URL, otherwise use source as-is
+                        const displayText = source.includes("http") 
+                          ? source.match(/(?:https?:\/\/)?(?:www\.)?([^\/]+)/)?.[1] || source 
+                          : source;
+                        return (
+                          <Badge 
+                            key={idx} 
+                            variant="outline" 
+                            className="text-xs border-[#e8d5b7]/20 text-[#e8d5b7]/60 cursor-help whitespace-nowrap"
+                            title={source}
+                          >
+                            {displayText}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
