@@ -1,34 +1,36 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
-
-function getStripeKeyPrefix() {
-  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  if (!key) return "missing";
-  if (key.startsWith("sk_")) return "sk";
-  if (key.startsWith("rk_")) return "rk";
-  if (key.startsWith("mk_")) return "mk";
-  if (key.startsWith("pk_")) return "pk";
-  return "other";
-}
-
-function maskError(msg: string) {
-  return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
-}
+import { getStripeClient, getStripeKeyPrefix, safeStripeError, stripeSanityCheck } from "./_utils/stripe.ts";
 
 async function scanForForbiddenConstructors() {
   try {
     const functionsDir = "./functions";
     const forbidden: string[] = [];
     
-    for await (const entry of Deno.readDir(functionsDir)) {
-      if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
-        const filePath = `${functionsDir}/${entry.name}`;
-        const content = await Deno.readTextFile(filePath);
-        if (content.includes("new Stripe(")) {
-          forbidden.push(entry.name);
+    async function scanDir(dir: string, prefix = "") {
+      for await (const entry of Deno.readDir(dir)) {
+        const fullPath = `${dir}/${entry.name}`;
+        const displayPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+        
+        if (entry.isDirectory && entry.name !== "node_modules") {
+          await scanDir(fullPath, displayPath);
+        } else if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
+          // Skip the stripe helper itself
+          if (fullPath.includes("_utils/stripe")) continue;
+          
+          const content = await Deno.readTextFile(fullPath);
+          if (content.includes("new Stripe(") || content.match(/import\s+Stripe\s+from\s+['"]/)) {
+            forbidden.push(displayPath);
+          }
         }
       }
     }
+    
+    await scanDir(functionsDir);
     
     return { ok: true, forbidden };
   } catch (e) {
@@ -56,22 +58,22 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const stripeKeyValid = keyPrefix === "sk" || keyPrefix === "rk";
+    // STRICT: Only sk_ allowed
+    const stripeKeyValid = keyPrefix === "sk";
     let stripeSanityOk = false;
     let stripeSanityError: string | null = null;
 
     if (stripeKeyValid) {
       try {
-        const key = Deno.env.get("STRIPE_SECRET_KEY")!.trim();
-        const stripe = new Stripe(key, { apiVersion: "2024-06-20" });
-        await stripe.balance.retrieve();
+        const stripe = getStripeClient();
+        await stripeSanityCheck(stripe);
         stripeSanityOk = true;
       } catch (e) {
         stripeSanityOk = false;
-        stripeSanityError = maskError(String(e?.message || e));
+        stripeSanityError = safeStripeError(e);
       }
     } else {
-      stripeSanityError = `Invalid key prefix: ${keyPrefix}. Use sk_ or rk_.`;
+      stripeSanityError = `FORBIDDEN: STRIPE_SECRET_KEY must start with sk_ (secret key). Found: ${keyPrefix}_`;
     }
 
     const scan = await scanForForbiddenConstructors();
@@ -97,7 +99,7 @@ Deno.serve(async (req: Request) => {
       ok: false,
       error: "DIAGNOSTICS_FAILED",
       keyPrefix,
-      message: maskError(String(error?.message || error))
+      message: safeStripeError(error)
     }), {
       status: 500,
       headers: { "content-type": "application/json" },

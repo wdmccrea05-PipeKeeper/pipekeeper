@@ -1,5 +1,10 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -358,8 +363,7 @@ Deno.serve(async (req) => {
 
     return json(200, { ok: true });
   } catch (err) {
-    console.error("[webhook] Error:", err);
-    const { safeStripeError } = await import("./_utils/stripe.ts");
+    console.error("[webhook] Fatal error:", err);
     return json(500, { ok: false, error: "WEBHOOK_ERROR", message: safeStripeError(err) });
   }
 });
