@@ -17,14 +17,18 @@ export default function SubscriptionProviderCard({ me }) {
   const qc = useQueryClient();
   const ios = isIOSCompanion();
 
-  const { data: summary, isLoading, refetch } = useQuery({
+  const { data: summary, isLoading, error: fetchError, refetch } = useQuery({
     queryKey: ["subscription-summary", me?.id],
     enabled: !!me?.id,
     queryFn: async () => {
       const result = await base44.functions.invoke("getMySubscriptionSummary", {});
+      if (result.data?.ok === false) {
+        throw new Error(result.data.message || result.data.error || "Failed to fetch subscription");
+      }
       return result.data;
     },
     staleTime: 30_000,
+    retry: 1
   });
 
   const [showSwitch, setShowSwitch] = useState(false);
@@ -33,8 +37,9 @@ export default function SubscriptionProviderCard({ me }) {
   const [error, setError] = useState(null);
 
   const openStripePortal = () => {
-    if (summary?.manage_url) {
-      window.open(summary.manage_url, "_blank", "noopener,noreferrer");
+    const url = summary?.manageUrl || summary?.manage_url;
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     } else {
       setError("Unable to open Stripe portal. Please contact support.");
     }
@@ -63,20 +68,26 @@ export default function SubscriptionProviderCard({ me }) {
     );
   }
 
-  if (!summary?.ok) {
+  if (fetchError || (!summary?.ok && summary !== undefined)) {
     return (
       <Card className="border-[#A35C5C]/30">
-        <CardContent className="p-6">
+        <CardContent className="p-6 space-y-3">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Failed to load subscription information</AlertDescription>
+            <AlertDescription>
+              {fetchError?.message || summary?.error || "Failed to load subscription information"}
+            </AlertDescription>
           </Alert>
+          <Button onClick={() => refetch()} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
         </CardContent>
       </Card>
     );
   }
 
-  const { paid, provider, tier, status, can_switch_to_apple } = summary;
+  const { paid, provider, tier, status, can_switch_to_apple, warning } = summary || {};
 
   const providerColors = {
     stripe: "bg-[#635BFF] text-white",
@@ -118,10 +129,10 @@ export default function SubscriptionProviderCard({ me }) {
           </Button>
         </div>
 
-        {error && (
-          <Alert variant="destructive">
+        {(error || warning) && (
+          <Alert variant={error ? "destructive" : "default"}>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{error || warning}</AlertDescription>
           </Alert>
         )}
 
