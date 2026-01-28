@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
+import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -251,6 +252,11 @@ export default function AdminReports() {
           >
             {backfilling ? 'Syncing...' : 'Backfill Stripe'}
           </Button>
+        </div>
+
+        {/* Subscription Management */}
+        <div className="mb-6">
+          <SubscriptionProviderCard me={user} />
         </div>
 
         {/* Subscription Migration Card */}
