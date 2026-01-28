@@ -58,12 +58,19 @@ async function resolveTier(stripeSub, stripe) {
 }
 
 Deno.serve(async (req) => {
+  const keyPrefix = getStripeKeyPrefix();
+  
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
 
     if (me?.role !== "admin") {
-      return Response.json({ ok: false, error: "Forbidden: Admin access required" }, { status: 403 });
+      return Response.json({ 
+        ok: false, 
+        error: "FORBIDDEN",
+        message: "Admin access required",
+        keyPrefix 
+      }, { status: 403 });
     }
 
     // Hard fail check: detect forbidden Stripe constructors
@@ -74,6 +81,7 @@ Deno.serve(async (req) => {
         error: "FORBIDDEN_STRIPE_CONSTRUCTOR_REMAINING",
         message: "Direct Stripe constructor usage detected. All functions must use getStripeClient() from _utils/stripe.ts",
         files: scan.forbidden,
+        keyPrefix,
       }, { status: 500 });
     }
 
@@ -82,7 +90,23 @@ Deno.serve(async (req) => {
     try {
       stripe = getStripeClient();
     } catch (e) {
-      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
+      const err = stripeKeyErrorResponse(e);
+      return Response.json(err, { status: 500 });
+    }
+
+    // Sanity check: verify Stripe connection before processing
+    try {
+      await stripe.balance.retrieve();
+    } catch (e) {
+      console.error("[repairStripeByEmail] Stripe auth failed:", e.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_AUTH_FAILED",
+        keyPrefix,
+        stripeSanityOk: false,
+        message: "Could not authenticate with Stripe API. Check STRIPE_SECRET_KEY.",
+        details: safeStripeError(e),
+      }, { status: 500 });
     }
 
     const body = await req.json().catch(() => ({}));
