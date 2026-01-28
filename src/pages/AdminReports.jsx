@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -250,6 +251,11 @@ export default function AdminReports() {
           >
             {backfilling ? 'Syncing...' : 'Backfill Stripe'}
           </Button>
+        </div>
+
+        {/* Subscription Migration Card */}
+        <div className="mb-6">
+          <SubscriptionMigrationCard />
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
