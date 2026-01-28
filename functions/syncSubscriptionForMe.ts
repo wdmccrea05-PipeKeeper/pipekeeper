@@ -4,7 +4,7 @@
 // Returns instantly with updated subscription data
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -47,16 +47,15 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeSecret) {
-      return Response.json({ ok: false, error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
-
-    const stripe = new Stripe(stripeSecret, { apiVersion: "2024-06-20" });
 
     const targetEmail = normEmail(authUser.email);
 
-    // Find Stripe customer by email or existing stripe_customer_id
     let customerId = authUser?.stripe_customer_id || null;
 
     if (customerId) {
@@ -68,8 +67,16 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
-      const customers = await stripe.customers.list({ email: targetEmail, limit: 1 });
-      customerId = customers.data?.[0]?.id || null;
+      try {
+        const customers = await stripe.customers.list({ email: targetEmail, limit: 1 });
+        customerId = customers.data?.[0]?.id || null;
+      } catch (e) {
+        return Response.json({
+          ok: false,
+          error: "STRIPE_CALL_FAILED",
+          message: safeStripeError(e)
+        }, { status: 500 });
+      }
     }
 
     if (!customerId) {
@@ -81,13 +88,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch all subscriptions for this customer
-    const list = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "all",
-      limit: 25,
-      expand: ["data.customer", "data.items.data.price"],
-    });
+    let list;
+    try {
+      list = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 25,
+        expand: ["data.customer", "data.items.data.price"],
+      });
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_CALL_FAILED",
+        message: safeStripeError(e)
+      }, { status: 500 });
+    }
 
     const best = pickBestSubscription(list?.data || []);
     if (!best) {
@@ -100,7 +115,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build subscription payload
     const customerObj = best.customer;
     const customerEmail =
       customerObj && typeof customerObj === "object" ? normEmail(customerObj.email) : "";
@@ -130,7 +144,6 @@ Deno.serve(async (req) => {
       amount,
     };
 
-    // Upsert Subscription entity
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
       stripe_subscription_id: best.id,
     });
@@ -144,12 +157,10 @@ Deno.serve(async (req) => {
       subscriptionRowId = created?.id || null;
     }
 
-    // Compute paid status
     const status = String(best.status || "").toLowerCase();
     const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     const isPaid = (status === "active" || status === "trialing") && endOk;
 
-    // Determine if user is a founding member (subscribed before Feb 1, 2026)
     const FOUNDING_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
     const trialEnd = isoFromUnixSeconds(best.trial_end);
     const startedAt = periodStart || (trialEnd ? new Date(trialEnd).toISOString() : null);
@@ -165,7 +176,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update User entity
     const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
 
     let updatedUser = false;
@@ -177,7 +187,6 @@ Deno.serve(async (req) => {
         stripe_customer_id: customerId,
       };
       
-      // Set founding member status (only if not already set - sticky flag)
       if (isFoundingMember && !userRec.isFoundingMember) {
         userUpdate.isFoundingMember = true;
         userUpdate.foundingMemberSince = foundingMemberSince;
@@ -203,9 +212,10 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[syncSubscriptionForMe] error:", error);
-    return Response.json(
-      { ok: false, error: error?.message || String(error) },
-      { status: 500 }
-    );
+    return Response.json({
+      ok: false,
+      error: "FUNCTION_ERROR",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });

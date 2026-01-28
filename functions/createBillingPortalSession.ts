@@ -1,10 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.4.0";
+import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
 
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
-
-const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 function getPlatform(req) {
   try {
@@ -35,18 +32,17 @@ async function safePersistCustomerId(base44, email, customerId) {
 
 Deno.serve(async (req) => {
   try {
-    if (!STRIPE_SECRET_KEY) {
-      return Response.json(
-        { error: "Server misconfigured: STRIPE_SECRET_KEY missing." },
-        { status: 500 }
-      );
-    }
-
     const platform = getPlatform(req);
 
-    // Apple compliance: billing portal not available in iOS companion
     if (platform === "ios_companion") {
       return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
+    }
+
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }
 
     const base44 = createClientFromRequest(req);
@@ -56,40 +52,54 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Prefer stripe_customer_id stored on user
     let customerId = user.stripe_customer_id || null;
 
-    // Fallback: find Stripe customer by email
     if (!customerId) {
-      const existing = await stripe.customers.list({ email: user.email, limit: 1 });
-      customerId = existing.data?.[0]?.id || null;
+      try {
+        const existing = await stripe.customers.list({ email: user.email, limit: 1 });
+        customerId = existing.data?.[0]?.id || null;
+      } catch (e) {
+        return Response.json({
+          ok: false,
+          error: "STRIPE_CALL_FAILED",
+          message: safeStripeError(e)
+        }, { status: 500 });
+      }
     }
 
     if (!customerId) {
-      return Response.json(
-        { error: "No Stripe customer found for this account yet. Please subscribe first." },
-        { status: 400 }
-      );
+      return Response.json({
+        error: "No Stripe customer found for this account yet. Please subscribe first."
+      }, { status: 400 });
     }
 
-    // Best-effort persistence
     if (!user.stripe_customer_id) {
       await safePersistCustomerId(base44, user.email, customerId);
     }
 
     const origin = safeOrigin(req);
 
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${origin}/Profile`,
-    });
+    let portalSession;
+    try {
+      portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${origin}/Profile`,
+      });
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "PORTAL_CREATION_FAILED",
+        message: safeStripeError(e)
+      }, { status: 500 });
+    }
 
     return Response.json({ url: portalSession.url });
   } catch (error) {
     console.error("[createBillingPortalSession] error:", error);
-    return Response.json(
-      { error: error?.message || "Failed to create billing portal session" },
-      { status: 500 }
-    );
+    return Response.json({
+      ok: false,
+      error: "FUNCTION_ERROR",
+      message: safeStripeError(error)
+    }, { status: 500 });
   }
 });

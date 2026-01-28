@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -9,7 +9,6 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Admin check
     const authUser = await base44.auth.me();
     if (!authUser || authUser.role !== "admin") {
       return Response.json({ error: "Admin access required" }, { status: 403 });
@@ -21,14 +20,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: "userEmail required" }, { status: 400 });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"), { apiVersion: "2024-12-18.acacia" });
+    let stripe;
+    try {
+      stripe = getStripeClient();
+    } catch (e) {
+      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
+    }
+
     const normalizedEmail = normEmail(userEmail);
     
-    // Find user's Stripe customer
-    const customers = await stripe.customers.list({
-      email: normalizedEmail,
-      limit: 10
-    });
+    let customers;
+    try {
+      customers = await stripe.customers.list({
+        email: normalizedEmail,
+        limit: 10
+      });
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_CALL_FAILED",
+        message: safeStripeError(e)
+      }, { status: 500 });
+    }
     
     if (!customers.data.length) {
       return Response.json({ error: "No Stripe customer found", email: normalizedEmail }, { status: 404 });
@@ -36,15 +49,22 @@ Deno.serve(async (req) => {
     
     const customer = customers.data[0];
     
-    // Get ALL subscriptions (active, trialing, past_due)
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: "all",
-      limit: 10,
-      expand: ["data.items.data.price"]
-    });
+    let subscriptions;
+    try {
+      subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 10,
+        expand: ["data.items.data.price"]
+      });
+    } catch (e) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_CALL_FAILED",
+        message: safeStripeError(e)
+      }, { status: 500 });
+    }
     
-    // Pick best subscription
     const pickBest = (subs) => {
       if (!subs.length) return null;
       const ranked = subs.sort((a, b) => {
@@ -66,13 +86,11 @@ Deno.serve(async (req) => {
       }, { status: 404 });
     }
     
-    // Determine tier
     const PRICE_ID_PRO_MONTHLY = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
     const PRICE_ID_PRO_ANNUAL = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
     const priceId = sub.items?.data?.[0]?.price?.id;
     const tier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) ? "pro" : "premium";
     
-    // Upsert subscription
     const existing = await base44.asServiceRole.entities.Subscription.filter({
       stripe_subscription_id: sub.id
     });
@@ -103,7 +121,6 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Subscription.create(subData);
     }
     
-    // Update User entity
     const users = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
     const isPaid = (sub.status === "active" || sub.status === "trialing") && (!periodEnd || new Date(periodEnd) > new Date());
     
@@ -130,8 +147,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({
       ok: false,
-      error: error.message,
-      stack: error.stack
+      error: "FUNCTION_ERROR",
+      message: safeStripeError(error)
     }, { status: 500 });
   }
 });
