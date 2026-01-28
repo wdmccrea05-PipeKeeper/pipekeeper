@@ -13,7 +13,8 @@ import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCar
 import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
 import RepairStripeByEmailCard from '@/components/admin/RepairStripeByEmailCard';
 import StripeDiagnosticsCard from '@/components/admin/StripeDiagnosticsCard';
-import BackfillStripeCard from '@/components/admin/BackfillStripeCard.jsx';
+import ReconcileEntitlementsCard from '@/components/admin/ReconcileEntitlementsCard';
+import ReconcileEntitlementsBatchCard from '@/components/admin/ReconcileEntitlementsBatchCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
@@ -243,77 +244,49 @@ export default function AdminReports() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
-              <p className="text-sm sm:text-base text-[#E0D8C8]/70">Review and manage abuse reports</p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                onClick={() => window.location.href = '/UserReport'}
-                variant="outline"
-                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
-              >
-                User Subscription Report
-              </Button>
-              <Button
-                onClick={handleBackfillStripe}
-                disabled={backfilling}
-                variant="outline"
-                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
-              >
-                {backfilling ? 'Syncing...' : 'Backfill Stripe'}
-              </Button>
-            </div>
-          </div>
-        </div>
+       <div className="mb-8">
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+           <div>
+             <h1 className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
+             <p className="text-sm sm:text-base text-[#E0D8C8]/70">Review and manage abuse reports</p>
+           </div>
+           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+             <Button
+               onClick={() => window.location.href = '/UserReport'}
+               variant="outline"
+               className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
+             >
+               User Subscription Report
+             </Button>
+             <Button
+               onClick={handleBackfillStripe}
+               disabled={backfilling}
+               variant="outline"
+               className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
+             >
+               {backfilling ? 'Syncing...' : 'Backfill Stripe'}
+             </Button>
+           </div>
+         </div>
+       </div>
 
-        {/* Subscription Management */}
-        <div className="mb-6">
-          <SubscriptionProviderCard me={user} />
-        </div>
-
-        {/* Subscription Migration Card */}
-        <div className="mb-6">
-          <SubscriptionMigrationCard />
-        </div>
-
-        {/* Repair Pro Access Card */}
-        <div className="mb-6">
-          <RepairProAccessCard />
-        </div>
-
-        {/* Repair Stripe by Email Card */}
-        <div className="mb-6">
-          <RepairStripeByEmailCard />
-        </div>
-
-        {/* Stripe Diagnostics Card */}
-        <div className="mb-6">
-          <StripeDiagnosticsCard />
-        </div>
-
-        {/* Backfill Stripe Customers Card */}
-        <div className="mb-6">
-          <BackfillStripeCard />
-        </div>
-
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6">
-            <TabsTrigger value="pending" className="text-xs sm:text-sm">
-              Pending ({pendingReports.length})
-            </TabsTrigger>
-            <TabsTrigger value="reviewed" className="text-xs sm:text-sm">
-              Reviewed ({reviewedReports.length})
-            </TabsTrigger>
-            <TabsTrigger value="actioned" className="text-xs sm:text-sm">
-              Actioned ({actionedReports.length})
-            </TabsTrigger>
-            <TabsTrigger value="dismissed" className="text-xs sm:text-sm">
-              Dismissed ({dismissedReports.length})
-            </TabsTrigger>
-          </TabsList>
+       {/* Abuse Reports - Moved to Top */}
+       <div className="mb-8">
+         <Tabs defaultValue="pending" className="w-full">
+           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6">
+             <TabsTrigger value="pending" className="text-xs sm:text-sm">
+               Pending ({pendingReports.length})
+             </TabsTrigger>
+             <TabsTrigger value="reviewed" className="text-xs sm:text-sm">
+               Reviewed ({reviewedReports.length})
+             </TabsTrigger>
+             <TabsTrigger value="actioned" className="text-xs sm:text-sm">
+               Actioned ({actionedReports.length})
+             </TabsTrigger>
+             <TabsTrigger value="dismissed" className="text-xs sm:text-sm">
+               Dismissed ({dismissedReports.length})
+             </TabsTrigger>
+           </TabsList>
 
           <TabsContent value="pending">
             {isLoading ? (
