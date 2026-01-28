@@ -65,14 +65,27 @@ export function getManageSubscriptionLabel() {
 export async function startSubscriptionCheckout(billingInterval) {
   // Apple build or iOS companion: purchases must be IAP (native)
   if (isAppleBuild || isIOSCompanion()) {
-    // You can replace this later with a native bridge trigger.
+    // Import native bridge if available
+    try {
+      const { startApplePurchaseFlow } = await import("./nativeIAPBridge");
+      if (startApplePurchaseFlow) {
+        startApplePurchaseFlow("premium");
+        return;
+      }
+    } catch (e) {
+      // Fallback to Apple subscriptions page
+    }
     window.open(APPLE_SUBSCRIPTIONS_URL, "_blank", "noopener,noreferrer");
     return;
   }
 
   // Web/Android: Stripe Checkout
   try {
-    const response = await base44.functions.invoke("createCheckoutSession", { billingInterval });
+    const interval = billingInterval === "monthly" ? "monthly" : "annual";
+    const response = await base44.functions.invoke("createCheckoutSession", { 
+      tier: "premium", 
+      interval 
+    });
     const url = response?.data?.url;
 
     if (!url) throw new Error("Could not start checkout");

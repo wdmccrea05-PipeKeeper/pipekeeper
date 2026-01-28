@@ -11,7 +11,15 @@ function normEmail(email) {
 
 function isActive(sub) {
   const status = String(sub?.status || "").toLowerCase();
-  return status === "active" || status === "trialing" || status === "incomplete";
+  if (status === "active" || status === "trialing") return true;
+  
+  // Allow incomplete ONLY if period_end is in future
+  if (status === "incomplete") {
+    const periodEnd = sub?.current_period_end;
+    return periodEnd && new Date(periodEnd).getTime() > Date.now();
+  }
+  
+  return false;
 }
 
 function pickPrimary(subs, preferProvider) {
@@ -42,9 +50,10 @@ Deno.serve(async (req) => {
     }
 
     const email = normEmail(me.email);
-    const userAgent = req.headers.get("user-agent") || "";
-    const isIOS = userAgent.toLowerCase().includes("ios") || userAgent.toLowerCase().includes("iphone");
-    const preferProvider = isIOS ? "apple" : "stripe";
+    
+    // Prefer provider from explicit header, avoid unreliable UA sniffing
+    const preferHeader = req.headers.get("x-pipekeeper-prefer-provider") || "";
+    const preferProvider = preferHeader === "apple" ? "apple" : (preferHeader === "stripe" ? "stripe" : null);
 
     let subs = [];
 

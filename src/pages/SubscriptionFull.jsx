@@ -20,8 +20,9 @@ export default function SubscriptionFull() {
     // Ask native for current status
     requestNativeSubscriptionStatus();
 
-    // Listen for native updates
-    const cleanup = registerNativeSubscriptionListener((active) => {
+    // Listen for native updates - payload is an object, not boolean
+    const cleanup = registerNativeSubscriptionListener((payload) => {
+      const active = !!payload.active;
       setIsPro(active);
       if (active) setMessage("Subscription active ✅");
     });

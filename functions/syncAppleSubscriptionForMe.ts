@@ -30,7 +30,11 @@ Deno.serve(async (req) => {
     
     // Require originalTransactionId for active subscriptions
     if (active && !originalTransactionId) {
-      console.warn('[syncAppleSubscriptionForMe] Active subscription without originalTransactionId, using fallback');
+      return Response.json({
+        ok: false,
+        error: 'Active subscription requires originalTransactionId',
+        code: 'MISSING_ORIGINAL_TX'
+      }, { status: 400 });
     }
     
     // Determine tier
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}`);
     }
     
-    // Update User entity
+    // Create or update User entity
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     if (users && users.length > 0) {
       await base44.asServiceRole.entities.User.update(users[0].id, {
@@ -103,6 +107,17 @@ Deno.serve(async (req) => {
         platform: 'ios'
       });
       console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${active ? 'paid' : 'free'}`);
+    } else {
+      // Create entity User if doesn't exist
+      await base44.asServiceRole.entities.User.create({
+        email: emailLower,
+        full_name: `User ${emailLower}`,
+        role: 'user',
+        subscription_level: active ? 'paid' : 'free',
+        subscription_status: status,
+        platform: 'ios'
+      });
+      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${active ? 'paid' : 'free'}`);
     }
     
     return Response.json({

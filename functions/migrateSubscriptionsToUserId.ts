@@ -22,21 +22,37 @@ Deno.serve(async (req) => {
     let usersCreated = 0;
     let subsLinkedToUserId = 0;
     let usersUpdated = 0;
-    let conflicts = 0;
+    let noAuthUser = 0;
 
     const createdUsers = [];
     const linkedSubs = [];
-    const mismatches = [];
+    const noAuthUserRecords = [];
 
     // Fetch all subscriptions (or batch if you have cursor support)
     const allSubs = await base44.asServiceRole.entities.Subscription.list('-created_date', limit);
     
-    // Fetch all users once to build email -> user_id map
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const userByEmail = new Map();
-    allUsers.forEach(u => {
+    // Fetch all auth users using the SDK (if available)
+    let authUserByEmail = new Map();
+    
+    // Try to get all auth users - use whichever method is available
+    try {
+      // Try method 1: list users (if available)
+      const authUsers = await base44.asServiceRole.auth.listUsers?.() || [];
+      authUsers.forEach(u => {
+        if (u.email) {
+          authUserByEmail.set(normEmail(u.email), u);
+        }
+      });
+    } catch (e) {
+      console.warn('[migrateSubscriptionsToUserId] Could not list auth users:', e?.message);
+    }
+    
+    // Fetch all entity Users to build email -> entity user map
+    const allEntityUsers = await base44.asServiceRole.entities.User.list();
+    const entityUserByEmail = new Map();
+    allEntityUsers.forEach(u => {
       if (u.email) {
-        userByEmail.set(normEmail(u.email), u);
+        entityUserByEmail.set(normEmail(u.email), u);
       }
     });
 
@@ -71,51 +87,77 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Find or create User entity
-      let targetUser = userByEmail.get(emailLower);
+      // Try to find auth user by email
+      let authUserId = null;
       
-      if (!targetUser) {
-        // User doesn't exist - create one
-        usersCreated++;
-        createdUsers.push({ email: emailLower, sub_id: sub.id });
+      // First check the map we built
+      const authUserFromMap = authUserByEmail.get(emailLower);
+      if (authUserFromMap?.id) {
+        authUserId = authUserFromMap.id;
+      }
+      
+      // If not in map, try to fetch directly (fallback)
+      if (!authUserId) {
+        try {
+          const authUserDirect = await base44.asServiceRole.auth.getUserByEmail?.(emailLower);
+          if (authUserDirect?.id) {
+            authUserId = authUserDirect.id;
+            authUserByEmail.set(emailLower, authUserDirect); // cache it
+          }
+        } catch (e) {
+          // Ignore - no auth user found
+        }
+      }
+      
+      if (!authUserId) {
+        noAuthUser++;
+        noAuthUserRecords.push({ email: emailLower, sub_id: sub.id });
+        // Keep email fallback, don't set user_id
+        continue;
+      }
+
+      // Auth user found - link subscription
+      subsLinkedToUserId++;
+      linkedSubs.push({
+        sub_id: sub.id,
+        auth_user_id: authUserId,
+        email: emailLower
+      });
+
+      if (!dryRun) {
+        await base44.asServiceRole.entities.Subscription.update(sub.id, {
+          user_id: authUserId,
+          user_email: emailLower,
+          provider: 'stripe',
+          provider_subscription_id: sub.stripe_subscription_id || sub.provider_subscription_id
+        });
+
+        // Create or update entity User
+        let entityUser = entityUserByEmail.get(emailLower);
         
-        if (!dryRun) {
-          const newUser = await base44.asServiceRole.entities.User.create({
+        if (!entityUser) {
+          // Create entity User
+          const newEntityUser = await base44.asServiceRole.entities.User.create({
             email: emailLower,
             full_name: `User ${emailLower}`,
             role: 'user',
             subscription_level: 'paid',
             platform: 'web'
           });
-          targetUser = newUser;
-          userByEmail.set(emailLower, newUser);
+          entityUser = newEntityUser;
+          entityUserByEmail.set(emailLower, newEntityUser);
+          usersCreated++;
+          createdUsers.push({ email: emailLower, entity_user_id: newEntityUser.id });
         }
-      }
-
-      // Link subscription to user_id
-      if (targetUser?.id) {
-        subsLinkedToUserId++;
-        linkedSubs.push({
-          sub_id: sub.id,
-          user_id: targetUser.id,
-          email: emailLower
+        
+        // Update entity User with auth_user_id and subscription info
+        const isPaid = sub.status === 'active' || sub.status === 'trialing';
+        await base44.asServiceRole.entities.User.update(entityUser.id, {
+          subscription_level: isPaid ? 'paid' : 'free',
+          subscription_status: sub.status,
+          stripe_customer_id: sub.stripe_customer_id || entityUser.stripe_customer_id
         });
-
-        if (!dryRun) {
-          await base44.asServiceRole.entities.Subscription.update(sub.id, {
-            user_id: targetUser.id,
-            user_email: emailLower
-          });
-
-          // Update User entity with subscription info
-          const isPaid = sub.status === 'active' || sub.status === 'trialing' || sub.status === 'incomplete';
-          await base44.asServiceRole.entities.User.update(targetUser.id, {
-            subscription_level: isPaid ? 'paid' : 'free',
-            subscription_status: sub.status,
-            stripe_customer_id: sub.stripe_customer_id || targetUser.stripe_customer_id
-          });
-          usersUpdated++;
-        }
+        usersUpdated++;
       }
     }
 
@@ -128,10 +170,10 @@ Deno.serve(async (req) => {
       usersCreated,
       subsLinkedToUserId,
       usersUpdated,
-      conflicts,
+      noAuthUser,
       createdUsers: createdUsers.slice(0, 10),
       linkedSubs: linkedSubs.slice(0, 10),
-      mismatches: mismatches.slice(0, 10)
+      noAuthUserRecords: noAuthUserRecords.slice(0, 10)
     });
   } catch (error) {
     console.error('[migrateSubscriptionsToUserId] error:', error);

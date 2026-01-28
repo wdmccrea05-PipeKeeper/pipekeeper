@@ -44,10 +44,13 @@ export function useCurrentUser() {
         }
       })();
 
-      // Merge auth + entity
+      // Merge auth + entity - PRESERVE AUTH ID as canonical
       return {
+        ...entityUser,
         ...authUser,
-        ...(entityUser || {}),
+        id: authUser.id,
+        auth_user_id: authUser.id,
+        entity_user_id: entityUser?.id || null,
         email: authUser?.email || entityUser?.email,
       };
     },
@@ -59,7 +62,7 @@ export function useCurrentUser() {
   });
 
   const email = normEmail(rawUser?.email || "");
-  const userId = rawUser?.id;
+  const userId = rawUser?.auth_user_id || rawUser?.id;
 
   // Fetch subscriptions by user_id (account-linked) with email fallback
   const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
