@@ -1,4 +1,12 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import Stripe from "npm:stripe@17.5.0";
+
+// Singleton Stripe client
+let stripeClient: Stripe | null = null;
 
 function maskKey(key: string) {
   if (!key) return "(missing)";
@@ -25,27 +33,33 @@ export function assertStripeKeyOrThrow() {
   const key = getStripeSecretKey();
   const prefix = getStripeKeyPrefix();
   
-  // Explicitly reject invalid key types
-  const forbidden = ["mk_", "pk_", "whsec_", "price_", "cus_", "sub_", "prod_", "plan_"];
+  // STRICT: Only sk_ allowed (reject ALL other types)
+  const forbidden = ["mk_", "pk_", "rk_", "whsec_", "price_", "cus_", "sub_", "prod_", "plan_"];
   for (const f of forbidden) {
     if (key.startsWith(f)) {
       throw new Error(
-        `STRIPE_SECRET_KEY_INVALID: Cannot use ${f} keys. Must be sk_ or rk_. Got: ${maskKey(key)}`
+        `STRIPE_SECRET_KEY_INVALID: Cannot use ${f} keys. Only sk_ (secret key) is allowed. Got: ${maskKey(key)}`
       );
     }
   }
   
-  if (prefix !== "sk" && prefix !== "rk") {
+  if (prefix !== "sk") {
     throw new Error(
-      `STRIPE_SECRET_KEY_INVALID: Must start with sk_ or rk_. Got prefix: ${prefix}, masked: ${maskKey(key)}`
+      `STRIPE_SECRET_KEY_INVALID: Must start with sk_ (secret key). Got prefix: ${prefix}, masked: ${maskKey(key)}`
     );
   }
   return key;
 }
 
-export function getStripeClient() {
+export function getStripeClient(): Stripe {
+  // Return singleton if already initialized
+  if (stripeClient) return stripeClient;
+  
+  // Initialize and validate
   const key = assertStripeKeyOrThrow();
-  return new Stripe(key, { apiVersion: "2024-06-20" });
+  stripeClient = new Stripe(key, { apiVersion: "2024-06-20" });
+  
+  return stripeClient;
 }
 
 export async function stripeSanityCheck(stripe: Stripe) {

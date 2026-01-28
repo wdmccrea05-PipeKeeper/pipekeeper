@@ -22,7 +22,7 @@ export default function ReconcileEntitlementsBatchCard() {
     setLoading(true);
     
     try {
-      const response = await base44.functions.invoke("adminBackfillEntitlementsBatch", {
+      const response = await base44.functions.invoke("adminBackfillEntitlements", {
         batchSize: limit,
         cursor: nextCursor || undefined,
         dryRun,
