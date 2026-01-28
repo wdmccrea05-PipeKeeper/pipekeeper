@@ -1,37 +1,75 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import Stripe from "npm:stripe@17.5.0";
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
-Deno.serve(async (req) => {
+function getStripeKeyPrefix() {
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  if (!key) return "missing";
+  if (key.startsWith("sk_")) return "sk";
+  if (key.startsWith("rk_")) return "rk";
+  if (key.startsWith("mk_")) return "mk";
+  if (key.startsWith("pk_")) return "pk";
+  return "other";
+}
+
+function maskError(msg: string) {
+  return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
+}
+
+export default async (req: Request) => {
+  const keyPrefix = getStripeKeyPrefix();
+  
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin-only access
     if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: 'FORBIDDEN',
+        keyPrefix 
+      }), {
+        status: 403,
+        headers: { "content-type": "application/json" }
+      });
     }
 
-    // Validate Stripe before proceeding (this migration touches Stripe subscriptions)
+    // Validate Stripe before proceeding
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
+    if (!stripeKey || (keyPrefix !== "sk" && keyPrefix !== "rk")) {
+      return new Response(JSON.stringify({
+        ok: false,
+        error: "STRIPE_SECRET_KEY_INVALID",
+        keyPrefix,
+        message: "STRIPE_SECRET_KEY must start with sk_ or rk_"
+      }), {
+        status: 500,
+        headers: { "content-type": "application/json" }
+      });
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+
+    // HARD STOP: Verify Stripe auth
     try {
-      const { getStripeClient, stripeSanityCheck } = await import("./_utils/stripe.ts");
-      const stripe = getStripeClient();
-      await stripeSanityCheck(stripe);
+      await stripe.balance.retrieve();
     } catch (e) {
-      const { getStripeKeyPrefix, safeStripeError } = await import("./_utils/stripe.ts");
-      const keyPrefix = getStripeKeyPrefix();
-      console.error("[migrateSubscriptionsToUserId] Stripe validation failed:", e.message);
-      return Response.json({
+      return new Response(JSON.stringify({
         ok: false,
         error: "STRIPE_AUTH_FAILED",
         keyPrefix,
+        stripeSanityOk: false,
         message: "Stripe authentication failed. Migration requires valid Stripe access.",
-        details: safeStripeError(e),
-      }, { status: 500 });
+        details: maskError(String(e?.message || e))
+      }), {
+        status: 500,
+        headers: { "content-type": "application/json" }
+      });
     }
 
     const body = await req.json().catch(() => ({}));
-    const dryRun = body.dryRun !== false; // Default true
+    const dryRun = body.dryRun !== false;
     const limit = Math.min(body.limit || 500, 1000);
 
     let scanned = 0;
@@ -41,34 +79,30 @@ Deno.serve(async (req) => {
     let subsLinkedToUserId = 0;
     let usersUpdated = 0;
     let noAuthUser = 0;
+    let conflicts = 0;
 
-    const createdUsers = [];
-    const linkedSubs = [];
-    const noAuthUserRecords = [];
+    const createdUsers: any[] = [];
+    const linkedSubs: any[] = [];
+    const noAuthUserRecords: any[] = [];
+    const errors: string[] = [];
 
-    // Fetch all subscriptions (or batch if you have cursor support)
     const allSubs = await base44.asServiceRole.entities.Subscription.list('-created_date', limit);
     
-    // Fetch all auth users using the SDK (if available)
-    let authUserByEmail = new Map();
-    
-    // Try to get all auth users - use whichever method is available
+    const authUserByEmail = new Map();
     try {
-      // Try method 1: list users (if available)
       const authUsers = await base44.asServiceRole.auth.listUsers?.() || [];
-      authUsers.forEach(u => {
+      authUsers.forEach((u: any) => {
         if (u.email) {
           authUserByEmail.set(normEmail(u.email), u);
         }
       });
     } catch (e) {
-      console.warn('[migrateSubscriptionsToUserId] Could not list auth users:', e?.message);
+      errors.push(`Could not list auth users: ${e?.message}`);
     }
     
-    // Fetch all entity Users to build email -> entity user map
     const allEntityUsers = await base44.asServiceRole.entities.User.list();
     const entityUserByEmail = new Map();
-    allEntityUsers.forEach(u => {
+    allEntityUsers.forEach((u: any) => {
       if (u.email) {
         entityUserByEmail.set(normEmail(u.email), u);
       }
@@ -77,13 +111,11 @@ Deno.serve(async (req) => {
     for (const sub of allSubs) {
       scanned++;
 
-      // Skip Apple subscriptions (already user_id linked)
       if (sub.provider === 'apple') {
         skippedApple++;
         continue;
       }
 
-      // Skip if already has user_id
       if (sub.user_id) {
         continue;
       }
@@ -95,7 +127,6 @@ Deno.serve(async (req) => {
 
       const emailLower = normEmail(emailRaw);
 
-      // Normalize email in subscription if needed
       if (emailRaw !== emailLower) {
         normalizedEmails++;
         if (!dryRun) {
@@ -105,42 +136,40 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Try to find auth user by email
       let authUserId = null;
-      
-      // First check the map we built
       const authUserFromMap = authUserByEmail.get(emailLower);
       if (authUserFromMap?.id) {
         authUserId = authUserFromMap.id;
       }
       
-      // If not in map, try to fetch directly (fallback)
       if (!authUserId) {
         try {
           const authUserDirect = await base44.asServiceRole.auth.getUserByEmail?.(emailLower);
           if (authUserDirect?.id) {
             authUserId = authUserDirect.id;
-            authUserByEmail.set(emailLower, authUserDirect); // cache it
+            authUserByEmail.set(emailLower, authUserDirect);
           }
         } catch (e) {
-          // Ignore - no auth user found
+          // No auth user
         }
       }
       
       if (!authUserId) {
         noAuthUser++;
-        noAuthUserRecords.push({ email: emailLower, sub_id: sub.id });
-        // Keep email fallback, don't set user_id
+        if (noAuthUserRecords.length < 10) {
+          noAuthUserRecords.push({ email: emailLower, sub_id: sub.id });
+        }
         continue;
       }
 
-      // Auth user found - link subscription
       subsLinkedToUserId++;
-      linkedSubs.push({
-        sub_id: sub.id,
-        auth_user_id: authUserId,
-        email: emailLower
-      });
+      if (linkedSubs.length < 10) {
+        linkedSubs.push({
+          sub_id: sub.id,
+          auth_user_id: authUserId,
+          email: emailLower
+        });
+      }
 
       if (!dryRun) {
         await base44.asServiceRole.entities.Subscription.update(sub.id, {
@@ -150,11 +179,9 @@ Deno.serve(async (req) => {
           provider_subscription_id: sub.stripe_subscription_id || sub.provider_subscription_id
         });
 
-        // Create or update entity User
         let entityUser = entityUserByEmail.get(emailLower);
         
         if (!entityUser) {
-          // Create entity User
           const newEntityUser = await base44.asServiceRole.entities.User.create({
             email: emailLower,
             full_name: `User ${emailLower}`,
@@ -165,10 +192,11 @@ Deno.serve(async (req) => {
           entityUser = newEntityUser;
           entityUserByEmail.set(emailLower, newEntityUser);
           usersCreated++;
-          createdUsers.push({ email: emailLower, entity_user_id: newEntityUser.id });
+          if (createdUsers.length < 10) {
+            createdUsers.push({ email: emailLower, entity_user_id: newEntityUser.id });
+          }
         }
         
-        // Update entity User with auth_user_id and subscription info
         const isPaid = sub.status === 'active' || sub.status === 'trialing';
         await base44.asServiceRole.entities.User.update(entityUser.id, {
           subscription_level: isPaid ? 'paid' : 'free',
@@ -179,8 +207,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({
+    return new Response(JSON.stringify({
       ok: true,
+      keyPrefix,
+      stripeSanityOk: true,
       dryRun,
       scanned,
       skippedApple,
@@ -189,15 +219,26 @@ Deno.serve(async (req) => {
       subsLinkedToUserId,
       usersUpdated,
       noAuthUser,
-      createdUsers: createdUsers.slice(0, 10),
-      linkedSubs: linkedSubs.slice(0, 10),
-      noAuthUserRecords: noAuthUserRecords.slice(0, 10)
+      conflicts,
+      errors,
+      samples: {
+        createdUsers: createdUsers.slice(0, 10),
+        linkedSubs: linkedSubs.slice(0, 10),
+        noAuthUserRecords: noAuthUserRecords.slice(0, 10)
+      }
+    }), {
+      status: 200,
+      headers: { "content-type": "application/json" }
     });
   } catch (error) {
-    console.error('[migrateSubscriptionsToUserId] error:', error);
-    return Response.json({ 
+    return new Response(JSON.stringify({ 
       ok: false,
-      error: error?.message || 'Migration failed'
-    }, { status: 500 });
+      error: "MIGRATION_FAILED",
+      keyPrefix: getStripeKeyPrefix(),
+      message: maskError(String(error?.message || error))
+    }), {
+      status: 500,
+      headers: { "content-type": "application/json" }
+    });
   }
-});
+};

@@ -33,13 +33,19 @@ function pickPrimary(subs, preferredProvider = null) {
   return active[0];
 }
 
-Deno.serve(async (req) => {
+export default async (req: Request) => {
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
 
     if (!me?.email) {
-      return Response.json({ ok: false, error: "UNAUTHENTICATED" }, { status: 401 });
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: "UNAUTHENTICATED" 
+      }), { 
+        status: 401,
+        headers: { "content-type": "application/json" }
+      });
     }
 
     const email = normEmail(me.email);
@@ -69,10 +75,11 @@ Deno.serve(async (req) => {
     const status = primarySub?.status || null;
     const expiresAt = primarySub?.current_period_end || null;
 
-    let stripeCustomerPortalUrl = null;
+    let manageUrl = null;
+    let warning = null;
     
     // Only initialize Stripe if there are Stripe subscriptions AND a customer ID
-    if (stripeSubs.length > 0) {
+    if (provider === "stripe" && stripeSubs.length > 0) {
       const subWithCustomer = stripeSubs.find((s) => s.stripe_customer_id);
       const customerId = subWithCustomer?.stripe_customer_id;
 
@@ -85,29 +92,36 @@ Deno.serve(async (req) => {
             customer: customerId,
             return_url: APP_URL,
           });
-          stripeCustomerPortalUrl = session.url;
+          manageUrl = session.url;
         } catch (e) {
           console.warn("[getMySubscriptionSummary] Failed to create portal session:", e.message);
-          // Don't fail the whole response - just return null portal URL
+          warning = "Unable to generate management URL. Please contact support.";
         }
       }
     }
 
-    return Response.json({
+    return new Response(JSON.stringify({
       ok: true,
       isPaid,
       provider,
       tier,
       status,
       expiresAt,
-      stripeCustomerPortalUrl,
+      manageUrl,
+      warning
+    }), {
+      status: 200,
+      headers: { "content-type": "application/json" }
     });
   } catch (error) {
     console.error("[getMySubscriptionSummary] error:", error);
-    return Response.json({ 
+    return new Response(JSON.stringify({ 
       ok: false, 
       error: "SUBSCRIPTION_FETCH_FAILED",
       message: String(error?.message || error)
-    }, { status: 500 });
+    }), { 
+      status: 500,
+      headers: { "content-type": "application/json" }
+    });
   }
-});
+};
