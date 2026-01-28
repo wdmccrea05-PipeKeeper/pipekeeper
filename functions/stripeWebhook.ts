@@ -173,10 +173,19 @@ Deno.serve(async (req) => {
 
         let user_email = String(sub.metadata?.user_email || "").trim().toLowerCase();
 
-        // NOTE: Without Stripe SDK, we cannot fetch customer email
-        // Rely on metadata or skip if not present
+        // If no email in metadata, fetch customer details from Stripe
+        if (!user_email && customerId) {
+          try {
+            const customerObj = await stripe.customers.retrieve(customerId);
+            user_email = String(customerObj.email || "").trim().toLowerCase();
+            console.log(`[webhook] Fetched email from customer ${customerId}: ${user_email}`);
+          } catch (err) {
+            console.error(`[webhook] Failed to fetch customer ${customerId}:`, err.message);
+          }
+        }
+
         if (!user_email) {
-          console.warn(`[webhook] No user_email in subscription ${sub.id} metadata, skipping`);
+          console.warn(`[webhook] No user_email found for subscription ${sub.id}, skipping`);
           break;
         }
 
