@@ -13,7 +13,7 @@ import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCar
 import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
 import RepairStripeByEmailCard from '@/components/admin/RepairStripeByEmailCard';
 import StripeDiagnosticsCard from '@/components/admin/StripeDiagnosticsCard';
-import BackfillStripeCard from '@/components/admin/BackfillStripeCard.tsx';
+import BackfillStripeCard from '@/components/admin/BackfillStripeCard';
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
