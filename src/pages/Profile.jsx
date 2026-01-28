@@ -318,7 +318,9 @@ export default function ProfilePage() {
                   <div>
                     {hasActiveSubscription ? (
                       <>
-                        <h3 className="font-semibold text-amber-900">Premium Active</h3>
+                        <h3 className="font-semibold text-amber-900">
+                          {user?.subscription_tier === 'pro' ? 'Pro Active' : 'Premium Active'}
+                        </h3>
                         <p className="text-sm text-amber-700">Full access to all features</p>
                       </>
                     ) : isWithinTrial ? (

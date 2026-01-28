@@ -49,6 +49,7 @@
  */
 import AIUpdates from './pages/AIUpdates';
 import AdminReports from './pages/AdminReports';
+import adminreportsTsx from './pages/AdminReports.tsx';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
@@ -78,13 +79,13 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import adminreportsTsx from './pages/AdminReports.tsx';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIUpdates": AIUpdates,
     "AdminReports": AdminReports,
+    "AdminReports.tsx": adminreportsTsx,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
@@ -114,7 +115,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "AdminReports.tsx": adminreportsTsx,
 }
 
 export const pagesConfig = {

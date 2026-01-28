@@ -27,29 +27,30 @@ export default function BackfillStripeCard() {
         starting_after: starting_after || undefined,
       });
 
-      if (response.status !== 200) {
-        const errorData = response.data;
-        setResult(errorData);
-        toast.error(`Backfill failed at stage: ${errorData.where || "unknown"}`);
-      } else {
-        setResult(response.data);
-        setCursor(response.data.nextStartingAfter);
+      const data = response.data;
+      setResult(data);
+      
+      if (data.ok) {
+        setCursor(data.nextStartingAfter);
+        toast.success(
+          `Fetched ${data.fetchedCustomers} customers, processed ${data.processedCustomers}`
+        );
         
-        if (response.data.ok) {
-          toast.success(
-            `Fetched ${response.data.fetchedCustomers} customers, processed ${response.data.processedCustomers}`
-          );
-          
-          await queryClient.invalidateQueries({ queryKey: ["user-report"] });
-          await queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-        } else {
-          toast.error(response.data.error || "Backfill failed");
-        }
+        await queryClient.invalidateQueries({ queryKey: ["user-report"] });
+        await queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      } else {
+        toast.error(`Backfill failed at ${data.where || "unknown"}: ${data.error || "UNKNOWN"}`);
       }
     } catch (err) {
       toast.error(err.message || "Failed to run backfill");
-      setResult({ ok: false, error: "REQUEST_FAILED", message: err.message, where: "client" });
+      setResult({ 
+        ok: false, 
+        error: "REQUEST_FAILED", 
+        message: err.message, 
+        where: "client",
+        keyPrefix: "unknown"
+      });
     } finally {
       setLoading(false);
     }
