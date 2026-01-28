@@ -23,29 +23,36 @@ export async function openManageSubscription() {
     if (!response?.data?.ok) {
       const err = response?.data?.error || "UNKNOWN_ERROR";
       const msg = response?.data?.message || "Failed to create portal session";
-      throw new Error(`${err}: ${msg}`);
+      
+      // Handle gracefully instead of throwing
+      console.error(`[openManageSubscription] Portal error: ${err} - ${msg}`);
+      
+      // If no customer found, redirect to subscription page
+      if (
+        err === "NO_STRIPE_CUSTOMER" ||
+        msg.toLowerCase().includes("no stripe customer") ||
+        msg.toLowerCase().includes("start a subscription")
+      ) {
+        window.location.href = createPageUrl("Subscription");
+        return;
+      }
+      
+      // Show error to user without crashing
+      alert(`Unable to open subscription management: ${msg}`);
+      return;
     }
     
     const url = response?.data?.url;
-    if (!url) throw new Error("No portal URL returned");
+    if (!url) {
+      console.error("[openManageSubscription] No portal URL returned");
+      alert("Unable to open subscription management portal. Please try again.");
+      return;
+    }
     
     window.location.href = url;
   } catch (error) {
-    console.error("[openManageSubscription] Error:", error);
-
-    const errorMessage = error?.message || "";
-
-    // If customer not found, route to Subscription page so they can start checkout
-    if (
-      errorMessage.toLowerCase().includes("no_stripe_customer") ||
-      errorMessage.toLowerCase().includes("no stripe customer") ||
-      errorMessage.toLowerCase().includes("start a subscription")
-    ) {
-      window.location.href = createPageUrl("Subscription");
-      return;
-    }
-
-    throw new Error(errorMessage || "Unable to open subscription management portal");
+    console.error("[openManageSubscription] Unexpected error:", error);
+    alert("Unable to open subscription management. Please try again.");
   }
 }
 
