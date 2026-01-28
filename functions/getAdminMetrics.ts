@@ -360,9 +360,9 @@ Deno.serve(async (req) => {
       communityEngagement,
     };
 
-    // 7. PLATFORM BREAKDOWN (include Apple users by subscription_level)
+    // 7. PLATFORM BREAKDOWN (Apple verified vs unverified)
     const platformBreakdown = {
-      apple: { paid: 0, free: 0 },
+      apple: { paid: 0, unverified: 0, free: 0 },
       android: { paid: 0, free: 0 },
       web: { paid: 0, free: 0 },
     };
@@ -374,19 +374,38 @@ Deno.serve(async (req) => {
         return st !== 'incomplete_expired';
       });
       
-      // Determine paid: has active sub OR User.subscription_level = 'paid'
-      const hasPaidSub = validSubs.some(s => {
-        const st = (s.status || '').toLowerCase();
-        return st === 'active' || st === 'trialing' || st === 'incomplete';
-      }) || u.subscription_level === 'paid';
-
       const platform = u.platform || 'web';
       const platformKey = platform === 'ios' ? 'apple' : platform === 'android' ? 'android' : 'web';
-
-      if (hasPaidSub) {
-        platformBreakdown[platformKey].paid++;
+      
+      // For Apple: distinguish verified paid vs unverified
+      if (platformKey === 'apple') {
+        const appleSub = validSubs.find(s => s.provider === 'apple');
+        
+        if (appleSub && appleSub.status === 'unverified') {
+          platformBreakdown.apple.unverified++;
+        } else if (appleSub && (appleSub.status === 'active' || appleSub.status === 'trialing')) {
+          const expiresAt = appleSub.current_period_end;
+          const isActive = !expiresAt || new Date(expiresAt) > now;
+          if (isActive) {
+            platformBreakdown.apple.paid++;
+          } else {
+            platformBreakdown.apple.free++;
+          }
+        } else {
+          platformBreakdown.apple.free++;
+        }
       } else {
-        platformBreakdown[platformKey].free++;
+        // For non-Apple: use existing logic
+        const hasPaidSub = validSubs.some(s => {
+          const st = (s.status || '').toLowerCase();
+          return st === 'active' || st === 'trialing' || st === 'incomplete';
+        }) || u.subscription_level === 'paid';
+
+        if (hasPaidSub) {
+          platformBreakdown[platformKey].paid++;
+        } else {
+          platformBreakdown[platformKey].free++;
+        }
       }
     });
 
