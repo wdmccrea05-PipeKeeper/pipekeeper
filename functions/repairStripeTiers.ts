@@ -9,18 +9,16 @@ const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") 
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-async function resolveTierFromStripe(stripeSubId, stripe) {
+async function resolveTierFromStripe(stripeSub, stripe) {
   try {
-    const sub = await stripe.subscriptions.retrieve(stripeSubId);
-    
     // Priority 1: Subscription metadata
-    const metadataTier = (sub.metadata?.tier || "").toLowerCase();
+    const metadataTier = (stripeSub.metadata?.tier || "").toLowerCase();
     if (metadataTier === "pro" || metadataTier === "premium") {
       return metadataTier;
     }
 
     // Priority 2: Price lookup_key or nickname
-    const priceId = sub.items?.data?.[0]?.price?.id;
+    const priceId = stripeSub.items?.data?.[0]?.price?.id;
     if (priceId) {
       const price = await stripe.prices.retrieve(priceId);
       
@@ -58,9 +56,64 @@ async function resolveTierFromStripe(stripeSubId, stripe) {
 
     return null;
   } catch (err) {
-    console.error(`[resolveTierFromStripe] Failed for ${stripeSubId}:`, err.message);
+    console.error(`[resolveTierFromStripe] Failed:`, err.message);
     throw err;
   }
+}
+
+async function findStripeSubscription(localSub, stripe) {
+  // Skip Apple subscriptions
+  if (localSub.provider === "apple") {
+    return { status: "SKIP_APPLE", stripeSub: null };
+  }
+
+  // A) Try provider_subscription_id
+  if (localSub.provider_subscription_id) {
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(localSub.provider_subscription_id);
+      return { status: "FOUND_BY_PROVIDER_ID", stripeSub, recoveryMethod: "provider_subscription_id" };
+    } catch (err) {
+      console.warn(`[findStripeSubscription] Failed to retrieve by provider_subscription_id ${localSub.provider_subscription_id}:`, err.message);
+    }
+  }
+
+  // B) Try stripe_subscription_id
+  if (localSub.stripe_subscription_id) {
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(localSub.stripe_subscription_id);
+      return { status: "FOUND_BY_STRIPE_ID", stripeSub, recoveryMethod: "stripe_subscription_id" };
+    } catch (err) {
+      console.warn(`[findStripeSubscription] Failed to retrieve by stripe_subscription_id ${localSub.stripe_subscription_id}:`, err.message);
+    }
+  }
+
+  // C) Try stripe_customer_id
+  if (localSub.stripe_customer_id) {
+    try {
+      const result = await stripe.subscriptions.list({
+        customer: localSub.stripe_customer_id,
+        status: "all",
+        limit: 10,
+        expand: ["data.items.data.price.product", "data.items.data.price"]
+      });
+
+      if (result.data.length === 0) {
+        return { status: "NO_SUBS_FOR_CUSTOMER", stripeSub: null };
+      }
+
+      // Prefer active/trialing, else most recent
+      const activeOrTrialing = result.data.find(s => s.status === "active" || s.status === "trialing");
+      const stripeSub = activeOrTrialing || result.data[0];
+
+      return { status: "RECOVERED_BY_CUSTOMER", stripeSub, recoveryMethod: "stripe_customer_id" };
+    } catch (err) {
+      console.error(`[findStripeSubscription] Failed to list by customer ${localSub.stripe_customer_id}:`, err.message);
+      return { status: "CUSTOMER_LOOKUP_ERROR", stripeSub: null, error: err.message };
+    }
+  }
+
+  // D) No Stripe IDs available
+  return { status: "NO_STRIPE_IDS", stripeSub: null };
 }
 
 Deno.serve(async (req) => {
@@ -85,13 +138,14 @@ Deno.serve(async (req) => {
 
     console.log(`[repairStripeTiers] Starting (dryRun=${dryRun}, limit=${limit})`);
 
-    // Fetch active Stripe subscriptions
-    const allSubs = await base44.asServiceRole.entities.Subscription.filter({
-      provider: "stripe",
-    });
+    // Fetch all subscriptions (including those without IDs)
+    const allSubs = await base44.asServiceRole.entities.Subscription.list();
 
-    // Filter to active/trialing or future-dated
+    // Filter to Stripe or unknown provider, and eligible status
     const eligibleSubs = allSubs.filter((sub) => {
+      // Skip Apple explicitly
+      if (sub.provider === "apple") return false;
+
       const status = (sub.status || "").toLowerCase();
       if (status === "active" || status === "trialing") return true;
       
@@ -107,105 +161,153 @@ Deno.serve(async (req) => {
       scanned: subsToRepair.length,
       updatedSubscriptions: 0,
       updatedUsers: 0,
+      recoveredByCustomer: 0,
+      noStripeIds: 0,
       unknownTier: 0,
+      skippedApple: 0,
       missingStripeSubscription: 0,
       samples: {
         updated: [],
+        recovered: [],
         unknown: [],
         missing: [],
       },
     };
 
-    for (const sub of subsToRepair) {
-      const stripeSubId = sub.provider_subscription_id || sub.stripe_subscription_id;
-      if (!stripeSubId) {
-        results.missingStripeSubscription++;
+    for (const localSub of subsToRepair) {
+      const lookupResult = await findStripeSubscription(localSub, stripe);
+
+      if (lookupResult.status === "SKIP_APPLE") {
+        results.skippedApple++;
+        continue;
+      }
+
+      if (!lookupResult.stripeSub) {
+        if (lookupResult.status === "NO_STRIPE_IDS") {
+          results.noStripeIds++;
+        } else {
+          results.missingStripeSubscription++;
+        }
+        
         if (results.samples.missing.length < 5) {
           results.samples.missing.push({
-            subscription_id: sub.id,
-            user_email: sub.user_email,
-            reason: "No Stripe subscription ID",
+            subscription_id: localSub.id,
+            user_email: localSub.user_email,
+            stripe_customer_id: localSub.stripe_customer_id,
+            status: lookupResult.status,
+            reason: lookupResult.error || lookupResult.status,
           });
         }
         continue;
       }
 
-      try {
-        const resolvedTier = await resolveTierFromStripe(stripeSubId, stripe);
+      const stripeSub = lookupResult.stripeSub;
 
-        if (!resolvedTier) {
-          results.unknownTier++;
-          if (results.samples.unknown.length < 5) {
-            results.samples.unknown.push({
-              subscription_id: sub.id,
-              user_email: sub.user_email,
-              stripe_sub_id: stripeSubId,
-              current_tier: sub.tier,
-              reason: "Could not resolve tier from Stripe",
-            });
-          }
-          continue;
-        }
-
-        const needsUpdate = sub.tier !== resolvedTier;
+      // Backfill missing IDs if recovered by customer
+      let needsBackfill = false;
+      if (lookupResult.status === "RECOVERED_BY_CUSTOMER") {
+        needsBackfill = true;
+        results.recoveredByCustomer++;
         
-        if (needsUpdate) {
-          if (!dryRun) {
-            // Update subscription tier
-            await base44.asServiceRole.entities.Subscription.update(sub.id, {
-              tier: resolvedTier,
+        if (results.samples.recovered.length < 10) {
+          results.samples.recovered.push({
+            subscription_id: localSub.id,
+            user_email: localSub.user_email,
+            stripe_customer_id: localSub.stripe_customer_id,
+            recovered_stripe_sub_id: stripeSub.id,
+            recovery_method: lookupResult.recoveryMethod,
+          });
+        }
+      }
+
+      // Resolve tier
+      let resolvedTier = null;
+      try {
+        resolvedTier = await resolveTierFromStripe(stripeSub, stripe);
+      } catch (err) {
+        console.error(`[repairStripeTiers] Tier resolution failed for ${stripeSub.id}:`, err.message);
+      }
+
+      if (!resolvedTier) {
+        // Keep existing tier if we can't resolve
+        resolvedTier = localSub.tier || null;
+        results.unknownTier++;
+        
+        if (results.samples.unknown.length < 5) {
+          results.samples.unknown.push({
+            subscription_id: localSub.id,
+            user_email: localSub.user_email,
+            stripe_sub_id: stripeSub.id,
+            current_tier: localSub.tier,
+            reason: "Could not resolve tier from Stripe",
+          });
+        }
+      }
+
+      const needsTierUpdate = localSub.tier !== resolvedTier;
+      
+      if (needsBackfill || needsTierUpdate) {
+        if (!dryRun) {
+          // Update subscription
+          const updatePayload = {};
+          
+          if (needsBackfill) {
+            updatePayload.provider = "stripe";
+            updatePayload.provider_subscription_id = stripeSub.id;
+            updatePayload.stripe_subscription_id = stripeSub.id;
+            updatePayload.stripe_customer_id = typeof stripeSub.customer === "string" 
+              ? stripeSub.customer 
+              : stripeSub.customer?.id;
+          }
+          
+          if (needsTierUpdate && resolvedTier) {
+            updatePayload.tier = resolvedTier;
+          }
+
+          await base44.asServiceRole.entities.Subscription.update(localSub.id, updatePayload);
+          results.updatedSubscriptions++;
+
+          // Update user tier
+          let userRow = null;
+          if (localSub.user_id) {
+            const byUserId = await base44.asServiceRole.entities.User.filter({
+              id: localSub.user_id,
             });
-            results.updatedSubscriptions++;
+            userRow = byUserId?.[0];
+          }
+          
+          if (!userRow && localSub.user_email) {
+            const byEmail = await base44.asServiceRole.entities.User.filter({
+              email: normEmail(localSub.user_email),
+            });
+            userRow = byEmail?.[0];
+          }
 
-            // Update user tier - try user_id first, then email
-            let userRow = null;
-            if (sub.user_id) {
-              const byUserId = await base44.asServiceRole.entities.User.filter({
-                id: sub.user_id,
-              });
-              userRow = byUserId?.[0];
-            }
-            
-            if (!userRow && sub.user_email) {
-              const byEmail = await base44.asServiceRole.entities.User.filter({
-                email: normEmail(sub.user_email),
-              });
-              userRow = byEmail?.[0];
-            }
-
-            if (userRow) {
-              const isPaid = sub.status === "active" || sub.status === "trialing";
-              await base44.asServiceRole.entities.User.update(userRow.id, {
-                subscription_tier: resolvedTier,
-                subscription_level: isPaid ? "paid" : "free",
-                subscription_status: sub.status,
-              });
-              results.updatedUsers++;
-            }
-          } else {
-            results.updatedSubscriptions++;
+          if (userRow && resolvedTier) {
+            const isPaid = stripeSub.status === "active" || stripeSub.status === "trialing";
+            await base44.asServiceRole.entities.User.update(userRow.id, {
+              subscription_tier: resolvedTier,
+              subscription_level: isPaid ? "paid" : "free",
+              subscription_status: stripeSub.status,
+            });
             results.updatedUsers++;
           }
-
-          if (results.samples.updated.length < 10) {
-            results.samples.updated.push({
-              subscription_id: sub.id,
-              user_email: sub.user_email,
-              user_id: sub.user_id,
-              stripe_sub_id: stripeSubId,
-              old_tier: sub.tier,
-              new_tier: resolvedTier,
-            });
-          }
+        } else {
+          // Dry run counts
+          results.updatedSubscriptions++;
+          if (resolvedTier) results.updatedUsers++;
         }
-      } catch (err) {
-        results.missingStripeSubscription++;
-        if (results.samples.missing.length < 5) {
-          results.samples.missing.push({
-            subscription_id: sub.id,
-            user_email: sub.user_email,
-            stripe_sub_id: stripeSubId,
-            reason: `Stripe API error: ${err.message}`,
+
+        if (results.samples.updated.length < 10) {
+          results.samples.updated.push({
+            subscription_id: localSub.id,
+            user_email: localSub.user_email,
+            user_id: localSub.user_id,
+            stripe_sub_id: stripeSub.id,
+            recovery_method: lookupResult.recoveryMethod,
+            old_tier: localSub.tier,
+            new_tier: resolvedTier,
+            backfilled_ids: needsBackfill,
           });
         }
       }
