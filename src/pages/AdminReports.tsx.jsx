@@ -295,7 +295,7 @@ export default function AdminReports() {
               <Card>
                 <CardContent className="p-8 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
-                  <p className="text-stone-500">No pending reports</p>
+                  <p className="text-[#E0D8C8]/70">No pending reports</p>
                 </CardContent>
               </Card>
             ) : (
@@ -307,7 +307,7 @@ export default function AdminReports() {
             {reviewedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-stone-500">No reviewed reports</p>
+                  <p className="text-[#E0D8C8]/70">No reviewed reports</p>
                 </CardContent>
               </Card>
             ) : (
@@ -319,7 +319,7 @@ export default function AdminReports() {
             {actionedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-stone-500">No actioned reports</p>
+                  <p className="text-[#E0D8C8]/70">No actioned reports</p>
                 </CardContent>
               </Card>
             ) : (
@@ -331,15 +331,51 @@ export default function AdminReports() {
             {dismissedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-stone-500">No dismissed reports</p>
+                  <p className="text-[#E0D8C8]/70">No dismissed reports</p>
                 </CardContent>
               </Card>
             ) : (
               dismissedReports.map(report => <ReportCard key={report.id} report={report} />)
             )}
           </TabsContent>
-        </Tabs>
-      </div>
+          </Tabs>
+          </div>
+
+          {/* Subscription Management */}
+          <div className="mb-6">
+          <SubscriptionProviderCard me={user} />
+          </div>
+
+          {/* Subscription Migration Card */}
+          <div className="mb-6">
+          <SubscriptionMigrationCard />
+          </div>
+
+          {/* Repair Pro Access Card */}
+          <div className="mb-6">
+          <RepairProAccessCard />
+          </div>
+
+          {/* Repair Stripe by Email Card */}
+          <div className="mb-6">
+          <RepairStripeByEmailCard />
+          </div>
+
+          {/* Stripe Diagnostics Card */}
+          <div className="mb-6">
+          <StripeDiagnosticsCard />
+          </div>
+
+          {/* Reconcile Entitlements Card */}
+          <div className="mb-6">
+          <ReconcileEntitlementsCard />
+          </div>
+
+          {/* Reconcile Entitlements Batch Card */}
+          <div className="mb-6">
+          <ReconcileEntitlementsBatchCard />
+          </div>
+          </div>
     </div>
   );
 }
