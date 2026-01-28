@@ -152,7 +152,12 @@ export function useCurrentUser() {
   const isLoading = userLoading || subLoading;
   const hasPremium = hasPremiumAccess(rawUser, subscription);
   const hasPaid = hasPaidAccess(rawUser, subscription);
-  const isPro = hasPaid && subscription?.tier === 'pro';
+
+  // Pro check: Must have paid access AND be on pro tier
+  const subTier = (subscription?.tier || "").toLowerCase();
+  const userTier = (rawUser?.subscription_tier || rawUser?.tier || "").toLowerCase();
+  const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
+
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
   const trialDaysRemaining = getTrialDaysRemaining(rawUser);

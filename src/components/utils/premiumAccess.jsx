@@ -37,12 +37,16 @@ export function hasPaidAccess(user, subscription = null) {
   if (subscription) {
     const subStatus = (subscription.status || "").toLowerCase();
     const periodEnd = subscription.current_period_end;
+    const tier = (subscription.tier || "").toLowerCase();
     
     // Check if subscription is active/trialing/incomplete (Stripe checkout may leave status as incomplete) AND not expired
     const isActiveStatus = subStatus === "active" || subStatus === "trialing" || subStatus === "incomplete";
     const isNotExpired = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     
-    return isActiveStatus && isNotExpired;
+    // Must have a valid tier (premium or pro) in addition to active status
+    const hasValidTier = tier === "premium" || tier === "pro";
+    
+    return isActiveStatus && isNotExpired && hasValidTier;
   }
 
   // PRIORITY 2: User entity fields (synced from Subscription by webhooks)
@@ -70,6 +74,30 @@ export function hasPaidAccess(user, subscription = null) {
   }
 
   return isPaid || hasFuturePeriod;
+}
+
+// Helper to check if user has Pro tier specifically
+export function hasProAccess(user, subscription = null) {
+  if (!user) return false;
+
+  // Admin override
+  const role = (user.role || "").toLowerCase();
+  if (role === "admin" || role === "owner" || user.is_admin === true) {
+    return true;
+  }
+
+  // Check if they have paid access first
+  if (!hasPaidAccess(user, subscription)) return false;
+
+  // Then verify they're on Pro tier
+  if (subscription) {
+    const tier = (subscription.tier || "").toLowerCase();
+    return tier === "pro";
+  }
+
+  // Fallback to user entity tier field
+  const userTier = (user.subscription_tier || user.tier || "").toLowerCase();
+  return userTier === "pro";
 }
 
 export function hasPremiumAccess(user, subscription = null) {
