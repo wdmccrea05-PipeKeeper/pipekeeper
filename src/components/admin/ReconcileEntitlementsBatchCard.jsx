@@ -34,7 +34,7 @@ export default function ReconcileEntitlementsBatchCard() {
       if (data.ok) {
         setCursor(data.nextCursor);
         toast.success(
-          `Batch complete: ${data.fixed} fixed, ${data.unchanged} unchanged, ${data.errorsCount} errors`
+          `Batch complete: ${data.scanned} scanned, ${data.fixed} fixed, ${data.unchanged} unchanged, ${data.errorsCount} errors`
         );
         
         if (!dryRun) {
@@ -45,11 +45,13 @@ export default function ReconcileEntitlementsBatchCard() {
         toast.error(data.message || "Batch reconciliation failed");
       }
     } catch (err) {
-      toast.error(err.message || "Failed to run batch reconciliation");
+      console.error("[ReconcileEntitlementsBatchCard] Error:", err);
+      const errMsg = err?.response?.data?.message || err?.message || "Failed to run batch reconciliation";
+      toast.error(errMsg);
       setResult({ 
         ok: false, 
         error: "REQUEST_FAILED", 
-        message: err.message
+        message: errMsg
       });
     } finally {
       setLoading(false);
