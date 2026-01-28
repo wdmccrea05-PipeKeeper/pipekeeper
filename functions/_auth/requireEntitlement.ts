@@ -1,74 +1,59 @@
-import { buildEntitlements } from './entitlements.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+function normEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
 
-/**
- * Checks if the user has a given entitlement.
- * Uses user_id first (account-linked), then email fallback (legacy Stripe).
- * Throws an error with status 402 if not.
- */
-export async function requireEntitlement(base44, user, feature) {
-  if (!user?.email) {
-    const err = new Error('Unauthorized');
-    err.status = 401;
-    throw err;
-  }
-
-  const userId = user.id;
-  const emailLower = normEmail(user.email);
-
-  // PRIORITY 1: Query by user_id (account-linked subscriptions - Apple + modern Stripe)
-  let subscription = null;
+export async function requireEntitlement(req) {
+  const base44 = createClientFromRequest(req);
+  const me = await base44.auth.me();
   
-  if (userId) {
-    const byUserId = await base44.entities.Subscription.filter({ 
-      user_id: userId 
-    });
-    
-    // Find active/trialing subscription
-    subscription = byUserId?.find(s => 
-      s.status === 'active' || s.status === 'trialing' || s.status === 'incomplete'
-    );
-    
-    if (subscription) {
-      console.log(`[requireEntitlement] Found subscription by user_id=${userId}: ${subscription.provider}/${subscription.provider_subscription_id}`);
+  if (!me?.id) {
+    return { ok: false, status: 401, error: "UNAUTHENTICATED" };
+  }
+
+  const email = normEmail(me.email);
+
+  const isActive = (s) => {
+    const status = String(s?.status || "").toLowerCase();
+    return status === "active" || status === "trialing" || status === "incomplete";
+  };
+
+  // 1) Preferred: active sub by user_id (either provider)
+  try {
+    const byUserId = await base44.entities.Subscription.filter({ user_id: me.id });
+    if (Array.isArray(byUserId) && byUserId.some(isActive)) {
+      return { ok: true, me };
+    }
+  } catch (e) {
+    console.warn("[requireEntitlement] user_id lookup failed:", e);
+  }
+
+  // 2) Legacy fallback: stripe by email
+  if (email) {
+    try {
+      const byEmail = await base44.entities.Subscription.filter({ 
+        provider: "stripe", 
+        user_email: email 
+      });
+      if (Array.isArray(byEmail) && byEmail.some(isActive)) {
+        return { ok: true, me };
+      }
+    } catch (e) {
+      console.warn("[requireEntitlement] email lookup failed:", e);
     }
   }
 
-  // PRIORITY 2: Fallback to email for legacy Stripe subscriptions
-  if (!subscription) {
-    const byEmail = await base44.entities.Subscription.filter({ 
-      user_email: emailLower,
-      provider: 'stripe'
-    });
-    
-    subscription = byEmail?.find(s => 
-      s.status === 'active' || s.status === 'trialing' || s.status === 'incomplete'
-    );
-    
-    if (subscription) {
-      console.log(`[requireEntitlement] Found legacy Stripe subscription by email=${emailLower}`);
+  // 3) Denormalized fallback (failsafe)
+  try {
+    const users = await base44.entities.User.filter({ email });
+    const u = Array.isArray(users) ? users[0] : null;
+    if (u?.subscription_level === "paid") {
+      return { ok: true, me };
     }
+  } catch (e) {
+    console.warn("[requireEntitlement] User entity fallback failed:", e);
   }
 
-  // Determine if paid and pro
-  const isPaidSubscriber = !!(subscription);
-  const isProSubscriber = !!(isPaidSubscriber && subscription?.tier === 'pro');
-
-  // Build entitlements
-  const entitlements = buildEntitlements({
-    isPaidSubscriber,
-    isProSubscriber,
-    subscriptionStartedAt: subscription?.started_at || subscription?.current_period_start || user?.created_date || null,
-    isFreeGrandfathered: user?.isFreeGrandfathered || false,
-  });
-
-  // Check the feature
-  if (!entitlements.canUse(feature)) {
-    const err = new Error(`Upgrade required to use this feature: ${feature}`);
-    err.status = 402;
-    throw err;
-  }
-
-  return entitlements;
+  return { ok: false, status: 403, error: "NO_ENTITLEMENT" };
 }

@@ -4,6 +4,10 @@ export const isIOSWebView = () => {
   return !!window?.webkit?.messageHandlers?.pipekeeper;
 };
 
+export const isIOSCompanion = () => {
+  return isIOSWebView();
+};
+
 const safePost = (payload) => {
   try {
     const handler = window?.webkit?.messageHandlers?.pipekeeper;
@@ -25,6 +29,14 @@ export const requestNativeSubscriptionStatus = () => {
 
 export const openAppleSubscriptions = () => {
   return safePost({ action: "openAppleSubscriptions" });
+};
+
+export const openAppleManageSubscriptions = () => {
+  return safePost({ action: "openAppleSubscriptions" });
+};
+
+export const startApplePurchaseFlow = (tier) => {
+  return safePost({ action: "showPaywall", tier: tier || "premium" });
 };
 
 export const nativeDebugPing = (label = "ping") => {
