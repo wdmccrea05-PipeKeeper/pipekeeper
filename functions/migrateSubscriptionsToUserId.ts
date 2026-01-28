@@ -83,6 +83,7 @@ Deno.serve(async (req) => {
           const newUser = await base44.asServiceRole.entities.User.create({
             email: emailLower,
             full_name: `User ${emailLower}`,
+            role: 'user',
             subscription_level: 'paid',
             platform: 'web'
           });
