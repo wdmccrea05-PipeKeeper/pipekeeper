@@ -21,36 +21,44 @@ Deno.serve(async (req) => {
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     
     if (existingUsers && existingUsers.length > 0) {
-      // User exists - update platform if missing
-      const existing = existingUsers[0];
-      if (!existing.platform && platformFromBody) {
-        await base44.asServiceRole.entities.User.update(existing.id, {
-          platform: platformFromBody
+      // User exists - run entitlement reconciliation on every login
+      try {
+        await base44.functions.invoke('reconcileEntitlementsOnLogin', { 
+          platform: platformFromBody 
         });
-        return Response.json({ 
-          ok: true, 
-          user: { ...existing, platform: platformFromBody },
-          user_id: userId,
-          updated: true
-        });
+      } catch (e) {
+        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
       }
+      
+      // Re-fetch user to get updated entitlements
+      const updatedUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
+      const existing = updatedUsers?.[0] || existingUsers[0];
+      
       return Response.json({ 
         ok: true, 
         user: existing,
         user_id: userId, 
-        updated: false 
+        reconciled: true 
       });
     }
 
     // User doesn't exist - create with service role
+    // IMPORTANT: Don't set subscription fields to defaults - let reconciliation handle it
     const newUser = await base44.asServiceRole.entities.User.create({
       email: emailLower,
       full_name: authUser.full_name || authUser.name || null,
       platform: platformFromBody || 'web',
-      subscription_level: authUser.subscription_level || 'free',
-      subscription_status: authUser.subscription_status || 'none',
       role: authUser.role || 'user'
     });
+
+    // Run entitlement reconciliation immediately after creation
+    try {
+      await base44.functions.invoke('reconcileEntitlementsOnLogin', { 
+        platform: platformFromBody 
+      });
+    } catch (e) {
+      console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
+    }
 
     return Response.json({ 
       ok: true, 
