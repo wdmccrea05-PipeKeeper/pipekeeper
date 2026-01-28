@@ -209,7 +209,17 @@ export default function SubscriptionMigrationCard() {
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              <div className="space-y-2">
+                <div className="font-semibold">Migration Error</div>
+                <div className="text-sm break-words">{error}</div>
+                {(error.includes("STRIPE_AUTH_FAILED") || error.includes("Invalid API Key") || error.includes("mk_")) && (
+                  <div className="text-sm font-semibold text-yellow-200 mt-2">
+                    ⚠️ Check STRIPE_SECRET_KEY - must start with sk_ or rk_
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
