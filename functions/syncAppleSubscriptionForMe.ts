@@ -27,15 +27,10 @@ Deno.serve(async (req) => {
     const expiresAt = body.expiresAt || null;
     const productId = body.productId || '';
     const originalTransactionId = body.originalTransactionId || '';
+    const verificationProof = body.verificationProof || null; // Server-side verification data
     
-    // Require originalTransactionId for active subscriptions
-    if (active && !originalTransactionId) {
-      return Response.json({
-        ok: false,
-        error: 'Active subscription requires originalTransactionId',
-        code: 'MISSING_ORIGINAL_TX'
-      }, { status: 400 });
-    }
+    // Determine if this is verified (requires server-side proof from App Store)
+    const isVerified = !!verificationProof;
     
     // Determine tier
     let tier = body.tier || 'premium';
@@ -43,11 +38,16 @@ Deno.serve(async (req) => {
       tier = 'pro';
     }
     
-    // Determine status
-    const status = active ? 'active' : 'expired';
+    // Determine status based on verification and active state
+    let status;
+    if (!isVerified) {
+      status = 'unverified';
+    } else {
+      status = active ? 'active' : 'expired';
+    }
     
     // Create stable provider subscription ID
-    const providerSubId = originalTransactionId || `apple_${userId}`;
+    const providerSubId = originalTransactionId || `apple_unverified_${userId}`;
     
     const nowIso = new Date().toISOString();
     
@@ -89,45 +89,46 @@ Deno.serve(async (req) => {
     };
     
     if (existingAppleSub) {
-      // Update existing Apple subscription
       await base44.asServiceRole.entities.Subscription.update(existingAppleSub.id, subData);
-      console.log(`[syncAppleSubscriptionForMe] Updated Apple subscription ${providerSubId} for user ${userId}`);
+      console.log(`[syncAppleSubscriptionForMe] Updated Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
     } else {
-      // Create new Apple subscription
       await base44.asServiceRole.entities.Subscription.create(subData);
-      console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}`);
+      console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
     }
     
-    // Create or update User entity
+    // CRITICAL: Only mark user as paid if subscription is VERIFIED and ACTIVE
+    const shouldMarkPaid = isVerified && active;
+    
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     if (users && users.length > 0) {
       await base44.asServiceRole.entities.User.update(users[0].id, {
-        subscription_level: active ? 'paid' : 'free',
+        subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
         platform: 'ios'
       });
-      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${active ? 'paid' : 'free'}`);
+      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, verified=${isVerified}`);
     } else {
-      // Create entity User if doesn't exist
       await base44.asServiceRole.entities.User.create({
         email: emailLower,
         full_name: `User ${emailLower}`,
         role: 'user',
-        subscription_level: active ? 'paid' : 'free',
+        subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
         platform: 'ios'
       });
-      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${active ? 'paid' : 'free'}`);
+      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, verified=${isVerified}`);
     }
     
     return Response.json({
       ok: true,
       synced: true,
+      verified: isVerified,
       tier,
       status,
       active,
       user_id: userId,
-      provider_subscription_id: providerSubId
+      provider_subscription_id: providerSubId,
+      warning: !isVerified ? 'Subscription recorded as unverified. User will remain on free tier until verified via App Store Server API.' : null
     });
   } catch (error) {
     console.error('[syncAppleSubscriptionForMe] error:', error);

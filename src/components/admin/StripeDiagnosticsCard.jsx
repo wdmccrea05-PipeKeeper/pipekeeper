@@ -95,13 +95,7 @@ export default function StripeDiagnosticsCard() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-white/50 rounded p-2">
                 <div className="text-purple-600 text-xs">Key Prefix</div>
-                <div className="text-purple-900 font-mono font-semibold">{result.stripeKeyPrefix}</div>
-              </div>
-              <div className="bg-white/50 rounded p-2">
-                <div className="text-purple-600 text-xs">Key Valid</div>
-                <div className="text-purple-900 font-semibold">
-                  {result.stripeKeyValid ? "Yes" : "No"}
-                </div>
+                <div className="text-purple-900 font-mono font-semibold">{result.keyPrefix}</div>
               </div>
               <div className="bg-white/50 rounded p-2">
                 <div className="text-purple-600 text-xs">API Connection</div>
@@ -112,7 +106,7 @@ export default function StripeDiagnosticsCard() {
               <div className="bg-white/50 rounded p-2">
                 <div className="text-purple-600 text-xs">Forbidden Constructors</div>
                 <div className="text-purple-900 font-semibold">
-                  {result.forbiddenStripeConstructorsScan.ok 
+                  {result.forbiddenStripeConstructorsScan?.ok 
                     ? result.forbiddenStripeConstructorsScan.forbidden.length 
                     : "N/A"}
                 </div>

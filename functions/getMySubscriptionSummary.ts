@@ -1,5 +1,4 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse } from "./_utils/stripe.ts";
 
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
 
@@ -43,14 +42,6 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: "UNAUTHENTICATED" }, { status: 401 });
     }
 
-    // Initialize Stripe with validation
-    let stripe;
-    try {
-      stripe = getStripeClient();
-    } catch (e) {
-      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
-    }
-
     const email = normEmail(me.email);
     const userId = me.id;
 
@@ -79,12 +70,17 @@ Deno.serve(async (req) => {
     const expiresAt = primarySub?.current_period_end || null;
 
     let stripeCustomerPortalUrl = null;
+    
+    // Only initialize Stripe if there are Stripe subscriptions AND a customer ID
     if (stripeSubs.length > 0) {
       const subWithCustomer = stripeSubs.find((s) => s.stripe_customer_id);
       const customerId = subWithCustomer?.stripe_customer_id;
 
       if (customerId) {
         try {
+          const { getStripeClient } = await import("./_utils/stripe.ts");
+          const stripe = getStripeClient();
+          
           const session = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: APP_URL,
@@ -92,6 +88,7 @@ Deno.serve(async (req) => {
           stripeCustomerPortalUrl = session.url;
         } catch (e) {
           console.warn("[getMySubscriptionSummary] Failed to create portal session:", e.message);
+          // Don't fail the whole response - just return null portal URL
         }
       }
     }
@@ -107,11 +104,10 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[getMySubscriptionSummary] error:", error);
-    const { safeStripeError } = await import("./_utils/stripe.ts");
     return Response.json({ 
       ok: false, 
       error: "SUBSCRIPTION_FETCH_FAILED",
-      message: safeStripeError(error)
+      message: String(error?.message || error)
     }, { status: 500 });
   }
 });

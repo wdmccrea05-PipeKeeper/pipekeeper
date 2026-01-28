@@ -94,9 +94,10 @@ Deno.serve(async (req) => {
       return Response.json(err, { status: 500 });
     }
 
-    // Sanity check: verify Stripe connection before processing
+    // Sanity check: verify Stripe connection before processing (HARD STOP on failure)
     try {
-      await stripe.balance.retrieve();
+      const { stripeSanityCheck } = await import("./_utils/stripe.ts");
+      await stripeSanityCheck(stripe);
     } catch (e) {
       console.error("[repairStripeByEmail] Stripe auth failed:", e.message);
       return Response.json({
@@ -104,7 +105,7 @@ Deno.serve(async (req) => {
         error: "STRIPE_AUTH_FAILED",
         keyPrefix,
         stripeSanityOk: false,
-        message: "Could not authenticate with Stripe API. Check STRIPE_SECRET_KEY.",
+        message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
         details: safeStripeError(e),
       }, { status: 500 });
     }

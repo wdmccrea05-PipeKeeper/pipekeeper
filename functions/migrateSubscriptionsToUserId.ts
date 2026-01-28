@@ -12,6 +12,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    // Validate Stripe before proceeding (this migration touches Stripe subscriptions)
+    try {
+      const { getStripeClient, stripeSanityCheck } = await import("./_utils/stripe.ts");
+      const stripe = getStripeClient();
+      await stripeSanityCheck(stripe);
+    } catch (e) {
+      const { getStripeKeyPrefix, safeStripeError } = await import("./_utils/stripe.ts");
+      const keyPrefix = getStripeKeyPrefix();
+      console.error("[migrateSubscriptionsToUserId] Stripe validation failed:", e.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_AUTH_FAILED",
+        keyPrefix,
+        message: "Stripe authentication failed. Migration requires valid Stripe access.",
+        details: safeStripeError(e),
+      }, { status: 500 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default true
     const limit = Math.min(body.limit || 500, 1000);
