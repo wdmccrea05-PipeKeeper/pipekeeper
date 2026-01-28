@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const PRO_LAUNCH_CUTOFF = "2026-02-01T00:00:00.000Z";
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 Deno.serve(async (req) => {
   try {
@@ -28,10 +29,10 @@ Deno.serve(async (req) => {
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
     const proLaunchDate = new Date(PRO_LAUNCH_CUTOFF);
 
-    // Build subscription map
+    // Build subscription map with normalized emails
     const subMap = new Map();
     allSubscriptions.forEach(sub => {
-      const email = sub.user_email;
+      const email = normEmail(sub.user_email);
       if (!subMap.has(email)) {
         subMap.set(email, []);
       }
@@ -43,13 +44,20 @@ Deno.serve(async (req) => {
     let foundingMemberCount = 0;
 
     allUsers.forEach(u => {
-      const subs = subMap.get(u.email) || [];
+      const email = normEmail(u.email);
+      const subs = subMap.get(email) || [];
       const validSubs = subs.filter(s => {
         const st = (s.status || '').toLowerCase();
-        return st !== 'incomplete' && st !== 'incomplete_expired';
+        return st !== 'incomplete_expired';
       });
 
       if (validSubs.length === 0) {
+        // Fallback: check User.subscription_level for Apple users without Subscription entity
+        if (u.subscription_level === 'paid') {
+          // Treat as premium by default unless we can determine tier
+          usersByTier.premium.push(u);
+          return;
+        }
         usersByTier.free.push(u);
         return;
       }
@@ -60,8 +68,9 @@ Deno.serve(async (req) => {
           const st = (s.status || '').toLowerCase();
           if (st === 'active') return 5;
           if (st === 'trialing') return 4;
-          if (st === 'past_due') return 3;
-          return 2;
+          if (st === 'incomplete') return 3;
+          if (st === 'past_due') return 2;
+          return 1;
         };
         return rankFn(b) - rankFn(a);
       })[0];
@@ -109,7 +118,7 @@ Deno.serve(async (req) => {
       const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
 
       // Count active or trialing subscriptions
-      if (status === 'active' || status === 'trialing') {
+      if (status === 'active' || status === 'trialing' || status === 'incomplete') {
         if (tier === 'pro') activeOrTrialPro++;
         else activeOrTrialPremium++;
       }
@@ -170,16 +179,15 @@ Deno.serve(async (req) => {
       return status === 'active' && startedAt && new Date(startedAt) >= thirtyDaysAgo;
     }).length;
 
-    // Drop-off: trial ended without converting (not in active subscriptions, created date in last 30 days)
+    // Drop-off: trial ended without converting
     const trialEndedEmails = new Set(
       allSubscriptions
         .filter(s => (s.status || '').toLowerCase() === 'canceled')
         .filter(s => s.trial_end_date && new Date(s.trial_end_date) >= thirtyDaysAgo)
-        .map(s => s.user_email)
+        .map(s => normEmail(s.user_email))
     );
 
     const dropoffLast30d = Array.from(trialEndedEmails).filter(email => {
-      // Check if user has no other active paid subs
       const subs = (subMap.get(email) || []).filter(s => (s.status || '').toLowerCase() === 'active');
       return subs.length === 0;
     }).length;
@@ -216,7 +224,7 @@ Deno.serve(async (req) => {
         const startedAt = sub.started_at || sub.current_period_start;
         if (!startedAt) return false;
         const created = new Date(startedAt);
-        return (status === 'active' || status === 'trialing') && created >= weekStart && created < weekEnd;
+        return (status === 'active' || status === 'trialing' || status === 'incomplete') && created >= weekStart && created < weekEnd;
       }).length;
 
       const newProSubscribers = allSubscriptions.filter(sub => {
@@ -225,7 +233,7 @@ Deno.serve(async (req) => {
         const startedAt = sub.started_at || sub.current_period_start;
         if (!startedAt) return false;
         const created = new Date(startedAt);
-        return tier === 'pro' && (status === 'active' || status === 'trialing') && created >= weekStart && created < weekEnd;
+        return tier === 'pro' && (status === 'active' || status === 'trialing' || status === 'incomplete') && created >= weekStart && created < weekEnd;
       }).length;
 
       weeks.push({
@@ -233,7 +241,7 @@ Deno.serve(async (req) => {
         newUsers,
         newPaidSubscribers,
         newProSubscribers,
-        netGrowth: newUsers - dropoffLast30d, // Simplified
+        netGrowth: newUsers - dropoffLast30d,
       });
     }
 
@@ -253,7 +261,7 @@ Deno.serve(async (req) => {
       const startedAt = sub.started_at || sub.current_period_start;
       return (
         tier === 'premium' &&
-        (status === 'active' || status === 'trialing' || status === 'past_due') &&
+        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete') &&
         startedAt &&
         new Date(startedAt) >= sixtyDaysAgo
       );
@@ -274,7 +282,7 @@ Deno.serve(async (req) => {
       const startedAt = sub.started_at || sub.current_period_start;
       return (
         tier === 'pro' &&
-        (status === 'active' || status === 'trialing' || status === 'past_due') &&
+        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete') &&
         startedAt &&
         new Date(startedAt) >= sixtyDaysAgo
       );
@@ -282,9 +290,8 @@ Deno.serve(async (req) => {
 
     const proChurn30d = activePro30d > 0 ? Math.round((churned30dPro / activePro30d) * 10000) / 100 : 0;
 
-    // Downgrades (simplified: look for tier changes in subscription history)
-    const proToPremiumDowngrade = 0; // Would require change tracking
-    const premiumToFreeDowngrade = 0; // Would require change tracking
+    const proToPremiumDowngrade = 0;
+    const premiumToFreeDowngrade = 0;
 
     const churnMetrics = {
       premiumChurn30d,
@@ -298,34 +305,34 @@ Deno.serve(async (req) => {
     const tobaccosByUser = new Map();
 
     allPipes.forEach(p => {
-      const creator = p.created_by;
+      const creator = normEmail(p.created_by);
       pipesByUser.set(creator, (pipesByUser.get(creator) || 0) + 1);
     });
 
     allTobaccos.forEach(t => {
-      const creator = t.created_by;
+      const creator = normEmail(t.created_by);
       tobaccosByUser.set(creator, (tobaccosByUser.get(creator) || 0) + 1);
     });
 
     const avgPipesPerUser = {
-      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (pipesByUser.get(u.email) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
+      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
       premium:
         usersByTier.premium.length > 0
-          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (pipesByUser.get(u.email) || 0), 0) / usersByTier.premium.length) * 10) / 10
+          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.premium.length) * 10) / 10
           : 0,
-      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (pipesByUser.get(u.email) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
+      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
     };
 
     const avgTobaccosPerUser = {
-      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (tobaccosByUser.get(u.email) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
+      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
       premium:
         usersByTier.premium.length > 0
-          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (tobaccosByUser.get(u.email) || 0), 0) / usersByTier.premium.length) * 10) / 10
+          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.premium.length) * 10) / 10
           : 0,
-      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (tobaccosByUser.get(u.email) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
+      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
     };
 
-    const communityEngagementEmails = new Set(allComments.map(c => c.commenter_email));
+    const communityEngagementEmails = new Set(allComments.map(c => normEmail(c.commenter_email)));
     const communityEngagement = Math.round((communityEngagementEmails.size / allUsers.length) * 10000) / 100;
 
     const usageMetrics = {
@@ -334,7 +341,7 @@ Deno.serve(async (req) => {
       communityEngagement,
     };
 
-    // 7. PLATFORM BREAKDOWN
+    // 7. PLATFORM BREAKDOWN (include Apple users even without Subscription)
     const platformBreakdown = {
       apple: { paid: 0, free: 0 },
       android: { paid: 0, free: 0 },
@@ -342,16 +349,18 @@ Deno.serve(async (req) => {
     };
 
     allUsers.forEach(u => {
-      const subs = subMap.get(u.email) || [];
+      const email = normEmail(u.email);
+      const subs = subMap.get(email) || [];
       const validSubs = subs.filter(s => {
         const st = (s.status || '').toLowerCase();
-        return st !== 'incomplete' && st !== 'incomplete_expired';
+        return st !== 'incomplete_expired';
       });
       
+      // Determine paid status: either has active/trialing/incomplete subscription OR User.subscription_level = 'paid'
       const hasPaidSub = validSubs.some(s => {
         const st = (s.status || '').toLowerCase();
-        return st === 'active' || st === 'trialing';
-      });
+        return st === 'active' || st === 'trialing' || st === 'incomplete';
+      }) || u.subscription_level === 'paid';
 
       const platform = u.platform || 'web';
       const platformKey = platform === 'ios' ? 'apple' : platform === 'android' ? 'android' : 'web';

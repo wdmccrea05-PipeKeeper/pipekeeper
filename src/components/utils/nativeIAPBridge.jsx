@@ -36,8 +36,9 @@ export const registerNativeSubscriptionListener = (onStatus) => {
   if (typeof onStatus !== "function") return () => {};
 
   const handler = (e) => {
-    const active = !!e?.detail?.active;
-    onStatus(active);
+    // Pass full payload instead of just boolean
+    const payload = e?.detail || {};
+    onStatus(payload);
   };
 
   window.addEventListener("pipekeeper_subscription_status", handler);

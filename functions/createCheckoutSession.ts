@@ -1,6 +1,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.4.0";
 
+const normEmail = (email) => String(email || "").trim().toLowerCase();
+
 // ---- Config ----
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
@@ -133,6 +135,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const emailLower = normEmail(user.email);
     const origin = safeOrigin(req);
 
     const body = await req.json().catch(() => ({}));
@@ -179,21 +182,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Customer resolution
+    // Customer resolution - use normalized email
     let customerId = user.stripe_customer_id || null;
 
     if (!customerId) {
-      const existing = await stripe.customers.list({ email: user.email, limit: 1 });
+      const existing = await stripe.customers.list({ email: emailLower, limit: 1 });
       customerId = existing.data?.[0]?.id || null;
     }
 
     if (!customerId) {
-      const created = await stripe.customers.create({ email: user.email });
+      const created = await stripe.customers.create({ email: emailLower });
       customerId = created.id;
     }
 
     if (!user.stripe_customer_id) {
-      await safePersistCustomerId(base44, user.email, customerId);
+      await safePersistCustomerId(base44, emailLower, customerId);
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -204,12 +207,12 @@ Deno.serve(async (req) => {
       success_url: `${origin}/Subscription?success=1`,
       cancel_url: `${origin}/Subscription?canceled=1`,
       metadata: {
-        user_email: user.email,
+        user_email: emailLower,
         platform: platform,
       },
       subscription_data: {
         metadata: {
-          user_email: user.email,
+          user_email: emailLower,
           platform: platform,
         },
       },

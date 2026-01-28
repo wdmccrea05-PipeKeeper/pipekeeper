@@ -8,15 +8,29 @@ import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/componen
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const normEmail = (email) => String(email || "").trim().toLowerCase();
+
+// Detect platform
+function detectPlatform() {
+  if (isIOSCompanion?.()) return "ios";
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('platform') === 'android') return "android";
+  }
+  return "web";
+}
 
 export function useCurrentUser() {
+  const [ensuredUser, setEnsuredUser] = useState(false);
+
   // Fetch auth user + entity User + Subscription in parallel
   const { data: rawUser, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
       const authUser = await base44.auth.me();
-      const email = (authUser?.email || "").trim().toLowerCase();
+      const email = normEmail(authUser?.email || "");
 
       // Fetch entity User record
       const entityUser = await (async () => {
@@ -44,13 +58,15 @@ export function useCurrentUser() {
     refetchOnReconnect: true,
   });
 
+  const email = normEmail(rawUser?.email || "");
+
   const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
-    queryKey: ["subscription", rawUser?.email],
+    queryKey: ["subscription", email],
     queryFn: async () => {
       try {
-        if (!rawUser?.email) return null;
+        if (!email) return null;
         const subs = await base44.entities.Subscription.filter(
-          { user_email: rawUser.email },
+          { user_email: email },
           "-current_period_end",
           5
         );
@@ -83,10 +99,37 @@ export function useCurrentUser() {
         return null;
       }
     },
-    enabled: !!rawUser?.email,
-    staleTime: 5_000, // Reduced from 30s to 5s for faster refresh
+    enabled: !!email,
+    staleTime: 5_000,
     retry: 1,
   });
+
+  // Ensure User entity exists and has platform set
+  useEffect(() => {
+    if (userLoading || !rawUser?.email || ensuredUser) return;
+    
+    const entityUser = rawUser;
+    const needsEnsure = !entityUser?.id || !entityUser?.platform;
+    
+    if (!needsEnsure) {
+      setEnsuredUser(true);
+      return;
+    }
+
+    const platform = detectPlatform();
+    
+    (async () => {
+      try {
+        await base44.functions.invoke('ensureUserRecord', { platform });
+        await refetchUser();
+        setEnsuredUser(true);
+      } catch (e) {
+        console.error('[useCurrentUser] ensureUserRecord failed:', e);
+        // Don't block app, just log
+        setEnsuredUser(true);
+      }
+    })();
+  }, [userLoading, rawUser, ensuredUser, refetchUser]);
 
   // Compute derived flags
   const isLoading = userLoading || subLoading;
@@ -113,6 +156,7 @@ export function useCurrentUser() {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && !isLoading && rawUser?.email) {
       const debugInfo = {
         email: rawUser.email,
+        emailNormalized: email,
         tier: subscription?.tier || 'free',
         isOnTrial: isInTrial,
         isLegacyPremium: subscription?.tier === 'premium' && subscription?.subscriptionStartedAt && 
@@ -121,10 +165,11 @@ export function useCurrentUser() {
         subscriptionStartedAt: subscription?.subscriptionStartedAt || subscription?.started_at || 'N/A',
         hasPaid,
         hasPremium,
+        platform: rawUser.platform || 'unknown',
       };
       console.log('[PipeKeeper Dev] Entitlements:', debugInfo);
     }
-  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium]);
+  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email]);
 
   return {
     user: rawUser,
@@ -133,7 +178,7 @@ export function useCurrentUser() {
     error: userError,
     hasPremium,
     hasPaid,
-    hasPaidAccess: hasPaid, // Alias for compatibility
+    hasPaidAccess: hasPaid,
     isPro,
     hasTrial,
     isInTrial,

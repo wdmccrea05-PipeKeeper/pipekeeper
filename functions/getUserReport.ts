@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
+const normEmail = (email) => String(email || "").trim().toLowerCase();
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -17,36 +19,37 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Subscription.list()
     ]);
 
-    // Create a map of user email to best subscription (filter out incomplete)
+    // Create a map of normalized user email to best subscription (filter out incomplete_expired)
     const subscriptionMap = new Map();
     
-    // Group subscriptions by user email
+    // Group subscriptions by normalized user email
     const subsByEmail = new Map();
     allSubscriptions.forEach(sub => {
-      const email = sub.user_email;
+      const email = normEmail(sub.user_email);
       if (!subsByEmail.has(email)) {
         subsByEmail.set(email, []);
       }
       subsByEmail.get(email).push(sub);
     });
     
-    // Pick best subscription for each user (ignore incomplete/incomplete_expired)
+    // Pick best subscription for each user (ignore only incomplete_expired)
     subsByEmail.forEach((subs, email) => {
-      // Filter out incomplete and incomplete_expired
+      // Filter out incomplete_expired only
       const validSubs = subs.filter(s => {
         const status = (s.data?.status || s.status || '').toLowerCase();
-        return status !== 'incomplete' && status !== 'incomplete_expired';
+        return status !== 'incomplete_expired';
       });
       
       if (validSubs.length === 0) return;
       
-      // Rank: active > trialing > past_due > others
+      // Rank: active > trialing > incomplete > past_due > others
       const rank = (s) => {
         const st = (s.data?.status || s.status || '').toLowerCase();
         if (st === 'active') return 5;
         if (st === 'trialing') return 4;
-        if (st === 'past_due') return 3;
-        return 2;
+        if (st === 'incomplete') return 3;
+        if (st === 'past_due') return 2;
+        return 1;
       };
       
       // Sort and pick best
@@ -68,17 +71,18 @@ Deno.serve(async (req) => {
     const freeUsers = [];
 
     allUsers.forEach(user => {
-      const subscription = subscriptionMap.get(user.email);
+      const email = normEmail(user.email);
+      const subscription = subscriptionMap.get(email);
       
       // Check if subscription grants premium access
       // 1. Check Subscription entity first
       const subStatus = subscription?.data?.status || subscription?.status;
       const subPeriodEnd = subscription?.data?.current_period_end || subscription?.current_period_end;
       let isPaid = subscription && 
-        (subStatus === 'active' || subStatus === 'trialing') &&
+        (subStatus === 'active' || subStatus === 'trialing' || subStatus === 'incomplete') &&
         (!subPeriodEnd || new Date(subPeriodEnd) > new Date());
       
-      // 2. Fallback to User entity fields (set by webhook)
+      // 2. Fallback to User entity fields (for Apple IAP or webhook-synced users)
       if (!isPaid && user.subscription_level === 'paid') {
         isPaid = true;
       }
@@ -87,6 +91,7 @@ Deno.serve(async (req) => {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        platform: user.platform || 'unknown',
         created_date: user.created_date,
         subscription_status: subscription?.data?.status || subscription?.status || user.subscription_status || 'none',
         subscription_end: subscription?.data?.current_period_end || subscription?.current_period_end || null,

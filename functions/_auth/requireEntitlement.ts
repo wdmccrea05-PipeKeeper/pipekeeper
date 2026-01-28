@@ -1,5 +1,7 @@
 import { buildEntitlements } from './entitlements.ts';
 
+const normEmail = (email) => String(email || "").trim().toLowerCase();
+
 /**
  * Checks if the user has a given entitlement.
  * Throws an error with status 402 if not.
@@ -11,13 +13,15 @@ export async function requireEntitlement(base44, user, feature) {
     throw err;
   }
 
-  // Fetch subscription
-  const subscriptions = await base44.entities.Subscription.filter({ user_email: user.email });
+  const emailLower = normEmail(user.email);
+
+  // Fetch subscription with normalized email
+  const subscriptions = await base44.entities.Subscription.filter({ user_email: emailLower });
   const subscription = subscriptions?.[0];
 
   // Determine if paid and pro
   const isPaidSubscriber = !!(
-    subscription?.status === 'active' || subscription?.status === 'trialing'
+    subscription?.status === 'active' || subscription?.status === 'trialing' || subscription?.status === 'incomplete'
   );
   const isProSubscriber = !!(isPaidSubscriber && subscription?.tier === 'pro');
 
