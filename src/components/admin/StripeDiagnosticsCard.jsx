@@ -10,6 +10,19 @@ export default function StripeDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  const runPing = async () => {
+    try {
+      const res = await base44.functions.invoke('adminPing');
+      if (res.data?.ok) {
+        toast.success('Admin routing is working');
+      } else {
+        toast.error('Admin ping failed');
+      }
+    } catch (err) {
+      toast.error('Admin ping failed: ' + (err.message || 'Unknown error'));
+    }
+  };
+
   const runDiagnostics = async () => {
     setLoading(true);
     setResult(null);
@@ -45,13 +58,22 @@ export default function StripeDiagnosticsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button
-          onClick={runDiagnostics}
-          disabled={loading}
-          className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-        >
-          {loading ? "Running..." : "Run Stripe Diagnostics"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={runDiagnostics}
+            disabled={loading}
+            className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
+          >
+            {loading ? "Running..." : "Run Stripe Diagnostics"}
+          </Button>
+          <Button
+            onClick={runPing}
+            variant="outline"
+            className="flex-1"
+          >
+            Ping Admin Routes
+          </Button>
+        </div>
 
         {result && result.hardFail && (
           <Alert variant="destructive" className="bg-red-100 border-red-400">
