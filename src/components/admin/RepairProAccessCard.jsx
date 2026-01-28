@@ -199,7 +199,30 @@ export default function RepairProAccessCard() {
 
         {result && !result.ok && (
           <Alert variant="destructive">
-            <AlertDescription>{result.error}</AlertDescription>
+            <AlertDescription>
+              <div className="space-y-2">
+                <div className="font-semibold">Repair Failed</div>
+                <div className="text-sm break-words">{result.error || result.message}</div>
+                {result.keyPrefix && (
+                  <div className="text-sm">
+                    <span className="font-semibold">Key Prefix:</span>{" "}
+                    <code className="bg-black/30 px-2 py-0.5 rounded font-mono">
+                      {result.keyPrefix}
+                    </code>
+                  </div>
+                )}
+                {(result.error?.includes("STRIPE_AUTH_FAILED") || result.error?.includes("Invalid API Key") || result.error?.includes("mk_") || result.keyPrefix === "mk" || result.keyPrefix === "pk") && (
+                  <div className="text-sm font-semibold text-yellow-200 mt-2">
+                    ⚠️ STRIPE_SECRET_KEY must start with sk_ (secret) or rk_ (restricted)
+                  </div>
+                )}
+                {result.details && (
+                  <div className="text-xs mt-2 font-mono bg-black/20 p-2 rounded break-words">
+                    {result.details}
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
           </Alert>
         )}
       </CardContent>
