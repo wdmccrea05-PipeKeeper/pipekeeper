@@ -25,14 +25,11 @@ Deno.serve(async (req: Request) => {
     const user = await base44.auth.me();
 
     if (user?.role !== "admin") {
-      return new Response(JSON.stringify({ 
+      return Response.json({ 
         ok: false, 
         error: "FORBIDDEN",
         keyPrefix 
-      }), {
-        status: 403,
-        headers: { "content-type": "application/json" },
-      });
+      }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -42,15 +39,12 @@ Deno.serve(async (req: Request) => {
     // Initialize Stripe and validate
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
     if (!stripeKey || (keyPrefix !== "sk" && keyPrefix !== "rk")) {
-      return new Response(JSON.stringify({
+      return Response.json({
         ok: false,
         error: "STRIPE_SECRET_KEY_INVALID",
         keyPrefix,
         message: "STRIPE_SECRET_KEY must start with sk_ or rk_"
-      }), {
-        status: 500,
-        headers: { "content-type": "application/json" },
-      });
+      }, { status: 500 });
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
@@ -58,25 +52,36 @@ Deno.serve(async (req: Request) => {
     // HARD STOP: Verify Stripe auth before processing
     try {
       await stripe.balance.retrieve();
-    } catch (e) {
-      return new Response(JSON.stringify({
+    } catch (e: any) {
+      return Response.json({
         ok: false,
         error: "STRIPE_AUTH_FAILED",
         keyPrefix,
         stripeSanityOk: false,
+        where: "sanity_check",
         message: "Stripe authentication failed. Check STRIPE_SECRET_KEY.",
         details: maskError(String(e?.message || e))
-      }), {
-        status: 500,
-        headers: { "content-type": "application/json" },
-      });
+      }, { status: 500 });
     }
 
     // Fetch ONE page of customers
-    const customers = await stripe.customers.list({ limit, starting_after });
+    let customers;
+    try {
+      customers = await stripe.customers.list({ limit, starting_after });
+    } catch (e: any) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_CUSTOMERS_LIST_FAILED",
+        keyPrefix,
+        where: "customers.list",
+        message: maskError(String(e?.message || e))
+      }, { status: 500 });
+    }
 
-    let created = 0;
-    let updated = 0;
+    let createdSubs = 0;
+    let updatedSubs = 0;
+    let createdUsers = 0;
+    let updatedUsers = 0;
     let errorsCount = 0;
     const sampleErrors: any[] = [];
 
@@ -88,7 +93,8 @@ Deno.serve(async (req: Request) => {
         // Try to find subscription for this customer
         const stripeSubsResponse = await stripe.subscriptions.list({
           customer: customer.id,
-          limit: 1
+          limit: 1,
+          expand: ["data.items.data.price"]
         });
         
         const stripeSub = stripeSubsResponse.data[0];
@@ -104,13 +110,13 @@ Deno.serve(async (req: Request) => {
             role: "user",
             stripe_customer_id: customer.id
           });
-          created++;
+          createdUsers++;
         } else {
           if (!entityUser.stripe_customer_id) {
             await base44.asServiceRole.entities.User.update(entityUser.id, {
               stripe_customer_id: customer.id
             });
-            updated++;
+            updatedUsers++;
           }
         }
 
@@ -122,7 +128,6 @@ Deno.serve(async (req: Request) => {
 
         if (!existingSubs || existingSubs.length === 0) {
           await base44.asServiceRole.entities.Subscription.create({
-            user_id: entityUser.id,
             user_email: email,
             provider: "stripe",
             provider_subscription_id: stripeSub.id,
@@ -133,8 +138,11 @@ Deno.serve(async (req: Request) => {
             current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
             current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString()
           });
+          createdSubs++;
+        } else {
+          updatedSubs++;
         }
-      } catch (e) {
+      } catch (e: any) {
         errorsCount++;
         if (sampleErrors.length < 5) {
           sampleErrors.push({
@@ -146,30 +154,27 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({
+    return Response.json({
       ok: true,
       keyPrefix,
       stripeSanityOk: true,
       fetchedCustomers: customers.data.length,
       hasMore: customers.has_more,
       nextStartingAfter: customers.has_more ? customers.data[customers.data.length - 1]?.id : null,
-      created,
-      updated,
+      createdSubs,
+      updatedSubs,
+      createdUsers,
+      updatedUsers,
       errorsCount,
       sampleErrors
-    }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({
+  } catch (error: any) {
+    return Response.json({
       ok: false,
       error: "BACKFILL_FAILED",
       keyPrefix,
+      where: "top_level",
       message: maskError(String(error?.message || error))
-    }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    });
+    }, { status: 500 });
   }
 });

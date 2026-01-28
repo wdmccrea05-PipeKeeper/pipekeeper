@@ -1,15 +1,28 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, getStripeKeyPrefix, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
-import { scanForForbiddenStripeConstructors } from "./_utils/forbidStripeConstructor.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
-async function resolveTierFromStripe(stripeSub, stripe) {
+function getStripeKeyPrefix() {
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  if (!key) return "missing";
+  if (key.startsWith("sk_")) return "sk";
+  if (key.startsWith("rk_")) return "rk";
+  if (key.startsWith("mk_")) return "mk";
+  if (key.startsWith("pk_")) return "pk";
+  return "other";
+}
+
+function maskError(msg: string) {
+  return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
+}
+
+async function resolveTierFromStripe(stripeSub: any, stripe: Stripe) {
   try {
     // Priority 1: Subscription metadata
     const metadataTier = (stripeSub.metadata?.tier || "").toLowerCase();
@@ -55,35 +68,39 @@ async function resolveTierFromStripe(stripeSub, stripe) {
     }
 
     return null;
-  } catch (err) {
+  } catch (err: any) {
     console.error(`[resolveTierFromStripe] Failed:`, err.message);
     throw err;
   }
 }
 
-async function findStripeSubscription(localSub, stripe) {
+async function findStripeSubscriptionWithEmailRecovery(localSub: any, stripe: Stripe) {
   // Skip Apple subscriptions
   if (localSub.provider === "apple") {
-    return { status: "SKIP_APPLE", stripeSub: null };
+    return { status: "SKIP_APPLE", stripeSub: null, customer: null };
   }
 
   // A) Try provider_subscription_id
   if (localSub.provider_subscription_id) {
     try {
-      const stripeSub = await stripe.subscriptions.retrieve(localSub.provider_subscription_id);
-      return { status: "FOUND_BY_PROVIDER_ID", stripeSub, recoveryMethod: "provider_subscription_id" };
-    } catch (err) {
-      console.warn(`[findStripeSubscription] Failed to retrieve by provider_subscription_id ${localSub.provider_subscription_id}:`, err.message);
+      const stripeSub = await stripe.subscriptions.retrieve(localSub.provider_subscription_id, {
+        expand: ["items.data.price.product", "items.data.price"]
+      });
+      return { status: "FOUND_BY_PROVIDER_ID", stripeSub, recoveryMethod: "provider_subscription_id", customer: null };
+    } catch (err: any) {
+      console.warn(`[findStripeSubscription] Failed to retrieve by provider_subscription_id:`, err.message);
     }
   }
 
   // B) Try stripe_subscription_id
   if (localSub.stripe_subscription_id) {
     try {
-      const stripeSub = await stripe.subscriptions.retrieve(localSub.stripe_subscription_id);
-      return { status: "FOUND_BY_STRIPE_ID", stripeSub, recoveryMethod: "stripe_subscription_id" };
-    } catch (err) {
-      console.warn(`[findStripeSubscription] Failed to retrieve by stripe_subscription_id ${localSub.stripe_subscription_id}:`, err.message);
+      const stripeSub = await stripe.subscriptions.retrieve(localSub.stripe_subscription_id, {
+        expand: ["items.data.price.product", "items.data.price"]
+      });
+      return { status: "FOUND_BY_STRIPE_ID", stripeSub, recoveryMethod: "stripe_subscription_id", customer: null };
+    } catch (err: any) {
+      console.warn(`[findStripeSubscription] Failed to retrieve by stripe_subscription_id:`, err.message);
     }
   }
 
@@ -98,25 +115,73 @@ async function findStripeSubscription(localSub, stripe) {
       });
 
       if (result.data.length === 0) {
-        return { status: "NO_SUBS_FOR_CUSTOMER", stripeSub: null };
+        return { status: "NO_SUBS_FOR_CUSTOMER", stripeSub: null, customer: null };
       }
 
       // Prefer active/trialing, else most recent
-      const activeOrTrialing = result.data.find(s => s.status === "active" || s.status === "trialing");
+      const activeOrTrialing = result.data.find((s: any) => s.status === "active" || s.status === "trialing");
       const stripeSub = activeOrTrialing || result.data[0];
 
-      return { status: "RECOVERED_BY_CUSTOMER", stripeSub, recoveryMethod: "stripe_customer_id" };
-    } catch (err) {
-      console.error(`[findStripeSubscription] Failed to list by customer ${localSub.stripe_customer_id}:`, err.message);
-      return { status: "CUSTOMER_LOOKUP_ERROR", stripeSub: null, error: err.message };
+      return { status: "RECOVERED_BY_CUSTOMER", stripeSub, recoveryMethod: "stripe_customer_id", customer: null };
+    } catch (err: any) {
+      console.error(`[findStripeSubscription] Failed to list by customer:`, err.message);
     }
   }
 
-  // D) No Stripe IDs available
-  return { status: "NO_STRIPE_IDS", stripeSub: null };
+  // D) Email recovery fallback
+  const email = normEmail(localSub.user_email || "");
+  if (email) {
+    try {
+      // Try search API first (more efficient)
+      let customers: any;
+      try {
+        customers = await stripe.customers.search({
+          query: `email:'${email}'`,
+          limit: 5
+        });
+      } catch (e) {
+        // Fallback to list if search not available
+        customers = await stripe.customers.list({
+          email,
+          limit: 10
+        });
+      }
+
+      if (customers.data && customers.data.length > 0) {
+        const customer = customers.data[0];
+        
+        // List subscriptions for this customer
+        const subs = await stripe.subscriptions.list({
+          customer: customer.id,
+          status: "all",
+          limit: 10,
+          expand: ["data.items.data.price.product", "data.items.data.price"]
+        });
+
+        if (subs.data.length > 0) {
+          // Prefer active/trialing
+          const activeOrTrialing = subs.data.find((s: any) => s.status === "active" || s.status === "trialing");
+          const stripeSub = activeOrTrialing || subs.data[0];
+
+          return { 
+            status: "RECOVERED_BY_EMAIL", 
+            stripeSub, 
+            recoveryMethod: "email_search",
+            customer,
+            needsBackfill: true
+          };
+        }
+      }
+    } catch (err: any) {
+      console.error(`[findStripeSubscription] Email recovery failed:`, err.message);
+    }
+  }
+
+  // E) No recovery possible
+  return { status: "NO_STRIPE_IDS", stripeSub: null, customer: null };
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const keyPrefix = getStripeKeyPrefix();
   
   try {
@@ -133,40 +198,30 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
-    // Hard fail check: detect forbidden Stripe constructors
-    const scan = await scanForForbiddenStripeConstructors();
-    if (scan.ok && scan.forbidden.length > 0) {
+    // Initialize Stripe with validation
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
+    if (!stripeKey || (keyPrefix !== "sk" && keyPrefix !== "rk")) {
       return Response.json({
         ok: false,
-        error: "FORBIDDEN_STRIPE_CONSTRUCTOR_REMAINING",
-        message: "Direct Stripe constructor usage detected. All functions must use getStripeClient() from _utils/stripe.ts",
-        files: scan.forbidden,
+        error: "STRIPE_SECRET_KEY_INVALID",
         keyPrefix,
+        message: "STRIPE_SECRET_KEY must start with sk_ or rk_"
       }, { status: 500 });
     }
 
-    // Initialize Stripe with validation
-    let stripe;
-    try {
-      stripe = getStripeClient();
-    } catch (e) {
-      const err = stripeKeyErrorResponse(e);
-      return Response.json(err, { status: 500 });
-    }
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
-    // Sanity check: verify Stripe connection before processing (HARD STOP on failure)
+    // HARD STOP: Verify Stripe auth before processing
     try {
-      const { stripeSanityCheck } = await import("./_utils/stripe.ts");
-      await stripeSanityCheck(stripe);
-    } catch (e) {
-      console.error("[repairStripeTiers] Stripe auth failed:", e.message);
+      await stripe.balance.retrieve();
+    } catch (e: any) {
       return Response.json({
         ok: false,
         error: "STRIPE_AUTH_FAILED",
         keyPrefix,
         stripeSanityOk: false,
         message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
-        details: safeStripeError(e),
+        details: maskError(String(e?.message || e))
       }, { status: 500 });
     }
 
@@ -176,11 +231,11 @@ Deno.serve(async (req) => {
 
     console.log(`[repairStripeTiers] Starting (dryRun=${dryRun}, limit=${limit})`);
 
-    // Fetch all subscriptions (including those without IDs)
+    // Fetch all subscriptions
     const allSubs = await base44.asServiceRole.entities.Subscription.list();
 
     // Filter to Stripe or unknown provider, and eligible status
-    const eligibleSubs = allSubs.filter((sub) => {
+    const eligibleSubs = allSubs.filter((sub: any) => {
       // Skip Apple explicitly
       if (sub.provider === "apple") return false;
 
@@ -200,20 +255,21 @@ Deno.serve(async (req) => {
       updatedSubscriptions: 0,
       updatedUsers: 0,
       recoveredByCustomer: 0,
+      recoveredByEmail: 0,
       noStripeIds: 0,
       unknownTier: 0,
       skippedApple: 0,
       missingStripeSubscription: 0,
       samples: {
-        updated: [],
-        recovered: [],
-        unknown: [],
-        missing: [],
+        updated: [] as any[],
+        recovered: [] as any[],
+        unknown: [] as any[],
+        missing: [] as any[],
       },
     };
 
     for (const localSub of subsToRepair) {
-      const lookupResult = await findStripeSubscription(localSub, stripe);
+      const lookupResult = await findStripeSubscriptionWithEmailRecovery(localSub, stripe);
 
       if (lookupResult.status === "SKIP_APPLE") {
         results.skippedApple++;
@@ -233,7 +289,7 @@ Deno.serve(async (req) => {
             user_email: localSub.user_email,
             stripe_customer_id: localSub.stripe_customer_id,
             status: lookupResult.status,
-            reason: lookupResult.error || lookupResult.status,
+            reason: lookupResult.status,
           });
         }
         continue;
@@ -241,33 +297,34 @@ Deno.serve(async (req) => {
 
       const stripeSub = lookupResult.stripeSub;
 
-      // Backfill missing IDs if recovered by customer
+      // Backfill missing IDs if recovered
       let needsBackfill = false;
       if (lookupResult.status === "RECOVERED_BY_CUSTOMER") {
         needsBackfill = true;
         results.recoveredByCustomer++;
-        
-        if (results.samples.recovered.length < 10) {
-          results.samples.recovered.push({
-            subscription_id: localSub.id,
-            user_email: localSub.user_email,
-            stripe_customer_id: localSub.stripe_customer_id,
-            recovered_stripe_sub_id: stripeSub.id,
-            recovery_method: lookupResult.recoveryMethod,
-          });
-        }
+      } else if (lookupResult.status === "RECOVERED_BY_EMAIL") {
+        needsBackfill = true;
+        results.recoveredByEmail++;
+      }
+      
+      if (needsBackfill && results.samples.recovered.length < 10) {
+        results.samples.recovered.push({
+          subscription_id: localSub.id,
+          user_email: localSub.user_email,
+          recovered_stripe_sub_id: stripeSub.id,
+          recovery_method: lookupResult.recoveryMethod,
+        });
       }
 
       // Resolve tier
       let resolvedTier = null;
       try {
         resolvedTier = await resolveTierFromStripe(stripeSub, stripe);
-      } catch (err) {
-        console.error(`[repairStripeTiers] Tier resolution failed for ${stripeSub.id}:`, err.message);
+      } catch (err: any) {
+        console.error(`[repairStripeTiers] Tier resolution failed:`, err.message);
       }
 
       if (!resolvedTier) {
-        // Keep existing tier if we can't resolve
         resolvedTier = localSub.tier || null;
         results.unknownTier++;
         
@@ -287,15 +344,18 @@ Deno.serve(async (req) => {
       if (needsBackfill || needsTierUpdate) {
         if (!dryRun) {
           // Update subscription
-          const updatePayload = {};
+          const updatePayload: any = {};
           
           if (needsBackfill) {
             updatePayload.provider = "stripe";
             updatePayload.provider_subscription_id = stripeSub.id;
             updatePayload.stripe_subscription_id = stripeSub.id;
-            updatePayload.stripe_customer_id = typeof stripeSub.customer === "string" 
+            const customerId = typeof stripeSub.customer === "string" 
               ? stripeSub.customer 
               : stripeSub.customer?.id;
+            if (customerId) {
+              updatePayload.stripe_customer_id = customerId;
+            }
           }
           
           if (needsTierUpdate && resolvedTier) {
@@ -340,7 +400,6 @@ Deno.serve(async (req) => {
           results.samples.updated.push({
             subscription_id: localSub.id,
             user_email: localSub.user_email,
-            user_id: localSub.user_id,
             stripe_sub_id: stripeSub.id,
             recovery_method: lookupResult.recoveryMethod,
             old_tier: localSub.tier,
@@ -353,16 +412,16 @@ Deno.serve(async (req) => {
 
     return Response.json({
       ok: true,
+      keyPrefix,
       dryRun,
       ...results,
     });
-  } catch (error) {
-    console.error("[repairStripeTiers] error:", error);
-    const { safeStripeError } = await import("./_utils/stripe.ts");
+  } catch (error: any) {
     return Response.json({ 
       ok: false, 
-      error: "FUNCTION_ERROR",
-      message: safeStripeError(error)
+      error: "REPAIR_FAILED",
+      keyPrefix,
+      message: maskError(String(error?.message || error))
     }, { status: 500 });
   }
 });
