@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_utils/stripe.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -91,18 +91,12 @@ Deno.serve(async (req) => {
 
   try {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     
     if (!webhookSecret) {
       return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
     }
-    if (!stripeSecretKey) {
-      return json(500, { ok: false, error: "Missing STRIPE_SECRET_KEY" });
-    }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: "2024-12-18.acacia",
-    });
+    const stripe = getStripeClient();
 
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();
