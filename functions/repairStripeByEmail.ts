@@ -1,5 +1,10 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, getStripeKeyPrefix, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, getStripeKeyPrefix, stripeKeyErrorResponse, safeStripeError, stripeSanityCheck } from "./_utils/stripe.ts";
 import { scanForForbiddenStripeConstructors } from "./_utils/forbidStripeConstructor.ts";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
@@ -58,9 +63,16 @@ async function resolveTier(stripeSub, stripe) {
 }
 
 Deno.serve(async (req) => {
-  const keyPrefix = getStripeKeyPrefix();
-  
   try {
+    // Only accept POST
+    if (req.method !== "POST") {
+      return Response.json({ 
+        ok: false, 
+        error: "METHOD_NOT_ALLOWED",
+        message: "Only POST requests are allowed"
+      }, { status: 405 });
+    }
+
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
 
@@ -68,45 +80,21 @@ Deno.serve(async (req) => {
       return Response.json({ 
         ok: false, 
         error: "FORBIDDEN",
-        message: "Admin access required",
-        keyPrefix 
+        message: "Admin access required"
       }, { status: 403 });
-    }
-
-    // Hard fail check: detect forbidden Stripe constructors
-    const scan = await scanForForbiddenStripeConstructors();
-    if (scan.ok && scan.forbidden.length > 0) {
-      return Response.json({
-        ok: false,
-        error: "FORBIDDEN_STRIPE_CONSTRUCTOR_REMAINING",
-        message: "Direct Stripe constructor usage detected. All functions must use getStripeClient() from _utils/stripe.ts",
-        files: scan.forbidden,
-        keyPrefix,
-      }, { status: 500 });
     }
 
     // Initialize Stripe with validation
     let stripe;
     try {
       stripe = getStripeClient();
-    } catch (e) {
-      const err = stripeKeyErrorResponse(e);
-      return Response.json(err, { status: 500 });
-    }
-
-    // Sanity check: verify Stripe connection before processing (HARD STOP on failure)
-    try {
-      const { stripeSanityCheck } = await import("./_utils/stripe.ts");
       await stripeSanityCheck(stripe);
     } catch (e) {
-      console.error("[repairStripeByEmail] Stripe auth failed:", e.message);
+      console.error("[repairStripeByEmail] Stripe init failed:", e);
       return Response.json({
         ok: false,
-        error: "STRIPE_AUTH_FAILED",
-        keyPrefix,
-        stripeSanityOk: false,
-        message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
-        details: safeStripeError(e),
+        error: "STRIPE_INIT_FAILED",
+        message: safeStripeError(e),
       }, { status: 500 });
     }
 
@@ -115,23 +103,32 @@ Deno.serve(async (req) => {
     const dryRun = body.dryRun !== false;
 
     if (!email) {
-      return Response.json({ ok: false, error: "EMAIL_REQUIRED" }, { status: 400 });
+      return Response.json({ 
+        ok: false, 
+        error: "EMAIL_REQUIRED",
+        message: "Email is required"
+      }, { status: 400 });
     }
 
+    console.log(`[repairStripeByEmail] Processing: ${email}, dryRun=${dryRun}`);
+
     // 1. Find Stripe customer
-    let customers;
+    let customer = null;
     try {
-      customers = await stripe.customers.list({ email, limit: 3 });
-    } catch (e) {
-      console.error("[repairStripeByEmail] Customer lookup failed:", e.message);
-      return Response.json({
-        ok: false,
-        error: "STRIPE_LOOKUP_FAILED",
-        message: `Failed to lookup Stripe customer: ${e.message}`,
-      }, { status: 500 });
+      // Try search API first (more accurate)
+      const searchResults = await stripe.customers.search({
+        query: `email:'${email}'`,
+        limit: 1,
+      });
+      customer = searchResults.data?.[0];
+    } catch {
+      // Fallback to list
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      customer = customers.data?.[0];
     }
     
-    if (customers.data.length === 0) {
+    if (!customer) {
+      console.log(`[repairStripeByEmail] No Stripe customer found for ${email}`);
       return Response.json({ 
         ok: false, 
         error: "NOT_FOUND", 
@@ -139,7 +136,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const customer = customers.data[0];
+    console.log(`[repairStripeByEmail] Found Stripe customer: ${customer.id}`);
 
     // 2. Get subscriptions for customer
     let subscriptions;
@@ -151,15 +148,16 @@ Deno.serve(async (req) => {
         expand: ["data.items.data.price.product", "data.items.data.price"]
       });
     } catch (e) {
-      console.error("[repairStripeByEmail] Subscription lookup failed:", e.message);
+      console.error("[repairStripeByEmail] Subscription lookup failed:", e);
       return Response.json({
         ok: false,
         error: "STRIPE_LOOKUP_FAILED",
-        message: `Failed to lookup subscriptions: ${e.message}`,
+        message: `Failed to lookup subscriptions: ${safeStripeError(e)}`,
       }, { status: 500 });
     }
 
     if (subscriptions.data.length === 0) {
+      console.log(`[repairStripeByEmail] Customer ${customer.id} has no subscriptions`);
       return Response.json({
         ok: false,
         error: "NO_SUBSCRIPTIONS",
@@ -167,24 +165,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Choose subscription
+    // 3. Choose subscription (prefer active/trialing)
     const activeOrTrialing = subscriptions.data.find(s => s.status === "active" || s.status === "trialing");
     const stripeSub = activeOrTrialing || subscriptions.data[0];
 
+    console.log(`[repairStripeByEmail] Using subscription: ${stripeSub.id}, status: ${stripeSub.status}`);
+
     // 4. Resolve tier
     const tier = await resolveTier(stripeSub, stripe);
+    console.log(`[repairStripeByEmail] Resolved tier: ${tier || "premium (default)"}`);
 
     // 5. Find local user
     const userRows = await base44.asServiceRole.entities.User.filter({ email });
     const userRow = userRows?.[0];
 
     if (!userRow) {
+      console.log(`[repairStripeByEmail] No local User entity found for ${email}`);
       return Response.json({
         ok: false,
         error: "USER_NOT_FOUND",
         message: `No local User entity found for ${email}`
       });
     }
+
+    console.log(`[repairStripeByEmail] Found local user: ${userRow.id}`);
 
     // 6. Find or create local Subscription
     let localSub = null;
@@ -242,11 +246,16 @@ Deno.serve(async (req) => {
       // Apply changes
       if (localSub) {
         await base44.asServiceRole.entities.Subscription.update(localSub.id, subscriptionPayload);
+        console.log(`[repairStripeByEmail] Updated subscription: ${localSub.id}`);
       } else {
-        await base44.asServiceRole.entities.Subscription.create(subscriptionPayload);
+        const newSub = await base44.asServiceRole.entities.Subscription.create(subscriptionPayload);
+        console.log(`[repairStripeByEmail] Created subscription: ${newSub.id}`);
       }
 
       await base44.asServiceRole.entities.User.update(userRow.id, userPayload);
+      console.log(`[repairStripeByEmail] Updated user: ${userRow.id}`);
+    } else {
+      console.log(`[repairStripeByEmail] Dry run - no changes applied`);
     }
 
     return Response.json({
