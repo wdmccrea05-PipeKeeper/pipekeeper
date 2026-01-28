@@ -282,14 +282,28 @@ export default function Layout({ children, currentPageName }) {
     nativeDebugPing("Layout mounted (bridge ok)");
     requestNativeSubscriptionStatus();
 
-    const cleanup = registerNativeSubscriptionListener((status) => {
-      console.log("[Layout] Native subscription status:", status);
-      setSubActive(!!status);
-      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+    const cleanup = registerNativeSubscriptionListener(async (payload) => {
+      console.log("[Layout] Native subscription payload:", payload);
+      const active = !!payload.active;
+      setSubActive(active);
+      
+      try {
+        // Sync Apple subscription to Base44 entities
+        await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
+        
+        // Invalidate queries to refresh UI
+        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        const email = (user?.email || "").trim().toLowerCase();
+        if (email) {
+          await queryClient.invalidateQueries({ queryKey: ["subscription", email] });
+        }
+      } catch (e) {
+        console.error("[Layout] Apple subscription sync failed:", e);
+      }
     });
 
     return cleanup;
-  }, [ios, queryClient]);
+  }, [ios, queryClient, user?.email]);
 
   // iOS WKWebView: Intercept subscription management clicks globally
   useEffect(() => {
