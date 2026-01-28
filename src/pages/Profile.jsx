@@ -529,7 +529,7 @@ export default function ProfilePage() {
                               };
                               input.click();
                             }}
-                            className="flex-1"
+                            className="flex-1 border-stone-400 text-stone-700 hover:bg-stone-100"
                           >
                             <Camera className="w-4 h-4 mr-2" />
                             Camera
@@ -557,7 +557,7 @@ export default function ProfilePage() {
                               };
                               input.click();
                             }}
-                            className="flex-1"
+                            className="flex-1 border-stone-400 text-stone-700 hover:bg-stone-100"
                           >
                             <Upload className="w-4 h-4 mr-2" />
                             Upload
