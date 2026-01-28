@@ -1,5 +1,10 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError, getStripeKeyPrefix } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
 
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
 
@@ -31,9 +36,12 @@ Deno.serve(async (req) => {
       stripe = getStripeClient();
       await stripe.balance.retrieve(); // Sanity check
     } catch (e) {
+      console.error("[createCustomerPortalSession] Stripe init failed:", e);
       return Response.json({
-        ...stripeKeyErrorResponse(e),
-        where: "stripe_init"
+        ok: false,
+        error: "STRIPE_INIT_FAILED",
+        where: "stripe_init",
+        message: safeStripeError(e)
       }, { status: 500 });
     }
 
@@ -119,8 +127,7 @@ Deno.serve(async (req) => {
           ok: false,
           error: "STRIPE_LOOKUP_FAILED",
           where: "recover_customer",
-          message: safeStripeError(e),
-          keyPrefix: getStripeKeyPrefix(),
+          message: safeStripeError(e)
         }, { status: 500 });
       }
     }
@@ -130,8 +137,7 @@ Deno.serve(async (req) => {
         ok: false, 
         error: "NO_STRIPE_CUSTOMER",
         where: "recover_customer",
-        message: "No Stripe customer found. Please subscribe first.",
-        keyPrefix: getStripeKeyPrefix(),
+        message: "No Stripe customer found. Please subscribe first."
       }, { status: 404 });
     }
 
@@ -154,8 +160,7 @@ Deno.serve(async (req) => {
       ok: false, 
       error: "PORTAL_FAILED",
       where: where.stage,
-      message: safeStripeError(error),
-      keyPrefix: getStripeKeyPrefix(),
+      message: safeStripeError(error)
     }, { status: 500 });
   }
 });

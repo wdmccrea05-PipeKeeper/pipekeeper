@@ -1,11 +1,10 @@
-// Functions/syncStripeSubscriptions (FULL REPLACEMENT)
-// - Safe for normal users (syncs ONLY the logged-in user's subscription)
-// - Also supports admin optional override: { email: "someone@domain.com" } in body
-// - Upserts Subscription entity and updates User.subscription_level/status + stripe_customer_id
-// - Works even if subscription metadata is missing by using Stripe customer email
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -55,9 +54,14 @@ Deno.serve(async (req) => {
 
     let stripe;
     try {
-      stripe = getStripeClient();
+     stripe = getStripeClient();
     } catch (e) {
-      return Response.json(stripeKeyErrorResponse(e), { status: 500 });
+     console.error("[syncStripeSubscriptions] Stripe init failed:", e);
+     return Response.json({
+       ok: false,
+       error: "STRIPE_INIT_FAILED",
+       message: safeStripeError(e)
+     }, { status: 500 });
     }
 
     let body = {};
