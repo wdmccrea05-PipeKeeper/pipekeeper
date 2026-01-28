@@ -1,5 +1,10 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -230,8 +235,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ url: session.url });
   } catch (error) {
-    console.error("[createCheckoutSession] error:", error);
-    const { safeStripeError } = await import("./_utils/stripe.ts");
+    console.error("[createCheckoutSession] Fatal error:", error);
     return Response.json({
       ok: false,
       error: "CHECKOUT_CREATION_FAILED",
