@@ -5,8 +5,9 @@ if (typeof Deno?.serve !== "function") {
 
 import Stripe from "npm:stripe@17.5.0";
 
-// Singleton Stripe client
+// Singleton Stripe client with cache busting
 let stripeClient: Stripe | null = null;
+let cachedKey: string | null = null;
 
 function maskKey(key: string) {
   if (!key) return "(missing)";
@@ -52,12 +53,22 @@ export function assertStripeKeyOrThrow() {
 }
 
 export function getStripeClient(): Stripe {
-  // Return singleton if already initialized
+  const key = assertStripeKeyOrThrow();
+  
+  // Invalidate cache if key has changed (fixes expired key caching)
+  if (stripeClient && cachedKey !== key) {
+    console.log(`[Stripe] Key changed, invalidating cached client (old: ${maskKey(cachedKey || "")}, new: ${maskKey(key)})`);
+    stripeClient = null;
+    cachedKey = null;
+  }
+  
+  // Return singleton if already initialized with current key
   if (stripeClient) return stripeClient;
   
   // Initialize and validate
-  const key = assertStripeKeyOrThrow();
+  console.log(`[Stripe] Initializing new client with key: ${maskKey(key)}`);
   stripeClient = new Stripe(key, { apiVersion: "2024-06-20" });
+  cachedKey = key;
   
   return stripeClient;
 }
