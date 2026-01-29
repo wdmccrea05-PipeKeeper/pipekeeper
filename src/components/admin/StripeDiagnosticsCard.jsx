@@ -9,20 +9,36 @@ import { toast } from "sonner";
 export default function StripeDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [envEcho, setEnvEcho] = useState(null);
+  const [runtimeKey, setRuntimeKey] = useState(null);
+  const [forbiddenScan, setForbiddenScan] = useState(null);
 
-  const runEnvEcho = async () => {
+  const runRuntimeKeyCheck = async () => {
     try {
-      const res = await base44.functions.invoke('stripeEnvEcho');
-      setEnvEcho(res.data);
-      if (res.data?.ok) {
-        toast.success('Stripe env echo completed');
+      const res = await base44.functions.invoke('admin/stripeRuntimeKey');
+      setRuntimeKey(res.data);
+      if (res.data?.ok && res.data.prefix === "sk") {
+        toast.success('Runtime key check passed');
       } else {
-        toast.error('Stripe env echo failed');
+        toast.error('Runtime key issue detected');
       }
     } catch (err) {
-      toast.error('Stripe env echo failed: ' + (err.message || 'Unknown error'));
-      setEnvEcho({ ok: false, error: err.message });
+      toast.error('Runtime key check failed: ' + (err.message || 'Unknown error'));
+      setRuntimeKey({ ok: false, error: err.message });
+    }
+  };
+
+  const runForbiddenScan = async () => {
+    try {
+      const res = await base44.functions.invoke('admin/stripeForbiddenScan');
+      setForbiddenScan(res.data);
+      if (res.data?.ok && res.data.violationCount === 0) {
+        toast.success('No forbidden Stripe patterns found');
+      } else if (res.data?.violationCount > 0) {
+        toast.error(`Found ${res.data.violationCount} forbidden Stripe pattern(s)`);
+      }
+    } catch (err) {
+      toast.error('Forbidden scan failed: ' + (err.message || 'Unknown error'));
+      setForbiddenScan({ ok: false, error: err.message });
     }
   };
 
@@ -80,49 +96,128 @@ export default function StripeDiagnosticsCard() {
             disabled={loading}
             className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
           >
-            {loading ? "Running..." : "Run Stripe Diagnostics"}
+            {loading ? "Running..." : "Run Diagnostics"}
           </Button>
           <Button
-            onClick={runEnvEcho}
+            onClick={runRuntimeKeyCheck}
             variant="outline"
             className="flex-1"
           >
             Check Runtime Key
           </Button>
           <Button
+            onClick={runForbiddenScan}
+            variant="outline"
+            className="flex-1"
+          >
+            Scan Forbidden
+          </Button>
+          <Button
             onClick={runPing}
             variant="outline"
             className="flex-1"
           >
-            Ping Admin Routes
+            Ping Routes
           </Button>
         </div>
 
-        {envEcho && (
-          <Alert className={envEcho.ok && envEcho.prefix === "sk" ? "bg-green-100 border-green-400" : "bg-yellow-100 border-yellow-400"}>
+        {runtimeKey && (
+          <Alert className={runtimeKey.ok && runtimeKey.prefix === "sk" && runtimeKey.present ? "bg-green-100 border-green-400" : "bg-red-100 border-red-400"}>
             <Activity className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-bold">Runtime Stripe Key Status</div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="font-bold text-lg">🔑 Runtime Stripe Key (LIVE)</div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-600">Prefix:</span>{" "}
-                    <code className={`font-mono font-semibold ${envEcho.prefix === "sk" ? "text-green-700" : "text-red-700"}`}>
-                      {envEcho.prefix || "N/A"}
+                    <code className={`font-mono font-bold text-lg ${runtimeKey.prefix === "sk" ? "text-green-700" : "text-red-700"}`}>
+                      {runtimeKey.prefix || "N/A"}
                     </code>
                   </div>
                   <div>
-                    <span className="text-gray-600">Masked:</span>{" "}
-                    <code className="font-mono text-xs">{envEcho.masked || "N/A"}</code>
+                    <span className="text-gray-600">Present:</span>{" "}
+                    <code className={`font-mono font-semibold ${runtimeKey.present ? "text-green-700" : "text-red-700"}`}>
+                      {runtimeKey.present ? "YES" : "NO"}
+                    </code>
                   </div>
                   <div className="col-span-2">
+                    <span className="text-gray-600">Masked Key:</span>{" "}
+                    <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{runtimeKey.masked || "N/A"}</code>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Length:</span>{" "}
+                    <span className="font-mono">{runtimeKey.length || 0} chars</span>
+                  </div>
+                  <div>
                     <span className="text-gray-600">Timestamp:</span>{" "}
-                    <span className="text-xs">{envEcho.ts || "N/A"}</span>
+                    <span className="text-xs">{runtimeKey.timestamp ? new Date(runtimeKey.timestamp).toLocaleTimeString() : "N/A"}</span>
                   </div>
                 </div>
-                {envEcho.prefix !== "sk" && (
-                  <div className="text-sm font-semibold text-red-900 mt-2 bg-red-50 border border-red-300 p-2 rounded">
-                    ⚠️ Expected prefix: <code>sk</code>, got: <code>{envEcho.prefix}</code>
+                {(!runtimeKey.ok || runtimeKey.prefix !== "sk" || !runtimeKey.present) && (
+                  <div className="text-sm font-bold text-red-900 mt-3 bg-red-50 border-2 border-red-400 p-3 rounded">
+                    <div className="mb-2">❌ BLOCKING ISSUE:</div>
+                    {!runtimeKey.present && <div>• STRIPE_SECRET_KEY is MISSING in runtime environment</div>}
+                    {runtimeKey.present && runtimeKey.prefix !== "sk" && (
+                      <div>• Expected prefix: <code className="bg-red-200 px-1 font-mono">sk_</code>, got: <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
+                    )}
+                    <div className="mt-2 text-xs">
+                      → Check the correct environment (Preview vs Live) and redeploy functions after updating STRIPE_SECRET_KEY
+                    </div>
+                  </div>
+                )}
+                {runtimeKey.ok && runtimeKey.prefix === "sk" && runtimeKey.present && (
+                  <div className="text-sm font-semibold text-green-900 mt-2 bg-green-50 border border-green-400 p-2 rounded">
+                    ✅ Runtime key is valid and properly loaded
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {forbiddenScan && (
+          <Alert className={forbiddenScan.ok && forbiddenScan.violationCount === 0 ? "bg-green-100 border-green-400" : "bg-red-100 border-red-400"}>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <div className="font-bold">Forbidden Stripe Pattern Scan</div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-600">Files Scanned:</span>{" "}
+                    <span className="font-semibold">{forbiddenScan.scannedCount || 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Violations:</span>{" "}
+                    <span className={`font-bold ${forbiddenScan.violationCount > 0 ? "text-red-700" : "text-green-700"}`}>
+                      {forbiddenScan.violationCount || 0}
+                    </span>
+                  </div>
+                </div>
+                {forbiddenScan.violationCount > 0 && (
+                  <div className="mt-2 max-h-48 overflow-auto">
+                    <div className="text-xs font-semibold text-red-900 mb-1">Fix Required:</div>
+                    {forbiddenScan.violations.slice(0, 10).map((v, i) => (
+                      <div key={i} className="text-xs bg-red-50 p-2 rounded mb-1 border border-red-200">
+                        <div className="font-mono text-red-900">{v.file}:{v.line}</div>
+                        <div className="text-red-700">Pattern: {v.pattern}</div>
+                        <div className="text-gray-600 truncate">→ {v.excerpt}</div>
+                      </div>
+                    ))}
+                    {forbiddenScan.violationCount > 10 && (
+                      <div className="text-xs text-red-700 mt-1">
+                        ... and {forbiddenScan.violationCount - 10} more violations
+                      </div>
+                    )}
+                  </div>
+                )}
+                {forbiddenScan.ok && forbiddenScan.violationCount === 0 && (
+                  <div className="text-sm font-semibold text-green-900 mt-2 bg-green-50 border border-green-400 p-2 rounded">
+                    ✅ All Stripe usage goes through helper function
+                  </div>
+                )}
+                {forbiddenScan.scanError && (
+                  <div className="text-xs text-yellow-800 bg-yellow-50 p-2 rounded border border-yellow-300 mt-2">
+                    ⚠️ Scan error: {forbiddenScan.scanError}
                   </div>
                 )}
               </div>
