@@ -130,6 +130,16 @@ export default function StripeDiagnosticsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Deployment Banner */}
+        <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
+          <div className="font-bold text-blue-900 mb-2">🔄 After Updating STRIPE_SECRET_KEY:</div>
+          <div className="text-sm text-blue-800 space-y-1">
+            <div>1. Click "Full Status Check" below to verify current state</div>
+            <div>2. Click "Force Refresh" to reload Stripe client</div>
+            <div>3. If key mismatch persists → Manually trigger "Redeploy Functions" in Base44 Dashboard</div>
+          </div>
+        </div>
+        
         <div className="flex gap-2 flex-wrap">
           <Button
             onClick={checkDeploymentStatus}
@@ -159,6 +169,75 @@ export default function StripeDiagnosticsCard() {
             Scan Code
           </Button>
         </div>
+
+        {/* Deployment Status */}
+        {deployStatus && (
+          <Alert className={deployStatus.ok ? "bg-green-50 border-green-400" : "bg-red-50 border-red-400"}>
+            <Activity className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-3">
+                <div className="font-bold text-lg flex items-center gap-2">
+                  {deployStatus.ok ? '✅' : '❌'} Deployment Status
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-600">Environment:</span>{" "}
+                    <code className={`font-mono font-semibold ${deployStatus.environment === "live" ? "text-green-700" : "text-yellow-700"}`}>
+                      {deployStatus.environment || "unknown"}
+                    </code>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Health:</span>{" "}
+                    <span className={`font-bold ${deployStatus.deployment?.healthy ? "text-green-700" : "text-red-700"}`}>
+                      {deployStatus.deployment?.healthy ? "HEALTHY" : "UNHEALTHY"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-sm">
+                  <div className="font-semibold">Check Results:</div>
+                  <div className="ml-3 space-y-1">
+                    <div>
+                      {deployStatus.checks?.secretPresent?.passed ? '✅' : '❌'} Secret Present
+                      {deployStatus.checks?.secretPresent?.keyMasked && 
+                        <code className="ml-2 text-xs bg-gray-100 px-1 rounded">{deployStatus.checks.secretPresent.keyMasked}</code>
+                      }
+                    </div>
+                    <div>
+                      {deployStatus.checks?.stripeInit?.passed ? '✅' : '❌'} Stripe Init
+                      {!deployStatus.checks?.stripeInit?.passed && deployStatus.checks?.stripeInit?.error && 
+                        <span className="ml-2 text-xs text-red-600">{deployStatus.checks.stripeInit.error}</span>
+                      }
+                    </div>
+                    <div>
+                      {deployStatus.checks?.apiConnect?.passed ? '✅' : '❌'} API Connect
+                      {!deployStatus.checks?.apiConnect?.passed && deployStatus.checks?.apiConnect?.error && 
+                        <span className="ml-2 text-xs text-red-600">{deployStatus.checks.apiConnect.error}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                {deployStatus.deployment?.recommendation && (
+                  <div className="p-3 bg-white border border-gray-300 rounded text-sm">
+                    <div className="font-bold mb-1">💡 Recommendation:</div>
+                    <div>{deployStatus.deployment.recommendation}</div>
+                  </div>
+                )}
+
+                {deployStatus.instructions && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-300 rounded text-xs space-y-1">
+                    <div className="font-bold">🔧 Fix Steps:</div>
+                    {Object.entries(deployStatus.instructions).map(([key, value]) => (
+                      <div key={key} className="ml-2">• {value}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {runtimeKey && (
           <Alert className={runtimeKey.ok && runtimeKey.prefix === "sk" && runtimeKey.present ? "bg-green-100 border-green-400" : "bg-red-100 border-red-400"}>
