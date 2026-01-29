@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
@@ -8,21 +8,7 @@ const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") 
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
-function getStripeKeyPrefix() {
-  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  if (!key) return "missing";
-  if (key.startsWith("sk_")) return "sk";
-  if (key.startsWith("rk_")) return "rk";
-  if (key.startsWith("mk_")) return "mk";
-  if (key.startsWith("pk_")) return "pk";
-  return "other";
-}
-
-function maskError(msg: string) {
-  return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
-}
-
-async function resolveTierFromStripe(stripeSub: any, stripe: Stripe) {
+async function resolveTierFromStripe(stripeSub: any, stripe: any) {
   try {
     // Priority 1: Subscription metadata
     const metadataTier = (stripeSub.metadata?.tier || "").toLowerCase();
@@ -74,7 +60,7 @@ async function resolveTierFromStripe(stripeSub: any, stripe: Stripe) {
   }
 }
 
-async function findStripeSubscriptionWithEmailRecovery(localSub: any, stripe: Stripe) {
+async function findStripeSubscriptionWithEmailRecovery(localSub: any, stripe: any) {
   // Skip Apple subscriptions
   if (localSub.provider === "apple") {
     return { status: "SKIP_APPLE", stripeSub: null, customer: null };
@@ -182,8 +168,6 @@ async function findStripeSubscriptionWithEmailRecovery(localSub: any, stripe: St
 }
 
 Deno.serve(async (req: Request) => {
-  const keyPrefix = getStripeKeyPrefix();
-  
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
@@ -193,37 +177,12 @@ Deno.serve(async (req: Request) => {
       return Response.json({ 
         ok: false,
         error: "FORBIDDEN",
-        message: "Admin access required",
-        keyPrefix 
+        message: "Admin access required"
       }, { status: 403 });
     }
 
-    // Initialize Stripe with validation
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
-    if (!stripeKey || (keyPrefix !== "sk" && keyPrefix !== "rk")) {
-      return Response.json({
-        ok: false,
-        error: "STRIPE_SECRET_KEY_INVALID",
-        keyPrefix,
-        message: "STRIPE_SECRET_KEY must start with sk_ or rk_"
-      }, { status: 500 });
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-
-    // HARD STOP: Verify Stripe auth before processing
-    try {
-      await stripe.balance.retrieve();
-    } catch (e: any) {
-      return Response.json({
-        ok: false,
-        error: "STRIPE_AUTH_FAILED",
-        keyPrefix,
-        stripeSanityOk: false,
-        message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
-        details: maskError(String(e?.message || e))
-      }, { status: 500 });
-    }
+    // Initialize Stripe using centralized helper
+    const stripe = getStripeClient();
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default to true
@@ -412,7 +371,6 @@ Deno.serve(async (req: Request) => {
 
     return Response.json({
       ok: true,
-      keyPrefix,
       dryRun,
       ...results,
     });
@@ -420,8 +378,7 @@ Deno.serve(async (req: Request) => {
     return Response.json({ 
       ok: false, 
       error: "REPAIR_FAILED",
-      keyPrefix,
-      message: maskError(String(error?.message || error))
+      message: safeStripeError(String(error?.message || error))
     }, { status: 500 });
   }
 });
