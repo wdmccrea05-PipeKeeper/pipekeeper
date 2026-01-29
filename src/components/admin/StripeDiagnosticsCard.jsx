@@ -12,6 +12,7 @@ export default function StripeDiagnosticsCard() {
   const [runtimeKey, setRuntimeKey] = useState(null);
   const [forbiddenScan, setForbiddenScan] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [deployStatus, setDeployStatus] = useState(null);
 
   const runRuntimeKeyCheck = async () => {
     try {
@@ -36,8 +37,11 @@ export default function StripeDiagnosticsCard() {
       const res = await base44.functions.invoke('admin/forceStripeRefresh');
       if (res.data?.ok) {
         toast.success('Stripe refreshed and validated');
-        // Re-check runtime key to show updated status
-        await runRuntimeKeyCheck();
+        // Re-check all diagnostics
+        await Promise.all([
+          runRuntimeKeyCheck(),
+          checkDeploymentStatus()
+        ]);
       } else {
         toast.error('Stripe refresh failed: ' + (res.data?.message || 'Unknown'));
       }
@@ -45,6 +49,21 @@ export default function StripeDiagnosticsCard() {
       toast.error('Refresh failed: ' + (err.message || 'Unknown error'));
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const checkDeploymentStatus = async () => {
+    try {
+      const res = await base44.functions.invoke('admin/stripeDeploymentStatus');
+      setDeployStatus(res.data);
+      if (res.data?.ok) {
+        toast.success('Deployment status: Healthy');
+      } else {
+        toast.warning('Deployment issues detected');
+      }
+    } catch (err) {
+      toast.error('Status check failed: ' + (err.message || 'Unknown'));
+      setDeployStatus({ ok: false, error: err.message });
     }
   };
 
@@ -113,33 +132,31 @@ export default function StripeDiagnosticsCard() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 flex-wrap">
           <Button
-            onClick={runDiagnostics}
-            disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
+            onClick={checkDeploymentStatus}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
           >
-            {loading ? "Running..." : "Run Diagnostics"}
+            Full Status Check
+          </Button>
+          <Button
+            onClick={forceStripeRefresh}
+            disabled={refreshing}
+            className="bg-green-600 hover:bg-green-700 text-white flex-1"
+          >
+            {refreshing ? "Refreshing..." : "Force Refresh"}
           </Button>
           <Button
             onClick={runRuntimeKeyCheck}
             variant="outline"
             className="flex-1"
           >
-            Check Runtime Key
-          </Button>
-          <Button
-            onClick={forceStripeRefresh}
-            disabled={refreshing}
-            variant="outline"
-            className="flex-1"
-          >
-            {refreshing ? "Refreshing..." : "Force Refresh"}
+            Runtime Key
           </Button>
           <Button
             onClick={runForbiddenScan}
             variant="outline"
             className="flex-1"
           >
-            Scan Forbidden
+            Scan Code
           </Button>
         </div>
 
@@ -188,20 +205,32 @@ export default function StripeDiagnosticsCard() {
                 )}
                 {(!runtimeKey.ok || runtimeKey.prefix !== "sk" || !runtimeKey.present || runtimeKey.looksExpired) && (
                   <div className="text-sm font-bold text-red-900 mt-3 bg-red-50 border-2 border-red-400 p-3 rounded">
-                    <div className="mb-2">❌ BLOCKING ISSUE:</div>
-                    {!runtimeKey.present && <div>• STRIPE_SECRET_KEY is MISSING in runtime environment</div>}
+                    <div className="mb-2">❌ BLOCKING ISSUE DETECTED:</div>
+                    {!runtimeKey.present && <div>• STRIPE_SECRET_KEY is MISSING in {runtimeKey.environment || "runtime"} environment</div>}
                     {runtimeKey.present && runtimeKey.prefix !== "sk" && (
-                      <div>• Expected prefix: <code className="bg-red-200 px-1 font-mono">sk_</code>, got: <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
+                      <div>• Invalid key type: Expected <code className="bg-red-200 px-1 font-mono">sk_</code>, got: <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
                     )}
                     {runtimeKey.looksExpired && (
-                      <div>• Key appears EXPIRED or REVOKED</div>
+                      <div>• Key appears EXPIRED or REVOKED (contains "expired"/"revoked" in value)</div>
                     )}
-                    <div className="mt-3 text-xs bg-yellow-50 border border-yellow-300 p-2 rounded">
-                      <div className="font-bold mb-1">🔧 FIX STEPS for Preview:</div>
-                      <div>1. Update STRIPE_SECRET_KEY in Dashboard → Secrets</div>
-                      <div>2. Click "Force Refresh" button above to reload</div>
-                      <div>3. If still failing → Manually redeploy functions in Base44</div>
+                    <div className="mt-3 text-xs bg-yellow-50 border border-yellow-300 p-2 rounded space-y-2">
+                      <div className="font-bold">🔧 IMMEDIATE FIX ({runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} RUNTIME):</div>
+                      <div className="space-y-1 ml-2">
+                        <div>Step 1: Verify Dashboard → Settings → Secrets shows new <code className="bg-gray-200 px-1">sk_live_…</code> key</div>
+                        <div>Step 2: Click "Force Refresh" button above</div>
+                        <div>Step 3: Click "Check Runtime Key" to verify update</div>
+                        <div className="text-red-700 font-bold mt-1">⚠️ If still failing after Force Refresh:</div>
+                        <div className="ml-2">→ Base44 backend functions need manual redeploy</div>
+                        <div className="ml-2">→ Go to Base44 Dashboard → Code → Functions</div>
+                        <div className="ml-2">→ Trigger "Redeploy All Functions" or publish a code change</div>
+                      </div>
                     </div>
+                  </div>
+                )}
+                
+                {runtimeKey.ok && runtimeKey.present && runtimeKey.prefix === "sk" && !runtimeKey.looksExpired && (
+                  <div className="text-sm font-bold text-green-900 mt-3 bg-green-50 border-2 border-green-400 p-3 rounded">
+                    ✅ Runtime key validated - {runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} environment OK
                   </div>
                 )}
                 {runtimeKey.ok && runtimeKey.prefix === "sk" && runtimeKey.present && (
