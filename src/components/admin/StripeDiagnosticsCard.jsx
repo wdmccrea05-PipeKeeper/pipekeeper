@@ -9,6 +9,22 @@ import { toast } from "sonner";
 export default function StripeDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [envEcho, setEnvEcho] = useState(null);
+
+  const runEnvEcho = async () => {
+    try {
+      const res = await base44.functions.invoke('stripeEnvEcho');
+      setEnvEcho(res.data);
+      if (res.data?.ok) {
+        toast.success('Stripe env echo completed');
+      } else {
+        toast.error('Stripe env echo failed');
+      }
+    } catch (err) {
+      toast.error('Stripe env echo failed: ' + (err.message || 'Unknown error'));
+      setEnvEcho({ ok: false, error: err.message });
+    }
+  };
 
   const runPing = async () => {
     try {
@@ -58,13 +74,20 @@ export default function StripeDiagnosticsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             onClick={runDiagnostics}
             disabled={loading}
             className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
           >
             {loading ? "Running..." : "Run Stripe Diagnostics"}
+          </Button>
+          <Button
+            onClick={runEnvEcho}
+            variant="outline"
+            className="flex-1"
+          >
+            Check Runtime Key
           </Button>
           <Button
             onClick={runPing}
@@ -74,6 +97,38 @@ export default function StripeDiagnosticsCard() {
             Ping Admin Routes
           </Button>
         </div>
+
+        {envEcho && (
+          <Alert className={envEcho.ok && envEcho.prefix === "sk" ? "bg-green-100 border-green-400" : "bg-yellow-100 border-yellow-400"}>
+            <Activity className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <div className="font-bold">Runtime Stripe Key Status</div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-600">Prefix:</span>{" "}
+                    <code className={`font-mono font-semibold ${envEcho.prefix === "sk" ? "text-green-700" : "text-red-700"}`}>
+                      {envEcho.prefix || "N/A"}
+                    </code>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Masked:</span>{" "}
+                    <code className="font-mono text-xs">{envEcho.masked || "N/A"}</code>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-600">Timestamp:</span>{" "}
+                    <span className="text-xs">{envEcho.ts || "N/A"}</span>
+                  </div>
+                </div>
+                {envEcho.prefix !== "sk" && (
+                  <div className="text-sm font-semibold text-red-900 mt-2 bg-red-50 border border-red-300 p-2 rounded">
+                    ⚠️ Expected prefix: <code>sk</code>, got: <code>{envEcho.prefix}</code>
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {result && result.hardFail && (
           <Alert variant="destructive" className="bg-red-100 border-red-400">
