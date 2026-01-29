@@ -14,11 +14,11 @@ const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "")
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
 function json(status, body) {
-  return new Response(JSON.stringify({ ...body, version: "v25-account-linked" }), {
+  return new Response(JSON.stringify({ ...body, version: "v26-key-refresh" }), {
     status,
     headers: { 
       "content-type": "application/json",
-      "X-PipeKeeper-Webhook-Version": "v25-account-linked"
+      "X-PipeKeeper-Webhook-Version": "v26-key-refresh"
     },
   });
 }
