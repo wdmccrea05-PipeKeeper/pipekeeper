@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
