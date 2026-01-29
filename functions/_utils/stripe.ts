@@ -17,7 +17,17 @@ function maskKey(key) {
 }
 
 export function getStripeSecretKey() {
-  return (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  
+  // HARD FAIL: Key must be present in runtime
+  if (!key) {
+    throw new Error(
+      "FATAL: STRIPE_SECRET_KEY missing in runtime environment. " +
+      "Check that the secret is set in the correct environment (Preview vs Live) and functions are redeployed."
+    );
+  }
+  
+  return key;
 }
 
 export function getStripeKeyPrefix() {

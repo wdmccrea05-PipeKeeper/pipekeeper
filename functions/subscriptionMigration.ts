@@ -1,25 +1,14 @@
+// Runtime guard: Enforce Deno environment
+if (typeof Deno?.serve !== "function") {
+  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+}
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient, stripeSanityCheck, safeStripeError } from "./_utils/stripe.js";
 
-const normEmail = (email: string) => String(email || "").trim().toLowerCase();
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-function getStripeKeyPrefix() {
-  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  if (!key) return "missing";
-  if (key.startsWith("sk_")) return "sk";
-  if (key.startsWith("rk_")) return "rk";
-  if (key.startsWith("mk_")) return "mk";
-  if (key.startsWith("pk_")) return "pk";
-  return "other";
-}
-
-function maskError(msg: string) {
-  return String(msg).replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
-}
-
-Deno.serve(async (req: Request) => {
-  const keyPrefix = getStripeKeyPrefix();
-  
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -28,34 +17,20 @@ Deno.serve(async (req: Request) => {
       return Response.json({ 
         ok: false, 
         error: 'FORBIDDEN',
-        keyPrefix 
+        message: 'Admin access required'
       }, { status: 403 });
     }
 
-    // Validate Stripe before proceeding
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
-    if (!stripeKey || (keyPrefix !== "sk" && keyPrefix !== "rk")) {
-      return Response.json({
-        ok: false,
-        error: "STRIPE_SECRET_KEY_INVALID",
-        keyPrefix,
-        message: "STRIPE_SECRET_KEY must start with sk_ or rk_"
-      }, { status: 500 });
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-
-    // HARD STOP: Verify Stripe auth
+    // Initialize Stripe with validation
+    let stripe;
     try {
-      await stripe.balance.retrieve();
-    } catch (e: any) {
+      stripe = getStripeClient();
+      await stripeSanityCheck(stripe);
+    } catch (e) {
       return Response.json({
         ok: false,
-        error: "STRIPE_AUTH_FAILED",
-        keyPrefix,
-        stripeSanityOk: false,
-        message: "Stripe authentication failed. Migration requires valid Stripe access.",
-        details: maskError(String(e?.message || e))
+        error: "STRIPE_INIT_FAILED",
+        message: safeStripeError(e)
       }, { status: 500 });
     }
 
@@ -192,8 +167,6 @@ Deno.serve(async (req: Request) => {
 
     return Response.json({
       ok: true,
-      keyPrefix,
-      stripeSanityOk: true,
       dryRun,
       scanned,
       skippedApple,
@@ -205,12 +178,11 @@ Deno.serve(async (req: Request) => {
       errors,
       samples
     });
-  } catch (error: any) {
+  } catch (error) {
     return Response.json({ 
       ok: false,
       error: "MIGRATION_FAILED",
-      keyPrefix: getStripeKeyPrefix(),
-      message: maskError(String(error?.message || error))
+      message: safeStripeError(error)
     }, { status: 500 });
   }
 });

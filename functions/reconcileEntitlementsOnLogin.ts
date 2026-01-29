@@ -4,7 +4,9 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { reconcileUserEntitlements } from "./_utils/reconcileEntitlements.ts";
+import { reconcileUserEntitlements } from "./_utils/reconcileEntitlements.js";
+
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 Deno.serve(async (req) => {
   try {
@@ -67,7 +69,7 @@ Deno.serve(async (req) => {
     const providerUsed = result.providerUsed;
 
     // === UPDATE USER ENTITY ===
-    const updates: any = {
+    const updates = {
       last_login_platform: platform,
       subscription_tier: finalTier,
       subscription_level: finalLevel,
@@ -103,7 +105,7 @@ Deno.serve(async (req) => {
       reconciled: true,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("[reconcileEntitlementsOnLogin] error:", error);
     return Response.json({
       ok: false,
