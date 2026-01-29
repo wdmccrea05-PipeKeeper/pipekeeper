@@ -11,6 +11,7 @@ export default function StripeDiagnosticsCard() {
   const [result, setResult] = useState(null);
   const [runtimeKey, setRuntimeKey] = useState(null);
   const [forbiddenScan, setForbiddenScan] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const runRuntimeKeyCheck = async () => {
     try {
@@ -18,12 +19,32 @@ export default function StripeDiagnosticsCard() {
       setRuntimeKey(res.data);
       if (res.data?.ok && res.data.prefix === "sk") {
         toast.success('Runtime key check passed');
+      } else if (res.data?.looksExpired) {
+        toast.error('WARNING: Key may be expired');
       } else {
         toast.error('Runtime key issue detected');
       }
     } catch (err) {
       toast.error('Runtime key check failed: ' + (err.message || 'Unknown error'));
       setRuntimeKey({ ok: false, error: err.message });
+    }
+  };
+
+  const forceStripeRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const res = await base44.functions.invoke('admin/forceStripeRefresh');
+      if (res.data?.ok) {
+        toast.success('Stripe refreshed and validated');
+        // Re-check runtime key to show updated status
+        await runRuntimeKeyCheck();
+      } else {
+        toast.error('Stripe refresh failed: ' + (res.data?.message || 'Unknown'));
+      }
+    } catch (err) {
+      toast.error('Refresh failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -106,18 +127,19 @@ export default function StripeDiagnosticsCard() {
             Check Runtime Key
           </Button>
           <Button
+            onClick={forceStripeRefresh}
+            disabled={refreshing}
+            variant="outline"
+            className="flex-1"
+          >
+            {refreshing ? "Refreshing..." : "Force Refresh"}
+          </Button>
+          <Button
             onClick={runForbiddenScan}
             variant="outline"
             className="flex-1"
           >
             Scan Forbidden
-          </Button>
-          <Button
-            onClick={runPing}
-            variant="outline"
-            className="flex-1"
-          >
-            Ping Routes
           </Button>
         </div>
 
@@ -149,19 +171,36 @@ export default function StripeDiagnosticsCard() {
                     <span className="font-mono">{runtimeKey.length || 0} chars</span>
                   </div>
                   <div>
+                    <span className="text-gray-600">Environment:</span>{" "}
+                    <code className={`font-mono font-semibold ${runtimeKey.environment === "live" ? "text-green-700" : "text-yellow-700"}`}>
+                      {runtimeKey.environment || "unknown"}
+                    </code>
+                  </div>
+                  <div className="col-span-2">
                     <span className="text-gray-600">Timestamp:</span>{" "}
                     <span className="text-xs">{runtimeKey.timestamp ? new Date(runtimeKey.timestamp).toLocaleTimeString() : "N/A"}</span>
                   </div>
                 </div>
-                {(!runtimeKey.ok || runtimeKey.prefix !== "sk" || !runtimeKey.present) && (
+                {runtimeKey.warning && (
+                  <div className="text-xs bg-yellow-50 border border-yellow-300 text-yellow-900 p-2 rounded mt-2">
+                    ⚠️ {runtimeKey.warning}
+                  </div>
+                )}
+                {(!runtimeKey.ok || runtimeKey.prefix !== "sk" || !runtimeKey.present || runtimeKey.looksExpired) && (
                   <div className="text-sm font-bold text-red-900 mt-3 bg-red-50 border-2 border-red-400 p-3 rounded">
                     <div className="mb-2">❌ BLOCKING ISSUE:</div>
                     {!runtimeKey.present && <div>• STRIPE_SECRET_KEY is MISSING in runtime environment</div>}
                     {runtimeKey.present && runtimeKey.prefix !== "sk" && (
                       <div>• Expected prefix: <code className="bg-red-200 px-1 font-mono">sk_</code>, got: <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
                     )}
-                    <div className="mt-2 text-xs">
-                      → Check the correct environment (Preview vs Live) and redeploy functions after updating STRIPE_SECRET_KEY
+                    {runtimeKey.looksExpired && (
+                      <div>• Key appears EXPIRED or REVOKED</div>
+                    )}
+                    <div className="mt-3 text-xs bg-yellow-50 border border-yellow-300 p-2 rounded">
+                      <div className="font-bold mb-1">🔧 FIX STEPS for Preview:</div>
+                      <div>1. Update STRIPE_SECRET_KEY in Dashboard → Secrets</div>
+                      <div>2. Click "Force Refresh" button above to reload</div>
+                      <div>3. If still failing → Manually redeploy functions in Base44</div>
                     </div>
                   </div>
                 )}

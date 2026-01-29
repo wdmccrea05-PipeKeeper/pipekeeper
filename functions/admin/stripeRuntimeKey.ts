@@ -13,6 +13,27 @@ function maskKey(key) {
   return `${k.slice(0, 5)}…${k.slice(-5)}`;
 }
 
+function detectEnvironment(req) {
+  try {
+    const url = new URL(req.url);
+    const host = url.hostname.toLowerCase();
+    
+    // Base44 preview domains typically have "preview" or specific patterns
+    if (host.includes("preview") || host.includes("localhost") || host.includes("127.0.0.1")) {
+      return "preview";
+    }
+    
+    // Check for custom domain or production patterns
+    if (host.includes("pipekeeper.app") || host.includes("pipekeeper.com")) {
+      return "live";
+    }
+    
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,
@@ -29,11 +50,17 @@ Deno.serve(async (req) => {
       return json(403, { ok: false, error: "FORBIDDEN", message: "Admin access required" });
     }
 
+    const environment = detectEnvironment(req);
+
     try {
-      const raw = getStripeSecretKey();
+      // CRITICAL: Read FRESH from Deno.env - no caching
+      const raw = Deno.env.get("STRIPE_SECRET_KEY") || "";
       const prefix = getStripeKeyPrefix();
-      const present = !!raw && raw.length > 0;
+      const present = !!raw && raw.trim().length > 0;
       const length = raw ? raw.length : 0;
+
+      // Detect if key looks expired (common pattern: keys rotate every 90 days)
+      const looksExpired = raw.includes("expired") || raw.includes("revoked");
 
       return json(200, {
         ok: true,
@@ -42,8 +69,12 @@ Deno.serve(async (req) => {
         prefix,
         masked: maskKey(raw),
         length,
+        environment,
+        looksExpired,
         timestamp: new Date().toISOString(),
         deploymentNote: "This shows the ACTUAL key loaded in THIS deployment runtime",
+        warning: environment === "preview" ? 
+          "Preview may cache env vars - redeploy functions after secret changes" : null,
       });
     } catch (e) {
       return json(200, {
@@ -53,6 +84,7 @@ Deno.serve(async (req) => {
         prefix: "error",
         masked: "(error)",
         length: 0,
+        environment,
         timestamp: new Date().toISOString(),
         error: safeStripeError(e),
       });

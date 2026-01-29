@@ -65,17 +65,21 @@ export function assertStripeKeyOrThrow() {
 export function getStripeClient() {
   const key = assertStripeKeyOrThrow();
   
-  // Invalidate cache if key has changed (fixes expired key caching)
+  // CRITICAL: Always check if key changed to prevent expired key caching
   if (stripeClient && cachedKey !== key) {
-    console.log(`[Stripe] Key changed, invalidating cached client (old: ${maskKey(cachedKey || "")}, new: ${maskKey(key)})`);
+    console.warn(`[Stripe] Key mismatch detected - invalidating cache`);
+    console.log(`[Stripe] Old: ${maskKey(cachedKey || "")}`);
+    console.log(`[Stripe] New: ${maskKey(key)}`);
     stripeClient = null;
     cachedKey = null;
   }
   
-  // Return singleton if already initialized with current key
-  if (stripeClient) return stripeClient;
+  // Return singleton only if key matches
+  if (stripeClient && cachedKey === key) {
+    return stripeClient;
+  }
   
-  // Initialize and validate
+  // Initialize fresh client
   console.log(`[Stripe] Initializing new client with key: ${maskKey(key)}`);
   stripeClient = new Stripe(key, { apiVersion: "2024-06-20" });
   cachedKey = key;
