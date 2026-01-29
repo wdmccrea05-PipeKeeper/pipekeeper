@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, stripeSanityCheck, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
 
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
     let stripe;
     try {
       stripe = getStripeClient();
+      await stripeSanityCheck(stripe);
     } catch (e) {
       return Response.json(stripeKeyErrorResponse(e), { status: 500 });
     }

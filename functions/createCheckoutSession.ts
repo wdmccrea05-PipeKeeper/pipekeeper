@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, stripeSanityCheck, safeStripeError } from "./_utils/stripe.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -125,6 +125,7 @@ Deno.serve(async (req) => {
 
     // Initialize Stripe with validation
     const stripe = getStripeClient();
+    await stripeSanityCheck(stripe);
 
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

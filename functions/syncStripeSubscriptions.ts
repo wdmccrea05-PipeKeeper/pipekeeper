@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
+import { getStripeClient, stripeSanityCheck, safeStripeError } from "./_utils/stripe.js";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -55,6 +55,7 @@ Deno.serve(async (req) => {
     let stripe;
     try {
      stripe = getStripeClient();
+     await stripeSanityCheck(stripe);
     } catch (e) {
      console.error("[syncStripeSubscriptions] Stripe init failed:", e);
      return Response.json({
