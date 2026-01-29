@@ -6,10 +6,10 @@ if (typeof Deno?.serve !== "function") {
 import Stripe from "npm:stripe@17.5.0";
 
 // Singleton Stripe client with cache busting
-let stripeClient: Stripe | null = null;
-let cachedKey: string | null = null;
+let stripeClient = null;
+let cachedKey = null;
 
-function maskKey(key: string) {
+function maskKey(key) {
   if (!key) return "(missing)";
   const k = String(key).trim();
   if (k.length < 10) return "****";
@@ -20,7 +20,7 @@ export function getStripeSecretKey() {
   return (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
 }
 
-export function getStripeKeyPrefix(): "sk" | "rk" | "mk" | "pk" | "missing" | "other" {
+export function getStripeKeyPrefix() {
   const key = getStripeSecretKey();
   if (!key) return "missing";
   if (key.startsWith("sk_")) return "sk";
@@ -52,7 +52,7 @@ export function assertStripeKeyOrThrow() {
   return key;
 }
 
-export function getStripeClient(): Stripe {
+export function getStripeClient() {
   const key = assertStripeKeyOrThrow();
   
   // Invalidate cache if key has changed (fixes expired key caching)
@@ -73,17 +73,17 @@ export function getStripeClient(): Stripe {
   return stripeClient;
 }
 
-export async function stripeSanityCheck(stripe: Stripe) {
+export async function stripeSanityCheck(stripe) {
   await stripe.balance.retrieve();
   return true;
 }
 
-export function safeStripeError(e: any) {
+export function safeStripeError(e) {
   const msg = String(e?.message || e || "");
   return msg.replace(/(sk|rk|pk|mk)_[A-Za-z0-9_]+/g, (m) => `${m.slice(0, 4)}…${m.slice(-4)}`);
 }
 
-export function stripeKeyErrorResponse(e: any) {
+export function stripeKeyErrorResponse(e) {
   const msg = safeStripeError(e);
   const prefix = getStripeKeyPrefix();
   const isKeyError =
