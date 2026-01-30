@@ -1852,10 +1852,10 @@ Provide concrete, actionable steps with specific field values.`,
 
                                          {content.key_points?.length > 0 && (
                                            <div className="pt-3 border-t border-stone-300">
-                                             <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
+                                             <p className="font-medium text-sm text-stone-900 mb-2">Key Points:</p>
                                              <ul className="space-y-1.5 text-sm">
                                                {content.key_points.map((pt, i) => (
-                                                 <li key={i} className="flex gap-2 leading-relaxed">
+                                                 <li key={i} className="flex gap-2 leading-relaxed text-stone-800">
                                                    <span className="text-blue-600">•</span>
                                                    <span>{pt}</span>
                                                  </li>
@@ -1866,7 +1866,7 @@ Provide concrete, actionable steps with specific field values.`,
 
                                          {content.routed_to && (
                                            <div className="mt-2 pt-2 border-t border-stone-300">
-                                             <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
+                                             <p className="text-xs font-mono text-stone-600 bg-stone-100 px-2 py-1 rounded">
                                                Answered by: {content.routed_to}
                                              </p>
                                            </div>
@@ -1887,14 +1887,14 @@ Provide concrete, actionable steps with specific field values.`,
 
                                          {!!content.detailed_reasoning && (
                                            <div className="space-y-2">
-                                             <p className="text-stone-700 font-medium">Analysis:</p>
+                                             <p className="text-stone-900 font-semibold text-sm">Analysis:</p>
                                              <FormattedTobacconistResponse content={content.detailed_reasoning} style="simple_paragraphs" />
                                            </div>
                                          )}
 
                                          {content.trophy_pairings?.length > 0 && (
                                            <div>
-                                             <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
+                                             <p className="text-stone-900 font-semibold text-xs mb-1">Trophy Pairings:</p>
                                              <div className="flex flex-wrap gap-1">
                                                {content.trophy_pairings.map((blend, i) => (
                                                  <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
@@ -1904,19 +1904,6 @@ Provide concrete, actionable steps with specific field values.`,
                                              </div>
                                            </div>
                                          )}
-
-                                         {!!content.redundancy_analysis && (
-                                           <div className="pt-2 border-t border-stone-200">
-                                             <p className="text-stone-700 font-medium text-xs mb-1">Redundancy:</p>
-                                             <FormattedTobacconistResponse content={content.redundancy_analysis} style="simple_paragraphs" />
-                                           </div>
-                                         )}
-
-                                         {/* Catch-all so we NEVER crash */}
-                                         <div className="pt-2 border-t border-stone-200">
-                                           <p className="text-stone-700 font-medium text-xs mb-1">Raw Result:</p>
-                                           <SafeRender value={content} className="text-xs text-stone-600" />
-                                         </div>
                                        </div>
                                      ) : isCollectionQuestion ? (
                                        <div className="space-y-2">
@@ -1924,10 +1911,10 @@ Provide concrete, actionable steps with specific field values.`,
 
                                          {content.specific_recommendations?.length > 0 && (
                                            <div className="pt-2 border-t border-stone-300">
-                                             <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                             <p className="font-semibold text-sm text-stone-900 mb-1">Recommendations:</p>
                                              <ul className="space-y-1">
                                                {content.specific_recommendations.map((rec, i) => (
-                                                 <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                                 <li key={i} className="text-sm text-stone-800">• {rec}</li>
                                                ))}
                                              </ul>
                                            </div>
@@ -1935,7 +1922,7 @@ Provide concrete, actionable steps with specific field values.`,
                                        </div>
                                      ) : (
                                        // Ultimate fallback: safe render anything
-                                       <SafeRender value={content} className="text-sm text-stone-700" />
+                                       <SafeRender value={content} className="text-sm text-stone-800" />
                                      )}
                                    </div>
                                  </div>
