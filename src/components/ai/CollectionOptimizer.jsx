@@ -3274,12 +3274,12 @@ Provide concrete, actionable steps with specific field values.`,
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                 {Array.isArray(whatIfResult.trophy_pairings) && whatIfResult.trophy_pairings.map((blend, idx) => {
-                                  const label = typeof blend === "string" ? blend : (blend?.name || blend?.blend_name || String(blend));
-                                  return (
-                                    <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
-                                      {label}
-                                    </Badge>
-                                  );
+                                 const label = safeToString(blend);
+                                 return (
+                                   <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
+                                     {label}
+                                   </Badge>
+                                 );
                                 })}
                                 </div>
                             </CardContent>
@@ -3303,17 +3303,17 @@ Provide concrete, actionable steps with specific field values.`,
                           <CardContent className="p-4 space-y-3">
                             <div>
                               <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
-                              <p className="text-sm text-stone-600">{whatIfResult.redundancy_analysis}</p>
+                              <p className="text-sm text-stone-600">{safeToString(whatIfResult.redundancy_analysis)}</p>
                             </div>
                             {whatIfResult.score_improvements && (
                               <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
                                 <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
-                                <p className="text-sm text-emerald-800">{whatIfResult.score_improvements}</p>
+                                <p className="text-sm text-emerald-800">{safeToString(whatIfResult.score_improvements)}</p>
                               </div>
                             )}
                             <div>
                               <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
-                              <p className="text-sm text-stone-600">{whatIfResult.detailed_reasoning}</p>
+                              <p className="text-sm text-stone-600">{safeToString(whatIfResult.detailed_reasoning)}</p>
                             </div>
                           </CardContent>
                         </Card>
