@@ -565,7 +565,7 @@ async function undoOptimizationApply(batchId) {
       // Check if should route to agent
       if (shouldRouteToAgent(currentQuery)) {
         // Route to expert_tobacconist agent with full context
-        const { data: conversation } = await base44.agents.createConversation({
+        const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { source: 'collection_optimizer' }
         });
@@ -704,7 +704,7 @@ Be conversational and specific to their actual pipes and blends. Reference their
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
         
         // Route to expert_tobacconist agent
-        const { data: conversation } = await base44.agents.createConversation({
+        const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { source: 'what_if_general' }
         });
@@ -875,7 +875,7 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
       // Check if should route to agent
       if (shouldRouteToAgent(query)) {
         // Route to expert_tobacconist agent with conversation context
-        const { data: conversation } = await base44.agents.createConversation({
+        const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { source: 'collection_optimizer_followup' }
         });
@@ -1010,7 +1010,7 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
         console.log('[ROUTING] Follow-up detected as collection question, routing to expert_tobacconist');
         
         // Route to expert_tobacconist agent with conversation context
-        const { data: conversation } = await base44.agents.createConversation({
+        const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { source: 'what_if_followup' }
         });

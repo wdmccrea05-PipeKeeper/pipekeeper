@@ -122,7 +122,7 @@ Return a JSON object:
       console.log('[IDENTIFY] Using expert_tobacconist agent for final identification');
       
       // Route to expert_tobacconist agent
-      const { data: conversation } = await base44.agents.createConversation({
+      const conversation = await base44.agents.createConversation({
         agent_name: 'expert_tobacconist',
         metadata: { source: 'pipe_identifier_final' }
       });
@@ -298,7 +298,7 @@ Return JSON with these exact fields:
       console.log('[IMPACT] Routing impact analysis to expert_tobacconist agent');
       
       // Route to expert_tobacconist agent for impact analysis
-      const { data: conversation } = await base44.agents.createConversation({
+      const conversation = await base44.agents.createConversation({
         agent_name: 'expert_tobacconist',
         metadata: { source: 'pipe_impact_analysis' }
       });
