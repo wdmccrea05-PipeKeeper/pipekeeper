@@ -775,6 +775,11 @@ ${currentQuery}`;
           finalResponse = "I couldn't load a response from the expert agent. Please try again.";
           console.error(`[${debugContext}] ❌ Empty response after ${Date.now() - startTime}ms`);
         }
+
+        // De-dup: strip repeated prefix from follow-ups
+        const lastAssistantMsg = [...conversationMessages].reverse().find(m => m.role === 'assistant');
+        const lastAssistantText = lastAssistantMsg?.content?.response || lastAssistantMsg?.content?.advice || '';
+        finalResponse = stripRepeatedPrefix(lastAssistantText, finalResponse);
         
         const aiResponse = {
           is_collection_question: true,
