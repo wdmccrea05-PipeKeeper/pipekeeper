@@ -557,8 +557,20 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
                       <p className="text-white/90 text-sm sm:text-base">Manage your blends</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 flex-shrink-0 ml-2">
-                      <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    <div className="flex gap-2 flex-shrink-0 ml-2">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          refetchBlends();
+                        }}
+                        className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
+                        title="Refresh"
+                      >
+                        <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                      </button>
+                      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3">
+                        <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                      </div>
                     </div>
                   </div>
 
