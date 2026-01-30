@@ -77,7 +77,7 @@ export default function ExpertTobacconistChat() {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize conversation
+  // Initialize conversation with context sent upfront
   useEffect(() => {
     (async () => {
       try {
@@ -90,12 +90,21 @@ export default function ExpertTobacconistChat() {
         });
         setConversationId(conversation.id);
         setMessages(conversation.messages || []);
+
+        // Send context once at the start
+        if (pipes.length > 0) {
+          const contextMsg = buildContextMessage();
+          await base44.agents.addMessage(conversation, {
+            role: 'user',
+            content: `[INITIAL CONTEXT - Do not repeat or remind me of this]\n\n${contextMsg}`,
+          });
+        }
       } catch (err) {
         console.error('Failed to create conversation:', err);
         toast.error('Failed to initialize chat');
       }
     })();
-  }, []);
+  }, [pipes, blends, pairingMatrix, usageLogs]);
 
   // Subscribe to conversation updates and accumulate full responses
   useEffect(() => {
