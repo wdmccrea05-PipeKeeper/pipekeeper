@@ -699,44 +699,86 @@ Be conversational and specific to their actual pipes and blends. Reference their
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // General hobby advice from expert tobacconist
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: You are an expert tobacconist and pipe smoking advisor.
+      // ROUTING CHECK - Route collection questions to expert agent
+      if (shouldRouteToAgent(currentQuery)) {
+        console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
+        
+        // Route to expert_tobacconist agent
+        const { data: conversation } = await base44.agents.createConversation({
+          agent_name: 'expert_tobacconist',
+          metadata: { source: 'what_if_general' }
+        });
+        
+        const response = await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: currentQuery,
+          file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined
+        });
+        
+        console.log('[ROUTING] Response received from expert_tobacconist');
+        
+        // Extract the assistant's response
+        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        
+        const aiResponse = {
+          is_general_advice: true,
+          advice: assistantMsg?.content || 'No response received from agent',
+          key_points: [],
+          tips: [],
+          routed_to: 'expert_tobacconist'
+        };
+        
+        setWhatIfResult(aiResponse);
+        
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+      } else {
+        console.log('[ROUTING] General question, using standard LLM');
+        
+        // General hobby advice from expert tobacconist
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: You are an expert tobacconist and pipe smoking advisor.
 
 User's Question: ${currentQuery}
 
 Provide clear, expert advice about pipe smoking, tobacco, techniques, history, product information, maintenance, or general hobby topics. Be conversational, knowledgeable, and helpful.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            advice: { type: "string" },
-            key_points: {
-              type: "array",
-              items: { type: "string" }
-            },
-            tips: {
-              type: "array",
-              items: { type: "string" }
+          response_json_schema: {
+            type: "object",
+            properties: {
+              advice: { type: "string" },
+              key_points: {
+                type: "array",
+                items: { type: "string" }
+              },
+              tips: {
+                type: "array",
+                items: { type: "string" }
+              }
             }
           }
-        }
-      });
+        });
 
-      const aiResponse = {
-        is_general_advice: true,
-        advice: result.advice,
-        key_points: result.key_points,
-        tips: result.tips
-      };
-      
-      setWhatIfResult(aiResponse);
-      
-      // Add AI response to conversation
-      setConversationMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
-      }]);
+        const aiResponse = {
+          is_general_advice: true,
+          advice: result.advice,
+          key_points: result.key_points,
+          tips: result.tips,
+          routed_to: 'standard_llm'
+        };
+        
+        setWhatIfResult(aiResponse);
+        
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+      }
     } catch (err) {
       console.error('Error analyzing general question:', err);
       toast.error('Failed to analyze question. Please try again.');
@@ -963,50 +1005,92 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
 
     try {
-      // Continue general advice conversation
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: Continue the friendly hobbyist conversation.
+      // ROUTING CHECK for follow-ups too
+      if (shouldRouteToAgent(query)) {
+        console.log('[ROUTING] Follow-up detected as collection question, routing to expert_tobacconist');
+        
+        // Route to expert_tobacconist agent with conversation context
+        const { data: conversation } = await base44.agents.createConversation({
+          agent_name: 'expert_tobacconist',
+          metadata: { source: 'what_if_followup' }
+        });
+        
+        // Add conversation history as context
+        const conversationContext = conversationMessages
+          .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice || m.content.response || ''}`)
+          .join('\n\n');
+        
+        const response = await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: `Previous discussion:\n${conversationContext}\n\nFollow-up question: ${query}`
+        });
+        
+        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        
+        const aiResponse = {
+          is_general_advice: true,
+          advice: assistantMsg?.content || 'No response received from agent',
+          key_points: [],
+          tips: [],
+          routed_to: 'expert_tobacconist'
+        };
 
-  Previous Discussion:
-  ${conversationMessages.map(m => {
-  if (m.role === 'user') return `User: ${m.content}`;
-  return `Tobacconist: ${m.content.advice || ''}`;
-  }).join('\n\n')}
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
 
-  User Follow-up: ${query}
+        setWhatIfResult(aiResponse);
+      } else {
+        console.log('[ROUTING] General follow-up, using standard LLM');
+        
+        // Continue general advice conversation
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: Continue the friendly hobbyist conversation.
 
-  Provide helpful, knowledgeable advice. Be conversational and personable.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            advice: { type: "string" },
-            key_points: {
-              type: "array",
-              items: { type: "string" }
-            },
-            tips: {
-              type: "array",
-              items: { type: "string" }
+    Previous Discussion:
+    ${conversationMessages.map(m => {
+    if (m.role === 'user') return `User: ${m.content}`;
+    return `Tobacconist: ${m.content.advice || ''}`;
+    }).join('\n\n')}
+
+    User Follow-up: ${query}
+
+    Provide helpful, knowledgeable advice. Be conversational and personable.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              advice: { type: "string" },
+              key_points: {
+                type: "array",
+                items: { type: "string" }
+              },
+              tips: {
+                type: "array",
+                items: { type: "string" }
+              }
             }
           }
-        }
-      });
+        });
 
-      const aiResponse = {
-        is_general_advice: true,
-        advice: result.advice,
-        key_points: result.key_points,
-        tips: result.tips
-      };
+        const aiResponse = {
+          is_general_advice: true,
+          advice: result.advice,
+          key_points: result.key_points,
+          tips: result.tips,
+          routed_to: 'standard_llm'
+        };
 
-      // Add AI response to conversation
-      setConversationMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
-      }]);
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
 
-      setWhatIfResult(aiResponse);
+        setWhatIfResult(aiResponse);
+      }
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
@@ -1311,6 +1395,13 @@ Provide concrete, actionable steps with specific field values.`,
                                       </li>
                                     ))}
                                   </ul>
+                                </div>
+                              )}
+                              {nextMsg.content.routed_to && (
+                                <div className="mt-2 pt-2 border-t border-stone-300">
+                                  <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
+                                    Answered by: {nextMsg.content.routed_to}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -2509,6 +2600,13 @@ Provide concrete, actionable steps with specific field values.`,
                                             <li key={i} className="text-xs text-stone-600">• {pt}</li>
                                           ))}
                                         </ul>
+                                      </div>
+                                    )}
+                                    {msg.content.routed_to && (
+                                      <div className="mt-2 pt-2 border-t border-stone-300">
+                                        <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
+                                          Answered by: {msg.content.routed_to}
+                                        </p>
                                       </div>
                                     )}
                                   </div>
