@@ -23,10 +23,8 @@ export function formatTobacconistResponse(text) {
   const finalParagraphs = [];
   for (const para of paragraphs) {
     if (para.length > 350) {
-      // Split by sentence: period/exclamation/question followed by space + capital OR end of string
-      // This regex is more robust: captures full sentence including punctuation
-      const sentenceRegex = /[^.!?]*[.!?]+/g;
-      let sentences = para.match(sentenceRegex) || [para];
+      // Split by sentence using a more reliable approach: look for . ! or ? followed by space or end
+      const sentences = para.split(/(?<=[.!?])\s+(?=[A-Z])/);
       
       let chunk = '';
       let sentenceCount = 0;
@@ -40,14 +38,14 @@ export function formatTobacconistResponse(text) {
         
         // Split if: 3+ sentences OR exceeds 350 chars and already has content
         if (sentenceCount >= 3 || (potentialChunk.length > 350 && chunk.length > 0)) {
-          if (chunk.trim()) finalParagraphs.push(chunk.trim());
+          if (chunk.trim().length > 0) finalParagraphs.push(chunk.trim());
           chunk = sentence;
           sentenceCount = 1;
         } else {
           chunk = potentialChunk;
         }
       }
-      if (chunk.trim()) finalParagraphs.push(chunk.trim());
+      if (chunk.trim().length > 0) finalParagraphs.push(chunk.trim());
     } else {
       finalParagraphs.push(para);
     }
