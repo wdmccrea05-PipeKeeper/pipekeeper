@@ -150,7 +150,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
 
   const queryClient = useQueryClient();
 
-  const { data: blends = [], isLoading: blendsLoading } = useQuery({
+  const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
