@@ -222,6 +222,12 @@ export default function ExpertTobacconistChat() {
       // Get current conversation data
       const conversation = await base44.agents.getConversation(conversationId);
       
+      // Persist selectedAgent and responseStyle in conversation metadata
+      if (conversation.metadata) {
+        conversation.metadata.selectedAgent = classification.shouldUseExpert ? 'expert_tobacconist' : 'standard_llm';
+        conversation.metadata.responseStyle = classification.responseStyle;
+      }
+      
       // Build concise message with context (avoid token bloat)
       const pipesList = contextPayload.pipes
         .map(p => `- ${p.name}${p.maker ? ` (${p.maker})` : ''} [${p.shape}, ${p.bowl_material || 'unknown'}]${p.focus && p.focus.length > 0 ? ` focus: ${p.focus.join(', ')}` : ''}`)
