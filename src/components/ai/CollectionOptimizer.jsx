@@ -770,12 +770,20 @@ ${currentQuery}`;
           collection_insights: [],
           routed_to: 'expert_tobacconist',
           _debug: {
-            pipes_count: contextPayload.pipes.length,
-            pairingGrid_present: !!contextPayload.pairingGrid,
-            usageLogs_present: !!contextPayload.usageLogs,
-            response_length: finalResponse.length
+            conversation_id: conversation.id,
+            pipes_count: pipesSummary.length,
+            tobaccos_count: tobaccosSummary.length,
+            pairings_count: pairingsSummary.length,
+            payload_size_bytes: payloadSize,
+            response_length: finalResponse.length,
+            total_time_ms: Date.now() - startTime
           }
         };
+        
+        console.log(`[${debugContext}] ✅ Complete:`, {
+          total_time_ms: Date.now() - startTime,
+          response_preview: finalResponse.substring(0, 100)
+        });
         
         setWhatIfResult(aiResponse);
         
@@ -1439,7 +1447,13 @@ ${query}`;
     try {
       // ROUTING CHECK for follow-ups too
       if (shouldRouteToAgent(query)) {
-        console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
+        const debugContext = 'FOLLOWUP_EXPERT';
+        const startTime = Date.now();
+        
+        console.log(`[${debugContext}] ▶️ Starting follow-up agent call`, {
+          timestamp: new Date().toISOString(),
+          query: query
+        });
         
         // Validate and prepare context
         if (pipes.length === 0) {
