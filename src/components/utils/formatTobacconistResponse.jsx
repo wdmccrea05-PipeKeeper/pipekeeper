@@ -23,22 +23,25 @@ export function formatTobacconistResponse(text) {
   const finalParagraphs = [];
   for (const para of paragraphs) {
     if (para.length > 350) {
-      // Split by sentence boundaries: . ! ? followed by space or end
-      const sentences = para.match(/[^.!?]*[.!?]+(?:\s+(?=[A-Z])|$)/g) || [para];
+      // Split by sentence: period/exclamation/question followed by space + capital OR end of string
+      // This regex is more robust: captures full sentence including punctuation
+      const sentenceRegex = /[^.!?]*[.!?]+/g;
+      let sentences = para.match(sentenceRegex) || [para];
+      
       let chunk = '';
       let sentenceCount = 0;
       
-      for (const sentence of sentences) {
-        const trimmed = sentence.trim();
-        if (!trimmed) continue;
+      for (let sentence of sentences) {
+        sentence = sentence.trim();
+        if (!sentence) continue;
         
-        const potentialChunk = chunk ? chunk + ' ' + trimmed : trimmed;
-        sentenceCount += 1;
+        const potentialChunk = chunk ? chunk + ' ' + sentence : sentence;
+        sentenceCount++;
         
-        // New paragraph if: reached 3 sentences, or adding would exceed 350 chars
+        // Split if: 3+ sentences OR exceeds 350 chars and already has content
         if (sentenceCount >= 3 || (potentialChunk.length > 350 && chunk.length > 0)) {
           if (chunk.trim()) finalParagraphs.push(chunk.trim());
-          chunk = trimmed;
+          chunk = sentence;
           sentenceCount = 1;
         } else {
           chunk = potentialChunk;

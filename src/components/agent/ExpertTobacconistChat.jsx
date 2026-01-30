@@ -106,30 +106,31 @@ export default function ExpertTobacconistChat() {
       const msgs = data.messages || [];
       setMessages(msgs);
 
-      // Only process assistant messages created AFTER the current user message
-      let assistantContent = '';
-      let foundNewResponse = false;
+      // Find the LAST user message (most recent question)
+      const lastUserMsg = [...msgs].reverse().find(m => m.role === 'user');
+      if (!lastUserMsg || !lastUserMsg.created_date) return;
 
+      const userMsgTime = new Date(lastUserMsg.created_date).getTime();
+
+      // Collect ONLY assistant messages created AFTER the last user message
+      let assistantContent = '';
       for (const msg of msgs) {
         if ((msg.role === 'assistant' || msg.role === 'agent') && msg.created_date) {
-          // Only include assistant messages created after current request
           const msgTime = new Date(msg.created_date).getTime();
-          if (msgTime > lastResponseTime) {
+          if (msgTime > userMsgTime) {
             const content = extractAssistantContent(msg);
             if (content) {
               assistantContent += content;
-              foundNewResponse = true;
             }
           }
         }
       }
 
-      // Update streaming display only if we have new content
-      if (foundNewResponse && assistantContent && loading) {
+      // Update streaming display
+      if (assistantContent && loading) {
         setStreamingContent(assistantContent);
         setIsStreaming(true);
-      } else if (foundNewResponse && assistantContent && !loading) {
-        // Agent finished, show final response
+      } else if (assistantContent && !loading) {
         setStreamingContent(assistantContent);
         setIsStreaming(false);
       }
@@ -138,7 +139,7 @@ export default function ExpertTobacconistChat() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [conversationId, currentRequestId, loading, lastResponseTime]);
+  }, [conversationId, currentRequestId, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
