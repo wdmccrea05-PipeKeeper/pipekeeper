@@ -2099,11 +2099,24 @@ Provide concrete, actionable steps with specific field values.`,
                       Trophy Pairings (9-10 scores):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {whatIfResult.trophy_pairings.map((blend, idx) => (
-                        <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
-                          {blend}
-                        </Badge>
-                      ))}
+                      const toLabel = (v) => {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  // common shapes from agent/tooling
+  return (
+    v?.name ||
+    v?.title ||
+    v?.blend_name ||
+    v?.pipe_name ||
+    v?.pipe ||
+    v?.tobacco ||
+    v?.label ||
+    (() => {
+      try { return JSON.stringify(v); } catch { return String(v); }
+    })()
+  );
+};
                     </div>
                   </CardContent>
                 </Card>
