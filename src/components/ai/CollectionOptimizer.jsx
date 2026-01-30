@@ -966,6 +966,11 @@ ${currentQuery}`;
           finalResponse = "I couldn't load a response from the expert agent. Please try again.";
           console.error('[ROUTING] Agent returned empty response or timed out');
         }
+
+        // De-dup: strip repeated prefix from follow-ups
+        const lastAssistantMsg = [...conversationMessages].reverse().find(m => m.role === 'assistant');
+        const lastAssistantText = lastAssistantMsg?.content?.response || lastAssistantMsg?.content?.advice || '';
+        finalResponse = stripRepeatedPrefix(lastAssistantText, finalResponse);
         
         const aiResponse = {
           is_general_advice: true,
