@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { waitForAssistantMessage } from '@/components/utils/agentWait';
+import { FormattedTobacconistResponse } from '@/components/utils/formatTobacconistResponse';
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
