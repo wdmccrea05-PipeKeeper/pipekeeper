@@ -1683,6 +1683,8 @@ ${query}`;
           key_points: [],
           tips: [],
           routed_to: 'expert_tobacconist',
+          sticky_agent: stickyAgent,
+          conversation_id: conversation.id,
           _debug: {
             conversation_id: conversation.id,
             pipes_count: contextPayload.pipes.length,
