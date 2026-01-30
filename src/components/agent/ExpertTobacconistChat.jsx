@@ -252,22 +252,14 @@ ${userMessage}`;
         content: messageWithContext,
       });
 
-      console.log('[EXPERT_TOBACCONIST] Message sent, streaming response in progress...');
+      console.log('[EXPERT_TOBACCONIST] Message sent, waiting for response...');
 
-      // Let subscription handle response streaming; set timeout as fallback
-      const timeout = setTimeout(() => {
-        console.warn('[EXPERT_TOBACCONIST] Response timeout - stopping stream');
+      // Wait for agent to finish (max 240s for deep thinking)
+      setTimeout(() => {
         setLoading(false);
-        setIsStreaming(false);
       }, 240000);
-
-      return () => clearTimeout(timeout);
     } catch (err) {
       console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
-      console.error('[EXPERT_TOBACCONIST] Error details:', {
-        message: err?.message,
-        response: err?.response?.data
-      });
       toast.error('Failed to send message');
       setLoading(false);
       setIsStreaming(false);
