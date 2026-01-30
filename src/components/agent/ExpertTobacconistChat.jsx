@@ -328,10 +328,26 @@ ${userMessage}`;
         )}
 
         {messages.map((msg, idx) => (
-          <MessageBubble key={idx} message={msg} />
+          <MessageBubble key={idx} message={msg} isStreaming={false} />
         ))}
 
-        {loading && (
+        {isStreaming && streamingContent && (
+          <div className="flex gap-3">
+            <img
+              src={TOBACCONIST_ICON}
+              alt="Expert"
+              className="w-8 h-8 rounded-lg shrink-0"
+            />
+            <div className="max-w-[80%] rounded-2xl px-4 py-2.5 bg-[#243548] text-[#e8d5b7] border border-[#e8d5b7]/10">
+              <div className="text-sm whitespace-pre-wrap">{streamingContent}</div>
+              <div className="mt-2 flex items-center gap-1 text-xs text-[#e8d5b7]/60">
+                <span className="animate-pulse">▌</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading && !isStreaming && (
           <div className="flex items-center gap-2 text-[#e8d5b7]/70">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span className="text-sm">Expert is thinking...</span>
