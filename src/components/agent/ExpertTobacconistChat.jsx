@@ -16,7 +16,10 @@ export default function ExpertTobacconistChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef(null);
+  const lastAssistantMsgRef = useRef(null);
   const { user } = useCurrentUser();
 
   // Fetch user collection data
@@ -90,17 +93,44 @@ export default function ExpertTobacconistChat() {
     })();
   }, []);
 
-  // Subscribe to conversation updates
+  // Subscribe to conversation updates and stream responses
   useEffect(() => {
     if (!conversationId) return;
 
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      setMessages(data.messages || []);
-      setLoading(false);
+      const msgs = data.messages || [];
+      setMessages(msgs);
+
+      // Find the latest assistant message (not user or system)
+      const latestAssistant = [...msgs]
+        .reverse()
+        .find((m) => m.role === 'assistant' || m.role === 'agent');
+
+      if (latestAssistant) {
+        // Extract content from current assistant message
+        const content = extractAssistantContent(latestAssistant);
+        
+        // Check if this is a new/different assistant message
+        if (latestAssistant.id !== lastAssistantMsgRef.current) {
+          lastAssistantMsgRef.current = latestAssistant.id;
+          setStreamingContent(content);
+          setIsStreaming(true);
+        } else if (content !== streamingContent) {
+          // Content has changed (streaming update)
+          setStreamingContent(content);
+          setIsStreaming(true);
+        }
+      }
+
+      // Check if agent is done (no loading spinner, assistant message complete)
+      if (!loading && latestAssistant) {
+        setIsStreaming(false);
+        setLoading(false);
+      }
     });
 
     return unsubscribe;
-  }, [conversationId]);
+  }, [conversationId, loading, streamingContent]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
@@ -114,6 +144,9 @@ export default function ExpertTobacconistChat() {
     const userMessage = input.trim();
     setInput('');
     setLoading(true);
+    setStreamingContent('');
+    setIsStreaming(true);
+    lastAssistantMsgRef.current = null;
 
     try {
       // Prepare usage statistics
