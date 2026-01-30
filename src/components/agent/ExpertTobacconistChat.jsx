@@ -93,44 +93,61 @@ export default function ExpertTobacconistChat() {
     })();
   }, []);
 
-  // Subscribe to conversation updates and stream responses
+  // Subscribe to conversation updates and accumulate streaming responses
   useEffect(() => {
     if (!conversationId) return;
 
-    const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-      const msgs = data.messages || [];
-      setMessages(msgs);
+    let unsubscribe;
+    (async () => {
+      try {
+        unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+          const msgs = data.messages || [];
+          setMessages(msgs);
 
-      // Find the latest assistant message (not user or system)
-      const latestAssistant = [...msgs]
-        .reverse()
-        .find((m) => m.role === 'assistant' || m.role === 'agent');
+          // Find the latest assistant message by looking through all messages
+          let latestAssistant = null;
+          let assistantContent = '';
 
-      if (latestAssistant) {
-        // Extract content from current assistant message
-        const content = extractAssistantContent(latestAssistant);
-        
-        // Check if this is a new/different assistant message
-        if (latestAssistant.id !== lastAssistantMsgRef.current) {
-          lastAssistantMsgRef.current = latestAssistant.id;
-          setStreamingContent(content);
-          setIsStreaming(true);
-        } else if (content !== streamingContent) {
-          // Content has changed (streaming update)
-          setStreamingContent(content);
-          setIsStreaming(true);
-        }
+          for (let i = msgs.length - 1; i >= 0; i--) {
+            const msg = msgs[i];
+            if (msg.role === 'assistant' || msg.role === 'agent') {
+              latestAssistant = msg;
+              break;
+            }
+          }
+
+          // Collect ALL assistant messages (handle multiple message chunks)
+          for (const msg of msgs) {
+            if (msg.role === 'assistant' || msg.role === 'agent') {
+              const content = extractAssistantContent(msg);
+              if (content) {
+                assistantContent += content;
+              }
+            }
+          }
+
+          // Update streaming content if assistant content exists
+          if (assistantContent) {
+            setStreamingContent(assistantContent);
+            setIsStreaming(true);
+          }
+
+          // Stop streaming if no longer loading
+          if (!loading && latestAssistant) {
+            setTimeout(() => {
+              setIsStreaming(false);
+            }, 1500);
+          }
+        });
+      } catch (err) {
+        console.error('Subscription setup failed:', err);
       }
+    })();
 
-      // Check if agent is done (no loading spinner, assistant message complete)
-      if (!loading && latestAssistant) {
-        setIsStreaming(false);
-        setLoading(false);
-      }
-    });
-
-    return unsubscribe;
-  }, [conversationId, loading, streamingContent]);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [conversationId]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
