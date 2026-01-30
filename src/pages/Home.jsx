@@ -179,7 +179,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     return () => unsubscribe?.();
   }, [user?.email, queryClient]);
 
-  const { data: cellarLogs = [] } = useQuery({
+  const { data: cellarLogs = [], refetch: refetchCellarLogs } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: async () => {
       try {
