@@ -146,43 +146,43 @@ Return an array of relevant tobacco blend matches with detailed information.`,
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-stone-800">{blend.name}</h4>
+                        <h4 className="font-bold text-lg text-white">{blend.name}</h4>
                         <ChevronRight className="w-4 h-4 text-stone-400" />
                       </div>
-                      <p className="text-sm text-stone-600">{blend.manufacturer}</p>
+                      <p className="text-sm text-stone-300">{blend.manufacturer}</p>
                       {blend.description && (
-                        <p className="text-sm text-stone-600 mt-2 line-clamp-2">{blend.description}</p>
+                        <p className="text-sm text-stone-400 mt-3 line-clamp-2 leading-relaxed">{blend.description}</p>
                       )}
-                      <div className="flex flex-wrap gap-1.5 mt-3">
+                      <div className="flex flex-wrap gap-2 mt-3">
                         {blend.blend_type && (
                           <Badge 
                             variant="secondary" 
-                            className={`${BLEND_COLORS[blend.blend_type] || 'bg-stone-100 text-stone-800 border-stone-200'} text-xs`}
+                            className={`${BLEND_COLORS[blend.blend_type] || 'bg-stone-700 text-stone-100 border-stone-600'} text-xs font-medium`}
                           >
                             {blend.blend_type}
                           </Badge>
                         )}
                         {blend.strength && (
-                          <Badge variant="secondary" className="bg-stone-100 text-stone-700 border-stone-200 text-xs">
+                          <Badge variant="secondary" className="bg-stone-700 text-stone-100 border-stone-600 text-xs font-medium">
                             {blend.strength}
                           </Badge>
                         )}
                         {blend.cut && (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+                          <Badge variant="secondary" className="bg-amber-900 text-amber-100 border-amber-800 text-xs font-medium">
                             {blend.cut}
                           </Badge>
                         )}
                       </div>
                       {blend.flavor_notes && blend.flavor_notes.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-stone-500">Flavors: {blend.flavor_notes.slice(0, 4).join(', ')}</p>
+                        <div className="mt-3">
+                          <p className="text-xs text-stone-400">Flavors: <span className="text-stone-300">{blend.flavor_notes.slice(0, 4).join(', ')}</span></p>
                         </div>
                       )}
                     </div>
                     {blend.typical_rating && (
                       <div className="text-right shrink-0">
-                        <p className="text-xs text-stone-500">Rating</p>
-                        <p className="font-semibold text-amber-700 flex items-center gap-1">
+                        <p className="text-xs text-stone-400">Avg Rating</p>
+                        <p className="font-bold text-amber-400 flex items-center justify-end gap-1 mt-1">
                           ⭐ {blend.typical_rating}/5
                         </p>
                       </div>
