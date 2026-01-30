@@ -60,8 +60,8 @@ function extractMessageContent(message) {
  * @returns {Promise<string>} The assistant's response content
  * @throws {Error} If timeout is reached before assistant responds or if agent errors
  */
-export async function waitForAssistantMessage(conversationId, timeoutMs = 60000, options = {}) {
-  const { debug = true, context = "agent" } = options;
+export async function waitForAssistantMessage(conversationId, timeoutMs = 120000, options = {}) {
+    const { debug = true, context = "agent" } = options;
   
   const startTime = Date.now();
   
