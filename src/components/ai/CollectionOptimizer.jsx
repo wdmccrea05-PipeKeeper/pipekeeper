@@ -2977,7 +2977,7 @@ Provide concrete, actionable steps with specific field values.`,
                           </div>
                         )}
 
-                        <p className="text-sm text-stone-600">{rec.reasoning}</p>
+                        <p className="text-sm text-foreground">{rec.reasoning}</p>
                       </div>
                     </CardContent>
                   </Card>
