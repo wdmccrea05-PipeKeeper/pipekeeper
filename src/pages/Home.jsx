@@ -622,8 +622,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                   ))}
                   {favoriteBlends.map(blend => (
                     <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
-                      <Badge className="cursor-pointer px-3 py-1.5">
-                        🍂 {blend.name}
+                      <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
+                        <Leaf className="w-3.5 h-3.5 text-[#e8d5b7]" />
+                        {blend.name}
                       </Badge>
                     </a>
                   ))}
