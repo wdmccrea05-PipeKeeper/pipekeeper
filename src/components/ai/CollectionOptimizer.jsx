@@ -597,7 +597,13 @@ async function undoOptimizationApply(batchId) {
     try {
       // Check if should route to agent
       if (shouldRouteToAgent(currentQuery)) {
-        console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
+        const debugContext = 'ASK_EXPERT';
+        const startTime = Date.now();
+        
+        console.log(`[${debugContext}] ▶️ Starting agent call`, {
+          timestamp: new Date().toISOString(),
+          query: currentQuery
+        });
         
         // Validate required context
         if (pipes.length === 0) {
@@ -632,103 +638,129 @@ async function undoOptimizationApply(batchId) {
           }
         });
         
-        // Prepare comprehensive context payload
+        // Build COMPACT context summary (avoiding massive JSON payloads)
+        const pipesSummary = pipes.map(p => ({
+          id: p.id,
+          name: p.name,
+          maker: p.maker,
+          shape: p.shape,
+          chamber_volume: p.chamber_volume,
+          focus: p.focus,
+          usage_count: usageStats[p.id]?.count || 0
+        }));
+        
+        const tobaccosSummary = blends.map(b => ({
+          id: b.id,
+          name: b.name,
+          blend_type: b.blend_type
+        }));
+        
+        // Extract only essential pairing data
+        const pairingsSummary = pairingMatrix?.pairings?.map(pair => ({
+          pipe: pair.pipe_name,
+          tobacco: pair.tobacco_name,
+          score: pair.score
+        })) || [];
+        
         const contextPayload = {
-          pipes: pipes.map(p => ({
-            id: p.id,
-            name: p.name,
-            maker: p.maker,
-            shape: p.shape,
-            bowlStyle: p.bowlStyle,
-            chamber_volume: p.chamber_volume,
-            bowl_diameter_mm: p.bowl_diameter_mm,
-            bowl_depth_mm: p.bowl_depth_mm,
-            focus: p.focus,
-            interchangeable_bowls: p.interchangeable_bowls,
-            usage_count: usageStats[p.id]?.count || 0,
-            last_used: usageStats[p.id]?.lastUsed || null
-          })),
-          tobaccos: blends.map(b => ({
-            id: b.id,
-            name: b.name,
-            manufacturer: b.manufacturer,
-            blend_type: b.blend_type,
-            strength: b.strength,
-            flavor_notes: b.flavor_notes
-          })),
-          pairingGrid: pairingMatrix ? {
-            pairings: pairingMatrix.pairings || [],
-            generated_date: pairingMatrix.generated_date
-          } : null,
-          usageLogs: {
-            total_sessions: usageLogs.length,
-            pipe_usage: usageStats
-          }
+          pipes: pipesSummary,
+          tobaccos: tobaccosSummary,
+          pairings: pairingsSummary.slice(0, 100), // Limit to avoid huge payloads
+          usage: usageStats
         };
         
-        console.log('[EXPERT_TOBACCONIST] Context payload:', {
-          pipes_count: contextPayload.pipes.length,
-          tobaccos_count: contextPayload.tobaccos.length,
-          pairingGrid_present: !!contextPayload.pairingGrid,
-          usageLogs_present: !!contextPayload.usageLogs,
-          total_usage_sessions: contextPayload.usageLogs.total_sessions
+        const payloadSize = JSON.stringify(contextPayload).length;
+        
+        console.log(`[${debugContext}] Context prepared:`, {
+          pipes_count: pipesSummary.length,
+          tobaccos_count: tobaccosSummary.length,
+          pairings_count: pairingsSummary.length,
+          pairings_included: Math.min(100, pairingsSummary.length),
+          usage_stats_count: Object.keys(usageStats).length,
+          payload_size_bytes: payloadSize,
+          elapsed_ms: Date.now() - startTime
         });
         
-        // Route to expert_tobacconist agent with full context
+        // Route to expert_tobacconist agent
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { 
-            source: 'collection_optimizer',
+            source: 'ask_expert',
             context_provided: true
           }
         });
         
-        // Build comprehensive message with all context
-        const messageWithContext = `USER COLLECTION CONTEXT:
-Pipes: ${contextPayload.pipes.length}
-Tobaccos: ${contextPayload.tobaccos.length}
-Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
-Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
+        console.log(`[${debugContext}] Conversation created:`, {
+          conversation_id: conversation.id,
+          elapsed_ms: Date.now() - startTime
+        });
+        
+        // Build message with compact context
+        const messageWithContext = `USER COLLECTION SUMMARY:
+Pipes: ${pipesSummary.length} | Tobaccos: ${tobaccosSummary.length} | Pairings: ${pairingsSummary.length}
 
-PIPES DATA:
-${JSON.stringify(contextPayload.pipes, null, 2)}
+PIPES:
+${JSON.stringify(pipesSummary, null, 2)}
 
-TOBACCOS DATA:
-${JSON.stringify(contextPayload.tobaccos, null, 2)}
+TOBACCOS:
+${JSON.stringify(tobaccosSummary, null, 2)}
 
-${contextPayload.pairingGrid ? `PAIRING GRID:
-${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+TOP PAIRINGS (${Math.min(100, pairingsSummary.length)} shown):
+${JSON.stringify(pairingsSummary.slice(0, 100), null, 2)}
 
 USAGE STATISTICS:
-${JSON.stringify(contextPayload.usageLogs, null, 2)}
+${JSON.stringify(usageStats, null, 2)}
 
 USER QUESTION:
 ${currentQuery}`;
         
+        const messageSize = messageWithContext.length;
+        console.log(`[${debugContext}] Message size:`, {
+          characters: messageSize,
+          kilobytes: (messageSize / 1024).toFixed(2)
+        });
+        
+        const addMessageStart = Date.now();
         await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
         });
         
-        console.log('[EXPERT_TOBACCONIST] Message sent, waiting for assistant response...');
+        console.log(`[${debugContext}] ✅ addMessage complete:`, {
+          elapsed_ms: Date.now() - addMessageStart,
+          total_elapsed_ms: Date.now() - startTime
+        });
         
-        // Wait for assistant response asynchronously
+        // Wait for assistant response with extended timeout
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id);
-          console.log('[EXPERT_TOBACCONIST] Assistant response received:', {
+          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { 
+            debug: true, 
+            context: debugContext 
+          });
+          
+          console.log(`[${debugContext}] ✅ Agent response received:`, {
             response_length: agentResponse.length,
-            preview: agentResponse.substring(0, 150)
+            preview: agentResponse.substring(0, 200),
+            total_elapsed_ms: Date.now() - startTime
           });
         } catch (err) {
-          console.error('[EXPERT_TOBACCONIST] Failed to receive assistant response:', err);
+          console.error(`[${debugContext}] ❌ Agent wait failed:`, {
+            error: err.message,
+            total_elapsed_ms: Date.now() - startTime
+          });
+          
+          // Surface agent errors to user
+          if (err.message?.includes("Agent error:")) {
+            agentResponse = `The expert agent encountered an error: ${err.message.replace("Agent error: ", "")}`;
+          }
         }
         
         // Handle empty or missing response
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
           finalResponse = "I couldn't load a response from the expert agent. Please try again.";
-          console.error('[EXPERT_TOBACCONIST] Agent returned empty response or timed out');
+          console.error(`[${debugContext}] ❌ Empty response after ${Date.now() - startTime}ms`);
         }
         
         const aiResponse = {
@@ -3129,13 +3161,16 @@ Provide concrete, actionable steps with specific field values.`,
                                     )}
                                     {msg.content.routed_to && (
                                       <div className="mt-2 pt-2 border-t border-stone-300">
-                                        <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
-                                          Answered by: {msg.content.routed_to}
+                                        <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded break-all">
+                                          {msg.content.routed_to}
                                           {msg.content._debug && (
-                                            <span className="ml-2">
+                                            <span className="block mt-1">
+                                              convId: {msg.content._debug.conversation_id?.substring(0, 12)}...
                                               | Pipes: {msg.content._debug.pipes_count}
-                                              | Grid: {msg.content._debug.pairingGrid_present ? '✓' : '✗'}
-                                              | Logs: {msg.content._debug.usageLogs_present ? '✓' : '✗'}
+                                              | Tobaccos: {msg.content._debug.tobaccos_count}
+                                              | Pairings: {msg.content._debug.pairings_count}
+                                              | Size: {(msg.content._debug.payload_size_bytes / 1024).toFixed(1)}KB
+                                              | Time: {msg.content._debug.total_time_ms}ms
                                               | Len: {msg.content._debug.response_length}
                                             </span>
                                           )}
@@ -3160,14 +3195,15 @@ Provide concrete, actionable steps with specific field values.`,
                                    )}
                                    {msg.content.routed_to && (
                                      <div className="mt-2 pt-2 border-t border-stone-300">
-                                       <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
-                                         Answered by: {msg.content.routed_to}
+                                       <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded break-all">
+                                         {msg.content.routed_to}
                                          {msg.content._debug && (
-                                           <span className="ml-2">
+                                           <span className="block mt-1">
+                                             convId: {msg.content._debug.conversation_id?.substring(0, 12)}...
                                              | Pipes: {msg.content._debug.pipes_count}
-                                             | Grid: {msg.content._debug.pairingGrid_present ? '✓' : '✗'}
-                                             | Logs: {msg.content._debug.usageLogs_present ? '✓' : '✗'}
-                                             | Len: {msg.content._debug.response_length}
+                                             | Pairings: {msg.content._debug.pairings_count}
+                                             | Size: {(msg.content._debug.payload_size_bytes / 1024).toFixed(1)}KB
+                                             | Time: {msg.content._debug.total_time_ms}ms
                                            </span>
                                          )}
                                        </p>
