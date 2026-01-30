@@ -423,7 +423,11 @@ function MessageBubble({ message, isStreaming = false }) {
             : 'bg-[#243548] text-[#e8d5b7] border border-[#e8d5b7]/10'
         }`}
       >
-        <div className="text-sm whitespace-pre-wrap">{content}</div>
+        {isUser ? (
+          <div className="text-sm whitespace-pre-wrap">{content}</div>
+        ) : (
+          <FormattedTobacconistResponse content={content} />
+        )}
         
         {message.tool_calls?.length > 0 && (
           <div className="mt-2 pt-2 border-t border-[#e8d5b7]/10 text-xs text-[#e8d5b7]/60">
