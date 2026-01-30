@@ -146,14 +146,44 @@ ${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${
 - Additional observations
 - Your confidence level (high/medium/low)`;
 
-      const response = await base44.agents.addMessage(conversation, {
+      await base44.agents.addMessage(conversation, {
         role: 'user',
         content: identificationPrompt,
         file_urls: photos
       });
       
-      const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-      const responseText = assistantMsg?.content || '';
+      console.log('[IDENTIFY] Waiting for final identification...');
+      
+      // Wait for assistant response asynchronously
+      let responseText = "";
+      try {
+        responseText = await new Promise((resolve, reject) => {
+          let resolved = false;
+          const unsubscribe = base44.agents.subscribeToConversation(
+            conversation.id,
+            (data) => {
+              const messages = data?.messages || [];
+              const assistant = [...messages].reverse().find(
+                m => m.role === "assistant" && m.content?.trim()
+              );
+              if (assistant && !resolved) {
+                resolved = true;
+                try { unsubscribe?.(); } catch {}
+                resolve(assistant.content);
+              }
+            }
+          );
+          setTimeout(() => {
+            if (resolved) return;
+            resolved = true;
+            try { unsubscribe?.(); } catch {}
+            reject(new Error("Timeout"));
+          }, 45000);
+        });
+      } catch (err) {
+        console.error('[IDENTIFY] Response wait failed:', err);
+        responseText = "Failed to receive identification. Please try again.";
+      }
       
       // Parse agent response
       const parsePrompt = `Extract pipe details from this expert response into structured data:
@@ -217,7 +247,7 @@ Return JSON:
           .map(([q, a]) => `${q}\nAnswer: ${a}`)
           .join('\n\n');
         
-        const response = await base44.agents.addMessage(
+        await base44.agents.addMessage(
           { id: clarificationNeeded.agent_conversation_id },
           {
             role: 'user',
@@ -225,8 +255,36 @@ Return JSON:
           }
         );
         
-        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-        const responseText = assistantMsg?.content || '';
+        // Wait for assistant response asynchronously
+        let responseText = "";
+        try {
+          responseText = await new Promise((resolve, reject) => {
+            let resolved = false;
+            const unsubscribe = base44.agents.subscribeToConversation(
+              clarificationNeeded.agent_conversation_id,
+              (data) => {
+                const messages = data?.messages || [];
+                const assistant = [...messages].reverse().find(
+                  m => m.role === "assistant" && m.content?.trim()
+                );
+                if (assistant && !resolved) {
+                  resolved = true;
+                  try { unsubscribe?.(); } catch {}
+                  resolve(assistant.content);
+                }
+              }
+            );
+            setTimeout(() => {
+              if (resolved) return;
+              resolved = true;
+              try { unsubscribe?.(); } catch {}
+              reject(new Error("Timeout"));
+            }, 45000);
+          });
+        } catch (err) {
+          console.error('[IDENTIFY] Clarification response wait failed:', err);
+          responseText = "Failed to receive clarification response.";
+        }
         
         // Parse the response
         const parsePrompt = `Extract pipe identification details from this expert response:
@@ -319,15 +377,43 @@ Please analyze the impact of adding this pipe:
 4. What's the overall value proposition?
 5. Would you recommend adding it: Strong addition / Good addition / Consider alternatives?`;
 
-      const response = await base44.agents.addMessage(conversation, {
+      await base44.agents.addMessage(conversation, {
         role: 'user',
         content: impactPrompt
       });
       
-      console.log('[IMPACT] Received impact analysis from expert_tobacconist');
+      console.log('[IMPACT] Waiting for impact analysis response...');
       
-      const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-      const responseText = assistantMsg?.content || '';
+      // Wait for assistant response asynchronously
+      let responseText = "";
+      try {
+        responseText = await new Promise((resolve, reject) => {
+          let resolved = false;
+          const unsubscribe = base44.agents.subscribeToConversation(
+            conversation.id,
+            (data) => {
+              const messages = data?.messages || [];
+              const assistant = [...messages].reverse().find(
+                m => m.role === "assistant" && m.content?.trim()
+              );
+              if (assistant && !resolved) {
+                resolved = true;
+                try { unsubscribe?.(); } catch {}
+                resolve(assistant.content);
+              }
+            }
+          );
+          setTimeout(() => {
+            if (resolved) return;
+            resolved = true;
+            try { unsubscribe?.(); } catch {}
+            reject(new Error("Timeout"));
+          }, 45000);
+        });
+      } catch (err) {
+        console.error('[IMPACT] Response wait failed:', err);
+        responseText = "Failed to receive impact analysis.";
+      }
       
       // Parse the agent's response to extract structured data
       const parsePrompt = `Extract impact analysis from this expert response:
