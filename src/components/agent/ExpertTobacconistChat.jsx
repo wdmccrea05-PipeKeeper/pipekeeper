@@ -141,6 +141,11 @@ export default function ExpertTobacconistChat() {
     }
 
     const userMessage = input.trim();
+
+    // Classify question and determine response style
+    const classification = classifyQuestion(userMessage);
+    setResponseStyle(classification.responseStyle);
+
     setInput('');
     setLoading(true);
     setStreamingContent('');
