@@ -720,6 +720,12 @@ ${currentQuery}`;
           kilobytes: (messageSize / 1024).toFixed(2)
         });
         
+        // Start waiting BEFORE sending message to avoid race conditions
+        const waitPromise = waitForAssistantMessage(conversation.id, 90000, { 
+          debug: true, 
+          context: debugContext 
+        });
+        
         const addMessageStart = Date.now();
         await base44.agents.addMessage(conversation, {
           role: 'user',
@@ -731,13 +737,10 @@ ${currentQuery}`;
           total_elapsed_ms: Date.now() - startTime
         });
         
-        // Wait for assistant response with extended timeout
+        // Wait for assistant response
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { 
-            debug: true, 
-            context: debugContext 
-          });
+          agentResponse = await waitPromise;
           
           console.log(`[${debugContext}] ✅ Agent response received:`, {
             response_length: agentResponse.length,
@@ -985,6 +988,12 @@ ${JSON.stringify(contextPayload, null, 2)}
 USER QUESTION:
 ${currentQuery}`;
         
+        // Start waiting BEFORE sending message
+        const waitPromise = waitForAssistantMessage(conversation.id, 90000, { 
+          debug: true, 
+          context: 'ROUTING_GENERAL' 
+        });
+        
         await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext,
@@ -996,7 +1005,7 @@ ${currentQuery}`;
         // Wait for assistant response asynchronously
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id);
+          agentResponse = await waitPromise;
           console.log('[ROUTING] Response received:', {
             length: agentResponse.length,
             preview: agentResponse.substring(0, 100)
@@ -1316,6 +1325,12 @@ ${JSON.stringify(usageStats, null, 2)}
 FOLLOW-UP:
 ${query}`;
         
+        // Start waiting BEFORE sending message
+        const waitPromise = waitForAssistantMessage(conversation.id, 90000, { 
+          debug: true, 
+          context: debugContext 
+        });
+        
         await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
@@ -1323,13 +1338,10 @@ ${query}`;
         
         console.log(`[${debugContext}] Message sent, waiting...`);
         
-        // Wait for assistant response with extended timeout
+        // Wait for assistant response
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { 
-            debug: true, 
-            context: debugContext 
-          });
+          agentResponse = await waitPromise;
         } catch (err) {
           console.error(`[${debugContext}] Wait failed:`, err);
           if (err.message?.includes("Agent error:")) {
@@ -1578,6 +1590,12 @@ ${conversationContext}
 FOLLOW-UP QUESTION:
 ${query}`;
         
+        // Start waiting BEFORE sending message
+        const waitPromise = waitForAssistantMessage(conversation.id, 90000, { 
+          debug: true, 
+          context: 'FOLLOWUP_COLLECTION' 
+        });
+        
         await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
@@ -1588,7 +1606,7 @@ ${query}`;
         // Wait for assistant response asynchronously
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { debug: true, context: 'FOLLOWUP_COLLECTION' });
+          agentResponse = await waitPromise;
           console.log('[EXPERT_TOBACCONIST] Follow-up response received:', {
             response_length: agentResponse.length,
             preview: agentResponse.substring(0, 150)

@@ -73,6 +73,44 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 60000,
     });
   }
   
+  // Check current conversation snapshot first (prevents missed events)
+  try {
+    const snapshot = await base44.agents.getConversation(conversationId);
+    const messages = snapshot?.messages || [];
+    
+    if (debug) {
+      console.log(`[AgentWait:${context}] Snapshot check:`, {
+        total_messages: messages.length,
+        last_3_roles: messages.slice(-3).map(m => m.role)
+      });
+    }
+    
+    // Look for existing assistant message
+    const assistant = [...messages]
+      .reverse()
+      .find((m) => {
+        if (!m.role || !["assistant", "agent"].includes(m.role)) return false;
+        if (m.type === "tool" || m.type === "system") return false;
+        const content = extractMessageContent(m);
+        return content.length > 0;
+      });
+    
+    if (assistant) {
+      const content = extractMessageContent(assistant);
+      if (debug) {
+        console.log(`[AgentWait:${context}] ✅ Found in snapshot (${Date.now() - startTime}ms):`, {
+          content_length: content.length,
+          preview: content.substring(0, 150)
+        });
+      }
+      return content;
+    }
+  } catch (err) {
+    if (debug) {
+      console.warn(`[AgentWait:${context}] Snapshot check failed (non-fatal):`, err);
+    }
+  }
+  
   return new Promise((resolve, reject) => {
     let resolved = false;
     let eventCount = 0;
