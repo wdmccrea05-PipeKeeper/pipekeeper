@@ -226,14 +226,14 @@ export default function ExpertTobacconistChat() {
   };
 
   return (
-    <Card className="p-4 space-y-4 bg-[#223447] border-white/10 text-[#F5F1E7]">
+    <Card className="p-4 space-y-4 bg-[#223447] border-white/10 text-white">
       <div className="flex items-center gap-3">
         <img src={TOBACCONIST_ICON} alt="AI Tobacconist" className="w-8 h-8 rounded-full object-cover" />
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">Ask the Expert</h3>
-          <p className="text-sm text-[#E0D8C8]/70">Ask questions and discuss the hobby</p>
+          <h3 className="text-lg font-semibold text-white">Ask the Expert</h3>
+          <p className="text-sm text-white/70">Ask questions and discuss the hobby</p>
         </div>
-        <Sparkles className="w-5 h-5 text-[#E0D8C8]/70" />
+        <Sparkles className="w-5 h-5 text-white/70" />
       </div>
 
       <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
@@ -253,17 +253,20 @@ export default function ExpertTobacconistChat() {
                   }
                 >
                   {isUser ? (
-                    <p className="text-sm whitespace-pre-wrap">{text}</p>
+                    <p className="text-sm whitespace-pre-wrap text-white">{text}</p>
                   ) : (
-                    <FormattedTobacconistResponse
-                      content={formatTobacconistResponse(text)}
-                      style="light_structure"
-                    />
+                    <div className="text-white/90">
+                      <FormattedTobacconistResponse
+                        content={formatTobacconistResponse(text)}
+                        style="light_structure"
+                        className="text-white/90"
+                      />
+                    </div>
                   )}
 
                   {!isUser && (
                     <div className="mt-2 pt-2 border-t border-white/10">
-                      <p className="text-xs font-mono text-[#E0D8C8]/50">Answered by: expert_tobacconist</p>
+                      <p className="text-xs font-mono text-white/50">Answered by: expert_tobacconist</p>
                     </div>
                   )}
                 </div>
@@ -274,8 +277,8 @@ export default function ExpertTobacconistChat() {
         {loading && (
           <div className="text-left">
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
-              <Loader2 className="w-4 h-4 animate-spin text-[#E0D8C8]/70" />
-              <p className="text-sm text-[#E0D8C8]/70">Thinking…</p>
+              <Loader2 className="w-4 h-4 animate-spin text-white/70" />
+              <p className="text-sm text-white/70">Thinking…</p>
             </div>
           </div>
         )}
@@ -289,7 +292,7 @@ export default function ExpertTobacconistChat() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask about pipes, blends, pairing ideas, aging, value, redundancy..."
-          className="min-h-[90px] bg-[#1E2F43] border-white/10 text-[#F5F1E7] placeholder:text-[#E0D8C8]/50"
+          className="min-h-[90px] bg-[#1E2F43] border-white/10 text-white placeholder:text-white/50"
           disabled={loading}
         />
         <div className="flex justify-end">

@@ -5,11 +5,11 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 0 0% 6%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 0 0% 6%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 0 0% 6%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
@@ -60,25 +60,25 @@
 
   .dark {
     --background: 218 49% 9%;
-    --foreground: 36 33% 92%;
+    --foreground: 0 0% 98%;
 
     --card: 215 42% 15%;
-    --card-foreground: 36 33% 92%;
+    --card-foreground: 0 0% 98%;
 
     --popover: 215 42% 15%;
-    --popover-foreground: 36 33% 92%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 36 33% 92%;
     --primary-foreground: 218 49% 9%;
 
     --secondary: 215 35% 18%;
-    --secondary-foreground: 36 33% 92%;
+    --secondary-foreground: 0 0% 98%;
 
     --muted: 215 35% 18%;
-    --muted-foreground: 36 15% 70%;
+    --muted-foreground: 0 0% 80%;
 
     --accent: 215 35% 18%;
-    --accent-foreground: 36 33% 92%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -101,11 +101,26 @@
   }
   body {
     background-color: rgb(var(--pk-bg-primary));
-    color: rgb(var(--pk-text-primary));
+    color: hsl(var(--foreground));
   }
   
   html {
     @apply dark;
+  }
+  
+  /* PipeKeeper readability helpers */
+  .pk-body-dark { 
+    color: hsl(var(--foreground)); 
+  }
+  .dark .pk-body-dark { 
+    color: hsl(var(--foreground)); 
+  }
+
+  .pk-muted-dark { 
+    color: hsl(var(--muted-foreground)); 
+  }
+  .dark .pk-muted-dark { 
+    color: hsl(var(--muted-foreground)); 
   }
   
   /* Custom scrollbar styling */
@@ -132,13 +147,13 @@
   input, textarea, select {
     background: rgb(var(--pk-surface));
     border-color: rgb(var(--pk-border-strong));
-    color: rgb(var(--pk-text-primary));
+    color: hsl(var(--foreground));
     border-radius: 0.75rem;
     transition: all 200ms ease-in-out;
   }
   
   input::placeholder, textarea::placeholder, select::placeholder {
-    color: rgb(var(--pk-text-muted));
+    color: hsl(var(--muted-foreground));
   }
   
   input:focus, textarea:focus, select:focus {
