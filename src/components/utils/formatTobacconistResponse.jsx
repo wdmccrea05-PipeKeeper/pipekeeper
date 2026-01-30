@@ -1,95 +1,198 @@
 /**
- * Format agent responses with aggressive paragraph reflow
- * Strips markdown, handles long paragraphs, ensures clean spacing
+ * Format agent responses with paragraph reflow that is SAFE in all runtimes.
+ * - No regex lookbehind (prevents Safari/WKWebView white screens)
+ * - Strips markdown artifacts
+ * - Reflows long paragraphs into 2–3 sentence chunks
+ * - Preserves bullets when present
  */
-export function formatTobacconistResponse(text) {
-  if (!text || typeof text !== 'string') return '';
 
-  // Step 1: Strip markdown artifacts
-  let cleaned = text
-    .replace(/\*\*([^*]+)\*\*/g, '$1')        // **bold** → bold
-    .replace(/\*\*\*([^*]+)\*\*\*/g, '$1')   // ***bold italic*** → text
-    .replace(/\*([^*]+)\*/g, '$1')           // *italic* → italic
-    .replace(/^#+\s+/gm, '')                 // remove markdown headings
-    .replace(/^\s*[-*_]+\s*$/gm, '')         // remove markdown dividers
-    .replace(/`([^`]+)`/g, '$1')             // remove inline code ticks
-    .replace(/^\s*\*+\s*$/gm, '')            // remove isolated * lines
+import { ResponseStyle } from "@/components/utils/questionClassifier";
+
+// --- helpers ----------------------------------------------------
+
+function stripMarkdownArtifacts(text) {
+  return (text || "")
+    // Remove bold/italic markers
+    .replace(/\*\*\*([\s\S]+?)\*\*\*/g, "$1")
+    .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
+    .replace(/\*([\s\S]+?)\*/g, "$1")
+    // Remove inline code ticks
+    .replace(/`([^`]+)`/g, "$1")
+    // Remove markdown headings/dividers
+    .replace(/^\s*#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    // Normalize excessive spaces
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
 
-  // Step 2: Split by double newlines first (explicit breaks)
-  let paragraphs = cleaned.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+/**
+ * Sentence splitter WITHOUT lookbehind.
+ * Splits on punctuation followed by whitespace.
+ * Keeps punctuation with the sentence.
+ */
+function splitIntoSentences(paragraph) {
+  const s = (paragraph || "").trim();
+  if (!s) return [];
 
-  // Step 3: Aggressively reflow long paragraphs (>350 chars) into 2–3 sentence chunks
-  const finalParagraphs = [];
-  for (const para of paragraphs) {
-    if (para.length > 350) {
-      // Split by sentence using a more reliable approach: look for . ! or ? followed by space or end
-      const sentences = para.split(/(?<=[.!?])\s+(?=[A-Z])/);
-      
-      let chunk = '';
-      let sentenceCount = 0;
-      
-      for (let sentence of sentences) {
-        sentence = sentence.trim();
-        if (!sentence) continue;
-        
-        const potentialChunk = chunk ? chunk + ' ' + sentence : sentence;
-        sentenceCount++;
-        
-        // Split if: 3+ sentences OR exceeds 350 chars and already has content
-        if (sentenceCount >= 3 || (potentialChunk.length > 350 && chunk.length > 0)) {
-          if (chunk.trim().length > 0) finalParagraphs.push(chunk.trim());
-          chunk = sentence;
-          sentenceCount = 1;
-        } else {
-          chunk = potentialChunk;
-        }
-      }
-      if (chunk.trim().length > 0) finalParagraphs.push(chunk.trim());
-    } else {
-      finalParagraphs.push(para);
+  const sentences = [];
+  let buf = "";
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    buf += ch;
+
+    const isEndPunct = ch === "." || ch === "!" || ch === "?";
+    if (!isEndPunct) continue;
+
+    // Peek next char(s) to see if this is a likely sentence boundary
+    const next = s[i + 1] || "";
+    const next2 = s[i + 2] || "";
+
+    // Boundary if punctuation followed by space/newline/end.
+    // (This avoids lookbehind entirely.)
+    const boundary =
+      next === "" ||
+      next === " " ||
+      next === "\n" ||
+      (next === "\r" && next2 === "\n");
+
+    if (boundary) {
+      const trimmed = buf.trim();
+      if (trimmed) sentences.push(trimmed);
+      buf = "";
+      // Skip extra whitespace after boundary
+      while (i + 1 < s.length && (s[i + 1] === " " || s[i + 1] === "\n")) i++;
     }
   }
 
-  // Step 4: Ensure blank lines between all paragraphs
-  return finalParagraphs.join('\n\n');
+  const tail = buf.trim();
+  if (tail) sentences.push(tail);
+
+  return sentences;
 }
 
-import { type ResponseStyle } from '@/components/utils/questionClassifier';
+/**
+ * Reflow a paragraph into chunks of 2–3 sentences for readability.
+ */
+function reflowParagraph(paragraph, maxChars = 380, maxSentences = 3) {
+  const sentences = splitIntoSentences(paragraph);
+
+  // If we couldn't split into sentences reliably, fallback to original
+  if (sentences.length <= 1) return [paragraph.trim()].filter(Boolean);
+
+  const chunks = [];
+  let current = "";
+  let count = 0;
+
+  for (const sent of sentences) {
+    const next = current ? `${current} ${sent}` : sent;
+    const nextCount = count + 1;
+
+    // Start new chunk if too many sentences or too long
+    if (
+      (nextCount > maxSentences && current) ||
+      (next.length > maxChars && current)
+    ) {
+      chunks.push(current.trim());
+      current = sent;
+      count = 1;
+    } else {
+      current = next;
+      count = nextCount;
+    }
+  }
+
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
+// --- main formatter ---------------------------------------------
+
+export function formatTobacconistResponse(text) {
+  if (!text || typeof text !== "string") return "";
+
+  const cleaned = stripMarkdownArtifacts(text);
+
+  // Split on explicit blank lines first
+  const initialParas = cleaned
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const finalParas = [];
+
+  for (const para of initialParas) {
+    // Keep bullet blocks together (don’t reflow line-by-line)
+    const looksLikeBullets =
+      para.includes("\n- ") || para.startsWith("- ") || para.includes("\n• ");
+
+    if (looksLikeBullets) {
+      // Normalize bullet markers to "- "
+      const normalized = para
+        .replace(/\n•\s+/g, "\n- ")
+        .replace(/^•\s+/g, "- ")
+        .trim();
+      finalParas.push(normalized);
+      continue;
+    }
+
+    // Reflow long paragraphs
+    if (para.length > 320) {
+      finalParas.push(...reflowParagraph(para));
+    } else {
+      finalParas.push(para);
+    }
+  }
+
+  return finalParas.join("\n\n").trim();
+}
 
 /**
- * React component to render formatted tobacconist response
- * Adapts format based on response style (simple_paragraphs, light_structure, structured)
+ * React renderer. Uses formatTobacconistResponse and renders paragraphs cleanly.
  */
-export function FormattedTobacconistResponse({ content, style = 'light_structure' }: { content: string; style?: ResponseStyle }) {
+export function FormattedTobacconistResponse({
+  content,
+  style = "light_structure",
+}) {
   if (!content) return null;
 
-  // Split into paragraphs and preserve structure
-  const paragraphs = formatTobacconistResponse(content).split('\n\n');
+  const formatted = formatTobacconistResponse(
+    typeof content === "string" ? content : String(content)
+  );
+
+  const paragraphs = formatted
+    .split("\n\n")
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
-    <div className={style === 'structured' ? 'space-y-4' : 'space-y-3'}>
+    <div className={style === "structured" ? "space-y-4" : "space-y-3"}>
       {paragraphs.map((para, idx) => {
-        // Check if this paragraph contains bullets
-        const isBulletSection = para.includes('\n- ') || para.startsWith('- ');
+        const hasBullets =
+          para.includes("\n- ") || para.startsWith("- ");
 
-        if (isBulletSection && (style === 'light_structure' || style === 'structured')) {
-          // Split into intro line and bullet points
-          const lines = para.split('\n');
-          const introLine = lines[0];
-          const bulletLines = lines.slice(1).filter(l => l.trim());
+        if (hasBullets && (style === "light_structure" || style === "structured")) {
+          const lines = para.split("\n").filter(Boolean);
+          const intro =
+            lines[0].startsWith("- ") ? "" : lines[0];
+
+          const bullets = (intro ? lines.slice(1) : lines).map((l) =>
+            l.replace(/^\-\s*/, "").trim()
+          );
 
           return (
             <div key={idx}>
-              {introLine && !introLine.startsWith('-') && (
-                <p className={`text-sm leading-relaxed ${style === 'structured' ? 'font-semibold mb-2' : 'mb-2'}`}>
-                  {introLine}
+              {intro && (
+                <p className={`text-sm leading-relaxed ${style === "structured" ? "font-semibold mb-2" : "mb-2"}`}>
+                  {intro}
                 </p>
               )}
-              <ul className="space-y-1 ml-3">
-                {bulletLines.map((line, bIdx) => (
-                  <li key={bIdx} className="text-sm leading-relaxed list-disc">
-                    {line.replace(/^-\s*/, '')}
+              <ul className="space-y-1 ml-4 list-disc">
+                {bullets.map((b, bIdx) => (
+                  <li key={bIdx} className="text-sm leading-relaxed">
+                    {b}
                   </li>
                 ))}
               </ul>
@@ -97,21 +200,7 @@ export function FormattedTobacconistResponse({ content, style = 'light_structure
           );
         }
 
-        // Regular paragraph (bullets suppressed in simple_paragraphs mode)
-        if (isBulletSection && style === 'simple_paragraphs') {
-          const lines = para.split('\n').filter(l => l.trim());
-          return (
-            <div key={idx}>
-              {lines.map((line, lIdx) => (
-                <p key={lIdx} className="text-sm leading-relaxed">
-                  {line.replace(/^-\s*/, '')}
-                </p>
-              ))}
-            </div>
-          );
-        }
-
-        // Regular paragraph
+        // Simple paragraph
         return (
           <p key={idx} className="text-sm leading-relaxed">
             {para}
