@@ -15,6 +15,7 @@ function extractMessageContent(message) {
   if (message.content && typeof message.content === "object") {
     // Prefer standard fields if present
     const maybe =
+      (typeof message.content.advice === "string" && message.content.advice) ||
       (typeof message.content.response === "string" && message.content.response) ||
       (typeof message.content.text === "string" && message.content.text) ||
       (typeof message.content.message === "string" && message.content.message);
