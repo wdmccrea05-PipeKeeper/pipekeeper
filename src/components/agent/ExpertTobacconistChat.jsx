@@ -20,6 +20,7 @@ export default function ExpertTobacconistChat() {
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [responseStyle, setResponseStyle] = useState<ResponseStyle>('simple_paragraphs');
   const messagesEndRef = useRef(null);
   const lastAssistantMsgRef = useRef(null);
   const { user } = useCurrentUser();
