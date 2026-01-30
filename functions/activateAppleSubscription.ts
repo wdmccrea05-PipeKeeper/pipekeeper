@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { email, subscriptionId } = await req.json();
+    const { email, subscriptionId, tier = 'pro' } = await req.json();
 
     if (!email || !subscriptionId) {
       return Response.json({ error: 'Email and subscriptionId required' }, { status: 400 });
@@ -27,12 +27,13 @@ Deno.serve(async (req) => {
 
     const sub = subs[0];
 
-    // Activate it
+    // Activate it with specified tier
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
     const updated = await base44.asServiceRole.entities.Subscription.update(sub.id, {
       status: 'active',
+      tier: tier,
       current_period_start: now.toISOString(),
       current_period_end: periodEnd.toISOString(),
       started_at: sub.started_at || now.toISOString()
