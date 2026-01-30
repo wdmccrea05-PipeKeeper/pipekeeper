@@ -7,6 +7,7 @@ import { Loader2, Send, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { waitForAssistantMessage } from '@/components/utils/agentWait';
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
@@ -222,7 +223,18 @@ ${userMessage}`;
         content: messageWithContext,
       });
 
-      console.log('[EXPERT_TOBACCONIST] Message sent, agent invoked');
+      console.log('[EXPERT_TOBACCONIST] Message sent, waiting for complete response...');
+
+      // Wait for complete assistant response (with extended timeout for thorough answers)
+      try {
+        const response = await waitForAssistantMessage(conversationId, 240000, {
+          debug: true,
+          context: 'expert_tobacconist'
+        });
+        console.log('[EXPERT_TOBACCONIST] Complete response received:', response.substring(0, 100) + '...');
+      } catch (waitErr) {
+        console.warn('[EXPERT_TOBACCONIST] Response wait timed out (may be normal):', waitErr?.message);
+      }
     } catch (err) {
       console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
       console.error('[EXPERT_TOBACCONIST] Error details:', {
