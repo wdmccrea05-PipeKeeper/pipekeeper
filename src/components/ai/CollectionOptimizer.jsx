@@ -1253,46 +1253,67 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
           }
         };
         
-        console.log('[EXPERT_TOBACCONIST] Follow-up context payload:', {
-          pipes_count: contextPayload.pipes.length,
-          tobaccos_count: contextPayload.tobaccos.length,
-          pairingGrid_present: !!contextPayload.pairingGrid,
-          usageLogs_present: !!contextPayload.usageLogs
+        // Build COMPACT context
+        const pipesSummary = pipes.map(p => ({
+          id: p.id,
+          name: p.name,
+          maker: p.maker,
+          shape: p.shape,
+          chamber_volume: p.chamber_volume,
+          focus: p.focus,
+          usage_count: usageStats[p.id]?.count || 0
+        }));
+        
+        const tobaccosSummary = blends.map(b => ({
+          id: b.id,
+          name: b.name,
+          blend_type: b.blend_type
+        }));
+        
+        const pairingsSummary = pairingMatrix?.pairings?.map(pair => ({
+          pipe: pair.pipe_name,
+          tobacco: pair.tobacco_name,
+          score: pair.score
+        })) || [];
+        
+        const payloadSize = JSON.stringify({ pipes: pipesSummary, tobaccos: tobaccosSummary, pairings: pairingsSummary.slice(0, 100) }).length;
+        
+        console.log(`[${debugContext}] Context prepared:`, {
+          pipes: pipesSummary.length,
+          tobaccos: tobaccosSummary.length,
+          pairings: Math.min(100, pairingsSummary.length),
+          payload_kb: (payloadSize / 1024).toFixed(2)
         });
         
-        // Route to expert_tobacconist agent with conversation context
+        // Route to expert_tobacconist agent
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
-          metadata: { source: 'collection_optimizer_followup' }
+          metadata: { source: 'followup_expert' }
         });
+        
+        console.log(`[${debugContext}] Conversation ID:`, conversation.id);
         
         // Add conversation history as context
         const conversationContext = conversationMessages
           .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.response || m.content.advice || ''}`)
           .join('\n\n');
         
-        const messageWithContext = `USER COLLECTION CONTEXT:
-Pipes: ${contextPayload.pipes.length}
-Tobaccos: ${contextPayload.tobaccos.length}
-Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
-Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
-
-PIPES DATA:
-${JSON.stringify(contextPayload.pipes, null, 2)}
-
-TOBACCOS DATA:
-${JSON.stringify(contextPayload.tobaccos, null, 2)}
-
-${contextPayload.pairingGrid ? `PAIRING GRID:
-${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
-
-USAGE STATISTICS:
-${JSON.stringify(contextPayload.usageLogs, null, 2)}
-
-PREVIOUS DISCUSSION:
+        const messageWithContext = `PREVIOUS DISCUSSION:
 ${conversationContext}
 
-FOLLOW-UP QUESTION:
+PIPES (${pipesSummary.length}):
+${JSON.stringify(pipesSummary, null, 2)}
+
+TOBACCOS (${tobaccosSummary.length}):
+${JSON.stringify(tobaccosSummary, null, 2)}
+
+TOP PAIRINGS (${Math.min(100, pairingsSummary.length)}):
+${JSON.stringify(pairingsSummary.slice(0, 100), null, 2)}
+
+USAGE:
+${JSON.stringify(usageStats, null, 2)}
+
+FOLLOW-UP:
 ${query}`;
         
         await base44.agents.addMessage(conversation, {
@@ -1300,24 +1321,26 @@ ${query}`;
           content: messageWithContext
         });
         
-        console.log('[EXPERT_TOBACCONIST] Follow-up sent, waiting for response...');
+        console.log(`[${debugContext}] Message sent, waiting...`);
         
-        // Wait for assistant response asynchronously
+        // Wait for assistant response with extended timeout
         let agentResponse = "";
         try {
-          agentResponse = await waitForAssistantMessage(conversation.id);
-          console.log('[EXPERT_TOBACCONIST] Follow-up response received:', {
-            response_length: agentResponse.length,
-            preview: agentResponse.substring(0, 150)
+          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { 
+            debug: true, 
+            context: debugContext 
           });
         } catch (err) {
-          console.error('[EXPERT_TOBACCONIST] Follow-up response wait failed:', err);
+          console.error(`[${debugContext}] Wait failed:`, err);
+          if (err.message?.includes("Agent error:")) {
+            agentResponse = `The expert agent encountered an error: ${err.message.replace("Agent error: ", "")}`;
+          }
         }
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
           finalResponse = "I couldn't load a response from the expert agent. Please try again.";
-          console.error('[EXPERT_TOBACCONIST] Agent returned empty response on follow-up');
+          console.error(`[${debugContext}] Empty response`);
         }
         
         const aiResponse = {
@@ -1327,10 +1350,13 @@ ${query}`;
           collection_insights: [],
           routed_to: 'expert_tobacconist',
           _debug: {
-            pipes_count: contextPayload.pipes.length,
-            pairingGrid_present: !!contextPayload.pairingGrid,
-            usageLogs_present: !!contextPayload.usageLogs,
-            response_length: finalResponse.length
+            conversation_id: conversation.id,
+            pipes_count: pipesSummary.length,
+            tobaccos_count: tobaccosSummary.length,
+            pairings_count: pairingsSummary.length,
+            payload_size_bytes: payloadSize,
+            response_length: finalResponse.length,
+            total_time_ms: Date.now() - startTime
           }
         };
 
