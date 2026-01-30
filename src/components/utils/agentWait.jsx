@@ -5,27 +5,45 @@ import { base44 } from "@/api/base44Client";
  */
 function extractMessageContent(message) {
   if (!message) return "";
-  
-  // Try m.content first
+
+  // 1) String content (most common)
   if (typeof message.content === "string" && message.content.trim()) {
     return message.content.trim();
   }
-  
-  // Try m.text
+
+  // 2) JSON/object content (very common for "expert" agents returning structured payloads)
+  if (message.content && typeof message.content === "object") {
+    // Prefer standard fields if present
+    const maybe =
+      (typeof message.content.response === "string" && message.content.response) ||
+      (typeof message.content.text === "string" && message.content.text) ||
+      (typeof message.content.message === "string" && message.content.message);
+
+    if (maybe && maybe.trim()) return maybe.trim();
+
+    // Fallback: stringify the object so the waiter can resolve
+    try {
+      return JSON.stringify(message.content);
+    } catch {
+      return String(message.content);
+    }
+  }
+
+  // 3) Try m.text
   if (typeof message.text === "string" && message.text.trim()) {
     return message.text.trim();
   }
-  
-  // Try m.parts array (for multi-part messages)
+
+  // 4) Try m.parts array (multi-part messages)
   if (Array.isArray(message.parts)) {
     const text = message.parts
-      .filter(p => p && typeof p.text === "string")
-      .map(p => p.text)
+      .filter((p) => p && typeof p.text === "string")
+      .map((p) => p.text)
       .join("")
       .trim();
     if (text) return text;
   }
-  
+
   return "";
 }
 
