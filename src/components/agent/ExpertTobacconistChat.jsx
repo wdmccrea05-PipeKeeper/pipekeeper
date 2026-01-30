@@ -332,10 +332,64 @@ function extractAssistantContent(message) {
   return '';
 }
 
+function buildContextMessage() {
+  // Reusable helper to format context
+  const usageStats = {};
+  usageLogs.forEach(log => {
+    if (log.pipe_id) {
+      if (!usageStats[log.pipe_id]) {
+        usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+      }
+      usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+      if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+        usageStats[log.pipe_id].lastUsed = log.date;
+      }
+    }
+  });
+
+  const pipesList = pipes
+    .map(p => `- ${p.name}${p.maker ? ` (${p.maker})` : ''} [${p.shape}, ${p.bowl_material || 'unknown'}]${p.focus && p.focus.length > 0 ? ` focus: ${p.focus.join(', ')}` : ''}`)
+    .join('\n');
+
+  const blendsList = blends
+    .map(b => `- ${b.name}${b.manufacturer ? ` (${b.manufacturer})` : ''} [${b.blend_type}, ${b.strength || 'unknown'}]`)
+    .join('\n');
+
+  const topUsedPipes = Object.entries(usageStats)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 5)
+    .map(([pipeId, stats]) => {
+      const pipe = pipes.find(p => p.id === pipeId);
+      return pipe ? `${pipe.name}: ${stats.count} bowls` : null;
+    })
+    .filter(Boolean)
+    .join(', ');
+
+  return `COLLECTION CONTEXT:
+
+Pipes (${pipes.length}):
+${pipesList}
+
+Tobaccos (${blends.length}):
+${blendsList}
+
+Most Used Pipes: ${topUsedPipes || 'No usage data'}
+Total Smoking Sessions: ${usageLogs.length}
+
+Pairing Grid: ${pairingMatrix ? 'Available' : 'Not generated'}
+
+This context is for reference throughout our conversation. Focus on answering my questions naturally—don't repeat this unless I ask.`;
+}
+
 function MessageBubble({ message, isStreaming = false }) {
   const isUser = message.role === 'user';
 
   if (message.role === 'system') return null;
+
+  // Skip displaying initial context message
+  if (isUser && message.content?.includes('[INITIAL CONTEXT - Do not repeat')) {
+    return null;
+  }
 
   // Extract content handling multiple formats
   const content = isUser ? message.content : extractAssistantContent(message);
@@ -365,7 +419,7 @@ function MessageBubble({ message, isStreaming = false }) {
             style={message.responseStyle || 'light_structure'} 
           />
         )}
-        
+
         {message.tool_calls?.length > 0 && (
           <div className="mt-2 pt-2 border-t border-[#e8d5b7]/10 text-xs text-[#e8d5b7]/60">
             {message.tool_calls.map((tool, i) => (
