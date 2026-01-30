@@ -573,6 +573,10 @@ async function undoOptimizationApply(batchId) {
     return intentTriggers.some(trigger => lowerQuery.includes(trigger));
   };
 
+  // Store conversation ID and agent for sticky routing
+  const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [stickyAgent, setStickyAgent] = useState(null);
+
   const analyzeCollectionQuestion = async () => {
     if (!whatIfQuery.trim()) return;
     
@@ -595,8 +599,10 @@ async function undoOptimizationApply(batchId) {
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // Check if should route to agent
-      if (shouldRouteToAgent(currentQuery)) {
+      // STICKY ROUTING: Use stored agent if exists, otherwise route based on query
+      const useAgent = stickyAgent || shouldRouteToAgent(currentQuery);
+      
+      if (useAgent) {
         const debugContext = 'ASK_EXPERT';
         const startTime = Date.now();
         
@@ -681,14 +687,19 @@ async function undoOptimizationApply(batchId) {
           elapsed_ms: Date.now() - startTime
         });
         
-        // Route to expert_tobacconist agent
+        // Route to expert_tobacconist agent with sticky metadata
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { 
             source: 'ask_expert',
-            context_provided: true
+            context_provided: true,
+            selected_agent: 'expert_tobacconist' // Store for sticky routing
           }
         });
+        
+        // Store conversation ID and agent for follow-ups
+        setCurrentConversationId(conversation.id);
+        setStickyAgent('expert_tobacconist');
         
         console.log(`[${debugContext}] Conversation created:`, {
           conversation_id: conversation.id,
@@ -917,8 +928,10 @@ Be conversational and specific to their actual pipes and blends. Reference their
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // ROUTING CHECK - Route collection questions to expert agent
-      if (shouldRouteToAgent(currentQuery)) {
+      // STICKY ROUTING: Use stored agent if exists
+      const useAgent = stickyAgent || shouldRouteToAgent(currentQuery);
+      
+      if (useAgent) {
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
         
         // Prepare usage statistics
@@ -972,11 +985,21 @@ Be conversational and specific to their actual pipes and blends. Reference their
           usageLogs_present: !!contextPayload.usageLogs
         });
         
-        // Route to expert_tobacconist agent
-        const conversation = await base44.agents.createConversation({
-          agent_name: 'expert_tobacconist',
-          metadata: { source: 'what_if_general' }
-        });
+        // Route to expert_tobacconist agent - reuse or create with sticky metadata
+        let conversation;
+        if (currentConversationId) {
+          conversation = await base44.agents.getConversation(currentConversationId);
+        } else {
+          conversation = await base44.agents.createConversation({
+            agent_name: 'expert_tobacconist',
+            metadata: { 
+              source: 'what_if_general',
+              selected_agent: 'expert_tobacconist'
+            }
+          });
+          setCurrentConversationId(conversation.id);
+          setStickyAgent('expert_tobacconist');
+        }
         
         const messageWithContext = `USER CONTEXT:
 Pipes in collection: ${contextPayload.pipes.length}
@@ -1169,6 +1192,8 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
     setWhatIfHistory([]);
     setConversationMessages([]);
+    setCurrentConversationId(null);
+    setStickyAgent(null);
   };
 
   const handleCollectionFollowUp = async () => {
@@ -1193,8 +1218,10 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
 
     try {
-      // Check if should route to agent
-      if (shouldRouteToAgent(query)) {
+      // STICKY ROUTING: Always use stored agent for follow-ups, don't re-route
+      const useAgent = stickyAgent || shouldRouteToAgent(query);
+      
+      if (useAgent) {
         console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
         
         // Validate required context
@@ -1294,11 +1321,23 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
           payload_kb: (payloadSize / 1024).toFixed(2)
         });
         
-        // Route to expert_tobacconist agent
-        const conversation = await base44.agents.createConversation({
-          agent_name: 'expert_tobacconist',
-          metadata: { source: 'followup_expert' }
-        });
+        // Route to expert_tobacconist agent - reuse existing conversation or create new
+        let conversation;
+        if (currentConversationId) {
+          // Reuse existing conversation
+          conversation = await base44.agents.getConversation(currentConversationId);
+        } else {
+          // Create new conversation with sticky metadata
+          conversation = await base44.agents.createConversation({
+            agent_name: 'expert_tobacconist',
+            metadata: { 
+              source: 'followup_expert',
+              selected_agent: 'expert_tobacconist'
+            }
+          });
+          setCurrentConversationId(conversation.id);
+          setStickyAgent('expert_tobacconist');
+        }
         
         console.log(`[${debugContext}] Conversation ID:`, conversation.id);
         
@@ -1361,6 +1400,8 @@ ${query}`;
           specific_recommendations: [],
           collection_insights: [],
           routed_to: 'expert_tobacconist',
+          sticky_agent: stickyAgent,
+          conversation_id: conversation.id,
           _debug: {
             conversation_id: conversation.id,
             pipes_count: pipesSummary.length,
@@ -1483,8 +1524,10 @@ ${query}`;
     setWhatIfFollowUp('');
 
     try {
-      // ROUTING CHECK for follow-ups too
-      if (shouldRouteToAgent(query)) {
+      // STICKY ROUTING: Always use stored agent for follow-ups
+      const useAgent = stickyAgent || shouldRouteToAgent(query);
+      
+      if (useAgent) {
         const debugContext = 'FOLLOWUP_EXPERT';
         const startTime = Date.now();
         
@@ -1555,11 +1598,21 @@ ${query}`;
           }
         };
         
-        // Route to expert_tobacconist agent with conversation context
-        const conversation = await base44.agents.createConversation({
-          agent_name: 'expert_tobacconist',
-          metadata: { source: 'what_if_followup' }
-        });
+        // Route to expert_tobacconist agent - reuse or create with sticky metadata
+        let conversation;
+        if (currentConversationId) {
+          conversation = await base44.agents.getConversation(currentConversationId);
+        } else {
+          conversation = await base44.agents.createConversation({
+            agent_name: 'expert_tobacconist',
+            metadata: { 
+              source: 'what_if_followup',
+              selected_agent: 'expert_tobacconist'
+            }
+          });
+          setCurrentConversationId(conversation.id);
+          setStickyAgent('expert_tobacconist');
+        }
         
         // Add conversation history as context
         const conversationContext = conversationMessages
@@ -3228,22 +3281,27 @@ Provide concrete, actionable steps with specific field values.`,
                                       </div>
                                     )}
                                     {msg.content.routed_to && (
-                                      <div className="mt-2 pt-2 border-t border-stone-300">
-                                        <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded break-all">
-                                          {msg.content.routed_to}
-                                          {msg.content._debug && (
-                                            <span className="block mt-1">
-                                              convId: {msg.content._debug.conversation_id?.substring(0, 12)}...
-                                              | Pipes: {msg.content._debug.pipes_count}
-                                              | Tobaccos: {msg.content._debug.tobaccos_count}
-                                              | Pairings: {msg.content._debug.pairings_count}
-                                              | Size: {(msg.content._debug.payload_size_bytes / 1024).toFixed(1)}KB
-                                              | Time: {msg.content._debug.total_time_ms}ms
-                                              | Len: {msg.content._debug.response_length}
-                                            </span>
-                                          )}
-                                        </p>
-                                      </div>
+                                     <div className="mt-2 pt-2 border-t border-stone-300">
+                                       <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded break-all">
+                                         Answered by: {msg.content.routed_to}
+                                         {msg.content.sticky_agent && (
+                                           <span> | stickyAgent: {msg.content.sticky_agent}</span>
+                                         )}
+                                         {msg.content.conversation_id && (
+                                           <span> | convoId: {msg.content.conversation_id.substring(0, 8)}...</span>
+                                         )}
+                                         {msg.content._debug && (
+                                           <span className="block mt-1">
+                                             Pipes: {msg.content._debug.pipes_count}
+                                             | Tobaccos: {msg.content._debug.tobaccos_count}
+                                             | Pairings: {msg.content._debug.pairings_count}
+                                             | Size: {(msg.content._debug.payload_size_bytes / 1024).toFixed(1)}KB
+                                             | Time: {msg.content._debug.total_time_ms}ms
+                                             | Len: {msg.content._debug.response_length}
+                                           </span>
+                                         )}
+                                       </p>
+                                     </div>
                                     )}
                                   </div>
                                 </div>
@@ -3264,11 +3322,16 @@ Provide concrete, actionable steps with specific field values.`,
                                    {msg.content.routed_to && (
                                      <div className="mt-2 pt-2 border-t border-stone-300">
                                        <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded break-all">
-                                         {msg.content.routed_to}
+                                         Answered by: {msg.content.routed_to}
+                                         {msg.content.sticky_agent && (
+                                           <span> | stickyAgent: {msg.content.sticky_agent}</span>
+                                         )}
+                                         {msg.content.conversation_id && (
+                                           <span> | convoId: {msg.content.conversation_id.substring(0, 8)}...</span>
+                                         )}
                                          {msg.content._debug && (
                                            <span className="block mt-1">
-                                             convId: {msg.content._debug.conversation_id?.substring(0, 12)}...
-                                             | Pipes: {msg.content._debug.pipes_count}
+                                             Pipes: {msg.content._debug.pipes_count}
                                              | Pairings: {msg.content._debug.pairings_count}
                                              | Size: {(msg.content._debug.payload_size_bytes / 1024).toFixed(1)}KB
                                              | Time: {msg.content._debug.total_time_ms}ms
