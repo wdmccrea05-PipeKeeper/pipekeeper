@@ -103,35 +103,37 @@ export default function ExpertTobacconistChat() {
 
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
       const msgs = data.messages || [];
-      setMessages(msgs);
 
       // Only process if we have an active request
       const requestId = currentRequestIdRef.current;
       const requestTime = currentRequestTimeRef.current;
-      if (!requestId || !requestTime) return;
 
-      // Collect ONLY assistant messages created AFTER this request was sent
-      let assistantContent = '';
-      for (const msg of msgs) {
-        if ((msg.role === 'assistant' || msg.role === 'agent') && msg.created_date) {
-          const msgTime = new Date(msg.created_date).getTime();
-          // Only include messages created AFTER the user sent this request
-          if (msgTime > requestTime) {
-            const content = extractAssistantContent(msg);
-            if (content) {
-              assistantContent += content;
+      if (requestId && requestTime) {
+        // Actively streaming: collect ONLY assistant messages created AFTER this request
+        let assistantContent = '';
+        for (const msg of msgs) {
+          if ((msg.role === 'assistant' || msg.role === 'agent') && msg.created_date) {
+            const msgTime = new Date(msg.created_date).getTime();
+            if (msgTime > requestTime) {
+              const content = extractAssistantContent(msg);
+              if (content) {
+                assistantContent += content;
+              }
             }
           }
         }
-      }
 
-      // Update streaming display
-      if (assistantContent && loading) {
-        setStreamingContent(assistantContent);
-        setIsStreaming(true);
-      } else if (assistantContent && !loading) {
-        setStreamingContent(assistantContent);
-        setIsStreaming(false);
+        // Update streaming display
+        if (assistantContent && loading) {
+          setStreamingContent(assistantContent);
+          setIsStreaming(true);
+        } else if (assistantContent && !loading) {
+          setStreamingContent(assistantContent);
+          setIsStreaming(false);
+        }
+      } else {
+        // No active request: just update message list for historical view
+        setMessages(msgs);
       }
     });
 
@@ -239,7 +241,7 @@ export default function ExpertTobacconistChat() {
       // Persist selectedAgent and responseStyle in conversation metadata
       if (conversation.metadata) {
         conversation.metadata.selectedAgent = classification.shouldUseExpert ? 'expert_tobacconist' : 'standard_llm';
-        conversation.metadata.responseStyle = currentResponseStyle;
+        conversation.metadata.responseStyle = classification.responseStyle;
       }
       
       // Build concise message with context (avoid token bloat)
