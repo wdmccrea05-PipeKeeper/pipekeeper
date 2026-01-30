@@ -114,6 +114,9 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
   return new Promise((resolve, reject) => {
     let resolved = false;
     let eventCount = 0;
+    let lastContent = '';
+    let quietWindowTimeout = null;
+    const QUIET_WINDOW_MS = 1200;
 
     const unsubscribe = base44.agents.subscribeToConversation(
       conversationId,
@@ -127,9 +130,6 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
             total_messages: messages.length,
             last_3_roles: messages.slice(-3).map(m => ({
               role: m.role,
-              hasContent: !!m.content,
-              hasText: !!m.text,
-              hasParts: !!m.parts,
               status: m.status,
               error: m.error
             }))
@@ -143,52 +143,92 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
             if (debug) {
               console.error(`[AgentWait:${context}] Agent error detected:`, {
                 status: msg.status,
-                error: msg.error,
-                full_message: msg
+                error: msg.error
               });
             }
             if (!resolved) {
               resolved = true;
               try { unsubscribe?.(); } catch {}
+              clearTimeout(quietWindowTimeout);
               reject(new Error(`Agent error: ${errorMsg}`));
             }
             return;
           }
         }
         
-        // Look for valid assistant message (newest first)
-        const assistant = [...messages]
+        // Collect ALL assistant messages (handle chunked responses)
+        let assistantContent = '';
+        for (const msg of messages) {
+          if (msg.role === 'assistant' || msg.role === 'agent') {
+            const content = extractMessageContent(msg);
+            if (content) assistantContent += content;
+          }
+        }
+
+        // Get latest assistant message for status check
+        const latestAssistant = [...messages]
           .reverse()
           .find((m) => {
-            // Accept assistant or agent role
-            if (!m.role || !["assistant", "agent"].includes(m.role)) {
-              return false;
-            }
-            
-            // Skip tool/system messages
-            if (m.type === "tool" || m.type === "system") {
-              return false;
-            }
-            
-            // Extract content using flexible matcher
-            const content = extractMessageContent(m);
-            return content.length > 0;
+            if (!m.role || !["assistant", "agent"].includes(m.role)) return false;
+            if (m.type === "tool" || m.type === "system") return false;
+            return true;
           });
 
-        if (assistant && !resolved) {
-          const content = extractMessageContent(assistant);
-          resolved = true;
-          try { unsubscribe?.(); } catch {}
-          
+        if (assistantContent && !resolved) {
           if (debug) {
-            console.log(`[AgentWait:${context}] ✅ Assistant response received (${elapsed}ms):`, {
-              content_length: content.length,
-              preview: content.substring(0, 150),
-              total_events: eventCount
+            console.log(`[AgentWait:${context}] Content update:`, {
+              length: assistantContent.length,
+              status: latestAssistant?.status,
+              changed: assistantContent !== lastContent
             });
           }
-          
-          resolve(content);
+
+          // Clear previous quiet window timeout
+          clearTimeout(quietWindowTimeout);
+
+          // Check if assistant message is marked as complete
+          const isComplete = latestAssistant?.status && 
+            ["completed", "done", "final"].includes(latestAssistant.status.toLowerCase());
+
+          if (isComplete) {
+            if (debug) {
+              console.log(`[AgentWait:${context}] ✅ Agent marked complete (${elapsed}ms)`, {
+                status: latestAssistant.status,
+                content_length: assistantContent.length
+              });
+            }
+            resolved = true;
+            try { unsubscribe?.(); } catch {}
+            resolve(assistantContent);
+            return;
+          }
+
+          // If content hasn't changed, start quiet window
+          if (assistantContent === lastContent && assistantContent.length > 0) {
+            if (debug) {
+              console.log(`[AgentWait:${context}] No new content, starting quiet window (${QUIET_WINDOW_MS}ms)`);
+            }
+
+            quietWindowTimeout = setTimeout(() => {
+              if (!resolved) {
+                resolved = true;
+                try { unsubscribe?.(); } catch {}
+                if (debug) {
+                  console.log(`[AgentWait:${context}] ✅ Quiet window complete (${elapsed}ms)`, {
+                    content_length: assistantContent.length,
+                    total_events: eventCount
+                  });
+                }
+                resolve(assistantContent);
+              }
+            }, QUIET_WINDOW_MS);
+          } else {
+            // Content changed, update tracker
+            lastContent = assistantContent;
+            if (debug) {
+              console.log(`[AgentWait:${context}] Content growing: ${assistantContent.length} chars`);
+            }
+          }
         }
       }
     );
@@ -197,6 +237,7 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
       if (resolved) return;
       resolved = true;
       try { unsubscribe?.(); } catch {}
+      clearTimeout(quietWindowTimeout);
       
       const elapsed = Date.now() - startTime;
       if (debug) {
