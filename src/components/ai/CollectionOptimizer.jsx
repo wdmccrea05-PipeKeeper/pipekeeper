@@ -2514,21 +2514,26 @@ Provide concrete, actionable steps with specific field values.`,
                                   </div>
                                 </div>
                               ) : (
-                                <div className="inline-block bg-stone-100 rounded-lg px-3 sm:px-4 py-2 sm:py-3 max-w-[85%] sm:max-w-[80%] text-left">
-                                  <div className="text-xs sm:text-sm text-stone-700 space-y-1.5 sm:space-y-2">
-                                    <p className="leading-relaxed">{msg.content.response}</p>
-                                    {msg.content.specific_recommendations?.length > 0 && (
-                                      <div className="pt-1.5 sm:pt-2 border-t border-stone-300">
-                                        <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
-                                        <ul className="space-y-0.5 sm:space-y-1">
-                                          {msg.content.specific_recommendations.map((rec, i) => (
-                                            <li key={i} className="text-xs text-stone-600">• {rec}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
+                               <div className="inline-block bg-stone-100 rounded-lg px-3 sm:px-4 py-2 sm:py-3 max-w-[85%] sm:max-w-[80%] text-left">
+                                 <div className="text-xs sm:text-sm text-stone-700 space-y-1.5 sm:space-y-2">
+                                   <p className="leading-relaxed">{msg.content.response}</p>
+                                   {msg.content.specific_recommendations?.length > 0 && (
+                                     <div className="pt-1.5 sm:pt-2 border-t border-stone-300">
+                                       <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                       <ul className="space-y-0.5 sm:space-y-1">
+                                         {msg.content.specific_recommendations.map((rec, i) => (
+                                           <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                         ))}
+                                       </ul>
+                                     </div>
+                                   )}
+                                   {process.env.NODE_ENV === 'development' && msg.content.routed_to && (
+                                     <div className="mt-2 pt-2 border-t border-stone-300">
+                                       <p className="text-xs text-stone-400">Answered by: {msg.content.routed_to}</p>
+                                     </div>
+                                   )}
+                                 </div>
+                               </div>
                               )}
                             </div>
                             {msg.role === 'assistant' && !msg.content.is_impact_analysis && (
