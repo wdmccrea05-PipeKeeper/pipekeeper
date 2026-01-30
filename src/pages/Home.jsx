@@ -568,8 +568,8 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          refetchBlends();
-                          refetchCellarLogs();
+                          queryClient.invalidateQueries({ queryKey: ['blends', user?.email] });
+                          queryClient.invalidateQueries({ queryKey: ['cellar-logs-all', user?.email] });
                         }}
                         className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
                         title="Refresh"
