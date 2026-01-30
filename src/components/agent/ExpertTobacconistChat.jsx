@@ -154,19 +154,16 @@ export default function ExpertTobacconistChat() {
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
 
-    // Check if context data is loaded
     if (contextLoading) {
       toast.error('Loading your collection data...');
       return;
     }
 
     const userMessage = input.trim();
-
-    // Classify question and determine response style
     const classification = classifyQuestion(userMessage);
     setResponseStyle(classification.responseStyle);
 
-    // Track this request with timestamp to prevent old response reuse
+    // Track this request
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const requestTime = Date.now();
     currentRequestIdRef.current = requestId;
@@ -178,122 +175,17 @@ export default function ExpertTobacconistChat() {
     setIsStreaming(true);
 
     try {
-      // Prepare usage statistics
-      const usageStats = {};
-      usageLogs.forEach(log => {
-        if (log.pipe_id) {
-          if (!usageStats[log.pipe_id]) {
-            usageStats[log.pipe_id] = { count: 0, lastUsed: null };
-          }
-          usageStats[log.pipe_id].count += log.bowls_smoked || 1;
-          if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
-            usageStats[log.pipe_id].lastUsed = log.date;
-          }
-        }
-      });
-
-      // Build context payload
-      const contextPayload = {
-        pipes: pipes.map(p => ({
-          id: p.id,
-          name: p.name,
-          maker: p.maker,
-          shape: p.shape,
-          bowlStyle: p.bowlStyle,
-          chamber_volume: p.chamber_volume,
-          bowl_diameter_mm: p.bowl_diameter_mm,
-          bowl_depth_mm: p.bowl_depth_mm,
-          focus: p.focus,
-          usage_count: usageStats[p.id]?.count || 0,
-          last_used: usageStats[p.id]?.lastUsed || null
-        })),
-        tobaccos: blends.map(b => ({
-          id: b.id,
-          name: b.name,
-          manufacturer: b.manufacturer,
-          blend_type: b.blend_type,
-          strength: b.strength,
-          flavor_notes: b.flavor_notes
-        })),
-        pairingGrid: pairingMatrix ? {
-          pairings: pairingMatrix.pairings || [],
-          generated_date: pairingMatrix.generated_date
-        } : null,
-        usageLogs: {
-          total_sessions: usageLogs.length,
-          pipe_usage: usageStats
-        }
-      };
-
-      console.log('[EXPERT_TOBACCONIST] Sending context payload:', {
-        pipes_count: contextPayload.pipes.length,
-        tobaccos_count: contextPayload.tobaccos.length,
-        pairingGrid_present: !!contextPayload.pairingGrid,
-        usageLogs_present: !!contextPayload.usageLogs,
-        total_usage_sessions: contextPayload.usageLogs.total_sessions
-      });
-
-      // Validate required context
-      if (contextPayload.pipes.length === 0) {
-        toast.error('No pipes found in your collection');
-        setLoading(false);
-        return;
-      }
-
-      if (!contextPayload.pairingGrid) {
-        console.warn('[EXPERT_TOBACCONIST] No pairing grid found - agent may return limited advice');
-      }
-
-      // Get current conversation data
       const conversation = await base44.agents.getConversation(conversationId);
-      
-      // Persist selectedAgent and responseStyle in conversation metadata
-      if (conversation.metadata) {
-        conversation.metadata.selectedAgent = classification.shouldUseExpert ? 'expert_tobacconist' : 'standard_llm';
-        conversation.metadata.responseStyle = classification.responseStyle;
-      }
-      
-      // Build concise message with context (avoid token bloat)
-      const pipesList = contextPayload.pipes
-        .map(p => `- ${p.name}${p.maker ? ` (${p.maker})` : ''} [${p.shape}, ${p.bowl_material || 'unknown'}]${p.focus && p.focus.length > 0 ? ` focus: ${p.focus.join(', ')}` : ''}`)
-        .join('\n');
-      
-      const blendsList = contextPayload.tobaccos
-        .map(b => `- ${b.name}${b.manufacturer ? ` (${b.manufacturer})` : ''} [${b.blend_type}, ${b.strength || 'unknown'}]`)
-        .join('\n');
 
-      const topUsedPipes = Object.entries(contextPayload.usageLogs.pipe_usage)
-        .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 5)
-        .map(([pipeId, stats]) => {
-          const pipe = contextPayload.pipes.find(p => p.id === pipeId);
-          return pipe ? `${pipe.name}: ${stats.count} bowls` : null;
-        })
-        .filter(Boolean)
-        .join(', ');
-
-      const messageWithContext = `USER COLLECTION SUMMARY:
-Pipes (${contextPayload.pipes.length}):
-${pipesList}
-
-Tobaccos (${contextPayload.tobaccos.length}):
-${blendsList}
-
-Most Used Pipes: ${topUsedPipes || 'No usage data'}
-Total Smoking Sessions: ${contextPayload.usageLogs.total_sessions}
-
-QUESTION:
-${userMessage}`;
-      
-      // Add user message with context
+      // Send ONLY the user's question (context already sent on init)
       await base44.agents.addMessage(conversation, {
         role: 'user',
-        content: messageWithContext,
+        content: userMessage,
       });
 
-      console.log('[EXPERT_TOBACCONIST] Message sent, waiting for response...');
+      console.log('[EXPERT_TOBACCONIST] User question sent:', userMessage);
 
-      // Wait for agent to finish (max 240s for deep thinking)
+      // Wait for response (max 240s)
       setTimeout(() => {
         setLoading(false);
       }, 240000);
