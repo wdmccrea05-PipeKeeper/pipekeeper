@@ -23,7 +23,7 @@ import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/c
 import PhotoUploader from "@/components/PhotoUploader";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { SafeRender } from "@/components/utils/SafeRender";
+import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
@@ -1922,7 +1922,7 @@ Provide concrete, actionable steps with specific field values.`,
                                        </div>
                                      ) : (
                                        // Ultimate fallback: safe render anything
-                                       <SafeRender value={content} className="text-sm text-stone-800" />
+                                       <p className="text-sm text-stone-800">{safeToString(content)}</p>
                                      )}
                                    </div>
                                  </div>
@@ -2141,19 +2141,19 @@ Provide concrete, actionable steps with specific field values.`,
               <CardContent className="p-4 space-y-3">
               <div>
               <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
-              <SafeRender value={whatIfResult.redundancy_analysis} className="text-sm text-stone-600" />
+              <p className="text-sm text-stone-600">{safeToString(whatIfResult.redundancy_analysis)}</p>
               </div>
 
               {whatIfResult.score_improvements && (
               <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
               <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
-              <SafeRender value={whatIfResult.score_improvements} className="text-sm text-emerald-800" />
+              <p className="text-sm text-emerald-800">{safeToString(whatIfResult.score_improvements)}</p>
               </div>
               )}
 
               <div>
               <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
-              <SafeRender value={whatIfResult.detailed_reasoning} className="text-sm text-stone-600" />
+              <p className="text-sm text-stone-600">{safeToString(whatIfResult.detailed_reasoning)}</p>
               </div>
               </CardContent>
               </Card>
