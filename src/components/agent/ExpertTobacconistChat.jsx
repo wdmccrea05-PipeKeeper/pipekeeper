@@ -381,10 +381,43 @@ ${userMessage}`;
   );
 }
 
-function MessageBubble({ message }) {
+function extractAssistantContent(message) {
+  if (!message) return '';
+  
+  // Handle string content
+  if (typeof message.content === 'string') {
+    return message.content;
+  }
+  
+  // Handle object with response field
+  if (message.content && typeof message.content === 'object') {
+    const textField = message.content.response || 
+                     message.content.advice || 
+                     message.content.text || 
+                     message.content.message;
+    if (typeof textField === 'string') {
+      return textField;
+    }
+  }
+  
+  // Handle parts array
+  if (Array.isArray(message.parts)) {
+    return message.parts
+      .filter((p) => p && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('');
+  }
+  
+  return '';
+}
+
+function MessageBubble({ message, isStreaming = false }) {
   const isUser = message.role === 'user';
 
   if (message.role === 'system') return null;
+
+  // Extract content handling multiple formats
+  const content = isUser ? message.content : extractAssistantContent(message);
 
   return (
     <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -402,7 +435,7 @@ function MessageBubble({ message }) {
             : 'bg-[#243548] text-[#e8d5b7] border border-[#e8d5b7]/10'
         }`}
       >
-        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+        <div className="text-sm whitespace-pre-wrap">{content}</div>
         
         {message.tool_calls?.length > 0 && (
           <div className="mt-2 pt-2 border-t border-[#e8d5b7]/10 text-xs text-[#e8d5b7]/60">
