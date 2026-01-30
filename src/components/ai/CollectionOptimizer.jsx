@@ -1098,6 +1098,32 @@ ${currentQuery}`;
     }
   };
 
+  // Strip repeated prefix from follow-up responses to prevent recap
+  const stripRepeatedPrefix = (prevText, nextText) => {
+    if (!prevText || !nextText) return nextText || "";
+    const p = String(prevText).trim();
+    const n = String(nextText).trim();
+    if (p.length < 80 || n.length < 80) return nextText;
+
+    // Hard prefix match
+    if (n.startsWith(p)) {
+      const trimmed = n.slice(p.length).trim();
+      return trimmed.length ? trimmed : nextText;
+    }
+
+    // Soft match: compare first 300 chars
+    const pHead = p.slice(0, 300);
+    const nHead = n.slice(0, 300);
+    if (nHead === pHead) {
+      let i = 0;
+      while (i < p.length && i < n.length && p[i] === n[i]) i++;
+      const trimmed = n.slice(i).trim();
+      return trimmed.length ? trimmed : nextText;
+    }
+
+    return nextText;
+  };
+
   const resetWhatIf = () => {
     setWhatIfQuery('');
     setWhatIfPhotos([]);
