@@ -184,26 +184,36 @@ export default function ExpertTobacconistChat() {
       // Get current conversation data
       const conversation = await base44.agents.getConversation(conversationId);
       
-      // Build message with context
-      const messageWithContext = `USER COLLECTION CONTEXT:
-Pipes: ${contextPayload.pipes.length}
-Tobaccos: ${contextPayload.tobaccos.length}
-Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
-Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
+      // Build concise message with context (avoid token bloat)
+      const pipesList = contextPayload.pipes
+        .map(p => `- ${p.name}${p.maker ? ` (${p.maker})` : ''} [${p.shape}, ${p.bowl_material || 'unknown'}]${p.focus && p.focus.length > 0 ? ` focus: ${p.focus.join(', ')}` : ''}`)
+        .join('\n');
+      
+      const blendsList = contextPayload.tobaccos
+        .map(b => `- ${b.name}${b.manufacturer ? ` (${b.manufacturer})` : ''} [${b.blend_type}, ${b.strength || 'unknown'}]`)
+        .join('\n');
 
-PIPES DATA:
-${JSON.stringify(contextPayload.pipes, null, 2)}
+      const topUsedPipes = Object.entries(contextPayload.usageLogs.pipe_usage)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 5)
+        .map(([pipeId, stats]) => {
+          const pipe = contextPayload.pipes.find(p => p.id === pipeId);
+          return pipe ? `${pipe.name}: ${stats.count} bowls` : null;
+        })
+        .filter(Boolean)
+        .join(', ');
 
-TOBACCOS DATA:
-${JSON.stringify(contextPayload.tobaccos, null, 2)}
+      const messageWithContext = `USER COLLECTION SUMMARY:
+Pipes (${contextPayload.pipes.length}):
+${pipesList}
 
-${contextPayload.pairingGrid ? `PAIRING GRID:
-${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+Tobaccos (${contextPayload.tobaccos.length}):
+${blendsList}
 
-USAGE STATISTICS:
-${JSON.stringify(contextPayload.usageLogs, null, 2)}
+Most Used Pipes: ${topUsedPipes || 'No usage data'}
+Total Smoking Sessions: ${contextPayload.usageLogs.total_sessions}
 
-USER QUESTION:
+QUESTION:
 ${userMessage}`;
       
       // Add user message with context
