@@ -439,7 +439,11 @@ function MessageBubble({ message, isStreaming = false }) {
         {isUser ? (
           <div className="text-sm whitespace-pre-wrap">{content}</div>
         ) : (
-          <FormattedTobacconistResponse content={content} style="light_structure" />
+          // Use stored responseStyle if available, fallback to light_structure for historical messages
+          <FormattedTobacconistResponse 
+            content={content} 
+            style={message.responseStyle || 'light_structure'} 
+          />
         )}
         
         {message.tool_calls?.length > 0 && (

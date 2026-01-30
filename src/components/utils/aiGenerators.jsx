@@ -214,7 +214,7 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
-  // Expand pipes to include bowl variants as separate entries
+  // Expand pipes to include bowl variants as separate entries (cap to 30)
   const pipesData = [];
   for (const p of pipes || []) {
     const pid = String(p.id);
@@ -225,57 +225,50 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
           pipe_id: pid,
           pipe_name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
           bowl_variant_id: bowl.bowl_variant_id || `bowl_${idx}`,
-
           maker: p.maker,
           shape: bowl.shape || p.shape,
           bowlStyle: bowl.bowlStyle || p.bowlStyle,
-          shankShape: bowl.shankShape || p.shankShape,
           bend: bowl.bend || p.bend,
           sizeClass: bowl.sizeClass || p.sizeClass,
-
           bowl_material: bowl.bowl_material ?? p.bowl_material,
           chamber_volume: bowl.chamber_volume ?? p.chamber_volume,
           bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm,
           bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm,
-          bowl_height_mm: bowl.bowl_height_mm ?? null,
-          bowl_width_mm: bowl.bowl_width_mm ?? null,
-
           focus: Array.isArray(bowl.focus) ? bowl.focus : [],
-          notes: bowl.notes || "",
         });
-        });
-        } else {
-        pipesData.push({
+      });
+    } else {
+      pipesData.push({
         pipe_id: pid,
         pipe_name: p.name,
         bowl_variant_id: null,
-
         maker: p.maker,
         shape: p.shape,
         bowlStyle: p.bowlStyle,
-        shankShape: p.shankShape,
         bend: p.bend,
         sizeClass: p.sizeClass,
-
         bowl_material: p.bowl_material,
         chamber_volume: p.chamber_volume,
         bowl_diameter_mm: p.bowl_diameter_mm,
         bowl_depth_mm: p.bowl_depth_mm,
-
         focus: Array.isArray(p.focus) ? p.focus : [],
-        notes: p.notes || "",
-        });
+      });
     }
   }
 
-  const blendsData = (blends || []).map((b) => ({
+  // Cap pipes to 30 and blends to 60
+  const pipesDataCapped = pipesData.slice(0, 30);
+  const blendsDataCapped = (blends || []).slice(0, 60).map((b) => ({
     id: b.id,
     name: b.name,
-    manufacturer: b.manufacturer,
     blend_type: b.blend_type,
     strength: b.strength,
     cut: b.cut,
   }));
+
+  // Add stats summary if data was truncated
+  const pipesTruncatedNote = pipesData.length > 30 ? `\n[Note: Showing 30 of ${pipesData.length} pipe configurations. Model should infer patterns from visible sample.]` : '';
+  const blendsTruncatedNote = blends && blends.length > 60 ? `\n[Note: Showing 60 of ${blends.length} blends. Model should infer patterns from visible sample.]` : '';
 
   const profileContext = profile
     ? {
@@ -292,39 +285,32 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `Analyze the user's pipe and tobacco collection considering pipe geometry. Provide optimization recommendations.
 
-  Rules:
-  - Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
-  - When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
-  - Consider pipe geometry (shape, bowlStyle, shankShape, bend, sizeClass) when making recommendations
-  - Bend degree affects smoking characteristics (straight smokes different than full bent)
-  - Bowl style and shank shape affect heat retention and moisture handling
-  - Recommend specialization updates (bowl focus changes) only when justified
-  - Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
-  - Include "collection_gaps" and "next_additions" suggestions considering geometry diversity
-  - If what-if is advice-only, give advice and keep applyable_changes empty
+Rules:
+- Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
+- When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
+- Consider pipe geometry (shape, bowlStyle, bend, sizeClass) when making recommendations
+- Bend degree affects smoking characteristics (straight smokes different than full bent)
+- Bowl style and chamber size affect heat retention and moisture handling
+- Recommend specialization updates (bowl focus changes) only when justified
+- Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
+- Include "collection_gaps" and "next_additions" suggestions considering geometry diversity
+- If what-if is advice-only, give advice and keep applyable_changes empty
 
-  CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
+CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
 
-  WHAT_IF:
-  ${whatIfText ? whatIfText : ""}
+WHAT_IF CONTEXT:
+${whatIfText ? whatIfText.substring(0, 2500) : ''}
 
-  PIPES:
-  ${JSON.stringify(pipesData, null, 2)}
+PIPES DATA (${pipesDataCapped.length} shown):
+${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
 
-  BLENDS:
-  ${JSON.stringify(blendsData, null, 2)}
+BLENDS DATA (${blendsDataCapped.length} shown):
+${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
 
-  USER_PREFERENCES:
-  ${JSON.stringify(profileContext, null, 2)}
+USER PREFERENCES:
+${JSON.stringify(profileContext)}
 
-  Return JSON:
-  {
-  summary: string,
-  applyable_changes: [{ pipe_id, bowl_variant_id, before_focus: string[], after_focus: string[], rationale: string }],
-  collection_gaps: string[],
-  next_additions: string[],
-  notes: string
-  }`,
+RESPONSE: Return JSON only with applyable_changes, summary, collection_gaps, and next_additions.`,
     response_json_schema: {
       type: "object",
       required: ["applyable_changes", "summary"],

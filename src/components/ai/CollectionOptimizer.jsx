@@ -1008,11 +1008,30 @@ ${currentQuery}`;
     setWhatIfLoading(true);
     
     try {
-      // Build full context from conversation
-      const conversationContext = conversationMessages
+      // Get user questions AND most recent assistant recommendation
+      const userQuestions = conversationMessages
         .filter(m => m.role === 'user')
-        .map(m => m.content)
-        .join('\n\n');
+        .slice(-6)  // Last 6 user messages for context
+        .map(m => `User: ${m.content}`)
+        .join('\n');
+
+      // Find the most recent assistant message (that's not an impact analysis)
+      const lastAssistant = [...conversationMessages]
+        .reverse()
+        .find(m => m.role === 'assistant' && !m.content?.is_impact_analysis);
+      
+      const assistantRecommendationText = lastAssistant
+        ? (typeof lastAssistant.content === 'string' 
+            ? lastAssistant.content 
+            : (lastAssistant.content?.response || lastAssistant.content?.advice || ''))
+        : '';
+
+      // Build compact conversation context with both user and assistant
+      const whatIfContextParts = [];
+      if (userQuestions) whatIfContextParts.push(`USER QUESTIONS:\n${userQuestions}`);
+      if (assistantRecommendationText) whatIfContextParts.push(`ASSISTANT RECOMMENDATION:\n${assistantRecommendationText.substring(0, 1500)}`);
+      
+      const whatIfText = whatIfContextParts.join('\n\n').substring(0, 3500);
       
       // Run collection impact analysis
       try {
@@ -1020,7 +1039,7 @@ ${currentQuery}`;
           pipes,
           blends,
           profile: userProfile,
-          whatIfText: conversationContext
+          whatIfText
         });
 
         // Transform the result to match whatIfResult format
@@ -1048,6 +1067,8 @@ ${currentQuery}`;
       } catch (err) {
         console.error('Error analyzing collection impact:', err);
         toast.error('Failed to analyze collection impact. Please try again.');
+        // Log root error for debugging
+        console.error('Root error:', err?.message || err);
       }
     } catch (err) {
       console.error('Error in impact analysis:', err);
