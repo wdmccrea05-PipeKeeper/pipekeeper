@@ -614,8 +614,9 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                 <div className="flex flex-wrap gap-3">
                   {favoritePipes.map(pipe => (
                     <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                      <Badge className="cursor-pointer px-3 py-1.5">
-                        🪈 {pipe.name}
+                      <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
+                        <img src={PIPE_ICON} alt="" className="w-3.5 h-3.5 object-contain inline-block" style={{ filter: 'brightness(0) invert(1)' }} />
+                        {pipe.name}
                       </Badge>
                     </a>
                   ))}
@@ -877,4 +878,4 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
       </Dialog>
     </>
   );
-} 
+}
