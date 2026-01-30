@@ -66,6 +66,32 @@ export default function CollectionOptimizer({ pipes, blends, showWhatIf: initial
     enabled: !!user?.email,
   });
 
+  // Fetch pairing grid for expert_tobacconist context
+  const { data: pairingMatrix, isLoading: pairingLoading } = useQuery({
+    queryKey: ['pairing-matrix', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const results = await base44.entities.PairingMatrix.filter({
+        created_by: user.email,
+        is_active: true,
+      });
+      return results[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  // Fetch usage logs for expert_tobacconist context
+  const { data: usageLogs = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return await base44.entities.SmokingLog.filter({ created_by: user.email });
+    },
+    enabled: !!user?.email,
+  });
+
+  const contextLoading = pairingLoading || logsLoading;
+
   // Load active optimization (scoped to current user)
   const { data: activeOpt, isLoading: optLoading } = useQuery({
     queryKey: ["activeOptimization", user?.email],
@@ -549,6 +575,12 @@ async function undoOptimizationApply(batchId) {
   const analyzeCollectionQuestion = async () => {
     if (!whatIfQuery.trim()) return;
     
+    // Check if context data is still loading
+    if (contextLoading) {
+      toast.error('Loading your collection data...');
+      return;
+    }
+    
     setWhatIfLoading(true);
     
     // Add user message to conversation
@@ -566,7 +598,40 @@ async function undoOptimizationApply(batchId) {
       if (shouldRouteToAgent(currentQuery)) {
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
         
-        // Prepare context payload
+        // Validate required context
+        if (pipes.length === 0) {
+          const errorMsg = 'No pipes found in your collection. Add pipes first to get personalized advice.';
+          toast.error(errorMsg);
+          setConversationMessages(prev => [...prev, {
+            role: 'assistant',
+            content: {
+              is_collection_question: true,
+              response: errorMsg,
+              specific_recommendations: [],
+              collection_insights: [],
+              routed_to: 'error'
+            },
+            timestamp: new Date().toISOString()
+          }]);
+          setWhatIfLoading(false);
+          return;
+        }
+        
+        // Prepare usage statistics
+        const usageStats = {};
+        usageLogs.forEach(log => {
+          if (log.pipe_id) {
+            if (!usageStats[log.pipe_id]) {
+              usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+            }
+            usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+            if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+              usageStats[log.pipe_id].lastUsed = log.date;
+            }
+          }
+        });
+        
+        // Prepare comprehensive context payload
         const contextPayload = {
           pipes: pipes.map(p => ({
             id: p.id,
@@ -576,23 +641,36 @@ async function undoOptimizationApply(batchId) {
             bowlStyle: p.bowlStyle,
             chamber_volume: p.chamber_volume,
             bowl_diameter_mm: p.bowl_diameter_mm,
+            bowl_depth_mm: p.bowl_depth_mm,
             focus: p.focus,
-            interchangeable_bowls: p.interchangeable_bowls
+            interchangeable_bowls: p.interchangeable_bowls,
+            usage_count: usageStats[p.id]?.count || 0,
+            last_used: usageStats[p.id]?.lastUsed || null
           })),
           tobaccos: blends.map(b => ({
             id: b.id,
             name: b.name,
             manufacturer: b.manufacturer,
             blend_type: b.blend_type,
-            strength: b.strength
+            strength: b.strength,
+            flavor_notes: b.flavor_notes
           })),
-          userEmail: user?.email
+          pairingGrid: pairingMatrix ? {
+            pairings: pairingMatrix.pairings || [],
+            generated_date: pairingMatrix.generated_date
+          } : null,
+          usageLogs: {
+            total_sessions: usageLogs.length,
+            pipe_usage: usageStats
+          }
         };
         
-        console.log('[ROUTING] Context payload:', {
+        console.log('[EXPERT_TOBACCONIST] Context payload:', {
           pipes_count: contextPayload.pipes.length,
           tobaccos_count: contextPayload.tobaccos.length,
-          user_email: contextPayload.userEmail
+          pairingGrid_present: !!contextPayload.pairingGrid,
+          usageLogs_present: !!contextPayload.usageLogs,
+          total_usage_sessions: contextPayload.usageLogs.total_sessions
         });
         
         // Route to expert_tobacconist agent with full context
@@ -604,16 +682,24 @@ async function undoOptimizationApply(batchId) {
           }
         });
         
-        // Include context in the message
-        const messageWithContext = `USER CONTEXT:
-Pipes in collection: ${contextPayload.pipes.length}
-Tobaccos in collection: ${contextPayload.tobaccos.length}
+        // Build comprehensive message with all context
+        const messageWithContext = `USER COLLECTION CONTEXT:
+Pipes: ${contextPayload.pipes.length}
+Tobaccos: ${contextPayload.tobaccos.length}
+Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
+Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
 
 PIPES DATA:
 ${JSON.stringify(contextPayload.pipes, null, 2)}
 
 TOBACCOS DATA:
 ${JSON.stringify(contextPayload.tobaccos, null, 2)}
+
+${contextPayload.pairingGrid ? `PAIRING GRID:
+${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+
+USAGE STATISTICS:
+${JSON.stringify(contextPayload.usageLogs, null, 2)}
 
 USER QUESTION:
 ${currentQuery}`;
@@ -623,7 +709,9 @@ ${currentQuery}`;
           content: messageWithContext
         });
         
-        console.log('[ROUTING] Agent response received:', {
+        console.log('[EXPERT_TOBACCONIST] Agent invoked with full context');
+        
+        console.log('[EXPERT_TOBACCONIST] Agent response received:', {
           messages_count: response.messages?.length,
           has_assistant_msg: response.messages?.some(m => m.role === 'assistant')
         });
@@ -632,13 +720,19 @@ ${currentQuery}`;
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
         const agentResponse = assistantMsg?.content || '';
         
-        console.log('[ROUTING] Agent response content length:', agentResponse.length);
+        console.log('[EXPERT_TOBACCONIST] Response details:', {
+          response_length: agentResponse.length,
+          preview: agentResponse.substring(0, 150),
+          pipes_provided: contextPayload.pipes.length,
+          pairingGrid_provided: !!contextPayload.pairingGrid,
+          usageLogs_provided: !!contextPayload.usageLogs
+        });
         
         // Handle empty or missing response
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
-          console.error('[ROUTING] Agent returned empty response');
+          finalResponse = "I couldn't load your collection data. Please try again.";
+          console.error('[EXPERT_TOBACCONIST] Agent returned empty response despite context');
         }
         
         const aiResponse = {
@@ -646,7 +740,13 @@ ${currentQuery}`;
           response: finalResponse,
           specific_recommendations: [],
           collection_insights: [],
-          routed_to: 'expert_tobacconist'
+          routed_to: 'expert_tobacconist',
+          _debug: {
+            pipes_count: contextPayload.pipes.length,
+            pairingGrid_present: !!contextPayload.pairingGrid,
+            usageLogs_present: !!contextPayload.usageLogs,
+            response_length: finalResponse.length
+          }
         };
         
         setWhatIfResult(aiResponse);
@@ -1001,6 +1101,12 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     const query = whatIfFollowUp.trim();
     if (!query) return;
 
+    // Check if context data is still loading
+    if (contextLoading) {
+      toast.error('Loading your collection data...');
+      return;
+    }
+
     setWhatIfLoading(true);
 
     // Add user follow-up to conversation
@@ -1015,24 +1121,79 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     try {
       // Check if should route to agent
       if (shouldRouteToAgent(query)) {
-        console.log('[ROUTING] Follow-up detected as collection question');
+        console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
         
-        // Prepare context payload
+        // Validate required context
+        if (pipes.length === 0) {
+          const errorMsg = 'No pipes found in your collection.';
+          toast.error(errorMsg);
+          setConversationMessages(prev => [...prev, {
+            role: 'assistant',
+            content: {
+              is_collection_question: true,
+              response: errorMsg,
+              specific_recommendations: [],
+              collection_insights: [],
+              routed_to: 'error'
+            },
+            timestamp: new Date().toISOString()
+          }]);
+          setWhatIfLoading(false);
+          return;
+        }
+        
+        // Prepare usage statistics
+        const usageStats = {};
+        usageLogs.forEach(log => {
+          if (log.pipe_id) {
+            if (!usageStats[log.pipe_id]) {
+              usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+            }
+            usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+            if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+              usageStats[log.pipe_id].lastUsed = log.date;
+            }
+          }
+        });
+        
+        // Prepare comprehensive context payload
         const contextPayload = {
           pipes: pipes.map(p => ({
             id: p.id,
             name: p.name,
             maker: p.maker,
             shape: p.shape,
+            bowlStyle: p.bowlStyle,
             chamber_volume: p.chamber_volume,
-            focus: p.focus
+            bowl_diameter_mm: p.bowl_diameter_mm,
+            focus: p.focus,
+            usage_count: usageStats[p.id]?.count || 0,
+            last_used: usageStats[p.id]?.lastUsed || null
           })),
           tobaccos: blends.map(b => ({
             id: b.id,
             name: b.name,
-            blend_type: b.blend_type
-          }))
+            manufacturer: b.manufacturer,
+            blend_type: b.blend_type,
+            strength: b.strength,
+            flavor_notes: b.flavor_notes
+          })),
+          pairingGrid: pairingMatrix ? {
+            pairings: pairingMatrix.pairings || [],
+            generated_date: pairingMatrix.generated_date
+          } : null,
+          usageLogs: {
+            total_sessions: usageLogs.length,
+            pipe_usage: usageStats
+          }
         };
+        
+        console.log('[EXPERT_TOBACCONIST] Follow-up context payload:', {
+          pipes_count: contextPayload.pipes.length,
+          tobaccos_count: contextPayload.tobaccos.length,
+          pairingGrid_present: !!contextPayload.pairingGrid,
+          usageLogs_present: !!contextPayload.usageLogs
+        });
         
         // Route to expert_tobacconist agent with conversation context
         const conversation = await base44.agents.createConversation({
@@ -1045,12 +1206,23 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
           .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.response || m.content.advice || ''}`)
           .join('\n\n');
         
-        const messageWithContext = `USER CONTEXT:
+        const messageWithContext = `USER COLLECTION CONTEXT:
 Pipes: ${contextPayload.pipes.length}
 Tobaccos: ${contextPayload.tobaccos.length}
+Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
+Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
 
-COLLECTION DATA:
-${JSON.stringify(contextPayload, null, 2)}
+PIPES DATA:
+${JSON.stringify(contextPayload.pipes, null, 2)}
+
+TOBACCOS DATA:
+${JSON.stringify(contextPayload.tobaccos, null, 2)}
+
+${contextPayload.pairingGrid ? `PAIRING GRID:
+${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+
+USAGE STATISTICS:
+${JSON.stringify(contextPayload.usageLogs, null, 2)}
 
 PREVIOUS DISCUSSION:
 ${conversationContext}
@@ -1066,12 +1238,15 @@ ${query}`;
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
         const agentResponse = assistantMsg?.content || '';
         
-        console.log('[ROUTING] Follow-up response length:', agentResponse.length);
+        console.log('[EXPERT_TOBACCONIST] Follow-up response:', {
+          response_length: agentResponse.length,
+          preview: agentResponse.substring(0, 150)
+        });
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
-          console.error('[ROUTING] Agent returned empty response on follow-up');
+          finalResponse = "I couldn't load your collection data. Please try again.";
+          console.error('[EXPERT_TOBACCONIST] Agent returned empty response on follow-up');
         }
         
         const aiResponse = {
@@ -1079,7 +1254,13 @@ ${query}`;
           response: finalResponse,
           specific_recommendations: [],
           collection_insights: [],
-          routed_to: 'expert_tobacconist'
+          routed_to: 'expert_tobacconist',
+          _debug: {
+            pipes_count: contextPayload.pipes.length,
+            pairingGrid_present: !!contextPayload.pairingGrid,
+            usageLogs_present: !!contextPayload.usageLogs,
+            response_length: finalResponse.length
+          }
         };
 
         setConversationMessages(prev => [...prev, {
@@ -1175,6 +1356,12 @@ ${query}`;
     const query = whatIfFollowUp.trim();
     if (!query) return;
 
+    // Check if context data is still loading
+    if (contextLoading) {
+      toast.error('Loading your collection data...');
+      return;
+    }
+
     setWhatIfLoading(true);
 
     // Add user follow-up to conversation
@@ -1189,12 +1376,68 @@ ${query}`;
     try {
       // ROUTING CHECK for follow-ups too
       if (shouldRouteToAgent(query)) {
-        console.log('[ROUTING] Follow-up detected as collection question, routing to expert_tobacconist');
+        console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
         
-        // Prepare context
+        // Validate and prepare context
+        if (pipes.length === 0) {
+          const errorMsg = 'No pipes found in your collection.';
+          toast.error(errorMsg);
+          setConversationMessages(prev => [...prev, {
+            role: 'assistant',
+            content: {
+              is_general_advice: true,
+              advice: errorMsg,
+              key_points: [],
+              tips: [],
+              routed_to: 'error'
+            },
+            timestamp: new Date().toISOString()
+          }]);
+          setWhatIfLoading(false);
+          return;
+        }
+        
+        // Prepare usage statistics
+        const usageStats = {};
+        usageLogs.forEach(log => {
+          if (log.pipe_id) {
+            if (!usageStats[log.pipe_id]) {
+              usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+            }
+            usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+            if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+              usageStats[log.pipe_id].lastUsed = log.date;
+            }
+          }
+        });
+        
         const contextPayload = {
-          pipes: pipes.map(p => ({ id: p.id, name: p.name, maker: p.maker, shape: p.shape, focus: p.focus })),
-          tobaccos: blends.map(b => ({ id: b.id, name: b.name, blend_type: b.blend_type }))
+          pipes: pipes.map(p => ({
+            id: p.id,
+            name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            chamber_volume: p.chamber_volume,
+            bowl_diameter_mm: p.bowl_diameter_mm,
+            focus: p.focus,
+            usage_count: usageStats[p.id]?.count || 0,
+            last_used: usageStats[p.id]?.lastUsed || null
+          })),
+          tobaccos: blends.map(b => ({
+            id: b.id,
+            name: b.name,
+            manufacturer: b.manufacturer,
+            blend_type: b.blend_type,
+            strength: b.strength
+          })),
+          pairingGrid: pairingMatrix ? {
+            pairings: pairingMatrix.pairings || [],
+            generated_date: pairingMatrix.generated_date
+          } : null,
+          usageLogs: {
+            total_sessions: usageLogs.length,
+            pipe_usage: usageStats
+          }
         };
         
         // Route to expert_tobacconist agent with conversation context
@@ -1208,12 +1451,23 @@ ${query}`;
           .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice || m.content.response || ''}`)
           .join('\n\n');
         
-        const messageWithContext = `USER CONTEXT:
+        const messageWithContext = `USER COLLECTION CONTEXT:
 Pipes: ${contextPayload.pipes.length}
 Tobaccos: ${contextPayload.tobaccos.length}
+Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
+Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
 
-COLLECTION DATA:
-${JSON.stringify(contextPayload, null, 2)}
+PIPES DATA:
+${JSON.stringify(contextPayload.pipes, null, 2)}
+
+TOBACCOS DATA:
+${JSON.stringify(contextPayload.tobaccos, null, 2)}
+
+${contextPayload.pairingGrid ? `PAIRING GRID:
+${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+
+USAGE STATISTICS:
+${JSON.stringify(contextPayload.usageLogs, null, 2)}
 
 PREVIOUS DISCUSSION:
 ${conversationContext}
@@ -1229,12 +1483,15 @@ ${query}`;
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
         const agentResponse = assistantMsg?.content || '';
         
-        console.log('[ROUTING] Follow-up response length:', agentResponse.length);
+        console.log('[EXPERT_TOBACCONIST] Follow-up response:', {
+          response_length: agentResponse.length,
+          preview: agentResponse.substring(0, 150)
+        });
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
-          console.error('[ROUTING] Agent returned empty response on follow-up');
+          finalResponse = "I couldn't load your collection data. Please try again.";
+          console.error('[EXPERT_TOBACCONIST] Agent returned empty response on follow-up');
         }
         
         const aiResponse = {
@@ -1242,7 +1499,13 @@ ${query}`;
           advice: finalResponse,
           key_points: [],
           tips: [],
-          routed_to: 'expert_tobacconist'
+          routed_to: 'expert_tobacconist',
+          _debug: {
+            pipes_count: contextPayload.pipes.length,
+            pairingGrid_present: !!contextPayload.pairingGrid,
+            usageLogs_present: !!contextPayload.usageLogs,
+            response_length: finalResponse.length
+          }
         };
 
         setConversationMessages(prev => [...prev, {
@@ -2770,10 +3033,16 @@ Provide concrete, actionable steps with specific field values.`,
                             setConversationMessages([]);
                             analyzeCollectionQuestion();
                           }}
-                          disabled={!whatIfQuery.trim() || whatIfLoading}
+                          disabled={!whatIfQuery.trim() || whatIfLoading || contextLoading}
                           className="flex-1 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
                         >
-                          {whatIfLoading ? (
+                          {contextLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              <span className="hidden sm:inline">Loading data...</span>
+                              <span className="sm:hidden">Loading</span>
+                            </>
+                          ) : whatIfLoading ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               <span className="hidden sm:inline">Analyzing...</span>
@@ -2831,6 +3100,14 @@ Provide concrete, actionable steps with specific field values.`,
                                       <div className="mt-2 pt-2 border-t border-stone-300">
                                         <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
                                           Answered by: {msg.content.routed_to}
+                                          {msg.content._debug && (
+                                            <span className="ml-2">
+                                              | Pipes: {msg.content._debug.pipes_count}
+                                              | Grid: {msg.content._debug.pairingGrid_present ? '✓' : '✗'}
+                                              | Logs: {msg.content._debug.usageLogs_present ? '✓' : '✗'}
+                                              | Len: {msg.content._debug.response_length}
+                                            </span>
+                                          )}
                                         </p>
                                       </div>
                                     )}
@@ -2850,9 +3127,19 @@ Provide concrete, actionable steps with specific field values.`,
                                        </ul>
                                      </div>
                                    )}
-                                   {process.env.NODE_ENV === 'development' && msg.content.routed_to && (
+                                   {msg.content.routed_to && (
                                      <div className="mt-2 pt-2 border-t border-stone-300">
-                                       <p className="text-xs text-stone-400">Answered by: {msg.content.routed_to}</p>
+                                       <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
+                                         Answered by: {msg.content.routed_to}
+                                         {msg.content._debug && (
+                                           <span className="ml-2">
+                                             | Pipes: {msg.content._debug.pipes_count}
+                                             | Grid: {msg.content._debug.pairingGrid_present ? '✓' : '✗'}
+                                             | Logs: {msg.content._debug.usageLogs_present ? '✓' : '✗'}
+                                             | Len: {msg.content._debug.response_length}
+                                           </span>
+                                         )}
+                                       </p>
                                      </div>
                                    )}
                                  </div>
@@ -2903,7 +3190,7 @@ Provide concrete, actionable steps with specific field values.`,
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             onClick={handleCollectionFollowUp}
-                            disabled={!whatIfFollowUp.trim() || whatIfLoading}
+                            disabled={!whatIfFollowUp.trim() || whatIfLoading || contextLoading}
                             variant="outline"
                             className="flex-1 border-indigo-300 text-indigo-700 hover:bg-indigo-50 text-sm"
                           >
