@@ -119,41 +119,64 @@ Return a JSON object:
 
   const performFinalIdentification = async (additionalContext) => {
     try {
+      console.log('[IDENTIFY] Using expert_tobacconist agent for final identification');
+      
+      // Route to expert_tobacconist agent
+      const { data: conversation } = await base44.agents.createConversation({
+        agent_name: 'expert_tobacconist',
+        metadata: { source: 'pipe_identifier_final' }
+      });
+      
       const clarificationContext = Object.entries(clarificationResponses)
         .map(([q, a]) => `Q: ${q}\nA: ${a}`)
         .join('\n\n');
 
-      const prompt = `Analyze these pipe photos and provide detailed identification information.
+      const identificationPrompt = `Please identify this pipe from the photos and provide detailed information.
 
-${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${clarificationContext ? `Additional clarifications:\n${clarificationContext}\n\n` : ''}Return a JSON object with this exact structure:
+${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${clarificationContext ? `Additional clarifications:\n${clarificationContext}\n\n` : ''}I need:
+- Name/description
+- Maker/brand
+- Shape
+- Bowl material
+- Finish type
+- Stem material
+- Estimated market value
+- Year/era made
+- Any visible stampings/markings
+- Additional observations
+- Your confidence level (high/medium/low)`;
+
+      const response = await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: identificationPrompt,
+        file_urls: photos
+      });
+      
+      const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+      const responseText = assistantMsg?.content || '';
+      
+      // Parse agent response
+      const parsePrompt = `Extract pipe details from this expert response into structured data:
+
+${responseText}
+
+Return JSON:
 {
-  "name": "Brief descriptive name for the pipe",
-  "maker": "Pipe maker/brand if identifiable",
-  "shape": "One of: Billiard, Bulldog, Dublin, Apple, Author, Bent, Canadian, Churchwarden, Freehand, Liverpool, Lovat, Poker, Prince, Rhodesian, Zulu, Calabash, Cavalier, Chimney, Devil Anse, Egg, Hawkbill, Horn, Hungarian, Nautilus, Oom Paul, Panel, Pot, Sitter, Tomato, Volcano, Woodstock, Other",
-  "bowl_material": "One of: Briar, Meerschaum, Corn Cob, Clay, Olive Wood, Cherry Wood, Morta, Other",
-  "finish": "One of: Smooth, Sandblast, Rusticated, Partially Rusticated, Carved, Natural, Other",
-  "stem_material": "One of: Vulcanite, Acrylic, Lucite, Cumberland, Amber, Horn, Bone, Other",
+  "name": "Brief name",
+  "maker": "Brand/maker",
+  "shape": "Shape",
+  "bowl_material": "Bowl material",
+  "finish": "Finish",
+  "stem_material": "Stem material",
   "estimated_value": 150,
-  "year_made": "Estimated era/year",
-  "stamping": "Any visible stampings or markings",
-  "notes": "Additional observations about the pipe",
+  "year_made": "Year/era",
+  "stamping": "Markings",
+  "notes": "Observations",
   "confidence": "high/medium/low"
-}
+}`;
 
-IMPORTANT VALUE ESTIMATION GUIDELINES:
-- Estate pipes from quality makers: $100-$500+
-- Artisan pipes: $200-$2000+ depending on maker reputation
-- Factory pipes: $75-$300 depending on brand and condition
-- Premium brands (Dunhill, Charatan, Peterson): $150-$800+
-- No-name or basket pipes: $25-$75
-- Vintage collectibles can be worth significantly more
-- Excellent condition adds 30-50% to value
-
-Be realistic with estimated_value based on actual market prices. Be as specific as possible based on visible features. Do NOT include any source URLs, links, or references in your response.`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        file_urls: photos,
+      const parsed = await base44.integrations.Core.InvokeLLM({
+        prompt: parsePrompt,
         response_json_schema: {
           type: "object",
           properties: {
@@ -172,7 +195,7 @@ Be realistic with estimated_value based on actual market prices. Be as specific 
         }
       });
 
-      setIdentified(result);
+      setIdentified({ ...parsed, agent_response: responseText });
       setClarificationNeeded(null);
       setClarificationResponses({});
     } catch (error) {
