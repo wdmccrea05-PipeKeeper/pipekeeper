@@ -149,7 +149,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
               )}
               <ul className="space-y-1 ml-4 list-disc">
                 {bullets.map((b, bIdx) => (
-                  <li key={bIdx} className="text-sm leading-relaxed text-stone-900">
+                  <li key={bIdx} className="text-sm leading-relaxed text-blue-950">
                     {b}
                   </li>
                 ))}
@@ -159,7 +159,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
         }
 
         return (
-          <p key={idx} className="text-sm leading-relaxed text-stone-900">
+          <p key={idx} className="text-sm leading-relaxed text-blue-950">
             {para}
           </p>
         );
