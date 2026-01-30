@@ -599,8 +599,25 @@ async function undoOptimizationApply(batchId) {
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // STICKY ROUTING: Use stored agent if exists, otherwise route based on query
-      const useAgent = stickyAgent || shouldRouteToAgent(currentQuery);
+      // STICKY ROUTING: If conversation exists, check metadata for selected agent FIRST
+      let useAgent = stickyAgent;
+      if (!useAgent && currentConversationId) {
+        try {
+          const conv = await base44.agents.getConversation(currentConversationId);
+          useAgent = conv?.metadata?.selected_agent || null;
+          if (useAgent) {
+            setStickyAgent(useAgent);
+            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
+          }
+        } catch (err) {
+          console.warn('[ROUTING] Failed to check conversation metadata:', err);
+        }
+      }
+      
+      // Fallback to keyword-based routing only if no sticky agent
+      if (!useAgent) {
+        useAgent = shouldRouteToAgent(currentQuery);
+      }
       
       if (useAgent) {
         const debugContext = 'ASK_EXPERT';
@@ -928,8 +945,25 @@ Be conversational and specific to their actual pipes and blends. Reference their
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // STICKY ROUTING: Use stored agent if exists
-      const useAgent = stickyAgent || shouldRouteToAgent(currentQuery);
+      // STICKY ROUTING: If conversation exists, check metadata for selected agent FIRST
+      let useAgent = stickyAgent;
+      if (!useAgent && currentConversationId) {
+        try {
+          const conv = await base44.agents.getConversation(currentConversationId);
+          useAgent = conv?.metadata?.selected_agent || null;
+          if (useAgent) {
+            setStickyAgent(useAgent);
+            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
+          }
+        } catch (err) {
+          console.warn('[ROUTING] Failed to check conversation metadata:', err);
+        }
+      }
+      
+      // Fallback to keyword-based routing only if no sticky agent
+      if (!useAgent) {
+        useAgent = shouldRouteToAgent(currentQuery);
+      }
       
       if (useAgent) {
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
@@ -1218,8 +1252,25 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
 
     try {
-      // STICKY ROUTING: Always use stored agent for follow-ups, don't re-route
-      const useAgent = stickyAgent || shouldRouteToAgent(query);
+      // STICKY ROUTING: If conversation exists, ALWAYS check metadata for selected agent
+      let useAgent = stickyAgent;
+      if (!useAgent && currentConversationId) {
+        try {
+          const conv = await base44.agents.getConversation(currentConversationId);
+          useAgent = conv?.metadata?.selected_agent || null;
+          if (useAgent) {
+            setStickyAgent(useAgent);
+            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
+          }
+        } catch (err) {
+          console.warn('[ROUTING] Failed to check conversation metadata:', err);
+        }
+      }
+      
+      // Fallback to keyword routing only if no sticky agent found
+      if (!useAgent) {
+        useAgent = shouldRouteToAgent(query);
+      }
       
       if (useAgent) {
         console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
@@ -1524,8 +1575,25 @@ ${query}`;
     setWhatIfFollowUp('');
 
     try {
-      // STICKY ROUTING: Always use stored agent for follow-ups
-      const useAgent = stickyAgent || shouldRouteToAgent(query);
+      // STICKY ROUTING: If conversation exists, ALWAYS check metadata for selected agent
+      let useAgent = stickyAgent;
+      if (!useAgent && currentConversationId) {
+        try {
+          const conv = await base44.agents.getConversation(currentConversationId);
+          useAgent = conv?.metadata?.selected_agent || null;
+          if (useAgent) {
+            setStickyAgent(useAgent);
+            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
+          }
+        } catch (err) {
+          console.warn('[ROUTING] Failed to check conversation metadata:', err);
+        }
+      }
+      
+      // Fallback to keyword routing only if no sticky agent found
+      if (!useAgent) {
+        useAgent = shouldRouteToAgent(query);
+      }
       
       if (useAgent) {
         const debugContext = 'FOLLOWUP_EXPERT';
