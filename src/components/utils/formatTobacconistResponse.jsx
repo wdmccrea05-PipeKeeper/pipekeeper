@@ -116,7 +116,7 @@ function reflowParagraph(paragraph, maxChars = 380, maxSentences = 3) {
  * React component to render formatted tobacconist response.
  * style: "simple_paragraphs" | "light_structure" | "structured"
  */
-export function FormattedTobacconistResponse({ content, style = "light_structure" }) {
+export function FormattedTobacconistResponse({ content, style = "light_structure", className = "" }) {
   if (!content) return null;
 
   const formatted = formatTobacconistResponse(
@@ -129,7 +129,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
     .filter(Boolean);
 
   return (
-    <div className={style === "structured" ? "space-y-4" : "space-y-3"}>
+    <div className={`${style === "structured" ? "space-y-4" : "space-y-3"} ${className}`}>
       {paras.map((para, idx) => {
         const isBulletSection = para.startsWith("- ") || para.includes("\n- ");
 
@@ -149,7 +149,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
               )}
               <ul className="space-y-1 ml-4 list-disc">
                 {bullets.map((b, bIdx) => (
-                  <li key={bIdx} className="text-sm leading-relaxed">
+                  <li key={bIdx} className="text-sm leading-relaxed text-stone-900">
                     {b}
                   </li>
                 ))}
@@ -159,7 +159,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
         }
 
         return (
-          <p key={idx} className="text-sm leading-relaxed">
+          <p key={idx} className="text-sm leading-relaxed text-stone-900">
             {para}
           </p>
         );
