@@ -22,9 +22,8 @@ export default function ExpertTobacconistChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [responseStyle, setResponseStyle] = useState<ResponseStyle>('simple_paragraphs');
   const messagesEndRef = useRef(null);
-  const lastAssistantMsgRef = useRef(null);
-  const [currentRequestId, setCurrentRequestId] = useState(null);
-  const [lastResponseTime, setLastResponseTime] = useState(null);
+  const currentRequestIdRef = useRef(null);
+  const currentRequestTimeRef = useRef(null);
   const { user } = useCurrentUser();
 
   // Fetch user collection data
@@ -100,24 +99,24 @@ export default function ExpertTobacconistChat() {
 
   // Subscribe to conversation updates and accumulate full responses
   useEffect(() => {
-    if (!conversationId || !currentRequestId) return;
+    if (!conversationId) return;
 
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
       const msgs = data.messages || [];
       setMessages(msgs);
 
-      // Find the LAST user message (most recent question)
-      const lastUserMsg = [...msgs].reverse().find(m => m.role === 'user');
-      if (!lastUserMsg || !lastUserMsg.created_date) return;
+      // Only process if we have an active request
+      const requestId = currentRequestIdRef.current;
+      const requestTime = currentRequestTimeRef.current;
+      if (!requestId || !requestTime) return;
 
-      const userMsgTime = new Date(lastUserMsg.created_date).getTime();
-
-      // Collect ONLY assistant messages created AFTER the last user message
+      // Collect ONLY assistant messages created AFTER this request was sent
       let assistantContent = '';
       for (const msg of msgs) {
         if ((msg.role === 'assistant' || msg.role === 'agent') && msg.created_date) {
           const msgTime = new Date(msg.created_date).getTime();
-          if (msgTime > userMsgTime) {
+          // Only include messages created AFTER the user sent this request
+          if (msgTime > requestTime) {
             const content = extractAssistantContent(msg);
             if (content) {
               assistantContent += content;
@@ -139,7 +138,7 @@ export default function ExpertTobacconistChat() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [conversationId, currentRequestId, loading]);
+  }, [conversationId, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
@@ -156,16 +155,16 @@ export default function ExpertTobacconistChat() {
     const classification = classifyQuestion(userMessage);
     setResponseStyle(classification.responseStyle);
 
-    // Generate unique request ID and reset response tracking
+    // Track this request with timestamp to prevent old response reuse
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setCurrentRequestId(requestId);
-    setLastResponseTime(Date.now());
+    const requestTime = Date.now();
+    currentRequestIdRef.current = requestId;
+    currentRequestTimeRef.current = requestTime;
 
     setInput('');
     setLoading(true);
     setStreamingContent('');
     setIsStreaming(true);
-    lastAssistantMsgRef.current = null;
 
     try {
       // Prepare usage statistics
@@ -284,24 +283,16 @@ ${userMessage}`;
       console.log('[EXPERT_TOBACCONIST] Message sent, waiting for response...');
 
       // Wait for agent to finish (max 240s for deep thinking)
-      const timeoutId = setTimeout(() => {
+      setTimeout(() => {
         setLoading(false);
-        if (!streamingContent || streamingContent.trim().length === 0) {
-          setStreamingContent('');
-          setIsStreaming(false);
-        }
       }, 240000);
-      
-      return () => clearTimeout(timeoutId);
     } catch (err) {
       console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
-      // Only show error if request is still current
-      if (currentRequestId === requestId) {
-        toast.error('Failed to send message');
-        setStreamingContent('');
-        setIsStreaming(false);
-      }
+      toast.error('Failed to send message');
       setLoading(false);
+      setIsStreaming(false);
+      currentRequestIdRef.current = null;
+      currentRequestTimeRef.current = null;
     }
   };
 
