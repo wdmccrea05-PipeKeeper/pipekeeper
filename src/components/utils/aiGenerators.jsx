@@ -214,7 +214,6 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
     }
 
 export async function generateOptimizationAI({ pipes, blends, profile, whatIfText }) {
-  // Expand pipes to include bowl variants as separate entries (cap to 30)
   const pipesData = [];
   for (const p of pipes || []) {
     const pid = String(p.id);
@@ -256,7 +255,6 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     }
   }
 
-  // Cap pipes to 30 and blends to 60
   const pipesDataCapped = pipesData.slice(0, 30);
   const blendsDataCapped = (blends || []).slice(0, 60).map((b) => ({
     id: b.id,
@@ -265,10 +263,6 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     strength: b.strength,
     cut: b.cut,
   }));
-
-  // Add stats summary if data was truncated
-  const pipesTruncatedNote = pipesData.length > 30 ? `\n[Note: Showing 30 of ${pipesData.length} pipe configurations. Model should infer patterns from visible sample.]` : '';
-  const blendsTruncatedNote = blends && blends.length > 60 ? `\n[Note: Showing 60 of ${blends.length} blends. Model should infer patterns from visible sample.]` : '';
 
   const profileContext = profile
     ? {
@@ -282,24 +276,26 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
       }
     : null;
 
-  const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Analyze the user's pipe and tobacco collection considering pipe geometry. Provide optimization recommendations.
+  const pipesTruncatedNote =
+    pipesData.length > 30
+      ? `\n[Note: Showing 30 of ${pipesData.length} pipe configurations.]`
+      : "";
+  const blendsTruncatedNote =
+    blends && blends.length > 60
+      ? `\n[Note: Showing 60 of ${blends.length} blends.]`
+      : "";
+
+  const prompt = `Analyze the user's pipe and tobacco collection considering pipe geometry. Provide optimization recommendations.
 
 Rules:
-- Each entry represents a different bowl configuration (bowl_variant_id identifies interchangeable bowls)
-- When multiple bowls exist on a pipe, treat each bowl INDIVIDUALLY with its own focus and characteristics
-- Consider pipe geometry (shape, bowlStyle, bend, sizeClass) when making recommendations
-- Bend degree affects smoking characteristics (straight smokes different than full bent)
-- Bowl style and chamber size affect heat retention and moisture handling
-- Recommend specialization updates (bowl focus changes) only when justified
-- Provide "applyable_changes" as a list: { pipe_id, bowl_variant_id, before_focus, after_focus, rationale }
-- Include "collection_gaps" and "next_additions" suggestions considering geometry diversity
-- If what-if is advice-only, give advice and keep applyable_changes empty
-
-CRITICAL: When bowl_variant_id is present, the focus change applies to THAT SPECIFIC BOWL, not the entire pipe.
+- Each entry represents a bowl configuration (bowl_variant_id identifies interchangeable bowls)
+- Treat each bowl independently when bowl_variant_id is present
+- Provide applyable_changes only when justified
+- If the request is advice-only, keep applyable_changes empty
+- Return JSON only
 
 WHAT_IF CONTEXT:
-${whatIfText ? whatIfText.substring(0, 2500) : ''}
+${whatIfText ? String(whatIfText).substring(0, 2500) : ""}
 
 PIPES DATA (${pipesDataCapped.length} shown):
 ${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
@@ -310,7 +306,10 @@ ${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
 USER PREFERENCES:
 ${JSON.stringify(profileContext)}
 
-RESPONSE: Return JSON only with applyable_changes, summary, collection_gaps, and next_additions.`,
+RESPONSE JSON SCHEMA: { applyable_changes: [], summary: string, collection_gaps?: [], next_additions?: [] }`;
+
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt,
     response_json_schema: {
       type: "object",
       required: ["applyable_changes", "summary"],
@@ -333,15 +332,16 @@ RESPONSE: Return JSON only with applyable_changes, summary, collection_gaps, and
         collection_gaps: { type: "array", items: { type: "string" } },
         next_additions: { type: "array", items: { type: "string" } },
       },
-    }
+    },
   });
 
-  // Hard guard: ensure applyable_changes are returned
-  if (!result?.applyable_changes?.length) {
-    throw new Error("Optimization returned no applyable changes.");
-  }
-
-  return result;
+  // Always normalize the shape so downstream UI never crashes
+  return {
+    summary: result?.summary || "",
+    applyable_changes: Array.isArray(result?.applyable_changes) ? result.applyable_changes : [],
+    collection_gaps: Array.isArray(result?.collection_gaps) ? result.collection_gaps : [],
+    next_additions: Array.isArray(result?.next_additions) ? result.next_additions : [],
+  };
 }
 
 export async function generateBreakInScheduleAI({ pipe, blends, profile }) {
