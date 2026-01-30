@@ -912,7 +912,21 @@ Be conversational and specific to their actual pipes and blends. Reference their
       if (shouldRouteToAgent(currentQuery)) {
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
         
-        // Prepare context payload
+        // Prepare usage statistics
+        const usageStats = {};
+        usageLogs.forEach(log => {
+          if (log.pipe_id) {
+            if (!usageStats[log.pipe_id]) {
+              usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+            }
+            usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+            if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+              usageStats[log.pipe_id].lastUsed = log.date;
+            }
+          }
+        });
+        
+        // Prepare context payload with COMPLETE data
         const contextPayload = {
           pipes: pipes.map(p => ({
             id: p.id,
@@ -920,18 +934,33 @@ Be conversational and specific to their actual pipes and blends. Reference their
             maker: p.maker,
             shape: p.shape,
             chamber_volume: p.chamber_volume,
-            focus: p.focus
+            bowl_diameter_mm: p.bowl_diameter_mm,
+            focus: p.focus,
+            usage_count: usageStats[p.id]?.count || 0,
+            last_used: usageStats[p.id]?.lastUsed || null
           })),
           tobaccos: blends.map(b => ({
             id: b.id,
             name: b.name,
-            blend_type: b.blend_type
-          }))
+            manufacturer: b.manufacturer,
+            blend_type: b.blend_type,
+            strength: b.strength
+          })),
+          pairingGrid: pairingMatrix ? {
+            pairings: pairingMatrix.pairings || [],
+            generated_date: pairingMatrix.generated_date
+          } : null,
+          usageLogs: {
+            total_sessions: usageLogs.length,
+            pipe_usage: usageStats
+          }
         };
         
         console.log('[ROUTING] Context payload:', {
           pipes_count: contextPayload.pipes.length,
-          tobaccos_count: contextPayload.tobaccos.length
+          tobaccos_count: contextPayload.tobaccos.length,
+          pairingGrid_present: !!contextPayload.pairingGrid,
+          usageLogs_present: !!contextPayload.usageLogs
         });
         
         // Route to expert_tobacconist agent
@@ -950,30 +979,30 @@ ${JSON.stringify(contextPayload, null, 2)}
 USER QUESTION:
 ${currentQuery}`;
         
-        const response = await base44.agents.addMessage(conversation, {
+        await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext,
           file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined
         });
         
-        console.log('[ROUTING] Response received from expert_tobacconist:', {
-          messages_count: response.messages?.length,
-          response_structure: response
-        });
+        console.log('[ROUTING] Waiting for expert_tobacconist response...');
         
-        // Extract the assistant's response
-        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-        const agentResponse = assistantMsg?.content || '';
-        
-        console.log('[ROUTING] Agent response content:', {
-          length: agentResponse.length,
-          preview: agentResponse.substring(0, 100)
-        });
+        // Wait for assistant response asynchronously
+        let agentResponse = "";
+        try {
+          agentResponse = await waitForAssistantMessage(conversation.id);
+          console.log('[ROUTING] Response received:', {
+            length: agentResponse.length,
+            preview: agentResponse.substring(0, 100)
+          });
+        } catch (err) {
+          console.error('[ROUTING] Failed to receive response:', err);
+        }
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
-          console.error('[ROUTING] Agent returned empty response');
+          finalResponse = "I couldn't load a response from the expert agent. Please try again.";
+          console.error('[ROUTING] Agent returned empty response or timed out');
         }
         
         const aiResponse = {
@@ -1260,22 +1289,28 @@ ${conversationContext}
 FOLLOW-UP QUESTION:
 ${query}`;
         
-        const response = await base44.agents.addMessage(conversation, {
+        await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
         });
         
-        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-        const agentResponse = assistantMsg?.content || '';
+        console.log('[EXPERT_TOBACCONIST] Follow-up sent, waiting for response...');
         
-        console.log('[EXPERT_TOBACCONIST] Follow-up response:', {
-          response_length: agentResponse.length,
-          preview: agentResponse.substring(0, 150)
-        });
+        // Wait for assistant response asynchronously
+        let agentResponse = "";
+        try {
+          agentResponse = await waitForAssistantMessage(conversation.id);
+          console.log('[EXPERT_TOBACCONIST] Follow-up response received:', {
+            response_length: agentResponse.length,
+            preview: agentResponse.substring(0, 150)
+          });
+        } catch (err) {
+          console.error('[EXPERT_TOBACCONIST] Follow-up response wait failed:', err);
+        }
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't load your collection data. Please try again.";
+          finalResponse = "I couldn't load a response from the expert agent. Please try again.";
           console.error('[EXPERT_TOBACCONIST] Agent returned empty response on follow-up');
         }
         
