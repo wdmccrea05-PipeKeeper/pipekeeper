@@ -1003,6 +1003,24 @@ ${currentQuery}`;
     }
   };
 
+  // Normalize impact result to ensure all string fields are strings (not objects)
+  const normalizeImpactResult = (result) => {
+    if (!result) return null;
+    
+    return {
+      ...result,
+      redundancy_analysis: typeof result.redundancy_analysis === 'string' 
+        ? result.redundancy_analysis 
+        : (result.redundancy_analysis?.summary || JSON.stringify(result.redundancy_analysis || '')),
+      detailed_reasoning: typeof result.detailed_reasoning === 'string'
+        ? result.detailed_reasoning
+        : (result.detailed_reasoning?.summary || JSON.stringify(result.detailed_reasoning || '')),
+      score_improvements: typeof result.score_improvements === 'string'
+        ? result.score_improvements
+        : JSON.stringify(result.score_improvements || '')
+    };
+  };
+
   const analyzeCollectionImpact = async () => {
     if (conversationMessages.length === 0) return;
     
@@ -1044,7 +1062,7 @@ ${currentQuery}`;
         });
 
         // Transform the result to match whatIfResult format
-        const impactAnalysis = {
+        const impactAnalysis = normalizeImpactResult({
           is_impact_analysis: true,
           impact_score: result.applyable_changes?.length > 0 ? 8 : 6,
           trophy_pairings: (result.next_additions || []).slice(0, 5),
@@ -1054,7 +1072,7 @@ ${currentQuery}`;
           gaps_filled: result.collection_gaps || [],
           score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(', ')}`,
           applyable_changes: result.applyable_changes || []
-        };
+        });
         
         // Add impact analysis to conversation
         setConversationMessages(prev => [...prev, {
