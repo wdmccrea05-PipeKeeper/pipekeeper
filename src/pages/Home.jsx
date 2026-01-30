@@ -197,6 +197,8 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     enabled: !!user?.email,
     retry: 1,
     staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Check if user has paid access
