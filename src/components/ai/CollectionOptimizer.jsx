@@ -3271,14 +3271,17 @@ Provide concrete, actionable steps with specific field values.`,
                               <p className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
                                 <Trophy className="w-4 h-4" />
                                 Trophy Pairings (9-10 scores):
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {whatIfResult.trophy_pairings.map((blend, idx) => (
-                                  <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
-                                    {blend}
-                                  </Badge>
-                                ))}
-                              </div>
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                {Array.isArray(whatIfResult.trophy_pairings) && whatIfResult.trophy_pairings.map((blend, idx) => {
+                                  const label = typeof blend === "string" ? blend : (blend?.name || blend?.blend_name || String(blend));
+                                  return (
+                                    <Badge key={idx} className="bg-amber-100 text-amber-800 border-amber-300">
+                                      {label}
+                                    </Badge>
+                                  );
+                                })}
+                                </div>
                             </CardContent>
                           </Card>
                         )}

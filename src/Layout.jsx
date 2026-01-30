@@ -236,7 +236,6 @@ export default function Layout({ children, currentPageName }) {
         markStripeSyncRan(user.email);
 
         if (!cancelled && result.ok) {
-          // Invalidate both current-user and subscription queries
           await queryClient.invalidateQueries({ queryKey: ["current-user"] });
           await queryClient.invalidateQueries({ queryKey: ["subscription"] });
           await queryClient.refetchQueries({ queryKey: ["current-user"] });
@@ -254,7 +253,6 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [userLoading, user?.email, hasPaidAccess, queryClient]);
 
-  // Backfill founding member status for early subscribers
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
@@ -275,7 +273,6 @@ export default function Layout({ children, currentPageName }) {
     })();
   }, [userLoading, user, subscription, hasPaidAccess, queryClient]);
 
-  // Listen for native iOS subscription status updates
   useEffect(() => {
     if (!ios) return undefined;
 
@@ -286,18 +283,15 @@ export default function Layout({ children, currentPageName }) {
       console.log("[Layout] Native subscription payload:", payload);
       const active = !!payload.active;
       setSubActive(active);
-      
+
       try {
-        // Sync Apple subscription to Base44 entities (account-linked by user_id)
         const result = await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
-        
+
         if (result.data?.code === 'ALREADY_LINKED') {
-          // Show error to user
           showIAPToast('This Apple subscription is already linked to a different account. Please sign in with the original account or contact support.');
           return;
         }
-        
-        // Invalidate queries to refresh UI
+
         await queryClient.invalidateQueries({ queryKey: ["current-user"] });
         const userId = user?.id;
         const email = (user?.email || "").trim().toLowerCase();
@@ -313,7 +307,6 @@ export default function Layout({ children, currentPageName }) {
     return cleanup;
   }, [ios, queryClient, user?.id, user?.email]);
 
-  // iOS WKWebView: Intercept subscription management clicks globally
   useEffect(() => {
     if (!ios) return undefined;
 
@@ -414,18 +407,17 @@ export default function Layout({ children, currentPageName }) {
     markSubscribePromptShown();
   }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
 
-  // Founding Member popup for early supporters
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
     if (!hasPaidAccess) return;
     if (user?.foundingMemberAcknowledged) return;
-    
+
     const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
     const startedAt = subscription?.subscriptionStartedAt || subscription?.started_at || subscription?.current_period_start;
-    
+
     if (!startedAt) return;
-    
+
     const subscriptionDate = new Date(startedAt);
     if (subscriptionDate < foundingCutoff) {
       setShowFoundingMemberPopup(true);
@@ -479,7 +471,7 @@ export default function Layout({ children, currentPageName }) {
       <DocumentTitle title="PipeKeeper" />
       <Toaster position="top-center" />
       <MeasurementProvider>
-        <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+        <div className="dark min-h-screen flex flex-col" style={{ colorScheme: 'dark' }}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
             <div className="max-w-7xl mx-auto px-6 w-full">
               <div className="flex items-center justify-between h-16 gap-4">
@@ -584,7 +576,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <main className="pt-16 md:pt-16 pb-20">
+          <main className="flex-1 pt-16 md:pt-16 pb-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               {children}
             </div>
@@ -614,89 +606,87 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </div>
           </footer>
-        </div>
 
-        <TermsGate user={user} />
+          <TermsGate user={user} />
 
-        <FoundingMemberPopup
-          isOpen={showFoundingMemberPopup}
-          onClose={async () => {
-            setShowFoundingMemberPopup(false);
-            try {
-              await base44.auth.updateMe({ foundingMemberAcknowledged: true });
-              await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-            } catch (err) {
-              console.error("Failed to update founding member status:", err);
-            }
-          }}
-        />
+          <FoundingMemberPopup
+            isOpen={showFoundingMemberPopup}
+            onClose={async () => {
+              setShowFoundingMemberPopup(false);
+              try {
+                await base44.auth.updateMe({ foundingMemberAcknowledged: true });
+                await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+              } catch (err) {
+                console.error("Failed to update founding member status:", err);
+              }
+            }}
+          />
 
-        {showSubscribePrompt && (
-          <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-              <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
-              <p className="text-[#E0D8C8]/80 mb-5">
-                {t("subscription.trialEndedBody")}
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                  {t("subscription.continueFree")}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setShowSubscribePrompt(false);
-                    navigate(createPageUrl("Subscription"));
-                  }}
-                >
-                  {t("subscription.subscribe")}
-                </Button>
+          {showSubscribePrompt && (
+            <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+              <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
+                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
+                <p className="text-[#E0D8C8]/80 mb-5">
+                  {t("subscription.trialEndedBody")}
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
+                    {t("subscription.continueFree")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowSubscribePrompt(false);
+                      navigate(createPageUrl("Subscription"));
+                    }}
+                  >
+                    {t("subscription.subscribe")}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <EntitlementDebug />
+          <EntitlementDebug />
 
-        {/* iOS IAP Toast */}
-        {iapToast && (
-          <div
-            style={{
-              position: "fixed",
-              left: "50%",
-              bottom: "24px",
-              transform: "translateX(-50%)",
-              padding: "10px 14px",
-              borderRadius: "12px",
-              background: "rgba(0,0,0,0.85)",
-              color: "white",
-              zIndex: 999999,
-              fontSize: "14px",
-              maxWidth: "340px",
-              textAlign: "center",
-            }}
-          >
-            {iapToast}
-          </div>
-        )}
+          {iapToast && (
+            <div
+              style={{
+                position: "fixed",
+                left: "50%",
+                bottom: "24px",
+                transform: "translateX(-50%)",
+                padding: "10px 14px",
+                borderRadius: "12px",
+                background: "rgba(0,0,0,0.85)",
+                color: "white",
+                zIndex: 999999,
+                fontSize: "14px",
+                maxWidth: "340px",
+                textAlign: "center",
+              }}
+            >
+              {iapToast}
+            </div>
+          )}
 
-        {/* iOS debug pill */}
-        {ios && (
-          <div
-            style={{
-              position: "fixed",
-              right: 10,
-              bottom: 10,
-              padding: "6px 10px",
-              borderRadius: 10,
-              background: "rgba(0,0,0,0.18)",
-              fontSize: 12,
-              zIndex: 999999,
-              pointerEvents: "none",
-            }}
-          >
-            Bridge: ✅ | {subActive ? "Pro ✅" : "Free"}
-          </div>
-        )}
+          {ios && (
+            <div
+              style={{
+                position: "fixed",
+                right: 10,
+                bottom: 10,
+                padding: "6px 10px",
+                borderRadius: 10,
+                background: "rgba(0,0,0,0.18)",
+                fontSize: 12,
+                zIndex: 999999,
+                pointerEvents: "none",
+              }}
+            >
+              Bridge: ✅ | {subActive ? "Pro ✅" : "Free"}
+            </div>
+          )}
+        </div>
       </MeasurementProvider>
     </>
   );

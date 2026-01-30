@@ -100,9 +100,9 @@ export default function ExpertTobacconistChat() {
       "",
       "Behavior rules:",
       "- If collection-dependent: reference specific items and scores.",
-      "- If general brand/topic: answer normally (don’t force collection stats).",
+      "- If general brand/topic: answer normally (don't force collection stats).",
       "- Keep paragraphs short. Use clean spacing (no walls of text).",
-      "- Don’t include “Why this works” unless the user asks for reasoning.",
+      "- Don't include 'Why this works' unless the user asks for reasoning.",
     ].join("\n");
   };
 

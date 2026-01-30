@@ -16,31 +16,29 @@ export function formatTobacconistResponse(text) {
   let cleaned = (text || "")
     .replace(/\*\*\*([\s\S]+?)\*\*\*/g, "$1")
     .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
-    .replace(/\*([\s\S]+?)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/^\s*#{1,6}\s+/gm, "")
-    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/__([\s\S]+?)__/g, "$1")
+    .replace(/_([\s\S]+?)_/g, "$1")
+    .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
+    .replace(/\[([\s\S]+?)\]\(.*?\)/g, "$1")
+    .replace(/#+\s+/g, "")
+    .replace(/> /gm, "")
+    .replace(/---+/g, "")
+    .replace(/\n\n+/g, "\n\n")
     .trim();
 
-  const paragraphs = cleaned
-    .split(/\n\n+/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const paragraphs = cleaned.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   const finalParas = [];
   for (const para of paragraphs) {
     const looksLikeBullets =
       para.startsWith("- ") || para.includes("\n- ") || para.startsWith("• ") || para.includes("\n• ");
 
+    if (!para || para.length === 0) {
+      continue;
+    }
+
     if (looksLikeBullets) {
-      finalParas.push(
-        para
-          .replace(/\n•\s+/g, "\n- ")
-          .replace(/^•\s+/g, "- ")
-          .trim()
-      );
+      finalParas.push(para);
       continue;
     }
 
@@ -62,25 +60,22 @@ function splitIntoSentences(paragraph) {
   let buf = "";
 
   for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    buf += ch;
+    buf += s[i];
 
-    const isEnd = ch === "." || ch === "!" || ch === "?";
-    if (!isEnd) continue;
-
-    const next = s[i + 1] || "";
-    const boundary = next === "" || next === " " || next === "\n" || next === "\r";
-
-    if (boundary) {
-      const out = buf.trim();
-      if (out) sentences.push(out);
-      buf = "";
-      while ((s[i + 1] || "") === " ") i++;
+    if (s[i] === "." || s[i] === "?" || s[i] === "!") {
+      const nextChar = s[i + 1];
+      if (nextChar === undefined || nextChar === " " || nextChar === "\n") {
+        const out = buf.trim();
+        if (out) sentences.push(out);
+        buf = "";
+        while ((s[i + 1] || "") === " ") i++;
+      }
     }
   }
 
-  const tail = buf.trim();
-  if (tail) sentences.push(tail);
+  if (buf.trim()) {
+    sentences.push(buf.trim());
+  }
 
   return sentences;
 }
