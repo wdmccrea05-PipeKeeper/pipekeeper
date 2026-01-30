@@ -163,7 +163,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     },
     enabled: !!user?.email,
     retry: 1,
-    staleTime: 10000,
+    staleTime: 0,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
