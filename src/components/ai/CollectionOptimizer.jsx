@@ -1302,11 +1302,26 @@ ${query}`;
         setWhatIfResult(aiResponse);
       }
     } catch (err) {
-      console.error('Error with follow-up question:', err);
+      console.error('[ROUTING] Error with follow-up (analyzeCollectionQuestion path):', err);
+      console.error('[ROUTING] Error details:', {
+        message: err?.message,
+        response: err?.response?.data
+      });
+      
       toast.error('Failed to process follow-up question');
 
-      // Remove the user message if analysis failed
-      setConversationMessages(prev => prev.slice(0, -1));
+      // Add error message to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: {
+          is_collection_question: true,
+          response: `Error: ${err?.message || 'Failed to process question'}. Please try again.`,
+          specific_recommendations: [],
+          collection_insights: [],
+          routed_to: 'error'
+        },
+        timestamp: new Date().toISOString()
+      }]);
     } finally {
       setWhatIfLoading(false);
     }
