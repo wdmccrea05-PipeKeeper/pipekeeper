@@ -848,28 +848,8 @@ ${currentQuery}`;
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // STICKY ROUTING: If conversation exists, check metadata for selected agent FIRST
-      let useAgent = stickyAgent;
-      if (!useAgent && currentConversationId) {
-        try {
-          const conv = await base44.agents.getConversation(currentConversationId);
-          useAgent = conv?.metadata?.selected_agent || null;
-          if (useAgent) {
-            setStickyAgent(useAgent);
-            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
-          }
-        } catch (err) {
-          console.warn('[ROUTING] Failed to check conversation metadata:', err);
-        }
-      }
-      
-      // Fallback to keyword-based routing only if no sticky agent
-      if (!useAgent) {
-        useAgent = shouldRouteToAgent(currentQuery);
-      }
-      
-      if (useAgent) {
-        console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
+      // ALWAYS route to expert_tobacconist for "Ask the Expert"
+      console.log('[ROUTING] Routing to expert_tobacconist agent');
         
         // Prepare usage statistics
         const usageStats = {};
@@ -996,49 +976,6 @@ ${currentQuery}`;
           content: aiResponse,
           timestamp: new Date().toISOString()
         }]);
-      } else {
-        console.log('[ROUTING] General question, using standard LLM');
-        
-        // General hobby advice from expert tobacconist
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: You are an expert tobacconist and pipe smoking advisor.
-
-User's Question: ${currentQuery}
-
-Provide clear, expert advice about pipe smoking, tobacco, techniques, history, product information, maintenance, or general hobby topics. Be conversational, knowledgeable, and helpful.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              advice: { type: "string" },
-              key_points: {
-                type: "array",
-                items: { type: "string" }
-              },
-              tips: {
-                type: "array",
-                items: { type: "string" }
-              }
-            }
-          }
-        });
-
-        const aiResponse = {
-          is_general_advice: true,
-          advice: result.advice,
-          key_points: result.key_points,
-          tips: result.tips,
-          routed_to: 'standard_llm'
-        };
-        
-        setWhatIfResult(aiResponse);
-        
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-      }
     } catch (err) {
       console.error('[ROUTING] Error analyzing general question:', err);
       console.error('[ROUTING] Error details:', {
