@@ -132,7 +132,7 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     staleTime: 10000,
   });
 
-  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
+  const { data: pipes = [], isLoading: pipesLoading, refetch: refetchPipes } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
