@@ -23,7 +23,7 @@ function countMatches(text, patterns) {
 
 export function classifyQuestion(input) {
   const q = norm(input);
-  const reasons: string[] = [];
+  const reasons = [];
 
   if (!q) {
     return {
