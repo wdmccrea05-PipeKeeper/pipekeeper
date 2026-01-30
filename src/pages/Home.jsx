@@ -148,6 +148,8 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     staleTime: 10000,
   });
 
+  const queryClient = useQueryClient();
+
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
     queryKey: ['blends', user?.email],
     queryFn: async () => {
@@ -163,6 +165,19 @@ const { data: user, isLoading: userLoading, error: userError } = useQuery({
     retry: 1,
     staleTime: 10000,
   });
+
+  // Subscribe to blend updates and invalidate cellar logs
+  useEffect(() => {
+    if (!user?.email) return;
+    
+    const unsubscribe = base44.entities.TobaccoBlend.subscribe((event) => {
+      if (event.type === 'update' || event.type === 'create') {
+        queryClient.invalidateQueries({ queryKey: ['cellar-logs-all', user?.email] });
+      }
+    });
+    
+    return () => unsubscribe?.();
+  }, [user?.email, queryClient]);
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
