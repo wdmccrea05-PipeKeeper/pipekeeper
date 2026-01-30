@@ -564,23 +564,86 @@ async function undoOptimizationApply(batchId) {
     try {
       // Check if should route to agent
       if (shouldRouteToAgent(currentQuery)) {
+        console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
+        
+        // Prepare context payload
+        const contextPayload = {
+          pipes: pipes.map(p => ({
+            id: p.id,
+            name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            bowlStyle: p.bowlStyle,
+            chamber_volume: p.chamber_volume,
+            bowl_diameter_mm: p.bowl_diameter_mm,
+            focus: p.focus,
+            interchangeable_bowls: p.interchangeable_bowls
+          })),
+          tobaccos: blends.map(b => ({
+            id: b.id,
+            name: b.name,
+            manufacturer: b.manufacturer,
+            blend_type: b.blend_type,
+            strength: b.strength
+          })),
+          userEmail: user?.email
+        };
+        
+        console.log('[ROUTING] Context payload:', {
+          pipes_count: contextPayload.pipes.length,
+          tobaccos_count: contextPayload.tobaccos.length,
+          user_email: contextPayload.userEmail
+        });
+        
         // Route to expert_tobacconist agent with full context
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
-          metadata: { source: 'collection_optimizer' }
+          metadata: { 
+            source: 'collection_optimizer',
+            context_provided: true
+          }
         });
+        
+        // Include context in the message
+        const messageWithContext = `USER CONTEXT:
+Pipes in collection: ${contextPayload.pipes.length}
+Tobaccos in collection: ${contextPayload.tobaccos.length}
+
+PIPES DATA:
+${JSON.stringify(contextPayload.pipes, null, 2)}
+
+TOBACCOS DATA:
+${JSON.stringify(contextPayload.tobaccos, null, 2)}
+
+USER QUESTION:
+${currentQuery}`;
         
         const response = await base44.agents.addMessage(conversation, {
           role: 'user',
-          content: currentQuery
+          content: messageWithContext
+        });
+        
+        console.log('[ROUTING] Agent response received:', {
+          messages_count: response.messages?.length,
+          has_assistant_msg: response.messages?.some(m => m.role === 'assistant')
         });
         
         // Extract the assistant's response
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        const agentResponse = assistantMsg?.content || '';
+        
+        console.log('[ROUTING] Agent response content length:', agentResponse.length);
+        
+        // Handle empty or missing response
+        let finalResponse = agentResponse;
+        if (!finalResponse || finalResponse.trim().length === 0) {
+          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
+          console.error('[ROUTING] Agent returned empty response');
+        }
         
         const aiResponse = {
           is_collection_question: true,
-          response: assistantMsg?.content || 'No response received from agent',
+          response: finalResponse,
           specific_recommendations: [],
           collection_insights: [],
           routed_to: 'expert_tobacconist'
@@ -672,11 +735,27 @@ Be conversational and specific to their actual pipes and blends. Reference their
         }]);
       }
     } catch (err) {
-      console.error('Error analyzing collection question:', err);
+      console.error('[ROUTING] Error analyzing collection question:', err);
+      console.error('[ROUTING] Error details:', {
+        message: err?.message,
+        stack: err?.stack,
+        response: err?.response?.data
+      });
+      
       toast.error('Failed to analyze question. Please try again.');
       
-      // Remove the user message if analysis failed
-      setConversationMessages(prev => prev.slice(0, -1));
+      // Add error message to conversation instead of removing
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: {
+          is_collection_question: true,
+          response: `Error: ${err?.message || 'Failed to analyze question'}. Please try again.`,
+          specific_recommendations: [],
+          collection_insights: [],
+          routed_to: 'error'
+        },
+        timestamp: new Date().toISOString()
+      }]);
     } finally {
       setWhatIfLoading(false);
     }
@@ -703,26 +782,73 @@ Be conversational and specific to their actual pipes and blends. Reference their
       if (shouldRouteToAgent(currentQuery)) {
         console.log('[ROUTING] Detected collection question, routing to expert_tobacconist agent');
         
+        // Prepare context payload
+        const contextPayload = {
+          pipes: pipes.map(p => ({
+            id: p.id,
+            name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            chamber_volume: p.chamber_volume,
+            focus: p.focus
+          })),
+          tobaccos: blends.map(b => ({
+            id: b.id,
+            name: b.name,
+            blend_type: b.blend_type
+          }))
+        };
+        
+        console.log('[ROUTING] Context payload:', {
+          pipes_count: contextPayload.pipes.length,
+          tobaccos_count: contextPayload.tobaccos.length
+        });
+        
         // Route to expert_tobacconist agent
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
           metadata: { source: 'what_if_general' }
         });
         
+        const messageWithContext = `USER CONTEXT:
+Pipes in collection: ${contextPayload.pipes.length}
+Tobaccos in collection: ${contextPayload.tobaccos.length}
+
+COLLECTION DATA:
+${JSON.stringify(contextPayload, null, 2)}
+
+USER QUESTION:
+${currentQuery}`;
+        
         const response = await base44.agents.addMessage(conversation, {
           role: 'user',
-          content: currentQuery,
+          content: messageWithContext,
           file_urls: whatIfPhotos.length > 0 ? whatIfPhotos : undefined
         });
         
-        console.log('[ROUTING] Response received from expert_tobacconist');
+        console.log('[ROUTING] Response received from expert_tobacconist:', {
+          messages_count: response.messages?.length,
+          response_structure: response
+        });
         
         // Extract the assistant's response
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        const agentResponse = assistantMsg?.content || '';
+        
+        console.log('[ROUTING] Agent response content:', {
+          length: agentResponse.length,
+          preview: agentResponse.substring(0, 100)
+        });
+        
+        let finalResponse = agentResponse;
+        if (!finalResponse || finalResponse.trim().length === 0) {
+          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
+          console.error('[ROUTING] Agent returned empty response');
+        }
         
         const aiResponse = {
           is_general_advice: true,
-          advice: assistantMsg?.content || 'No response received from agent',
+          advice: finalResponse,
           key_points: [],
           tips: [],
           routed_to: 'expert_tobacconist'
@@ -780,11 +906,26 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
         }]);
       }
     } catch (err) {
-      console.error('Error analyzing general question:', err);
+      console.error('[ROUTING] Error analyzing general question:', err);
+      console.error('[ROUTING] Error details:', {
+        message: err?.message,
+        response: err?.response?.data
+      });
+      
       toast.error('Failed to analyze question. Please try again.');
       
-      // Remove the user message if analysis failed
-      setConversationMessages(prev => prev.slice(0, -1));
+      // Add error message to conversation
+      setConversationMessages(prev => [...prev, {
+        role: 'assistant',
+        content: {
+          is_general_advice: true,
+          advice: `Error: ${err?.message || 'Failed to analyze question'}. Please try again.`,
+          key_points: [],
+          tips: [],
+          routed_to: 'error'
+        },
+        timestamp: new Date().toISOString()
+      }]);
     } finally {
       setWhatIfLoading(false);
     }
@@ -874,6 +1015,25 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     try {
       // Check if should route to agent
       if (shouldRouteToAgent(query)) {
+        console.log('[ROUTING] Follow-up detected as collection question');
+        
+        // Prepare context payload
+        const contextPayload = {
+          pipes: pipes.map(p => ({
+            id: p.id,
+            name: p.name,
+            maker: p.maker,
+            shape: p.shape,
+            chamber_volume: p.chamber_volume,
+            focus: p.focus
+          })),
+          tobaccos: blends.map(b => ({
+            id: b.id,
+            name: b.name,
+            blend_type: b.blend_type
+          }))
+        };
+        
         // Route to expert_tobacconist agent with conversation context
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
@@ -885,16 +1045,38 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
           .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.response || m.content.advice || ''}`)
           .join('\n\n');
         
+        const messageWithContext = `USER CONTEXT:
+Pipes: ${contextPayload.pipes.length}
+Tobaccos: ${contextPayload.tobaccos.length}
+
+COLLECTION DATA:
+${JSON.stringify(contextPayload, null, 2)}
+
+PREVIOUS DISCUSSION:
+${conversationContext}
+
+FOLLOW-UP QUESTION:
+${query}`;
+        
         const response = await base44.agents.addMessage(conversation, {
           role: 'user',
-          content: `Previous discussion:\n${conversationContext}\n\nFollow-up question: ${query}`
+          content: messageWithContext
         });
         
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        const agentResponse = assistantMsg?.content || '';
+        
+        console.log('[ROUTING] Follow-up response length:', agentResponse.length);
+        
+        let finalResponse = agentResponse;
+        if (!finalResponse || finalResponse.trim().length === 0) {
+          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
+          console.error('[ROUTING] Agent returned empty response on follow-up');
+        }
         
         const aiResponse = {
           is_collection_question: true,
-          response: assistantMsg?.content || 'No response received from agent',
+          response: finalResponse,
           specific_recommendations: [],
           collection_insights: [],
           routed_to: 'expert_tobacconist'
@@ -1009,6 +1191,12 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
       if (shouldRouteToAgent(query)) {
         console.log('[ROUTING] Follow-up detected as collection question, routing to expert_tobacconist');
         
+        // Prepare context
+        const contextPayload = {
+          pipes: pipes.map(p => ({ id: p.id, name: p.name, maker: p.maker, shape: p.shape, focus: p.focus })),
+          tobaccos: blends.map(b => ({ id: b.id, name: b.name, blend_type: b.blend_type }))
+        };
+        
         // Route to expert_tobacconist agent with conversation context
         const conversation = await base44.agents.createConversation({
           agent_name: 'expert_tobacconist',
@@ -1020,16 +1208,38 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
           .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.advice || m.content.response || ''}`)
           .join('\n\n');
         
+        const messageWithContext = `USER CONTEXT:
+Pipes: ${contextPayload.pipes.length}
+Tobaccos: ${contextPayload.tobaccos.length}
+
+COLLECTION DATA:
+${JSON.stringify(contextPayload, null, 2)}
+
+PREVIOUS DISCUSSION:
+${conversationContext}
+
+FOLLOW-UP QUESTION:
+${query}`;
+        
         const response = await base44.agents.addMessage(conversation, {
           role: 'user',
-          content: `Previous discussion:\n${conversationContext}\n\nFollow-up question: ${query}`
+          content: messageWithContext
         });
         
         const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        const agentResponse = assistantMsg?.content || '';
+        
+        console.log('[ROUTING] Follow-up response length:', agentResponse.length);
+        
+        let finalResponse = agentResponse;
+        if (!finalResponse || finalResponse.trim().length === 0) {
+          finalResponse = "I couldn't retrieve your collection data to answer this. Please try again.";
+          console.error('[ROUTING] Agent returned empty response on follow-up');
+        }
         
         const aiResponse = {
           is_general_advice: true,
-          advice: assistantMsg?.content || 'No response received from agent',
+          advice: finalResponse,
           key_points: [],
           tips: [],
           routed_to: 'expert_tobacconist'
