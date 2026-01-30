@@ -2884,7 +2884,7 @@ Provide concrete, actionable steps with specific field values.`,
                               </div>
                             )}
 
-                            <p className="text-xs text-stone-600 mb-3">{change.reasoning}</p>
+                            <p className="text-xs text-foreground mb-3">{change.reasoning}</p>
 
                             {hasAppliedFocus ? (
                               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
