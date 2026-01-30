@@ -185,14 +185,86 @@ Be realistic with estimated_value based on actual market prices. Be as specific 
 
   const handleClarificationSubmit = async () => {
     setLoading(true);
-    const additionalContext = [
-      hints.name && `Name/Description: ${hints.name}`,
-      hints.maker && `Brand/Maker: ${hints.maker}`,
-      hints.shape && `Shape: ${hints.shape}`,
-      hints.stamping && `Stampings/Markings: ${hints.stamping}`
-    ].filter(Boolean).join('\n');
-    
-    await performFinalIdentification(additionalContext);
+    try {
+      console.log('[IDENTIFY] Submitting clarification responses to expert_tobacconist agent');
+      
+      // If we have a conversation ID from clarification, continue it
+      if (clarificationNeeded?.agent_conversation_id) {
+        const clarificationText = Object.entries(clarificationResponses)
+          .map(([q, a]) => `${q}\nAnswer: ${a}`)
+          .join('\n\n');
+        
+        const response = await base44.agents.addMessage(
+          { id: clarificationNeeded.agent_conversation_id },
+          {
+            role: 'user',
+            content: `Here are the answers to your clarification questions:\n\n${clarificationText}\n\nPlease provide the full pipe identification now.`
+          }
+        );
+        
+        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        const responseText = assistantMsg?.content || '';
+        
+        // Parse the response
+        const parsePrompt = `Extract pipe identification details from this expert response:
+
+${responseText}
+
+Return JSON with these exact fields:
+{
+  "name": "Brief descriptive name",
+  "maker": "Brand/maker",
+  "shape": "Pipe shape",
+  "bowl_material": "Bowl material",
+  "finish": "Finish type",
+  "stem_material": "Stem material",
+  "estimated_value": 150,
+  "year_made": "Era/year",
+  "stamping": "Visible marks",
+  "notes": "Additional observations",
+  "confidence": "high/medium/low"
+}`;
+
+        const parsed = await base44.integrations.Core.InvokeLLM({
+          prompt: parsePrompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              maker: { type: "string" },
+              shape: { type: "string" },
+              bowl_material: { type: "string" },
+              finish: { type: "string" },
+              stem_material: { type: "string" },
+              estimated_value: { type: "number" },
+              year_made: { type: "string" },
+              stamping: { type: "string" },
+              notes: { type: "string" },
+              confidence: { type: "string" }
+            }
+          }
+        });
+
+        setIdentified({ ...parsed, agent_response: responseText });
+        setClarificationNeeded(null);
+        setClarificationResponses({});
+      } else {
+        // Fallback to original logic if no conversation ID
+        const additionalContext = [
+          hints.name && `Name/Description: ${hints.name}`,
+          hints.maker && `Brand/Maker: ${hints.maker}`,
+          hints.shape && `Shape: ${hints.shape}`,
+          hints.stamping && `Stampings/Markings: ${hints.stamping}`
+        ].filter(Boolean).join('\n');
+        
+        await performFinalIdentification(additionalContext);
+      }
+    } catch (error) {
+      console.error('Clarification failed:', error);
+      alert('Failed to process clarification. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAnalyzeImpact = async () => {
@@ -200,31 +272,56 @@ Be realistic with estimated_value based on actual market prices. Be as specific 
 
     setAnalyzing(true);
     try {
-      const pipeContext = pipes.map(p => `${p.name} - ${p.maker || 'Unknown'} ${p.shape || ''} (${p.chamber_volume || 'Unknown size'})`).join('\n');
-      const blendContext = blends.map(b => `${b.name} - ${b.manufacturer || 'Unknown'} ${b.blend_type || ''}`).join('\n');
+      console.log('[IMPACT] Routing impact analysis to expert_tobacconist agent');
+      
+      // Route to expert_tobacconist agent for impact analysis
+      const { data: conversation } = await base44.agents.createConversation({
+        agent_name: 'expert_tobacconist',
+        metadata: { source: 'pipe_impact_analysis' }
+      });
+      
+      const impactPrompt = `I'm considering adding this pipe to my collection:
 
-      const prompt = `Analyze the impact of adding this new pipe to the collection:
+Pipe Details:
+- Name: ${identified.name}
+- Maker: ${identified.maker || 'Unknown'}
+- Shape: ${identified.shape || 'Unknown'}
+- Material: ${identified.bowl_material || 'Unknown'}
+- Estimated Value: $${identified.estimated_value || 'Unknown'}
 
-NEW PIPE:
-${identified.name} - ${identified.maker || 'Unknown'} ${identified.shape || ''} ${identified.bowl_material || ''}
+Please analyze the impact of adding this pipe:
+1. What gap does it fill in my current collection?
+2. Is there any redundancy with my existing pipes?
+3. Which of my tobacco blends would pair best with it?
+4. What's the overall value proposition?
+5. Would you recommend adding it: Strong addition / Good addition / Consider alternatives?`;
 
-CURRENT PIPES:
-${pipeContext || 'No pipes in collection yet'}
+      const response = await base44.agents.addMessage(conversation, {
+        role: 'user',
+        content: impactPrompt
+      });
+      
+      console.log('[IMPACT] Received impact analysis from expert_tobacconist');
+      
+      const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+      const responseText = assistantMsg?.content || '';
+      
+      // Parse the agent's response to extract structured data
+      const parsePrompt = `Extract impact analysis from this expert response:
 
-TOBACCO BLENDS:
-${blendContext || 'No tobacco blends yet'}
+${responseText}
 
-Provide analysis as JSON:
+Return JSON:
 {
-  "fills_gap": "What gap this pipe fills in the collection",
-  "redundancy": "Any redundancy with existing pipes",
-  "recommended_for": ["Blend 1", "Blend 2"],
-  "value_proposition": "Overall value this adds",
+  "fills_gap": "What gap this fills",
+  "redundancy": "Redundancy notes",
+  "recommended_for": ["Blend names"],
+  "value_proposition": "Overall value",
   "recommendation": "Strong addition / Good addition / Consider alternatives"
 }`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
+      const parsed = await base44.integrations.Core.InvokeLLM({
+        prompt: parsePrompt,
         response_json_schema: {
           type: "object",
           properties: {
@@ -237,7 +334,7 @@ Provide analysis as JSON:
         }
       });
 
-      setImpactAnalysis(result);
+      setImpactAnalysis({ ...parsed, agent_response: responseText });
     } catch (error) {
       console.error('Impact analysis failed:', error);
       alert('Failed to analyze impact. You can still add the pipe directly.');
