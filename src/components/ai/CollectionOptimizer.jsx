@@ -1578,22 +1578,31 @@ ${conversationContext}
 FOLLOW-UP QUESTION:
 ${query}`;
         
-        const response = await base44.agents.addMessage(conversation, {
+        await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
         });
         
-        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-        const agentResponse = assistantMsg?.content || '';
+        console.log('[EXPERT_TOBACCONIST] Follow-up message sent, waiting for response...');
         
-        console.log('[EXPERT_TOBACCONIST] Follow-up response:', {
-          response_length: agentResponse.length,
-          preview: agentResponse.substring(0, 150)
-        });
+        // Wait for assistant response asynchronously
+        let agentResponse = "";
+        try {
+          agentResponse = await waitForAssistantMessage(conversation.id, 90000, { debug: true, context: 'FOLLOWUP_COLLECTION' });
+          console.log('[EXPERT_TOBACCONIST] Follow-up response received:', {
+            response_length: agentResponse.length,
+            preview: agentResponse.substring(0, 150)
+          });
+        } catch (err) {
+          console.error('[EXPERT_TOBACCONIST] Follow-up wait failed:', err);
+          if (err.message?.includes("Agent error:")) {
+            agentResponse = `The expert agent encountered an error: ${err.message.replace("Agent error: ", "")}`;
+          }
+        }
         
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't load your collection data. Please try again.";
+          finalResponse = "I couldn't load a response from the expert agent. Please try again.";
           console.error('[EXPERT_TOBACCONIST] Agent returned empty response on follow-up');
         }
         
@@ -1604,6 +1613,7 @@ ${query}`;
           tips: [],
           routed_to: 'expert_tobacconist',
           _debug: {
+            conversation_id: conversation.id,
             pipes_count: contextPayload.pipes.length,
             pairingGrid_present: !!contextPayload.pairingGrid,
             usageLogs_present: !!contextPayload.usageLogs,
