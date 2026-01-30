@@ -10,7 +10,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Heart, DollarSign, 
-  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle
+  Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle, RotateCcw
 } from "lucide-react";
 import { isTrialWindowNow } from "@/components/utils/access";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
