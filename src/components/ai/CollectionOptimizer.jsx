@@ -527,6 +527,25 @@ async function undoOptimizationApply(batchId) {
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
   };
 
+  // Router: Detect if question should go to expert_tobacconist agent
+  const shouldRouteToAgent = (query) => {
+    const lowerQuery = query.toLowerCase();
+    
+    // Intent triggers
+    const intentTriggers = [
+      'which pipe', 'which tobacco', 'which blend',
+      'lowest scoring', 'worst', 'most redundant', 'redundant',
+      'get rid of', 'remove', 'replace', 'upgrade', 'sell', 'trade',
+      'best candidate', 'optimize', 'greatest impact',
+      'what should i smoke', 'what should i age',
+      'value', 'worth', 'pairing grid', 'pairings',
+      'cellar strategy', 'aging plan', 'rotation',
+      'gap', 'missing', 'need'
+    ];
+    
+    return intentTriggers.some(trigger => lowerQuery.includes(trigger));
+  };
+
   const analyzeCollectionQuestion = async () => {
     if (!whatIfQuery.trim()) return;
     
@@ -543,32 +562,66 @@ async function undoOptimizationApply(batchId) {
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowlStyle: p.bowlStyle,
-        shankShape: p.shankShape,
-        bend: p.bend,
-        sizeClass: p.sizeClass,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        focus: p.focus,
-        interchangeable_bowls: p.interchangeable_bowls || []
-      }));
+      // Check if should route to agent
+      if (shouldRouteToAgent(currentQuery)) {
+        // Route to expert_tobacconist agent with full context
+        const { data: conversation } = await base44.agents.createConversation({
+          agent_name: 'expert_tobacconist',
+          metadata: { source: 'collection_optimizer' }
+        });
+        
+        const response = await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: currentQuery
+        });
+        
+        // Extract the assistant's response
+        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        
+        const aiResponse = {
+          is_collection_question: true,
+          response: assistantMsg?.content || 'No response received from agent',
+          specific_recommendations: [],
+          collection_insights: [],
+          routed_to: 'expert_tobacconist'
+        };
+        
+        setWhatIfResult(aiResponse);
+        
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+      } else {
+        // Use standard LLM for general questions
+        const pipesData = pipes.map(p => ({
+          id: p.id,
+          name: p.name,
+          maker: p.maker,
+          shape: p.shape,
+          bowlStyle: p.bowlStyle,
+          shankShape: p.shankShape,
+          bend: p.bend,
+          sizeClass: p.sizeClass,
+          bowl_material: p.bowl_material,
+          chamber_volume: p.chamber_volume,
+          focus: p.focus,
+          interchangeable_bowls: p.interchangeable_bowls || []
+        }));
 
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        manufacturer: b.manufacturer,
-        blend_type: b.blend_type,
-        strength: b.strength
-      }));
+        const blendsData = blends.map(b => ({
+          id: b.id,
+          name: b.name,
+          manufacturer: b.manufacturer,
+          blend_type: b.blend_type,
+          strength: b.strength
+        }));
 
-      // Collection-focused advice with optimization context
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: You are an expert collection strategist for pipe smoking.
+        // Collection-focused advice with optimization context
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: You are an expert collection strategist for pipe smoking.
 
 User's Collection Analysis:
 ${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
@@ -585,37 +638,39 @@ Provide specific, actionable advice about:
 IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
 
 Be conversational and specific to their actual pipes and blends. Reference their collection items by name when relevant.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            response: { type: "string" },
-            specific_recommendations: {
-              type: "array",
-              items: { type: "string" }
-            },
-            collection_insights: {
-              type: "array",
-              items: { type: "string" }
+          response_json_schema: {
+            type: "object",
+            properties: {
+              response: { type: "string" },
+              specific_recommendations: {
+                type: "array",
+                items: { type: "string" }
+              },
+              collection_insights: {
+                type: "array",
+                items: { type: "string" }
+              }
             }
           }
-        }
-      });
+        });
 
-      const aiResponse = {
-        is_collection_question: true,
-        response: result.response,
-        specific_recommendations: result.specific_recommendations,
-        collection_insights: result.collection_insights
-      };
-      
-      setWhatIfResult(aiResponse);
-      
-      // Add AI response to conversation
-      setConversationMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
-      }]);
+        const aiResponse = {
+          is_collection_question: true,
+          response: result.response,
+          specific_recommendations: result.specific_recommendations,
+          collection_insights: result.collection_insights,
+          routed_to: 'standard_llm'
+        };
+        
+        setWhatIfResult(aiResponse);
+        
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
+      }
     } catch (err) {
       console.error('Error analyzing collection question:', err);
       toast.error('Failed to analyze question. Please try again.');
@@ -775,73 +830,112 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
 
     try {
-      const pipesData = pipes.map(p => ({
-        id: p.id,
-        name: p.name,
-        maker: p.maker,
-        shape: p.shape,
-        bowlStyle: p.bowlStyle,
-        shankShape: p.shankShape,
-        bend: p.bend,
-        sizeClass: p.sizeClass,
-        focus: p.focus
-      }));
+      // Check if should route to agent
+      if (shouldRouteToAgent(query)) {
+        // Route to expert_tobacconist agent with conversation context
+        const { data: conversation } = await base44.agents.createConversation({
+          agent_name: 'expert_tobacconist',
+          metadata: { source: 'collection_optimizer_followup' }
+        });
+        
+        // Add conversation history as context
+        const conversationContext = conversationMessages
+          .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content.response || m.content.advice || ''}`)
+          .join('\n\n');
+        
+        const response = await base44.agents.addMessage(conversation, {
+          role: 'user',
+          content: `Previous discussion:\n${conversationContext}\n\nFollow-up question: ${query}`
+        });
+        
+        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
+        
+        const aiResponse = {
+          is_collection_question: true,
+          response: assistantMsg?.content || 'No response received from agent',
+          specific_recommendations: [],
+          collection_insights: [],
+          routed_to: 'expert_tobacconist'
+        };
 
-      const blendsData = blends.map(b => ({
-        id: b.id,
-        name: b.name,
-        blend_type: b.blend_type
-      }));
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
 
-      // Continue collection-specific conversation
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SYSTEM: Continue the expert collection strategy conversation.
+        setWhatIfResult(aiResponse);
+      } else {
+        // Standard LLM path
+        const pipesData = pipes.map(p => ({
+          id: p.id,
+          name: p.name,
+          maker: p.maker,
+          shape: p.shape,
+          bowlStyle: p.bowlStyle,
+          shankShape: p.shankShape,
+          bend: p.bend,
+          sizeClass: p.sizeClass,
+          focus: p.focus
+        }));
 
-  User's Collection:
-  ${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
+        const blendsData = blends.map(b => ({
+          id: b.id,
+          name: b.name,
+          blend_type: b.blend_type
+        }));
 
-  Previous Discussion:
-  ${conversationMessages.map(m => {
-  if (m.role === 'user') return `User: ${m.content}`;
-  return `Expert: ${m.content.response || m.content.advice || ''}`;
-  }).join('\n\n')}
+        // Continue collection-specific conversation
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `SYSTEM: Continue the expert collection strategy conversation.
 
-  User Follow-up: ${query}
+    User's Collection:
+    ${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
 
-  IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
+    Previous Discussion:
+    ${conversationMessages.map(m => {
+    if (m.role === 'user') return `User: ${m.content}`;
+    return `Expert: ${m.content.response || m.content.advice || ''}`;
+    }).join('\n\n')}
 
-  Provide specific, actionable advice about their collection based on the ongoing discussion.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            response: { type: "string" },
-            specific_recommendations: {
-              type: "array",
-              items: { type: "string" }
-            },
-            collection_insights: {
-              type: "array",
-              items: { type: "string" }
+    User Follow-up: ${query}
+
+    IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
+
+    Provide specific, actionable advice about their collection based on the ongoing discussion.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              response: { type: "string" },
+              specific_recommendations: {
+                type: "array",
+                items: { type: "string" }
+              },
+              collection_insights: {
+                type: "array",
+                items: { type: "string" }
+              }
             }
           }
-        }
-      });
+        });
 
-      const aiResponse = {
-        is_collection_question: true,
-        response: result.response,
-        specific_recommendations: result.specific_recommendations,
-        collection_insights: result.collection_insights
-      };
+        const aiResponse = {
+          is_collection_question: true,
+          response: result.response,
+          specific_recommendations: result.specific_recommendations,
+          collection_insights: result.collection_insights,
+          routed_to: 'standard_llm'
+        };
 
-      // Add AI response to conversation
-      setConversationMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
-      }]);
+        // Add AI response to conversation
+        setConversationMessages(prev => [...prev, {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        }]);
 
-      setWhatIfResult(aiResponse);
+        setWhatIfResult(aiResponse);
+      }
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
