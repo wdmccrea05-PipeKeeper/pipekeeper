@@ -24,6 +24,7 @@ import PhotoUploader from "@/components/PhotoUploader";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { SafeRender } from "@/components/utils/SafeRender";
+import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   if (isAppleBuild) return null;
@@ -1812,115 +1813,138 @@ Provide concrete, actionable steps with specific field values.`,
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Conversation History */}
-          {conversationMessages.length > 0 && (
-            <div className="space-y-4 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-stone-50">
-              {conversationMessages.map((msg, idx) => {
-                const nextMsg = conversationMessages[idx + 1];
-                const showPair = msg.role === 'user' && nextMsg?.role === 'assistant';
-                
-                if (msg.role === 'assistant' && conversationMessages[idx - 1]?.role === 'user') {
-                  // Skip assistant messages that are already shown in pairs
-                  return null;
-                }
-                
-                return (
-                  <div key={idx} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3">
-                    {/* User Message */}
-                    <div className="text-right">
-                      <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[85%]">
-                        <p className="text-sm">{msg.content}</p>
-                        {msg.photos?.length > 0 && (
-                          <div className="flex gap-2 mt-2">
-                            {msg.photos.map((url, i) => (
-                              <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Assistant Response (if exists) */}
-                    {showPair && (
-                      <div className="text-left border-t border-stone-200 pt-3">
-                        <div className="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
-                          {nextMsg.content.is_general_advice ? (
-                            <div className="text-sm text-stone-700 space-y-3">
-                              <p>{nextMsg.content.advice}</p>
-                              {nextMsg.content.key_points?.length > 0 && (
-                                <div className="pt-3 border-t border-stone-300">
-                                  <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
-                                  <ul className="space-y-1.5 text-sm">
-                                    {nextMsg.content.key_points.map((pt, i) => (
-                                      <li key={i} className="flex gap-2 leading-relaxed">
-                                        <span className="text-blue-600">•</span>
-                                        <span>{pt}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {nextMsg.content.routed_to && (
-                                <div className="mt-2 pt-2 border-t border-stone-300">
-                                  <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
-                                    Answered by: {nextMsg.content.routed_to}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ) : nextMsg.content.is_impact_analysis ? (
-                            <div className="text-sm space-y-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge className="bg-indigo-600 text-white">
-                                  Impact Score: {nextMsg.content.impact_score}/10
-                                </Badge>
-                                <Badge className="bg-blue-600 text-white">
-                                  {nextMsg.content.recommendation_category}
-                                </Badge>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-stone-700 font-medium">Analysis:</p>
-                                <p className="text-stone-600 text-xs">{nextMsg.content.detailed_reasoning}</p>
-                              </div>
-                              {nextMsg.content.trophy_pairings?.length > 0 && (
-                                <div>
-                                  <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
-                                  <div className="flex flex-wrap gap-1">
-                                    {nextMsg.content.trophy_pairings.map((blend, i) => (
-                                      <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
-                                        {blend}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : nextMsg.content.is_collection_question ? (
-                            <div className="text-sm text-stone-700 space-y-2">
-                              <p>{nextMsg.content.response}</p>
-                              {nextMsg.content.specific_recommendations?.length > 0 && (
-                                <div className="pt-2 border-t border-stone-300">
-                                  <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
-                                  <ul className="space-y-1">
-                                    {nextMsg.content.specific_recommendations.map((rec, i) => (
-                                      <li key={i} className="text-xs text-stone-600">• {rec}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-stone-700">
-                              <p>Unable to display response</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                     {conversationMessages.length > 0 && (
+                       <div className="space-y-4 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-stone-50">
+                         {conversationMessages.map((msg, idx) => {
+                           const isUser = msg.role === "user";
+                           const content = msg.content;
+
+                           const isImpact = !!content?.is_impact_analysis;
+                           const isGeneralAdvice = !!content?.is_general_advice;
+                           const isCollectionQuestion = !!content?.is_collection_question;
+
+                           return (
+                             <div key={idx} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3">
+                               {/* USER MESSAGE */}
+                               {isUser && (
+                                 <div className="text-right">
+                                   <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[85%]">
+                                     <p className="text-sm">{typeof content === "string" ? content : JSON.stringify(content)}</p>
+
+                                     {msg.photos?.length > 0 && (
+                                       <div className="flex gap-2 mt-2">
+                                         {msg.photos.map((url, i) => (
+                                           <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
+                                         ))}
+                                       </div>
+                                     )}
+                                   </div>
+                                 </div>
+                               )}
+
+                               {/* ASSISTANT MESSAGE */}
+                               {!isUser && (
+                                 <div className="text-left">
+                                   <div className="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
+                                     {isGeneralAdvice ? (
+                                       <div className="space-y-3">
+                                         <FormattedTobacconistResponse content={content.advice || ""} style="light_structure" />
+
+                                         {content.key_points?.length > 0 && (
+                                           <div className="pt-3 border-t border-stone-300">
+                                             <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
+                                             <ul className="space-y-1.5 text-sm">
+                                               {content.key_points.map((pt, i) => (
+                                                 <li key={i} className="flex gap-2 leading-relaxed">
+                                                   <span className="text-blue-600">•</span>
+                                                   <span>{pt}</span>
+                                                 </li>
+                                               ))}
+                                             </ul>
+                                           </div>
+                                         )}
+
+                                         {content.routed_to && (
+                                           <div className="mt-2 pt-2 border-t border-stone-300">
+                                             <p className="text-xs font-mono text-stone-400 bg-stone-100 px-2 py-1 rounded">
+                                               Answered by: {content.routed_to}
+                                             </p>
+                                           </div>
+                                         )}
+                                       </div>
+                                     ) : isImpact ? (
+                                       <div className="text-sm space-y-3">
+                                         <div className="flex items-center gap-2 flex-wrap">
+                                           <Badge className="bg-indigo-600 text-white">
+                                             Impact Score: {content.impact_score}/10
+                                           </Badge>
+                                           {!!content.recommendation_category && (
+                                             <Badge className="bg-blue-600 text-white">
+                                               {content.recommendation_category}
+                                             </Badge>
+                                           )}
+                                         </div>
+
+                                         {!!content.detailed_reasoning && (
+                                           <div className="space-y-2">
+                                             <p className="text-stone-700 font-medium">Analysis:</p>
+                                             <FormattedTobacconistResponse content={content.detailed_reasoning} style="simple_paragraphs" />
+                                           </div>
+                                         )}
+
+                                         {content.trophy_pairings?.length > 0 && (
+                                           <div>
+                                             <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
+                                             <div className="flex flex-wrap gap-1">
+                                               {content.trophy_pairings.map((blend, i) => (
+                                                 <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
+                                                   {blend}
+                                                 </Badge>
+                                               ))}
+                                             </div>
+                                           </div>
+                                         )}
+
+                                         {!!content.redundancy_analysis && (
+                                           <div className="pt-2 border-t border-stone-200">
+                                             <p className="text-stone-700 font-medium text-xs mb-1">Redundancy:</p>
+                                             <FormattedTobacconistResponse content={content.redundancy_analysis} style="simple_paragraphs" />
+                                           </div>
+                                         )}
+
+                                         {/* Catch-all so we NEVER crash */}
+                                         <div className="pt-2 border-t border-stone-200">
+                                           <p className="text-stone-700 font-medium text-xs mb-1">Raw Result:</p>
+                                           <SafeRender value={content} className="text-xs text-stone-600" />
+                                         </div>
+                                       </div>
+                                     ) : isCollectionQuestion ? (
+                                       <div className="space-y-2">
+                                         <FormattedTobacconistResponse content={content.response || ""} style="light_structure" />
+
+                                         {content.specific_recommendations?.length > 0 && (
+                                           <div className="pt-2 border-t border-stone-300">
+                                             <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                             <ul className="space-y-1">
+                                               {content.specific_recommendations.map((rec, i) => (
+                                                 <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                               ))}
+                                             </ul>
+                                           </div>
+                                         )}
+                                       </div>
+                                     ) : (
+                                       // Ultimate fallback: safe render anything
+                                       <SafeRender value={content} className="text-sm text-stone-700" />
+                                     )}
+                                   </div>
+                                 </div>
+                               )}
+                             </div>
+                           );
+                         })}
+                       </div>
+                     )}
 
           <div>
             <label className="text-sm font-medium text-stone-800 mb-2 block">
