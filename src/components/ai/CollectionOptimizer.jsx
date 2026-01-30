@@ -1173,94 +1173,110 @@ Provide concrete, actionable steps with specific field values.`,
         <CardContent className="space-y-4">
           {/* Conversation History */}
           {conversationMessages.length > 0 && (
-            <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-stone-50">
-              {conversationMessages.map((msg, idx) => (
-                <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                  {msg.role === 'user' ? (
-                    <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[80%]">
-                      <p className="text-sm">{msg.content}</p>
-                      {msg.photos?.length > 0 && (
-                        <div className="flex gap-2 mt-2">
-                          {msg.photos.map((url, i) => (
-                            <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
-                          ))}
-                        </div>
-                      )}
+            <div className="space-y-4 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-stone-50">
+              {conversationMessages.map((msg, idx) => {
+                const nextMsg = conversationMessages[idx + 1];
+                const showPair = msg.role === 'user' && nextMsg?.role === 'assistant';
+                
+                if (msg.role === 'assistant' && conversationMessages[idx - 1]?.role === 'user') {
+                  // Skip assistant messages that are already shown in pairs
+                  return null;
+                }
+                
+                return (
+                  <div key={idx} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3">
+                    {/* User Message */}
+                    <div className="text-right">
+                      <div className="inline-block bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-[85%]">
+                        <p className="text-sm">{msg.content}</p>
+                        {msg.photos?.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {msg.photos.map((url, i) => (
+                              <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="inline-block bg-white border rounded-lg px-4 py-3 max-w-[80%] text-left">
-                      {msg.content.is_general_advice ? (
-                        <div className="text-sm text-stone-700 space-y-3">
-                          <p>{msg.content.advice}</p>
-                          {msg.content.key_points?.length > 0 && (
-                            <div className="pt-3 border-t">
-                              <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
-                              <ul className="space-y-1.5 text-sm">
-                                {msg.content.key_points.map((pt, i) => (
-                                  <li key={i} className="flex gap-2 leading-relaxed">
-                                    <span className="text-blue-600">•</span>
-                                    <span>{pt}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                    
+                    {/* Assistant Response (if exists) */}
+                    {showPair && (
+                      <div className="text-left border-t border-stone-200 pt-3">
+                        <div className="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
+                          {nextMsg.content.is_general_advice ? (
+                            <div className="text-sm text-stone-700 space-y-3">
+                              <p>{nextMsg.content.advice}</p>
+                              {nextMsg.content.key_points?.length > 0 && (
+                                <div className="pt-3 border-t border-stone-300">
+                                  <p className="font-medium text-sm text-stone-700 mb-2">Key Points:</p>
+                                  <ul className="space-y-1.5 text-sm">
+                                    {nextMsg.content.key_points.map((pt, i) => (
+                                      <li key={i} className="flex gap-2 leading-relaxed">
+                                        <span className="text-blue-600">•</span>
+                                        <span>{pt}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ) : msg.content.is_impact_analysis ? (
-                        <div className="text-sm space-y-3 w-full">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className="bg-indigo-600 text-white">
-                              Impact Score: {msg.content.impact_score}/10
-                            </Badge>
-                            <Badge className="bg-blue-600 text-white">
-                              {msg.content.recommendation_category}
-                            </Badge>
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-stone-700 font-medium">Analysis:</p>
-                            <p className="text-stone-600 text-xs">{msg.content.detailed_reasoning}</p>
-                          </div>
-                          {msg.content.trophy_pairings?.length > 0 && (
-                            <div>
-                              <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {msg.content.trophy_pairings.map((blend, i) => (
-                                  <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
-                                    {blend}
-                                  </Badge>
-                                ))}
+                          ) : nextMsg.content.is_impact_analysis ? (
+                            <div className="text-sm space-y-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge className="bg-indigo-600 text-white">
+                                  Impact Score: {nextMsg.content.impact_score}/10
+                                </Badge>
+                                <Badge className="bg-blue-600 text-white">
+                                  {nextMsg.content.recommendation_category}
+                                </Badge>
                               </div>
+                              <div className="space-y-2">
+                                <p className="text-stone-700 font-medium">Analysis:</p>
+                                <p className="text-stone-600 text-xs">{nextMsg.content.detailed_reasoning}</p>
+                              </div>
+                              {nextMsg.content.trophy_pairings?.length > 0 && (
+                                <div>
+                                  <p className="text-stone-700 font-medium text-xs mb-1">Trophy Pairings:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {nextMsg.content.trophy_pairings.map((blend, i) => (
+                                      <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
+                                        {blend}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : nextMsg.content.is_collection_question ? (
+                            <div className="text-sm text-stone-700 space-y-2">
+                              <p>{nextMsg.content.response}</p>
+                              {nextMsg.content.specific_recommendations?.length > 0 && (
+                                <div className="pt-2 border-t border-stone-300">
+                                  <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
+                                  <ul className="space-y-1">
+                                    {nextMsg.content.specific_recommendations.map((rec, i) => (
+                                      <li key={i} className="text-xs text-stone-600">• {rec}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-stone-700">
+                              <p>Unable to display response</p>
                             </div>
                           )}
                         </div>
-                      ) : msg.content.is_collection_question ? (
-                        <div className="text-sm text-stone-700 space-y-2">
-                          <p>{msg.content.response}</p>
-                          {msg.content.specific_recommendations?.length > 0 && (
-                            <div className="pt-2 border-t border-stone-300">
-                              <p className="font-medium text-xs text-stone-600 mb-1">Recommendations:</p>
-                              <ul className="space-y-1">
-                                {msg.content.specific_recommendations.map((rec, i) => (
-                                  <li key={i} className="text-xs text-stone-600">• {rec}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-stone-700">
-                          <p>Unable to display response</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
           <div>
-            <label className="text-sm font-medium text-stone-700 mb-2 block">
+            <label className="text-sm font-medium text-stone-800 mb-2 block">
               {conversationMessages.length > 0 ? 'Continue the conversation...' : 'Chat with the Tobacconist'}
             </label>
             <Textarea
@@ -1269,7 +1285,7 @@ Provide concrete, actionable steps with specific field values.`,
                 : "e.g., 'How do I clean my pipe?' or 'Should I buy a bent pipe for English blends?'"}
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value)}
-              className="min-h-[80px]"
+              className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   if (conversationMessages.length > 0) {
@@ -1284,19 +1300,19 @@ Provide concrete, actionable steps with specific field values.`,
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-700 mb-2 block">
+            <label className="text-sm font-medium text-stone-800 mb-2 block">
               Pipe Details (Optional)
             </label>
             <Textarea
               placeholder="Describe characteristics: shape, bowl size, material, etc."
               value={whatIfDescription}
               onChange={(e) => setWhatIfDescription(e.target.value)}
-              className="min-h-[60px]"
+              className="min-h-[60px] bg-white text-stone-900 placeholder:text-stone-500"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-700 mb-2 block">
+            <label className="text-sm font-medium text-stone-800 mb-2 block">
               Upload Photos (Optional)
             </label>
             <div onDrop={(e) => { e.preventDefault(); handlePhotoUpload({ target: { files: e.dataTransfer.files } }); }} onDragOver={(e) => e.preventDefault()}>
@@ -1356,7 +1372,7 @@ Provide concrete, actionable steps with specific field values.`,
                     onClick={analyzeCollectionImpact}
                     disabled={whatIfLoading}
                     variant="outline"
-                    className="border-blue-300 text-blue-700 hover:bg-blue-50 flex-1"
+                    className="border-blue-400 bg-blue-600 text-white hover:bg-blue-700 hover:text-white flex-1"
                   >
                     {whatIfLoading ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1366,7 +1382,7 @@ Provide concrete, actionable steps with specific field values.`,
                     <span className="hidden sm:inline">Analyze Impact</span>
                     <span className="sm:hidden">Impact</span>
                   </Button>
-                  <Button variant="outline" onClick={resetWhatIf} className="flex-1">
+                  <Button variant="outline" onClick={resetWhatIf} className="flex-1 bg-stone-700 text-white hover:bg-stone-800 border-stone-600">
                     Reset
                   </Button>
                 </div>
