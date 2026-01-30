@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import { waitForAssistantMessage } from "@/components/utils/agentWait";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const [photos, setPhotos] = useState([]);
@@ -157,29 +158,7 @@ ${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${
       // Wait for assistant response asynchronously
       let responseText = "";
       try {
-        responseText = await new Promise((resolve, reject) => {
-          let resolved = false;
-          const unsubscribe = base44.agents.subscribeToConversation(
-            conversation.id,
-            (data) => {
-              const messages = data?.messages || [];
-              const assistant = [...messages].reverse().find(
-                m => m.role === "assistant" && m.content?.trim()
-              );
-              if (assistant && !resolved) {
-                resolved = true;
-                try { unsubscribe?.(); } catch {}
-                resolve(assistant.content);
-              }
-            }
-          );
-          setTimeout(() => {
-            if (resolved) return;
-            resolved = true;
-            try { unsubscribe?.(); } catch {}
-            reject(new Error("Timeout"));
-          }, 45000);
-        });
+        responseText = await waitForAssistantMessage(conversation.id);
       } catch (err) {
         console.error('[IDENTIFY] Response wait failed:', err);
         responseText = "Failed to receive identification. Please try again.";
@@ -258,29 +237,7 @@ Return JSON:
         // Wait for assistant response asynchronously
         let responseText = "";
         try {
-          responseText = await new Promise((resolve, reject) => {
-            let resolved = false;
-            const unsubscribe = base44.agents.subscribeToConversation(
-              clarificationNeeded.agent_conversation_id,
-              (data) => {
-                const messages = data?.messages || [];
-                const assistant = [...messages].reverse().find(
-                  m => m.role === "assistant" && m.content?.trim()
-                );
-                if (assistant && !resolved) {
-                  resolved = true;
-                  try { unsubscribe?.(); } catch {}
-                  resolve(assistant.content);
-                }
-              }
-            );
-            setTimeout(() => {
-              if (resolved) return;
-              resolved = true;
-              try { unsubscribe?.(); } catch {}
-              reject(new Error("Timeout"));
-            }, 45000);
-          });
+          responseText = await waitForAssistantMessage(clarificationNeeded.agent_conversation_id);
         } catch (err) {
           console.error('[IDENTIFY] Clarification response wait failed:', err);
           responseText = "Failed to receive clarification response.";
@@ -387,29 +344,7 @@ Please analyze the impact of adding this pipe:
       // Wait for assistant response asynchronously
       let responseText = "";
       try {
-        responseText = await new Promise((resolve, reject) => {
-          let resolved = false;
-          const unsubscribe = base44.agents.subscribeToConversation(
-            conversation.id,
-            (data) => {
-              const messages = data?.messages || [];
-              const assistant = [...messages].reverse().find(
-                m => m.role === "assistant" && m.content?.trim()
-              );
-              if (assistant && !resolved) {
-                resolved = true;
-                try { unsubscribe?.(); } catch {}
-                resolve(assistant.content);
-              }
-            }
-          );
-          setTimeout(() => {
-            if (resolved) return;
-            resolved = true;
-            try { unsubscribe?.(); } catch {}
-            reject(new Error("Timeout"));
-          }, 45000);
-        });
+        responseText = await waitForAssistantMessage(conversation.id);
       } catch (err) {
         console.error('[IMPACT] Response wait failed:', err);
         responseText = "Failed to receive impact analysis.";

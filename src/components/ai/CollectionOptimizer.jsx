@@ -5,6 +5,7 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
+import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import { Loader2, Target, TrendingUp, ShoppingCart, Sparkles, CheckCircle2, RefreshCw, Check, ChevronDown, ChevronUp, Trophy, HelpCircle, Upload, X, Lightbulb, CheckCheck, Star, AlertTriangle, Undo } from "lucide-react";
 import { toast } from "sonner";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
@@ -551,41 +552,6 @@ async function undoOptimizationApply(batchId) {
     }
     
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
-  };
-
-  // Helper: Wait for assistant message from agent conversation
-  const waitForAssistantMessage = async (conversationId, timeoutMs = 45000) => {
-    return new Promise((resolve, reject) => {
-      let resolved = false;
-
-      const unsubscribe = base44.agents.subscribeToConversation(
-        conversationId,
-        (data) => {
-          const messages = data?.messages || [];
-          const assistant = [...messages]
-            .reverse()
-            .find(
-              m =>
-                m.role === "assistant" &&
-                typeof m.content === "string" &&
-                m.content.trim().length > 0
-            );
-
-          if (assistant && !resolved) {
-            resolved = true;
-            try { unsubscribe?.(); } catch {}
-            resolve(assistant.content);
-          }
-        }
-      );
-
-      setTimeout(() => {
-        if (resolved) return;
-        resolved = true;
-        try { unsubscribe?.(); } catch {}
-        reject(new Error("Timed out waiting for expert_tobacconist response"));
-      }, timeoutMs);
-    });
   };
 
   // Router: Detect if question should go to expert_tobacconist agent
