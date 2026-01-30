@@ -23,6 +23,7 @@ import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/c
 import PhotoUploader from "@/components/PhotoUploader";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { SafeRender } from "@/components/utils/SafeRender";
 
 export default function CollectionOptimizer({ pipes, blends, showWhatIf: initialShowWhatIf = false, improvedWhatIf = false }) {
   if (isAppleBuild) return null;
@@ -2095,24 +2096,24 @@ Provide concrete, actionable steps with specific field values.`,
               )}
 
               <Card className="border-stone-200">
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
-                    <p className="text-sm text-stone-600">{whatIfResult.redundancy_analysis}</p>
-                  </div>
+              <CardContent className="p-4 space-y-3">
+              <div>
+              <p className="text-sm font-medium text-stone-700 mb-1">Redundancy Analysis:</p>
+              <SafeRender value={whatIfResult.redundancy_analysis} className="text-sm text-stone-600" />
+              </div>
 
-                  {whatIfResult.score_improvements && (
-                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
-                      <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
-                      <p className="text-sm text-emerald-800">{whatIfResult.score_improvements}</p>
-                    </div>
-                  )}
+              {whatIfResult.score_improvements && (
+              <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+              <p className="text-sm font-medium text-emerald-700 mb-1">Score Improvements:</p>
+              <SafeRender value={whatIfResult.score_improvements} className="text-sm text-emerald-800" />
+              </div>
+              )}
 
-                  <div>
-                    <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
-                    <p className="text-sm text-stone-600">{whatIfResult.detailed_reasoning}</p>
-                  </div>
-                </CardContent>
+              <div>
+              <p className="text-sm font-medium text-stone-700 mb-1">Detailed Analysis:</p>
+              <SafeRender value={whatIfResult.detailed_reasoning} className="text-sm text-stone-600" />
+              </div>
+              </CardContent>
               </Card>
 
               {whatIfResult.applyable_changes?.length > 0 && (
