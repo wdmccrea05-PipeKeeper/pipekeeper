@@ -2660,7 +2660,7 @@ Provide concrete, actionable steps with specific field values.`,
                               </div>
                             )}
 
-                            <p className="text-sm text-[#E0D8C8] mb-2">{displaySpec.reasoning}</p>
+                            <p className="text-sm text-foreground mb-2">{displaySpec.reasoning}</p>
                             
                             {displaySpec.score_improvement && (
                               <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
