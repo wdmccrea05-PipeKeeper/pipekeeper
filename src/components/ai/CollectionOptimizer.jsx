@@ -599,28 +599,8 @@ async function undoOptimizationApply(batchId) {
     setWhatIfQuery(''); // Clear input immediately
     
     try {
-      // STICKY ROUTING: If conversation exists, check metadata for selected agent FIRST
-      let useAgent = stickyAgent;
-      if (!useAgent && currentConversationId) {
-        try {
-          const conv = await base44.agents.getConversation(currentConversationId);
-          useAgent = conv?.metadata?.selected_agent || null;
-          if (useAgent) {
-            setStickyAgent(useAgent);
-            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
-          }
-        } catch (err) {
-          console.warn('[ROUTING] Failed to check conversation metadata:', err);
-        }
-      }
-      
-      // Fallback to keyword-based routing only if no sticky agent
-      if (!useAgent) {
-        useAgent = shouldRouteToAgent(currentQuery);
-      }
-      
-      if (useAgent) {
-        const debugContext = 'ASK_EXPERT';
+      // ALWAYS route to expert_tobacconist for "Ask the Expert"
+      const debugContext = 'ASK_EXPERT';
         const startTime = Date.now();
         
         console.log(`[${debugContext}] ▶️ Starting agent call`, {
@@ -824,83 +804,6 @@ ${currentQuery}`;
           content: aiResponse,
           timestamp: new Date().toISOString()
         }]);
-      } else {
-        // Use standard LLM for general questions
-        const pipesData = pipes.map(p => ({
-          id: p.id,
-          name: p.name,
-          maker: p.maker,
-          shape: p.shape,
-          bowlStyle: p.bowlStyle,
-          shankShape: p.shankShape,
-          bend: p.bend,
-          sizeClass: p.sizeClass,
-          bowl_material: p.bowl_material,
-          chamber_volume: p.chamber_volume,
-          focus: p.focus,
-          interchangeable_bowls: p.interchangeable_bowls || []
-        }));
-
-        const blendsData = blends.map(b => ({
-          id: b.id,
-          name: b.name,
-          manufacturer: b.manufacturer,
-          blend_type: b.blend_type,
-          strength: b.strength
-        }));
-
-        // Collection-focused advice with optimization context
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: You are an expert collection strategist for pipe smoking.
-
-User's Collection Analysis:
-${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
-
-User's Question About Their Collection: ${currentQuery}
-
-Provide specific, actionable advice about:
-- Collection coverage and gaps
-- Pipe specialization recommendations considering geometry (shape, bend, bowl style, size)
-- Blend-to-pipe matching strategies based on pipe geometry and characteristics
-- Redundancies and optimization opportunities
-- Size, shape, bend, and material diversity
-
-IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
-
-Be conversational and specific to their actual pipes and blends. Reference their collection items by name when relevant.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              response: { type: "string" },
-              specific_recommendations: {
-                type: "array",
-                items: { type: "string" }
-              },
-              collection_insights: {
-                type: "array",
-                items: { type: "string" }
-              }
-            }
-          }
-        });
-
-        const aiResponse = {
-          is_collection_question: true,
-          response: result.response,
-          specific_recommendations: result.specific_recommendations,
-          collection_insights: result.collection_insights,
-          routed_to: 'standard_llm'
-        };
-        
-        setWhatIfResult(aiResponse);
-        
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-      }
     } catch (err) {
       console.error('[ROUTING] Error analyzing collection question:', err);
       console.error('[ROUTING] Error details:', {
@@ -1252,28 +1155,8 @@ Provide clear, expert advice about pipe smoking, tobacco, techniques, history, p
     setWhatIfFollowUp('');
 
     try {
-      // STICKY ROUTING: If conversation exists, ALWAYS check metadata for selected agent
-      let useAgent = stickyAgent;
-      if (!useAgent && currentConversationId) {
-        try {
-          const conv = await base44.agents.getConversation(currentConversationId);
-          useAgent = conv?.metadata?.selected_agent || null;
-          if (useAgent) {
-            setStickyAgent(useAgent);
-            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
-          }
-        } catch (err) {
-          console.warn('[ROUTING] Failed to check conversation metadata:', err);
-        }
-      }
-      
-      // Fallback to keyword routing only if no sticky agent found
-      if (!useAgent) {
-        useAgent = shouldRouteToAgent(query);
-      }
-      
-      if (useAgent) {
-        console.log('[EXPERT_TOBACCONIST] Follow-up detected as collection question');
+      // ALWAYS route to expert_tobacconist for "Ask the Expert"
+      console.log('[EXPERT_TOBACCONIST] Follow-up routing to expert agent');
         
         // Validate required context
         if (pipes.length === 0) {
@@ -1471,77 +1354,6 @@ ${query}`;
         }]);
 
         setWhatIfResult(aiResponse);
-      } else {
-        // Standard LLM path
-        const pipesData = pipes.map(p => ({
-          id: p.id,
-          name: p.name,
-          maker: p.maker,
-          shape: p.shape,
-          bowlStyle: p.bowlStyle,
-          shankShape: p.shankShape,
-          bend: p.bend,
-          sizeClass: p.sizeClass,
-          focus: p.focus
-        }));
-
-        const blendsData = blends.map(b => ({
-          id: b.id,
-          name: b.name,
-          blend_type: b.blend_type
-        }));
-
-        // Continue collection-specific conversation
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: Continue the expert collection strategy conversation.
-
-    User's Collection:
-    ${JSON.stringify({ pipes: pipesData, blends: blendsData }, null, 2)}
-
-    Previous Discussion:
-    ${conversationMessages.map(m => {
-    if (m.role === 'user') return `User: ${m.content}`;
-    return `Expert: ${m.content.response || m.content.advice || ''}`;
-    }).join('\n\n')}
-
-    User Follow-up: ${query}
-
-    IMPORTANT: Use clear, well-spaced paragraphs. Avoid markdown formatting (no **, ##, etc). Use proper grammar and spelling. Format recommendations as clear bullet points or numbered lists.
-
-    Provide specific, actionable advice about their collection based on the ongoing discussion.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              response: { type: "string" },
-              specific_recommendations: {
-                type: "array",
-                items: { type: "string" }
-              },
-              collection_insights: {
-                type: "array",
-                items: { type: "string" }
-              }
-            }
-          }
-        });
-
-        const aiResponse = {
-          is_collection_question: true,
-          response: result.response,
-          specific_recommendations: result.specific_recommendations,
-          collection_insights: result.collection_insights,
-          routed_to: 'standard_llm'
-        };
-
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-
-        setWhatIfResult(aiResponse);
-      }
     } catch (err) {
       console.error('Error with follow-up question:', err);
       toast.error('Failed to process follow-up question');
@@ -1575,28 +1387,8 @@ ${query}`;
     setWhatIfFollowUp('');
 
     try {
-      // STICKY ROUTING: If conversation exists, ALWAYS check metadata for selected agent
-      let useAgent = stickyAgent;
-      if (!useAgent && currentConversationId) {
-        try {
-          const conv = await base44.agents.getConversation(currentConversationId);
-          useAgent = conv?.metadata?.selected_agent || null;
-          if (useAgent) {
-            setStickyAgent(useAgent);
-            console.log('[ROUTING] Restored agent from conversation metadata:', useAgent);
-          }
-        } catch (err) {
-          console.warn('[ROUTING] Failed to check conversation metadata:', err);
-        }
-      }
-      
-      // Fallback to keyword routing only if no sticky agent found
-      if (!useAgent) {
-        useAgent = shouldRouteToAgent(query);
-      }
-      
-      if (useAgent) {
-        const debugContext = 'FOLLOWUP_EXPERT';
+      // ALWAYS route to expert_tobacconist for "Ask the Expert"
+      const debugContext = 'FOLLOWUP_EXPERT';
         const startTime = Date.now();
         
         console.log(`[${debugContext}] ▶️ Starting follow-up agent call`, {
@@ -1769,55 +1561,6 @@ ${query}`;
         }]);
 
         setWhatIfResult(aiResponse);
-      } else {
-        console.log('[ROUTING] General follow-up, using standard LLM');
-        
-        // Continue general advice conversation
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `SYSTEM: Continue the friendly hobbyist conversation.
-
-    Previous Discussion:
-    ${conversationMessages.map(m => {
-    if (m.role === 'user') return `User: ${m.content}`;
-    return `Tobacconist: ${m.content.advice || ''}`;
-    }).join('\n\n')}
-
-    User Follow-up: ${query}
-
-    Provide helpful, knowledgeable advice. Be conversational and personable.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              advice: { type: "string" },
-              key_points: {
-                type: "array",
-                items: { type: "string" }
-              },
-              tips: {
-                type: "array",
-                items: { type: "string" }
-              }
-            }
-          }
-        });
-
-        const aiResponse = {
-          is_general_advice: true,
-          advice: result.advice,
-          key_points: result.key_points,
-          tips: result.tips,
-          routed_to: 'standard_llm'
-        };
-
-        // Add AI response to conversation
-        setConversationMessages(prev => [...prev, {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString()
-        }]);
-
-        setWhatIfResult(aiResponse);
-      }
     } catch (err) {
       console.error('[ROUTING] Error with follow-up (analyzeCollectionQuestion path):', err);
       console.error('[ROUTING] Error details:', {
