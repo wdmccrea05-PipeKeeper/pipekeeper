@@ -1,41 +1,27 @@
-export type QuestionType =
-  | "brand_opinion"
-  | "recommendation"
-  | "optimization_remove_replace"
-  | "comparison"
-  | "how_to"
-  | "troubleshooting"
-  | "collection_query"
-  | "other";
+/**
+ * @typedef {"brand_opinion" | "recommendation" | "optimization_remove_replace" | "comparison" | "how_to" | "troubleshooting" | "collection_query" | "other"} QuestionType
+ * @typedef {"simple_paragraphs" | "light_structure" | "structured"} ResponseStyle
+ * @typedef {{type: QuestionType, confidence: number, reasons: string[], shouldUseExpert: boolean, responseStyle: ResponseStyle}} ClassifierResult
+ */
 
-export type ResponseStyle = "simple_paragraphs" | "light_structure" | "structured";
-
-export type ClassifierResult = {
-  type: QuestionType;
-  confidence: number;
-  reasons: string[];
-  shouldUseExpert: boolean;
-  responseStyle: ResponseStyle;
-};
-
-function norm(s: string): string {
+function norm(s) {
   return (s || "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function hasAny(text: string, phrases: string[]): boolean {
+function hasAny(text, phrases) {
   return phrases.some((p) => text.includes(p));
 }
 
-function countMatches(text: string, patterns: RegExp[]): number {
+function countMatches(text, patterns) {
   let c = 0;
   for (const re of patterns) if (re.test(text)) c++;
   return c;
 }
 
-export function classifyQuestion(input: string): ClassifierResult {
+export function classifyQuestion(input) {
   const q = norm(input);
   const reasons: string[] = [];
 
@@ -188,7 +174,7 @@ export function classifyQuestion(input: string): ClassifierResult {
   ];
 
   // Scoring
-  const scores: Record<QuestionType, number> = {
+  const scores = {
     brand_opinion: 0,
     recommendation: 0,
     optimization_remove_replace: 0,
@@ -221,10 +207,10 @@ export function classifyQuestion(input: string): ClassifierResult {
   const collectionSignal = scores.collection_query > 0;
 
   // Pick best type
-  let bestType: QuestionType = "other";
-  let bestScore = scores.other;
+   let bestType = "other";
+   let bestScore = scores.other;
 
-  (Object.keys(scores) as QuestionType[]).forEach((t) => {
+   Object.keys(scores).forEach((t) => {
     if (scores[t] > bestScore) {
       bestScore = scores[t];
       bestType = t;
@@ -251,7 +237,7 @@ export function classifyQuestion(input: string): ClassifierResult {
     bestType === "how_to";
 
   // Response style mapping
-  let responseStyle: ResponseStyle = "simple_paragraphs";
+  let responseStyle = "simple_paragraphs";
 
   if (bestType === "brand_opinion") responseStyle = "simple_paragraphs";
   else if (bestType === "recommendation" || bestType === "how_to")
