@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Loader2, Send, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
@@ -14,6 +16,50 @@ export default function ExpertTobacconistChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const { user } = useCurrentUser();
+
+  // Fetch user collection data
+  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
+    queryKey: ['pipes', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return await base44.entities.Pipe.filter({ created_by: user.email });
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: blends = [], isLoading: blendsLoading } = useQuery({
+    queryKey: ['blends', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return await base44.entities.TobaccoBlend.filter({ created_by: user.email });
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: pairingMatrix, isLoading: pairingLoading } = useQuery({
+    queryKey: ['pairing-matrix', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const results = await base44.entities.PairingMatrix.filter({
+        created_by: user.email,
+        is_active: true,
+      });
+      return results[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: usageLogs = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return await base44.entities.SmokingLog.filter({ created_by: user.email });
+    },
+    enabled: !!user?.email,
+  });
+
+  const contextLoading = pipesLoading || blendsLoading || pairingLoading || logsLoading;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,21 +104,121 @@ export default function ExpertTobacconistChat() {
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
 
+    // Check if context data is loaded
+    if (contextLoading) {
+      toast.error('Loading your collection data...');
+      return;
+    }
+
     const userMessage = input.trim();
     setInput('');
     setLoading(true);
 
     try {
+      // Prepare usage statistics
+      const usageStats = {};
+      usageLogs.forEach(log => {
+        if (log.pipe_id) {
+          if (!usageStats[log.pipe_id]) {
+            usageStats[log.pipe_id] = { count: 0, lastUsed: null };
+          }
+          usageStats[log.pipe_id].count += log.bowls_smoked || 1;
+          if (!usageStats[log.pipe_id].lastUsed || new Date(log.date) > new Date(usageStats[log.pipe_id].lastUsed)) {
+            usageStats[log.pipe_id].lastUsed = log.date;
+          }
+        }
+      });
+
+      // Build context payload
+      const contextPayload = {
+        pipes: pipes.map(p => ({
+          id: p.id,
+          name: p.name,
+          maker: p.maker,
+          shape: p.shape,
+          bowlStyle: p.bowlStyle,
+          chamber_volume: p.chamber_volume,
+          bowl_diameter_mm: p.bowl_diameter_mm,
+          bowl_depth_mm: p.bowl_depth_mm,
+          focus: p.focus,
+          usage_count: usageStats[p.id]?.count || 0,
+          last_used: usageStats[p.id]?.lastUsed || null
+        })),
+        tobaccos: blends.map(b => ({
+          id: b.id,
+          name: b.name,
+          manufacturer: b.manufacturer,
+          blend_type: b.blend_type,
+          strength: b.strength,
+          flavor_notes: b.flavor_notes
+        })),
+        pairingGrid: pairingMatrix ? {
+          pairings: pairingMatrix.pairings || [],
+          generated_date: pairingMatrix.generated_date
+        } : null,
+        usageLogs: {
+          total_sessions: usageLogs.length,
+          pipe_usage: usageStats
+        }
+      };
+
+      console.log('[EXPERT_TOBACCONIST] Sending context payload:', {
+        pipes_count: contextPayload.pipes.length,
+        tobaccos_count: contextPayload.tobaccos.length,
+        pairingGrid_present: !!contextPayload.pairingGrid,
+        usageLogs_present: !!contextPayload.usageLogs,
+        total_usage_sessions: contextPayload.usageLogs.total_sessions
+      });
+
+      // Validate required context
+      if (contextPayload.pipes.length === 0) {
+        toast.error('No pipes found in your collection');
+        setLoading(false);
+        return;
+      }
+
+      if (!contextPayload.pairingGrid) {
+        console.warn('[EXPERT_TOBACCONIST] No pairing grid found - agent may return limited advice');
+      }
+
       // Get current conversation data
       const conversation = await base44.agents.getConversation(conversationId);
       
-      // Add user message
+      // Build message with context
+      const messageWithContext = `USER COLLECTION CONTEXT:
+Pipes: ${contextPayload.pipes.length}
+Tobaccos: ${contextPayload.tobaccos.length}
+Pairing Grid: ${contextPayload.pairingGrid ? 'Available' : 'Not Generated'}
+Usage Logs: ${contextPayload.usageLogs.total_sessions} sessions
+
+PIPES DATA:
+${JSON.stringify(contextPayload.pipes, null, 2)}
+
+TOBACCOS DATA:
+${JSON.stringify(contextPayload.tobaccos, null, 2)}
+
+${contextPayload.pairingGrid ? `PAIRING GRID:
+${JSON.stringify(contextPayload.pairingGrid, null, 2)}` : ''}
+
+USAGE STATISTICS:
+${JSON.stringify(contextPayload.usageLogs, null, 2)}
+
+USER QUESTION:
+${userMessage}`;
+      
+      // Add user message with context
       await base44.agents.addMessage(conversation, {
         role: 'user',
-        content: userMessage,
+        content: messageWithContext,
       });
+
+      console.log('[EXPERT_TOBACCONIST] Message sent, agent invoked');
     } catch (err) {
-      console.error('Failed to send message:', err);
+      console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
+      console.error('[EXPERT_TOBACCONIST] Error details:', {
+        message: err?.message,
+        response: err?.response?.data
+      });
       toast.error('Failed to send message');
       setLoading(false);
     }
@@ -153,10 +299,10 @@ export default function ExpertTobacconistChat() {
           />
           <Button
             onClick={handleSend}
-            disabled={!input.trim() || loading || !conversationId}
+            disabled={!input.trim() || loading || !conversationId || contextLoading}
             className="h-auto px-6"
           >
-            <Send className="w-4 h-4" />
+            {contextLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
       </Card>
