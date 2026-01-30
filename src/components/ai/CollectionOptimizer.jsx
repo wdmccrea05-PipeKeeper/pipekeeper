@@ -553,6 +553,41 @@ async function undoOptimizationApply(batchId) {
     setWhatIfPhotos([...whatIfPhotos, ...uploadedUrls]);
   };
 
+  // Helper: Wait for assistant message from agent conversation
+  const waitForAssistantMessage = async (conversationId, timeoutMs = 45000) => {
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+
+      const unsubscribe = base44.agents.subscribeToConversation(
+        conversationId,
+        (data) => {
+          const messages = data?.messages || [];
+          const assistant = [...messages]
+            .reverse()
+            .find(
+              m =>
+                m.role === "assistant" &&
+                typeof m.content === "string" &&
+                m.content.trim().length > 0
+            );
+
+          if (assistant && !resolved) {
+            resolved = true;
+            try { unsubscribe?.(); } catch {}
+            resolve(assistant.content);
+          }
+        }
+      );
+
+      setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        try { unsubscribe?.(); } catch {}
+        reject(new Error("Timed out waiting for expert_tobacconist response"));
+      }, timeoutMs);
+    });
+  };
+
   // Router: Detect if question should go to expert_tobacconist agent
   const shouldRouteToAgent = (query) => {
     const lowerQuery = query.toLowerCase();
@@ -704,35 +739,30 @@ ${JSON.stringify(contextPayload.usageLogs, null, 2)}
 USER QUESTION:
 ${currentQuery}`;
         
-        const response = await base44.agents.addMessage(conversation, {
+        await base44.agents.addMessage(conversation, {
           role: 'user',
           content: messageWithContext
         });
         
-        console.log('[EXPERT_TOBACCONIST] Agent invoked with full context');
+        console.log('[EXPERT_TOBACCONIST] Message sent, waiting for assistant response...');
         
-        console.log('[EXPERT_TOBACCONIST] Agent response received:', {
-          messages_count: response.messages?.length,
-          has_assistant_msg: response.messages?.some(m => m.role === 'assistant')
-        });
-        
-        // Extract the assistant's response
-        const assistantMsg = response.messages?.find(m => m.role === 'assistant');
-        const agentResponse = assistantMsg?.content || '';
-        
-        console.log('[EXPERT_TOBACCONIST] Response details:', {
-          response_length: agentResponse.length,
-          preview: agentResponse.substring(0, 150),
-          pipes_provided: contextPayload.pipes.length,
-          pairingGrid_provided: !!contextPayload.pairingGrid,
-          usageLogs_provided: !!contextPayload.usageLogs
-        });
+        // Wait for assistant response asynchronously
+        let agentResponse = "";
+        try {
+          agentResponse = await waitForAssistantMessage(conversation.id);
+          console.log('[EXPERT_TOBACCONIST] Assistant response received:', {
+            response_length: agentResponse.length,
+            preview: agentResponse.substring(0, 150)
+          });
+        } catch (err) {
+          console.error('[EXPERT_TOBACCONIST] Failed to receive assistant response:', err);
+        }
         
         // Handle empty or missing response
         let finalResponse = agentResponse;
         if (!finalResponse || finalResponse.trim().length === 0) {
-          finalResponse = "I couldn't load your collection data. Please try again.";
-          console.error('[EXPERT_TOBACCONIST] Agent returned empty response despite context');
+          finalResponse = "I couldn't load a response from the expert agent. Please try again.";
+          console.error('[EXPERT_TOBACCONIST] Agent returned empty response or timed out');
         }
         
         const aiResponse = {
