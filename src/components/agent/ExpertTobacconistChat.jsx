@@ -23,6 +23,8 @@ export default function ExpertTobacconistChat() {
   const [responseStyle, setResponseStyle] = useState<ResponseStyle>('simple_paragraphs');
   const messagesEndRef = useRef(null);
   const lastAssistantMsgRef = useRef(null);
+  const [currentRequestId, setCurrentRequestId] = useState(null);
+  const [lastResponseTime, setLastResponseTime] = useState(null);
   const { user } = useCurrentUser();
 
   // Fetch user collection data
@@ -98,28 +100,35 @@ export default function ExpertTobacconistChat() {
 
   // Subscribe to conversation updates and accumulate full responses
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !currentRequestId) return;
 
     const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
       const msgs = data.messages || [];
       setMessages(msgs);
 
-      // Collect ALL assistant messages
+      // Only process assistant messages created AFTER the current user message
       let assistantContent = '';
+      let foundNewResponse = false;
+
       for (const msg of msgs) {
-        if (msg.role === 'assistant' || msg.role === 'agent') {
-          const content = extractAssistantContent(msg);
-          if (content) {
-            assistantContent += content;
+        if ((msg.role === 'assistant' || msg.role === 'agent') && msg.created_date) {
+          // Only include assistant messages created after current request
+          const msgTime = new Date(msg.created_date).getTime();
+          if (msgTime > lastResponseTime) {
+            const content = extractAssistantContent(msg);
+            if (content) {
+              assistantContent += content;
+              foundNewResponse = true;
+            }
           }
         }
       }
 
-      // Update streaming display with accumulated content
-      if (assistantContent && loading) {
+      // Update streaming display only if we have new content
+      if (foundNewResponse && assistantContent && loading) {
         setStreamingContent(assistantContent);
         setIsStreaming(true);
-      } else if (assistantContent && !loading) {
+      } else if (foundNewResponse && assistantContent && !loading) {
         // Agent finished, show final response
         setStreamingContent(assistantContent);
         setIsStreaming(false);
@@ -129,7 +138,7 @@ export default function ExpertTobacconistChat() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [conversationId, loading]);
+  }, [conversationId, currentRequestId, loading, lastResponseTime]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
@@ -145,6 +154,11 @@ export default function ExpertTobacconistChat() {
     // Classify question and determine response style
     const classification = classifyQuestion(userMessage);
     setResponseStyle(classification.responseStyle);
+
+    // Generate unique request ID and reset response tracking
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setCurrentRequestId(requestId);
+    setLastResponseTime(Date.now());
 
     setInput('');
     setLoading(true);
@@ -269,14 +283,24 @@ ${userMessage}`;
       console.log('[EXPERT_TOBACCONIST] Message sent, waiting for response...');
 
       // Wait for agent to finish (max 240s for deep thinking)
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setLoading(false);
+        if (!streamingContent || streamingContent.trim().length === 0) {
+          setStreamingContent('');
+          setIsStreaming(false);
+        }
       }, 240000);
+      
+      return () => clearTimeout(timeoutId);
     } catch (err) {
       console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
-      toast.error('Failed to send message');
+      // Only show error if request is still current
+      if (currentRequestId === requestId) {
+        toast.error('Failed to send message');
+        setStreamingContent('');
+        setIsStreaming(false);
+      }
       setLoading(false);
-      setIsStreaming(false);
     }
   };
 
