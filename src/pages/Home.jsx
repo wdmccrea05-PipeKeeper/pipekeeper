@@ -563,6 +563,7 @@ const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
                         onClick={(e) => {
                           e.preventDefault();
                           refetchBlends();
+                          refetchCellarLogs();
                         }}
                         className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
                         title="Refresh"
