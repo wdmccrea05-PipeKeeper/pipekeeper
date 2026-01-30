@@ -273,18 +273,16 @@ ${userMessage}`;
         content: messageWithContext,
       });
 
-      console.log('[EXPERT_TOBACCONIST] Message sent, waiting for complete response...');
+      console.log('[EXPERT_TOBACCONIST] Message sent, streaming response in progress...');
 
-      // Wait for complete assistant response (with extended timeout for thorough answers)
-      try {
-        const response = await waitForAssistantMessage(conversationId, 240000, {
-          debug: true,
-          context: 'expert_tobacconist'
-        });
-        console.log('[EXPERT_TOBACCONIST] Complete response received:', response.substring(0, 100) + '...');
-      } catch (waitErr) {
-        console.warn('[EXPERT_TOBACCONIST] Response wait timed out (may be normal):', waitErr?.message);
-      }
+      // Let subscription handle response streaming; set timeout as fallback
+      const timeout = setTimeout(() => {
+        console.warn('[EXPERT_TOBACCONIST] Response timeout - stopping stream');
+        setLoading(false);
+        setIsStreaming(false);
+      }, 240000);
+
+      return () => clearTimeout(timeout);
     } catch (err) {
       console.error('[EXPERT_TOBACCONIST] Failed to send message:', err);
       console.error('[EXPERT_TOBACCONIST] Error details:', {
@@ -293,6 +291,7 @@ ${userMessage}`;
       });
       toast.error('Failed to send message');
       setLoading(false);
+      setIsStreaming(false);
     }
   };
 
