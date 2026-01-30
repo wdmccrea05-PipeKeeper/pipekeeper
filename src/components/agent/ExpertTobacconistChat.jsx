@@ -439,7 +439,7 @@ function MessageBubble({ message, isStreaming = false }) {
         {isUser ? (
           <div className="text-sm whitespace-pre-wrap">{content}</div>
         ) : (
-          <FormattedTobacconistResponse content={content} />
+          <FormattedTobacconistResponse content={content} style="light_structure" />
         )}
         
         {message.tool_calls?.length > 0 && (
