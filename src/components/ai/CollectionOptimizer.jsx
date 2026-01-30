@@ -850,9 +850,9 @@ ${currentQuery}`;
     try {
       // ALWAYS route to expert_tobacconist for "Ask the Expert"
       console.log('[ROUTING] Routing to expert_tobacconist agent');
-        
-        // Prepare usage statistics
-        const usageStats = {};
+      
+      // Prepare usage statistics
+      const usageStats = {};
         usageLogs.forEach(log => {
           if (log.pipe_id) {
             if (!usageStats[log.pipe_id]) {
