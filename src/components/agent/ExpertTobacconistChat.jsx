@@ -340,7 +340,7 @@ ${userMessage}`;
               className="w-8 h-8 rounded-lg shrink-0"
             />
             <div className="max-w-[80%] rounded-2xl px-4 py-2.5 bg-[#243548] text-[#e8d5b7] border border-[#e8d5b7]/10">
-              <FormattedTobacconistResponse content={streamingContent} />
+              <FormattedTobacconistResponse content={streamingContent} style={responseStyle} />
               <div className="mt-2 flex items-center gap-1 text-xs text-[#e8d5b7]/60">
                 <span className="animate-pulse">▌</span>
               </div>
