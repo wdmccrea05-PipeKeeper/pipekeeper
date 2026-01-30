@@ -1,19 +1,57 @@
 /**
- * Format agent responses with proper paragraph spacing
- * Ensures blank lines between paragraphs and clean rendering
+ * Format agent responses with aggressive paragraph reflow
+ * Strips markdown, handles long paragraphs, ensures clean spacing
  */
 export function formatTobacconistResponse(text) {
   if (!text || typeof text !== 'string') return '';
 
-  // Split on double newlines or natural paragraph breaks
-  const paragraphs = text
-    .split(/\n\n+/)
-    .map(p => p.trim())
-    .filter(p => p.length > 0);
+  // Step 1: Strip markdown artifacts
+  let cleaned = text
+    .replace(/\*\*([^*]+)\*\*/g, '$1')        // **bold** → bold
+    .replace(/\*\*\*([^*]+)\*\*\*/g, '$1')   // ***bold italic*** → text
+    .replace(/\*([^*]+)\*/g, '$1')           // *italic* → italic
+    .replace(/^#+\s+/gm, '')                 // remove markdown headings
+    .replace(/^\s*[-*_]+\s*$/gm, '')         // remove markdown dividers
+    .replace(/`([^`]+)`/g, '$1')             // remove inline code ticks
+    .replace(/^\s*\*+\s*$/gm, '')            // remove isolated * lines
+    .trim();
 
-  // Return paragraphs joined with actual line breaks (React will render them)
-  // Each paragraph gets double spacing via CSS
-  return paragraphs.join('\n\n');
+  // Step 2: Split by double newlines first (explicit breaks)
+  let paragraphs = cleaned.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+
+  // Step 3: Aggressively reflow long paragraphs (>350 chars) into 2–3 sentence chunks
+  const finalParagraphs = [];
+  for (const para of paragraphs) {
+    if (para.length > 350) {
+      // Split by sentence boundaries: . ! ? followed by space or end
+      const sentences = para.match(/[^.!?]*[.!?]+(?:\s+(?=[A-Z])|$)/g) || [para];
+      let chunk = '';
+      let sentenceCount = 0;
+      
+      for (const sentence of sentences) {
+        const trimmed = sentence.trim();
+        if (!trimmed) continue;
+        
+        const potentialChunk = chunk ? chunk + ' ' + trimmed : trimmed;
+        sentenceCount += 1;
+        
+        // New paragraph if: reached 3 sentences, or adding would exceed 350 chars
+        if (sentenceCount >= 3 || (potentialChunk.length > 350 && chunk.length > 0)) {
+          if (chunk.trim()) finalParagraphs.push(chunk.trim());
+          chunk = trimmed;
+          sentenceCount = 1;
+        } else {
+          chunk = potentialChunk;
+        }
+      }
+      if (chunk.trim()) finalParagraphs.push(chunk.trim());
+    } else {
+      finalParagraphs.push(para);
+    }
+  }
+
+  // Step 4: Ensure blank lines between all paragraphs
+  return finalParagraphs.join('\n\n');
 }
 
 import { type ResponseStyle } from '@/components/utils/questionClassifier';
