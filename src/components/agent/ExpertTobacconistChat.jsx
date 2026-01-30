@@ -93,61 +93,40 @@ export default function ExpertTobacconistChat() {
     })();
   }, []);
 
-  // Subscribe to conversation updates and accumulate streaming responses
+  // Subscribe to conversation updates and accumulate full responses
   useEffect(() => {
     if (!conversationId) return;
 
-    let unsubscribe;
-    (async () => {
-      try {
-        unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
-          const msgs = data.messages || [];
-          setMessages(msgs);
+    const unsubscribe = base44.agents.subscribeToConversation(conversationId, (data) => {
+      const msgs = data.messages || [];
+      setMessages(msgs);
 
-          // Find the latest assistant message by looking through all messages
-          let latestAssistant = null;
-          let assistantContent = '';
-
-          for (let i = msgs.length - 1; i >= 0; i--) {
-            const msg = msgs[i];
-            if (msg.role === 'assistant' || msg.role === 'agent') {
-              latestAssistant = msg;
-              break;
-            }
+      // Collect ALL assistant messages
+      let assistantContent = '';
+      for (const msg of msgs) {
+        if (msg.role === 'assistant' || msg.role === 'agent') {
+          const content = extractAssistantContent(msg);
+          if (content) {
+            assistantContent += content;
           }
-
-          // Collect ALL assistant messages (handle multiple message chunks)
-          for (const msg of msgs) {
-            if (msg.role === 'assistant' || msg.role === 'agent') {
-              const content = extractAssistantContent(msg);
-              if (content) {
-                assistantContent += content;
-              }
-            }
-          }
-
-          // Update streaming content if assistant content exists
-          if (assistantContent) {
-            setStreamingContent(assistantContent);
-            setIsStreaming(true);
-          }
-
-          // Stop streaming if no longer loading
-          if (!loading && latestAssistant) {
-            setTimeout(() => {
-              setIsStreaming(false);
-            }, 1500);
-          }
-        });
-      } catch (err) {
-        console.error('Subscription setup failed:', err);
+        }
       }
-    })();
+
+      // Update streaming display with accumulated content
+      if (assistantContent && loading) {
+        setStreamingContent(assistantContent);
+        setIsStreaming(true);
+      } else if (assistantContent && !loading) {
+        // Agent finished, show final response
+        setStreamingContent(assistantContent);
+        setIsStreaming(false);
+      }
+    });
 
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [conversationId]);
+  }, [conversationId, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversationId || loading) return;
