@@ -85,7 +85,7 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
       });
     }
     
-    // Look for existing assistant message
+    // Look for existing assistant message but don't resolve immediately (may be incomplete)
     const assistant = [...messages]
       .reverse()
       .find((m) => {
@@ -95,12 +95,13 @@ export async function waitForAssistantMessage(conversationId, timeoutMs = 180000
         return content.length > 0;
       });
     
-    if (assistant) {
+    // Only return from snapshot if marked complete
+    if (assistant && assistant.status && ["completed", "done", "final"].includes(assistant.status.toLowerCase())) {
       const content = extractMessageContent(assistant);
       if (debug) {
-        console.log(`[AgentWait:${context}] ✅ Found in snapshot (${Date.now() - startTime}ms):`, {
+        console.log(`[AgentWait:${context}] ✅ Found complete in snapshot (${Date.now() - startTime}ms):`, {
           content_length: content.length,
-          preview: content.substring(0, 150)
+          status: assistant.status
         });
       }
       return content;
