@@ -936,7 +936,7 @@ ${userText}
                       <div className="text-left">
                         <div className="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
                           {isImpact ? (
-                            <div className="text-sm space-y-3">
+                            <div className="text-sm space-y-3 text-stone-900">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge className="bg-indigo-600 text-white">Impact Score: {asText(c?.impact_score)}/10</Badge>
                                 {!!c?.recommendation_category && (
@@ -947,7 +947,9 @@ ${userText}
                               {!!c?.detailed_reasoning && (
                                 <div className="space-y-2">
                                   <p className="text-stone-900 font-semibold text-sm">Analysis:</p>
-                                  <FormattedTobacconistResponse content={asText(c?.detailed_reasoning)} style="simple_paragraphs" />
+                                  <div className="text-stone-900">
+                                    <FormattedTobacconistResponse content={asText(c?.detailed_reasoning)} style="simple_paragraphs" />
+                                  </div>
                                 </div>
                               )}
 
@@ -965,23 +967,23 @@ ${userText}
                               )}
                             </div>
                           ) : isGeneralAdvice ? (
-                            <div className="space-y-3">
+                            <div className="space-y-3 text-stone-900">
                               <FormattedTobacconistResponse content={asText(c?.advice)} style="light_structure" />
 
                               {c?.routed_to && (
-                                <div className="mt-2 pt-2 border-t border-stone-300">
-                                  <p className="text-xs font-mono text-stone-600 bg-stone-100 px-2 py-1 rounded break-all">
+                                <div className="mt-2 pt-2 border-t border-stone-400">
+                                  <p className="text-xs font-mono text-stone-700 bg-stone-200 px-2 py-1 rounded break-all">
                                     Answered by: {asText(c.routed_to)}
                                   </p>
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-3 text-stone-900">
                               <FormattedTobacconistResponse content={asText(c?.response || c?.advice || c)} style="light_structure" />
                               {c?.routed_to && (
-                                <div className="mt-2 pt-2 border-t border-stone-300">
-                                  <p className="text-xs font-mono text-stone-600 bg-stone-100 px-2 py-1 rounded break-all">
+                                <div className="mt-2 pt-2 border-t border-stone-400">
+                                  <p className="text-xs font-mono text-stone-700 bg-stone-200 px-2 py-1 rounded break-all">
                                     Answered by: {asText(c.routed_to)}
                                   </p>
                                 </div>
