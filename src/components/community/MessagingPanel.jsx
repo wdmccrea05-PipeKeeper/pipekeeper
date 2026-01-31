@@ -275,7 +275,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
       {/* Chat Sheet */}
       <Sheet open={!!selectedFriend} onOpenChange={() => setSelectedFriend(null)}>
-        <SheetContent className="w-full sm:max-w-lg flex flex-col">
+        <SheetContent className="w-full sm:max-w-lg flex flex-col" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
             <SheetTitle className="flex items-center gap-3">
               <div className="relative">
@@ -445,7 +445,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
       {/* Inbox Sheet */}
       <Sheet open={showInbox} onOpenChange={setShowInbox}>
-        <SheetContent className="w-full sm:max-w-lg">
+        <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
             <SheetTitle>Message Inbox</SheetTitle>
           </SheetHeader>
