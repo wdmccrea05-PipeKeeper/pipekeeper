@@ -471,7 +471,7 @@ export default function Layout({ children, currentPageName }) {
       <DocumentTitle title="PipeKeeper" />
       <Toaster position="top-center" />
       <MeasurementProvider>
-        <div className="dark min-h-screen flex flex-col" style={{ colorScheme: 'dark' }}>
+        <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
             <div className="max-w-7xl mx-auto px-6 w-full">
               <div className="flex items-center justify-between h-16 gap-4">
