@@ -5,6 +5,8 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
+import { safeGetItem, safeSetItem } from "@/components/utils/safeStorage";
+import { safeStringify } from "@/components/utils/safeStringify";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import {
   Loader2,
@@ -137,8 +139,14 @@ function CollectionOptimizerInner({
 
   const [loading, setLoading] = useState(false);
   const [optimization, setOptimization] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem("collectionOptimizerCollapsed") === "true");
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [showWhatIf, setShowWhatIf] = useState(initialShowWhatIf);
+
+  // iOS-safe: load collapse state in useEffect
+  useEffect(() => {
+    const saved = safeGetItem("collectionOptimizerCollapsed", null);
+    if (saved !== null) setIsCollapsed(saved === "true");
+  }, []);
 
   // Ask-the-expert chat state
   const [whatIfQuery, setWhatIfQuery] = useState("");
@@ -582,8 +590,8 @@ User Feedback: ${feedback}
         score: pair.score,
       })) || [];
 
-    // keep payload sane
-    const MAX_PAIRINGS = 100;
+    // keep payload sane (iOS stability)
+    const MAX_PAIRINGS = 60;
 
     return {
       pipesSummary,
@@ -642,16 +650,16 @@ Tobaccos: ${tobaccosSummary.length}
 Pairings available: ${pairingCount} (showing up to ${pairingsSummary.length})
 
 PIPES:
-${JSON.stringify(pipesSummary, null, 2)}
+${safeStringify(pipesSummary, 6000)}
 
 TOBACCOS:
-${JSON.stringify(tobaccosSummary, null, 2)}
+${safeStringify(tobaccosSummary, 6000)}
 
 TOP PAIRINGS:
-${JSON.stringify(pairingsSummary, null, 2)}
+${safeStringify(pairingsSummary, 6000)}
 
 USAGE:
-${JSON.stringify(usageStats, null, 2)}
+${safeStringify(usageStats, 3000)}
 
 RECENT CHAT:
 ${conversationContext || "(none)"}
@@ -883,7 +891,7 @@ ${userText}
   const toggleCollapse = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem("collectionOptimizerCollapsed", String(newState));
+    safeSetItem("collectionOptimizerCollapsed", String(newState));
   };
 
   // ---- Standalone “Ask the Expert” mode (home card) ----
