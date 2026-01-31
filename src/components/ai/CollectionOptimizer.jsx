@@ -903,7 +903,7 @@ ${userText}
             <Lightbulb className="w-5 h-5" />
             Ask the Expert
           </CardTitle>
-          <p className="text-sm text-stone-600">Ask questions and discuss the hobby</p>
+          <p className="text-sm text-stone-800">Ask questions and discuss the hobby</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -1673,7 +1673,7 @@ ${userText}
 
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">
-                  <p className="text-sm text-stone-700">
+                  <p className="text-sm text-stone-900">
                     Ask for personalized advice. Follow-ups stay in the same conversation and won&apos;t repeat earlier answers.
                   </p>
 
