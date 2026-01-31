@@ -165,6 +165,26 @@ export default function Layout({ children, currentPageName }) {
   const ios = useMemo(() => isIOSWebView(), []);
   const { t } = useTranslation();
 
+  // Handle Android back button
+  useEffect(() => {
+    const handlePopState = (e) => {
+      // Prevent default back behavior
+      e.preventDefault();
+
+      // Close mobile menu if open
+      if (mobileOpen) {
+        setMobileOpen(false);
+        return;
+      }
+
+      // Use React Router's navigate with -1 to go back in history
+      navigate(-1);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [mobileOpen, navigate]);
+
   const navItems = [
     { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
     { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
@@ -473,7 +493,7 @@ export default function Layout({ children, currentPageName }) {
       <Toaster position="top-center" />
       <MeasurementProvider>
         <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'var(--safe-area-top)' }}>
             <div className="max-w-7xl mx-auto px-6 w-full">
               <div className="flex items-center justify-between h-16 gap-4">
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -514,7 +534,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg">
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'var(--safe-area-top)' }}>
             <div className="flex items-center justify-between h-14 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
@@ -544,14 +564,18 @@ export default function Layout({ children, currentPageName }) {
               mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
             onClick={() => setMobileOpen(false)}
-            style={{ top: "56px" }}
+            style={{ top: 'calc(56px + var(--safe-area-top))' }}
           />
 
           <div
             className={cn(
-              "md:hidden fixed top-14 right-0 w-64 h-[calc(100vh-56px)] bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
+              "md:hidden fixed right-0 w-64 bg-white z-50 shadow-xl overflow-y-auto transition-transform duration-200",
               mobileOpen ? "translate-x-0" : "translate-x-full"
             )}
+            style={{ 
+              top: 'calc(56px + var(--safe-area-top))',
+              height: 'calc(100vh - 56px - var(--safe-area-top))'
+            }}
           >
             <div className="flex flex-col gap-2 p-4">
               {navItems.map((item) => (
@@ -577,7 +601,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <main className="flex-1 pt-16 md:pt-16 pb-20">
+          <main className="flex-1 pb-20" style={{ paddingTop: 'calc(4rem + var(--safe-area-top))' }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               {children}
             </div>
