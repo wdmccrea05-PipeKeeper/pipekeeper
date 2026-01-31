@@ -147,7 +147,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
         }
 
         return (
-          <p key={idx} className="text-sm leading-relaxed whitespace-pre-wrap text-stone-900">
+          <p key={idx} className="text-sm leading-relaxed whitespace-pre-wrap">
             {para}
           </p>
         );

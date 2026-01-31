@@ -42,7 +42,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
           </div>
           <div>
             <CardTitle className="text-2xl">Expert Tobacconist</CardTitle>
-            <p className="text-sm text-stone-800 dark:text-stone-300">AI-powered collection analysis and recommendations</p>
+            <p className="text-sm opacity-70">AI-powered collection analysis and recommendations</p>
           </div>
         </div>
       </CardHeader>
