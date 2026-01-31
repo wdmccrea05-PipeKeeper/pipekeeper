@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
+import ErrorBoundary from "@/components/system/ErrorBoundary";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
@@ -467,7 +468,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <DocumentTitle title="PipeKeeper" />
       <Toaster position="top-center" />
       <MeasurementProvider>
@@ -687,7 +688,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           )}
         </div>
-      </MeasurementProvider>
-    </>
-  );
+        </MeasurementProvider>
+        </ErrorBoundary>
+        );
 }
