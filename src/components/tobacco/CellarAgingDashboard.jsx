@@ -108,11 +108,8 @@ export default function CellarAgingDashboard({ user }) {
     let total = 0;
     cellarBlends.forEach(b => {
       const logData = getCellarDataFromLogs(b.id);
-      const tinOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0);
-      const bulkOz = b.bulk_cellared || 0;
-      const pouchOz = (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
-      const logOz = logData.net;
-      total += tinOz + bulkOz + pouchOz + logOz;
+      // Use cellar logs as source of truth for cellared amounts
+      total += logData.net;
     });
     return total;
   };
@@ -186,11 +183,8 @@ export default function CellarAgingDashboard({ user }) {
             const recommendation = getAgingRecommendation(blend);
             const logData = getCellarDataFromLogs(blend.id);
             
-            const tinOz = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
-            const bulkOz = blend.bulk_cellared || 0;
-            const pouchOz = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
-            const logOz = logData.net;
-            const totalOz = tinOz + bulkOz + pouchOz + logOz;
+            // Use cellar logs as source of truth for cellared amounts
+            const totalOz = logData.net;
             
             const maxMonths = blend.aging_potential === "Excellent" ? 24 : 
                              blend.aging_potential === "Good" ? 12 : 6;
