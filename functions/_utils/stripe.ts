@@ -3,11 +3,12 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-// Force key reload: 2026-02-01 v2
+// CRITICAL: Force fresh key read on every invocation - 2026-02-01 v3
+// Production env cache issue workaround
 
 import Stripe from "npm:stripe@17.5.0";
 
-// Singleton Stripe client with cache busting
+// DISABLED client caching to force fresh key reads
 let stripeClient = null;
 let cachedKey = null;
 
@@ -67,22 +68,12 @@ export function assertStripeKeyOrThrow() {
 export function getStripeClient() {
   const key = assertStripeKeyOrThrow();
   
-  // CRITICAL: Always check if key changed to prevent expired key caching
-  if (stripeClient && cachedKey !== key) {
-    console.warn(`[Stripe] Key mismatch detected - invalidating cache`);
-    console.log(`[Stripe] Old: ${maskKey(cachedKey || "")}`);
-    console.log(`[Stripe] New: ${maskKey(key)}`);
-    stripeClient = null;
-    cachedKey = null;
-  }
+  // WORKAROUND: Disable caching completely due to production env variable stale cache
+  // Force fresh Stripe client on EVERY invocation until platform env cache is cleared
+  stripeClient = null;
+  cachedKey = null;
   
-  // Return singleton only if key matches
-  if (stripeClient && cachedKey === key) {
-    return stripeClient;
-  }
-  
-  // Initialize fresh client
-  console.log(`[Stripe] Initializing new client with key: ${maskKey(key)}`);
+  console.log(`[Stripe] Creating fresh client (cache disabled) with key: ${maskKey(key)}`);
   stripeClient = new Stripe(key, { apiVersion: "2024-06-20" });
   cachedKey = key;
   
