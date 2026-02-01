@@ -3,6 +3,8 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
+// Force key reload: 2026-02-01 v2
+
 import Stripe from "npm:stripe@17.5.0";
 
 // Singleton Stripe client with cache busting
