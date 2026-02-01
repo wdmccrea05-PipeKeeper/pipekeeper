@@ -534,8 +534,8 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </nav>
 
-          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'var(--safe-area-top)' }}>
-            <div className="flex items-center justify-between h-14 px-4">
+          <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+            <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
@@ -573,8 +573,8 @@ export default function Layout({ children, currentPageName }) {
               mobileOpen ? "translate-x-0" : "translate-x-full"
             )}
             style={{ 
-              top: 'calc(56px + var(--safe-area-top))',
-              height: 'calc(100vh - 56px - var(--safe-area-top))'
+              top: 'calc(4rem + env(safe-area-inset-top, 0px))',
+              height: 'calc(100vh - 4rem - env(safe-area-inset-top, 0px))'
             }}
           >
             <div className="flex flex-col gap-2 p-4">
@@ -601,8 +601,8 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <main className="flex-1 pb-20" style={{ paddingTop: 'calc(3.5rem + var(--safe-area-top))' }}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main className="flex-1 pb-20 md:pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
+            <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
               {children}
             </div>
           </main>
