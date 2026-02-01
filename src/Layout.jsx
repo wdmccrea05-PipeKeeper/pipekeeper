@@ -601,7 +601,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <main className="flex-1 pb-20" style={{ paddingTop: 'calc(4rem + var(--safe-area-top))' }}>
+          <main className="flex-1 pb-20" style={{ paddingTop: 'calc(3.5rem + var(--safe-area-top))' }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               {children}
             </div>
