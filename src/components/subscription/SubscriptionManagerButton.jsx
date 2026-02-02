@@ -16,7 +16,7 @@ export default function SubscriptionManagerButton({ variant = "default", classNa
   const [showPaymentLinks, setShowPaymentLinks] = useState(false);
   const [billingConfig, setBillingConfig] = useState(null);
   const { user } = useCurrentUser();
-  const isApple = isAppleBuild();
+  const isApple = isAppleBuild;
 
   const handleAppleSubscriptions = () => {
     window.open(APPLE_SUBSCRIPTIONS_URL, "_blank");
