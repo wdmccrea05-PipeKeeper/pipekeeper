@@ -377,6 +377,14 @@ export default function ProfilePage() {
                           {getSubscriptionManagementMessage()}
                         </div>
                       )}
+                      <Button
+                        variant="outline"
+                        className="border-amber-300 text-amber-700 hover:bg-amber-50 w-full mt-2"
+                        onClick={() => setShowBackupModal(true)}
+                      >
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Backup Options
+                      </Button>
                     </>
                   ) : (
                     <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
