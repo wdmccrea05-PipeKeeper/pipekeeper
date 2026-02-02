@@ -10,10 +10,33 @@
  *   Let the parent container decide text color (theme-safe).
  */
 
+// De-duplicate repeated responses (agent bug workaround)
+function deduplicateResponse(text) {
+  if (!text || typeof text !== "string") return text;
+  
+  const paras = text.split("\n\n").filter(Boolean);
+  if (paras.length < 2) return text;
+  
+  // Check if first paragraph is repeated
+  const first = paras[0].trim();
+  const rest = paras.slice(1);
+  
+  // Remove first paragraph if it appears again in rest
+  const filtered = rest.filter((p) => {
+    const similarity = first.slice(0, 200) === p.trim().slice(0, 200);
+    return !similarity;
+  });
+  
+  return [first, ...filtered].join("\n\n");
+}
+
 export function formatTobacconistResponse(text) {
   if (!text || typeof text !== "string") return "";
 
-  let cleaned = (text || "")
+  // De-duplicate first
+  let deduplicated = deduplicateResponse(text);
+
+  let cleaned = (deduplicated || "")
     .replace(/\*\*\*([\s\S]+?)\*\*\*/g, "$1")
     .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
     .replace(/__([\s\S]+?)__/g, "$1")
@@ -23,7 +46,7 @@ export function formatTobacconistResponse(text) {
     .replace(/#+\s+/g, "")
     .replace(/> /gm, "")
     .replace(/---+/g, "")
-    .replace(/\n\n+/g, "\n\n")
+    .replace(/\n\n\n+/g, "\n\n")
     .trim();
 
   const paragraphs = cleaned.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
@@ -116,10 +139,8 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
   const formatted = formatTobacconistResponse(typeof content === "string" ? content : String(content));
   const paras = formatted.split("\n\n").map((p) => p.trim()).filter(Boolean);
 
-  const wrapperSpace = style === "structured" ? "space-y-4" : "space-y-3";
-
   return (
-    <div className={`${wrapperSpace} ${className}`}>
+    <div className={className}>
       {paras.map((para, idx) => {
         const isBulletSection = para.startsWith("- ") || para.includes("\n- ");
 
@@ -147,7 +168,7 @@ export function FormattedTobacconistResponse({ content, style = "light_structure
         }
 
         return (
-          <p key={idx} className="text-sm leading-relaxed whitespace-pre-wrap">
+          <p key={idx} className="text-sm leading-relaxed mb-3 last:mb-0 whitespace-pre-wrap">
             {para}
           </p>
         );
