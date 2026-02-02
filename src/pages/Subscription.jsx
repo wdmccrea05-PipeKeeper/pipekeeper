@@ -87,9 +87,7 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={premiumFeatures} />
             <div className="mt-4">
-              <Button className="w-full" onClick={openSubscription}>
-                {t("subscription.subscribe")}
-              </Button>
+              <SubscriptionManagerButton className="w-full" />
             </div>
           </CardContent>
         </Card>
@@ -101,9 +99,7 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={proFeatures} />
             <div className="mt-4">
-              <Button className="w-full" onClick={openSubscription}>
-                {t("subscription.subscribe")}
-              </Button>
+              <SubscriptionManagerButton className="w-full" />
             </div>
           </CardContent>
         </Card>
