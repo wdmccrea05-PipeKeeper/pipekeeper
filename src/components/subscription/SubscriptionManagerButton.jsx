@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Mail } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
-import { getBillingConfig } from "@/components/utils/billingConfig";
+import { getBillingConfig } from "@/components/utils/billingConfig.ts";
 import PaymentLinksModal from "./PaymentLinksModal";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
