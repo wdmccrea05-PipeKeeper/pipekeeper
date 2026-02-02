@@ -43,15 +43,17 @@ export default function SubscriptionFull() {
     try {
       const response = await base44.functions.invoke('createCheckoutSession', { 
         tier: 'premium', 
-        interval: 'annual' 
+        interval: 'monthly' 
       });
       
       if (response?.data?.url) {
         window.location.href = response.data.url;
       } else {
+        console.error('[SubscriptionFull] No URL in response:', response);
         setMessage("Could not start checkout. Please try again.");
       }
     } catch (e) {
+      console.error('[SubscriptionFull] Checkout error:', e);
       setMessage("Could not start checkout. Please try again.");
     }
   };
