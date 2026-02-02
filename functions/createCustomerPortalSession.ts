@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T03:50:00Z - v12 NO IMPORTS
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_shared/getStripeClient.ts";
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -73,21 +73,9 @@ Deno.serve(async (req) => {
       await srv.entities.User.update(authUser.id, { stripe_customer_id: stripeCustomerId }).catch(() => null);
     }
 
-    // ---- Get Stripe key via function call (no imports) ----
-    console.log("[createCustomerPortalSession] Getting Stripe key...");
-    const keyResult = await base44.functions.invoke('getStripeClient', {});
-    
-    if (!keyResult?.data?.key) {
-      console.error("[createCustomerPortalSession] No key returned:", keyResult);
-      return json(500, { ok: false, error: "Failed to get Stripe key" });
-    }
-    
-    const stripeKey = keyResult.data.key;
-    console.log("[createCustomerPortalSession] Got key:", stripeKey.slice(0, 8), "...", stripeKey.slice(-4));
-    
-    // Create Stripe client directly
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-    console.log("[createCustomerPortalSession] Stripe client created");
+    // Use shared Stripe client loader
+    const { stripe, meta } = await getStripeClient(req);
+    console.log(`[createCustomerPortalSession] env=${meta.environment} source=${meta.source} key=${meta.masked}`);
 
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
