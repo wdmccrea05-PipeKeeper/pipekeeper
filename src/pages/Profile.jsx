@@ -1223,6 +1223,12 @@ export default function ProfilePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
         </AlertDialog>
+
+        <SubscriptionBackupModeModal
+          isOpen={showBackupModal}
+          onClose={() => setShowBackupModal(false)}
+          user={user}
+        />
         </div>
         );
         }
