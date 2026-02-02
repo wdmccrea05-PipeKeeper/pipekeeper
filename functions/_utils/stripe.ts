@@ -3,12 +3,13 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-// CRITICAL: Force fresh key read on every invocation - 2026-02-01 v3
-// Production env cache issue workaround
+// INTEGRATED: Remote config fallback system - 2026-02-02
+// Solves production env cache issues permanently
 
 import Stripe from "npm:stripe@17.5.0";
+import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 
-// DISABLED client caching to force fresh key reads
+// Client cache with key tracking
 let stripeClient = null;
 let cachedKey = null;
 
@@ -65,15 +66,31 @@ export function assertStripeKeyOrThrow() {
   return key;
 }
 
-export function getStripeClient() {
-  const key = assertStripeKeyOrThrow();
+export async function getStripeClient(req?: Request) {
+  // Use remote config fallback system
+  const { value: key, source } = await getStripeSecretKeyLive(req);
   
-  // WORKAROUND: Disable caching completely due to production env variable stale cache
-  // Force fresh Stripe client on EVERY invocation until platform env cache is cleared
-  stripeClient = null;
-  cachedKey = null;
+  if (!key) {
+    throw new Error(
+      "STRIPE_SECRET_KEY missing from both env vars and RemoteConfig. " +
+      "Add it to RemoteConfig entity or set as environment variable."
+    );
+  }
   
-  console.log(`[Stripe] Creating fresh client (cache disabled) with key: ${maskKey(key)}`);
+  // Invalidate cache if key changed
+  if (stripeClient && cachedKey !== key) {
+    console.warn(`[Stripe] Key changed (${source}) - invalidating cache`);
+    stripeClient = null;
+    cachedKey = null;
+  }
+  
+  // Return cached client if key matches
+  if (stripeClient && cachedKey === key) {
+    return stripeClient;
+  }
+  
+  // Initialize fresh client
+  console.log(`[Stripe] Initializing client with key from ${source}: ${maskKey(key)}`);
   stripeClient = new Stripe(key, { apiVersion: "2024-06-20" });
   cachedKey = key;
   

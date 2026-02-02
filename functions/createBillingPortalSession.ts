@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     let stripe;
     try {
-      stripe = getStripeClient();
+      stripe = await getStripeClient(req);
       await stripeSanityCheck(stripe);
     } catch (e) {
       return Response.json(stripeKeyErrorResponse(e), { status: 500 });
