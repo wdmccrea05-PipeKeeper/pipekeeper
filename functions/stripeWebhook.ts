@@ -1,7 +1,7 @@
-// DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
+// DEPLOYMENT: 2026-02-02T03:55:00Z - Backup Mode resilient
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_shared/getStripeClient.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -94,23 +94,40 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get Stripe key via function call
-    const keyResult = await base44.functions.invoke('getStripeClient', {});
-    if (!keyResult?.data?.key) {
-      return json(500, { ok: false, error: "Failed to get Stripe key" });
+    // Use shared Stripe client loader
+    let stripe;
+    try {
+      const { stripe: stripeClient, meta } = await getStripeClient(req);
+      stripe = stripeClient;
+      console.log(`[stripeWebhook] env=${meta.environment} source=${meta.source}`);
+    } catch (e) {
+      console.error("[stripeWebhook] Failed to get Stripe client:", e?.message || e);
+      return json(500, { ok: false, error: "Failed to get Stripe client" });
     }
-    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
     
-    // Get webhook secret via function call
-    const secretResult = await base44.functions.invoke('getRemoteConfig', { 
-      key: 'STRIPE_WEBHOOK_SECRET',
-      environment: 'live'
-    });
-    const webhookSecret = secretResult?.data?.value || "";
+    // Get webhook secret - try ENV first, then RemoteConfig fallback
+    let webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
+    let secretSource = "env";
     
     if (!webhookSecret) {
-      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
+      try {
+        const secretResult = await base44.functions.invoke('getRemoteConfig', { 
+          key: 'STRIPE_WEBHOOK_SECRET',
+          environment: 'live'
+        });
+        webhookSecret = secretResult?.data?.value || "";
+        secretSource = "remoteconfig";
+      } catch (e) {
+        console.warn("[stripeWebhook] Failed to get webhook secret from RemoteConfig:", e?.message || e);
+      }
     }
+    
+    if (!webhookSecret) {
+      console.warn("[stripeWebhook] Webhook secret missing from both ENV and RemoteConfig");
+      return json(200, { ok: false, error: "Webhook secret missing; ignoring event" });
+    }
+    
+    console.log(`[stripeWebhook] Using webhook secret from ${secretSource}`);
 
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();
@@ -122,8 +139,9 @@ Deno.serve(async (req) => {
     try {
       event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
     } catch (err) {
-      console.error("[webhook] Signature verification failed:", err.message);
-      return json(400, { ok: false, error: `Webhook signature verification failed: ${err.message}` });
+      console.error("[stripeWebhook] Signature verification failed:", err.message);
+      // Return 400 for signature errors (client issue), not 500
+      return json(400, { ok: false, error: `Signature verification failed: ${err.message}` });
     }
 
     // Deduplication: Check if event already processed
@@ -214,7 +232,10 @@ Deno.serve(async (req) => {
         const user_email = normEmail(emailRaw);
         const user_id = session.metadata?.user_id || null;
         
-        if (!user_email) break;
+        if (!user_email) {
+          console.warn("[stripeWebhook] checkout.session.completed: no user email found, skipping");
+          break;
+        }
 
         // Ensure user exists before setting entitlement
         await ensureUserExists(user_email, customerId);
@@ -223,13 +244,20 @@ Deno.serve(async (req) => {
         const sessionTier = (session.metadata?.tier || "").toLowerCase();
         const tierValue = (sessionTier === "pro" || sessionTier === "premium") ? sessionTier : null;
         
-        console.log(`[webhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}, setting paid status`);
-        await setUserEntitlement(user_email, {
-          subscription_level: "paid",
-          subscription_status: "active",
-          subscription_tier: tierValue,
-          stripe_customer_id: customerId || null,
-        });
+        console.log(`[stripeWebhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}`);
+        
+        // Update user entitlements
+        try {
+          await setUserEntitlement(user_email, {
+            subscription_level: "paid",
+            subscriptionStatus: "active",
+            subscriptionSource: "stripe",
+            subscriptionTier: tierValue,
+            stripe_customer_id: customerId || null,
+          });
+        } catch (err) {
+          console.error("[stripeWebhook] Failed to set entitlement for checkout.session.completed:", err?.message || err);
+        }
 
         // The subscription update will come via subscription.created/updated events
         if (subscriptionId) {
@@ -343,13 +371,19 @@ Deno.serve(async (req) => {
           userRow = await findUserByEmail(user_email);
         }
         
-        console.log(`[webhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, tier=${payload.tier}, isPaid=${isPaid}`);
-        await setUserEntitlement(user_email, {
-          subscription_level: isPaid ? "paid" : "free",
-          subscription_status: sub.status,
-          subscription_tier: payload.tier || null,
-          stripe_customer_id: customerId || null,
-        });
+        console.log(`[stripeWebhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, tier=${payload.tier}`);
+        
+        // Update user entitlements
+        try {
+          await setUserEntitlement(user_email, {
+            subscriptionStatus: isPaid ? "active" : "inactive",
+            subscriptionSource: "stripe",
+            subscriptionTier: payload.tier || null,
+            stripe_customer_id: customerId || null,
+          });
+        } catch (err) {
+          console.error(`[stripeWebhook] Failed to set entitlement for ${event.type}:`, err?.message || err);
+        }
 
         break;
       }
