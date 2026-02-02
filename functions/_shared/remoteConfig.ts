@@ -72,14 +72,15 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
       console.log("[remoteConfig] RemoteConfig records found:", recs.map(r => ({ key: r.key, env: r.environment, active: r.is_active })));
     }
 
-    const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live");
+    const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live" && r.is_active);
     console.log("[remoteConfig] Found live key record:", !!rec0);
+    console.log("[remoteConfig] Record details:", rec0 ? { key: rec0.key, env: rec0.environment, active: rec0.is_active, valuePrefix: rec0.value?.slice(0, 4) } : "null");
     
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
     
     // Validate it's a real Stripe key (not test/invalid)
     if (remoteVal && remoteVal.startsWith("sk_live_")) {
-      console.log("[remoteConfig] ✅ Using live key from RemoteConfig");
+      console.log("[remoteConfig] ✅ Using live key from RemoteConfig:", remoteVal.slice(0, 8), "...", remoteVal.slice(-4));
       cachedValue = remoteVal;
       cachedSource = "remote";
       lastFetchMs = now();
@@ -88,6 +89,8 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     
     if (remoteVal) {
       console.warn("[remoteConfig] ⚠️ Found key but not sk_live_:", remoteVal.slice(0, 8));
+    } else {
+      console.warn("[remoteConfig] ⚠️ No RemoteConfig value found for STRIPE_SECRET_KEY + live");
     }
   } catch (e) {
     console.error("[remoteConfig] ❌ RemoteConfig fetch failed:", e?.message || e);
