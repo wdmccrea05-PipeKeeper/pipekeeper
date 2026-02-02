@@ -351,12 +351,12 @@ export default function ProfilePage() {
                                 // iOS uses App Store subscription settings
                                 await openAppleSettings();
                               } else {
-                                await openManageSubscription();
+                                await openManageSubscription(() => setShowBackupModal(true));
                               }
                             } catch (e) {
                               const message = e?.message || "Unable to open subscription management portal";
                               console.error('[Profile] Manage subscription error:', message);
-                              alert(message);
+                              setShowBackupModal(true);
                             }
                           }}
                         >
