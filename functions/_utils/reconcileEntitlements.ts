@@ -31,7 +31,7 @@ export interface ReconcileResult {
 export async function reconcileUserEntitlements(
   base44: any,
   user: any,
-  options: { forceStripeCheck?: boolean } = {}
+  options: { forceStripeCheck?: boolean; req?: any } = {}
 ): Promise<ReconcileResult> {
   const email = normEmail(user.email);
   
@@ -61,7 +61,7 @@ export async function reconcileUserEntitlements(
 
   if (needsStripeRecovery) {
     try {
-      const stripe = getStripeClient();
+      const { stripe } = await getStripeClient(options.req);
       
       let customer = null;
       try {

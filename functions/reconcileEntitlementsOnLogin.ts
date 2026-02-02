@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     };
 
     // Run reconciliation
-    const result = await reconcileUserEntitlements(base44, userEntity);
+    const result = await reconcileUserEntitlements(base44, userEntity, { req });
 
     const finalTier = result.finalTier;
     const finalLevel = result.finalLevel;
