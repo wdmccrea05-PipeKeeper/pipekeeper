@@ -1,12 +1,7 @@
-// Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
-}
-
-// DEPLOYMENT TIMESTAMP: 2026-02-02T03:30:00Z - v11 FINAL
+// DEPLOYMENT: 2026-02-02T03:50:00Z - v12 NO IMPORTS
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -78,10 +73,21 @@ Deno.serve(async (req) => {
       await srv.entities.User.update(authUser.id, { stripe_customer_id: stripeCustomerId }).catch(() => null);
     }
 
-    // ---- Stripe client with RemoteConfig fallback + cache bust options ----
-    console.log("[createCustomerPortalSession] Getting Stripe client...");
-    const stripe = await getStripeClient(req);
-    console.log("[createCustomerPortalSession] Stripe client obtained successfully");
+    // ---- Get Stripe key via function call (no imports) ----
+    console.log("[createCustomerPortalSession] Getting Stripe key...");
+    const keyResult = await base44.functions.invoke('getStripeClient', {});
+    
+    if (!keyResult?.data?.key) {
+      console.error("[createCustomerPortalSession] No key returned:", keyResult);
+      return json(500, { ok: false, error: "Failed to get Stripe key" });
+    }
+    
+    const stripeKey = keyResult.data.key;
+    console.log("[createCustomerPortalSession] Got key:", stripeKey.slice(0, 8), "...", stripeKey.slice(-4));
+    
+    // Create Stripe client directly
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+    console.log("[createCustomerPortalSession] Stripe client created");
 
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
@@ -91,10 +97,9 @@ Deno.serve(async (req) => {
 
     return json(200, { ok: true, url: session.url });
   } catch (e) {
-    const msg = safeStripeError(e);
+    const msg = e?.message || String(e);
     console.error("[createCustomerPortalSession] Error:", msg);
 
-    // Keep response stable for UI
     return json(500, {
       ok: false,
       error: "Failed to create customer portal session",
