@@ -77,7 +77,9 @@ Deno.serve(async (req) => {
     }
 
     // ---- Stripe client with RemoteConfig fallback + cache bust options ----
+    console.log("[createCustomerPortalSession] Getting Stripe client...");
     const stripe = await getStripeClient(req);
+    console.log("[createCustomerPortalSession] Stripe client obtained successfully");
 
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({

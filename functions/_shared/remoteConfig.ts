@@ -55,14 +55,22 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
 
   // 1) Try RemoteConfig (service role) - ALWAYS prioritize this
   try {
-    if (!req) throw new Error("Request required for RemoteConfig fetch");
+    if (!req) {
+      console.warn("[remoteConfig] No request provided, skipping RemoteConfig");
+      throw new Error("Request required for RemoteConfig fetch");
+    }
+    
     const base44 = createClientFromRequest(req);
     const srv = base44.asServiceRole;
 
-    console.log("[remoteConfig] Fetching from RemoteConfig...");
+    console.log("[remoteConfig] Fetching from RemoteConfig via asServiceRole...");
     
     const recs = await srv.entities.RemoteConfig.list();
-    console.log("[remoteConfig] Total records:", recs?.length || 0);
+    console.log("[remoteConfig] Total RemoteConfig records:", recs?.length || 0);
+    
+    if (recs && recs.length > 0) {
+      console.log("[remoteConfig] RemoteConfig records found:", recs.map(r => ({ key: r.key, env: r.environment, active: r.is_active })));
+    }
 
     const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live");
     console.log("[remoteConfig] Found live key record:", !!rec0);
