@@ -3,7 +3,7 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-// Force fresh deployment: 2026-02-02 v10 - Full env dump + RemoteConfig only
+// DEPLOYMENT TIMESTAMP: 2026-02-02T03:30:00Z - v11 FINAL
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
