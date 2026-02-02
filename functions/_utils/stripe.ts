@@ -2,19 +2,25 @@ import Stripe from "npm:stripe@17.5.0";
 import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 
 export async function getStripeClient(req: Request): Promise<Stripe> {
+  console.log("[stripe] ========== STRIPE CLIENT INIT START ==========");
+  console.log("[stripe] Timestamp:", new Date().toISOString());
+  
   // CRITICAL: Block ALL invalid keys before they reach Stripe
   const envDirect = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  console.log("[stripe] Env check:", envDirect ? `${envDirect.slice(0, 8)}...${envDirect.slice(-4)}` : "(not set)");
+  
   if (envDirect && envDirect.startsWith("mk_")) {
     console.error(`[stripe] ❌❌❌ FATAL: mk_ key detected in env: ${envDirect.slice(0, 8)}`);
     throw new Error(`FATAL: Invalid test key (mk_) in STRIPE_SECRET_KEY environment variable. Update to sk_live_ key.`);
   }
 
-  console.log("[stripe] Fetching Stripe key...");
+  console.log("[stripe] Fetching Stripe key from RemoteConfig...");
   const { value: key, source } = await getStripeSecretKeyLive(req);
-  console.log(`[stripe] Key source: ${source}, full: ${key ? key.slice(0, 8) : "(none)"}...${key ? key.slice(-4) : ""}`);
+  console.log(`[stripe] ✅ Received key from ${source}: ${key ? key.slice(0, 8) : "(none)"}...${key ? key.slice(-4) : ""}`);
 
   if (!key) {
-    throw new Error("Stripe secret key missing after env + RemoteConfig lookup");
+    console.error("[stripe] ❌ No key returned from RemoteConfig");
+    throw new Error("Stripe secret key missing after RemoteConfig lookup");
   }
 
   // CRITICAL: Reject ANY invalid key
@@ -32,11 +38,14 @@ export async function getStripeClient(req: Request): Promise<Stripe> {
 
   // Create fresh Stripe client (no caching to avoid stale key issues)
   try {
-    return new Stripe(key, {
+    const stripe = new Stripe(key, {
       apiVersion: "2024-06-20",
     });
+    console.log("[stripe] ✅ Stripe client created successfully");
+    console.log("[stripe] ========== STRIPE CLIENT INIT END ==========");
+    return stripe;
   } catch (e: any) {
-    console.error("[stripe] Failed to create Stripe client:", e?.message || e);
+    console.error("[stripe] ❌ Failed to create Stripe client:", e?.message || e);
     throw new Error(`Failed to initialize Stripe client: ${e?.message || e}`);
   }
 }
