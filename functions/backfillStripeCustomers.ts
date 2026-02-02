@@ -1,10 +1,12 @@
+// DEPLOYMENT: 2026-02-02T04:00:00Z - No imports
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, getStripeKeyPrefix, safeStripeError, stripeSanityCheck } from "./_utils/stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
 Deno.serve(async (req: Request) => {
-  const keyPrefix = getStripeKeyPrefix();
+  let keyPrefix = "unknown";
   
   try {
     // Stage: parse_body
@@ -52,28 +54,24 @@ Deno.serve(async (req: Request) => {
     // Stage: stripe_init
     let stripe;
     try {
-      stripe = getStripeClient();
+      const keyResult = await base44.functions.invoke('getStripeClient', {});
+      if (!keyResult?.data?.key) {
+        return Response.json({
+          ok: false,
+          error: "BACKFILL_FAILED",
+          where: "stripe_init",
+          message: "Failed to get Stripe key",
+          keyPrefix
+        }, { status: 500 });
+      }
+      keyPrefix = keyResult.data.prefix || "unknown";
+      stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
     } catch (e: any) {
       return Response.json({
         ok: false,
         error: "BACKFILL_FAILED",
         where: "stripe_init",
-        message: safeStripeError(e),
-        keyPrefix
-      }, { status: 500 });
-    }
-
-    // Stage: stripe_sanity (HARD STOP on failure)
-    try {
-      await stripeSanityCheck(stripe);
-    } catch (e: any) {
-      return Response.json({
-        ok: false,
-        error: "STRIPE_AUTH_FAILED",
-        where: "stripe_sanity",
-        stripeSanityOk: false,
-        message: "Stripe authentication failed. Check STRIPE_SECRET_KEY.",
-        details: safeStripeError(e),
+        message: e?.message || String(e),
         keyPrefix
       }, { status: 500 });
     }
@@ -91,7 +89,7 @@ Deno.serve(async (req: Request) => {
         ok: false,
         error: "BACKFILL_FAILED",
         where: "stripe_customers_list",
-        message: safeStripeError(e),
+        message: e?.message || String(e),
         keyPrefix
       }, { status: 500 });
     }
@@ -131,7 +129,7 @@ Deno.serve(async (req: Request) => {
               where: "stripe_subscriptions_list",
               email,
               customer_id: customer.id,
-              message: safeStripeError(e)
+              message: e?.message || String(e)
             });
           }
           continue;
@@ -309,7 +307,7 @@ Deno.serve(async (req: Request) => {
       ok: false,
       error: "BACKFILL_FAILED",
       where: "top_level",
-      message: safeStripeError(error),
+      message: error?.message || String(error),
       keyPrefix
     }, { status: 500 });
   }

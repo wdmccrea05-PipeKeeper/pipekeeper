@@ -1,12 +1,7 @@
-// Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
-}
-
-// Force redeploy: 2026-02-01
+// DEPLOYMENT: 2026-02-02T04:00:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeSanityCheck, safeStripeError } from "./_utils/stripe.js";
+import Stripe from "npm:stripe@17.5.0";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
@@ -54,18 +49,15 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    let stripe;
-    try {
-     stripe = await getStripeClient(req);
-     await stripeSanityCheck(stripe);
-    } catch (e) {
-     console.error("[syncStripeSubscriptions] Stripe init failed:", e);
-     return Response.json({
-       ok: false,
-       error: "STRIPE_INIT_FAILED",
-       message: safeStripeError(e)
-     }, { status: 500 });
+    const keyResult = await base44.functions.invoke('getStripeClient', {});
+    if (!keyResult?.data?.key) {
+      return Response.json({
+        ok: false,
+        error: "STRIPE_INIT_FAILED",
+        message: "Failed to get Stripe key"
+      }, { status: 500 });
     }
+    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
 
     let body = {};
     try {
@@ -96,7 +88,7 @@ Deno.serve(async (req) => {
         return Response.json({
           ok: false,
           error: "STRIPE_CALL_FAILED",
-          message: safeStripeError(e)
+          message: e?.message || String(e)
         }, { status: 500 });
       }
     }
@@ -122,7 +114,7 @@ Deno.serve(async (req) => {
       return Response.json({
         ok: false,
         error: "STRIPE_CALL_FAILED",
-        message: safeStripeError(e)
+        message: e?.message || String(e)
       }, { status: 500 });
     }
 
@@ -213,7 +205,7 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: false,
       error: "FUNCTION_ERROR",
-      message: safeStripeError(error)
+      message: error?.message || String(error)
     }, { status: 500 });
   }
 });
