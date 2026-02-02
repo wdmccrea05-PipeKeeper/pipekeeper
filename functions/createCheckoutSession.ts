@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_shared/getStripeClient.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
