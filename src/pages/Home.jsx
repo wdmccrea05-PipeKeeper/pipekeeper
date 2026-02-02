@@ -641,7 +641,9 @@ export default function HomePage() {
                   description="This iOS build focuses on cataloging and cellar inventory management: identification assistance, metadata cleanup, verified measurements, export reports, and organization tools."
                 />
               ) : isPaidUser ? (
-                <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} />
+                <ErrorBoundary fallback={<div className="text-center text-red-500">Expert Tobacconist failed to load</div>}>
+                  <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} user={user} />
+                </ErrorBoundary>
               ) : (
                 <UpgradePrompt 
                   featureName="Expert Tobacconist"

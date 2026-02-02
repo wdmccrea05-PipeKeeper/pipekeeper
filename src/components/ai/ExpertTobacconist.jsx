@@ -12,22 +12,8 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
-export default function ExpertTobacconist({ pipes, blends, isPaidUser }) {
+export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
   if (isAppleBuild) return null;
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.email],
-    queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
-    },
-    enabled: !!user?.email,
-  });
 
   return (
     <Card>
