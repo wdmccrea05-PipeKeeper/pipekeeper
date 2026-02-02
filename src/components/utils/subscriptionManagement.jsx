@@ -9,7 +9,7 @@ import { isAppleBuild } from "./appVariant";
  */
 const APPLE_SUBSCRIPTIONS_URL = "https://apps.apple.com/account/subscriptions";
 
-export async function openManageSubscription() {
+export async function openManageSubscription(onBackupModeOpen) {
   // Apple build OR iOS companion: never open Stripe billing portal
   if (isAppleBuild || isIOSCompanion()) {
     window.open(APPLE_SUBSCRIPTIONS_URL, "_blank", "noopener,noreferrer");
@@ -37,22 +37,31 @@ export async function openManageSubscription() {
         return;
       }
       
-      // Show error to user without crashing
-      alert(`Unable to open subscription management: ${msg}`);
+      // Portal failed: open backup mode instead
+      console.warn("[openManageSubscription] Portal failed, opening backup mode");
+      if (onBackupModeOpen) {
+        onBackupModeOpen();
+      }
       return;
     }
     
     const url = response?.data?.url;
     if (!url) {
       console.error("[openManageSubscription] No portal URL returned");
-      alert("Unable to open subscription management portal. Please try again.");
+      // No URL: open backup mode
+      if (onBackupModeOpen) {
+        onBackupModeOpen();
+      }
       return;
     }
     
     window.location.href = url;
   } catch (error) {
     console.error("[openManageSubscription] Unexpected error:", error);
-    alert("Unable to open subscription management. Please try again.");
+    // Error opening portal: fallback to backup mode
+    if (onBackupModeOpen) {
+      onBackupModeOpen();
+    }
   }
 }
 
