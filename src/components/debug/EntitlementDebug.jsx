@@ -40,19 +40,23 @@ function copyToClipboard(text) {
 export default function EntitlementDebug() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { user, subscription, isLoading, hasPaid, hasPremium, isInTrial, isAdmin } = useCurrentUser();
 
-  // Determine if debug widget should be visible (deferred to avoid hydration mismatch)
+  // Safely check visibility after mount to avoid hydration mismatch
   useEffect(() => {
-    const devMode = isDevMode();
-    const debugParam = getDebugParam();
-    const adminDebugMode = isAdmin && debugParam;
-    setShouldRender(devMode || adminDebugMode);
-  }, [isAdmin]);
+    setIsMounted(true);
+  }, []);
 
-  if (!shouldRender || isLoading || !user?.email) return null;
+  // Only render if mounted AND conditions are met
+  if (!isMounted || isLoading || !user?.email) return null;
+  
+  const devMode = isDevMode();
+  const debugParam = getDebugParam();
+  const adminDebugMode = isAdmin && debugParam;
+  
+  if (!devMode && !adminDebugMode) return null;
 
   const isLegacy = isLegacyPremium(subscription);
   const isFounder = isFoundingMember(user);
