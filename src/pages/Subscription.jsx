@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import SubscriptionManagerButton from "@/components/subscription/SubscriptionManagerButton";
 
 function FeatureList({ items }) {
   return (
@@ -57,12 +56,21 @@ function AppleSubscription() {
     "Early access to new advanced features",
   ];
 
+  const openSubscription = () => {
+    if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
+      window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscriptionSheet" });
+      return;
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
 
-        <SubscriptionManagerButton variant="secondary" />
+        <Button variant="secondary" onClick={openSubscription}>
+          {t("subscription.manage")}
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -87,7 +95,9 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={premiumFeatures} />
             <div className="mt-4">
-              <SubscriptionManagerButton className="w-full" />
+              <Button className="w-full" onClick={openSubscription}>
+                {t("subscription.subscribe")}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -99,7 +109,9 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={proFeatures} />
             <div className="mt-4">
-              <SubscriptionManagerButton className="w-full" />
+              <Button className="w-full" onClick={openSubscription}>
+                {t("subscription.subscribe")}
+              </Button>
             </div>
           </CardContent>
         </Card>

@@ -20,7 +20,6 @@ import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion 
 import { openManageSubscription, shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { openAppleSettings } from "@/components/utils/appleIAP";
-import SubscriptionManagerButton from "@/components/subscription/SubscriptionManagerButton";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
@@ -338,10 +337,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
+                  {/* iOS compliance: Hide all subscription management */}
                   {!isIOSCompanion() ? (
                     <>
                       {shouldShowManageSubscription(subscription, user) && (
-                        <SubscriptionManagerButton className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full" />
+                        <Button
+                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
+                          onClick={async () => {
+                            try {
+                              if (isAppleBuild) {
+                                // iOS uses App Store subscription settings
+                                await openAppleSettings();
+                              } else {
+                                await openManageSubscription();
+                              }
+                            } catch (e) {
+                              const message = e?.message || "Unable to open subscription management portal";
+                              console.error('[Profile] Manage subscription error:', message);
+                              alert(message);
+                            }
+                          }}
+                        >
+                          {isAppleBuild ? 'Manage Subscription (App Store)' : getManageSubscriptionLabel()}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
                       )}
                       {shouldShowPurchaseUI() && !hasActiveSubscription && (
                         <a href={createPageUrl("Subscription")}>
