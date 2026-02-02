@@ -79,10 +79,11 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
+import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
+import adminsubscriptiontoolsTsx from './pages/AdminSubscriptionTools.tsx';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
-import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
-import adminsubscriptiontoolsTsx from './pages/AdminSubscriptionTools.tsx';
 import __Layout from './Layout.jsx';
 
 
@@ -119,10 +120,11 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
+    "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
+    "AdminSubscriptionTools.tsx": adminsubscriptiontoolsTsx,
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionCancelled": SubscriptionCancelled,
-    "AdminSubscriptionTools": AdminSubscriptionTools,
-    "AdminSubscriptionTools.tsx": adminsubscriptiontoolsTsx,
 }
 
 export const pagesConfig = {
