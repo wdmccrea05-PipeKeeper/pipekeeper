@@ -41,8 +41,20 @@ export default function HomePage() {
       console.error('[Home Error]', error);
       setHasError(true);
     };
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
+    
+    const handleUnhandledRejection = (event) => {
+      console.error('[Home Unhandled Promise]', event.reason);
+      setHasError(true);
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('error', handleError);
+      window.addEventListener('unhandledrejection', handleUnhandledRejection);
+      return () => {
+        window.removeEventListener('error', handleError);
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      };
+    }
   }, []);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
