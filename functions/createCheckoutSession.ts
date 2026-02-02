@@ -122,12 +122,9 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
     
-    // Get Stripe key via function call
-    const keyResult = await base44.functions.invoke('getStripeClient', {});
-    if (!keyResult?.data?.key) {
-      return Response.json({ error: "Failed to get Stripe key" }, { status: 500 });
-    }
-    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
+    // Use shared Stripe client loader
+    const { stripe, meta } = await getStripeClient(req);
+    console.log(`[createCheckoutSession] env=${meta.environment} source=${meta.source} key=${meta.masked}`);
     const user = await base44.auth.me();
 
     if (!user?.email) {
