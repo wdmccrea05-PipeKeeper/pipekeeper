@@ -27,15 +27,20 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   const loadConfig = async () => {
     try {
       setLoading(true);
-      const remoteConfig = await base44.functions.invoke("getRemoteConfig", {});
-      const configData = remoteConfig?.data || {};
+      const [premiumMonthly, premiumAnnual, proMonthly, proAnnual, supportEmail] = await Promise.all([
+        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PREMIUM_MONTHLY_URL" }).then(r => r.data?.value || ""),
+        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PREMIUM_ANNUAL_URL" }).then(r => r.data?.value || ""),
+        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PRO_MONTHLY_URL" }).then(r => r.data?.value || ""),
+        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PRO_ANNUAL_URL" }).then(r => r.data?.value || ""),
+        base44.functions.invoke("getRemoteConfig", { key: "SUBSCRIPTION_SUPPORT_EMAIL" }).then(r => r.data?.value || "admin@pipekeeperapp.com"),
+      ]);
       
       setConfig({
-        checkoutPremiumMonthly: configData.STRIPE_CHECKOUT_PREMIUM_MONTHLY_URL || "",
-        checkoutPremiumAnnual: configData.STRIPE_CHECKOUT_PREMIUM_ANNUAL_URL || "",
-        checkoutProMonthly: configData.STRIPE_CHECKOUT_PRO_MONTHLY_URL || "",
-        checkoutProAnnual: configData.STRIPE_CHECKOUT_PRO_ANNUAL_URL || "",
-        supportEmail: configData.SUBSCRIPTION_SUPPORT_EMAIL || "admin@pipekeeperapp.com",
+        checkoutPremiumMonthly: premiumMonthly,
+        checkoutPremiumAnnual: premiumAnnual,
+        checkoutProMonthly: proMonthly,
+        checkoutProAnnual: proAnnual,
+        supportEmail: supportEmail,
       });
     } catch (err) {
       console.error("[SubscriptionBackupModeModal] Failed to load config:", err);
