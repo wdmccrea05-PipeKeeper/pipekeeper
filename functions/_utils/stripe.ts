@@ -2,16 +2,27 @@ import Stripe from "npm:stripe@17.5.0";
 import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 
 export async function getStripeClient(req: Request): Promise<Stripe> {
-  // Always resolve key dynamically (do NOT trust cached Stripe instance)
+  // CRITICAL: Block ALL invalid keys before they reach Stripe
+  const envDirect = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  if (envDirect && envDirect.startsWith("mk_")) {
+    console.error(`[stripe] ❌❌❌ FATAL: mk_ key detected in env: ${envDirect.slice(0, 8)}`);
+    throw new Error(`FATAL: Invalid test key (mk_) in STRIPE_SECRET_KEY environment variable. Update to sk_live_ key.`);
+  }
+
   console.log("[stripe] Fetching Stripe key...");
   const { value: key, source } = await getStripeSecretKeyLive(req);
-  console.log(`[stripe] Key source: ${source}, prefix: ${key ? key.slice(0, 4) : "(none)"}`);
+  console.log(`[stripe] Key source: ${source}, full: ${key ? key.slice(0, 8) : "(none)"}...${key ? key.slice(-4) : ""}`);
 
   if (!key) {
     throw new Error("Stripe secret key missing after env + RemoteConfig lookup");
   }
 
-  // Validate key format before using it
+  // CRITICAL: Reject ANY invalid key
+  if (key.startsWith("mk_")) {
+    console.error(`[stripe] ❌❌❌ FATAL: mk_ key returned from ${source}`);
+    throw new Error(`FATAL: Invalid test key (mk_) returned from ${source}. This must be a sk_live_ key.`);
+  }
+
   if (!key.startsWith("sk_live_") && !key.startsWith("sk_test_")) {
     console.error(`[stripe] ❌ INVALID KEY PREFIX: ${key.slice(0, 8)}`);
     throw new Error(`Invalid Stripe key format: ${key.slice(0, 8)}... (expected sk_live_ or sk_test_)`);
