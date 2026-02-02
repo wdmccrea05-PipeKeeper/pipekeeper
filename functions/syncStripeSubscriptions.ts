@@ -57,15 +57,17 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const keyResult = await base44.functions.invoke('getStripeClient', {});
-    if (!keyResult?.data?.key) {
+    let stripe;
+    try {
+      const stripeKey = getStripeKey();
+      stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+    } catch (e) {
       return Response.json({
         ok: false,
         error: "STRIPE_INIT_FAILED",
-        message: "Failed to get Stripe key"
+        message: e?.message || "Failed to initialize Stripe"
       }, { status: 500 });
     }
-    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
 
     let body = {};
     try {
