@@ -1,24 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isLegacyPremium, isFoundingMember } from '@/components/utils/premiumAccess';
 import { ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Detect dev mode using Vite's import.meta.env (browser-safe)
+function isDevMode() {
+  return import.meta.env.DEV === true;
+}
+
+// Safe debug param detector
+function getDebugParam() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams?.get('debug') === '1';
+  } catch {
+    return false;
+  }
+}
+
+// Safe clipboard copy
+function copyToClipboard(text) {
+  if (typeof navigator === 'undefined' || !navigator.clipboard) {
+    console.warn('[EntitlementDebug] Clipboard API not available');
+    return false;
+  }
+  
+  try {
+    navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    console.error('[EntitlementDebug] Copy failed:', e);
+    return false;
+  }
+}
+
 // Debug component - only visible in dev or (admin + ?debug=1)
 export default function EntitlementDebug() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
 
   const { user, subscription, isLoading, hasPaid, hasPremium, isInTrial, isAdmin } = useCurrentUser();
 
-  // Determine if debug widget should be visible
-  const isDevMode = process.env.NODE_ENV !== 'production';
-  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const hasDebugParam = urlParams?.get('debug') === '1';
-  const isAdminDebugMode = isAdmin && hasDebugParam;
-  
-  if (!isDevMode && !isAdminDebugMode) return null;
-  if (isLoading || !user?.email) return null;
+  // Determine if debug widget should be visible (deferred to avoid hydration mismatch)
+  useEffect(() => {
+    const devMode = isDevMode();
+    const debugParam = getDebugParam();
+    const adminDebugMode = isAdmin && debugParam;
+    setShouldRender(devMode || adminDebugMode);
+  }, [isAdmin]);
+
+  if (!shouldRender || isLoading || !user?.email) return null;
 
   const isLegacy = isLegacyPremium(subscription);
   const isFounder = isFoundingMember(user);
@@ -38,10 +72,14 @@ export default function EntitlementDebug() {
   };
 
   const handleCopySnapshot = () => {
-    navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
-    setJustCopied(true);
-    setTimeout(() => setJustCopied(false), 2000);
-    toast.success('Snapshot copied');
+    const copied = copyToClipboard(JSON.stringify(snapshot, null, 2));
+    if (copied) {
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 2000);
+      toast.success('Snapshot copied');
+    } else {
+      toast.error('Copy failed - clipboard unavailable');
+    }
   };
 
   return (
@@ -49,7 +87,7 @@ export default function EntitlementDebug() {
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="text-yellow-500 font-bold flex items-center gap-1">
           <span>🔍 Debug</span>
-          {!isDevMode && <span className="text-blue-400 text-[10px]">(Admin)</span>}
+          {!isDevMode() && <span className="text-blue-400 text-[10px]">(Admin)</span>}
         </div>
         <div className="flex gap-1">
           <button

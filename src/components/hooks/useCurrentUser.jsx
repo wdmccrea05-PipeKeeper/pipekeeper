@@ -16,8 +16,12 @@ const normEmail = (email) => String(email || "").trim().toLowerCase();
 function detectPlatform() {
   if (isIOSCompanion?.()) return "ios";
   if (typeof window !== 'undefined') {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get('platform') === 'android') return "android";
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('platform') === 'android') return "android";
+    } catch {
+      // URL parsing failed, fall through to default
+    }
   }
   return "web";
 }
@@ -173,9 +177,9 @@ export function useCurrentUser() {
     }
   }, [isLoading, rawUser, hasPaid]);
 
-  // Dev-only tier/entitlement debug output
+  // Dev-only tier/entitlement debug output (using Vite's import.meta.env)
   useEffect(() => {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && !isLoading && rawUser?.email) {
+    if (typeof window !== 'undefined' && import.meta.env.DEV && !isLoading && rawUser?.email) {
       const debugInfo = {
         user_id: userId,
         email: rawUser.email,
