@@ -203,6 +203,7 @@ export default function Layout({ children, currentPageName }) {
 
   const adminNavItems = [
     { name: "Reports", page: "AdminReports", icon: AlertCircle, isIconComponent: true },
+    { name: "Subscription Queue", page: "AdminSubscriptionRequests", icon: AlertCircle, isIconComponent: true },
   ];
 
   const PUBLIC_PAGES = useMemo(
