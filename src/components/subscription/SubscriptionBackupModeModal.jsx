@@ -47,11 +47,13 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
 
   const getCheckoutUrl = (tier, term) => {
     if (!config) return "";
-    
+
     const key = `checkout${
       tier === "premium" ? "Premium" : "Pro"
     }${term === "monthly" ? "Monthly" : "Annual"}`;
-    return config[key] || "";
+    const url = config[key];
+    console.log(`[SubscriptionBackupModeModal] Getting checkout URL for ${tier}/${term}: ${url}`);
+    return url || "";
   };
 
   const handleOpenCheckout = (tier, term) => {
