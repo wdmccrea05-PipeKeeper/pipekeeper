@@ -56,14 +56,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     }
   };
 
-  const handleOpenCheckout = (tier, term) => {
-    const url = getCheckoutUrl(tier, term);
-    if (!url) {
-      toast.error("Checkout URL not configured. Please contact support.");
-      return;
-    }
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+
 
   const handleRequestUnlock = async () => {
     if (!user?.email) {
