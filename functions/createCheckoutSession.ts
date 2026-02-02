@@ -1,12 +1,7 @@
-// Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
-}
-
-// Force redeploy: 2026-02-01
+// DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeSanityCheck, safeStripeError } from "./_utils/stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -125,11 +120,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
     }
 
-    // Initialize Stripe with validation and remote config fallback
-    const stripe = await getStripeClient(req);
-    await stripeSanityCheck(stripe);
-
     const base44 = createClientFromRequest(req);
+    
+    // Get Stripe key via function call
+    const keyResult = await base44.functions.invoke('getStripeClient', {});
+    if (!keyResult?.data?.key) {
+      return Response.json({ error: "Failed to get Stripe key" }, { status: 500 });
+    }
+    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
     const user = await base44.auth.me();
 
     if (!user?.email) {
@@ -242,7 +240,7 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: false,
       error: "CHECKOUT_CREATION_FAILED",
-      message: safeStripeError(error)
+      message: error?.message || String(error)
     }, { status: 500 });
   }
 });

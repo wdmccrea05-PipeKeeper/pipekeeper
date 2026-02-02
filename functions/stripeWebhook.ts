@@ -1,12 +1,7 @@
-// Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
-}
-
-// Force redeploy: 2026-02-01
+// DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -97,20 +92,30 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const stripe = await getStripeClient(req);
+    const base44 = createClientFromRequest(req);
     
-    // Use remote config fallback for webhook secret
-    const { getStripeWebhookSecretLive } = await import("./_shared/remoteConfig.ts");
-    const { value: webhookSecret, source: webhookSource } = await getStripeWebhookSecretLive(req);
+    // Get Stripe key via function call
+    const keyResult = await base44.functions.invoke('getStripeClient', {});
+    if (!keyResult?.data?.key) {
+      return json(500, { ok: false, error: "Failed to get Stripe key" });
+    }
+    const stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
+    
+    // Get webhook secret via function call
+    const secretResult = await base44.functions.invoke('getRemoteConfig', { 
+      key: 'STRIPE_WEBHOOK_SECRET',
+      environment: 'live'
+    });
+    const webhookSecret = secretResult?.data?.value || "";
     
     if (!webhookSecret) {
-      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET from both env and RemoteConfig" });
+      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
     }
-    
-    console.log(`[webhook] Using webhook secret from ${webhookSource}`);
 
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();
+    
+    console.log("[webhook] Webhook received, event type:", event?.type || "unknown");
 
     // Verify signature using Stripe SDK (async for Deno WebCrypto compatibility)
     let event;
@@ -120,8 +125,6 @@ Deno.serve(async (req) => {
       console.error("[webhook] Signature verification failed:", err.message);
       return json(400, { ok: false, error: `Webhook signature verification failed: ${err.message}` });
     }
-
-    const base44 = createClientFromRequest(req);
 
     // Deduplication: Check if event already processed
     try {
@@ -370,6 +373,6 @@ Deno.serve(async (req) => {
     return json(200, { ok: true });
   } catch (err) {
     console.error("[webhook] Fatal error:", err);
-    return json(500, { ok: false, error: "WEBHOOK_ERROR", message: safeStripeError(err) });
+    return json(500, { ok: false, error: "WEBHOOK_ERROR", message: err?.message || String(err) });
   }
 });
