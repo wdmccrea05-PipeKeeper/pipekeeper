@@ -1,17 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
-// In-memory cache (per function instance)
-let cachedValue: string | null = null;
-let cachedSource: "remote" | "env" | "missing" = "missing";
-let lastFetchMs = 0;
-
-// Default cache TTL (ms) - DISABLED for debugging
-const TTL_MS = 0; // Force fresh fetch every time
-
-function now() {
-  return Date.now();
-}
-
+// CACHE COMPLETELY DISABLED - Always fetch fresh
 function readFlags(req?: Request) {
   if (!req) return { forceRefresh: false, forceRemote: false };
   try {
@@ -40,18 +29,9 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
   source: "remote" | "env" | "missing";
 }> {
   const { forceRefresh, forceRemote } = readFlags(req);
-
-  // Cache hit (unless forced refresh)
-  if (!forceRefresh && cachedValue && now() - lastFetchMs < TTL_MS) {
-    return { value: cachedValue, source: cachedSource };
-  }
-
-  // Force refresh: invalidate cache timestamp/value
-  if (forceRefresh) {
-    cachedValue = null;
-    cachedSource = "missing";
-    lastFetchMs = 0;
-  }
+  
+  console.log("[remoteConfig] ===== NEW REQUEST =====");
+  console.log("[remoteConfig] Flags:", { forceRefresh, forceRemote });
 
   // 1) Try RemoteConfig (service role) - ALWAYS prioritize this
   try {
@@ -77,13 +57,10 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     console.log("[remoteConfig] Record details:", rec0 ? { key: rec0.key, env: rec0.environment, active: rec0.is_active, valuePrefix: rec0.value?.slice(0, 4) } : "null");
     
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
-    
+
     // Validate it's a real Stripe key (not test/invalid)
     if (remoteVal && remoteVal.startsWith("sk_live_")) {
       console.log("[remoteConfig] ✅ Using live key from RemoteConfig:", remoteVal.slice(0, 8), "...", remoteVal.slice(-4));
-      cachedValue = remoteVal;
-      cachedSource = "remote";
-      lastFetchMs = now();
       return { value: remoteVal, source: "remote" };
     }
     
@@ -109,16 +86,11 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     
     if (envVal && envVal.startsWith("sk_live_")) {
       console.log("[remoteConfig] ✅ Using valid env key:", envVal.slice(0, 8), "...", envVal.slice(-4));
-      cachedValue = envVal;
-      cachedSource = "env";
-      lastFetchMs = now();
       return { value: envVal, source: "env" };
     }
   }
 
-  cachedValue = "";
-  cachedSource = "missing";
-  lastFetchMs = now();
+  console.log("[remoteConfig] ❌ No valid key found");
   return { value: "", source: "missing" };
 }
 
