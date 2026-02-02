@@ -113,7 +113,6 @@ export default function AdminSubscriptionTools() {
         <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">Subscription Admin Tools</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Grant/Revoke Form */}
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
             <CardHeader>
               <CardTitle className="text-[#E0D8C8]">Manage User Subscription</CardTitle>
@@ -202,7 +201,6 @@ export default function AdminSubscriptionTools() {
             </CardContent>
           </Card>
 
-          {/* Updated User Summary */}
           {updatedUser && (
             <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
               <CardHeader>
