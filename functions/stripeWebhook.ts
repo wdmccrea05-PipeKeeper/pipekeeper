@@ -132,12 +132,11 @@ Deno.serve(async (req) => {
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();
     
-    console.log("[webhook] Webhook received, event type:", event?.type || "unknown");
-
     // Verify signature using Stripe SDK (async for Deno WebCrypto compatibility)
     let event;
     try {
       event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret);
+      console.log("[webhook] Received event:", event.type, event.id);
     } catch (err) {
       console.error("[stripeWebhook] Signature verification failed:", err.message);
       // Return 400 for signature errors (client issue), not 500
@@ -250,9 +249,8 @@ Deno.serve(async (req) => {
         try {
           await setUserEntitlement(user_email, {
             subscription_level: "paid",
-            subscriptionStatus: "active",
-            subscriptionSource: "stripe",
-            subscriptionTier: tierValue,
+            subscription_status: "active",
+            subscription_tier: tierValue,
             stripe_customer_id: customerId || null,
           });
         } catch (err) {
@@ -376,11 +374,12 @@ Deno.serve(async (req) => {
         // Update user entitlements
         try {
           await setUserEntitlement(user_email, {
-            subscriptionStatus: isPaid ? "active" : "inactive",
-            subscriptionSource: "stripe",
-            subscriptionTier: payload.tier || null,
+            subscription_level: isPaid ? "paid" : "free",
+            subscription_status: sub.status,
+            subscription_tier: payload.tier || null,
             stripe_customer_id: customerId || null,
           });
+          console.log(`[stripeWebhook] Updated entitlements for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}`);
         } catch (err) {
           console.error(`[stripeWebhook] Failed to set entitlement for ${event.type}:`, err?.message || err);
         }
