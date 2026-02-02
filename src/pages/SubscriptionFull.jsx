@@ -133,92 +133,113 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: keep existing Stripe customer portal
+    // Non-iOS: Stripe customer portal
     try {
       await openManageSubscription();
     } catch (e) {
-      setMessage("Could not open subscription management. Please try again.");
+      setMessage("Error: Could not open subscription management");
     }
   };
 
-  return (
-    <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
-      <h1 style={{ marginBottom: 8, color: "#E0D8C8", fontSize: 32, fontWeight: "bold" }}>PipeKeeper Premium</h1>
-
-      <p style={{ marginTop: 0, lineHeight: 1.5, color: "#E0D8C8", fontSize: 16 }}>
-        Unlock unlimited pipes and tobacco blends, cellar tracking, smoking logs, AI-powered insights, and advanced collection management tools.
-      </p>
-
-      {isIOSApp && (
-        <div
-          style={{
-            padding: 12,
-            borderRadius: 12,
-            background: "rgba(0,0,0,0.06)",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontWeight: 600, marginBottom: 6, color: "#E0D8C8" }}>
-            iOS App Store Subscriptions
-          </div>
-          <div style={{ opacity: 0.85, fontSize: 14, color: "#E0D8C8" }}>
-            Purchases and subscription management are handled through Apple.
-          </div>
+  if (isIOSApp) {
+    // iOS App Store subscriptions
+    return (
+      <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold text-[#e8d5b7]">PipeKeeper Subscriptions</h1>
+          <Button variant="secondary" onClick={handleManage}>
+            Manage
+          </Button>
         </div>
-      )}
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-        <button
-          onClick={handleUpgrade}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 600,
-            flex: "1 1 auto",
-            minWidth: 0,
-            background: "#A35C5C",
-            color: "#E0D8C8",
-          }}
-        >
-          {isIOSApp ? "Upgrade (App Store)" : "Upgrade"}
-        </button>
+        <Card className="bg-black/40 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">iOS App Store</CardTitle>
+          </CardHeader>
+          <CardContent className="text-[#e8d5b7]/80">
+            <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
+            <Button className="w-full" onClick={handleUpgrade}>
+              Upgrade (App Store)
+            </Button>
+            {isPro && <div className="mt-4 text-emerald-500">Status: Pro Active ✅</div>}
+            {message && <div className="mt-4 text-red-500">{message}</div>}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-        <button
-          onClick={handleManage}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid rgba(224, 216, 200, 0.3)",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: "transparent",
-            flex: "1 1 auto",
-            minWidth: 0,
-            color: "#E0D8C8",
-          }}
-        >
-          {isIOSApp ? "Manage (Apple)" : "Manage Subscription"}
-        </button>
+  // Web/Android subscriptions
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">PipeKeeper Subscriptions</h1>
+        <p className="text-[#e8d5b7]/70">Choose your plan and unlock premium features</p>
       </div>
 
-      {isIOSApp && (
-        <div style={{ marginTop: 8, fontSize: 14, opacity: 0.85, color: "#E0D8C8" }}>
-          {isPro ? "Status: Pro Active ✅" : "Status: Free / Not Active"}
-        </div>
-      )}
+      {/* Billing Interval Toggle */}
+      <div className="flex gap-4 items-center">
+        <span className="text-[#e8d5b7]">Billing:</span>
+        <Button
+          variant={selectedInterval === "monthly" ? "default" : "outline"}
+          onClick={() => setSelectedInterval("monthly")}
+          disabled={isLoading}
+        >
+          Monthly
+        </Button>
+        <Button
+          variant={selectedInterval === "annual" ? "default" : "outline"}
+          onClick={() => setSelectedInterval("annual")}
+          disabled={isLoading}
+        >
+          Annual (Save {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
+        </Button>
+      </div>
+
+      {/* Tier Selection */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <TierCard
+          tier="premium"
+          interval={selectedInterval}
+          price={tierPrices.premium[selectedInterval]}
+          features={tierFeatures.premium}
+          isSelected={selectedTier === "premium"}
+          onSelect={() => setSelectedTier("premium")}
+          isLoading={isLoading}
+        />
+        <TierCard
+          tier="pro"
+          interval={selectedInterval}
+          price={tierPrices.pro[selectedInterval]}
+          features={tierFeatures.pro}
+          isSelected={selectedTier === "pro"}
+          onSelect={() => setSelectedTier("pro")}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* Upgrade Button */}
+      <Button
+        size="lg"
+        className="w-full text-lg"
+        onClick={handleUpgrade}
+        disabled={isLoading}
+      >
+        {isLoading ? "Processing..." : `Upgrade to ${selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)}`}
+      </Button>
+
+      {/* Manage Subscription */}
+      <Button variant="outline" className="w-full" onClick={handleManage} disabled={isLoading}>
+        Manage Subscription
+      </Button>
 
       {message && (
-        <div style={{ marginTop: 12, color: message.includes("✅") ? "green" : "crimson" }}>
-          {message}
-        </div>
+        <Card className={`border-${message.includes("Error") ? "red" : "green"}-500`}>
+          <CardContent className={`pt-6 text-${message.includes("Error") ? "red" : "green"}-500`}>
+            {message}
+          </CardContent>
+        </Card>
       )}
-
-      {/* IMPORTANT SAFETY NOTE:
-          On iOS WKWebView, do NOT render any Stripe portal links or buttons.
-          If your existing page includes those elsewhere, Base44 should remove them
-          from the iOS WKWebView conditional path. */}
     </div>
   );
 }
