@@ -7,6 +7,14 @@ function normEmail(v) {
   return String(v || "").trim().toLowerCase();
 }
 
+function getStripeKey() {
+  const envKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  if (envKey && (envKey.startsWith("sk_live_") || envKey.startsWith("sk_test_"))) {
+    return envKey;
+  }
+  throw new Error("STRIPE_SECRET_KEY not configured in environment");
+}
+
 function isoFromUnixSeconds(sec) {
   if (!sec) return null;
   const ms = Number(sec) * 1000;
