@@ -4,14 +4,15 @@ import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 export async function getStripeClient(req: Request): Promise<Stripe> {
   console.log("[stripe] ========== STRIPE CLIENT INIT START ==========");
   console.log("[stripe] Timestamp:", new Date().toISOString());
+  console.log("[stripe] Deno.env ALL KEYS:", Object.keys(Deno.env.toObject()));
   
   // CRITICAL: Block ALL invalid keys before they reach Stripe
   const envDirect = Deno.env.get("STRIPE_SECRET_KEY") || "";
-  console.log("[stripe] Env check:", envDirect ? `${envDirect.slice(0, 8)}...${envDirect.slice(-4)}` : "(not set)");
+  console.log("[stripe] STRIPE_SECRET_KEY from env:", envDirect ? `${envDirect.slice(0, 8)}...${envDirect.slice(-4)}` : "(not set)");
   
-  if (envDirect && envDirect.startsWith("mk_")) {
-    console.error(`[stripe] ❌❌❌ FATAL: mk_ key detected in env: ${envDirect.slice(0, 8)}`);
-    throw new Error(`FATAL: Invalid test key (mk_) in STRIPE_SECRET_KEY environment variable. Update to sk_live_ key.`);
+  // FORCE: Clear any env var to ensure RemoteConfig is used
+  if (envDirect) {
+    console.warn("[stripe] ⚠️ STRIPE_SECRET_KEY env var exists, but we will IGNORE it and use RemoteConfig");
   }
 
   console.log("[stripe] Fetching Stripe key from RemoteConfig...");
@@ -34,7 +35,7 @@ export async function getStripeClient(req: Request): Promise<Stripe> {
     throw new Error(`Invalid Stripe key format: ${key.slice(0, 8)}... (expected sk_live_ or sk_test_)`);
   }
 
-  console.log(`[stripe] ✅ Creating Stripe client with ${source} key: ${key.slice(0, 8)}...${key.slice(-4)}`);
+  console.log(`[stripe] ✅ Will create Stripe client with key: ${key.slice(0, 8)}...${key.slice(-4)}`);
 
   // Create fresh Stripe client (no caching to avoid stale key issues)
   try {
@@ -46,6 +47,7 @@ export async function getStripeClient(req: Request): Promise<Stripe> {
     return stripe;
   } catch (e: any) {
     console.error("[stripe] ❌ Failed to create Stripe client:", e?.message || e);
+    console.error("[stripe] Error details:", JSON.stringify(e, null, 2));
     throw new Error(`Failed to initialize Stripe client: ${e?.message || e}`);
   }
 }
