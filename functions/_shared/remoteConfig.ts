@@ -99,19 +99,16 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
   // 2) Env var fallback - but REJECT invalid keys
   if (!forceRemote) {
     const envVal = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-    console.log("[remoteConfig] Env STRIPE_SECRET_KEY prefix:", envVal ? envVal.slice(0, 4) : "(empty)");
+    console.log("[remoteConfig] Env STRIPE_SECRET_KEY:", envVal ? `${envVal.slice(0, 8)}...${envVal.slice(-4)}` : "(empty)");
     
     // ONLY accept valid Stripe keys (sk_live_ or sk_test_)
     if (envVal && !envVal.startsWith("sk_live_") && !envVal.startsWith("sk_test_")) {
-      console.warn("[remoteConfig] ⚠️ Env key has invalid prefix, rejecting:", envVal.slice(0, 8));
-      cachedValue = "";
-      cachedSource = "missing";
-      lastFetchMs = now();
-      return { value: "", source: "missing" };
+      console.error("[remoteConfig] ❌ REJECTING invalid env key prefix:", envVal.slice(0, 8));
+      throw new Error(`Invalid STRIPE_SECRET_KEY in environment: ${envVal.slice(0, 8)}... (expected sk_live_ or sk_test_)`);
     }
     
-    if (envVal) {
-      console.log("[remoteConfig] ✅ Using env key:", envVal.slice(0, 8));
+    if (envVal && envVal.startsWith("sk_live_")) {
+      console.log("[remoteConfig] ✅ Using valid env key:", envVal.slice(0, 8), "...", envVal.slice(-4));
       cachedValue = envVal;
       cachedSource = "env";
       lastFetchMs = now();
