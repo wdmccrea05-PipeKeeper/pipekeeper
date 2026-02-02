@@ -59,13 +59,19 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     const base44 = createClientFromRequest(req);
     const srv = base44.asServiceRole;
 
-    const recs = await srv.entities.RemoteConfig.filter({
-      key: "STRIPE_SECRET_KEY",
-      environment: "live",
+    console.log("[remoteConfig] Attempting RemoteConfig fetch...");
+    
+    const recs = await srv.entities.RemoteConfig.list().catch((err) => {
+      console.error("[remoteConfig] RemoteConfig.list() failed:", err);
+      return [];
     });
 
-    const rec0 = Array.isArray(recs) ? recs[0] : null;
+    console.log("[remoteConfig] Found", recs.length, "RemoteConfig records");
+
+    const rec0 = recs.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live");
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
+
+    console.log("[remoteConfig] RemoteConfig result:", remoteVal ? "found (sk_live...)" : "not found");
 
     if (remoteVal) {
       cachedValue = remoteVal;
@@ -75,7 +81,7 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     }
   } catch (e) {
     // If RemoteConfig fails, we still may fall back to env unless forceRemote is set
-    console.warn("[remoteConfig] RemoteConfig fetch failed:", String(e?.message || e));
+    console.error("[remoteConfig] RemoteConfig fetch failed:", e);
   }
 
   // 2) Env var fallback (unless forceRemote explicitly disables it)
