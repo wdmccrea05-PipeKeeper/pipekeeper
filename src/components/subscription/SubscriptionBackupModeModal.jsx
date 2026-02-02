@@ -38,15 +38,22 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     }
   };
 
-  const getCheckoutUrl = (tier, term) => {
-    if (!config) return "";
+  const handleOpenCheckoutDirect = async (tier, term) => {
+    try {
+      const response = await base44.functions.invoke("createCheckoutSession", {
+        tier,
+        interval: term,
+      });
 
-    const key = `checkout${
-      tier === "premium" ? "Premium" : "Pro"
-    }${term === "monthly" ? "Monthly" : "Annual"}`;
-    const url = config[key];
-    console.log(`[SubscriptionBackupModeModal] Getting checkout URL for ${tier}/${term}: ${url}`);
-    return url || "";
+      if (response?.data?.url) {
+        window.open(response.data.url, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error("Checkout URL not available. Please contact support.");
+      }
+    } catch (err) {
+      console.error("[SubscriptionBackupModeModal] Checkout failed:", err);
+      toast.error("Failed to create checkout. Please try again.");
+    }
   };
 
   const handleOpenCheckout = (tier, term) => {
