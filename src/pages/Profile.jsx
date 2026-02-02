@@ -82,6 +82,7 @@ export default function ProfilePage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleteAIOpen, setDeleteAIOpen] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['current-user'],
