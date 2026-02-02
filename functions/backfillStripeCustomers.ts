@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T04:00:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_shared/getStripeClient.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
@@ -54,18 +54,10 @@ Deno.serve(async (req: Request) => {
     // Stage: stripe_init
     let stripe;
     try {
-      const keyResult = await base44.functions.invoke('getStripeClient', {});
-      if (!keyResult?.data?.key) {
-        return Response.json({
-          ok: false,
-          error: "BACKFILL_FAILED",
-          where: "stripe_init",
-          message: "Failed to get Stripe key",
-          keyPrefix
-        }, { status: 500 });
-      }
-      keyPrefix = keyResult.data.prefix || "unknown";
-      stripe = new Stripe(keyResult.data.key, { apiVersion: "2024-06-20" });
+      const { stripe: stripeClient, meta } = await getStripeClient(req);
+      stripe = stripeClient;
+      keyPrefix = meta.masked.slice(0, 4);
+      console.log(`[backfillStripeCustomers] env=${meta.environment} source=${meta.source} key=${meta.masked}`);
     } catch (e: any) {
       return Response.json({
         ok: false,
