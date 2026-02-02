@@ -3,196 +3,98 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-// Force redeploy: 2026-02-02
-
-import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeSecretKeyLive } from "./_shared/remoteConfig.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
 
-const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
-
-function normEmail(email: string): string {
-  return String(email || "").trim().toLowerCase();
-}
-
-function json(status: number, body: Record<string, unknown>) {
+function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      "content-type": "application/json",
-      "cache-control": "no-store",
-    },
+    headers: { "content-type": "application/json" },
   });
 }
 
+// Reads auth + ensures we can read necessary entities even if RLS blocks user-level reads.
+// IMPORTANT: use asServiceRole for User/Subscription reads (server-side trusted).
 Deno.serve(async (req) => {
-  const start = Date.now();
-  const where = { stage: "init" };
-  
   try {
-    // Authenticate user
+    if (req.method !== "POST") {
+      return json(405, { ok: false, error: "Method not allowed" });
+    }
+
     const base44 = createClientFromRequest(req);
+
+    // Must be signed in
     const authUser = await base44.auth.me();
-    
-    if (!authUser?.id || !authUser?.email) {
-      return json(401, { 
-        ok: false, 
-        error: "UNAUTHENTICATED",
-        where: "auth" 
-      });
+    if (!authUser?.id) {
+      return json(401, { ok: false, error: "Not authenticated" });
     }
 
-    where.stage = "stripe_init";
-    
-    // Resolve Stripe key (env OR RemoteConfig fallback)
-    const { value: stripeKey, source } = await getStripeSecretKeyLive(req);
-
-    if (!stripeKey) {
-      return json(500, {
-        ok: false,
-        error: "Stripe key missing (env + RemoteConfig)",
-        key_source: source,
-        where: "stripe_init"
-      });
-    }
-
-    // Create Stripe client
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-    
-    // Sanity check
+    // Parse body (optional)
+    let body = {};
     try {
-      await stripe.balance.retrieve();
-    } catch (e) {
-      console.error("[createCustomerPortalSession] Stripe sanity check failed:", e);
-      return json(500, {
-        ok: false,
-        error: "STRIPE_VALIDATION_FAILED",
-        where: "stripe_init",
-        key_source: source,
-        message: e?.message || String(e)
-      });
+      body = await req.json();
+    } catch {
+      body = {};
     }
 
-    where.stage = "lookup_user";
-    const email = normEmail(authUser.email);
-    let stripeCustomerId = null;
+    const returnUrl =
+      (body?.returnUrl && String(body.returnUrl)) ||
+      (req.headers.get("origin") || "https://pipekeeper.app");
 
-    // Try 1: Get stripe_customer_id from User entity by ID
-    try {
-      const userEntity = await base44.entities.User.get(authUser.id);
-      if (userEntity?.stripe_customer_id) {
-        stripeCustomerId = userEntity.stripe_customer_id;
-      }
-    } catch (e) {
-      console.warn("[createCustomerPortalSession] User.get failed, trying filter:", e);
+    // ---- Service-role reads (avoid "Authentication required to view users") ----
+    const srv = base44.asServiceRole;
+
+    // 1) Get the user record
+    const userRecord = await srv.entities.User.get(authUser.id).catch(() => null);
+    if (!userRecord) {
+      return json(404, { ok: false, error: "User record not found" });
     }
 
-    // Try 2: Filter User entity by email if not found by ID
+    // 2) Ensure we have a Stripe customer id; if missing, attempt to find/create.
+    let stripeCustomerId = userRecord?.stripe_customer_id || "";
+
     if (!stripeCustomerId) {
-      try {
-        const users = await base44.entities.User.filter({ email });
-        if (users?.[0]?.stripe_customer_id) {
-          stripeCustomerId = users[0].stripe_customer_id;
-        }
-      } catch (e) {
-        console.warn("[createCustomerPortalSession] User.filter failed:", e);
-      }
-    }
+      // Attempt to find an existing subscription for this user (if your schema stores it)
+      const subs = await srv.entities.Subscription.filter({
+        user_id: authUser.id,
+      }).catch(() => []);
 
-    where.stage = "recover_customer";
+      const sub0 = Array.isArray(subs) ? subs[0] : null;
+      stripeCustomerId = sub0?.stripe_customer_id || "";
 
-    // Try 3: Recover from Stripe subscriptions
-    if (!stripeCustomerId) {
-      try {
-        const subs = await base44.entities.Subscription.filter({
-          provider: "stripe",
-          user_id: authUser.id,
-        });
-
-        if (Array.isArray(subs) && subs.length) {
-          const withCustomer = subs.find((s) => s.stripe_customer_id);
-          if (withCustomer?.stripe_customer_id) {
-            stripeCustomerId = withCustomer.stripe_customer_id;
-          }
-        }
-      } catch (e) {
-        console.warn("[createCustomerPortalSession] Subscription lookup failed:", e);
-      }
-    }
-
-    // Try 4: Lookup Stripe customer by email and persist
-    if (!stripeCustomerId) {
-      try {
-        // Try search first (better performance)
-        let customer = null;
-        try {
-          const searchResults = await stripe.customers.search({
-            query: `email:'${email}'`,
-            limit: 1,
-          });
-          customer = searchResults.data?.[0];
-        } catch (searchErr) {
-          // Fallback to list if search fails
-          const customers = await stripe.customers.list({ email, limit: 1 });
-          customer = customers.data?.[0];
-        }
-
-        if (customer?.id) {
-          stripeCustomerId = customer.id;
-          
-          // Persist to User entity for future lookups
-          try {
-            await base44.asServiceRole.entities.User.update(authUser.id, {
-              stripe_customer_id: customer.id,
-            });
-          } catch (persistErr) {
-            console.warn("[createCustomerPortalSession] Failed to persist customer ID:", persistErr);
-          }
-        }
-      } catch (e) {
-        console.error("[createCustomerPortalSession] Stripe customer lookup failed:", e.message);
-        return json(500, {
+      // If still missing, we cannot open portal
+      if (!stripeCustomerId) {
+        return json(400, {
           ok: false,
-          error: "STRIPE_LOOKUP_FAILED",
-          where: "recover_customer",
-          message: e?.message || String(e)
+          error: "Missing stripeCustomerId",
+          hint:
+            "No Stripe customer id found for this user. Ensure checkout creates/records stripeCustomerId on User or Subscription.",
         });
       }
+
+      // backfill on User for next time (best effort)
+      await srv.entities.User.update(authUser.id, { stripe_customer_id: stripeCustomerId }).catch(() => null);
     }
 
-    if (!stripeCustomerId) {
-      return json(404, { 
-        ok: false, 
-        error: "NO_STRIPE_CUSTOMER",
-        where: "recover_customer",
-        message: "No Stripe customer found. Please subscribe first."
-      });
-    }
+    // ---- Stripe client with RemoteConfig fallback + cache bust options ----
+    const stripe = await getStripeClient(req);
 
-    where.stage = "create_portal";
-
-    // Create billing portal session
+    // Create portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: APP_URL,
+      return_url: returnUrl,
     });
 
-    return json(200, { 
-      ok: true, 
-      url: session.url,
-      key_source: source,
-      ms: Date.now() - start
-    });
-    
-  } catch (error) {
-    console.error("[createCustomerPortalSession] error:", error);
-    return json(500, { 
-      ok: false, 
-      error: error?.message || String(error),
-      name: error?.name || null,
-      where: where.stage,
-      stack: error?.stack ? String(error.stack).slice(0, 2000) : null,
-      ms: Date.now() - start
+    return json(200, { ok: true, url: session.url });
+  } catch (e) {
+    const msg = safeStripeError(e);
+    console.error("[createCustomerPortalSession] Error:", msg);
+
+    // Keep response stable for UI
+    return json(500, {
+      ok: false,
+      error: "Failed to create customer portal session",
+      message: msg,
     });
   }
 });
