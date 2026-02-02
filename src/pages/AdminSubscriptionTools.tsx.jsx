@@ -8,6 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
+interface ResultState {
+  ok: boolean;
+  message: string;
+}
+
 export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
   const [email, setEmail] = useState("");
@@ -15,7 +20,7 @@ export default function AdminSubscriptionTools() {
   const [status, setStatus] = useState("active");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [result, setResult] = useState<ResultState | null>(null);
   const [updatedUser, setUpdatedUser] = useState<any>(null);
 
   // Check admin access

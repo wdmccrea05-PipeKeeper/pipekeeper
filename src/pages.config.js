@@ -82,8 +82,6 @@ import index from './pages/index';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
-import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
-import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import adminsubscriptiontoolsTsx from './pages/AdminSubscriptionTools.tsx';
 import __Layout from './Layout.jsx';
 
@@ -124,8 +122,6 @@ export const PAGES = {
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionCancelled": SubscriptionCancelled,
     "AdminSubscriptionTools": AdminSubscriptionTools,
-    "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
-    "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "AdminSubscriptionTools.tsx": adminsubscriptiontoolsTsx,
 }
 
