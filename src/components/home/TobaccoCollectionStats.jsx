@@ -53,40 +53,41 @@ export default function TobaccoCollectionStats() {
     initialData: [],
   });
 
-  // Calculate statistics
-  const totalBlends = blends.length;
-  const uniqueBrands = [...new Set(blends.map(b => b.manufacturer).filter(Boolean))].length;
-  const favoriteBlends = blends.filter(b => b.is_favorite);
+  // Calculate statistics (safe from null/undefined)
+  const totalBlends = (blends || []).length;
+  const uniqueBrands = [...new Set((blends || []).map(b => b?.manufacturer).filter(Boolean))].length;
+  const favoriteBlends = (blends || []).filter(b => b?.is_favorite);
   
-  // Calculate net cellared amount from cellar logs
-  const totalCellaredOz = cellarLogs.reduce((sum, log) => {
+  // Calculate net cellared amount from cellar logs (safe from null/undefined)
+  const totalCellaredOz = (cellarLogs || []).reduce((sum, log) => {
+    if (!log) return sum;
     if (log.transaction_type === 'added') {
-      return sum + (log.amount_oz || 0);
+      return sum + (Number(log.amount_oz) || 0);
     } else if (log.transaction_type === 'removed') {
-      return sum - (log.amount_oz || 0);
+      return sum - (Number(log.amount_oz) || 0);
     }
     return sum;
   }, 0);
   
-  // Tin statistics
-  const totalTins = blends.reduce((sum, b) => sum + (b.tin_total_tins || 0), 0);
-  const tinWeightOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0), 0);
-  const tinOpenOz = blends.reduce((sum, b) => {
-    const open = b.tin_tins_open || 0;
-    const size = b.tin_size_oz || 0;
+  // Tin statistics (safe from null/undefined)
+  const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
+  const tinWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
+  const tinOpenOz = (blends || []).reduce((sum, b) => {
+    const open = Number(b?.tin_tins_open) || 0;
+    const size = Number(b?.tin_size_oz) || 0;
     return sum + (open * size);
   }, 0);
-  
+
   // Bulk statistics
-  const bulkWeightOz = blends.reduce((sum, b) => sum + (b.bulk_total_quantity_oz || 0), 0);
-  const bulkOpenOz = blends.reduce((sum, b) => sum + (b.bulk_open || 0), 0);
-  
+  const bulkWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_total_quantity_oz) || 0), 0);
+  const bulkOpenOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_open) || 0), 0);
+
   // Pouch statistics
-  const totalPouches = blends.reduce((sum, b) => sum + (b.pouch_total_pouches || 0), 0);
-  const pouchWeightOz = blends.reduce((sum, b) => sum + (b.pouch_total_quantity_oz || 0), 0);
-  const pouchOpenOz = blends.reduce((sum, b) => {
-    const open = b.pouch_pouches_open || 0;
-    const size = b.pouch_size_oz || 0;
+  const totalPouches = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_pouches) || 0), 0);
+  const pouchWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_quantity_oz) || 0), 0);
+  const pouchOpenOz = (blends || []).reduce((sum, b) => {
+    const open = Number(b?.pouch_pouches_open) || 0;
+    const size = Number(b?.pouch_size_oz) || 0;
     return sum + (open * size);
   }, 0);
   
@@ -94,8 +95,9 @@ export default function TobaccoCollectionStats() {
   const totalWeight = tinWeightOz + bulkWeightOz + pouchWeightOz;
   const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
 
-  // Brand breakdown
-  const brandBreakdown = blends.reduce((acc, b) => {
+  // Brand breakdown (safe from null/undefined)
+  const brandBreakdown = (blends || []).reduce((acc, b) => {
+    if (!b) return acc;
     const brand = b.manufacturer || 'Unknown';
     if (!acc[brand]) acc[brand] = [];
     acc[brand].push(b);
@@ -103,7 +105,8 @@ export default function TobaccoCollectionStats() {
   }, {});
 
   // Blend type breakdown
-  const blendTypes = blends.reduce((acc, b) => {
+  const blendTypes = (blends || []).reduce((acc, b) => {
+    if (!b) return acc;
     const type = b.blend_type || 'Unassigned';
     acc[type] = (acc[type] || 0) + 1;
     return acc;

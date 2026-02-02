@@ -23,22 +23,36 @@ export default function RotationPlanner({ user }) {
     enabled: !!user?.email,
   });
 
-  // Calculate last smoked date for each pipe
-  const pipeRotation = pipes.map(pipe => {
-    const pipeLogs = logs.filter(log => log.pipe_id === pipe.id);
-    const lastLog = pipeLogs[0]; // Already sorted by -date
-    const lastSmoked = lastLog ? new Date(lastLog.date) : null;
-    const daysSince = lastSmoked ? 
-      Math.floor((new Date() - lastSmoked) / (1000 * 60 * 60 * 24)) : 
-      null;
+  // Calculate last smoked date for each pipe (safe from invalid dates)
+   const pipeRotation = (pipes || []).map(pipe => {
+     try {
+       const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
+       const lastLog = pipeLogs[0]; // Already sorted by -date
+       let lastSmoked = null;
+       let daysSince = null;
 
-    return {
-      ...pipe,
-      lastSmoked,
-      daysSince,
-      totalSessions: pipeLogs.reduce((sum, log) => sum + (log.bowls_smoked || 1), 0),
-    };
-  });
+       if (lastLog?.date) {
+         try {
+           const d = new Date(lastLog.date);
+           if (!Number.isNaN(d.getTime())) {
+             lastSmoked = d;
+             daysSince = Math.floor((new Date() - d) / (1000 * 60 * 60 * 24));
+           }
+         } catch {
+           // invalid date, leave as null
+         }
+       }
+
+       return {
+         ...pipe,
+         lastSmoked,
+         daysSince,
+         totalSessions: pipeLogs.reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 1), 0),
+       };
+     } catch {
+       return { ...pipe, lastSmoked: null, daysSince: null, totalSessions: 0 };
+     }
+   });
 
   const needsRotation = pipeRotation
     .filter(p => p.daysSince !== null && p.daysSince > 60)
