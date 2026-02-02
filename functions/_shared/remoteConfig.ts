@@ -5,8 +5,8 @@ let cachedValue: string | null = null;
 let cachedSource: "remote" | "env" | "missing" = "missing";
 let lastFetchMs = 0;
 
-// Default cache TTL (ms)
-const TTL_MS = 60_000;
+// Default cache TTL (ms) - DISABLED for debugging
+const TTL_MS = 0; // Force fresh fetch every time
 
 function now() {
   return Date.now();
