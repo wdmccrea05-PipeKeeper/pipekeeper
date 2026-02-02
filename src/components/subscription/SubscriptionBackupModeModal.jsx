@@ -27,20 +27,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   const loadConfig = async () => {
     try {
       setLoading(true);
-      const [premiumMonthly, premiumAnnual, proMonthly, proAnnual, supportEmail] = await Promise.all([
-        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PREMIUM_MONTHLY_URL" }).then(r => r.data?.value || ""),
-        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PREMIUM_ANNUAL_URL" }).then(r => r.data?.value || ""),
-        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PRO_MONTHLY_URL" }).then(r => r.data?.value || ""),
-        base44.functions.invoke("getRemoteConfig", { key: "STRIPE_CHECKOUT_PRO_ANNUAL_URL" }).then(r => r.data?.value || ""),
-        base44.functions.invoke("getRemoteConfig", { key: "SUBSCRIPTION_SUPPORT_EMAIL" }).then(r => r.data?.value || "admin@pipekeeperapp.com"),
-      ]);
-      
       setConfig({
-        checkoutPremiumMonthly: premiumMonthly,
-        checkoutPremiumAnnual: premiumAnnual,
-        checkoutProMonthly: proMonthly,
-        checkoutProAnnual: proAnnual,
-        supportEmail: supportEmail,
+        supportEmail: "admin@pipekeeperapp.com",
       });
     } catch (err) {
       console.error("[SubscriptionBackupModeModal] Failed to load config:", err);
