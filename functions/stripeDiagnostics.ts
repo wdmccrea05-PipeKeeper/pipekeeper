@@ -1,108 +1,103 @@
-// Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
-}
-
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, getStripeKeyPrefix, safeStripeError, stripeSanityCheck } from "./_utils/stripe.ts";
+import { getStripeSecretKeyLive, getStripeWebhookSecretLive, getStripePriceId } from "./_shared/remoteConfig.ts";
 
-async function scanForForbiddenConstructors() {
-  try {
-    const functionsDir = "./functions";
-    const forbidden: string[] = [];
-    
-    async function scanDir(dir: string, prefix = "") {
-      for await (const entry of Deno.readDir(dir)) {
-        const fullPath = `${dir}/${entry.name}`;
-        const displayPath = prefix ? `${prefix}/${entry.name}` : entry.name;
-        
-        if (entry.isDirectory && entry.name !== "node_modules") {
-          await scanDir(fullPath, displayPath);
-        } else if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
-          // Skip the stripe helper itself
-          if (fullPath.includes("_utils/stripe")) continue;
-          
-          const content = await Deno.readTextFile(fullPath);
-          if (content.includes("new Stripe(") || content.match(/import\s+Stripe\s+from\s+['"]/)) {
-            forbidden.push(displayPath);
-          }
-        }
-      }
-    }
-    
-    await scanDir(functionsDir);
-    
-    return { ok: true, forbidden };
-  } catch (e) {
-    return { ok: false, error: String(e?.message || e) };
-  }
-}
-
-Deno.serve(async (req: Request) => {
-  const keyPrefix = getStripeKeyPrefix();
-  
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const me = await base44.auth.me();
+    const user = await base44.auth.me();
 
-    if (!me?.id) {
-      return new Response(JSON.stringify({ ok: false, error: "UNAUTHENTICATED", keyPrefix }), {
-        status: 401,
-        headers: { "content-type": "application/json" },
-      });
-    }
-    if (me.role !== "admin") {
-      return new Response(JSON.stringify({ ok: false, error: "FORBIDDEN", keyPrefix }), {
-        status: 403,
-        headers: { "content-type": "application/json" },
-      });
+    // Only admins can view diagnostics
+    if (user?.role !== "admin") {
+      return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
-    // STRICT: Only sk_ allowed
-    const stripeKeyValid = keyPrefix === "sk";
-    let stripeSanityOk = false;
-    let stripeSanityError: string | null = null;
+    // Check all required Stripe configs
+    const secretKey = await getStripeSecretKeyLive(req);
+    const webhookSecret = await getStripeWebhookSecretLive(req);
+    const premiumMonthly = await getStripePriceId("PREMIUM_MONTHLY", req);
+    const premiumAnnual = await getStripePriceId("PREMIUM_ANNUAL", req);
+    const proMonthly = await getStripePriceId("PRO_MONTHLY", req);
+    const proAnnual = await getStripePriceId("PRO_ANNUAL", req);
 
-    if (stripeKeyValid) {
-      try {
-        const stripe = getStripeClient();
-        await stripeSanityCheck(stripe);
-        stripeSanityOk = true;
-      } catch (e) {
-        stripeSanityOk = false;
-        stripeSanityError = safeStripeError(e);
-      }
-    } else {
-      stripeSanityError = `FORBIDDEN: STRIPE_SECRET_KEY must start with sk_ (secret key). Found: ${keyPrefix}_`;
+    const diagnostics = {
+      timestamp: new Date().toISOString(),
+      app_version: "2.0",
+      stripe_config: {
+        secret_key: {
+          present: !!secretKey.value,
+          source: secretKey.source,
+          masked: secretKey.value ? `${secretKey.value.slice(0, 7)}...${secretKey.value.slice(-4)}` : null,
+        },
+        webhook_secret: {
+          present: !!webhookSecret.value,
+          source: webhookSecret.source,
+        },
+        price_ids: {
+          premium_monthly: {
+            present: !!premiumMonthly.value,
+            source: premiumMonthly.source,
+            value: premiumMonthly.value,
+          },
+          premium_annual: {
+            present: !!premiumAnnual.value,
+            source: premiumAnnual.source,
+            value: premiumAnnual.value,
+          },
+          pro_monthly: {
+            present: !!proMonthly.value,
+            source: proMonthly.source,
+            value: proMonthly.value,
+          },
+          pro_annual: {
+            present: !!proAnnual.value,
+            source: proAnnual.source,
+            value: proAnnual.value,
+          },
+        },
+      },
+      overall_status: secretKey.value && webhookSecret.value ? "operational" : "degraded",
+      recommendations: [],
+    };
+
+    // Generate recommendations
+    if (!secretKey.value) {
+      diagnostics.recommendations.push(
+        "CRITICAL: STRIPE_SECRET_KEY is missing from both env vars and RemoteConfig"
+      );
+    } else if (secretKey.source === "remote") {
+      diagnostics.recommendations.push(
+        "WARNING: Using RemoteConfig for STRIPE_SECRET_KEY - env var is missing or stale"
+      );
     }
 
-    const scan = await scanForForbiddenConstructors();
-    const hardFail = scan.ok && scan.forbidden.length > 0;
+    if (!webhookSecret.value) {
+      diagnostics.recommendations.push(
+        "WARNING: STRIPE_WEBHOOK_SECRET is missing from both sources"
+      );
+    }
 
-    return new Response(JSON.stringify({
-      ok: true,
-      keyPrefix,
-      stripeKeyValid,
-      stripeSanityOk,
-      stripeSanityError,
-      forbiddenStripeConstructorsScan: scan,
-      hardFail,
-      hardFailHint: hardFail
-        ? "Remove all `new Stripe(` from /functions and use getStripeClient() from functions/_utils/stripe.ts."
-        : null
-    }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
+    const missingPrices = [];
+    if (!premiumMonthly.value) missingPrices.push("PREMIUM_MONTHLY");
+    if (!premiumAnnual.value) missingPrices.push("PREMIUM_ANNUAL");
+    if (!proMonthly.value) missingPrices.push("PRO_MONTHLY");
+    if (!proAnnual.value) missingPrices.push("PRO_ANNUAL");
+
+    if (missingPrices.length > 0) {
+      diagnostics.recommendations.push(
+        `Missing price IDs: ${missingPrices.join(", ")}`
+      );
+    }
+
+    return Response.json(diagnostics);
   } catch (error) {
-    return new Response(JSON.stringify({
-      ok: false,
-      error: "DIAGNOSTICS_FAILED",
-      keyPrefix,
-      message: safeStripeError(error)
-    }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    });
+    console.error("[stripeDiagnostics] error:", error);
+    return Response.json(
+      {
+        error: "DIAGNOSTICS_FAILED",
+        message: error?.message || String(error),
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 });
