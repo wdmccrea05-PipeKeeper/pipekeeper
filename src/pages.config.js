@@ -84,7 +84,6 @@ import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import adminsubscriptiontoolsTsx from './pages/AdminSubscriptionTools.tsx';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
-import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import __Layout from './Layout.jsx';
 
 
@@ -126,7 +125,6 @@ export const PAGES = {
     "AdminSubscriptionTools.tsx": adminsubscriptiontoolsTsx,
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionCancelled": SubscriptionCancelled,
-    "AdminSubscriptionTools": AdminSubscriptionTools,
 }
 
 export const pagesConfig = {
