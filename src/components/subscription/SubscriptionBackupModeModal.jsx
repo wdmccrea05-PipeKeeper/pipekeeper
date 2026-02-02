@@ -172,7 +172,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   <span className="font-semibold">Premium Monthly</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$9.99/mo</span>
+                  <span className="text-xs text-[#E0D8C8]/60">$1.99/mo</span>
                 </div>
               </Button>
 
@@ -183,7 +183,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   <span className="font-semibold">Premium Annual</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$99/yr</span>
+                  <span className="text-xs text-[#E0D8C8]/60">$19.99/yr</span>
                 </div>
               </Button>
 
@@ -194,7 +194,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   <span className="font-semibold">Pro Monthly</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$19.99/mo</span>
+                  <span className="text-xs text-[#E0D8C8]/60">$2.99/mo</span>
                 </div>
               </Button>
 
@@ -205,7 +205,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   <span className="font-semibold">Pro Annual</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$199/yr</span>
+                  <span className="text-xs text-[#E0D8C8]/60">$29.99/yr</span>
                 </div>
               </Button>
             </div>
