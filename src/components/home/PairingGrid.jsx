@@ -106,6 +106,10 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
+      if (!allPipes?.length || !allBlends?.length) {
+        toast.error("No pipes or blends to generate pairings");
+        return;
+      }
       const result = await regeneratePairingsConsistent({
         pipes: allPipes,
         blends: allBlends,

@@ -105,22 +105,37 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     return totalGrams * ozPerGram;
   };
 
-  // Get pipe rest status
-  const getPipeRestStatus = (pipeId) => {
-    const pipeLogs = logs.filter(l => l.pipe_id === pipeId).sort((a, b) => new Date(b.date) - new Date(a.date));
-    if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
-    
-    const lastSmoked = new Date(pipeLogs[0].date);
-    const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
-    const daysRested = Math.floor(hoursSinceSmoke / 24);
-    
-    if (hoursSinceSmoke >= 24) {
-      return { ready: true, message: `Rested ${daysRested} day${daysRested > 1 ? 's' : ''} - ready!` };
-    } else {
-      const hoursLeft = 24 - hoursSinceSmoke;
-      return { ready: false, message: `Needs ${hoursLeft} more hour${hoursLeft > 1 ? 's' : ''} rest` };
-    }
-  };
+  // Get pipe rest status (safe from invalid dates)
+   const getPipeRestStatus = (pipeId) => {
+     if (!logs || logs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+
+     const pipeLogs = logs.filter(l => l && l.pipe_id === pipeId).sort((a, b) => {
+       try {
+         return new Date(b.date).getTime() - new Date(a.date).getTime();
+       } catch {
+         return 0;
+       }
+     });
+     if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+
+     try {
+       const lastSmoked = new Date(pipeLogs[0].date);
+       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: 'No usage logged yet.' };
+
+       const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
+       const daysRested = Math.floor(hoursSinceSmoke / 24);
+
+       if (hoursSinceSmoke >= 24) {
+         return { ready: true, message: `Rested ${daysRested} day${daysRested > 1 ? 's' : ''} - ready!` };
+       } else {
+         const hoursLeft = Math.max(0, 24 - hoursSinceSmoke);
+         return { ready: false, message: `Needs ${hoursLeft.toFixed(1)} more hour${hoursLeft > 1 ? 's' : ''} rest` };
+       }
+     } catch (err) {
+       console.warn('getPipeRestStatus error:', err);
+       return { ready: true, message: 'No usage logged yet.' };
+     }
+   };
 
   const updateBlendMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
