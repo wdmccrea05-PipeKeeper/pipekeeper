@@ -71,8 +71,8 @@ export default function SubscriptionFull() {
   }, [isIOSApp]);
 
   const tierPrices = {
-    premium: { monthly: 4.99, annual: 49.99 },
-    pro: { monthly: 9.99, annual: 99.99 },
+    premium: { monthly: 1.99, annual: 19.99 },
+    pro: { monthly: 2.99, annual: 29.99 },
   };
 
   const tierFeatures = {
