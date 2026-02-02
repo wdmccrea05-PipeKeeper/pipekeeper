@@ -53,41 +53,53 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     lastFetchMs = 0;
   }
 
-  // 1) Try RemoteConfig (service role)
+  // 1) Try RemoteConfig (service role) - ALWAYS prioritize this
   try {
     if (!req) throw new Error("Request required for RemoteConfig fetch");
     const base44 = createClientFromRequest(req);
     const srv = base44.asServiceRole;
 
-    console.log("[remoteConfig] Attempting RemoteConfig fetch...");
+    console.log("[remoteConfig] Fetching from RemoteConfig...");
     
-    const recs = await srv.entities.RemoteConfig.list().catch((err) => {
-      console.error("[remoteConfig] RemoteConfig.list() failed:", err);
-      return [];
-    });
+    const recs = await srv.entities.RemoteConfig.list();
+    console.log("[remoteConfig] Total records:", recs?.length || 0);
 
-    console.log("[remoteConfig] Found", recs.length, "RemoteConfig records");
-
-    const rec0 = recs.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live");
+    const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live");
+    console.log("[remoteConfig] Found live key record:", !!rec0);
+    
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
-
-    console.log("[remoteConfig] RemoteConfig result:", remoteVal ? "found (sk_live...)" : "not found");
-
-    if (remoteVal) {
+    
+    // Validate it's a real Stripe key (not test/invalid)
+    if (remoteVal && remoteVal.startsWith("sk_live_")) {
+      console.log("[remoteConfig] ✅ Using live key from RemoteConfig");
       cachedValue = remoteVal;
       cachedSource = "remote";
       lastFetchMs = now();
       return { value: remoteVal, source: "remote" };
     }
+    
+    if (remoteVal) {
+      console.warn("[remoteConfig] ⚠️ Found key but not sk_live_:", remoteVal.slice(0, 8));
+    }
   } catch (e) {
-    // If RemoteConfig fails, we still may fall back to env unless forceRemote is set
-    console.error("[remoteConfig] RemoteConfig fetch failed:", e);
+    console.error("[remoteConfig] ❌ RemoteConfig fetch failed:", e?.message || e);
   }
 
-  // 2) Env var fallback (unless forceRemote explicitly disables it)
+  // 2) Env var fallback - but REJECT invalid keys
   if (!forceRemote) {
     const envVal = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+    
+    // Reject test/invalid keys - do NOT use them
+    if (envVal && (envVal.startsWith("mk_") || envVal.startsWith("pk_"))) {
+      console.warn("[remoteConfig] ⚠️ Env key is invalid (mk_/pk_), rejecting");
+      cachedValue = "";
+      cachedSource = "missing";
+      lastFetchMs = now();
+      return { value: "", source: "missing" };
+    }
+    
     if (envVal) {
+      console.log("[remoteConfig] Using env key:", envVal.slice(0, 8));
       cachedValue = envVal;
       cachedSource = "env";
       lastFetchMs = now();
