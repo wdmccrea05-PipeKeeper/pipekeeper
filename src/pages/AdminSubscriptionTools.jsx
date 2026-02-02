@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// v2 - TypeScript interfaces removed
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
