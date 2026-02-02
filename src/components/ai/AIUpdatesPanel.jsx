@@ -140,7 +140,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
           const idx = p.interchangeable_bowls.findIndex(
             (b, i) => (b.bowl_variant_id || `bowl_${i}`) === change.bowl_variant_id
           );
-          if (idx >= 0) pipeName = `${pipeName} - ${p.interchangeable_bowls[idx].name || `Bowl ${idx + 1}`}`;
+          if (idx >= 0 && p.interchangeable_bowls[idx]) {
+            pipeName = `${pipeName} - ${p.interchangeable_bowls[idx].name || `Bowl ${idx + 1}`}`;
+          }
         }
 
         return {

@@ -13,14 +13,21 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
   if (isAppleBuild) return null;
 
   const [formData, setFormData] = useState({
-    pipe_id: log.pipe_id || '',
-    bowl_variant_id: log.bowl_variant_id || '',
-    blend_id: log.blend_id || '',
-    bowls_smoked: log.bowls_smoked || 1,
-    is_break_in: log.is_break_in || false,
-    date: log.date ? new Date(log.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    notes: log.notes || ''
-  });
+     pipe_id: log?.pipe_id || '',
+     bowl_variant_id: log?.bowl_variant_id || '',
+     blend_id: log?.blend_id || '',
+     bowls_smoked: log?.bowls_smoked || 1,
+     is_break_in: log?.is_break_in || false,
+     date: log?.date ? (() => {
+       try {
+         const d = new Date(log.date);
+         return Number.isNaN(d.getTime()) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
+       } catch {
+         return new Date().toISOString().split('T')[0];
+       }
+     })() : new Date().toISOString().split('T')[0],
+     notes: log?.notes || ''
+   });
 
   const selectedPipe = pipes.find(p => p.id === formData.pipe_id);
   const hasMultipleBowls = selectedPipe?.interchangeable_bowls?.length > 0;

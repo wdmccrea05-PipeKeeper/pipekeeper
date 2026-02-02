@@ -29,21 +29,34 @@ export default function CellarAgingDashboard({ user }) {
 
   // Map blend IDs to their net cellared amount and oldest date from logs
   const getCellarDataFromLogs = (blendId) => {
-    const logs = cellarLogs.filter(l => l.blend_id === blendId);
-    const added = logs
-      .filter(l => l.transaction_type === 'added')
-      .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
-    const removed = logs
-      .filter(l => l.transaction_type === 'removed')
-      .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
-    const net = Math.max(0, added - removed);
-    
-    const addedLogs = logs.filter(l => l.transaction_type === 'added' && l.date);
-    const oldestDate = addedLogs.length > 0 
-      ? addedLogs.sort((a, b) => new Date(a.date) - new Date(b.date))[0].date
-      : null;
-    
-    return { net, oldestDate };
+    try {
+      const logs = (cellarLogs || []).filter(l => l && l.blend_id === blendId);
+      const added = logs
+        .filter(l => l.transaction_type === 'added')
+        .reduce((sum, l) => sum + (Number(l.amount_oz) || 0), 0);
+      const removed = logs
+        .filter(l => l.transaction_type === 'removed')
+        .reduce((sum, l) => sum + (Number(l.amount_oz) || 0), 0);
+      const net = Math.max(0, added - removed);
+
+      const addedLogs = logs.filter(l => l.transaction_type === 'added' && l.date);
+      const oldestDate = addedLogs.length > 0 
+        ? addedLogs.reduce((oldest, current) => {
+          try {
+            const curTime = new Date(current.date).getTime();
+            const oldTime = new Date(oldest.date).getTime();
+            return curTime < oldTime ? current : oldest;
+          } catch {
+            return oldest;
+          }
+        }).date
+        : null;
+
+      return { net, oldestDate };
+    } catch (err) {
+      console.warn('getCellarDataFromLogs error:', err);
+      return { net: 0, oldestDate: null };
+    }
   };
 
   const cellarBlends = blends.filter(b => {
@@ -57,15 +70,23 @@ export default function CellarAgingDashboard({ user }) {
   });
 
   const getAgingInfo = (blend) => {
-    const logData = getCellarDataFromLogs(blend.id);
-    const dates = [
-      blend.tin_cellared_date,
-      blend.bulk_cellared_date,
-      blend.pouch_cellared_date,
-      logData.oldestDate
-    ].filter(Boolean);
-    
-    const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
+     const logData = getCellarDataFromLogs(blend.id);
+     const dates = [
+       blend.tin_cellared_date,
+       blend.bulk_cellared_date,
+       blend.pouch_cellared_date,
+       logData.oldestDate
+     ].filter(Boolean);
+
+     const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
+       try {
+         const dTime = new Date(d).getTime();
+         const oldTime = new Date(oldest).getTime();
+         return dTime < oldTime ? d : oldest;
+       } catch {
+         return oldest;
+       }
+     }) : null;
     
     if (!oldestDate) return { months: 0, days: 0, oldestDate: null };
     
