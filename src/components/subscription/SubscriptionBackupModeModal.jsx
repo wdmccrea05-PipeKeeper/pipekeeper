@@ -161,7 +161,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Button
-                onClick={() => handleOpenCheckout("premium", "monthly")}
+                onClick={() => handleOpenCheckoutDirect("premium", "monthly")}
                 variant="outline"
                 className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
               >
@@ -172,7 +172,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               </Button>
 
               <Button
-                onClick={() => handleOpenCheckout("premium", "annual")}
+                onClick={() => handleOpenCheckoutDirect("premium", "annual")}
                 variant="outline"
                 className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
               >
@@ -183,7 +183,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               </Button>
 
               <Button
-                onClick={() => handleOpenCheckout("pro", "monthly")}
+                onClick={() => handleOpenCheckoutDirect("pro", "monthly")}
                 variant="outline"
                 className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
               >
@@ -194,7 +194,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               </Button>
 
               <Button
-                onClick={() => handleOpenCheckout("pro", "annual")}
+                onClick={() => handleOpenCheckoutDirect("pro", "annual")}
                 variant="outline"
                 className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
               >
