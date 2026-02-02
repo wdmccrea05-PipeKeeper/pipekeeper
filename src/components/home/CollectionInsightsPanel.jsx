@@ -35,9 +35,13 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
       });
 
       let alertCount = 0;
-      cellarBlends.forEach(b => {
-        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-        const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
+       cellarBlends.forEach(b => {
+         const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+         const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
+           const dTime = new Date(d).getTime();
+           const oldTime = new Date(oldest).getTime();
+           return dTime < oldTime ? d : oldest;
+         }) : null;
         
         if (oldestDate) {
           const months = differenceInMonths(new Date(), oldestDate);

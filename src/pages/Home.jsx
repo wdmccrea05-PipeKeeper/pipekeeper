@@ -637,7 +637,9 @@ export default function HomePage() {
               transition={{ delay: 0.75 }}
               className="mb-12"
             >
-              <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
+              <ErrorBoundary fallback={<div className="text-center text-red-500">Collection Insights failed to load</div>}>
+                <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
+              </ErrorBoundary>
             </motion.div>
           ) : null}
 
