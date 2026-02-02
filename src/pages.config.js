@@ -50,6 +50,7 @@
 import AIUpdates from './pages/AIUpdates';
 import AdminReports from './pages/AdminReports';
 import adminreportsTsx from './pages/AdminReports.tsx';
+import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
@@ -67,7 +68,11 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
+import SubscriptionCancelled from './pages/SubscriptionCancelled';
+import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionFull from './pages/SubscriptionFull';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
+import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
 import TermsOfService from './pages/TermsOfService';
@@ -79,10 +84,7 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
-import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
-import SubscriptionSuccess from './pages/SubscriptionSuccess';
-import SubscriptionCancelled from './pages/SubscriptionCancelled';
+import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import __Layout from './Layout.jsx';
 
 
@@ -90,6 +92,7 @@ export const PAGES = {
     "AIUpdates": AIUpdates,
     "AdminReports": AdminReports,
     "AdminReports.tsx": adminreportsTsx,
+    "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
@@ -107,7 +110,11 @@ export const PAGES = {
     "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
+    "SubscriptionCancelled": SubscriptionCancelled,
+    "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "SubscriptionFull": SubscriptionFull,
+    "SubscriptionSuccess": SubscriptionSuccess,
+    "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
     "Support": Support,
     "SupportFull": SupportFull,
     "TermsOfService": TermsOfService,
@@ -119,10 +126,7 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
-    "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
-    "SubscriptionSuccess": SubscriptionSuccess,
-    "SubscriptionCancelled": SubscriptionCancelled,
+    "AdminSubscriptionRequests": AdminSubscriptionRequests,
 }
 
 export const pagesConfig = {
