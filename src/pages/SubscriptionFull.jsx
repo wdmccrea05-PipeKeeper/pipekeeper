@@ -11,6 +11,7 @@ import {
   registerNativeSubscriptionListener,
 } from "@/components/utils/nativeIAPBridge";
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
+import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
   return (
@@ -53,6 +54,7 @@ export default function SubscriptionFull() {
   const [selectedTier, setSelectedTier] = useState("premium");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
   const [isLoading, setIsLoading] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   useEffect(() => {
     if (!isIOSApp) return;
@@ -115,10 +117,14 @@ export default function SubscriptionFull() {
       if (response?.data?.url) {
         window.location.href = response.data.url;
       } else {
-        setMessage("Error: " + (response?.data?.error || "Could not start checkout"));
+        // Checkout creation failed: show backup mode instead
+        console.warn("[SubscriptionFull] Checkout failed, opening backup mode:", response?.data?.error);
+        setShowBackupModal(true);
       }
     } catch (e) {
-      setMessage("Error: " + (e?.message || "Could not start checkout"));
+      // Checkout invocation failed: show backup mode instead
+      console.error("[SubscriptionFull] Checkout error, opening backup mode:", e?.message || e);
+      setShowBackupModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -133,9 +139,9 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: Stripe customer portal
+    // Non-iOS: Stripe customer portal with backup fallback
     try {
-      await openManageSubscription();
+      await openManageSubscription(() => setShowBackupModal(true));
     } catch (e) {
       setMessage("Error: Could not open subscription management");
     }
@@ -240,6 +246,12 @@ export default function SubscriptionFull() {
           </CardContent>
         </Card>
       )}
+
+      {/* Backup checkout modal for Stripe failures */}
+      <SubscriptionBackupModeModal
+        isOpen={showBackupModal}
+        onClose={() => setShowBackupModal(false)}
+      />
     </div>
   );
 }
