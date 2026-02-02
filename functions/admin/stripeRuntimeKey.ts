@@ -4,37 +4,38 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeSecretKey, getStripeKeyPrefix, safeStripeError } from "../_utils/stripe.js";
+import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 
-function maskKey(key) {
+function maskKey(key: string) {
   const k = String(key || "").trim();
   if (!k) return "(missing)";
   if (k.length < 10) return "****";
   return `${k.slice(0, 5)}…${k.slice(-5)}`;
 }
 
-function detectEnvironment(req) {
+function keyPrefix(key: string) {
+  const k = String(key || "").trim();
+  if (!k) return "N/A";
+  const m = k.match(/^(sk_(live|test)|rk_(live|test)|pk_(live|test)|mk)_/);
+  return m ? m[0] : "unknown";
+}
+
+function detectEnvironment(req: Request) {
   try {
-    const url = new URL(req.url);
-    const host = url.hostname.toLowerCase();
-    
-    // Base44 preview domains typically have "preview" or specific patterns
-    if (host.includes("preview") || host.includes("localhost") || host.includes("127.0.0.1")) {
-      return "preview";
-    }
-    
-    // Check for custom domain or production patterns
-    if (host.includes("pipekeeper.app") || host.includes("pipekeeper.com")) {
-      return "live";
-    }
-    
+    // Prefer forwarded host/header, since Base44 often sits behind a proxy
+    const xfHost = req.headers.get("x-forwarded-host");
+    const hostHeader = req.headers.get("host");
+    const host = String(xfHost || hostHeader || new URL(req.url).hostname).toLowerCase();
+
+    if (host.includes("localhost") || host.includes("127.0.0.1") || host.includes("preview")) return "preview";
+    if (host.includes("pipekeeper.app") || host.includes("pipekeeper.com")) return "live";
     return "unknown";
   } catch {
     return "unknown";
   }
 }
 
-function json(status, body) {
+function json(status: number, body: any) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json" },
@@ -44,56 +45,30 @@ function json(status, body) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const authUser = await base44.auth.me();
+    const me = await base44.auth.me();
 
-    if (authUser?.role !== "admin") {
+    if (me?.role !== "admin") {
       return json(403, { ok: false, error: "FORBIDDEN", message: "Admin access required" });
     }
 
     const environment = detectEnvironment(req);
 
-    try {
-      // CRITICAL: Read FRESH from Deno.env - no caching
-      const raw = Deno.env.get("STRIPE_SECRET_KEY") || "";
-      const prefix = getStripeKeyPrefix();
-      const present = !!raw && raw.trim().length > 0;
-      const length = raw ? raw.length : 0;
+    // IMPORTANT: Read from RemoteConfig fallback, not Deno.env
+    const key = (await getStripeSecretKeyLive(base44))?.trim() || "";
 
-      // Detect if key looks expired (common pattern: keys rotate every 90 days)
-      const looksExpired = raw.includes("expired") || raw.includes("revoked");
-
-      return json(200, {
-        ok: true,
-        envName: "STRIPE_SECRET_KEY",
-        present,
-        prefix,
-        masked: maskKey(raw),
-        length,
-        environment,
-        looksExpired,
-        timestamp: new Date().toISOString(),
-        deploymentNote: "This shows the ACTUAL key loaded in THIS deployment runtime",
-        warning: environment === "preview" ? 
-          "Preview may cache env vars - redeploy functions after secret changes" : null,
-      });
-    } catch (e) {
-      return json(200, {
-        ok: false,
-        envName: "STRIPE_SECRET_KEY",
-        present: false,
-        prefix: "error",
-        masked: "(error)",
-        length: 0,
-        environment,
-        timestamp: new Date().toISOString(),
-        error: safeStripeError(e),
-      });
-    }
-  } catch (e) {
-    return json(500, { 
-      ok: false, 
-      error: "ADMIN_AUTH_FAILED",
-      message: safeStripeError(e) 
+    return json(200, {
+      ok: true,
+      source: "RemoteConfig",
+      envName: "STRIPE_SECRET_KEY",
+      present: !!key,
+      prefix: keyPrefix(key),
+      masked: maskKey(key),
+      length: key.length,
+      environment,
+      timestamp: new Date().toISOString(),
+      note: "This reflects the key currently loaded via RemoteConfig fallback (not Deno.env).",
     });
+  } catch (e) {
+    return json(500, { ok: false, error: "RUNTIME_KEY_CHECK_FAILED", message: String(e?.message || e) });
   }
 });
