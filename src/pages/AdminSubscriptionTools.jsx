@@ -219,17 +219,17 @@ export default function AdminSubscriptionTools() {
                   <p className="text-[#E0D8C8] font-medium">{updatedUser.full_name}</p>
                 </div>
                 <div>
-                  <p className="text-[#E0D8C8]/50">Subscription Source</p>
-                  <p className="text-[#E0D8C8] font-medium">{updatedUser.subscriptionSource || "None"}</p>
-                </div>
-                <div>
-                  <p className="text-[#E0D8C8]/50">Subscription Status</p>
-                  <p className="text-[#E0D8C8] font-medium">{updatedUser.subscriptionStatus || "Inactive"}</p>
-                </div>
-                <div>
-                  <p className="text-[#E0D8C8]/50">Subscription Tier</p>
-                  <p className="text-[#E0D8C8] font-medium">{updatedUser.subscriptionTier || "None"}</p>
-                </div>
+                   <p className="text-[#E0D8C8]/50">Subscription Level</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_level || "Free"}</p>
+                 </div>
+                 <div>
+                   <p className="text-[#E0D8C8]/50">Subscription Status</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || "Inactive"}</p>
+                 </div>
+                 <div>
+                   <p className="text-[#E0D8C8]/50">Subscription Tier</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_tier || "None"}</p>
+                 </div>
                 <div>
                   <p className="text-[#E0D8C8]/50">Updated At</p>
                   <p className="text-[#E0D8C8] font-medium">

@@ -73,12 +73,14 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     console.error("[remoteConfig] ❌ RemoteConfig fetch failed:", e?.message || e);
   }
 
-  // 2) COMPLETELY SKIP ENV VAR - ONLY USE REMOTECONFIG
+  // 2) ENV VAR FALLBACK - Use if RemoteConfig failed
   const envVal = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  console.log("[remoteConfig] Env STRIPE_SECRET_KEY found but IGNORING:", envVal ? `${envVal.slice(0, 8)}...${envVal.slice(-4)}` : "(empty)");
-  console.log("[remoteConfig] ⚠️ Environment variables are DISABLED - only RemoteConfig is used");
+  if (envVal && envVal.startsWith("sk_live_")) {
+    console.log("[remoteConfig] ✅ Using sk_live_ key from ENV (RemoteConfig unavailable):", envVal.slice(0, 8), "...", envVal.slice(-4));
+    return { value: envVal, source: "env" };
+  }
 
-  console.log("[remoteConfig] ❌ No valid key found");
+  console.log("[remoteConfig] ❌ No valid key found from RemoteConfig or ENV");
   return { value: "", source: "missing" };
 }
 
