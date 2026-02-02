@@ -383,7 +383,7 @@ export default function ProfilePage() {
                         onClick={() => setShowBackupModal(true)}
                       >
                         <AlertCircle className="w-4 h-4 mr-2" />
-                        Backup Options
+                        Manual Subscribe
                       </Button>
                     </>
                   ) : (
