@@ -1,9 +1,6 @@
 import Stripe from "npm:stripe@17.5.0";
 import { getStripeSecretKeyLive } from "../_shared/remoteConfig.ts";
 
-let cachedStripe: Stripe | null = null;
-let cachedKeySource: string | null = null;
-
 export async function getStripeClient(req: Request): Promise<Stripe> {
   // Always resolve key dynamically (do NOT trust cached Stripe instance)
   const { value: key, source } = await getStripeSecretKeyLive(req);
@@ -12,21 +9,19 @@ export async function getStripeClient(req: Request): Promise<Stripe> {
     throw new Error("Stripe secret key missing after env + RemoteConfig lookup");
   }
 
-  // If cached client exists but key source changed, discard it
-  if (cachedStripe && cachedKeySource === source) {
-    return cachedStripe;
+  // Validate key format before using it
+  if (!key.startsWith("sk_live_") && !key.startsWith("sk_test_")) {
+    throw new Error(`Invalid Stripe key format: ${key.slice(0, 8)}... (expected sk_live_ or sk_test_)`);
   }
 
-  // Create fresh Stripe client
+  console.log(`[stripe] Creating Stripe client with ${source} key: ${key.slice(0, 8)}...`);
+
+  // Create fresh Stripe client (no caching to avoid stale key issues)
   try {
-    cachedStripe = new Stripe(key, {
+    return new Stripe(key, {
       apiVersion: "2024-06-20",
     });
-    cachedKeySource = source;
-    return cachedStripe;
   } catch (e: any) {
-    cachedStripe = null;
-    cachedKeySource = null;
     throw new Error(`Failed to initialize Stripe client: ${e?.message || e}`);
   }
 }
