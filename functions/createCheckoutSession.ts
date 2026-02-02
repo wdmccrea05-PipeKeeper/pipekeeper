@@ -20,7 +20,7 @@ const PRICE_MAP = {
   }
 };
 
-// Legacy fallback support
+// Legacy fallback support (optional, for backward compatibility)
 const LEGACY_PRICE_ID_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || "").trim();
 const LEGACY_PRICE_ID_YEARLY = (Deno.env.get("STRIPE_PRICE_ID_YEARLY") || "").trim();
 
@@ -92,7 +92,7 @@ function getPriceIdFromTierAndInterval(tier, interval) {
 function isAllowedPriceId(priceId) {
   if (!priceId) return false;
   
-  // Check against all valid price IDs in the map
+  // Check against all valid price IDs in the map (always required)
   const validPriceIds = [
     PRICE_MAP.premium.monthly,
     PRICE_MAP.premium.annual,
@@ -104,7 +104,7 @@ function isAllowedPriceId(priceId) {
   
   // Add ALLOWED_PRICE_IDS if configured
   if (ALLOWED_PRICE_IDS.length) {
-    return ALLOWED_PRICE_IDS.includes(priceId);
+    return ALLOWED_PRICE_IDS.includes(priceId) || validPriceIds.includes(priceId);
   }
   
   return validPriceIds.includes(priceId);
