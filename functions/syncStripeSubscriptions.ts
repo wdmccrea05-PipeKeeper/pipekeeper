@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     let stripe;
     try {
-     stripe = getStripeClient();
+     stripe = await getStripeClient(req);
      await stripeSanityCheck(stripe);
     } catch (e) {
      console.error("[syncStripeSubscriptions] Stripe init failed:", e);

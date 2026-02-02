@@ -97,13 +97,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    const stripe = await getStripeClient(req);
+    
+    // Use remote config fallback for webhook secret
+    const { getStripeWebhookSecretLive } = await import("./_shared/remoteConfig.ts");
+    const { value: webhookSecret, source: webhookSource } = await getStripeWebhookSecretLive(req);
     
     if (!webhookSecret) {
-      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET" });
+      return json(500, { ok: false, error: "Missing STRIPE_WEBHOOK_SECRET from both env and RemoteConfig" });
     }
-
-    const stripe = getStripeClient();
+    
+    console.log(`[webhook] Using webhook secret from ${webhookSource}`);
 
     const sig = req.headers.get("stripe-signature");
     const rawBody = await req.text();

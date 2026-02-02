@@ -125,8 +125,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Not available in iOS companion app." }, { status: 403 });
     }
 
-    // Initialize Stripe with validation
-    const stripe = getStripeClient();
+    // Initialize Stripe with validation and remote config fallback
+    const stripe = await getStripeClient(req);
     await stripeSanityCheck(stripe);
 
     const base44 = createClientFromRequest(req);

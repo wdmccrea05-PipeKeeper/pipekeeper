@@ -32,10 +32,10 @@ Deno.serve(async (req) => {
 
     where.stage = "stripe_init";
     
-    // Initialize Stripe with validation
+    // Initialize Stripe with validation and remote config fallback
     let stripe;
     try {
-      stripe = getStripeClient();
+      stripe = await getStripeClient(req);
       await stripe.balance.retrieve(); // Sanity check
     } catch (e) {
       console.error("[createCustomerPortalSession] Stripe init failed:", e);
