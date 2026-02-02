@@ -3,10 +3,11 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-// Force redeploy: 2026-02-01
+// Force redeploy: 2026-02-02
 
+import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.js";
+import { getStripeSecretKeyLive } from "./_shared/remoteConfig.ts";
 
 const APP_URL = (Deno.env.get("APP_URL") || "https://pipekeeper.app").trim();
 
@@ -14,7 +15,18 @@ function normEmail(email: string): string {
   return String(email || "").trim().toLowerCase();
 }
 
+function json(status: number, body: Record<string, unknown>) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json",
+      "cache-control": "no-store",
+    },
+  });
+}
+
 Deno.serve(async (req) => {
+  const start = Date.now();
   const where = { stage: "init" };
   
   try {
@@ -23,28 +35,42 @@ Deno.serve(async (req) => {
     const authUser = await base44.auth.me();
     
     if (!authUser?.id || !authUser?.email) {
-      return Response.json({ 
+      return json(401, { 
         ok: false, 
         error: "UNAUTHENTICATED",
         where: "auth" 
-      }, { status: 401 });
+      });
     }
 
     where.stage = "stripe_init";
     
-    // Initialize Stripe with validation and remote config fallback
-    let stripe;
-    try {
-      stripe = await getStripeClient(req);
-      await stripe.balance.retrieve(); // Sanity check
-    } catch (e) {
-      console.error("[createCustomerPortalSession] Stripe init failed:", e);
-      return Response.json({
+    // Resolve Stripe key (env OR RemoteConfig fallback)
+    const { value: stripeKey, source } = await getStripeSecretKeyLive(req);
+
+    if (!stripeKey) {
+      return json(500, {
         ok: false,
-        error: "STRIPE_INIT_FAILED",
+        error: "Stripe key missing (env + RemoteConfig)",
+        key_source: source,
+        where: "stripe_init"
+      });
+    }
+
+    // Create Stripe client
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+    
+    // Sanity check
+    try {
+      await stripe.balance.retrieve();
+    } catch (e) {
+      console.error("[createCustomerPortalSession] Stripe sanity check failed:", e);
+      return json(500, {
+        ok: false,
+        error: "STRIPE_VALIDATION_FAILED",
         where: "stripe_init",
-        message: safeStripeError(e)
-      }, { status: 500 });
+        key_source: source,
+        message: e?.message || String(e)
+      });
     }
 
     where.stage = "lookup_user";
@@ -125,22 +151,22 @@ Deno.serve(async (req) => {
         }
       } catch (e) {
         console.error("[createCustomerPortalSession] Stripe customer lookup failed:", e.message);
-        return Response.json({
+        return json(500, {
           ok: false,
           error: "STRIPE_LOOKUP_FAILED",
           where: "recover_customer",
-          message: safeStripeError(e)
-        }, { status: 500 });
+          message: e?.message || String(e)
+        });
       }
     }
 
     if (!stripeCustomerId) {
-      return Response.json({ 
+      return json(404, { 
         ok: false, 
         error: "NO_STRIPE_CUSTOMER",
         where: "recover_customer",
         message: "No Stripe customer found. Please subscribe first."
-      }, { status: 404 });
+      });
     }
 
     where.stage = "create_portal";
@@ -151,18 +177,22 @@ Deno.serve(async (req) => {
       return_url: APP_URL,
     });
 
-    return Response.json({ 
+    return json(200, { 
       ok: true, 
-      url: session.url 
+      url: session.url,
+      key_source: source,
+      ms: Date.now() - start
     });
     
   } catch (error) {
     console.error("[createCustomerPortalSession] error:", error);
-    return Response.json({ 
+    return json(500, { 
       ok: false, 
-      error: "PORTAL_FAILED",
+      error: error?.message || String(error),
+      name: error?.name || null,
       where: where.stage,
-      message: safeStripeError(error)
-    }, { status: 500 });
+      stack: error?.stack ? String(error.stack).slice(0, 2000) : null,
+      ms: Date.now() - start
+    });
   }
 });
