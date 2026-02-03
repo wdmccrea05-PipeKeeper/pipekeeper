@@ -52,6 +52,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 /**
  * Drop-in replacement notes:
@@ -1353,16 +1354,19 @@ ${userText}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <CardTitle className="flex items-center gap-2 text-blue-800 text-lg sm:text-base">
-                  <Target className="w-5 h-5 flex-shrink-0" />
-                  <span className="truncate">Collection Optimization</span>
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-blue-800 text-lg sm:text-base">
+                    <Target className="w-5 h-5 flex-shrink-0" />
+                    <span className="truncate">Collection Optimization</span>
+                  </CardTitle>
+                  <InfoTooltip text="AI analyzes your collection and recommends which pipes to specialize for specific tobacco types to maximize pairing scores and collection coverage." />
+                </div>
                 <Button variant="ghost" size="sm" onClick={toggleCollapse} className="text-blue-600 hover:text-blue-800 flex-shrink-0">
                   {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                 </Button>
               </div>
               <p className="mt-2 text-stone-700 text-xs sm:text-sm">
-                Maximize your collection&apos;s potential with strategic pipe specializations
+                Strategic pipe specializations to maximize collection potential
               </p>
             </div>
 
@@ -1668,10 +1672,13 @@ ${userText}
 
             {/* Discuss / Ask Expert (embedded) */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-stone-800 flex items-center gap-2">
-                <Target className="w-5 h-5 text-indigo-600" />
-                Ask the Expert (about your collection)
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-stone-800 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  Ask the Expert
+                </h3>
+                <InfoTooltip text="Get personalized collection advice based on your pipes, tobacco, and usage history. Follow-ups continue the conversation without repeating earlier answers." />
+              </div>
 
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">

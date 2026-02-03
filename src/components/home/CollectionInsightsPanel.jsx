@@ -18,8 +18,10 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Download } from "lucide-react";
 import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
+import { useTranslation } from "react-i18next";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
 
   // Check for aging alerts
@@ -161,8 +163,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 || blends.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">Usage history requires pipes and tobacco</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track which pipes you use with which blends to build recommendations</p>
+                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.usageLogNoPipes")}</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.usageLogAction")}</p>
                     <div className="flex gap-3 justify-center">
                       {pipes.length === 0 && (
                         <a href={createPageUrl('Pipes')}>
@@ -190,8 +192,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 ? (
                   <div className="text-center py-12">
                     <CalendarClock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">Rotation planner requires pipes in your collection</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track rest periods and optimize pipe health with usage rotation</p>
+                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.rotationNoPipes")}</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.rotationAction")}</p>
                     <a href={createPageUrl('Pipes')}>
                       <Button size="sm">Add First Pipe</Button>
                     </a>
@@ -228,8 +230,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {blends.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">Aging dashboard requires tobacco in your cellar</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track time cellared and optimal aging recommendations</p>
+                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.agingNoBlends")}</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.agingAction")}</p>
                     <a href={createPageUrl('Tobacco')}>
                       <Button size="sm">Add First Blend</Button>
                     </a>
