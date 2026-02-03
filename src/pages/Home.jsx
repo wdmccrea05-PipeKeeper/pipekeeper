@@ -27,6 +27,7 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
 import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
+import QuickStartChecklist from "@/components/onboarding/QuickStartChecklist";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
 
@@ -324,6 +325,19 @@ export default function HomePage() {
     return sum;
   }, 0);
 
+  // Check if user has added notes or viewed insights for checklist
+  const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
+  const hasViewedInsights = localStorage.getItem('pk_viewed_insights') === 'true';
+  
+  // Mark insights as viewed when user visits insights tab
+  useEffect(() => {
+    const markInsightsViewed = () => {
+      localStorage.setItem('pk_viewed_insights', 'true');
+    };
+    window.addEventListener('focus', markInsightsViewed);
+    return () => window.removeEventListener('focus', markInsightsViewed);
+  }, []);
+
   const getCellarBreakdown = () => {
     const byBlend = {};
     safeCellarLogs.forEach(log => {
@@ -442,6 +456,22 @@ export default function HomePage() {
               pairing suggestions, and market valuations.
             </p>
           </motion.div>
+
+          {(safePipes.length < 3 || safeBlends.length < 3) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mb-6"
+            >
+              <QuickStartChecklist 
+                pipes={safePipes}
+                blends={safeBlends}
+                hasNotes={hasNotes}
+                hasViewedInsights={hasViewedInsights}
+              />
+            </motion.div>
+          )}
 
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
             <motion.div
