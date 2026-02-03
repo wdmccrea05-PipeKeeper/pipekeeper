@@ -22,7 +22,11 @@ const resources = {
       startsAfterTrial:"Starts after your 7-day Premium access ends. Cancel anytime.",
       renewsAuto:"Renews automatically. Cancel anytime.",
       managedThrough:"Managed through Apple",
-      dataNotAffected:"Your data is never affected"
+      dataNotAffected:"Your data is never affected",
+      premiumActive:"Premium active",
+      premiumActiveSubtextTrial:"You have full access to Premium tools.",
+      premiumActiveSubtextPaid:"Your Premium tools are active.",
+      annualSavings:"Annual saves compared to monthly."
     },
     common: { loading:"Loading…", save:"Save", cancel:"Cancel", close:"Close" },
     empty: {
@@ -70,7 +74,11 @@ const resources = {
       startsAfterTrial:"Comienza después de que termine tu acceso Premium de 7 días. Cancela en cualquier momento.",
       renewsAuto:"Se renueva automáticamente. Cancela en cualquier momento.",
       managedThrough:"Gestionado a través de Apple",
-      dataNotAffected:"Tus datos nunca se ven afectados"
+      dataNotAffected:"Tus datos nunca se ven afectados",
+      premiumActive:"Premium activo",
+      premiumActiveSubtextTrial:"Tienes acceso completo a las herramientas Premium.",
+      premiumActiveSubtextPaid:"Tus herramientas Premium están activas.",
+      annualSavings:"Anual ahorra comparado con mensual."
     },
     common: { loading:"Cargando…", save:"Guardar", cancel:"Cancelar", close:"Cerrar" },
     empty: {
@@ -118,7 +126,11 @@ const resources = {
       startsAfterTrial:"Commence après la fin de votre accès Premium de 7 jours. Annulez à tout moment.",
       renewsAuto:"Se renouvelle automatiquement. Annulez à tout moment.",
       managedThrough:"Géré via Apple",
-      dataNotAffected:"Vos données ne sont jamais affectées"
+      dataNotAffected:"Vos données ne sont jamais affectées",
+      premiumActive:"Premium actif",
+      premiumActiveSubtextTrial:"Vous avez un accès complet aux outils Premium.",
+      premiumActiveSubtextPaid:"Vos outils Premium sont actifs.",
+      annualSavings:"L'annuel économise par rapport au mensuel."
     },
     common: { loading:"Chargement…", save:"Enregistrer", cancel:"Annuler", close:"Fermer" },
     empty: {
@@ -166,7 +178,11 @@ const resources = {
       startsAfterTrial:"Beginnt nach Ende Ihres 7-tägigen Premium-Zugangs. Jederzeit kündbar.",
       renewsAuto:"Wird automatisch verlängert. Jederzeit kündbar.",
       managedThrough:"Verwaltet über Apple",
-      dataNotAffected:"Ihre Daten sind niemals betroffen"
+      dataNotAffected:"Ihre Daten sind niemals betroffen",
+      premiumActive:"Premium aktiv",
+      premiumActiveSubtextTrial:"Sie haben vollen Zugriff auf Premium-Tools.",
+      premiumActiveSubtextPaid:"Ihre Premium-Tools sind aktiv.",
+      annualSavings:"Jährlich spart gegenüber monatlich."
     },
     common: { loading:"Wird geladen…", save:"Speichern", cancel:"Abbrechen", close:"Schließen" },
     empty: {
@@ -214,7 +230,11 @@ const resources = {
       startsAfterTrial:"Inizia dopo la fine del tuo accesso Premium di 7 giorni. Annulla in qualsiasi momento.",
       renewsAuto:"Si rinnova automaticamente. Annulla in qualsiasi momento.",
       managedThrough:"Gestito tramite Apple",
-      dataNotAffected:"I tuoi dati non sono mai interessati"
+      dataNotAffected:"I tuoi dati non sono mai interessati",
+      premiumActive:"Premium attivo",
+      premiumActiveSubtextTrial:"Hai accesso completo agli strumenti Premium.",
+      premiumActiveSubtextPaid:"I tuoi strumenti Premium sono attivi.",
+      annualSavings:"Annuale risparmia rispetto a mensile."
     },
     common: { loading:"Caricamento…", save:"Salva", cancel:"Annulla", close:"Chiudi" },
     empty: {
@@ -262,7 +282,11 @@ const resources = {
       startsAfterTrial:"Começa após o término do seu acesso Premium de 7 dias. Cancele a qualquer momento.",
       renewsAuto:"Renova automaticamente. Cancele a qualquer momento.",
       managedThrough:"Gerenciado via Apple",
-      dataNotAffected:"Seus dados nunca são afetados"
+      dataNotAffected:"Seus dados nunca são afetados",
+      premiumActive:"Premium ativo",
+      premiumActiveSubtextTrial:"Você tem acesso total às ferramentas Premium.",
+      premiumActiveSubtextPaid:"Suas ferramentas Premium estão ativas.",
+      annualSavings:"Anual economiza em comparação com mensal."
     },
     common: { loading:"Carregando…", save:"Salvar", cancel:"Cancelar", close:"Fechar" },
     empty: {
@@ -310,7 +334,11 @@ const resources = {
       startsAfterTrial:"Begint na afloop van je 7-daagse Premium-toegang. Altijd opzegbaar.",
       renewsAuto:"Verlengt automatisch. Altijd opzegbaar.",
       managedThrough:"Beheerd via Apple",
-      dataNotAffected:"Je gegevens worden nooit beïnvloed"
+      dataNotAffected:"Je gegevens worden nooit beïnvloed",
+      premiumActive:"Premium actief",
+      premiumActiveSubtextTrial:"Je hebt volledige toegang tot Premium-tools.",
+      premiumActiveSubtextPaid:"Je Premium-tools zijn actief.",
+      annualSavings:"Jaarlijks bespaart vergeleken met maandelijks."
     },
     common: { loading:"Laden…", save:"Opslaan", cancel:"Annuleren", close:"Sluiten" },
     empty: {
@@ -358,7 +386,11 @@ const resources = {
       startsAfterTrial:"Rozpoczyna się po zakończeniu 7-dniowego dostępu Premium. Anuluj w dowolnym momencie.",
       renewsAuto:"Odnawia się automatycznie. Anuluj w dowolnym momencie.",
       managedThrough:"Zarządzane przez Apple",
-      dataNotAffected:"Twoje dane nigdy nie są dotknięte"
+      dataNotAffected:"Twoje dane nigdy nie są dotknięte",
+      premiumActive:"Premium aktywne",
+      premiumActiveSubtextTrial:"Masz pełny dostęp do narzędzi Premium.",
+      premiumActiveSubtextPaid:"Twoje narzędzia Premium są aktywne.",
+      annualSavings:"Roczna oszczędza w porównaniu z miesięczną."
     },
     common: { loading:"Ładowanie…", save:"Zapisz", cancel:"Anuluj", close:"Zamknij" },
     empty: {
@@ -406,7 +438,11 @@ const resources = {
       startsAfterTrial:"7日間のPremiumアクセス終了後に開始されます。いつでもキャンセルできます。",
       renewsAuto:"自動的に更新されます。いつでもキャンセルできます。",
       managedThrough:"Apple経由で管理",
-      dataNotAffected:"データは影響を受けません"
+      dataNotAffected:"データは影響を受けません",
+      premiumActive:"Premiumアクティブ",
+      premiumActiveSubtextTrial:"Premiumツールへの完全なアクセスがあります。",
+      premiumActiveSubtextPaid:"Premiumツールがアクティブです。",
+      annualSavings:"年間は月間と比較して節約されます。"
     },
     common: { loading:"読み込み中…", save:"保存", cancel:"キャンセル", close:"閉じる" },
     empty: {
@@ -454,7 +490,11 @@ const resources = {
       startsAfterTrial:"在您的7天高级访问结束后开始。随时取消。",
       renewsAuto:"自动续订。随时取消。",
       managedThrough:"通过Apple管理",
-      dataNotAffected:"您的数据永远不会受到影响"
+      dataNotAffected:"您的数据永远不会受到影响",
+      premiumActive:"高级版活跃",
+      premiumActiveSubtextTrial:"您可以完全访问高级工具。",
+      premiumActiveSubtextPaid:"您的高级工具处于活动状态。",
+      annualSavings:"年度订阅相比月度订阅可节省费用。"
     },
     common: { loading:"加载中…", save:"保存", cancel:"取消", close:"关闭" },
     empty: {

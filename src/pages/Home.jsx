@@ -29,6 +29,7 @@ import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/u
 import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
 import QuickStartChecklist from "@/components/onboarding/QuickStartChecklist";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
+import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
 
@@ -457,6 +458,11 @@ export default function HomePage() {
               pairing suggestions, and market valuations.
             </p>
           </motion.div>
+
+          {/* Premium Active Indicator */}
+          <div className="max-w-4xl mx-auto px-4">
+            <PremiumActiveIndicator user={user} subscription={user?.subscription} />
+          </div>
 
           {(safePipes.length < 3 || safeBlends.length < 3) && (
             <motion.div

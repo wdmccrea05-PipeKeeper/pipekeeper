@@ -12,6 +12,7 @@ import {
 } from "@/components/utils/nativeIAPBridge";
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
+import { useTranslation } from "react-i18next";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
   return (
@@ -48,6 +49,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 }
 
 export default function SubscriptionFull() {
+  const { t } = useTranslation();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
   const [isPro, setIsPro] = useState(false);
   const [message, setMessage] = useState("");
