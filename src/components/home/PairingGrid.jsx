@@ -14,9 +14,12 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import InfoTooltip from "@/components/ui/InfoTooltip";
+import { useTranslation } from "react-i18next";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
   if (isAppleBuild) return null;
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [regenerating, setRegenerating] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -171,8 +174,11 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Pairing Grid</CardTitle>
-            <CardDescription>Each bowl variant appears as an individual "pipe" in recommendations.</CardDescription>
+            <div className="flex items-center gap-2">
+              <CardTitle>Pairing Grid</CardTitle>
+              <InfoTooltip text="AI-generated compatibility scores for each pipe-tobacco pairing. Higher scores indicate better matches based on pipe characteristics, blend type, and your preferences." />
+            </div>
+            <CardDescription>Top-rated matches and on-demand scoring for any blend</CardDescription>
             </div>
             <div className="flex gap-2">
             <Button
