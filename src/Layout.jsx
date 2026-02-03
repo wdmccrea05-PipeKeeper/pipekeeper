@@ -599,6 +599,9 @@ export default function Layout({ children, currentPageName }) {
                   isMobile={true}
                 />
               ))}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <LanguageSwitcher />
+              </div>
             </div>
           </div>
 
