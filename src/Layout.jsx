@@ -46,7 +46,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       to={createPageUrl(item.page)}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 transform hover:scale-105",
+        "flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 transform hover:scale-105 flex-shrink-0",
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
@@ -56,14 +56,15 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       style={{ WebkitTapHighlightColor: "transparent" }}
       aria-current={isActive ? "page" : undefined}
       role="link"
+      title={item.name}
     >
       {item.isIconComponent ? (
-        <item.icon className="w-5 h-5" />
+        <item.icon className="w-5 h-5 flex-shrink-0" />
       ) : (
         <img
           src={item.icon}
           alt={item.name}
-          className="w-6 h-6 object-contain"
+          className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
           style={{
             filter: isMobile
               ? "brightness(0)"
@@ -74,7 +75,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         />
       )}
 
-      <span>{item.name}</span>
+      <span className="truncate">{item.name}</span>
 
       {item.isPremium && !hasPaidAccess && <Crown className="w-3 h-3 text-amber-500" />}
     </Link>
