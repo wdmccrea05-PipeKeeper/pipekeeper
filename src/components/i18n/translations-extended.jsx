@@ -5,6 +5,35 @@
 
 export const translationsExtended = {
   en: { common: {
+    nav: {
+      home: "Home",
+      pipes: "Pipes",
+      tobacco: "Tobacco",
+      cellar: "Cellar",
+      community: "Community",
+      profile: "Profile",
+      help: "Help",
+      faq: "FAQ",
+      support: "Support",
+      terms: "Terms",
+      privacy: "Privacy",
+      reports: "Reports",
+      subscriptionQueue: "Subscription Queue",
+      quickAccess: "Quick Access",
+      syncing: "Syncing…",
+      goHome: "Go Home",
+    },
+    auth: {
+      login: "Log In",
+      loginPrompt: "Please log in to continue",
+    },
+    error: {
+      pageNotFound: "Page Not Found",
+      pageNotFoundDescription: "The page",
+      pageNotFoundSuffix: "could not be found in this application.",
+      adminNote: "Admin Note",
+      adminNoteDescription: "This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.",
+    },
     // === PIPES PAGE ===
     pipes: {
       title: "Pipes",
