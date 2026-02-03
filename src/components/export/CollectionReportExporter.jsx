@@ -201,7 +201,7 @@ export default function CollectionReportExporter({ user }) {
     csv += `Total Blends,${blends.length}\n`;
     csv += `Total Quantity,${totalOz.toFixed(1)} oz\n\n`;
     
-    csv += "SMOKING ACTIVITY\n";
+    csv += "USAGE ACTIVITY\n";
     csv += `Total Sessions,${logs.length}\n`;
     csv += `Break-In Sessions,${logs.filter(l => l.is_break_in).length}\n`;
 
@@ -236,7 +236,7 @@ export default function CollectionReportExporter({ user }) {
         <li>Total Quantity: ${totalOz.toFixed(1)} oz</li>
       </ul>
       
-      <h2 style="color: #1a2c42;">Smoking Activity</h2>
+      <h2 style="color: #1a2c42;">Usage Activity</h2>
       <ul>
         <li>Total Sessions: ${logs.length}</li>
         <li>Break-In Sessions: ${logs.filter(l => l.is_break_in).length}</li>
