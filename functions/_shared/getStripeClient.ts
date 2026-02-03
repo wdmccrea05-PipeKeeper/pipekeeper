@@ -3,6 +3,7 @@
 
 import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { getStripeClient as getSingleton, getStripeSecretKey as getSecretFromSingleton } from './stripeClientSingleton.ts';
 
 let cachedStripe: Stripe | null = null;
 let cachedKeyFingerprint: string | null = null;
@@ -78,10 +79,25 @@ export async function getStripeSecretKey(req: Request): Promise<{
   );
 }
 
-export async function getStripeClient(req: Request): Promise<{
+export async function getStripeClient(req: Request, options?: { forceRefresh?: boolean }): Promise<{
   stripe: Stripe;
   meta: { source: "env" | "remoteConfig"; masked: string; environment: "live" | "preview" };
 }> {
+  // Try centralized singleton first (prevents stale client issues)
+  try {
+    const stripe = getSingleton(options);
+    const key = getSecretFromSingleton();
+    const environment = key.startsWith('sk_live_') ? 'live' : 'preview';
+    return {
+      stripe,
+      meta: { source: 'env', masked: maskKey(key), environment }
+    };
+  } catch (envError) {
+    // Fallback to remoteconfig if env fails
+    console.warn('[getStripeClient] Singleton failed, trying remoteconfig:', envError);
+  }
+  
+  // Original remoteconfig fallback logic
   const { key, source, masked, environment } = await getStripeSecretKey(req);
   const fp = fingerprint(key);
 

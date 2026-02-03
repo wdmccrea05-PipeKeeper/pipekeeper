@@ -33,30 +33,57 @@ export function useCurrentUser() {
   const { data: rawUser, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
-      const authUser = await base44.auth.me();
-      const email = normEmail(authUser?.email || "");
+      try {
+        const authUser = await base44.auth.me();
+        const email = normEmail(authUser?.email || "");
 
-      // Fetch entity User record
-      const entityUser = await (async () => {
-        try {
-          if (!email) return null;
-          const rows = await base44.entities.User.filter({ email });
-          return rows?.[0] || null;
-        } catch (e) {
-          console.warn("[useCurrentUser] Could not load entities.User:", e);
-          return null;
-        }
-      })();
+        // Fetch entity User record
+        const entityUser = await (async () => {
+          try {
+            if (!email) return null;
+            const rows = await base44.entities.User.filter({ email });
+            const entity = rows?.[0] || null;
+            
+            // CRITICAL: Auto-reconcile entitlements if platform changed (fixes web→iOS bug)
+            if (entity) {
+              const currentPlatform = detectPlatform();
+              const needsReconcile = entity.platform && entity.platform !== currentPlatform;
+              
+              if (needsReconcile) {
+                console.log(`[useCurrentUser] Platform mismatch: ${entity.platform} → ${currentPlatform}, triggering reconciliation`);
+                try {
+                  const result = await base44.functions.invoke('reconcileEntitlementsForUser', { email });
+                  if (result?.data?.updated) {
+                    // Refetch entity after reconciliation
+                    const updated = await base44.entities.User.filter({ email });
+                    return updated?.[0] || entity;
+                  }
+                } catch (reconcileErr) {
+                  console.warn('[useCurrentUser] Auto-reconciliation failed (non-fatal):', reconcileErr);
+                }
+              }
+            }
+            
+            return entity;
+          } catch (e) {
+            console.warn("[useCurrentUser] Could not load entities.User:", e);
+            return null;
+          }
+        })();
 
-      // Merge auth + entity - PRESERVE AUTH ID as canonical
-      return {
-        ...entityUser,
-        ...authUser,
-        id: authUser.id,
-        auth_user_id: authUser.id,
-        entity_user_id: entityUser?.id || null,
-        email: authUser?.email || entityUser?.email,
-      };
+        // Merge auth + entity - PRESERVE AUTH ID as canonical
+        return {
+          ...entityUser,
+          ...authUser,
+          id: authUser.id,
+          auth_user_id: authUser.id,
+          entity_user_id: entityUser?.id || null,
+          email: authUser?.email || entityUser?.email,
+        };
+      } catch (err) {
+        console.error('[useCurrentUser] Critical error:', err);
+        throw err;
+      }
     },
     staleTime: 30_000,
     retry: 2,
@@ -216,8 +243,19 @@ export function useCurrentUser() {
     isApple,
     isAdmin,
     refetch: async () => {
-      await refetchUser();
-      await refetchSubscription();
+      try {
+        // Trigger reconciliation before refetch for accuracy
+        if (email) {
+          await base44.functions.invoke('reconcileEntitlementsForUser', { email }).catch(err => {
+            console.warn('[useCurrentUser] Refetch reconciliation failed (non-fatal):', err);
+          });
+        }
+        await refetchUser();
+        await refetchSubscription();
+      } catch (err) {
+        console.error('[useCurrentUser] Refetch failed:', err);
+        throw err;
+      }
     },
   };
 }
