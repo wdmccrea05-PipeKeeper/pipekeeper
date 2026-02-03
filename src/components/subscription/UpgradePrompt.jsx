@@ -29,11 +29,14 @@ export default function UpgradePrompt({ featureName, description }) {
             <a href={createPageUrl("Subscription")}>
               <Button className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#7A3E3E] text-[#E0D8C8]">
                 <Crown className="w-4 h-4 mr-2" />
-                Upgrade to Premium
+                Continue with Premium
               </Button>
             </a>
             <p className="text-xs text-center text-[#E0D8C8]/70 leading-relaxed">
-              Get unlimited collection tools, AI-powered insights, cellar tracking, and comprehensive analytics
+              Unlimited pipes & tobacco, advanced tools, cellar tracking, and comprehensive reports
+            </p>
+            <p className="text-xs text-center text-[#E0D8C8]/50">
+              Cancel anytime • Your data is never affected
             </p>
           </>
         ) : (

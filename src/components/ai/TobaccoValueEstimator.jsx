@@ -78,7 +78,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
           <DollarSign className="w-5 h-5 text-emerald-400" />
           AI Tobacco Valuation
           {showLocked && (
-            <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30 ml-auto">
+            <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-semibold ml-auto">
               Pro
             </Badge>
           )}

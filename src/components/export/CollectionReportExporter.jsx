@@ -188,7 +188,7 @@ export default function CollectionReportExporter({ user }) {
     ]);
 
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-    const totalOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0), 0);
+    const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
 
     let csv = "Collection Statistics Report\n";
     csv += `Generated: ${new Date().toLocaleDateString()}\n\n`;
@@ -216,7 +216,7 @@ export default function CollectionReportExporter({ user }) {
     ]);
 
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
-    const totalOz = blends.reduce((sum, b) => sum + (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0), 0);
+    const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
       <h1 style="color: #1a2c42;">Collection Statistics Report</h1>

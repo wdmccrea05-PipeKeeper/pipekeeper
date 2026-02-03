@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function PairingMatrix({ user }) {
   if (isAppleBuild) return null;
@@ -129,11 +130,26 @@ export default function PairingMatrix({ user }) {
       <CardContent className="space-y-3">
          {pairings.length === 0 ? (
            <div className="flex flex-col items-center justify-center py-8 text-center">
-             <p className="text-sm text-stone-600 mb-4">No pairing grid data yet.</p>
+             <p className="text-sm text-[#E0D8C8]/70 mb-2">No pairing data yet</p>
+             <p className="text-xs text-[#E0D8C8]/50 mb-4 max-w-md">
+               Add pipes and tobacco to your collection, then generate AI-powered pairing recommendations.
+             </p>
+             <div className="flex gap-3">
+               <a href={createPageUrl('Pipes')}>
+                 <Button variant="outline" size="sm">
+                   Add First Pipe
+                 </Button>
+               </a>
+               <a href={createPageUrl('Tobacco')}>
+                 <Button variant="outline" size="sm">
+                   Add First Blend
+                 </Button>
+               </a>
+             </div>
              <Button 
                onClick={regenPairings} 
-               disabled={regenerating}
-               className="mb-4"
+               disabled={regenerating || pipes.length === 0 || blends.length === 0}
+               className="mt-4"
              >
                {regenerating ? (
                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
@@ -142,7 +158,6 @@ export default function PairingMatrix({ user }) {
                )}
                Generate Pairings
              </Button>
-             <p className="text-xs text-stone-500">Generate AI recommendations, then visit <strong>PairingGrid</strong> to see results.</p>
            </div>
          ) : (
           pairings.map((p) => {

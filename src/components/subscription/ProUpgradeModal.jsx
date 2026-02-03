@@ -44,8 +44,8 @@ export default function ProUpgradeModal({ isOpen, onClose, featureName = "This f
           <div className="space-y-2">
             {proBenefits.map((benefit, idx) => (
               <div key={idx} className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span className="text-sm text-[#e8d5b7]/80">{benefit}</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span className="text-sm text-[#e8d5b7]/90">{benefit}</span>
               </div>
             ))}
           </div>

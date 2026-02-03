@@ -111,7 +111,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 {!hasPremium && <Lock className="w-3 h-3 text-amber-400" />}
               </Label>
               {!hasPremium && (
-                <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300 font-semibold">
                   Premium
                 </Badge>
               )}
@@ -149,7 +149,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 </Label>
               </div>
               {!hasProAccess && (
-                <Badge className="bg-amber-600/20 text-amber-400 border-amber-500/30">
+                <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-semibold">
                   Pro
                 </Badge>
               )}
