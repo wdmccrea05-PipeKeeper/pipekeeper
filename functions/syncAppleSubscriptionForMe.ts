@@ -43,13 +43,9 @@ Deno.serve(async (req) => {
       tier = 'pro';
     }
     
-    // Determine status based on verification and active state
-    let status;
-    if (!isVerified) {
-      status = 'unverified';
-    } else {
-      status = active ? 'active' : 'expired';
-    }
+    // Determine status: Trust iOS client immediately, mark as active when they report active
+    // Background verification can update this later if fraud is detected
+    const status = active ? 'active' : 'expired';
     
     // Create stable provider subscription ID
     const providerSubId = originalTransactionId || `apple_unverified_${userId}`;
