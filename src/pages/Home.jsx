@@ -283,7 +283,7 @@ export default function HomePage() {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className={PK_THEME.textBody}>Loading user...</p>
+          <p className={PK_THEME.textBody}>{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -296,9 +296,9 @@ export default function HomePage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Login Required</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">Please log in to continue</p>
-            <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">{t("auth.loginPrompt")}</p>
+            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -311,8 +311,8 @@ export default function HomePage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Please Log In</h2>
-            <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
+            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -376,9 +376,9 @@ export default function HomePage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Something went wrong</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">Please refresh to try again</p>
-            <Button onClick={() => window.location.reload()}>Refresh</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("home.errorTitle")}</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">{t("home.errorRefresh")}</p>
+            <Button onClick={() => window.location.reload()}>{t("common.refresh")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -395,7 +395,7 @@ export default function HomePage() {
               alt="PipeKeeper"
               className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
             />
-            <p className={PK_THEME.textBody}>Loading your collection...</p>
+            <p className={PK_THEME.textBody}>{t("home.loadingCollection")}</p>
           </div>
         </div>
       ) : null}
@@ -421,8 +421,8 @@ export default function HomePage() {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Testing Period Notice</h3>
-                    <p className="text-sm text-white/80 mt-1">Important Information</p>
+                    <h3 className="text-xl font-bold">{t("home.testingPeriodTitle")}</h3>
+                    <p className="text-sm text-white/80 mt-1">{t("home.importantInfo")}</p>
                   </div>
                 </div>
                 <button onClick={handleDismissNotice} className="text-white/80 hover:text-white transition-colors">
@@ -432,13 +432,13 @@ export default function HomePage() {
             </div>
             <div className="p-6">
               <p className="text-[#E0D8C8] text-lg leading-relaxed mb-4">
-                During testing, <span className="font-semibold text-white">no subscription fees will be charged until after January 15, 2026</span>.
+                {t("home.testingPeriodBody")}
               </p>
               <p className="text-[#E0D8C8]/70 text-sm">
-                All premium features are available free of charge during this period. Thank you for helping us test PipeKeeper!
+                {t("home.testingThankYou")}
               </p>
               <Button onClick={handleDismissNotice} className="w-full mt-6 bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                Got it, thanks!
+                {t("home.gotItThanks")}
               </Button>
             </div>
           </motion.div>
@@ -453,11 +453,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
-              Pipe & Tobacco Collection
+              {t("home.pageTitle")}
             </PkPageTitle>
             <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
-              Manage your pipes and tobacco blends with AI-powered search, photo identification, 
-              pairing suggestions, and market valuations.
+              {t("home.pageSubtitle")}
             </p>
           </motion.div>
 
@@ -500,8 +499,8 @@ export default function HomePage() {
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
-                        <p className="text-white/90 text-sm sm:text-base">Track and value your pipes</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.pipeCollection")}</h3>
+                        <p className="text-white/90 text-sm sm:text-base">{t("home.trackAndValue")}</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
@@ -524,7 +523,7 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safePipes.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.pipesInCollection")}</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
@@ -534,7 +533,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">View Collection</span>
+                      <span className="font-semibold">{t("home.viewCollection")}</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -559,8 +558,8 @@ export default function HomePage() {
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
-                        <p className="text-white/90 text-sm sm:text-base">Manage your blends</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.tobaccoCellar")}</h3>
+                        <p className="text-white/90 text-sm sm:text-base">{t("home.manageBlends")}</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
@@ -583,7 +582,7 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.tobaccoBlends")}</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 cursor-pointer" onClick={(e) => {
@@ -591,7 +590,7 @@ export default function HomePage() {
                         setShowCellarDialog(true);
                       }}>
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalCellaredOz.toFixed(1)} oz</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Cellared</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.cellared")}</p>
                       </div>
 
                       {(() => {
@@ -601,14 +600,14 @@ export default function HomePage() {
                         return isPaidUser && totalValue > 0 ? (
                           <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                             <p className="text-3xl sm:text-4xl font-bold text-white mb-1">≈ ${totalValue.toFixed(0)}</p>
-                            <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                            <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
                           </div>
                         ) : null;
                       })()}
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">View Cellar</span>
+                      <span className="font-semibold">{t("home.viewCellar")}</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -628,7 +627,7 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
-                    Favorites
+                    {t("home.favorites")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -662,7 +661,7 @@ export default function HomePage() {
               transition={{ delay: 0.75 }}
               className="mb-12"
             >
-              <ErrorBoundary fallback={<div className="text-center text-red-500">Collection Insights failed to load</div>}>
+              <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.insightsError")}</div>}>
                 <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
               </ErrorBoundary>
             </motion.div>
@@ -681,7 +680,7 @@ export default function HomePage() {
                   description="This iOS build focuses on cataloging and cellar inventory management: identification assistance, metadata cleanup, verified measurements, export reports, and organization tools."
                 />
               ) : isPaidUser ? (
-                <ErrorBoundary fallback={<div className="text-center text-red-500">Expert Tobacconist failed to load</div>}>
+                <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.expertTobacconistError")}</div>}>
                   <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} user={user} />
                 </ErrorBoundary>
               ) : (
@@ -703,10 +702,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">Recent Pipes</CardTitle>
-                    <a href={createPageUrl('Pipes')}>
-                      <Button variant="ghost" size="sm">
-                        View All <ArrowRight className="w-4 h-4 ml-1" />
+                    <CardTitle className="text-lg">{t("home.recentPipes")}</CardTitle>
+                      <a href={createPageUrl('Pipes')}>
+                         <Button variant="ghost" size="sm">
+                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -749,10 +748,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">Recent Tobacco</CardTitle>
-                    <a href={createPageUrl('Tobacco')}>
-                      <Button variant="ghost" size="sm">
-                        View All <ArrowRight className="w-4 h-4 ml-1" />
+                    <CardTitle className="text-lg">{t("home.recentTobacco")}</CardTitle>
+                      <a href={createPageUrl('Tobacco')}>
+                         <Button variant="ghost" size="sm">
+                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -806,8 +805,8 @@ export default function HomePage() {
                         <Sparkles className="w-5 h-5 text-[#d4a574]" />
                       </div>
                       <div>
-                        <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
-                        <p className="text-xs text-[#e8d5b7]/70">Import pipes & tobacco from CSV</p>
+                        <p className="font-semibold text-[#e8d5b7]">{t("home.bulkImport")}</p>
+                        <p className="text-xs text-[#e8d5b7]/70">{t("home.importDesc")}</p>
                       </div>
                     </div>
                     <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
@@ -834,20 +833,20 @@ export default function HomePage() {
                 <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
               </div>
               <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
-                Welcome to Your Collection
+                {t("home.welcomeToCollection")}
               </h2>
               <p className="text-sm sm:text-base text-[#e8d5b7]/70 mb-6 sm:mb-8 max-w-md mx-auto px-2">
-                Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.
+                {t("home.emptyStateDesc")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
                 <a href={createPageUrl('Pipes')} className="w-full sm:w-auto">
                   <Button className="bg-amber-700 hover:bg-amber-800 w-full">
-                    Add Your First Pipe
+                    {t("home.addFirstPipe")}
                   </Button>
                 </a>
                 <a href={createPageUrl('Tobacco')} className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full">
-                    Add Your First Blend
+                    {t("home.addFirstBlend")}
                   </Button>
                 </a>
               </div>
@@ -861,12 +860,12 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
-              Cellar Breakdown ({totalCellaredOz.toFixed(1)} oz)
+              {t("home.cellarBreakdown")} ({totalCellaredOz.toFixed(1)} oz)
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             {cellarBreakdown.length === 0 ? (
-              <p className="text-center text-[#E0D8C8]/60 py-8">No tobacco currently cellared</p>
+              <p className="text-center text-[#E0D8C8]/60 py-8">{t("home.noCellaredTobacco")}</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {cellarBreakdown.map((item) => (
