@@ -528,7 +528,7 @@ export default function HomePage() {
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">${totalPipeValue.toLocaleString()}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
                       </div>
                     </div>
 
