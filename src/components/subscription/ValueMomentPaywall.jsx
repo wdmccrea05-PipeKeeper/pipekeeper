@@ -9,6 +9,7 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
 import { getTrialDayNumber } from '@/components/utils/paywallTriggers';
 import { useTranslation } from 'react-i18next';
+import { isAppleBuild } from '@/components/utils/appVariant';
 
 export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
   const navigate = useNavigate();
@@ -122,12 +123,12 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                   <p className="text-lg font-bold text-[#A35C5C] mb-1">$1.99/mo or $19.99/yr</p>
                   <p className="text-xs text-emerald-500 mb-2">Annual saves vs monthly</p>
                   <Button onClick={handleContinuePremium} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] mb-2">
-                    Continue with Premium
+                    {t("subscription.continueWithPremium")}
                   </Button>
                   <p className="text-xs text-[#E0D8C8]/60 text-center">
                     {isDay7 
-                      ? "Renews automatically. Cancel anytime."
-                      : "Starts after your 7-day Premium access ends. Cancel anytime."}
+                      ? t("subscription.renewsAuto")
+                      : t("subscription.startsAfterTrial")}
                   </p>
                 </div>
 
@@ -162,8 +163,8 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
               {/* Reassurance */}
               <div className="text-center space-y-1 text-xs text-[#E0D8C8]/60 pt-4 border-t border-[#E0D8C8]/10">
                 <p>• Cancel anytime</p>
-                <p>• Managed through Apple</p>
-                <p>• Your data is never affected</p>
+                {isAppleBuild && <p>• {t("subscription.managedThrough")}</p>}
+                <p>• {t("subscription.dataNotAffected")}</p>
               </div>
             </CardContent>
           </div>
