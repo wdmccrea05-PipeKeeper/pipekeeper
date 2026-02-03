@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Crown, Lock } from "lucide-react";
 import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "react-i18next";
 
 export default function UpgradePrompt({ featureName, description }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="border-[#A35C5C]/50 bg-[#243548]/70" variant="default">
       <CardHeader className="pb-3">
@@ -29,14 +32,14 @@ export default function UpgradePrompt({ featureName, description }) {
             <a href={createPageUrl("Subscription")}>
               <Button className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#7A3E3E] text-[#E0D8C8]">
                 <Crown className="w-4 h-4 mr-2" />
-                Continue with Premium
+                {t("subscription.continueWithPremium")}
               </Button>
             </a>
             <p className="text-xs text-center text-[#E0D8C8]/70 leading-relaxed">
               Unlimited pipes & tobacco, advanced tools, cellar tracking, and comprehensive reports
             </p>
             <p className="text-xs text-center text-[#E0D8C8]/50">
-              Cancel anytime • Your data is never affected
+              Cancel anytime • {t("subscription.dataNotAffected")}
             </p>
           </>
         ) : (
