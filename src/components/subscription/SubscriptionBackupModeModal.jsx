@@ -133,8 +133,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-      <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#A35C5C]/50 my-8">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+      <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#A35C5C]/50 my-8 sm:my-0">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
