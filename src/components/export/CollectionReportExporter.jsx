@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 
 export default function CollectionReportExporter({ user }) {
   const entitlements = useEntitlements();
@@ -88,9 +89,9 @@ export default function CollectionReportExporter({ user }) {
       const tinOz = b.tin_total_quantity_oz || 0;
       const bulkOz = b.bulk_total_quantity_oz || 0;
       const pouchOz = b.pouch_total_quantity_oz || 0;
-      const totalOz = tinOz + bulkOz + pouchOz;
-      const cellarOz = ((b.tin_tins_cellared || 0) * (b.tin_size_oz || 0)) + (b.bulk_cellared || 0) + ((b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0));
-      csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}","${b.cut || ''}","${b.strength || ''}","${b.room_note || ''}","${b.aging_potential || ''}",${b.rating || ''},${tinOz},${bulkOz},${pouchOz},${totalOz},${cellarOz},"${(b.notes || '').replace(/"/g, '""')}"\n`;
+      const totalOz = calculateTotalOzFromBlend(b);
+      const cellarOz = calculateCellaredOzFromBlend(b);
+      csv += `"${b.name || ''}","${b.manufacturer || ''}","${b.blend_type || ''}","${b.cut || ''}","${b.strength || ''}","${b.room_note || ''}","${b.aging_potential || ''}",${b.rating || ''},${tinOz.toFixed(1)},${bulkOz.toFixed(1)},${pouchOz.toFixed(1)},${totalOz.toFixed(1)},${cellarOz.toFixed(1)},"${(b.notes || '').replace(/"/g, '""')}"\n`;
     });
 
     return { csv, filename: `Tobacco-Collection-${new Date().toISOString().split('T')[0]}.csv` };
@@ -106,14 +107,16 @@ export default function CollectionReportExporter({ user }) {
       <hr style="margin: 20px 0;">`;
     
     blends.forEach(b => {
-      const totalOz = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
+      const totalOz = calculateTotalOzFromBlend(b);
+      const cellaredOz = calculateCellaredOzFromBlend(b);
       html += `<div style="margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
         <h3 style="color: #3d5a4d; margin-bottom: 10px;">${b.name || 'Unnamed Blend'}</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="padding: 5px; width: 150px;"><strong>Manufacturer:</strong></td><td>${b.manufacturer || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>Type:</strong></td><td>${b.blend_type || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>Strength:</strong></td><td>${b.strength || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>Total Quantity:</strong></td><td>${totalOz} oz</td></tr>
+          <tr><td style="padding: 5px;"><strong>Total Quantity:</strong></td><td>${totalOz.toFixed(1)} oz</td></tr>
+          <tr><td style="padding: 5px;"><strong>Cellared:</strong></td><td>${cellaredOz.toFixed(1)} oz</td></tr>
           <tr><td style="padding: 5px;"><strong>Rating:</strong></td><td>${b.rating || '-'} / 5</td></tr>
         </table>
       </div>`;

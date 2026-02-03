@@ -1,5 +1,5 @@
 import { base44 } from "@/api/base44Client";
-import { buildPairingsForPipes } from "@/components/utils/pairingScore";
+import { buildPairingsForPipes, isAromaticBlend, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
 
 // === Hard Rules Enforcement ===
 
@@ -158,23 +158,9 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
   }
 
   const blendsData = (blends || []).map((b) => {
-    const bt = String(b.blend_type || "").toLowerCase();
-
-    // Treat ANY blend_type containing "aromatic" as aromatic.
-    // This fixes values like "Aromatic (Cherry)", "English Aromatic", etc.
-    const isAromatic = bt.includes("aromatic");
-    
-    // Determine aromatic intensity: Light, Medium, Heavy
-    let aromaticIntensity = null;
-    if (isAromatic) {
-      if (b.strength === "Mild" || b.strength === "Mild-Medium") {
-        aromaticIntensity = "light";
-      } else if (b.strength === "Medium" || b.strength === "Medium-Full") {
-        aromaticIntensity = "medium";
-      } else if (b.strength === "Full") {
-        aromaticIntensity = "heavy";
-      }
-    }
+    // Use canonical helpers
+    const isAro = isAromaticBlend(b);
+    const intensity = isAro ? getAromaticIntensity(b) : null;
     
     return {
       tobacco_id: String(b.id),
@@ -185,8 +171,8 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
       cut: b.cut || null,
       flavor_notes: b.flavor_notes || null,
       tobacco_components: b.tobacco_components || null,
-      category: isAromatic ? "aromatic" : "non_aromatic",
-      aromatic_intensity: aromaticIntensity,
+      category: isAro ? "aromatic" : "non_aromatic",
+      aromatic_intensity: intensity,
     };
     });
 

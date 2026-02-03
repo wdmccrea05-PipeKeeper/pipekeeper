@@ -13,6 +13,7 @@ import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 
 export default function TobaccoCollectionStats() {
   const [drillDown, setDrillDown] = useState(null);
@@ -58,18 +59,10 @@ export default function TobaccoCollectionStats() {
   const uniqueBrands = [...new Set((blends || []).map(b => b?.manufacturer).filter(Boolean))].length;
   const favoriteBlends = (blends || []).filter(b => b?.is_favorite);
   
-  // Calculate net cellared amount from cellar logs (safe from null/undefined)
-  const totalCellaredOz = (cellarLogs || []).reduce((sum, log) => {
-    if (!log) return sum;
-    if (log.transaction_type === 'added') {
-      return sum + (Number(log.amount_oz) || 0);
-    } else if (log.transaction_type === 'removed') {
-      return sum - (Number(log.amount_oz) || 0);
-    }
-    return sum;
-  }, 0);
+  // Use canonical quantity helpers (SOURCE OF TRUTH)
+  const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   
-  // Tin statistics (safe from null/undefined)
+  // Tin statistics
   const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
   const tinWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
   const tinOpenOz = (blends || []).reduce((sum, b) => {
@@ -91,7 +84,7 @@ export default function TobaccoCollectionStats() {
     return sum + (open * size);
   }, 0);
   
-  // Overall totals
+  // Overall totals (from entity fields)
   const totalWeight = tinWeightOz + bulkWeightOz + pouchWeightOz;
   const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
 

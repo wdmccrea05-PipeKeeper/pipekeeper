@@ -9,7 +9,7 @@ import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
-import { scorePipeBlend } from "@/components/utils/pairingScore";
+import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 
 export default function PairingMatrix({ user }) {
   if (isAppleBuild) return null;

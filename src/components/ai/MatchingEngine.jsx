@@ -87,6 +87,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
   const top3 = useMemo(() => {
     const recs = pairingEntry?.recommendations || pairingEntry?.blend_matches || [];
+    // CRITICAL: Always sort by score descending before slicing
     return [...recs]
       .filter((r) => (r.score ?? 0) > 0)
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))

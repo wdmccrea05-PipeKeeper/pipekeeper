@@ -8,9 +8,11 @@ import { CheckCircle2, X } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
 import { getTrialDayNumber } from '@/components/utils/paywallTriggers';
+import { useTranslation } from 'react-i18next';
 
 export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const dayNumber = getTrialDayNumber(user);
   const isDay7 = dayNumber >= 7;
 
@@ -118,10 +120,15 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                     </div>
                   </div>
                   <p className="text-lg font-bold text-[#A35C5C] mb-1">$1.99/mo or $19.99/yr</p>
-                  <p className="text-xs text-emerald-500 mb-3">Annual saves vs monthly</p>
-                  <Button onClick={handleContinuePremium} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E]">
+                  <p className="text-xs text-emerald-500 mb-2">Annual saves vs monthly</p>
+                  <Button onClick={handleContinuePremium} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] mb-2">
                     Continue with Premium
                   </Button>
+                  <p className="text-xs text-[#E0D8C8]/60 text-center">
+                    {isDay7 
+                      ? "Renews automatically. Cancel anytime."
+                      : "Starts after your 7-day Premium access ends. Cancel anytime."}
+                  </p>
                 </div>
 
                 {/* Pro Tier */}
@@ -155,8 +162,8 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
               {/* Reassurance */}
               <div className="text-center space-y-1 text-xs text-[#E0D8C8]/60 pt-4 border-t border-[#E0D8C8]/10">
                 <p>• Cancel anytime</p>
-                <p>• Subscription managed through your platform</p>
-                <p>• Your existing data is never affected</p>
+                <p>• Managed through Apple</p>
+                <p>• Your data is never affected</p>
               </div>
             </CardContent>
           </div>

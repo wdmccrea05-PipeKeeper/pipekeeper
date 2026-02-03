@@ -28,6 +28,7 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
 import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
 import QuickStartChecklist from "@/components/onboarding/QuickStartChecklist";
+import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
 
@@ -586,22 +587,8 @@ export default function HomePage() {
                       </div>
 
                       {(() => {
-                        const totalValue = safeBlends.reduce((sum, blend) => {
-                          if (!blend) return sum;
-                          const valuePerOz = blend.manual_market_value || blend.ai_estimated_value || 0;
-                          if (valuePerOz <= 0) return sum;
-                          const cellaredOz = safeCellarLogs.reduce((blendSum, log) => {
-                            if (log.blend_id !== blend.id) return blendSum;
-                            if (log.transaction_type === 'added') return blendSum + (log.amount_oz || 0);
-                            if (log.transaction_type === 'removed') return blendSum - (log.amount_oz || 0);
-                            return blendSum;
-                          }, 0);
-                          const totalOz = (blend.bulk_open || 0) + (blend.bulk_cellared || 0) + 
-                                         (blend.tin_open_oz || 0) + (blend.tin_cellared_oz || 0) + 
-                                         (blend.pouch_open_oz || 0) + (blend.pouch_cellared_oz || 0) +
-                                         cellaredOz;
-                          return sum + (valuePerOz * totalOz);
-                        }, 0);
+                        // Use canonical value calculation
+                        const totalValue = calculateTobaccoCollectionValue(safeBlends, safeCellarLogs);
                         
                         return isPaidUser && totalValue > 0 ? (
                           <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
