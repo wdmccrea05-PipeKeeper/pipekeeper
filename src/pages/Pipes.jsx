@@ -111,12 +111,12 @@ export default function PipesPage() {
       await queryClient.cancelQueries({ queryKey: ['pipes', user?.email] });
       const previousPipes = queryClient.getQueryData(['pipes', user?.email]);
       queryClient.setQueryData(['pipes', user?.email], (old) =>
-        old.map(p => p.id === id ? { ...p, is_favorite } : p)
+        (old || []).map(p => p?.id === id ? { ...p, is_favorite } : p)
       );
       return { previousPipes };
     },
     onError: (err, variables, context) => {
-      queryClient.setQueryData(['pipes', user?.email], context.previousPipes);
+      queryClient.setQueryData(['pipes', user?.email], context?.previousPipes);
     },
   });
 
@@ -124,7 +124,8 @@ export default function PipesPage() {
     toggleFavoriteMutation.mutate({ id: pipe.id, is_favorite: !pipe.is_favorite });
   };
 
-  const filteredPipes = pipes.filter(pipe => {
+  const filteredPipes = (pipes || []).filter(pipe => {
+    if (!pipe) return false;
     const matchesSearch = !searchQuery || 
       pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -132,26 +133,31 @@ export default function PipesPage() {
     const matchesMaterial = materialFilter === 'All Materials' || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
   }).sort((a, b) => {
-    if (sortBy === 'favorites') {
-      if (a.is_favorite && !b.is_favorite) return -1;
-      if (!a.is_favorite && b.is_favorite) return 1;
-      return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+    try {
+      if (sortBy === 'favorites') {
+        if (a?.is_favorite && !b?.is_favorite) return -1;
+        if (!a?.is_favorite && b?.is_favorite) return 1;
+        return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+      }
+      if (sortBy === 'maker') {
+        const makerA = (a?.maker || '').toLowerCase();
+        const makerB = (b?.maker || '').toLowerCase();
+        return makerA.localeCompare(makerB);
+      }
+      if (sortBy === 'name') {
+        const nameA = (a?.name || '').toLowerCase();
+        const nameB = (b?.name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      }
+      // Default: date (newest first)
+      return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+    } catch (e) {
+      console.error('Sort error:', e);
+      return 0;
     }
-    if (sortBy === 'maker') {
-      const makerA = (a.maker || '').toLowerCase();
-      const makerB = (b.maker || '').toLowerCase();
-      return makerA.localeCompare(makerB);
-    }
-    if (sortBy === 'name') {
-      const nameA = (a.name || '').toLowerCase();
-      const nameB = (b.name || '').toLowerCase();
-      return nameA.localeCompare(nameB);
-    }
-    // Default: date (newest first)
-    return new Date(b.created_date || 0) - new Date(a.created_date || 0);
   });
 
-  const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+  const totalValue = (pipes || []).reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
 
   return (
     <div className={`min-h-screen ${PK_THEME.pageBg}`}>

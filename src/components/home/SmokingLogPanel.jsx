@@ -52,8 +52,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     notes: ''
   });
 
-  const selectedPipe = pipes.find(p => p.id === formData.pipe_id);
-  const hasMultipleBowls = selectedPipe?.interchangeable_bowls?.length > 0;
+  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
+  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
 
   const queryClient = useQueryClient();
 
@@ -99,7 +99,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     };
     
     const gramsPerBowl = volumeMap[chamberVolume] || 0.75;
-    const totalGrams = gramsPerBowl * bowls;
+    const totalGrams = gramsPerBowl * Number(bowls || 1);
     const ozPerGram = 0.035274;
     
     return totalGrams * ozPerGram;
@@ -406,10 +406,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
     }
 
-    const pipe = pipes.find(p => p.id === formData.pipe_id);
-    const blend = blends.find(b => b.id === formData.blend_id);
+    const pipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
+    const blend = (blends || []).find(b => b && b.id === formData.blend_id);
     
-    if (!pipe || !blend) return;
+    if (!pipe || !blend) {
+      toast.error('Please select both a pipe and blend');
+      return;
+    }
 
     const bowls = parseInt(formData.bowls_smoked) || 1;
     const tobaccoUsed = estimateTobaccoUsage(pipe, bowls);
@@ -435,8 +438,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     });
   };
 
-  const totalBowls = logs.reduce((sum, log) => sum + (log.bowls_smoked || 0), 0);
-  const breakInBowls = logs.filter(l => l.is_break_in).reduce((sum, log) => sum + (log.bowls_smoked || 0), 0);
+  const totalBowls = (logs || []).reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 0), 0);
+  const breakInBowls = (logs || []).filter(l => l?.is_break_in).reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 0), 0);
 
   return (
     <>

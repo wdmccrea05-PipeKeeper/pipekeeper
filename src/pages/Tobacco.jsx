@@ -139,15 +139,15 @@ export default function TobaccoPage() {
 
   const bulkUpdateMutation = useMutation({
     mutationFn: async ({ blendIds, updateData }) => {
-      const updates = blendIds
+      const updates = (blendIds || [])
         .map(id => {
-          const blend = blends.find(b => b.id === id);
+          const blend = (blends || []).find(b => b && b.id === id);
           if (!blend) return null;
           
           // For quantity_owned, add to existing value
           const finalData = { ...updateData };
           if (updateData.quantity_owned !== undefined) {
-            finalData.quantity_owned = (blend.quantity_owned || 0) + updateData.quantity_owned;
+            finalData.quantity_owned = (Number(blend.quantity_owned) || 0) + Number(updateData.quantity_owned || 0);
           }
           
           return { id, data: finalData };
@@ -155,8 +155,8 @@ export default function TobaccoPage() {
         .filter(Boolean);
 
       const results = await safeBatchUpdate('TobaccoBlend', updates, user?.email);
-      const failures = results.filter(r => !r.success);
-      if (failures.length) throw new Error(failures[0].error || 'Bulk update failed');
+      const failures = results.filter(r => !r?.success);
+      if (failures.length) throw new Error(failures[0]?.error || 'Bulk update failed');
       return updates.length;
     },
     onSuccess: (count) => {
@@ -195,12 +195,12 @@ export default function TobaccoPage() {
       await queryClient.cancelQueries({ queryKey: ['blends', user?.email, sortBy] });
       const previousBlends = queryClient.getQueryData(['blends', user?.email, sortBy]);
       queryClient.setQueryData(['blends', user?.email, sortBy], (old) =>
-        old.map(b => b.id === id ? { ...b, is_favorite } : b)
+        (old || []).map(b => b?.id === id ? { ...b, is_favorite } : b)
       );
       return { previousBlends };
     },
     onError: (err, variables, context) => {
-      queryClient.setQueryData(['blends', user?.email, sortBy], context.previousBlends);
+      queryClient.setQueryData(['blends', user?.email, sortBy], context?.previousBlends);
     },
   });
 
@@ -208,7 +208,8 @@ export default function TobaccoPage() {
     toggleFavoriteMutation.mutate({ id: blend.id, is_favorite: !blend.is_favorite });
   };
 
-  const filteredBlends = blends.filter(blend => {
+  const filteredBlends = (blends || []).filter(blend => {
+    if (!blend) return false;
     const matchesSearch = !searchQuery || 
       blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -217,7 +218,7 @@ export default function TobaccoPage() {
     return matchesSearch && matchesType && matchesStrength;
   });
 
-  const totalTins = blends.reduce((sum, b) => sum + (b.quantity_owned || 0), 0);
+  const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.quantity_owned) || 0), 0);
 
   const toggleBlendSelection = (blendId) => {
     setSelectedForEdit(prev => 
@@ -229,7 +230,7 @@ export default function TobaccoPage() {
     if (selectedForEdit.length === filteredBlends.length && filteredBlends.length > 0) {
       setSelectedForEdit([]);
     } else {
-      setSelectedForEdit(filteredBlends.map(b => b.id));
+      setSelectedForEdit((filteredBlends || []).map(b => b?.id).filter(Boolean));
     }
   };
 
