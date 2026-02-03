@@ -108,7 +108,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
             <div className="flex items-center justify-between">
               <Label className="text-[#e8d5b7] font-medium flex items-center gap-2">
                 Cost Basis (per oz)
-                {!hasPremium && <Lock className="w-3 h-3 text-amber-400" />}
+                {!hasPremium && <Lock className="w-3 h-3 text-blue-600" />}
               </Label>
               {!hasPremium && (
                 <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300 font-semibold">

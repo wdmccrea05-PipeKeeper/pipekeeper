@@ -158,7 +158,27 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           {!isAppleBuild && (
             <>
               <TabsContent value="log" className="mt-0">
-                <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+                {pipes.length === 0 || blends.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                    <p className="text-[#E0D8C8]/60 mb-2">Usage history requires pipes and tobacco</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track which pipes you use with which blends to build recommendations</p>
+                    <div className="flex gap-3 justify-center">
+                      {pipes.length === 0 && (
+                        <a href={createPageUrl('Pipes')}>
+                          <Button size="sm">Add First Pipe</Button>
+                        </a>
+                      )}
+                      {blends.length === 0 && (
+                        <a href={createPageUrl('Tobacco')}>
+                          <Button size="sm" variant="outline">Add First Blend</Button>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+                )}
               </TabsContent>
 
               <TabsContent value="reference" className="mt-0">
@@ -167,7 +187,18 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="rotation" className="mt-0">
-                <RotationPlanner user={user} />
+                {pipes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <CalendarClock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                    <p className="text-[#E0D8C8]/60 mb-2">Rotation planner requires pipes in your collection</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track rest periods and optimize pipe health with usage rotation</p>
+                    <a href={createPageUrl('Pipes')}>
+                      <Button size="sm">Add First Pipe</Button>
+                    </a>
+                  </div>
+                ) : (
+                  <RotationPlanner user={user} />
+                )}
               </TabsContent>
 
               <TabsContent value="reports" className="mt-0">
@@ -194,7 +225,27 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="aging" className="mt-0">
-                <CellarAgingDashboard user={user} />
+                {blends.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Clock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                    <p className="text-[#E0D8C8]/60 mb-2">Aging dashboard requires tobacco in your cellar</p>
+                    <p className="text-sm text-[#E0D8C8]/40 mb-4">Track time cellared and optimal aging recommendations</p>
+                    <a href={createPageUrl('Tobacco')}>
+                      <Button size="sm">Add First Blend</Button>
+                    </a>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">Aging Dashboard</h3>
+                        <InfoTooltip text="Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics." />
+                      </div>
+                      <p className="text-sm text-[#E0D8C8]/60">Track aging progress and readiness</p>
+                    </div>
+                    <CellarAgingDashboard user={user} />
+                  </>
+                )}
               </TabsContent>
             </>
           )}
