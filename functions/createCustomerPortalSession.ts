@@ -65,6 +65,7 @@ async function getStripeClient(req: Request, base44: any): Promise<{
     }
     return { stripe: cachedStripe, meta: { source: "env", masked: maskKey(envKey), environment } };
   }
+  
 
   const rcKey = (await readRemoteConfigKey(base44, environment)).trim();
   if (!isInvalidKey(rcKey)) {
