@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
+import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
 import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
@@ -494,10 +495,11 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <ErrorBoundary>
-      <DocumentTitle title="PipeKeeper" />
-      <Toaster position="top-center" />
-      <MeasurementProvider>
+    <GlobalErrorBoundary>
+      <ErrorBoundary>
+        <DocumentTitle title="PipeKeeper" />
+        <Toaster position="top-center" />
+        <MeasurementProvider>
         <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
           <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'var(--safe-area-top)' }}>
             <div className="max-w-7xl mx-auto px-6 w-full">
