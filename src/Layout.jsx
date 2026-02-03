@@ -31,6 +31,7 @@ import {
 } from "@/components/utils/nativeIAPBridge";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -160,6 +161,7 @@ export default function Layout({ children, currentPageName }) {
   const [showFoundingMemberPopup, setShowFoundingMemberPopup] = useState(false);
   const [iapToast, setIapToast] = useState("");
   const [subActive, setSubActive] = useState(false);
+  const [showQuickAccess, setShowQuickAccess] = useState(false);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -534,6 +536,12 @@ export default function Layout({ children, currentPageName }) {
                 <div className="flex items-center gap-3">
                   <LanguageSwitcher />
                   <GlobalSearchTrigger />
+                  <button
+                    onClick={() => setShowQuickAccess(true)}
+                    className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    Quick Access
+                  </button>
                   {syncing ? (
                     <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
                   ) : null}
@@ -683,6 +691,8 @@ export default function Layout({ children, currentPageName }) {
           )}
 
           <EntitlementDebug />
+
+          <FeatureQuickAccess isOpen={showQuickAccess} onClose={() => setShowQuickAccess(false)} />
 
           {iapToast && (
             <div

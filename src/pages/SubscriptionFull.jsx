@@ -251,7 +251,7 @@ export default function SubscriptionFull() {
               per {selectedInterval === "monthly" ? "month" : "year"}
             </div>
             {selectedInterval === "annual" && (
-              <p className="text-xs text-emerald-500 mt-1">Annual saves compared to monthly</p>
+              <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
             )}
           </CardHeader>
           <CardContent className="space-y-3">
@@ -285,7 +285,7 @@ export default function SubscriptionFull() {
               per {selectedInterval === "monthly" ? "month" : "year"}
             </div>
             {selectedInterval === "annual" && (
-              <p className="text-xs text-emerald-500 mt-1">Annual saves compared to monthly</p>
+              <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
             )}
           </CardHeader>
           <CardContent className="space-y-3">
