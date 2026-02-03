@@ -35,6 +35,7 @@ import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndic
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
   const [showCellarDialog, setShowCellarDialog] = useState(false);
