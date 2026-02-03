@@ -625,10 +625,10 @@ export default function PipeDetailPage() {
             {(pipe.smoking_characteristics || pipe.notes) && (
               <Card className="border-white/10">
                 <CardContent className="p-6 space-y-4">
-                  {pipe.smoking_characteristics && (
+                  {(pipe.usage_characteristics || pipe.smoking_characteristics) && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Smoking Characteristics</p>
-                      <p className="text-[#E0D8C8]/80">{pipe.smoking_characteristics}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Usage Characteristics</p>
+                      <p className="text-[#E0D8C8]/80">{pipe.usage_characteristics || pipe.smoking_characteristics}</p>
                     </div>
                   )}
                   {pipe.notes && (

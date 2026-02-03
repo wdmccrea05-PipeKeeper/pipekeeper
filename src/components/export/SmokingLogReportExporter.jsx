@@ -13,7 +13,7 @@ export default function SmokingLogReportExporter({ user }) {
     return (
       <UpgradePrompt 
         featureName="Export Reports"
-        description="Export your smoking logs and data as PDF or Excel files. Requires Pro tier."
+        description="Export your usage logs and data as PDF or Excel files. Requires Pro tier."
       />
     );
   }
@@ -36,7 +36,7 @@ export default function SmokingLogReportExporter({ user }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `smoking-log-${startDate}-to-${endDate}.pdf`;
+      a.download = `usage-log-${startDate}-to-${endDate}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -60,7 +60,7 @@ export default function SmokingLogReportExporter({ user }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `smoking-log-${startDate}-to-${endDate}.xlsx`;
+      a.download = `usage-log-${startDate}-to-${endDate}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -76,7 +76,7 @@ export default function SmokingLogReportExporter({ user }) {
   return (
     <div className="bg-[#22384B]/50 border border-[#A35C5C]/20 rounded-lg p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-[#E0D8C8] mb-3">Smoking Log Report</h3>
+        <h3 className="font-semibold text-[#E0D8C8] mb-3">Usage Log Report</h3>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="flex-1">
             <label className="text-xs text-[#E0D8C8]/70 block mb-1">Start Date</label>
