@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import InfoTooltip from "@/components/ui/InfoTooltip";
+import { Badge } from "@/components/ui/badge";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
@@ -27,8 +29,12 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
             />
           </div>
           <div>
-            <CardTitle className="text-2xl">Expert Tobacconist</CardTitle>
-            <p className="text-sm opacity-70">AI-powered collection analysis and recommendations</p>
+            <div className="flex items-center gap-2 mb-1">
+              <CardTitle className="text-2xl">Expert Tobacconist</CardTitle>
+              <Badge variant="outline" className="text-xs">Optional</Badge>
+              <InfoTooltip text="Optional tools that help organize entries and surface patterns from your saved data." />
+            </div>
+            <p className="text-sm opacity-70">Optional advanced organization tools</p>
           </div>
         </div>
       </CardHeader>
@@ -54,7 +60,14 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </TabsList>
 
           <TabsContent value="identifier" className="mt-6">
-            <QuickPipeIdentifier pipes={pipes} blends={blends} />
+            {pipes.length === 0 && blends.length === 0 ? (
+              <div className="text-center py-12">
+                <Camera className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+              </div>
+            ) : (
+              <QuickPipeIdentifier pipes={pipes} blends={blends} />
+            )}
           </TabsContent>
 
           <TabsContent value="optimizer" className="mt-6">
@@ -63,7 +76,14 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
               featureName="Collection Optimization"
               description="Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access."
             >
-              <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
+              {pipes.length === 0 ? (
+                <div className="text-center py-12">
+                  <TrendingUp className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                  <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+                </div>
+              ) : (
+                <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
+              )}
             </FeatureGate>
           </TabsContent>
 
@@ -73,7 +93,14 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
               featureName="What-If Analysis"
               description="Ask collection strategy questions and run what-if scenarios with AI assistance. Available with Pro or legacy Premium access."
             >
-              <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
+              {pipes.length === 0 ? (
+                <div className="text-center py-12">
+                  <Lightbulb className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                  <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+                </div>
+              ) : (
+                <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
+              )}
             </FeatureGate>
           </TabsContent>
 
