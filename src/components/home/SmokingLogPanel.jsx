@@ -399,11 +399,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
     // Check free tier limits
     if (entitlements.tier === "free") {
-      const existingLogs = await base44.entities.SmokingLog.filter({ created_by: user?.email });
-      if (existingLogs.length >= entitlements.limits.smokingLogs) {
-        toast.error(`Free tier limited to ${entitlements.limits.smokingLogs} smoking logs. Upgrade for unlimited.`);
-        return;
-      }
+    const existingLogs = await base44.entities.SmokingLog.filter({ created_by: user?.email });
+    if (existingLogs.length >= entitlements.limits.smokingLogs) {
+      toast.error(`Free tier limited to ${entitlements.limits.smokingLogs} usage logs. Upgrade for unlimited.`);
+      return;
+    }
     }
 
     const pipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
@@ -671,7 +671,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="How was the smoke? Any observations..."
+                placeholder="How was the session? Any observations..."
                 rows={3}
               />
             </div>

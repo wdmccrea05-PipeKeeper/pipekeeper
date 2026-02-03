@@ -24,6 +24,9 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
+import { useTranslation } from "react-i18next";
+import { isAppleBuild } from "@/components/utils/appVariant";
 
 const BLEND_TYPES = [
   "All Types",
@@ -81,6 +84,7 @@ export default function TobaccoPage() {
   const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);
 
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const { user, hasPaidAccess, isTrialing } = useCurrentUser();
 
@@ -243,6 +247,8 @@ export default function TobaccoPage() {
   return (
     <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <CellarDriftAlert blends={blends} user={user} />
+
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -250,7 +256,7 @@ export default function TobaccoPage() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
           <div>
-            <PkPageTitle>My Tobacco</PkPageTitle>
+            <PkPageTitle>{isAppleBuild ? t("nav.cellar") : t("nav.tobacco")}</PkPageTitle>
             <PkText className="mt-1">
               {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
             </PkText>
