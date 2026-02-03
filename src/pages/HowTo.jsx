@@ -13,20 +13,25 @@ export default function HowTo() {
     setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const Q = ({ id, q, children, path, badge }) => (
-    <Card className="bg-white border-gray-200 overflow-hidden">
-      <button
-        onClick={() => toggleItem(id)}
-        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-2 flex-1">
-          <span className="font-semibold text-gray-900 pr-4">{q}</span>
-          {badge && <Badge variant="outline" className="text-xs">{badge}</Badge>}
-        </div>
-        <ChevronDown 
-          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
-        />
-      </button>
+  const Q = ({ id, q, children, path, badge }) => {
+    const badgeClass = badge === 'Pro' 
+      ? 'bg-amber-100 text-amber-800 border-amber-300 font-semibold' 
+      : 'bg-blue-100 text-blue-800 border-blue-300 font-semibold';
+    
+    return (
+      <Card className="bg-white border-gray-200 overflow-hidden">
+        <button
+          onClick={() => toggleItem(id)}
+          className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 flex-1">
+            <span className="font-semibold text-gray-900 pr-4">{q}</span>
+            {badge && <Badge variant="outline" className={`text-xs ${badgeClass}`}>{badge}</Badge>}
+          </div>
+          <ChevronDown 
+            className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+          />
+        </button>
       {openItems[id] && (
         <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed">
           <div className="mb-2">{children}</div>
@@ -38,7 +43,8 @@ export default function HowTo() {
         </CardContent>
       )}
     </Card>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
