@@ -20,6 +20,8 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
+import { useRecentValues } from "@/components/hooks/useRecentValues";
+import { Combobox } from "@/components/ui/combobox";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "English Aromatic", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -78,6 +80,9 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
   const { user } = useCurrentUser();
+
+  // Auto-suggest recent values
+  const { data: recentManufacturers = [] } = useRecentValues("TobaccoBlend", "manufacturer");
 
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
@@ -617,10 +622,13 @@ Return complete and accurate information based on the blend name or description 
             label="Manufacturer" 
             helpText="The company or brand that makes this blend (e.g., Peterson, Dunhill, Sutliff)."
           >
-            <Input
+            <Combobox
               value={formData.manufacturer}
-              onChange={(e) => handleChange('manufacturer', e.target.value)}
+              onValueChange={(v) => handleChange('manufacturer', v)}
+              options={recentManufacturers}
               placeholder="e.g., Orlik, Peterson"
+              searchPlaceholder="Search manufacturers..."
+              allowCustom={true}
               className="border-stone-200"
             />
           </FieldWithInfo>

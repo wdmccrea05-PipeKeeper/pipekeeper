@@ -47,7 +47,7 @@ export default function RotationPlanner({ user }) {
          ...pipe,
          lastSmoked,
          daysSince,
-         totalSessions: pipeLogs.reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 1), 0),
+         totalSessions: pipeLogs.reduce((sum, log) => sum + getBowlsUsed(log), 0),
        };
      } catch {
        return { ...pipe, lastSmoked: null, daysSince: null, totalSessions: 0 };

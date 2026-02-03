@@ -9,6 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Loader2, Save, Trash } from "lucide-react";
 
+import { prepareLogData, getBowlsUsed } from "@/components/utils/schemaCompatibility";
+
 export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete, onCancel, isLoading }) {
   if (isAppleBuild) return null;
 
@@ -16,7 +18,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
      pipe_id: log?.pipe_id || '',
      bowl_variant_id: log?.bowl_variant_id || '',
      blend_id: log?.blend_id || '',
-     bowls_smoked: log?.bowls_smoked || 1,
+     bowls_smoked: getBowlsUsed(log) || 1,
      is_break_in: log?.is_break_in || false,
      date: log?.date ? (() => {
        try {
@@ -47,14 +49,15 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
       bowl_name = bowl?.name || null;
     }
 
-    onSave({
+    const logData = prepareLogData({
       ...formData,
       pipe_name: pipe.name,
       blend_name: blend.name,
       bowl_name: bowl_name,
       date: new Date(formData.date).toISOString(),
-      bowls_smoked: parseInt(formData.bowls_smoked) || 1
+      bowls_used: parseInt(formData.bowls_smoked) || 1
     });
+    onSave(logData);
   };
 
   return (

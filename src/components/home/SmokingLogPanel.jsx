@@ -22,6 +22,7 @@ import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
+import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs } from "@/components/utils/schemaCompatibility";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   if (isAppleBuild) return null;
@@ -425,21 +426,22 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       bowl_name = bowl?.name || null;
     }
 
-    createLogMutation.mutate({
+    const logData = prepareLogData({
       ...formData,
       pipe_name: pipe.name,
       blend_name: blend.name,
       bowl_name: bowl_name,
       date: new Date(formData.date).toISOString(),
-      bowls_smoked: bowls,
+      bowls_used: bowls,
       tobaccoUsed,
       blend_id: formData.blend_id,
       container_id: formData.container_id || null,
     });
+    createLogMutation.mutate(logData);
   };
 
-  const totalBowls = (logs || []).reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 0), 0);
-  const breakInBowls = (logs || []).filter(l => l?.is_break_in).reduce((sum, log) => sum + (Number(log?.bowls_smoked) || 0), 0);
+  const totalBowls = getTotalBowlsFromLogs(logs);
+  const breakInBowls = getBreakInBowlsFromLogs(logs);
 
   return (
     <>
@@ -491,7 +493,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                       <Calendar className="w-3 h-3" />
                       {format(new Date(log.date), 'MMM d, yyyy')}
                       <span>•</span>
-                      <span className="text-[#E0D8C8]">{log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}</span>
+                      <span className="text-[#E0D8C8]">{getBowlsUsed(log)} bowl{getBowlsUsed(log) > 1 ? 's' : ''}</span>
                     </div>
                     {log.notes && (
                       <p className="text-xs text-[#E0D8C8]/70 mt-1">{log.notes}</p>

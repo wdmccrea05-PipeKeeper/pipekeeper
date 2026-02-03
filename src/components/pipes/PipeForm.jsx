@@ -21,6 +21,9 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
+import { useRecentValues } from "@/components/hooks/useRecentValues";
+import { Combobox } from "@/components/ui/combobox";
+import { preparePipeData } from "@/components/utils/schemaCompatibility";
 
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
 const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
@@ -83,6 +86,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const isPaidUser = user?.subscription_level === 'paid';
   
   const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
+
+  // Auto-suggest recent values
+  const { data: recentMakers = [] } = useRecentValues("Pipe", "maker");
+  const { data: recentCountries = [] } = useRecentValues("Pipe", "country_of_origin");
+  const { data: recentBowlMaterials = [] } = useRecentValues("Pipe", "bowl_material");
+  const { data: recentStemMaterials = [] } = useRecentValues("Pipe", "stem_material");
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -261,7 +270,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       estimated_value: formData.estimated_value ? Number(formData.estimated_value) : null,
       interchangeable_bowls: hasInterchangeableBowls ? formData.interchangeable_bowls : [],
     };
-    onSave(cleanedData);
+    onSave(preparePipeData(cleanedData));
   };
 
   return (
@@ -438,20 +447,26 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label="Maker / Brand" 
             helpText="The pipe manufacturer or maker (e.g., Dunhill, Peterson, Savinelli)."
           >
-            <Input
+            <Combobox
               value={formData.maker}
-              onChange={(e) => handleChange('maker', e.target.value)}
+              onValueChange={(v) => handleChange('maker', v)}
+              options={recentMakers}
               placeholder="e.g., Dunhill, Peterson"
+              searchPlaceholder="Search makers..."
+              allowCustom={true}
             />
           </FieldWithInfo>
           <FieldWithInfo 
             label="Country of Origin" 
             helpText="Where the pipe was manufactured (e.g., England, Denmark, Italy)."
           >
-            <Input
+            <Combobox
               value={formData.country_of_origin}
-              onChange={(e) => handleChange('country_of_origin', e.target.value)}
+              onValueChange={(v) => handleChange('country_of_origin', v)}
+              options={recentCountries}
               placeholder="e.g., England, Denmark"
+              searchPlaceholder="Search countries..."
+              allowCustom={true}
             />
           </FieldWithInfo>
           <FieldWithInfo 
@@ -601,27 +616,27 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             label="Bowl Material" 
             helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool sessions."
           >
-            <Select value={formData.bowl_material} onValueChange={(v) => handleChange('bowl_material', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select material" />
-              </SelectTrigger>
-              <SelectContent>
-                {BOWL_MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Combobox
+              value={formData.bowl_material}
+              onValueChange={(v) => handleChange('bowl_material', v)}
+              options={[...new Set([...BOWL_MATERIALS, ...recentBowlMaterials])]}
+              placeholder="Select material"
+              searchPlaceholder="Search materials..."
+              allowCustom={false}
+            />
           </FieldWithInfo>
           <FieldWithInfo 
             label="Stem Material" 
             helpText="What the mouthpiece is made from. Vulcanite is traditional but oxidizes; Acrylic is more durable."
           >
-            <Select value={formData.stem_material} onValueChange={(v) => handleChange('stem_material', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select material" />
-              </SelectTrigger>
-              <SelectContent>
-                {STEM_MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Combobox
+              value={formData.stem_material}
+              onValueChange={(v) => handleChange('stem_material', v)}
+              options={[...new Set([...STEM_MATERIALS, ...recentStemMaterials])]}
+              placeholder="Select material"
+              searchPlaceholder="Search materials..."
+              allowCustom={false}
+            />
           </FieldWithInfo>
           <FieldWithInfo 
             label="Finish" 

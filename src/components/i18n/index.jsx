@@ -16,9 +16,28 @@ const resources = {
     nav: { home:"Home", pipes:"Pipes", tobacco:"Tobacco", cellar:"Cellar", community:"Community", profile:"Profile", help:"Help", faq:"FAQ", support:"Support", terms:"Terms", privacy:"Privacy" },
     subscription: { title:"Subscription", manage:"Manage subscription", subscribe:"Subscribe", continueFree:"Continue Free",
       trialEndedTitle:"Your free trial has ended",
-      trialEndedBody:"To continue using Premium features, please start a subscription. You can keep using free collection features anytime."
+      trialEndedBody:"To continue using Premium features, please start a subscription. You can keep using free collection features anytime.",
+      continueWithPremium:"Continue with Premium",
+      upgradeNow:"Upgrade Now",
+      startsAfterTrial:"Starts after your 7-day Premium access ends. Cancel anytime.",
+      renewsAuto:"Renews automatically. Cancel anytime.",
+      managedThrough:"Managed through Apple",
+      dataNotAffected:"Your data is never affected"
     },
     common: { loading:"Loading…", save:"Save", cancel:"Cancel", close:"Close" },
+    empty: {
+      pairingNoPipes:"Pairing recommendations require pipes and tobacco",
+      pairingAction:"Track which pipes work best with which blends",
+      usageLogNoPipes:"Usage history requires pipes and tobacco",
+      usageLogAction:"Track which pipes you use with which blends to build recommendations",
+      rotationNoPipes:"Rotation planner requires pipes in your collection",
+      rotationAction:"Track rest periods and optimize pipe health with usage rotation",
+      agingNoBlends:"Aging dashboard requires tobacco in your cellar",
+      agingAction:"Track time cellared and optimal aging recommendations",
+      identifyNoData:"AI identification works once you have items to analyze",
+      optimizeNoPipes:"Optimization requires pipes in your collection",
+      whatIfNoData:"What-if scenarios require pipes and tobacco data"
+    },
     docs: {
       tobaccoValuation: {
         title: "Tobacco Valuation",
@@ -45,9 +64,28 @@ const resources = {
     nav: { home:"Inicio", pipes:"Pipas", tobacco:"Tabaco", cellar:"Bodega", community:"Comunidad", profile:"Perfil", help:"Ayuda", faq:"Preguntas frecuentes", support:"Soporte", terms:"Términos", privacy:"Privacidad" },
     subscription: { title:"Suscripción", manage:"Administrar suscripción", subscribe:"Suscribirse", continueFree:"Continuar gratis",
       trialEndedTitle:"Tu prueba gratuita terminó",
-      trialEndedBody:"Para seguir usando las funciones Premium, inicia una suscripción. Puedes seguir usando las funciones gratuitas en cualquier momento."
+      trialEndedBody:"Para seguir usando las funciones Premium, inicia una suscripción. Puedes seguir usando las funciones gratuitas en cualquier momento.",
+      continueWithPremium:"Continuar con Premium",
+      upgradeNow:"Actualizar Ahora",
+      startsAfterTrial:"Comienza después de que termine tu acceso Premium de 7 días. Cancela en cualquier momento.",
+      renewsAuto:"Se renueva automáticamente. Cancela en cualquier momento.",
+      managedThrough:"Gestionado a través de Apple",
+      dataNotAffected:"Tus datos nunca se ven afectados"
     },
     common: { loading:"Cargando…", save:"Guardar", cancel:"Cancelar", close:"Cerrar" },
+    empty: {
+      pairingNoPipes:"Las recomendaciones de emparejamiento requieren pipas y tabaco",
+      pairingAction:"Rastrea qué pipas funcionan mejor con qué mezclas",
+      usageLogNoPipes:"El historial de uso requiere pipas y tabaco",
+      usageLogAction:"Rastrea qué pipas usas con qué mezclas para generar recomendaciones",
+      rotationNoPipes:"El planificador de rotación requiere pipas en tu colección",
+      rotationAction:"Rastrea períodos de descanso y optimiza la salud de la pipa con rotación de uso",
+      agingNoBlends:"El panel de envejecimiento requiere tabaco en tu bodega",
+      agingAction:"Rastrea el tiempo almacenado y las recomendaciones de envejecimiento óptimas",
+      identifyNoData:"La identificación por IA funciona una vez que tengas elementos para analizar",
+      optimizeNoPipes:"La optimización requiere pipas en tu colección",
+      whatIfNoData:"Los escenarios hipotéticos requieren datos de pipas y tabaco"
+    },
     docs: {
       tobaccoValuation: {
         title: "Valoración de Tabaco",
@@ -74,9 +112,28 @@ const resources = {
     nav: { home:"Accueil", pipes:"Pipes", tobacco:"Tabac", cellar:"Cave", community:"Communauté", profile:"Profil", help:"Aide", faq:"FAQ", support:"Support", terms:"Conditions", privacy:"Confidentialité" },
     subscription: { title:"Abonnement", manage:"Gérer l'abonnement", subscribe:"S'abonner", continueFree:"Continuer gratuitement",
       trialEndedTitle:"Votre essai gratuit est terminé",
-      trialEndedBody:"Pour continuer à utiliser les fonctionnalités Premium, démarrez un abonnement. Vous pouvez continuer à utiliser les fonctionnalités gratuites à tout moment."
+      trialEndedBody:"Pour continuer à utiliser les fonctionnalités Premium, démarrez un abonnement. Vous pouvez continuer à utiliser les fonctionnalités gratuites à tout moment.",
+      continueWithPremium:"Continuer avec Premium",
+      upgradeNow:"Mettre à niveau maintenant",
+      startsAfterTrial:"Commence après la fin de votre accès Premium de 7 jours. Annulez à tout moment.",
+      renewsAuto:"Se renouvelle automatiquement. Annulez à tout moment.",
+      managedThrough:"Géré via Apple",
+      dataNotAffected:"Vos données ne sont jamais affectées"
     },
     common: { loading:"Chargement…", save:"Enregistrer", cancel:"Annuler", close:"Fermer" },
+    empty: {
+      pairingNoPipes:"Les recommandations d'appariement nécessitent des pipes et du tabac",
+      pairingAction:"Suivez quelles pipes fonctionnent le mieux avec quelles mélanges",
+      usageLogNoPipes:"L'historique d'utilisation nécessite des pipes et du tabac",
+      usageLogAction:"Suivez quelles pipes vous utilisez avec quelles mélanges pour générer des recommandations",
+      rotationNoPipes:"Le planificateur de rotation nécessite des pipes dans votre collection",
+      rotationAction:"Suivez les périodes de repos et optimisez la santé de la pipe avec la rotation d'utilisation",
+      agingNoBlends:"Le tableau de vieillissement nécessite du tabac dans votre cave",
+      agingAction:"Suivez le temps de stockage et les recommandations de vieillissement optimales",
+      identifyNoData:"L'identification par IA fonctionne une fois que vous avez des éléments à analyser",
+      optimizeNoPipes:"L'optimisation nécessite des pipes dans votre collection",
+      whatIfNoData:"Les scénarios hypothétiques nécessitent des données de pipes et de tabac"
+    },
     docs: {
       tobaccoValuation: {
         title: "Évaluation du Tabac",
@@ -103,9 +160,28 @@ const resources = {
     nav: { home:"Start", pipes:"Pfeifen", tobacco:"Tabak", cellar:"Keller", community:"Community", profile:"Profil", help:"Hilfe", faq:"FAQ", support:"Support", terms:"Bedingungen", privacy:"Datenschutz" },
     subscription: { title:"Abonnement", manage:"Abonnement verwalten", subscribe:"Abonnieren", continueFree:"Kostenlos fortfahren",
       trialEndedTitle:"Ihre kostenlose Testversion ist abgelaufen",
-      trialEndedBody:"Um Premium-Funktionen weiter zu nutzen, starten Sie bitte ein Abonnement. Kostenlose Funktionen können jederzeit genutzt werden."
+      trialEndedBody:"Um Premium-Funktionen weiter zu nutzen, starten Sie bitte ein Abonnement. Kostenlose Funktionen können jederzeit genutzt werden.",
+      continueWithPremium:"Mit Premium fortfahren",
+      upgradeNow:"Jetzt upgraden",
+      startsAfterTrial:"Beginnt nach Ende Ihres 7-tägigen Premium-Zugangs. Jederzeit kündbar.",
+      renewsAuto:"Wird automatisch verlängert. Jederzeit kündbar.",
+      managedThrough:"Verwaltet über Apple",
+      dataNotAffected:"Ihre Daten sind niemals betroffen"
     },
     common: { loading:"Wird geladen…", save:"Speichern", cancel:"Abbrechen", close:"Schließen" },
+    empty: {
+      pairingNoPipes:"Paarungsempfehlungen erfordern Pfeifen und Tabak",
+      pairingAction:"Verfolgen Sie, welche Pfeifen am besten mit welchen Mischungen funktionieren",
+      usageLogNoPipes:"Nutzungsverlauf erfordert Pfeifen und Tabak",
+      usageLogAction:"Verfolgen Sie, welche Pfeifen Sie mit welchen Mischungen verwenden, um Empfehlungen zu erstellen",
+      rotationNoPipes:"Der Rotationsplaner erfordert Pfeifen in Ihrer Sammlung",
+      rotationAction:"Verfolgen Sie Ruhephasen und optimieren Sie die Pfeifengesundheit mit Nutzungsrotation",
+      agingNoBlends:"Das Reifungs-Dashboard erfordert Tabak in Ihrem Keller",
+      agingAction:"Verfolgen Sie die Lagerzeit und optimale Reifungsempfehlungen",
+      identifyNoData:"KI-Identifikation funktioniert, sobald Sie Elemente zum Analysieren haben",
+      optimizeNoPipes:"Optimierung erfordert Pfeifen in Ihrer Sammlung",
+      whatIfNoData:"Was-wäre-wenn-Szenarien erfordern Pfeifen- und Tabakdaten"
+    },
     docs: {
       tobaccoValuation: {
         title: "Tabakbewertung",
@@ -132,9 +208,28 @@ const resources = {
     nav: { home:"Home", pipes:"Pipe", tobacco:"Tabacco", cellar:"Cantina", community:"Community", profile:"Profilo", help:"Aiuto", faq:"FAQ", support:"Supporto", terms:"Termini", privacy:"Privacy" },
     subscription: { title:"Abbonamento", manage:"Gestisci abbonamento", subscribe:"Abbonati", continueFree:"Continua gratis",
       trialEndedTitle:"La prova gratuita è terminata",
-      trialEndedBody:"Per continuare a usare le funzioni Premium, avvia un abbonamento. Puoi continuare a usare le funzioni gratuite in qualsiasi momento."
+      trialEndedBody:"Per continuare a usare le funzioni Premium, avvia un abbonamento. Puoi continuare a usare le funzioni gratuite in qualsiasi momento.",
+      continueWithPremium:"Continua con Premium",
+      upgradeNow:"Aggiorna ora",
+      startsAfterTrial:"Inizia dopo la fine del tuo accesso Premium di 7 giorni. Annulla in qualsiasi momento.",
+      renewsAuto:"Si rinnova automaticamente. Annulla in qualsiasi momento.",
+      managedThrough:"Gestito tramite Apple",
+      dataNotAffected:"I tuoi dati non sono mai interessati"
     },
     common: { loading:"Caricamento…", save:"Salva", cancel:"Annulla", close:"Chiudi" },
+    empty: {
+      pairingNoPipes:"Le raccomandazioni di abbinamento richiedono pipe e tabacco",
+      pairingAction:"Traccia quali pipe funzionano meglio con quali miscele",
+      usageLogNoPipes:"La cronologia di utilizzo richiede pipe e tabacco",
+      usageLogAction:"Traccia quali pipe usi con quali miscele per creare raccomandazioni",
+      rotationNoPipes:"Il pianificatore di rotazione richiede pipe nella tua collezione",
+      rotationAction:"Traccia i periodi di riposo e ottimizza la salute della pipa con la rotazione di utilizzo",
+      agingNoBlends:"Il dashboard di invecchiamento richiede tabacco nella tua cantina",
+      agingAction:"Traccia il tempo di conservazione e le raccomandazioni di invecchiamento ottimali",
+      identifyNoData:"L'identificazione AI funziona una volta che hai elementi da analizzare",
+      optimizeNoPipes:"L'ottimizzazione richiede pipe nella tua collezione",
+      whatIfNoData:"Gli scenari ipotetici richiedono dati di pipe e tabacco"
+    },
     docs: {
       tobaccoValuation: {
         title: "Valutazione del Tabacco",
@@ -161,9 +256,28 @@ const resources = {
     nav: { home:"Início", pipes:"Cachimbos", tobacco:"Tabaco", cellar:"Adega", community:"Comunidade", profile:"Perfil", help:"Ajuda", faq:"Perguntas frequentes", support:"Suporte", terms:"Termos", privacy:"Privacidade" },
     subscription: { title:"Assinatura", manage:"Gerenciar assinatura", subscribe:"Assinar", continueFree:"Continuar grátis",
       trialEndedTitle:"Seu teste grátis terminou",
-      trialEndedBody:"Para continuar usando os recursos Premium, inicie uma assinatura. Você pode continuar usando os recursos gratuitos a qualquer momento."
+      trialEndedBody:"Para continuar usando os recursos Premium, inicie uma assinatura. Você pode continuar usando os recursos gratuitos a qualquer momento.",
+      continueWithPremium:"Continuar com Premium",
+      upgradeNow:"Atualizar agora",
+      startsAfterTrial:"Começa após o término do seu acesso Premium de 7 dias. Cancele a qualquer momento.",
+      renewsAuto:"Renova automaticamente. Cancele a qualquer momento.",
+      managedThrough:"Gerenciado via Apple",
+      dataNotAffected:"Seus dados nunca são afetados"
     },
     common: { loading:"Carregando…", save:"Salvar", cancel:"Cancelar", close:"Fechar" },
+    empty: {
+      pairingNoPipes:"As recomendações de combinação exigem cachimbos e tabaco",
+      pairingAction:"Rastreie quais cachimbos funcionam melhor com quais misturas",
+      usageLogNoPipes:"O histórico de uso requer cachimbos e tabaco",
+      usageLogAction:"Rastreie quais cachimbos você usa com quais misturas para gerar recomendações",
+      rotationNoPipes:"O planejador de rotação requer cachimbos em sua coleção",
+      rotationAction:"Rastreie períodos de descanso e otimize a saúde do cachimbo com rotação de uso",
+      agingNoBlends:"O painel de envelhecimento requer tabaco em sua adega",
+      agingAction:"Rastreie o tempo armazenado e recomendações de envelhecimento ideais",
+      identifyNoData:"A identificação por IA funciona quando você tem itens para analisar",
+      optimizeNoPipes:"A otimização requer cachimbos em sua coleção",
+      whatIfNoData:"Cenários hipotéticos requerem dados de cachimbos e tabaco"
+    },
     docs: {
       tobaccoValuation: {
         title: "Avaliação de Tabaco",
@@ -190,9 +304,28 @@ const resources = {
     nav: { home:"Home", pipes:"Pijpen", tobacco:"Tabak", cellar:"Kelder", community:"Community", profile:"Profiel", help:"Help", faq:"FAQ", support:"Ondersteuning", terms:"Voorwaarden", privacy:"Privacy" },
     subscription: { title:"Abonnement", manage:"Abonnement beheren", subscribe:"Abonneren", continueFree:"Gratis doorgaan",
       trialEndedTitle:"Je gratis proefperiode is afgelopen",
-      trialEndedBody:"Om Premium-functies te blijven gebruiken, start je een abonnement. Je kunt de gratis functies altijd blijven gebruiken."
+      trialEndedBody:"Om Premium-functies te blijven gebruiken, start je een abonnement. Je kunt de gratis functies altijd blijven gebruiken.",
+      continueWithPremium:"Doorgaan met Premium",
+      upgradeNow:"Nu upgraden",
+      startsAfterTrial:"Begint na afloop van je 7-daagse Premium-toegang. Altijd opzegbaar.",
+      renewsAuto:"Verlengt automatisch. Altijd opzegbaar.",
+      managedThrough:"Beheerd via Apple",
+      dataNotAffected:"Je gegevens worden nooit beïnvloed"
     },
     common: { loading:"Laden…", save:"Opslaan", cancel:"Annuleren", close:"Sluiten" },
+    empty: {
+      pairingNoPipes:"Koppelingsaanbevelingen vereisen pijpen en tabak",
+      pairingAction:"Volg welke pijpen het beste werken met welke mengsels",
+      usageLogNoPipes:"Gebruiksgeschiedenis vereist pijpen en tabak",
+      usageLogAction:"Volg welke pijpen je gebruikt met welke mengsels om aanbevelingen te genereren",
+      rotationNoPipes:"De rotatieplanner vereist pijpen in je collectie",
+      rotationAction:"Volg rustperiodes en optimaliseer pijpgezondheid met gebruiksrotatie",
+      agingNoBlends:"Het verouderingsdashboard vereist tabak in je kelder",
+      agingAction:"Volg de opslagtijd en optimale verouderingsaanbevelingen",
+      identifyNoData:"AI-identificatie werkt zodra je items hebt om te analyseren",
+      optimizeNoPipes:"Optimalisatie vereist pijpen in je collectie",
+      whatIfNoData:"Wat-als-scenario's vereisen pijp- en tabaksgegevens"
+    },
     docs: {
       tobaccoValuation: {
         title: "Tabakwaardering",
@@ -219,9 +352,28 @@ const resources = {
     nav: { home:"Strona główna", pipes:"Fajki", tobacco:"Tytoń", cellar:"Piwniczka", community:"Społeczność", profile:"Profil", help:"Pomoc", faq:"FAQ", support:"Wsparcie", terms:"Warunki", privacy:"Prywatność" },
     subscription: { title:"Subskrypcja", manage:"Zarządzaj subskrypcją", subscribe:"Subskrybuj", continueFree:"Kontynuuj bezpłatnie",
       trialEndedTitle:"Bezpłatny okres próbny dobiegł końca",
-      trialEndedBody:"Aby dalej korzystać z funkcji Premium, rozpocznij subskrypcję. Możesz korzystać z funkcji bezpłatnych w dowolnym momencie."
+      trialEndedBody:"Aby dalej korzystać z funkcji Premium, rozpocznij subskrypcję. Możesz korzystać z funkcji bezpłatnych w dowolnym momencie.",
+      continueWithPremium:"Kontynuuj z Premium",
+      upgradeNow:"Uaktualnij teraz",
+      startsAfterTrial:"Rozpoczyna się po zakończeniu 7-dniowego dostępu Premium. Anuluj w dowolnym momencie.",
+      renewsAuto:"Odnawia się automatycznie. Anuluj w dowolnym momencie.",
+      managedThrough:"Zarządzane przez Apple",
+      dataNotAffected:"Twoje dane nigdy nie są dotknięte"
     },
     common: { loading:"Ładowanie…", save:"Zapisz", cancel:"Anuluj", close:"Zamknij" },
+    empty: {
+      pairingNoPipes:"Rekomendacje parowania wymagają fajek i tytoniu",
+      pairingAction:"Śledź, które fajki najlepiej współpracują z którymi mieszankami",
+      usageLogNoPipes:"Historia użytkowania wymaga fajek i tytoniu",
+      usageLogAction:"Śledź, których fajek używasz z którymi mieszankami, aby generować rekomendacje",
+      rotationNoPipes:"Planer rotacji wymaga fajek w Twojej kolekcji",
+      rotationAction:"Śledź okresy odpoczynku i optymalizuj zdrowie fajki dzięki rotacji użytkowania",
+      agingNoBlends:"Panel starzenia wymaga tytoniu w Twojej piwnicy",
+      agingAction:"Śledź czas przechowywania i optymalne zalecenia dotyczące starzenia",
+      identifyNoData:"Identyfikacja AI działa, gdy masz elementy do analizy",
+      optimizeNoPipes:"Optymalizacja wymaga fajek w Twojej kolekcji",
+      whatIfNoData:"Scenariusze co-jeśli wymagają danych o fajkach i tytoniu"
+    },
     docs: {
       tobaccoValuation: {
         title: "Wycena Tytoniu",
@@ -248,9 +400,28 @@ const resources = {
     nav: { home:"ホーム", pipes:"パイプ", tobacco:"タバコ", cellar:"セラー", community:"コミュニティ", profile:"プロフィール", help:"ヘルプ", faq:"FAQ", support:"サポート", terms:"利用規約", privacy:"プライバシー" },
     subscription: { title:"サブスクリプション", manage:"サブスクリプションを管理", subscribe:"購読する", continueFree:"無料で続ける",
       trialEndedTitle:"無料トライアルが終了しました",
-      trialEndedBody:"Premium 機能を継続して使用するには、サブスクリプションを開始してください。無料機能はいつでも利用できます。"
+      trialEndedBody:"Premium 機能を継続して使用するには、サブスクリプションを開始してください。無料機能はいつでも利用できます。",
+      continueWithPremium:"Premiumを続ける",
+      upgradeNow:"今すぐアップグレード",
+      startsAfterTrial:"7日間のPremiumアクセス終了後に開始されます。いつでもキャンセルできます。",
+      renewsAuto:"自動的に更新されます。いつでもキャンセルできます。",
+      managedThrough:"Apple経由で管理",
+      dataNotAffected:"データは影響を受けません"
     },
     common: { loading:"読み込み中…", save:"保存", cancel:"キャンセル", close:"閉じる" },
+    empty: {
+      pairingNoPipes:"ペアリング推奨にはパイプとタバコが必要です",
+      pairingAction:"どのパイプがどのブレンドに最適かを追跡",
+      usageLogNoPipes:"使用履歴にはパイプとタバコが必要です",
+      usageLogAction:"どのパイプをどのブレンドで使用するかを追跡して推奨事項を作成",
+      rotationNoPipes:"ローテーションプランナーにはコレクション内のパイプが必要です",
+      rotationAction:"休憩期間を追跡し、使用ローテーションでパイプの健康を最適化",
+      agingNoBlends:"エイジングダッシュボードにはセラー内のタバコが必要です",
+      agingAction:"保管時間と最適なエイジング推奨事項を追跡",
+      identifyNoData:"分析するアイテムがあるとAI識別が機能します",
+      optimizeNoPipes:"最適化にはコレクション内のパイプが必要です",
+      whatIfNoData:"仮定シナリオにはパイプとタバコのデータが必要です"
+    },
     docs: {
       tobaccoValuation: {
         title: "タバコ評価",
@@ -277,9 +448,28 @@ const resources = {
     nav: { home:"首页", pipes:"烟斗", tobacco:"烟草", cellar:"窖藏", community:"社区", profile:"个人资料", help:"帮助", faq:"常见问题", support:"支持", terms:"条款", privacy:"隐私" },
     subscription: { title:"订阅", manage:"管理订阅", subscribe:"订阅", continueFree:"继续免费使用",
       trialEndedTitle:"您的免费试用已结束",
-      trialEndedBody:"要继续使用高级功能，请开始订阅。您可以随时继续使用免费功能。"
+      trialEndedBody:"要继续使用高级功能，请开始订阅。您可以随时继续使用免费功能。",
+      continueWithPremium:"继续使用高级版",
+      upgradeNow:"立即升级",
+      startsAfterTrial:"在您的7天高级访问结束后开始。随时取消。",
+      renewsAuto:"自动续订。随时取消。",
+      managedThrough:"通过Apple管理",
+      dataNotAffected:"您的数据永远不会受到影响"
     },
     common: { loading:"加载中…", save:"保存", cancel:"取消", close:"关闭" },
+    empty: {
+      pairingNoPipes:"配对建议需要烟斗和烟草",
+      pairingAction:"跟踪哪些烟斗最适合哪些混合物",
+      usageLogNoPipes:"使用历史需要烟斗和烟草",
+      usageLogAction:"跟踪您使用哪些烟斗搭配哪些混合物以生成建议",
+      rotationNoPipes:"轮换计划需要收藏中的烟斗",
+      rotationAction:"跟踪休息期并通过使用轮换优化烟斗健康",
+      agingNoBlends:"陈化仪表板需要窖藏中的烟草",
+      agingAction:"跟踪存储时间和最佳陈化建议",
+      identifyNoData:"一旦您有要分析的项目，AI识别就会起作用",
+      optimizeNoPipes:"优化需要收藏中的烟斗",
+      whatIfNoData:"假设场景需要烟斗和烟草数据"
+    },
     docs: {
       tobaccoValuation: {
         title: "烟草估值",

@@ -34,6 +34,7 @@ export default function CellarDriftAlert({ blends, user }) {
         const blend = blends.find(b => b.id === drifted.blend_id);
         if (!blend) continue;
         
+        // SAFE: Only update computed cellared fields, never notes/metadata
         const correctValues = calculateCorrectCellaredValues(blend, cellarLogs);
         
         await safeUpdate("TobaccoBlend", blend.id, correctValues, user?.email);
@@ -41,7 +42,7 @@ export default function CellarDriftAlert({ blends, user }) {
       }
       
       await queryClient.invalidateQueries({ queryKey: ["blends"] });
-      toast.success(`Reconciled ${fixed} blend(s)`);
+      toast.success(`Reconciled ${fixed} blend(s) - cellared amounts synced to transaction history`);
       setShowReport(false);
     } catch (err) {
       console.error("Reconciliation failed:", err);
@@ -78,9 +79,15 @@ export default function CellarDriftAlert({ blends, user }) {
           <DialogHeader>
             <DialogTitle>Cellar Inventory Reconciliation</DialogTitle>
             <DialogDescription>
-              Source of truth: CellarLog transactions. The following blends need correction:
+              Source of truth: CellarLog transactions. This will update {driftedBlends.length} computed cellared totals based on your transaction history. Your notes and other data remain unchanged.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-900">
+              <strong>What will be updated:</strong> Only cellared quantity fields (tin_tins_cellared, bulk_cellared, pouch_pouches_cellared) will be recalculated from your CellarLog transaction history. Your notes, names, photos, and all other data remain unchanged.
+            </p>
+          </div>
 
           <div className="space-y-3">
             {driftedBlends.map((drifted) => (
@@ -88,11 +95,11 @@ export default function CellarDriftAlert({ blends, user }) {
                 <h4 className="font-semibold text-stone-900">{drifted.blend_name}</h4>
                 <div className="mt-2 space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-stone-600">Current (entity):</span>
+                    <span className="text-stone-600">Current (computed):</span>
                     <span className="font-mono">{drifted.entityValue.toFixed(2)} oz</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-600">Correct (logs):</span>
+                    <span className="text-stone-600">Will change to (ledger):</span>
                     <span className="font-mono text-emerald-700 font-semibold">{drifted.logValue.toFixed(2)} oz</span>
                   </div>
                   <div className="flex justify-between border-t border-stone-200 pt-1 mt-1">

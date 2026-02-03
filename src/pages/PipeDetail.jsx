@@ -18,6 +18,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useMeasurement } from "@/components/utils/measurementConversion";
+import { getUsageCharacteristics } from "@/components/utils/schemaCompatibility";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -622,13 +623,13 @@ export default function PipeDetailPage() {
             )}
 
             {/* Notes */}
-            {(pipe.smoking_characteristics || pipe.notes) && (
+            {(getUsageCharacteristics(pipe) || pipe.notes) && (
               <Card className="border-white/10">
                 <CardContent className="p-6 space-y-4">
-                  {(pipe.usage_characteristics || pipe.smoking_characteristics) && (
+                  {getUsageCharacteristics(pipe) && (
                     <div>
                       <p className="text-xs text-[#E0D8C8]/70 mb-1">Usage Characteristics</p>
-                      <p className="text-[#E0D8C8]/80">{pipe.usage_characteristics || pipe.smoking_characteristics}</p>
+                      <p className="text-[#E0D8C8]/80">{getUsageCharacteristics(pipe)}</p>
                     </div>
                   )}
                   {pipe.notes && (
