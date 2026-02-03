@@ -124,30 +124,34 @@ Deno.serve(async (req) => {
       return json(404, { ok: false, error: "User record not found" });
     }
 
-    // 2) Ensure we have a Stripe customer id; if missing, attempt to find/create.
-    let stripeCustomerId = userRecord?.stripe_customer_id || "";
+    // 2) Find Stripe customer ID from Subscription records
+    let stripeCustomerId = "";
+
+    // Try finding by user_id first, then by email
+    let subs = await srv.entities.Subscription.filter({
+      user_id: authUser.id,
+      provider: "stripe",
+    }).catch(() => []);
+
+    if (!subs?.length) {
+      subs = await srv.entities.Subscription.filter({
+        user_email: authUser.email.toLowerCase(),
+        provider: "stripe",
+      }).catch(() => []);
+    }
+
+    // Find first active subscription with stripe_customer_id
+    const activeSub = subs?.find(s => s.status === "active" && s.stripe_customer_id);
+    const anySub = subs?.find(s => s.stripe_customer_id);
+    
+    stripeCustomerId = activeSub?.stripe_customer_id || anySub?.stripe_customer_id || "";
 
     if (!stripeCustomerId) {
-      // Attempt to find an existing subscription for this user (if your schema stores it)
-      const subs = await srv.entities.Subscription.filter({
-        user_id: authUser.id,
-      }).catch(() => []);
-
-      const sub0 = Array.isArray(subs) ? subs[0] : null;
-      stripeCustomerId = sub0?.stripe_customer_id || "";
-
-      // If still missing, we cannot open portal
-      if (!stripeCustomerId) {
-        return json(400, {
-          ok: false,
-          error: "Missing stripeCustomerId",
-          hint:
-            "No Stripe customer id found for this user. Ensure checkout creates/records stripeCustomerId on User or Subscription.",
-        });
-      }
-
-      // backfill on User for next time (best effort)
-      await srv.entities.User.update(authUser.id, { stripe_customer_id: stripeCustomerId }).catch(() => null);
+      return json(400, {
+        ok: false,
+        error: "No Stripe subscription found",
+        hint: "You need an active Stripe subscription to manage billing. Please subscribe first.",
+      });
     }
 
     // Use inline Stripe client loader
