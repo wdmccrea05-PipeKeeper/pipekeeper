@@ -135,17 +135,17 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
       <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#A35C5C]/50 my-8 sm:my-0">
-        <CardHeader>
+        <CardHeader className="pt-6 sm:pt-8 px-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <CardTitle className="text-2xl text-[#E0D8C8]">Subscription Backup Mode</CardTitle>
-              <p className="text-sm text-[#E0D8C8]/70 mt-2">
+            <div className="flex-1">
+              <CardTitle className="text-xl sm:text-2xl text-[#E0D8C8]">Subscription Backup Mode</CardTitle>
+              <p className="text-xs sm:text-sm text-[#E0D8C8]/70 mt-2">
                 Subscription management is temporarily unavailable. Use direct checkout links or request manual unlock.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-[#E0D8C8]/50 hover:text-[#E0D8C8] transition-colors"
+              className="text-[#E0D8C8]/50 hover:text-[#E0D8C8] transition-colors flex-shrink-0 mt-1"
             >
               ✕
             </button>
