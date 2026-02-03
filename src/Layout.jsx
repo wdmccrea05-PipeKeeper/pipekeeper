@@ -75,7 +75,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         />
       )}
 
-      <span className="truncate">{item.name}</span>
+      <span className="truncate hidden lg:inline">{item.name}</span>
 
       {item.isPremium && !hasPaidAccess && <Crown className="w-3 h-3 text-amber-500" />}
     </Link>
