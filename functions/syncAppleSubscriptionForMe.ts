@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
     }
     
-    // TRUST iOS CLIENT: Mark as paid if active (verification comes later via App Store API)
+    // TRUST iOS CLIENT: Mark as paid immediately when active (background verification can revoke later if needed)
     const shouldMarkPaid = active;
     
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
