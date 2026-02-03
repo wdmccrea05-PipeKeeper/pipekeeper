@@ -21,6 +21,7 @@ import { invalidateAIQueries, invalidatePipeQueries } from "@/components/utils/c
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const entitlements = useEntitlements();
@@ -452,7 +453,10 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           )}
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
+              <InfoTooltip text="Generates 0-10 compatibility scores for every pipe-tobacco combination. Considers pipe focus, blend characteristics, and your preferences." />
+            </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - regeneration recommended</span>
@@ -493,7 +497,10 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           )}
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
+              <InfoTooltip text="AI suggests which pipes to specialize for specific tobacco families, identifies collection gaps, and recommends next purchases." />
+            </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - regeneration recommended</span>
@@ -530,9 +537,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         <div className="flex items-start gap-3 mb-3">
           <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Analyze Pipe Geometry</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-[#1a2c42]">Analyze Pipe Geometry</h3>
+              <InfoTooltip text="AI analyzes pipe photos and dimensions to classify shape (Billiard, Dublin, etc.), bowl style (cylindrical, conical), shank shape, bend, and size class. Only updates missing/Unknown fields." />
+            </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
+              Classify geometry from photos (primary method)
             </p>
           </div>
         </div>
@@ -581,7 +591,10 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         <div className="flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Break-In Schedules</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-[#1a2c42]">Break-In Schedules</h3>
+              <InfoTooltip text="Progressive conditioning stages for new pipes. Starts with mild blends, transitions to your pipe's intended focus. Track bowl-by-bowl progress." />
+            </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               Regeneration is handled per pipe on the Pipe detail page (with undo/history).
             </p>
