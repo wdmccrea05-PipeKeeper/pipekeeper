@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Download } from "lucide-react";
 import { differenceInMonths } from "date-fns";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
@@ -87,10 +88,16 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   return (
     <PKCard>
       <div className="p-6">
-        <PKHeader 
-          title={isAppleBuild ? "Inventory Insights" : "Collection Insights"}
-          className="mb-4"
-        />
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <PKHeader 
+              title={isAppleBuild ? "Inventory Insights" : "Collection Insights"}
+              className="mb-0"
+            />
+            <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
+          </div>
+          <p className="text-sm text-[#E0D8C8]/60">Summaries and trends across your collection</p>
+        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
             {isAppleBuild ? (
@@ -135,7 +142,17 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           </TabsList>
 
           <TabsContent value="stats" className="mt-0">
-            <TobaccoCollectionStats />
+            {pipes.length === 0 && blends.length === 0 ? (
+              <div className="text-center py-12">
+                <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                <p className="text-[#E0D8C8]/60 mb-4">Insights appear after you add a few items.</p>
+                <a href={createPageUrl('Pipes')}>
+                  <Button>Add first item</Button>
+                </a>
+              </div>
+            ) : (
+              <TobaccoCollectionStats />
+            )}
           </TabsContent>
 
           {!isAppleBuild && (
@@ -154,9 +171,26 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="reports" className="mt-0">
-                <SmokingLogReportExporter user={user} />
-                <AgingReportExporter user={user} />
-                <CollectionReportExporter user={user} />
+                {pipes.length === 0 && blends.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
+                    <p className="text-[#E0D8C8]/60 mb-1">Reports become available once your collection has entries.</p>
+                    <p className="text-sm text-[#E0D8C8]/40">Generate exportable summaries of your collection for reference or documentation.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">Reports</h3>
+                        <InfoTooltip text="Generate exportable summaries of your collection for reference or documentation." />
+                      </div>
+                      <p className="text-sm text-[#E0D8C8]/60">Exportable summaries and documentation</p>
+                    </div>
+                    <SmokingLogReportExporter user={user} />
+                    <AgingReportExporter user={user} />
+                    <CollectionReportExporter user={user} />
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="aging" className="mt-0">
