@@ -11,6 +11,8 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { Badge } from "@/components/ui/badge";
+import { createPageUrl } from "@/components/utils/createPageUrl";
+import { Button } from "@/components/ui/button";
 
 const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
@@ -30,11 +32,11 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-2xl">Expert Tobacconist</CardTitle>
-              <Badge variant="outline" className="text-xs">Optional</Badge>
+              <CardTitle className="text-2xl text-[#E0D8C8]">Expert Tobacconist</CardTitle>
+              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80">Optional</Badge>
               <InfoTooltip text="Optional tools that help organize entries and surface patterns from your saved data." />
             </div>
-            <p className="text-sm opacity-70">Optional advanced organization tools</p>
+            <p className="text-sm text-[#E0D8C8]/70">Optional advanced organization tools</p>
           </div>
         </div>
       </CardHeader>
@@ -60,10 +62,25 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </TabsList>
 
           <TabsContent value="identifier" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">Pipe & Tobacco Identification</h3>
+                <InfoTooltip text="Upload photos of pipes or tobacco tins to identify maker, model, blend details, and approximate values using AI visual analysis." />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">Identify items from photos</p>
+            </div>
             {pipes.length === 0 && blends.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-8">
                 <Camera className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+                <p className="text-[#E0D8C8]/60 mb-4">AI identification works once you have items to analyze</p>
+                <div className="flex gap-3 justify-center">
+                  <a href={createPageUrl('Pipes')}>
+                    <Button size="sm">Add First Pipe</Button>
+                  </a>
+                  <a href={createPageUrl('Tobacco')}>
+                    <Button size="sm" variant="outline">Add First Blend</Button>
+                  </a>
+                </div>
               </div>
             ) : (
               <QuickPipeIdentifier pipes={pipes} blends={blends} />
@@ -71,15 +88,25 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </TabsContent>
 
           <TabsContent value="optimizer" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">Collection Optimization</h3>
+                <InfoTooltip text="AI analyzes your collection to recommend pipe specializations, identify gaps, and suggest next additions for a balanced collection." />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">Optimize pipe focus and identify collection gaps</p>
+            </div>
             <FeatureGate 
               feature="COLLECTION_OPTIMIZATION"
               featureName="Collection Optimization"
               description="Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access."
             >
               {pipes.length === 0 ? (
-                <div className="text-center py-12">
+                <div className="text-center py-8">
                   <TrendingUp className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                  <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+                  <p className="text-[#E0D8C8]/60 mb-4">Optimization requires pipes in your collection</p>
+                  <a href={createPageUrl('Pipes')}>
+                    <Button size="sm">Add First Pipe</Button>
+                  </a>
                 </div>
               ) : (
                 <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={false} />
@@ -88,15 +115,30 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </TabsContent>
 
           <TabsContent value="whatif" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">What-If Scenarios</h3>
+                <InfoTooltip text="Explore hypothetical changes before making them. Ask questions like 'Should I buy a Dublin for Latakia?' and get AI-guided recommendations." />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">Explore collection strategy scenarios</p>
+            </div>
             <FeatureGate 
               feature="COLLECTION_OPTIMIZATION"
               featureName="What-If Analysis"
               description="Ask collection strategy questions and run what-if scenarios with AI assistance. Available with Pro or legacy Premium access."
             >
               {pipes.length === 0 ? (
-                <div className="text-center py-12">
+                <div className="text-center py-8">
                   <Lightbulb className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                  <p className="text-[#E0D8C8]/60">AI tools work best once your collection has data.</p>
+                  <p className="text-[#E0D8C8]/60 mb-4">What-if scenarios require pipes and tobacco data</p>
+                  <div className="flex gap-3 justify-center">
+                    <a href={createPageUrl('Pipes')}>
+                      <Button size="sm">Add First Pipe</Button>
+                    </a>
+                    <a href={createPageUrl('Tobacco')}>
+                      <Button size="sm" variant="outline">Add First Blend</Button>
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
@@ -105,6 +147,13 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </TabsContent>
 
           <TabsContent value="updates" className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-[#E0D8C8]">AI Updates</h3>
+                <InfoTooltip text="Run one-time AI operations to update geometry classifications, find verified specs, regenerate pairings, or refresh break-in schedules." />
+              </div>
+              <p className="text-sm text-[#E0D8C8]/60">Update classifications and recommendations</p>
+            </div>
             <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />
           </TabsContent>
         </Tabs>
