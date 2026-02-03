@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
       active,
       user_id: userId,
       provider_subscription_id: providerSubId,
-      warning: !isVerified ? 'Subscription recorded as unverified. User will remain on free tier until verified via App Store Server API.' : null
+      access_granted: shouldMarkPaid
     });
   } catch (error) {
     console.error('[syncAppleSubscriptionForMe] error:', error);
