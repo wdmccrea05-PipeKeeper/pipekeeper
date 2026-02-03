@@ -32,8 +32,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   if (!hasPaidAccess) {
     return (
       <UpgradePrompt 
-        featureName="Smoking Log"
-        description="Track your smoking sessions, monitor pipe rest periods, manage break-in schedules, and automatically reduce tobacco inventory. Build a detailed history to power AI recommendations."
+        featureName="Usage Log"
+        description="Track your usage sessions, monitor pipe rest periods, manage break-in schedules, and automatically reduce tobacco inventory. Build a detailed history to power AI recommendations."
       />
     );
   }
@@ -451,7 +451,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 <div>
                   <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                     <Flame className="w-5 h-5" />
-                    Smoking Log
+                    Usage Log
                     <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
                   <p className="text-sm text-[#E0D8C8]/70 mt-1">
@@ -472,7 +472,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             <CardContent>
           {logs.length === 0 ? (
             <p className="text-sm text-[#E0D8C8]/70 text-center py-8">
-              No smoking sessions logged yet. Start tracking your sessions!
+              No usage sessions logged yet. Start tracking your sessions!
             </p>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -524,7 +524,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <Sheet open={showAddLog} onOpenChange={(open) => { setShowAddLog(open); if (!open) setEditingLog(null); }}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Log Smoking Session</SheetTitle>
+            <SheetTitle>Log Usage Session</SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -695,7 +695,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <Sheet open={!!editingLog} onOpenChange={(open) => !open && setEditingLog(null)}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Edit Smoking Session</SheetTitle>
+            <SheetTitle>Edit Usage Session</SheetTitle>
           </SheetHeader>
           {editingLog && (
             <SmokingLogEditor
@@ -706,7 +706,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 await updateLogMutation.mutateAsync({ id: editingLog.id, data });
               }}
               onDelete={async () => {
-                if (window.confirm('Delete this smoking session?')) {
+                if (window.confirm('Delete this usage session?')) {
                   await deleteLogMutation.mutateAsync(editingLog.id);
                 }
               }}

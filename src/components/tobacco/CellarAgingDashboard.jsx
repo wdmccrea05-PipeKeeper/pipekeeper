@@ -122,7 +122,7 @@ export default function CellarAgingDashboard({ user }) {
       return { status: "ready", message: "Ready - minimal aging benefit", color: "green" };
     }
     
-    return { status: "ready", message: "Best smoked fresh", color: "green" };
+    return { status: "ready", message: "Best used fresh", color: "green" };
   };
 
   const getTotalCellarWeight = () => {

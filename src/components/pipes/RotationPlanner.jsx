@@ -137,7 +137,7 @@ export default function RotationPlanner({ user }) {
                       <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
                         <div>
                           <p className="font-medium text-sm">{pipe.name}</p>
-                          <p className="text-xs text-stone-500">No smoking sessions recorded</p>
+                          <p className="text-xs text-stone-500">No usage sessions recorded</p>
                         </div>
                         <Badge variant="outline" className="text-red-600 border-red-300">
                           New
@@ -154,7 +154,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <h3 className="font-semibold text-sm">Recently Smoked</h3>
+                    <h3 className="font-semibold text-sm">Recently Used</h3>
                   </div>
                   {recentlySmoked.length > 3 && (
                     <Button
