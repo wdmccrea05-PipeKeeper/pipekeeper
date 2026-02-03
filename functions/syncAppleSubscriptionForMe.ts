@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
     }
     
     // Log successful sync for monitoring
-    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${userEmail} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified}`);
+    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified}`);
 
     return Response.json({
       ok: true,
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
       access_granted: shouldMarkPaid
     });
   } catch (error) {
-    console.error('[syncAppleSubscriptionForMe] error:', error);
+    console.error(`[syncAppleSubscriptionForMe] ERROR:`, error);
     return Response.json({ 
       ok: false,
       error: error?.message || 'Failed to sync Apple subscription',
