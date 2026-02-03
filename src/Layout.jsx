@@ -713,7 +713,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           )}
         </div>
-        </MeasurementProvider>
-        </ErrorBoundary>
-        );
+      </MeasurementProvider>
+    </ErrorBoundary>
+  );
 }
