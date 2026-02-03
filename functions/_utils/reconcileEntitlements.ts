@@ -121,13 +121,15 @@ export async function reconcileUserEntitlements(
       provider: "apple",
     });
 
-    if (appleSubs?.length > 0) {
-      const activeSub = appleSubs.find((s: any) => isActiveStatus(s.status));
+    if (Array.isArray(appleSubs) && appleSubs.length > 0) {
+      const activeSub = appleSubs.find((s: any) => s && isActiveStatus(s.status));
       const bestSub = activeSub || appleSubs[0];
 
-      appleStatus = bestSub.status;
-      if (isActiveStatus(bestSub.status)) {
-        appleTier = bestSub.tier || "premium";
+      if (bestSub) {
+        appleStatus = bestSub.status;
+        if (isActiveStatus(bestSub.status)) {
+          appleTier = bestSub.tier || "premium";
+        }
       }
     }
   } catch (e: any) {

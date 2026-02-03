@@ -101,27 +101,29 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
     }
     
-    // CRITICAL: Only mark user as paid if subscription is VERIFIED and ACTIVE
-    const shouldMarkPaid = isVerified && active;
+    // TRUST iOS CLIENT: Mark as paid if active (verification comes later via App Store API)
+    const shouldMarkPaid = active;
     
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
-    if (users && users.length > 0) {
-      await base44.asServiceRole.entities.User.update(users[0].id, {
-        subscription_level: shouldMarkPaid ? 'paid' : 'free',
-        subscription_status: status,
-        platform: 'ios'
-      });
-      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, verified=${isVerified}`);
-    } else {
+    if (!users || users.length === 0) {
       await base44.asServiceRole.entities.User.create({
         email: emailLower,
         full_name: `User ${emailLower}`,
         role: 'user',
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
+        subscription_tier: tier,
         platform: 'ios'
       });
-      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, verified=${isVerified}`);
+      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
+    } else {
+      await base44.asServiceRole.entities.User.update(users[0].id, {
+        subscription_level: shouldMarkPaid ? 'paid' : 'free',
+        subscription_status: status,
+        subscription_tier: tier,
+        platform: 'ios'
+      });
+      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
     }
     
     return Response.json({

@@ -188,14 +188,16 @@ Deno.serve(async (req) => {
     const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
 
     let updatedUser = false;
-    if (users?.length) {
+    if (Array.isArray(users) && users.length > 0) {
       const userRec = users[0];
-      await base44.asServiceRole.entities.User.update(userRec.id, {
-        subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
-        subscription_status: best.status,
-        stripe_customer_id: customerId,
-      });
-      updatedUser = true;
+      if (userRec?.id) {
+        await base44.asServiceRole.entities.User.update(userRec.id, {
+          subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
+          subscription_status: best.status,
+          stripe_customer_id: customerId,
+        });
+        updatedUser = true;
+      }
     }
 
     return Response.json({

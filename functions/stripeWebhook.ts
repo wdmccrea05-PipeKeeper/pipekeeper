@@ -352,11 +352,11 @@ Deno.serve(async (req) => {
 
         const detectedTier = await getTier(sub, stripe);
         
-        // Keep existing tier if we can't determine new one
-        payload.tier = detectedTier || existing?.tier || null;
+        // Keep existing tier if we can't determine new one, default to premium for active subs
+        payload.tier = detectedTier || existing?.tier || (isPaid ? "premium" : null);
         
         if (!detectedTier) {
-          console.warn(`[webhook] Could not determine tier for subscription ${sub.id}, keeping existing: ${payload.tier || 'null'}`);
+          console.warn(`[webhook] Could not determine tier for subscription ${sub.id}, using fallback: ${payload.tier || 'null'}`);
         }
 
         await upsertSubscription(payload);
