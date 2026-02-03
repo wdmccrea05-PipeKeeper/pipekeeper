@@ -126,6 +126,9 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
     }
     
+    // Log successful sync for monitoring
+    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${userEmail} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified}`);
+
     return Response.json({
       ok: true,
       synced: true,

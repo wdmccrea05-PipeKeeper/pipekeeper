@@ -237,6 +237,11 @@ export default function Layout({ children, currentPageName }) {
         });
         setTimeout(() => window.location.reload(), 100);
       }
+      // Listen for entitlement sync triggers from other tabs
+      if (e.key === "pk_force_entitlement_refresh") {
+        queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      }
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);

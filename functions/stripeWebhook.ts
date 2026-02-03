@@ -247,14 +247,15 @@ Deno.serve(async (req) => {
         
         // Update user entitlements
         try {
-          await setUserEntitlement(user_email, {
+          const result = await setUserEntitlement(user_email, {
             subscription_level: "paid",
             subscription_status: "active",
             subscription_tier: tierValue,
             stripe_customer_id: customerId || null,
           });
+          console.log(`[stripeWebhook] checkout.session.completed entitlement update: ${result.ok ? 'SUCCESS' : 'FAILED'} for ${user_email}`);
         } catch (err) {
-          console.error("[stripeWebhook] Failed to set entitlement for checkout.session.completed:", err?.message || err);
+          console.error("[stripeWebhook] CRITICAL: Failed to set entitlement for checkout.session.completed:", err?.message || err);
         }
 
         // The subscription update will come via subscription.created/updated events
@@ -371,17 +372,22 @@ Deno.serve(async (req) => {
         
         console.log(`[stripeWebhook] ${event.type} for ${user_email}, user_id=${user_id}: status=${sub.status}, tier=${payload.tier}`);
         
-        // Update user entitlements
+        // Update user entitlements - CRITICAL PATH
         try {
-          await setUserEntitlement(user_email, {
+          const result = await setUserEntitlement(user_email, {
             subscription_level: isPaid ? "paid" : "free",
             subscription_status: sub.status,
             subscription_tier: payload.tier || null,
             stripe_customer_id: customerId || null,
           });
-          console.log(`[stripeWebhook] Updated entitlements for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}`);
+          
+          if (result.ok) {
+            console.log(`[stripeWebhook] SUCCESS: Entitlements updated for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}`);
+          } else {
+            console.error(`[stripeWebhook] FAILED: Entitlement update failed for ${user_email}: ${result.reason || 'unknown'}`);
+          }
         } catch (err) {
-          console.error(`[stripeWebhook] Failed to set entitlement for ${event.type}:`, err?.message || err);
+          console.error(`[stripeWebhook] CRITICAL ERROR: Failed to set entitlement for ${event.type}:`, err?.message || err);
         }
 
         break;

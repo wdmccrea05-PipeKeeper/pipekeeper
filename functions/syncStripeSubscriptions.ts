@@ -218,6 +218,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    console.log(`[syncStripeSubscriptions] SUCCESS: user=${user_email} tier=${tier} status=${best.status} isPaid=${isPaid} updatedUser=${updatedUser}`);
+
     return Response.json({
       ok: true,
       found: true,
