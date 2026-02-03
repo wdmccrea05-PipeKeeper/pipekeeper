@@ -62,6 +62,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     purchase_price: '',
     estimated_value: '',
     notes: '',
+    usage_characteristics: '',
     smoking_characteristics: '',
     photos: [],
     stamping_photos: [],
@@ -598,7 +599,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FieldWithInfo 
             label="Bowl Material" 
-            helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool smoking."
+            helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool sessions."
           >
             <Select value={formData.bowl_material} onValueChange={(v) => handleChange('bowl_material', v)}>
               <SelectTrigger>
@@ -637,7 +638,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           </FieldWithInfo>
           <FieldWithInfo 
             label="Chamber Volume" 
-            helpText="Overall size of the tobacco chamber. Small = 15-30 min smoke, Medium = 30-45 min, Large = 45-60 min, Extra Large = 60+ min."
+            helpText="Overall size of the tobacco chamber. Small = 15-30 min session, Medium = 30-45 min, Large = 45-60 min, Extra Large = 60+ min."
           >
             <Select value={formData.chamber_volume} onValueChange={(v) => handleChange('chamber_volume', v)}>
               <SelectTrigger>
@@ -650,7 +651,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           </FieldWithInfo>
           <FieldWithInfo 
             label="Filter Type" 
-            helpText="Size of removable filter or 'None' if filterless. 9mm filters absorb moisture and cool smoke."
+            helpText="Size of removable filter or 'None' if filterless. 9mm filters absorb moisture and cool the session."
           >
             <Select value={formData.filter_type} onValueChange={(v) => handleChange('filter_type', v)}>
               <SelectTrigger>
@@ -823,11 +824,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Smoking Characteristics</Label>
+            <Label>Usage Characteristics</Label>
             <Textarea
-              value={formData.smoking_characteristics}
-              onChange={(e) => handleChange('smoking_characteristics', e.target.value)}
-              placeholder="How does it smoke? Hot/cool, wet/dry, flavor notes..."
+              value={formData.usage_characteristics || formData.smoking_characteristics}
+              onChange={(e) => {
+                handleChange('usage_characteristics', e.target.value);
+                handleChange('smoking_characteristics', '');
+              }}
+              placeholder="How does it perform? Hot/cool, wet/dry, flavor notes..."
               rows={2}
             />
           </div>
