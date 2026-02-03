@@ -185,9 +185,10 @@ export default function PipeDetailPage() {
   });
 
   const toggleFavorite = () => {
+    if (!pipe) return;
     const newValue = !pipe.is_favorite;
     queryClient.setQueryData(['pipe', pipeId, user?.email], (old) => ({
-      ...old,
+      ...(old || {}),
       is_favorite: newValue
     }));
     updateMutation.mutate({ is_favorite: newValue });
@@ -198,6 +199,7 @@ export default function PipeDetailPage() {
   };
 
   const handlePipeUpdate = (updates) => {
+    if (!pipe) return;
     const { id, created_date, updated_date, ...rest } = pipe;
     updateMutation.mutate({
       ...rest,
@@ -244,7 +246,7 @@ export default function PipeDetailPage() {
     );
   }
 
-  const allPhotos = [...(pipe.photos || []), ...(pipe.stamping_photos || [])];
+  const allPhotos = pipe ? [...(pipe.photos || []), ...(pipe.stamping_photos || [])] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">

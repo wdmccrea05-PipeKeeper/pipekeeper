@@ -178,9 +178,10 @@ export default function TobaccoDetailPage() {
   });
 
   const toggleFavorite = () => {
+    if (!blend) return;
     const newValue = !blend.is_favorite;
     queryClient.setQueryData(['blend', blendId, user?.email], (old) => ({
-      ...old,
+      ...(old || {}),
       is_favorite: newValue
     }));
     updateMutation.mutate({

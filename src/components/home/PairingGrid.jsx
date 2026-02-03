@@ -67,40 +67,64 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
     const map = new Map();
     const list = activePairings?.pairings || activePairings?.data?.pairings || [];
-    (list || []).forEach((p) => {
-      const key = keyOf(p.pipe_id, p.bowl_variant_id);
-      map.set(key, p);
+    (Array.isArray(list) ? list : []).forEach((p) => {
+      if (!p) return;
+      try {
+        const key = keyOf(p.pipe_id, p.bowl_variant_id);
+        map.set(key, p);
+      } catch (e) {
+        console.error('Failed to process pairing:', p, e);
+      }
     });
     return map;
   }, [activePairings]);
 
   // ✅ Expand pipes to bowl variants (each bowl becomes a row)
-  const pipeVariants = useMemo(() => expandPipesToVariants(allPipes, { includeMainWhenBowls: false }), [allPipes]);
+  const pipeVariants = useMemo(() => {
+    try {
+      return expandPipesToVariants(allPipes || [], { includeMainWhenBowls: false });
+    } catch (e) {
+      console.error('expandPipesToVariants error:', e);
+      return [];
+    }
+  }, [allPipes]);
 
   const rows = useMemo(() => {
     const keyOf = (pipe_id, bowl_variant_id) =>
       `${String(pipe_id)}::${bowl_variant_id ? String(bowl_variant_id) : "main"}`;
 
-    return pipeVariants.map((pv) => {
-      const pipe = allPipes.find((p) => String(p.id) === String(pv.id));
-      const variant = getVariantFromPipe(pipe, pv.bowl_variant_id || null);
-      
-      // Lookup using ONLY pipe_id + bowl_variant_id
-      const tileKey = keyOf(pv.id, pv.bowl_variant_id || null);
-      const pairing = pairingsByVariant.get(tileKey);
+    return (pipeVariants || []).map((pv) => {
+      try {
+        const pipe = (allPipes || []).find((p) => p && String(p.id) === String(pv.id));
+        const variant = pipe ? getVariantFromPipe(pipe, pv.bowl_variant_id || null) : null;
+        
+        // Lookup using ONLY pipe_id + bowl_variant_id
+        const tileKey = keyOf(pv.id, pv.bowl_variant_id || null);
+        const pairing = pairingsByVariant.get(tileKey);
 
-      return {
-        key: tileKey,
-        pipe_id: pv.id,
-        bowl_variant_id: pv.bowl_variant_id || null,
-        name: variant?.variant_name || pv.variant_name || pv.name,
-        focus: Array.isArray(variant?.focus) ? variant.focus : [],
-        chamber_volume: variant?.chamber_volume,
-        bowl_diameter_mm: variant?.bowl_diameter_mm,
-        bowl_depth_mm: variant?.bowl_depth_mm,
-        recommendations: pairing?.recommendations || pairing?.blend_matches || [],
-      };
-    }).sort((a, b) => a.name.localeCompare(b.name));
+        return {
+          key: tileKey,
+          pipe_id: pv.id,
+          bowl_variant_id: pv.bowl_variant_id || null,
+          name: variant?.variant_name || pv.variant_name || pv.name || 'Unknown',
+          focus: Array.isArray(variant?.focus) ? variant.focus : [],
+          chamber_volume: variant?.chamber_volume,
+          bowl_diameter_mm: variant?.bowl_diameter_mm,
+          bowl_depth_mm: variant?.bowl_depth_mm,
+          recommendations: pairing?.recommendations || pairing?.blend_matches || [],
+        };
+      } catch (e) {
+        console.error('Row mapping error for pipe variant:', pv, e);
+        return {
+          key: `error-${pv.id}`,
+          pipe_id: pv.id,
+          bowl_variant_id: null,
+          name: 'Error loading variant',
+          focus: [],
+          recommendations: [],
+        };
+      }
+    }).sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
   }, [pipeVariants, allPipes, pairingsByVariant]);
 
   const regenPairings = async () => {

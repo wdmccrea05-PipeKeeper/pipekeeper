@@ -27,31 +27,44 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
     queryFn: async () => {
       const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
       
-      const cellarBlends = tobaccoBlends.filter(b => {
-        const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
-                            (b.bulk_cellared || 0) > 0 || 
-                            (b.pouch_pouches_cellared || 0) > 0;
-        return hasCellared;
+      const cellarBlends = (tobaccoBlends || []).filter(b => {
+       if (!b) return false;
+       const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
+                           (Number(b.bulk_cellared) || 0) > 0 || 
+                           (Number(b.pouch_pouches_cellared) || 0) > 0;
+       return hasCellared;
       });
 
       let alertCount = 0;
-       cellarBlends.forEach(b => {
-         const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-         const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
-           const dTime = new Date(d).getTime();
-           const oldTime = new Date(oldest).getTime();
-           return dTime < oldTime ? d : oldest;
-         }) : null;
-        
-        if (oldestDate) {
-          const months = differenceInMonths(new Date(), oldestDate);
-          const potential = b.aging_potential;
-          
-          // Alert if tobacco has reached optimal aging
-          if (potential === "Excellent" && months >= 24) alertCount++;
-          else if (potential === "Good" && months >= 12) alertCount++;
-          else if (potential === "Fair" && months >= 3) alertCount++;
-        }
+      cellarBlends.forEach(b => {
+        if (!b) return;
+        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+        const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
+          try {
+            const dTime = new Date(d).getTime();
+            const oldTime = new Date(oldest).getTime();
+            if (Number.isNaN(dTime) || Number.isNaN(oldTime)) return oldest;
+            return dTime < oldTime ? d : oldest;
+          } catch {
+            return oldest;
+          }
+        }) : null;
+
+       if (oldestDate) {
+         try {
+           const parsed = new Date(oldestDate);
+           if (Number.isNaN(parsed.getTime())) return;
+           const months = differenceInMonths(new Date(), parsed);
+           const potential = b.aging_potential;
+
+           // Alert if tobacco has reached optimal aging
+           if (potential === "Excellent" && months >= 24) alertCount++;
+           else if (potential === "Good" && months >= 12) alertCount++;
+           else if (potential === "Fair" && months >= 3) alertCount++;
+         } catch {
+           // ignore invalid dates
+         }
+       }
       });
       
       return alertCount;
