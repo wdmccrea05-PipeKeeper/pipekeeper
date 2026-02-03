@@ -515,24 +515,24 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 </div>
 
-                <div className="flex items-center gap-1 flex-1 justify-center max-w-5xl min-w-0">
-                   {navItems.map((item) => (
-                     <NavLink
-                       key={item.page}
-                       item={item}
-                       currentPage={currentPageName}
-                       hasPaidAccess={hasPaidAccess}
-                     />
-                   ))}
-                   {isAdmin && adminNavItems.map((item) => (
-                     <NavLink
-                       key={item.page}
-                       item={item}
-                       currentPage={currentPageName}
-                       hasPaidAccess={hasPaidAccess}
-                     />
-                   ))}
-                 </div>
+                <div className="flex items-center gap-0.5 flex-1 justify-center max-w-4xl min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide">
+                       {navItems.map((item) => (
+                         <NavLink
+                           key={item.page}
+                           item={item}
+                           currentPage={currentPageName}
+                           hasPaidAccess={hasPaidAccess}
+                         />
+                       ))}
+                       {isAdmin && adminNavItems.map((item) => (
+                         <NavLink
+                           key={item.page}
+                           item={item}
+                           currentPage={currentPageName}
+                           hasPaidAccess={hasPaidAccess}
+                         />
+                       ))}
+                     </div>
 
                 <div className="flex items-center gap-3">
                   <LanguageSwitcher />
