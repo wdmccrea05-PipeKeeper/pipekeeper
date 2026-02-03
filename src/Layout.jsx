@@ -205,8 +205,8 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const adminNavItems = [
-    { name: "Reports", page: "AdminReports", icon: AlertCircle, isIconComponent: true },
-    { name: "Subscription Queue", page: "AdminSubscriptionRequests", icon: AlertCircle, isIconComponent: true },
+    { name: t("nav.reports"), page: "AdminReports", icon: AlertCircle, isIconComponent: true },
+    { name: t("nav.subscriptionQueue"), page: "AdminSubscriptionRequests", icon: AlertCircle, isIconComponent: true },
   ];
 
   const PUBLIC_PAGES = useMemo(
@@ -474,7 +474,7 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">Loading...</p>
+          <p className="text-[#e8d5b7]">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -489,8 +489,8 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
-          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">Please log in to continue</p>
-          <Button onClick={() => base44.auth.redirectToLogin()}>Log In</Button>
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{t("auth.loginPrompt")}</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
         </div>
       </div>
     );
@@ -503,47 +503,47 @@ export default function Layout({ children, currentPageName }) {
         <Toaster position="top-center" />
         <MeasurementProvider>
         <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
-          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'var(--safe-area-top)' }}>
+          <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg overflow-x-auto" style={{ paddingTop: 'var(--safe-area-top)' }}>
             <div className="max-w-7xl mx-auto px-6 w-full">
               <div className="flex items-center justify-between h-16 gap-4">
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("Home")} className="flex items-center gap-2">
                     <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-8 h-8 object-contain" />
-                    <span className="font-bold text-xl text-[#E0D8C8]">PipeKeeper</span>
+                    <span className="font-bold text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">PipeKeeper</span>
                   </Link>
                 </div>
 
-                <div className="flex items-center gap-1 flex-1 justify-center max-w-5xl">
-                  {navItems.map((item) => (
-                    <NavLink
-                      key={item.page}
-                      item={item}
-                      currentPage={currentPageName}
-                      hasPaidAccess={hasPaidAccess}
-                    />
-                  ))}
-                  {isAdmin && adminNavItems.map((item) => (
-                    <NavLink
-                      key={item.page}
-                      item={item}
-                      currentPage={currentPageName}
-                      hasPaidAccess={hasPaidAccess}
-                    />
-                  ))}
-                </div>
+                <div className="flex items-center gap-1 flex-1 justify-center max-w-5xl min-w-0">
+                   {navItems.map((item) => (
+                     <NavLink
+                       key={item.page}
+                       item={item}
+                       currentPage={currentPageName}
+                       hasPaidAccess={hasPaidAccess}
+                     />
+                   ))}
+                   {isAdmin && adminNavItems.map((item) => (
+                     <NavLink
+                       key={item.page}
+                       item={item}
+                       currentPage={currentPageName}
+                       hasPaidAccess={hasPaidAccess}
+                     />
+                   ))}
+                 </div>
 
                 <div className="flex items-center gap-3">
                   <LanguageSwitcher />
                   <GlobalSearchTrigger />
                   <button
                     onClick={() => setShowQuickAccess(true)}
-                    className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5"
+                    className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 overflow-hidden text-ellipsis whitespace-nowrap"
                   >
-                    Quick Access
+                    {t("nav.quickAccess")}
                   </button>
                   {syncing ? (
-                    <span className="text-xs text-[#E0D8C8]/70">Syncing…</span>
+                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap">{t("nav.syncing")}</span>
                   ) : null}
                 </div>
               </div>
@@ -634,16 +634,16 @@ export default function Layout({ children, currentPageName }) {
                   <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
                 </div>
                 <div className="flex gap-6">
-                  <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                  <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
                     {t("nav.faq")}
                   </a>
-                  <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                  <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
                     {t("nav.support")}
                   </a>
-                  <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                  <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
                     {t("nav.terms")}
                   </a>
-                  <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline">
+                  <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
                     {t("nav.privacy")}
                   </a>
                 </div>
