@@ -8,7 +8,23 @@ import LanguageDetector from "i18next-browser-languagedetector";
  * - normalizeLng maps browser languages to our supported set
  */
 
+import { translationsExtended } from './translations-extended';
+
 const SUPPORTED = ["en","es","fr","de","it","pt-BR","nl","pl","ja","zh-Hans"];
+
+// --- Merge base + extended translations ---
+const mergeTranslations = () => {
+  const merged = {};
+  SUPPORTED.forEach(lng => {
+    merged[lng] = {
+      common: {
+        ...resources[lng]?.common,
+        ...translationsExtended[lng]?.common
+      }
+    };
+  });
+  return merged;
+};
 
 // --- Translations (keep concise; expand over time) ---
 const resources = {
@@ -557,11 +573,13 @@ function ensurePkLangDefault() {
 
 const initial = ensurePkLangDefault();
 
+const mergedResources = mergeTranslations();
+
 i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
+   .use(LanguageDetector)
+   .use(initReactI18next)
+   .init({
+     resources: mergedResources,
     fallbackLng: "en",
     defaultNS: "common",
     ns: ["common"],
