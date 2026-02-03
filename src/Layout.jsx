@@ -725,5 +725,6 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </MeasurementProvider>
     </ErrorBoundary>
+  </GlobalErrorBoundary>
   );
 }
