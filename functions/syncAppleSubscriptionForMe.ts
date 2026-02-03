@@ -117,12 +117,16 @@ Deno.serve(async (req) => {
       });
       console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
     } else {
-      await base44.asServiceRole.entities.User.update(users[0].id, {
+      const updates = {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
-        subscription_tier: tier,
-        platform: 'ios'
-      });
+        subscription_tier: tier
+      };
+      // Only set platform if not already set
+      if (!users[0].platform) {
+        updates.platform = 'ios';
+      }
+      await base44.asServiceRole.entities.User.update(users[0].id, updates);
       console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
     }
     

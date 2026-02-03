@@ -156,13 +156,24 @@ Deno.serve(async (req) => {
     const unitAmount = best.items?.data?.[0]?.price?.unit_amount;
     const amount = Number.isFinite(unitAmount) ? unitAmount / 100 : null;
 
+    // Determine tier from price ID
+    const priceId = best.items?.data?.[0]?.price?.id;
+    const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
+    const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+    const tier = (priceId === proMonthly || priceId === proAnnual) ? "pro" : "premium";
+
     const payload = {
       user_email,
+      provider: "stripe",
+      provider_subscription_id: best.id,
       status: best.status,
+      tier,
       stripe_subscription_id: best.id,
       stripe_customer_id: typeof customerObj === "string" ? customerObj : customerObj?.id || customerId,
       current_period_start: periodStart,
       current_period_end: periodEnd,
+      started_at: periodStart,
+      subscriptionStartedAt: periodStart,
       cancel_at_period_end: !!best.cancel_at_period_end,
       billing_interval: billingInterval,
       amount,
@@ -191,9 +202,16 @@ Deno.serve(async (req) => {
     if (Array.isArray(users) && users.length > 0) {
       const userRec = users[0];
       if (userRec?.id) {
+        // Determine tier from price ID
+        const priceId = best.items?.data?.[0]?.price?.id;
+        const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
+        const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+        const tier = (priceId === proMonthly || priceId === proAnnual) ? "pro" : "premium";
+
         await base44.asServiceRole.entities.User.update(userRec.id, {
           subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
           subscription_status: best.status,
+          subscription_tier: tier,
           stripe_customer_id: customerId,
         });
         updatedUser = true;
