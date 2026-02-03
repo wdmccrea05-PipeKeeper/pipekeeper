@@ -145,7 +145,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
         <Textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          placeholder="How was the smoke? Any observations..."
+          placeholder="How was the session? Any observations..."
           rows={3}
         />
       </div>
