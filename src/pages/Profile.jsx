@@ -701,15 +701,15 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="pt-4 border-t space-y-4">
-                    <h4 className="font-semibold text-violet-800">Social Media (Optional)</h4>
-                    <p className="text-sm text-stone-600">Add links to your social media profiles</p>
+                    <h4 className="font-semibold text-violet-800">{t("profile.socialMediaOptional")}</h4>
+                    <p className="text-sm text-stone-600">{t("profile.addSocialMediaLinks")}</p>
                     
                     <div className="space-y-3">
                       {formData.social_media.map((link, index) => (
                         <div key={index} className="flex gap-2 items-start">
                           <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
-                              placeholder="Platform (e.g., Instagram)"
+                              placeholder={t("profile.platform")}
                               value={link.platform || ""}
                               onChange={(e) => {
                                 const newLinks = [...formData.social_media];
@@ -718,7 +718,7 @@ export default function ProfilePage() {
                               }}
                             />
                             <Input
-                              placeholder="URL"
+                              placeholder={t("profile.url")}
                               value={link.url || ""}
                               onChange={(e) => {
                                 const newLinks = [...formData.social_media];
@@ -755,7 +755,7 @@ export default function ProfilePage() {
                         className="w-full"
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Social Media Link
+                        {t("profile.addSocialMediaLink")}
                       </Button>
                     </div>
 
@@ -768,18 +768,18 @@ export default function ProfilePage() {
                         className="w-4 h-4 rounded border-stone-300"
                       />
                       <Label htmlFor="show_social_media" className="text-sm text-stone-700 cursor-pointer">
-                        Display social media links publicly on my profile
-                      </Label>
+                         {t("profile.displaySocialMediaPublicly")}
+                       </Label>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t space-y-4">
-                    <h4 className="font-semibold text-violet-800">Location (Optional)</h4>
-                    <p className="text-sm text-stone-600">Share your location to connect with nearby pipe enthusiasts</p>
+                    <h4 className="font-semibold text-violet-800">{t("profile.locationOptional")}</h4>
+                    <p className="text-sm text-stone-600">{t("profile.shareLocationConnectNearby")}</p>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-stone-700 font-medium">City</Label>
+                        <Label className="text-stone-700 font-medium">{t("profile.city")}</Label>
                         <Input
                           value={formData.city}
                           onChange={(e) => setFormData({...formData, city: e.target.value})}
@@ -788,7 +788,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-stone-700 font-medium">State/Province</Label>
+                        <Label className="text-stone-700 font-medium">{t("profile.stateProvince")}</Label>
                         <Input
                           value={formData.state_province}
                           onChange={(e) => setFormData({...formData, state_province: e.target.value})}
@@ -800,7 +800,7 @@ export default function ProfilePage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-stone-700 font-medium">Country</Label>
+                        <Label className="text-stone-700 font-medium">{t("profile.country")}</Label>
                         <Input
                           list="countries"
                           value={formData.country}
@@ -832,7 +832,7 @@ export default function ProfilePage() {
                         </datalist>
                       </div>
                       <div>
-                        <Label className="text-stone-700 font-medium">Zip/Postal Code</Label>
+                        <Label className="text-stone-700 font-medium">{t("profile.zipPostalCode")}</Label>
                         <Input
                           value={formData.postal_code}
                           onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
@@ -851,15 +851,15 @@ export default function ProfilePage() {
                         className="w-4 h-4 rounded border-stone-300"
                       />
                       <Label htmlFor="show_location" className="text-sm text-stone-700 cursor-pointer">
-                        Show my location publicly and allow others to find me by location
-                      </Label>
+                         {t("profile.showLocationPublicly")}
+                       </Label>
                     </div>
                   </div>
                   </div>
 
                 {/* Clenching Preference */}
-                <div>
-                  <Label className="text-stone-700 font-medium">Do you clench your pipes?</Label>
+                 <div>
+                   <Label className="text-stone-700 font-medium">{t("profile.doClenching")}</Label>
                   <Select
                     value={formData.clenching_preference}
                     onValueChange={(value) => setFormData({ ...formData, clenching_preference: value })}
@@ -868,16 +868,16 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Yes">Yes - I prefer lighter pipes</SelectItem>
-                      <SelectItem value="Sometimes">Sometimes</SelectItem>
-                      <SelectItem value="No">No - Weight doesn't matter</SelectItem>
+                      <SelectItem value="Yes">{t("profile.clenchYesLighterPipes")}</SelectItem>
+                      <SelectItem value="Sometimes">{t("profile.clenchSometimes")}</SelectItem>
+                      <SelectItem value="No">{t("profile.clenchNoWeightDoesntMatter")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Smoke Duration */}
                 <div>
-                  <Label className="text-stone-700 font-medium">Preferred smoke duration?</Label>
+                  <Label className="text-stone-700 font-medium">{t("profile.preferredSmokeDuration")}</Label>
                   <Select
                     value={formData.smoke_duration_preference}
                     onValueChange={(value) => setFormData({ ...formData, smoke_duration_preference: value })}
@@ -886,10 +886,10 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Short (15-30 min)">Short (15-30 min)</SelectItem>
-                      <SelectItem value="Medium (30-60 min)">Medium (30-60 min)</SelectItem>
-                      <SelectItem value="Long (60+ min)">Long (60+ min)</SelectItem>
-                      <SelectItem value="No Preference">No Preference</SelectItem>
+                      <SelectItem value="Short (15-30 min)">{t("profile.smokeDurationShort")}</SelectItem>
+                      <SelectItem value="Medium (30-60 min)">{t("profile.smokeDurationMedium")}</SelectItem>
+                      <SelectItem value="Long (60+ min)">{t("profile.smokeDurationLong")}</SelectItem>
+                      <SelectItem value="No Preference">{t("profile.smokeDurationNoPreference")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
