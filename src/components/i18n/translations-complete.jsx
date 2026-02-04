@@ -48,7 +48,7 @@ export const translationsComplete = {
           note: "Incluya su dirección de correo electrónico al ponerse en contacto con el soporte para que podamos ayudarle rápidamente."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Tabaquista Experto',
       subtitle: 'Consulta de expertos y actualizaciones de IA',
@@ -96,7 +96,7 @@ export const translationsComplete = {
           note: "Incluez votre adresse e-mail lorsque vous contactez le support afin que nous puissions vous aider rapidement."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Maître Tabaccologue',
       subtitle: 'Consultation d\'expert et mises à jour IA',
@@ -144,7 +144,7 @@ export const translationsComplete = {
           note: "Geben Sie Ihre E-Mail-Adresse an, wenn Sie den Support kontaktieren, damit wir Ihnen schnell helfen können."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Meister Tabakkenner',
       subtitle: 'Expertenberatung und KI-Updates',
@@ -192,7 +192,7 @@ export const translationsComplete = {
           note: "Includi il tuo indirizzo e-mail quando contatti il supporto in modo da potervi aiutare rapidamente."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Maestro Tabaccaio',
       subtitle: 'Consulenza di esperti e aggiornamenti IA',
@@ -240,7 +240,7 @@ export const translationsComplete = {
           note: "Inclua seu endereço de e-mail ao entrar em contato com o suporte para que possamos ajudá-lo rapidamente."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Mestre Tabacário',
       subtitle: 'Consultoria de especialistas e atualizações de IA',
@@ -288,7 +288,7 @@ export const translationsComplete = {
           note: "Voeg uw e-mailadres toe wanneer u contact opneemt met ondersteuning, zodat we u snel kunnen helpen."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Meesterbesteller',
       subtitle: 'Deskundig advies en AI-updates',
@@ -336,7 +336,7 @@ export const translationsComplete = {
           note: "Podaj swój adres e-mail podczas kontaktowania się z obsługą, abyśmy mogli Ci szybko pomóc."
         }
       }
-    }
+    },
     tobacconist: {
       title: 'Mistrz Tytoniowy',
       subtitle: 'Porada ekspertów i aktualizacje AI',
@@ -384,7 +384,7 @@ export const translationsComplete = {
           note: "サポートにお問い合わせの際は、メールアドレスを含めてください。迅速にお手伝いできます。"
         }
       }
-    }
+    },
     tobacconist: {
       title: 'マスター・タバコニスト',
       subtitle: 'エキスパート・コンサルテーション & AI アップデート',
@@ -432,7 +432,7 @@ export const translationsComplete = {
           note: "联系支持时请附上您的电子邮件地址，以便我们为您提供快速帮助。"
         }
       }
-    }
+    },
     tobacconist: {
       title: '烟草大师',
       subtitle: '专家咨询和AI更新',
