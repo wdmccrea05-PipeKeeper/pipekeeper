@@ -53,6 +53,7 @@ import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
+import { useTranslation } from "react-i18next";
 
 /**
  * Drop-in replacement notes:
@@ -135,6 +136,7 @@ function CollectionOptimizerInner({
 }) {
   if (isAppleBuild) return null;
 
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
@@ -902,9 +904,9 @@ ${userText}
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-indigo-800 text-lg">
             <Lightbulb className="w-5 h-5" />
-            Ask the Expert
+            {t("tobacconist.askTheExpert")}
           </CardTitle>
-          <p className="text-sm text-stone-800">Ask questions and discuss the hobby</p>
+          <p className="text-sm text-stone-800">{t("tobacconist.askTheExpertDesc")}</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -939,7 +941,7 @@ ${userText}
                           {isImpact ? (
                             <div className="text-sm space-y-3 text-stone-900">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Badge className="bg-indigo-600 text-white">Impact Score: {asText(c?.impact_score)}/10</Badge>
+                                <Badge className="bg-indigo-600 text-white">{t("tobacconist.impactScore")} {asText(c?.impact_score)}/10</Badge>
                                 {!!c?.recommendation_category && (
                                   <Badge className="bg-blue-600 text-white">{asText(c?.recommendation_category)}</Badge>
                                 )}
@@ -1018,13 +1020,13 @@ ${userText}
           {/* Inputs */}
           <div>
             <label className="text-sm font-medium text-stone-800 mb-2 block">
-              {conversationMessages.length > 0 ? "Continue the conversation..." : "Chat with the Tobacconist"}
+              {conversationMessages.length > 0 ? "Continue the conversation..." : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
               placeholder={
                 conversationMessages.length > 0
                   ? "Ask a follow-up (Cmd+Enter to send)"
-                  : "Ask anything (Cmd+Enter to send)"
+                  : t("tobacconist.askAnything")
               }
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => (conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value))}
@@ -1038,13 +1040,13 @@ ${userText}
                 }
               }}
             />
-            <p className="text-xs text-stone-500 mt-1">Press Cmd+Enter to send</p>
+            <p className="text-xs text-stone-500 mt-1">{t("tobacconist.pressCmdEnter")}</p>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-800 mb-2 block">Pipe Details (Optional)</label>
+            <label className="text-sm font-medium text-stone-800 mb-2 block">{t("tobacconist.pipeDetailsOptional")}</label>
             <Textarea
-              placeholder="Describe characteristics: shape, bowl size, material, etc."
+              placeholder={t("tobacconist.describeCharacteristics")}
               value={whatIfDescription}
               onChange={(e) => setWhatIfDescription(e.target.value)}
               className="min-h-[60px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1052,7 +1054,7 @@ ${userText}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-stone-800 mb-2 block">Upload Photos (Optional)</label>
+            <label className="text-sm font-medium text-stone-800 mb-2 block">{t("tobacconist.uploadPhotosOptional")}</label>
             <div
               onDrop={(e) => {
                 e.preventDefault();
@@ -1154,7 +1156,7 @@ ${userText}
                 className="bg-emerald-600 hover:bg-emerald-700 w-full"
               >
                 <CheckCheck className="w-4 h-4 mr-2" />
-                Confirm & Apply Changes
+                {t("tobacconist.confirmApplyChanges")}
               </Button>
             </div>
           )}
@@ -1172,16 +1174,16 @@ ${userText}
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Collection Optimization Out of Date
+              {t("tobacconist.outOfDate")}
             </DialogTitle>
             <DialogDescription>
-              Your pipes, blends, or preferences have changed. Regenerate optimization now for accurate recommendations? You can undo this action.
+              {t("tobacconist.outOfDateMessage")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col sm:flex-row gap-2 justify-end">
             <Button variant="outline" onClick={() => setShowRegenDialog(false)} className="w-full sm:w-auto">
-              Not Now
+              {t("tobacconist.notNow")}
             </Button>
 
             {optimization?.previous_active_id && (
@@ -1192,7 +1194,7 @@ ${userText}
                 className="w-full sm:w-auto"
               >
                 <Undo className="w-4 h-4 mr-2" />
-                Undo Last Change
+                {t("tobacconist.undoLastChange")}
               </Button>
             )}
 
@@ -1207,10 +1209,10 @@ ${userText}
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Regenerating...
+                  {t("tobacconist.regenerating")}
                 </>
               ) : (
-                "Regenerate"
+                t("tobacconist.regenerate")
               )}
             </Button>
           </div>
@@ -1223,10 +1225,10 @@ ${userText}
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              Review & Apply Optimization Changes
+              {t("tobacconist.reviewApply")}
             </DialogTitle>
             <DialogDescription>
-              Select which pipe specializations you'd like to apply. Changes will update your collection and refresh the pairing grid.
+              {t("tobacconist.reviewApplyDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1242,7 +1244,7 @@ ${userText}
                 onCheckedChange={toggleAllChanges}
               />
               <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                Select All
+                {t("tobacconist.selectAll")}
               </label>
             </div>
 
@@ -1275,12 +1277,12 @@ ${userText}
                     <label htmlFor={`change-${variantKey}`} className="cursor-pointer">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-semibold text-stone-800">{asText(spec.pipe_name)}</h4>
-                        {!hasChanges && <Badge variant="outline" className="text-xs">No Change</Badge>}
+                        {!hasChanges && <Badge variant="outline" className="text-xs">{t("tobacconist.noChange")}</Badge>}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 text-sm mb-2">
                         <div>
-                          <p className="text-xs text-stone-500 mb-1">Current:</p>
+                          <p className="text-xs text-stone-500 mb-1">{t("tobacconist.current")}</p>
                           {currentFocus.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {currentFocus.map((f, i) => (
@@ -1288,12 +1290,12 @@ ${userText}
                               ))}
                             </div>
                           ) : (
-                            <span className="text-xs text-stone-400 italic">None set</span>
+                            <span className="text-xs text-stone-400 italic">{t("tobacconist.noneSet")}</span>
                           )}
                         </div>
 
                         <div>
-                          <p className="text-xs text-emerald-700 font-medium mb-1">Recommended:</p>
+                          <p className="text-xs text-emerald-700 font-medium mb-1">{t("tobacconist.recommended")}</p>
                           <div className="flex flex-wrap gap-1">
                             {spec.recommended_blend_types.map((f, i) => (
                               <Badge key={i} className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
@@ -1307,7 +1309,7 @@ ${userText}
                       {!!spec.score_improvement && (
                         <div className="bg-emerald-50 rounded p-2 border border-emerald-200">
                           <p className="text-xs text-emerald-800">
-                            <strong>Impact:</strong> {asText(spec.score_improvement)}
+                            <strong>{t("tobacconist.impact")}</strong> {asText(spec.score_improvement)}
                           </p>
                         </div>
                       )}
@@ -1324,7 +1326,7 @@ ${userText}
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowConfirmation(false)} disabled={acceptingAll} className="w-full sm:w-auto">
-              Cancel
+              {t("forms.cancel")}
             </Button>
             <Button
               onClick={handleConfirmChanges}
@@ -1334,13 +1336,12 @@ ${userText}
               {acceptingAll ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Applying...
+                  {t("tobacconist.applyingChanges")}
                 </>
               ) : (
                 <>
                   <CheckCheck className="w-4 h-4 mr-2" />
-                  Apply {Object.values(selectedChanges).filter(Boolean).length} Change
-                  {Object.values(selectedChanges).filter(Boolean).length !== 1 ? "s" : ""}
+                  {t("tobacconist.apply")} {Object.values(selectedChanges).filter(Boolean).length} {t("tobacconist.applyChanges")}
                 </>
               )}
             </Button>
@@ -1357,7 +1358,7 @@ ${userText}
                 <div className="flex items-center gap-2">
                   <CardTitle className="flex items-center gap-2 text-blue-800 text-lg sm:text-base">
                     <Target className="w-5 h-5 flex-shrink-0" />
-                    <span className="truncate">Collection Optimization</span>
+                    <span className="truncate">{t("tobacconist.optimizationTitle")}</span>
                   </CardTitle>
                   <InfoTooltip text="AI analyzes your collection and recommends which pipes to specialize for specific tobacco types to maximize pairing scores and collection coverage." />
                 </div>
@@ -1366,7 +1367,7 @@ ${userText}
                 </Button>
               </div>
               <p className="mt-2 text-stone-700 text-xs sm:text-sm">
-                Strategic pipe specializations to maximize collection potential
+                {t("tobacconist.strategicSpecializations")}
               </p>
             </div>
 
@@ -1379,14 +1380,14 @@ ${userText}
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span className="hidden sm:inline">Analyzing...</span>
-                    <span className="sm:hidden">Analyzing</span>
+                    <span className="hidden sm:inline">{t("tobacconist.analyzing2")}</span>
+                    <span className="sm:hidden">{t("tobacconist.analyzing")}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Update Analysis</span>
-                    <span className="sm:hidden">Update</span>
+                    <span className="hidden sm:inline">{t("tobacconist.updateAnalysis")}</span>
+                    <span className="sm:hidden">{t("tobacconist.updateAnalysis")}</span>
                   </>
                 )}
               </Button>
@@ -1405,7 +1406,7 @@ ${userText}
                 >
                   <h3 className="font-semibold text-stone-800 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                    Recommended Pipe Specializations
+                    {t("tobacconist.recommendedSpecializations")}
                   </h3>
                   <div className="text-blue-600">{showPipesList ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</div>
                 </button>
@@ -1415,12 +1416,12 @@ ${userText}
                     {acceptingAll ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Applying...
+                        {t("tobacconist.applyingChanges")}
                       </>
                     ) : (
                       <>
                         <CheckCheck className="w-4 h-4 mr-2" />
-                        Accept All Recommendations
+                        {t("tobacconist.acceptAllRecommendations")}
                       </>
                     )}
                   </Button>
@@ -1506,7 +1507,7 @@ ${userText}
 
                                 {pv.focus && pv.focus.length > 0 && (
                                   <div className="mb-3">
-                                    <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">Current Focus:</p>
+                                    <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {pv.focus.map((type, i) => (
                                         <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
@@ -1519,7 +1520,7 @@ ${userText}
 
                                 {displaySpec.recommended_blend_types?.length > 0 && (
                                   <div className="mb-3">
-                                    <p className="text-sm font-medium text-blue-900 mb-1">Specialize for:</p>
+                                    <p className="text-sm font-medium text-blue-900 mb-1">{t("tobacconist.specializeFo")}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {displaySpec.recommended_blend_types.map((type, i) => (
                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
@@ -1553,7 +1554,7 @@ ${userText}
                                 )}
 
                                 <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                                  <p className="text-xs font-medium text-blue-900">Usage Pattern:</p>
+                                  <p className="text-xs font-medium text-blue-900">{t("tobacconist.usagePattern")}</p>
                                   <p className="text-xs text-stone-800">{asText(displaySpec.usage_pattern)}</p>
                                 </div>
 
@@ -1566,7 +1567,7 @@ ${userText}
                                       onClick={() => applySpecialization(pv.pipe_id, displaySpec.recommended_blend_types, pv.bowl_variant_id)}
                                     >
                                       <Check className="w-4 h-4 mr-1" />
-                                      Apply Suggested
+                                      {t("tobacconist.applySuggested")}
                                     </Button>
                                   )}
 
@@ -1577,7 +1578,7 @@ ${userText}
                                     onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
                                   >
                                     <RefreshCw className="w-4 h-4 mr-1" />
-                                    {showFeedbackFor === variantKey ? "Cancel" : "Dispute / Add Info"}
+                                    {showFeedbackFor === variantKey ? t("forms.cancel") : t("tobacconist.disputeAddInfo")}
                                   </Button>
                                 </div>
 
@@ -1630,19 +1631,19 @@ ${userText}
               <div>
                 <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-amber-600" />
-                  Collection Analysis
+                  {t("tobacconist.collectionAnalysis")}
                 </h3>
 
                 <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
                   <CardContent className="p-4 space-y-3">
                     <div>
-                      <p className="text-sm font-medium text-stone-700 mb-2">Overall Assessment</p>
+                      <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
                       <p className="text-sm text-stone-700">{asText(optimization.collection_gaps.overall_assessment)}</p>
                     </div>
 
                     {optimization.collection_gaps.missing_coverage?.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-rose-700 mb-2">Coverage Gaps:</p>
+                        <p className="text-sm font-medium text-rose-700 mb-2">{t("tobacconist.coverageGaps")}</p>
                         <div className="flex flex-wrap gap-1">
                           {optimization.collection_gaps.missing_coverage.map((gap, i) => (
                             <Badge key={i} className="bg-rose-100 text-rose-800 border-rose-200">
@@ -1655,7 +1656,7 @@ ${userText}
 
                     {optimization.collection_gaps.redundancies?.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-amber-700 mb-2">Redundancies:</p>
+                        <p className="text-sm font-medium text-amber-700 mb-2">{t("tobacconist.redundancies")}</p>
                         <div className="flex flex-wrap gap-1">
                           {optimization.collection_gaps.redundancies.map((red, i) => (
                             <Badge key={i} className="bg-amber-100 text-amber-800 border-amber-200">
@@ -1675,7 +1676,7 @@ ${userText}
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-stone-800 flex items-center gap-2">
                   <Target className="w-5 h-5 text-indigo-600" />
-                  Ask the Expert
+                  {t("tobacconist.askTheExpert")}
                 </h3>
                 <InfoTooltip text="Get personalized collection advice based on your pipes, tobacco, and usage history. Follow-ups continue the conversation without repeating earlier answers." />
               </div>
@@ -1704,7 +1705,7 @@ ${userText}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700"
                     >
                       {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                      Ask
+                      {t("ai.ask")}
                     </Button>
 
                     <Button
@@ -1715,11 +1716,11 @@ ${userText}
                       title={!conversationMessages.length ? "Ask something first to analyze impact" : "Analyze impact"}
                     >
                       {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
-                      Analyze Impact
+                      {t("tobacconist.analyzeImpact")}
                     </Button>
 
                     <Button onClick={resetWhatIf} variant="outline" className="flex-1">
-                      Reset
+                      {t("tobacconist.reset")}
                     </Button>
                   </div>
 
