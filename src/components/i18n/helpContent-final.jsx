@@ -364,7 +364,9 @@ export const helpContentFinal = {
       }
     }
   },
-  "zh-Hans": {}
+  "zh-Hans": {
+
+  }
 };
 
 export { helpContentFinal };
