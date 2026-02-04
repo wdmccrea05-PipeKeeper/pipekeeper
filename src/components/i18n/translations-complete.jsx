@@ -93,7 +93,27 @@ export const translationsComplete = {
   },
   es: {
     collectionInsights: {
-      summaryTooltip: "Esta sección resume patrones y totales en tu colección según los datos que has ingresado."
+      summaryTooltip: "Esta sección resume patrones y totales en tu colección según los datos que has ingresado.",
+      reportTooltip: "Generar resúmenes exportables de tu colección para referencia o documentación.",
+      agingTooltip: "Monitorea el tabaco envejecido y obtén recomendaciones sobre tiempos de envejecimiento óptimos."
+    },
+    insights: {
+      title: "Información de Colección",
+      titleInventory: "Bodega de Tabaco",
+      subtitle: "Descripción General de la Colección",
+      stats: "Estadísticas",
+      log: "Registro",
+      pairingGrid: "Cuadrícula de Maridaje",
+      rotation: "Rotación",
+      aging: "Envejecimiento",
+      reports: "Informes",
+      statsEmpty: "Agrega pipas o tabaco para ver estadísticas de colección",
+      addFirstItem: "Agregar Primer Elemento",
+      reportsEmpty: "No hay elementos para generar informes",
+      reportsEmptyDesc: "Agrega pipas y tabaco a tu colección para generar informes",
+      reportsSubtitle: "Exporta datos de tu colección",
+      agingDashboard: "Panel de Envejecimiento",
+      agingSubtitle: "Monitoreo de Bodega"
     },
     smokingLog: {
       totalBowls: "{{total}} cuencos totales",
