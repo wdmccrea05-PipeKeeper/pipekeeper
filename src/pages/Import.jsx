@@ -126,7 +126,7 @@ export default function ImportPage() {
       setPipeResults({ success, failed, total: pipes.length });
       invalidatePipeQueries(queryClient, user?.email);
     } catch (error) {
-      alert('Failed to parse CSV file. Please check the format.');
+      alert(t("import.csvParseFailed"));
     } finally {
       setUploadingPipes(false);
       e.target.value = '';
@@ -159,7 +159,7 @@ export default function ImportPage() {
       setTobaccoResults({ success, failed, total: blends.length });
       invalidateBlendQueries(queryClient, user?.email);
     } catch (error) {
-      alert('Failed to parse CSV file. Please check the format.');
+      alert(t("import.csvParseFailed"));
     } finally {
       setUploadingTobacco(false);
       e.target.value = '';
@@ -177,8 +177,8 @@ export default function ImportPage() {
             </Button>
           </a>
           <UpgradePrompt 
-            featureName="Bulk Import"
-            description="Import multiple pipes and tobacco blends at once using CSV templates. Perfect for quickly building your collection from spreadsheets or other databases."
+            featureName={t("import.bulkImport")}
+            description={t("import.upgradeDesc")}
           />
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function ImportPage() {
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("nav.backToHome")}
           </Button>
         </a>
 
@@ -199,49 +199,49 @@ export default function ImportPage() {
           <CardHeader>
             <CardTitle className="text-3xl text-stone-100 flex items-center gap-3">
               <FileSpreadsheet className="w-8 h-8 text-[#8b3a3a]" />
-              Bulk Import
+              {t("import.bulkImport")}
             </CardTitle>
             <CardDescription className="text-stone-300">
-              Import multiple pipes and tobacco blends at once using CSV templates
+              {t("import.bulkImportDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="pipes" className="space-y-6">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="pipes">Import Pipes</TabsTrigger>
-                <TabsTrigger value="tobacco">Import Tobacco</TabsTrigger>
+                <TabsTrigger value="pipes">{t("import.importPipes")}</TabsTrigger>
+                <TabsTrigger value="tobacco">{t("import.importTobacco")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="pipes" className="space-y-6">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-amber-900 mb-2">How to Import Pipes</h3>
+                  <h3 className="font-semibold text-amber-900 mb-2">{t("import.howToImportPipes")}</h3>
                   <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
-                    <li>Download the CSV template below</li>
-                    <li>Open it in Excel, Google Sheets, or any spreadsheet app</li>
-                    <li>Fill in your pipe data (one pipe per row)</li>
-                    <li>Save as CSV format</li>
-                    <li>Upload the completed file</li>
+                    <li>{t("import.step1Template")}</li>
+                    <li>{t("import.step2OpenSpreadsheet")}</li>
+                    <li>{t("import.step3FillPipes")}</li>
+                    <li>{t("import.step4SaveCSV")}</li>
+                    <li>{t("import.step5Upload")}</li>
                   </ol>
                   <div className="mt-3 pt-3 border-t border-amber-300">
-                    <p className="text-sm font-semibold text-amber-900 mb-1">Required Fields:</p>
+                    <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
                     <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>name</strong> - Name or identifier for the pipe (required)</li>
-                      <li>• <strong>maker</strong> - Pipe brand (e.g., Peterson, Savinelli, Custom)</li>
+                      <li>• <strong>name</strong> - {t("import.pipeNameDesc")}</li>
+                      <li>• <strong>maker</strong> - {t("import.pipeMakerDesc")}</li>
                     </ul>
-                    <p className="text-xs text-amber-700 mt-2 italic">Note: 'Custom' is a valid maker for handmade or unbranded pipes. All other fields are optional.</p>
+                    <p className="text-xs text-amber-700 mt-2 italic">{t("import.pipeNoteCustom")}</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <Button onClick={downloadPipeTemplate} variant="outline" className="flex-1">
                     <Download className="w-4 h-4 mr-2" />
-                    Download Pipe Template
+                    {t("import.downloadPipeTemplate")}
                   </Button>
                 </div>
 
                 <div className="border-2 border-dashed border-stone-300 rounded-lg p-8 text-center">
                   <Upload className="w-12 h-12 text-stone-400 mx-auto mb-4" />
-                  <p className="text-stone-600 mb-4">Upload your completed CSV file</p>
+                  <p className="text-stone-600 mb-4">{t("import.uploadCompletedCSV")}</p>
                   <Input
                     type="file"
                     accept=".csv"
@@ -249,7 +249,7 @@ export default function ImportPage() {
                     disabled={uploadingPipes}
                     className="max-w-xs mx-auto"
                   />
-                  {uploadingPipes && <p className="text-sm text-stone-500 mt-2">Importing pipes...</p>}
+                  {uploadingPipes && <p className="text-sm text-stone-500 mt-2">{t("import.importingPipes")}</p>}
                 </div>
 
                 {pipeResults && (
@@ -262,10 +262,10 @@ export default function ImportPage() {
                           <AlertCircle className="w-5 h-5 text-yellow-600" />
                         )}
                         <div>
-                          <p className="font-semibold">Import Complete</p>
+                          <p className="font-semibold">{t("import.importComplete")}</p>
                           <p className="text-sm">
-                            {pipeResults.success} pipes imported successfully
-                            {pipeResults.failed > 0 && `, ${pipeResults.failed} failed`}
+                            {t("import.pipesImportedSuccess", { count: pipeResults.success })}
+                            {pipeResults.failed > 0 && `, ${t("import.importFailed", { count: pipeResults.failed })}`}
                           </p>
                         </div>
                       </div>
@@ -276,39 +276,39 @@ export default function ImportPage() {
 
               <TabsContent value="tobacco" className="space-y-6">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-amber-900 mb-2">How to Import Tobacco</h3>
+                  <h3 className="font-semibold text-amber-900 mb-2">{t("import.howToImportTobacco")}</h3>
                   <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
-                    <li>Download the CSV template below</li>
-                    <li>Open it in Excel, Google Sheets, or any spreadsheet app</li>
-                    <li>Fill in your tobacco data (one blend per row)</li>
-                    <li>Save as CSV format</li>
-                    <li>Upload the completed file</li>
+                    <li>{t("import.step1Template")}</li>
+                    <li>{t("import.step2OpenSpreadsheet")}</li>
+                    <li>{t("import.step3FillTobacco")}</li>
+                    <li>{t("import.step4SaveCSV")}</li>
+                    <li>{t("import.step5Upload")}</li>
                   </ol>
                   <div className="mt-3 pt-3 border-t border-amber-300">
-                    <p className="text-sm font-semibold text-amber-900 mb-1">Required Fields:</p>
+                    <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
                     <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>name</strong> - Name of the tobacco blend (required)</li>
+                      <li>• <strong>name</strong> - {t("import.tobaccoNameDesc")}</li>
                     </ul>
-                    <p className="text-sm font-semibold text-amber-900 mt-3 mb-1">Inventory Fields (Tins, Bulk, Pouches):</p>
+                    <p className="text-sm font-semibold text-amber-900 mt-3 mb-1">{t("import.inventoryFields")}:</p>
                     <ul className="text-xs text-amber-800 space-y-1">
-                      <li>• <strong>Tins:</strong> tin_size_oz, tin_total_tins, tin_tins_open, tin_tins_cellared, tin_cellared_date</li>
-                      <li>• <strong>Bulk:</strong> bulk_total_quantity_oz, bulk_open, bulk_cellared, bulk_cellared_date</li>
-                      <li>• <strong>Pouches:</strong> pouch_size_oz, pouch_total_pouches, pouch_pouches_open, pouch_pouches_cellared, pouch_cellared_date</li>
+                      <li>• <strong>{t("import.tins")}:</strong> tin_size_oz, tin_total_tins, tin_tins_open, tin_tins_cellared, tin_cellared_date</li>
+                      <li>• <strong>{t("import.bulk")}:</strong> bulk_total_quantity_oz, bulk_open, bulk_cellared, bulk_cellared_date</li>
+                      <li>• <strong>{t("import.pouches")}:</strong> pouch_size_oz, pouch_total_pouches, pouch_pouches_open, pouch_pouches_cellared, pouch_cellared_date</li>
                     </ul>
-                    <p className="text-xs text-amber-700 mt-2 italic">Note: All inventory fields are optional. Track any combination of tins, bulk, and/or pouches.</p>
+                    <p className="text-xs text-amber-700 mt-2 italic">{t("import.inventoryFieldsNote")}</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
                   <Button onClick={downloadTobaccoTemplate} variant="outline" className="flex-1">
                     <Download className="w-4 h-4 mr-2" />
-                    Download Tobacco Template
+                    {t("import.downloadTobaccoTemplate")}
                   </Button>
                 </div>
 
                 <div className="border-2 border-dashed border-stone-300 rounded-lg p-8 text-center">
                   <Upload className="w-12 h-12 text-stone-400 mx-auto mb-4" />
-                  <p className="text-stone-600 mb-4">Upload your completed CSV file</p>
+                  <p className="text-stone-600 mb-4">{t("import.uploadCompletedCSV")}</p>
                   <Input
                     type="file"
                     accept=".csv"
@@ -316,7 +316,7 @@ export default function ImportPage() {
                     disabled={uploadingTobacco}
                     className="max-w-xs mx-auto"
                   />
-                  {uploadingTobacco && <p className="text-sm text-stone-500 mt-2">Importing tobacco...</p>}
+                  {uploadingTobacco && <p className="text-sm text-stone-500 mt-2">{t("import.importingTobacco")}</p>}
                 </div>
 
                 {tobaccoResults && (
@@ -329,10 +329,10 @@ export default function ImportPage() {
                           <AlertCircle className="w-5 h-5 text-yellow-600" />
                         )}
                         <div>
-                          <p className="font-semibold">Import Complete</p>
+                          <p className="font-semibold">{t("import.importComplete")}</p>
                           <p className="text-sm">
-                            {tobaccoResults.success} blends imported successfully
-                            {tobaccoResults.failed > 0 && `, ${tobaccoResults.failed} failed`}
+                            {t("import.blendsImportedSuccess", { count: tobaccoResults.success })}
+                            {tobaccoResults.failed > 0 && `, ${t("import.importFailed", { count: tobaccoResults.failed })}`}
                           </p>
                         </div>
                       </div>
