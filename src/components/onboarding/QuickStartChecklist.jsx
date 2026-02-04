@@ -5,10 +5,12 @@ import { CheckCircle2, Circle, X } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { cn } from '@/lib/utils';
 import { isAppleBuild } from '@/components/utils/appVariant';
+import { useTranslation } from 'react-i18next';
 
 const CHECKLIST_KEY = 'pk_quickstart_dismissed';
 
 export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewedInsights }) {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -17,10 +19,10 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
   }, []);
 
   const items = [
-    { id: 'pipe', label: 'Add a pipe', done: pipes.length > 0, url: createPageUrl('Pipes') },
-    { id: 'cellar', label: isAppleBuild ? 'Add a cellar item' : 'Add a tobacco blend', done: blends.length > 0, url: createPageUrl('Tobacco') },
-    { id: 'note', label: 'Add a note', done: hasNotes, url: pipes.length > 0 ? createPageUrl(`PipeDetail?id=${pipes[0]?.id}`) : createPageUrl('Pipes') },
-    { id: 'insights', label: 'View insights', done: hasViewedInsights, url: createPageUrl('Home') },
+    { id: 'pipe', label: t("quickStart.addPipe"), done: pipes.length > 0, url: createPageUrl('Pipes') },
+    { id: 'cellar', label: isAppleBuild ? t("quickStart.addCellarItem") : t("quickStart.addBlend"), done: blends.length > 0, url: createPageUrl('Tobacco') },
+    { id: 'note', label: t("quickStart.addNote"), done: hasNotes, url: pipes.length > 0 ? createPageUrl(`PipeDetail?id=${pipes[0]?.id}`) : createPageUrl('Pipes') },
+    { id: 'insights', label: t("quickStart.viewInsights"), done: hasViewedInsights, url: createPageUrl('Home') },
   ];
 
   const completedCount = items.filter(i => i.done).length;
@@ -55,8 +57,8 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg text-[#E0D8C8]">Get started with your collection</CardTitle>
-                <p className="text-sm text-[#E0D8C8]/60 mt-1">{completedCount} of {items.length} complete</p>
+                <CardTitle className="text-lg text-[#E0D8C8]">{t("quickStart.title")}</CardTitle>
+                <p className="text-sm text-[#E0D8C8]/60 mt-1">{t("quickStart.progress", { completed: completedCount, total: items.length })}</p>
               </div>
               <button
                 onClick={handleDismiss}

@@ -11,8 +11,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function MessagingPanel({ user, friends, publicProfiles }) {
+  const { t } = useTranslation();
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [showInbox, setShowInbox] = useState(false);
@@ -76,7 +78,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
       setMessageText('');
-      toast.success('Message sent!');
+      toast.success(t("messaging.messageSent"));
     },
   });
 
@@ -98,7 +100,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     mutationFn: (messageId) => base44.entities.Message.delete(messageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
-      toast.success('Message deleted');
+      toast.success(t("messaging.messageDeleted"));
     },
   });
 
@@ -112,7 +114,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
       setEditingMessageId(null);
       setEditText('');
-      toast.success('Message edited');
+      toast.success(t("messaging.messageEdited"));
     },
   });
 
@@ -201,7 +203,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <div className="flex items-center justify-between">
             <CardTitle className="text-stone-800 flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-600" />
-              Instant Messaging
+              {t("messaging.instantMessaging")}
             </CardTitle>
             <Button
               variant="outline"
@@ -209,7 +211,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               onClick={() => setShowInbox(true)}
               className="relative"
             >
-              Inbox
+              {t("messaging.inbox")}
               {inboxMessages.length > 0 && (
                 <Badge className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs px-1.5">
                   {inboxMessages.length}
@@ -257,7 +259,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                         {profile?.display_name || friendEmail}
                       </p>
                       <p className="text-xs text-stone-500">
-                        {online ? 'Online' : 'Offline'}
+                        {online ? t("messaging.online") : t("messaging.offline")}
                       </p>
                     </div>
                     {unread > 0 && (
@@ -296,7 +298,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                   {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name || selectedFriend}
                 </p>
                 <p className="text-xs text-stone-500 font-normal">
-                  {isOnline(selectedFriend) ? 'Online' : 'Offline'}
+                  {isOnline(selectedFriend) ? t("messaging.online") : t("messaging.offline")}
                 </p>
               </div>
             </SheetTitle>
@@ -332,7 +334,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                               })}
                               disabled={!editText.trim() || editMessageMutation.isPending}
                             >
-                              Save
+                              {t("common.save")}
                             </Button>
                             <Button
                               size="sm"
@@ -342,7 +344,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                 setEditText('');
                               }}
                             >
-                              Cancel
+                              {t("common.cancel")}
                             </Button>
                           </div>
                         </div>
@@ -351,7 +353,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                           <p className="text-sm break-words">{message.content}</p>
                           {message.is_edited && (
                             <p className={`text-xs italic mt-1 ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
-                              (edited)
+                              ({t("messaging.edited")})
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-1">
@@ -393,7 +395,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    if (window.confirm('Delete this message?')) {
+                                    if (window.confirm(t("messaging.deleteConfirm"))) {
                                       deleteMessageMutation.mutate(message.id);
                                     }
                                   }}
@@ -416,7 +418,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <div className="border-t p-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Type a message..."
+                placeholder={t("messaging.typeMessage")}
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -432,11 +434,11 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
             </div>
             {isBlocked(selectedFriend) ? (
               <p className="text-xs text-rose-600 mt-2">
-                You have blocked this user.
+                {t("messaging.youBlockedUser")}
               </p>
             ) : !isOnline(selectedFriend) && (
               <p className="text-xs text-emerald-600 mt-2">
-                This user is offline. Your message will be saved to their inbox.
+                {t("messaging.offlineNote")}
               </p>
             )}
           </div>
@@ -447,14 +449,14 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       <Sheet open={showInbox} onOpenChange={setShowInbox}>
         <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
-            <SheetTitle>Message Inbox</SheetTitle>
+            <SheetTitle>{t("messaging.messageInbox")}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-stone-800 mb-2">Unread Messages ({inboxMessages.length})</h3>
+                <h3 className="font-semibold text-stone-800 mb-2">{t("messaging.unreadMessages")} ({inboxMessages.length})</h3>
                 {inboxMessages.length === 0 ? (
-                  <p className="text-sm text-stone-500 py-4">No unread messages</p>
+                  <p className="text-sm text-stone-500 py-4">{t("messaging.noUnread")}</p>
                 ) : (
                   <div className="space-y-2">
                     {inboxMessages.map((message) => {
@@ -486,7 +488,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                   setSelectedFriend(message.sender_email);
                                 }}
                               >
-                                Reply
+                                {t("messaging.reply")}
                               </Button>
                             </div>
                           </CardContent>
@@ -498,9 +500,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               </div>
 
               <div>
-                <h3 className="font-semibold text-stone-800 mb-2">Saved Messages ({savedMessages.length})</h3>
+                <h3 className="font-semibold text-stone-800 mb-2">{t("messaging.savedMessages")} ({savedMessages.length})</h3>
                 {savedMessages.length === 0 ? (
-                  <p className="text-sm text-stone-500 py-4">No saved messages</p>
+                  <p className="text-sm text-stone-500 py-4">{t("messaging.noSaved")}</p>
                 ) : (
                   <div className="space-y-2">
                     {savedMessages.map((message) => {

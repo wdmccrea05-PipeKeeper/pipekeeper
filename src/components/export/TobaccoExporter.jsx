@@ -4,8 +4,10 @@ import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
+import { useTranslation } from "react-i18next";
 
 export default function TobaccoExporter() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const { data: user } = useQuery({
@@ -258,7 +260,7 @@ export default function TobaccoExporter() {
         disabled={loading || blends.length === 0}
       >
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Export CSV
+        {t("tobaccoPage.exportCSV")}
       </Button>
       <Button
         variant="outline"
@@ -267,7 +269,7 @@ export default function TobaccoExporter() {
         disabled={loading || blends.length === 0}
       >
         <FileText className="w-4 h-4 mr-2" />
-        Export PDF
+        {t("tobaccoPage.exportPDF")}
       </Button>
     </div>
   );

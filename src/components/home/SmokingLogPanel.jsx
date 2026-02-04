@@ -23,8 +23,10 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs } from "@/components/utils/schemaCompatibility";
+import { useTranslation } from "react-i18next";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
+  const { t } = useTranslation();
   if (isAppleBuild) return null;
 
   const hasPaidAccess = hasPremiumAccess(user);
@@ -402,7 +404,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     if (entitlements.tier === "free") {
     const existingLogs = await base44.entities.SmokingLog.filter({ created_by: user?.email });
     if (existingLogs.length >= entitlements.limits.smokingLogs) {
-      toast.error(`Free tier limited to ${entitlements.limits.smokingLogs} usage logs. Upgrade for unlimited.`);
+      toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
       return;
     }
     }
@@ -411,7 +413,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     const blend = (blends || []).find(b => b && b.id === formData.blend_id);
     
     if (!pipe || !blend) {
-      toast.error('Please select both a pipe and blend');
+      toast.error(t("smokingLog.selectBoth"));
       return;
     }
 
@@ -453,11 +455,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 <div>
                   <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                     <Flame className="w-5 h-5" />
-                    Usage Log
+                    {t("smokingLog.usageLog")}
                     <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
                   <p className="text-sm text-[#E0D8C8]/70 mt-1">
-                    {totalBowls} total bowls ({breakInBowls} break-in)
+                    {t("smokingLog.totalBowls", { total: totalBowls, breakIn: breakInBowls })}
                   </p>
                 </div>
               </CollapsibleTrigger>
@@ -466,7 +468,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Log Session
+                {t("smokingLog.logSession")}
               </Button>
             </div>
           </CardHeader>
@@ -474,7 +476,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             <CardContent>
           {logs.length === 0 ? (
             <p className="text-sm text-[#E0D8C8]/70 text-center py-8">
-              No usage sessions logged yet. Start tracking your sessions!
+              {t("smokingLog.noSessionsYet")}
             </p>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -502,7 +504,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   <div className="flex items-center gap-2">
                     {log.is_break_in && (
                       <Badge className="bg-[#A35C5C]/30 text-[#E0D8C8] border-[#A35C5C]/50 shrink-0">
-                        Break-In
+                        {t("smokingLog.breakIn")}
                       </Badge>
                     )}
                     <Button
@@ -526,14 +528,14 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <Sheet open={showAddLog} onOpenChange={(open) => { setShowAddLog(open); if (!open) setEditingLog(null); }}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Log Usage Session</SheetTitle>
+            <SheetTitle>{t("smokingLog.logSession")}</SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">Pipe</Label>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.pipe")}</Label>
               <Select value={formData.pipe_id} onValueChange={(v) => setFormData({ ...formData, pipe_id: v })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select pipe" />
+                  <SelectValue placeholder={t("smokingLog.selectPipe")} />
                 </SelectTrigger>
                 <SelectContent>
                   {pipes.map(p => {
@@ -545,7 +547,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                           {restStatus.ready ? (
                             <CheckCircle className="w-3 h-3 text-green-600 ml-auto" />
                           ) : (
-                            <Badge variant="outline" className="text-xs ml-auto">Resting</Badge>
+                            <Badge variant="outline" className="text-xs ml-auto">{t("smokingLog.resting")}</Badge>
                           )}
                         </div>
                       </SelectItem>
@@ -565,13 +567,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
               {hasMultipleBowls && (
               <div className="space-y-2">
-                <Label className="text-[#E0D8C8]">Bowl Used (Optional)</Label>
+                <Label className="text-[#E0D8C8]">{t("smokingLog.bowlUsed")}</Label>
                 <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select bowl variant" />
+                    <SelectValue placeholder={t("smokingLog.selectBowl")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>No specific bowl selected</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
@@ -586,10 +588,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               )}
 
               <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">Tobacco Blend</Label>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.tobaccoBlend")}</Label>
               <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v, container_id: '' })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select blend" />
+                  <SelectValue placeholder={t("smokingLog.selectBlend")} />
                 </SelectTrigger>
                 <SelectContent>
                   {blends.map(b => (
@@ -603,13 +605,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
             {formData.blend_id && containers.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-[#E0D8C8]">Container (Optional)</Label>
+                <Label className="text-[#E0D8C8]">{t("smokingLog.container")}</Label>
                 <Select value={formData.container_id || ""} onValueChange={(v) => setFormData({ ...formData, container_id: v })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Auto / None" />
+                    <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>Auto / None</SelectItem>
+                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
@@ -621,7 +623,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             )}
 
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">Number of Bowls</Label>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.numberOfBowls")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -630,13 +632,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               />
               {formData.pipe_id && formData.bowls_smoked && (
                 <p className="text-xs text-[#E0D8C8]/60">
-                  Est. tobacco usage: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1)).toFixed(2)} oz
+                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1)).toFixed(2)} oz
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">Date</Label>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.date")}</Label>
               <Input
                 type="date"
                 value={formData.date}
@@ -650,7 +652,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   checked={formData.is_break_in}
                   onCheckedChange={(v) => setFormData({ ...formData, is_break_in: v })}
                 />
-                <Label className="text-[#E0D8C8]">Part of break-in schedule</Label>
+                <Label className="text-[#E0D8C8]">{t("smokingLog.partOfBreakIn")}</Label>
               </div>
               
               <div className="flex items-center gap-3">
@@ -659,35 +661,35 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   onCheckedChange={setAutoReduceInventory}
                 />
                 <Label className="flex items-center gap-2 text-[#E0D8C8]">
-                  Automatically reduce tobacco inventory
+                  {t("smokingLog.autoReduce")}
                   <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
                     <Crown className="w-3 h-3 mr-1" />
-                    Premium
+                    {t("subscription.premium")}
                   </Badge>
                 </Label>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8]">Notes (Optional)</Label>
+              <Label className="text-[#E0D8C8]">{t("smokingLog.notes")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="How was the session? Any observations..."
+                placeholder={t("smokingLog.notesPlaceholder")}
                 rows={3}
               />
             </div>
 
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowAddLog(false)} className="flex-1">
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button 
                 type="submit" 
                 disabled={!formData.pipe_id || !formData.blend_id || createLogMutation.isPending}
                 className="flex-1"
               >
-                Log Session
+                {t("smokingLog.logSession")}
               </Button>
             </div>
           </form>
@@ -697,7 +699,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       <Sheet open={!!editingLog} onOpenChange={(open) => !open && setEditingLog(null)}>
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Edit Usage Session</SheetTitle>
+            <SheetTitle>{t("smokingLog.editSession")}</SheetTitle>
           </SheetHeader>
           {editingLog && (
             <SmokingLogEditor
@@ -708,7 +710,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 await updateLogMutation.mutateAsync({ id: editingLog.id, data });
               }}
               onDelete={async () => {
-                if (window.confirm('Delete this usage session?')) {
+                if (window.confirm(t("smokingLog.deleteConfirm"))) {
                   await deleteLogMutation.mutateAsync(editingLog.id);
                 }
               }}
