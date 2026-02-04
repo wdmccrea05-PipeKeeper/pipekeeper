@@ -6329,9 +6329,9 @@ export const translationsExtended = {
       agingReport: "熟成レポート",
       cellaredStartDate: "保存開始日",
       cellaredEndDate: "保存終了日",
-    }
+    },
   }},
-  "zh-Hans": { common: {
+  "zh-Hans": {
     nav: {
       home: "首页",
       pipes: "烟斗",
