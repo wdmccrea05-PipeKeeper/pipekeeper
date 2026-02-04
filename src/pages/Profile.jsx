@@ -618,7 +618,7 @@ export default function ProfilePage() {
                       className="w-4 h-4 rounded border-stone-300"
                     />
                     <Label htmlFor="is_public" className="text-sm text-stone-700 cursor-pointer">
-                      Make my profile publicly searchable in Community
+                     {t("profile.makeProfilePubliclySearchable")}
                     </Label>
                   </div>
                   <div className="flex items-center gap-2">
@@ -630,7 +630,7 @@ export default function ProfilePage() {
                       className="w-4 h-4 rounded border-stone-300"
                     />
                     <Label htmlFor="allow_comments" className="text-sm text-stone-700 cursor-pointer">
-                      Allow comments on my pipes, tobacco, and logs
+                     {t("profile.allowCommentsOnMyItems")}
                     </Label>
                   </div>
                   <div className="flex items-center gap-2">
@@ -642,7 +642,7 @@ export default function ProfilePage() {
                       className="w-4 h-4 rounded border-stone-300"
                     />
                     <Label htmlFor="enable_messaging" className="text-sm text-stone-700 cursor-pointer">
-                      Enable instant messaging with friends (Premium)
+                     {t("profile.enableInstantMessagingWithFriends")}
                     </Label>
                   </div>
                   {!isAppleBuild && (
@@ -655,8 +655,8 @@ export default function ProfilePage() {
                       className="w-4 h-4 rounded border-stone-300"
                     />
                     <Label htmlFor="allow_web_lookups" className="text-sm text-stone-700 cursor-pointer flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      Allow AI to use external web lookups for enrichment
+                     <Globe className="w-3 h-3" />
+                     {t("profile.allowAIWebLookups")}
                     </Label>
                   </div>
                   )}

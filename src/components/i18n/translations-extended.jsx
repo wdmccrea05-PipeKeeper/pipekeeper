@@ -1081,6 +1081,12 @@ export const translationsExtended = {
       failedToResetTutorial: "Failed to reset tutorial",
       failedToUploadImage: "Failed to upload image. Please try again.",
       avatarUploadedSuccessfully: "Avatar uploaded successfully",
+      makeProfilePubliclySearchable: "Make my profile publicly searchable in Community",
+      allowCommentsOnMyItems: "Allow comments on my pipes, tobacco, and logs",
+      enableInstantMessagingWithFriends: "Enable instant messaging with friends (Premium)",
+      allowAIWebLookups: "Allow AI to use external web lookups for enrichment",
+      howYouAppearToOtherUsers: "How you appear to other users",
+      tellOthersAboutPipeJourney: "Tell others about your pipe journey...",
     },
     // === TOBACCO PAGE KEYS ===
     tobaccoPage: {
