@@ -735,6 +735,52 @@ export const translationsComplete = {
     }
   },
   ja: {
+    collectionInsights: {
+      summaryTooltip: "このセクションは、入力したデータに基づいたコレクション全体のパターンと合計を要約しています。"
+    },
+    smokingLog: {
+      totalBowls: "{{total}} ボウル合計",
+      breakInBowls: "{{breakIn}} ブレークイン",
+      totalBreakIn: "{{total}} ブレークイン",
+      title: "使用ログ",
+      addSession: "セッション追加"
+    },
+    blendTypes: {
+      american: "アメリカン",
+      aromatic: "アロマティック",
+      balkan: "バルカン",
+      burley: "バーレー",
+      burleyBased: "バーレーベース",
+      cavendish: "キャベンディッシュ",
+      codgerBlend: "コジャーブレンド",
+      darkFiredKentucky: "ダークファイアードケンタッキー",
+      english: "イングリッシュ",
+      englishAromatic: "イングリッシュアロマティック",
+      englishBalkan: "イングリッシュバルカン",
+      fullEnglishOriental: "フルイングリッシュ/オリエンタル",
+      kentucky: "ケンタッキー",
+      lakeland: "レイクランド",
+      latakiaBlend: "ラタキアブレンド",
+      navyFlake: "ネイビーフレーク",
+      orientalTurkish: "オリエンタル/ターキッシュ",
+      other: "その他",
+      perique: "ペリク",
+      shag: "シャグ",
+      virginia: "バージニア",
+      virginiaburley: "バージニア/バーレー",
+      virginiaoriental: "バージニア/オリエンタル",
+      virginiaperique: "バージニア/ペリク"
+    },
+    aiTools: {
+      outOfDate: "最後の最適化以降、コレクションが変更されました。更新された推奨事項を取得するには再生成してください。",
+      regenerate: "再生成",
+      undo: "元に戻す",
+      notNow: "後で",
+      undoLastChange: "最後の変更を元に戻す"
+    },
+    tobaccoPage: {
+      exportCSV: "CSV エクスポート"
+    },
     pipes: { search: '検索', filter: 'フィルター', shape: '形状', material: '素材', allShapes: 'すべての形状', allMaterials: 'すべての素材' },
     tobacco: { allTypes: 'すべてのタイプ', allStrengths: 'すべての強度', search: '検索' },
     common: { loading: '読み込み中...', refresh: '更新', cancel: 'キャンセル', save: '保存', delete: '削除', close: '閉じる', unknown: '不明', of: 'の' },
