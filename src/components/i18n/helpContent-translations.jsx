@@ -4,6 +4,9 @@
  */
 
 export const helpContentTranslations = {
+  es: {},
+  fr: {},
+  de: {},
   it: {
     faqFull: {
       pageTitle: "Domande frequenti di PipeKeeper",
