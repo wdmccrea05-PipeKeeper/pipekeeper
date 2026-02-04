@@ -39,23 +39,25 @@ languages.forEach(lang => {
 });
 
 i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'en',
-    supportedLngs: languages,
-    interpolation: {
-      escapeValue: false,
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'pipekeeper_language'
-    },
-    react: {
-      useSuspense: false
-    }
-  });
+   .use(LanguageDetector)
+   .use(initReactI18next)
+   .init({
+     resources,
+     fallbackLng: 'en',
+     supportedLngs: languages,
+     returnEmptyString: false,
+     returnNull: false,
+     interpolation: {
+       escapeValue: false,
+     },
+     detection: {
+       order: ['localStorage', 'navigator'],
+       caches: ['localStorage'],
+       lookupLocalStorage: 'pipekeeper_language'
+     },
+     react: {
+       useSuspense: false
+     }
+   });
 
 export default i18n;
