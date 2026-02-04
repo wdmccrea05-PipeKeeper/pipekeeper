@@ -3596,4 +3596,3 @@ export const translationsExtended = {
     }
   }},
 };
-};
