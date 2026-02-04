@@ -11,8 +11,10 @@ import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SpecializationRecommender from "./SpecializationRecommender";
+import { useTranslation } from "react-i18next";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [newDesignation, setNewDesignation] = useState('');
@@ -95,7 +97,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-stone-600">No specialization set</span>
+              <span className="text-sm text-stone-600">{t("pipeDetailTabs.noSpecializationSet")}</span>
             </div>
             <Button
               size="sm"
@@ -104,7 +106,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               className="border-blue-300 text-blue-700 hover:bg-blue-50"
             >
               <Plus className="w-4 h-4 mr-1" />
-              Add Specialization
+              {t("pipeDetailTabs.addSpecialization")}
             </Button>
           </div>
         </CardContent>
@@ -118,7 +120,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold text-blue-800">Pipe Specialization</span>
+            <span className="font-semibold text-blue-800">{t("pipeDetailTabs.pipeSpecialization")}</span>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <SpecializationRecommender 
@@ -135,7 +137,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               onClick={() => setEditing(!editing)}
               className="shrink-0 text-blue-900 hover:text-blue-950"
             >
-              {editing ? 'Done' : 'Edit'}
+              {editing ? t("pipeDetailTabs.done") : t("common.edit")}
             </Button>
           </div>
         </div>
@@ -160,7 +162,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
           <div className="space-y-2">
             <div className="flex gap-2">
               <Input
-                placeholder="Add designation (e.g., English, Non-Aromatic)"
+                placeholder={t("pipeDetailTabs.addDesignationPlaceholder")}
                 value={newDesignation}
                 onChange={(e) => setNewDesignation(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
@@ -171,7 +173,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               </Button>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <p className="text-xs text-stone-500 w-full mb-1">Quick add:</p>
+              <p className="text-xs text-stone-500 w-full mb-1">{t("pipeDetailTabs.quickAdd")}</p>
               {suggestedFocusOptions.map(option => (
                 <Badge
                   key={option}
@@ -190,7 +192,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
 
         {matchingBlends.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-blue-700 mb-2">Matching Blends in Collection:</p>
+            <p className="text-xs font-medium text-blue-700 mb-2">{t("pipeDetailTabs.matchingBlends")}</p>
             <div className="flex flex-wrap gap-1.5">
               {matchingBlends.slice(0, 5).map(blend => (
                 <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
@@ -201,7 +203,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               ))}
               {matchingBlends.length > 5 && (
                 <Badge variant="outline" className="border-blue-200 text-blue-600">
-                  +{matchingBlends.length - 5} more
+                  +{matchingBlends.length - 5} {t("pipeDetailTabs.more")}
                 </Badge>
               )}
             </div>

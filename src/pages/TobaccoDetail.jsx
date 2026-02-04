@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +51,7 @@ const BLEND_COLORS = {
 };
 
 export default function TobaccoDetailPage() {
+  const { t } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
   const blendId = urlParams.get('id');
 
@@ -231,7 +233,7 @@ export default function TobaccoDetailPage() {
         <a href={createPageUrl('Tobacco')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Tobacco
+            {t("tobaccoExtended.backToTobacco")}
           </Button>
         </a>
 
@@ -282,21 +284,21 @@ export default function TobaccoDetailPage() {
                       value="containers" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
-                      <span className="hidden sm:inline">Open Tobacco</span>
-                      <span className="sm:hidden">Open</span>
+                      <span className="hidden sm:inline">{t("tobaccoExtended.openTobacco")}</span>
+                      <span className="sm:hidden">{t("tobaccoExtended.open")}</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="log" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
-                      <span className="hidden sm:inline">Cellared Tobacco</span>
-                      <span className="sm:hidden">Cellared</span>
+                      <span className="hidden sm:inline">{t("cellarLog.cellaredTobacco")}</span>
+                      <span className="sm:hidden">{t("tobaccoExtended.cellared")}</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="inventory" 
                       className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] data-[state=active]:text-[#E0D8C8] rounded-none px-3 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 text-[#E0D8C8]/70"
                     >
-                      Inventory
+                      {t("tobaccoExtended.inventory")}
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -331,7 +333,7 @@ export default function TobaccoDetailPage() {
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-[#e8d5b7]">{blend.name}</h1>
-                <p className="text-lg text-[#e8d5b7]/70">{blend.manufacturer || 'Unknown maker'}</p>
+                <p className="text-lg text-[#e8d5b7]/70">{blend.manufacturer || t("tobaccoExtended.unknownMaker")}</p>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -401,7 +403,7 @@ export default function TobaccoDetailPage() {
               )}
               {blend.room_note && (
                 <Badge className="bg-violet-100 text-violet-800 border-violet-200">
-                  Room Note: {blend.room_note}
+                  {t("tobaccoExtended.roomNote")} {t(`roomNotes.${blend.room_note}`, blend.room_note)}
                 </Badge>
               )}
             </div>
@@ -484,7 +486,7 @@ export default function TobaccoDetailPage() {
         <Sheet open={showEdit} onOpenChange={setShowEdit}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>Edit Blend</SheetTitle>
+              <SheetTitle>{t("tobaccoPage.editBlend")}</SheetTitle>
             </SheetHeader>
             <TobaccoForm
               blend={blend}
@@ -499,18 +501,18 @@ export default function TobaccoDetailPage() {
         <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete this blend?</AlertDialogTitle>
+              <AlertDialogTitle>{t("tobaccoExtended.deleteBlendConfirm")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete "{blend.name}" from your collection. This action cannot be undone.
+                {t("tobaccoExtended.deleteBlendDesc", { name: blend.name })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={() => deleteMutation.mutate()}
                 className="bg-rose-600 hover:bg-rose-700"
               >
-                Delete
+                {t("common.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

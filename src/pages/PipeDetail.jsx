@@ -46,6 +46,7 @@ import PipeConditionTracker from "@/components/pipes/PipeConditionTracker";
 import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 
 export default function PipeDetailPage() {
+  const { t } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
   const pipeId = urlParams.get("id")?.trim();
 
@@ -256,7 +257,7 @@ export default function PipeDetailPage() {
         <a href={createPageUrl('Pipes')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Pipes
+            {t("pipesExtended.backToPipes")}
           </Button>
         </a>
 
@@ -287,26 +288,26 @@ export default function PipeDetailPage() {
             <CardContent className="p-6">
               <Tabs defaultValue="specialization">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
-                  <TabsTrigger value="specialization" className="flex items-center gap-1.5">
-                    <Target className="w-4 h-4" />
-                    <span className="hidden sm:inline">Specialization</span>
-                    <span className="sm:hidden">Focus</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="condition" className="flex items-center gap-1.5">
-                    <Activity className="w-4 h-4" />
-                    <span className="hidden sm:inline">Condition</span>
-                    <span className="sm:hidden">Status</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="maintenance" className="flex items-center gap-1.5">
-                    <Wrench className="w-4 h-4" />
-                    <span className="hidden sm:inline">Maintenance</span>
-                    <span className="sm:hidden">Care</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="breakin" className="flex items-center gap-1.5">
-                    <Flame className="w-4 h-4" />
-                    <span className="hidden sm:inline">Break-In</span>
-                    <span className="sm:hidden">Break</span>
-                  </TabsTrigger>
+                 <TabsTrigger value="specialization" className="flex items-center gap-1.5">
+                   <Target className="w-4 h-4" />
+                   <span className="hidden sm:inline">{t("pipeDetailTabs.specialization")}</span>
+                   <span className="sm:hidden">{t("pipeDetailTabs.focus")}</span>
+                 </TabsTrigger>
+                 <TabsTrigger value="condition" className="flex items-center gap-1.5">
+                   <Activity className="w-4 h-4" />
+                   <span className="hidden sm:inline">{t("pipeDetailTabs.condition")}</span>
+                   <span className="sm:hidden">{t("pipeDetailTabs.status")}</span>
+                 </TabsTrigger>
+                 <TabsTrigger value="maintenance" className="flex items-center gap-1.5">
+                   <Wrench className="w-4 h-4" />
+                   <span className="hidden sm:inline">{t("pipeDetailTabs.maintenance")}</span>
+                   <span className="sm:hidden">{t("pipeDetailTabs.care")}</span>
+                 </TabsTrigger>
+                 <TabsTrigger value="breakin" className="flex items-center gap-1.5">
+                   <Flame className="w-4 h-4" />
+                   <span className="hidden sm:inline">{t("pipeDetailTabs.breakIn")}</span>
+                   <span className="sm:hidden">{t("common.hide").slice(0,5)}</span>
+                 </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="specialization" className="mt-0">
@@ -397,7 +398,7 @@ export default function PipeDetailPage() {
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-[#e8d5b7]">{pipe.name}</h1>
-                <p className="text-lg text-[#e8d5b7]/70">{pipe.maker || 'Unknown maker'}</p>
+                <p className="text-lg text-[#e8d5b7]/70">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -429,8 +430,8 @@ export default function PipeDetailPage() {
                   <CardContent className="p-4 flex items-center gap-3">
                     <DollarSign className="w-5 h-5 text-emerald-400" />
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70">Est. Value</p>
-                      <p className="font-semibold text-emerald-200">${Number(pipe.estimated_value).toFixed(2)}</p>
+                      <p className="text-xs text-[#E0D8C8]/70">{t("pipesExtended.estValue")}</p>
+                      <p className="font-semibold text-emerald-200">{formatCurrency(+pipe.estimated_value)}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -440,8 +441,8 @@ export default function PipeDetailPage() {
                   <CardContent className="p-4 flex items-center gap-3">
                     <DollarSign className="w-5 h-5 text-amber-400" />
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70">Paid</p>
-                      <p className="font-semibold text-amber-200">${Number(pipe.purchase_price).toFixed(2)}</p>
+                      <p className="text-xs text-[#E0D8C8]/70">{t("pipesExtended.paid")}</p>
+                      <p className="font-semibold text-amber-200">{formatCurrency(+pipe.purchase_price)}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -462,7 +463,7 @@ export default function PipeDetailPage() {
               )}
               {pipe.shankShape && pipe.shankShape !== 'Unknown' && (
                 <Badge className="bg-teal-700 text-teal-100 border-teal-600/50">
-                  Shank: {pipe.shankShape}
+                  {t("pipesExtended.shank")} {pipe.shankShape}
                 </Badge>
               )}
               {pipe.bend && pipe.bend !== 'Unknown' && (
@@ -482,7 +483,7 @@ export default function PipeDetailPage() {
               )}
               {pipe.chamber_volume && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {pipe.chamber_volume} chamber
+                  {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)} {t("pipesExtended.chamber")}
                 </Badge>
               )}
               {pipe.condition && (
@@ -496,14 +497,14 @@ export default function PipeDetailPage() {
              <Card className="border-white/10">
                <CardContent className="p-6">
                  <div className="flex items-center justify-between mb-4">
-                   <h3 className="text-sm font-semibold text-[#E0D8C8]">Details & Measurements</h3>
+                   <h3 className="text-sm font-semibold text-[#E0D8C8]">{t("pipesExtended.detailsMeasurements")}</h3>
                    <Button
                      variant="ghost"
                      size="sm"
                      onClick={() => setUseImperial(!useImperial)}
                    >
                      <ArrowLeftRight className="w-3 h-3 mr-2" />
-                     {useImperial ? 'mm' : 'inches'}
+                     {useImperial ? t("units.mm") : t("units.inches")}
                    </Button>
                  </div>
                  <div className="grid grid-cols-2 gap-4">
@@ -511,9 +512,9 @@ export default function PipeDetailPage() {
                      <div className="flex items-center gap-2">
                        <Ruler className="w-4 h-4 text-[#E0D8C8]/60" />
                        <div>
-                         <p className="text-xs text-[#E0D8C8]/60">Length</p>
+                         <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.length")}</p>
                          <p className="font-medium text-[#E0D8C8]">
-                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${(pipe.length_mm).toFixed(2)}mm`}
+                          {formatLength(pipe.length_mm, useImperial)}
                         </p>
                       </div>
                     </div>
@@ -522,26 +523,26 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <Weight className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">Weight</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.weight")}</p>
                         <p className="font-medium text-[#E0D8C8]">
-                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)}oz` : `${(pipe.weight_grams).toFixed(2)}g`}
+                          {formatWeight(pipe.weight_grams, useImperial)}
                         </p>
                       </div>
                     </div>
                   )}
                   {pipe.bowl_height_mm && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Bowl Height</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlHeight")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_height_mm).toFixed(2)}mm`}
+                        {formatLength(pipe.bowl_height_mm, useImperial)}
                       </p>
                     </div>
                   )}
                   {pipe.bowl_width_mm && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Bowl Width</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlWidth")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_width_mm).toFixed(2)}mm`}
+                        {formatLength(pipe.bowl_width_mm, useImperial)}
                       </p>
                     </div>
                   )}
@@ -725,7 +726,7 @@ export default function PipeDetailPage() {
         <Sheet open={showEdit} onOpenChange={setShowEdit}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>Edit Pipe</SheetTitle>
+              <SheetTitle>{t("pipesPage.editPipe")}</SheetTitle>
             </SheetHeader>
             <PipeForm
               pipe={pipe}
@@ -740,18 +741,18 @@ export default function PipeDetailPage() {
         <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete this pipe?</AlertDialogTitle>
+              <AlertDialogTitle>{t("pipesExtended.deletePipeConfirm")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete "{pipe.name}" from your collection. This action cannot be undone.
+                {t("pipesExtended.deletePipeDesc", { name: pipe.name })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={() => deleteMutation.mutate()}
                 className="bg-rose-600 hover:bg-rose-700"
               >
-                Delete
+                {t("common.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

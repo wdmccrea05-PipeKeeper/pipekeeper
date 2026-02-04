@@ -1334,6 +1334,16 @@ export const translationsExtended = {
       quickAdd: "Quick add:",
       addDesignationPlaceholder: "Add designation (e.g., English, Non-Aromatic)",
     },
+    // === UNIT TRANSLATIONS ===
+    units: {
+      mm: "mm",
+      inches: "inches",
+      oz: "oz",
+      g: "g",
+      kg: "kg",
+      cm: "cm",
+      in: "in",
+    },
     // === HELP CENTER KEYS ===
     helpCenter: {
       helpCenter: "Help Center",
