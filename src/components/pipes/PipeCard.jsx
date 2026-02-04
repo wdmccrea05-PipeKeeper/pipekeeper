@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import PipeShapeIcon from "./PipeShapeIcon";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
