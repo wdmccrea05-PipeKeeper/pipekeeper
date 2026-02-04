@@ -1010,7 +1010,27 @@ export const translationsComplete = {
   },
   'zh-Hans': {
     collectionInsights: {
-      summaryTooltip: "本部分根据您输入的数据总结了您的收藏中的模式和总计。"
+      summaryTooltip: "本部分根据您输入的数据总结了您的收藏中的模式和总计。",
+      reportTooltip: "生成可导出的收藏摘要，用于参考或文档。",
+      agingTooltip: "监控陈年烟草并获取有关最佳陈年时间的建议。"
+    },
+    insights: {
+      title: "收藏信息",
+      titleInventory: "烟草地窖",
+      subtitle: "收藏概览",
+      stats: "统计",
+      log: "日志",
+      pairingGrid: "配对网格",
+      rotation: "轮换",
+      aging: "陈年",
+      reports: "报告",
+      statsEmpty: "添加烟斗或烟草以查看收藏统计",
+      addFirstItem: "添加第一项",
+      reportsEmpty: "没有项目来生成报告",
+      reportsEmptyDesc: "将烟斗和烟草添加到您的收藏以生成报告",
+      reportsSubtitle: "导出您的收藏数据",
+      agingDashboard: "陈年仪表板",
+      agingSubtitle: "地窖监视"
     },
     smokingLog: {
       totalBowls: "{{total}} 个碗总计",
