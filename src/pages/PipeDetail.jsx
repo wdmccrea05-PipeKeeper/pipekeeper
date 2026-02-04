@@ -56,13 +56,9 @@ export default function PipeDetailPage() {
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [expandedImage, setExpandedImage] = useState(null);
 
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { useImperial, setUseImperial, formatLength, formatWeight } = useMeasurement();
-  
-  const formatCurrency = (value) => {
-    if (!value) return '$0';
-    return `$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-  };
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
