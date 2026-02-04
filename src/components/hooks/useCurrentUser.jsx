@@ -44,24 +44,10 @@ export function useCurrentUser() {
             const rows = await base44.entities.User.filter({ email });
             const entity = rows?.[0] || null;
             
-            // CRITICAL: Auto-reconcile entitlements if platform changed (fixes web→iOS bug)
+            // Platform tracking for future use
             if (entity) {
               const currentPlatform = detectPlatform();
-              const needsReconcile = entity.platform && entity.platform !== currentPlatform;
-              
-              if (needsReconcile) {
-                console.log(`[useCurrentUser] Platform mismatch: ${entity.platform} → ${currentPlatform}, triggering reconciliation`);
-                try {
-                  const result = await base44.functions.invoke('reconcileEntitlementsForUser', { email });
-                  if (result?.data?.updated) {
-                    // Refetch entity after reconciliation
-                    const updated = await base44.entities.User.filter({ email });
-                    return updated?.[0] || entity;
-                  }
-                } catch (reconcileErr) {
-                  console.warn('[useCurrentUser] Auto-reconciliation failed (non-fatal):', reconcileErr);
-                }
-              }
+              // Platform mismatch detection removed - reconciliation function unavailable
             }
             
             return entity;
@@ -244,12 +230,6 @@ export function useCurrentUser() {
     isAdmin,
     refetch: async () => {
       try {
-        // Trigger reconciliation before refetch for accuracy
-        if (email) {
-          await base44.functions.invoke('reconcileEntitlementsForUser', { email }).catch(err => {
-            console.warn('[useCurrentUser] Refetch reconciliation failed (non-fatal):', err);
-          });
-        }
         await refetchUser();
         await refetchSubscription();
       } catch (err) {
