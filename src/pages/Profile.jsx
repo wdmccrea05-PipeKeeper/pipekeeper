@@ -896,7 +896,7 @@ export default function ProfilePage() {
 
                 {/* Pipe Size */}
                 <div>
-                  <Label className="text-stone-700 font-medium">Preferred pipe size?</Label>
+                  <Label className="text-stone-700 font-medium">{t("profile.preferredPipeSize")}</Label>
                   <Select
                     value={formData.pipe_size_preference}
                     onValueChange={(value) => setFormData({ ...formData, pipe_size_preference: value })}
@@ -905,18 +905,18 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Small">Small</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Large">Large</SelectItem>
-                      <SelectItem value="Extra Large">Extra Large</SelectItem>
-                      <SelectItem value="No Preference">No Preference</SelectItem>
+                      <SelectItem value="Small">{t("profile.pipeSizeSmall")}</SelectItem>
+                      <SelectItem value="Medium">{t("profile.pipeSizeMedium")}</SelectItem>
+                      <SelectItem value="Large">{t("profile.pipeSizeLarge")}</SelectItem>
+                      <SelectItem value="Extra Large">{t("profile.pipeSizeExtraLarge")}</SelectItem>
+                      <SelectItem value="No Preference">{t("profile.pipeSizeNoPreference")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Strength Preference */}
                 <div>
-                  <Label className="text-stone-700 font-medium">Preferred tobacco strength?</Label>
+                  <Label className="text-stone-700 font-medium">{t("profile.preferredTobaccoStrength")}</Label>
                   <Select
                     value={formData.strength_preference}
                     onValueChange={(value) => setFormData({ ...formData, strength_preference: value })}
@@ -925,19 +925,19 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Mild">Mild</SelectItem>
-                      <SelectItem value="Mild-Medium">Mild-Medium</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Medium-Full">Medium-Full</SelectItem>
-                      <SelectItem value="Full">Full</SelectItem>
-                      <SelectItem value="No Preference">No Preference</SelectItem>
+                      <SelectItem value="Mild">{t("profile.strengthMild")}</SelectItem>
+                      <SelectItem value="Mild-Medium">{t("profile.strengthMildMedium")}</SelectItem>
+                      <SelectItem value="Medium">{t("profile.strengthMedium")}</SelectItem>
+                      <SelectItem value="Medium-Full">{t("profile.strengthMediumFull")}</SelectItem>
+                      <SelectItem value="Full">{t("profile.strengthFull")}</SelectItem>
+                      <SelectItem value="No Preference">{t("profile.strengthNoPreference")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Preferred Blend Types */}
                 <div>
-                  <Label className="text-stone-700 font-medium mb-2 block">Favorite blend types</Label>
+                  <Label className="text-stone-700 font-medium mb-2 block">{t("profile.favoriteBlendTypes")}</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {BLEND_TYPES.map(type => (
                       <Badge
@@ -958,7 +958,7 @@ export default function ProfilePage() {
 
                 {/* Preferred Shapes */}
                 <div>
-                  <Label className="text-stone-700 font-medium mb-2 block">Favorite pipe shapes</Label>
+                  <Label className="text-stone-700 font-medium mb-2 block">{t("profile.favoritePipeShapes")}</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {PIPE_SHAPES.map(shape => (
                       <Badge
@@ -979,11 +979,11 @@ export default function ProfilePage() {
 
                 {/* Notes */}
                 <div>
-                  <Label className="text-stone-700 font-medium">Additional preferences</Label>
+                  <Label className="text-stone-700 font-medium">{t("profile.additionalPreferences")}</Label>
                   <Textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Any other preferences or smoking habits..."
+                    placeholder={t("profile.anyOtherPreferencesSmokingHabits")}
                     className="mt-2 min-h-[100px]"
                   />
                 </div>
@@ -995,7 +995,7 @@ export default function ProfilePage() {
                     className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {saveMutation.isPending ? 'Saving...' : 'Save Profile'}
+                    {saveMutation.isPending ? t("profile.saving") : t("profile.saveProfile")}
                   </Button>
                 </div>
               </form>
@@ -1014,12 +1014,12 @@ export default function ProfilePage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-blue-600" />
-                <CardTitle className="text-lg text-stone-800">Data Management</CardTitle>
+                  <CardTitle className="text-lg text-stone-800">{t("profile.dataManagement")}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-stone-600 mb-3">
-                Clear old AI-generated versions (pairings, schedules, optimizations)
+                {t("profile.clearOldAIVersions")}
               </p>
               <Button
                 variant="outline"
@@ -1027,7 +1027,7 @@ export default function ProfilePage() {
                 onClick={() => setDeleteAIOpen(true)}
               >
                 <Database className="w-4 h-4 mr-2" />
-                Delete Old AI Versions
+                {t("profile.deleteOldAIVersions")}
               </Button>
             </CardContent>
           </Card>
@@ -1044,8 +1044,8 @@ export default function ProfilePage() {
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-stone-800">Restart Tutorial</h3>
-                  <p className="text-sm text-stone-600">See the welcome guide again</p>
+                  <h3 className="font-semibold text-stone-800">{t("profile.restartTutorial")}</h3>
+                  <p className="text-sm text-stone-600">{t("profile.seeWelcomeGuideAgain")}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -1060,23 +1060,23 @@ export default function ProfilePage() {
                           current_step: 0 
                         }, user?.email);
                       }
-                      toast.success('Tutorial reset successfully');
+                      toast.success(t("profile.tutorialResetSuccessfully"));
                       window.location.href = createPageUrl('Home');
                     } catch (err) {
                       console.error('Error resetting tutorial:', err);
-                      toast.error('Failed to reset tutorial');
+                      toast.error(t("profile.failedToResetTutorial"));
                     }
                   }}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Restart
+                  {t("profile.restart")}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between border-t pt-4">
                 <div>
-                  <h3 className="font-semibold text-stone-800">Sign Out</h3>
-                  <p className="text-sm text-stone-600">Log out of your PipeKeeper account</p>
+                  <h3 className="font-semibold text-stone-800">{t("profile.signOut")}</h3>
+                  <p className="text-sm text-stone-600">{t("profile.logoutPipeKeeperAccount")}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -1104,7 +1104,7 @@ export default function ProfilePage() {
                   }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                  {t("profile.logout")}
                 </Button>
               </div>
             </CardContent>
