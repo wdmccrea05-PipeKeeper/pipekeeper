@@ -17,6 +17,7 @@ import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useTranslation } from "react-i18next";
+import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
 export default function CommunityPage() {
   if (isAppleBuild) return null;
@@ -427,14 +428,14 @@ export default function CommunityPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(profile.user_email)}`)}>
-                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
-                              {profile.display_name || profile.user_email}
-                            </h3>
-                          </a>
-                          {profile.bio && (
-                            <p className="text-sm text-[#E0D8C8]/70 line-clamp-1">{profile.bio}</p>
-                          )}
+                           <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(profile.user_email)}`)}>
+                             <SafeText as="h3" className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]" truncate>
+                               {profile.display_name || profile.user_email}
+                             </SafeText>
+                           </a>
+                           {profile.bio && (
+                             <SafeText as="p" className="text-sm text-[#E0D8C8]/70" lines={1}>{profile.bio}</SafeText>
+                           )}
                           {profile.show_location && (profile.city || profile.state_province || profile.country) && (
                             <p className="text-xs text-[#E0D8C8]/60 mt-1">
                               📍 {[profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')}

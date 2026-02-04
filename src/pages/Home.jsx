@@ -29,6 +29,7 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkCard, PkCardContent, PkCardHeader, PkCardTitle } from "@/components/ui/PkCard";
 import { PkPageTitle, PkText, PkSubtext } from "@/components/ui/PkSectionHeader";
 import QuickStartChecklist from "@/components/onboarding/QuickStartChecklist";
+import { SafeText, SafeHeading, SafeLabel } from "@/components/ui/SafeText";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
@@ -734,8 +735,8 @@ export default function HomePage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate text-sm sm:text-base">{pipe.name}</p>
-                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || pipe.shape || t("common.unknown")}</p>
+                              <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{pipe.name}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={pipe.maker || pipe.shape || t("common.unknown")}>{pipe.maker || pipe.shape || t("common.unknown")}</SafeText>
                             </div>
                             {pipe.estimated_value && (
                               <Badge variant="success" className="text-xs sm:text-sm flex-shrink-0">
@@ -784,8 +785,8 @@ export default function HomePage() {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate text-sm sm:text-base">{blend.name}</p>
-                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || blend.blend_type || t("common.unknown")}</p>
+                              <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{blend.name}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={blend.manufacturer || blend.blend_type || t("common.unknown")}>{blend.manufacturer || blend.blend_type || t("common.unknown")}</SafeText>
                             </div>
                             {blend.quantity_owned > 0 && (
                               <Badge className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
