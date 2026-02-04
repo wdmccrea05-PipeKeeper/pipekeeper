@@ -323,19 +323,19 @@ export default function ProfilePage() {
                     {hasActiveSubscription ? (
                       <>
                         <h3 className="font-semibold text-amber-900">
-                          {user?.subscription_tier === 'pro' ? 'Pro Active' : 'Premium Active'}
+                          {user?.subscription_tier === 'pro' ? t("profile.proActive") : t("profile.premiumActive")}
                         </h3>
-                        <p className="text-sm text-amber-700">Full access to all features</p>
+                        <p className="text-sm text-amber-700">{t("profile.fullAccess")}</p>
                       </>
                     ) : isWithinTrial ? (
                       <>
-                        <h3 className="font-semibold text-amber-900">Free Trial Active</h3>
-                        <p className="text-sm text-amber-700">7 days free access</p>
+                        <h3 className="font-semibold text-amber-900">{t("profile.freeTrialActive")}</h3>
+                        <p className="text-sm text-amber-700">{t("profile.sevenDaysFree")}</p>
                       </>
                     ) : (
                       <>
-                        <h3 className="font-semibold text-stone-800">Free Account</h3>
-                        <p className="text-sm text-stone-600">Limited features available</p>
+                        <h3 className="font-semibold text-stone-800">{t("profile.freeAccount")}</h3>
+                        <p className="text-sm text-stone-600">{t("profile.limitedFeatures")}</p>
                       </>
                     )}
                   </div>
@@ -362,14 +362,14 @@ export default function ProfilePage() {
                             }
                           }}
                         >
-                          {isAppleBuild ? 'Manage Subscription (App Store)' : getManageSubscriptionLabel()}
+                          {isAppleBuild ? t("profile.manageSubscriptionAppStore") : getManageSubscriptionLabel()}
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       )}
                       {shouldShowPurchaseUI() && !hasActiveSubscription && (
                         <a href={createPageUrl("Subscription")}>
                           <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full">
-                            {subscription?.stripe_customer_id ? 'View Subscription' : 'Upgrade'}
+                            {subscription?.stripe_customer_id ? t("profile.viewSubscription") : t("profile.upgrade")}
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </a>
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                         onClick={() => setShowBackupModal(true)}
                       >
                         <AlertCircle className="w-4 h-4 mr-2" />
-                        Manual Subscribe
+                         {t("profile.manualSubscribe")}
                       </Button>
                     </>
                   ) : (
@@ -415,20 +415,20 @@ export default function ProfilePage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? 'Collection Profile' : 'Smoking Profile'}</CardTitle>
+                  <CardTitle className="text-2xl text-violet-900">{isAppleBuild ? t("profile.collectionProfile") : t("profile.smokingProfile")}</CardTitle>
                   {user?.isFoundingMember && (
                     <Badge 
                       className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 flex items-center gap-1 text-xs"
                       title="Early supporter of PipeKeeper"
                     >
                       <Star className="w-3 h-3 fill-current" />
-                      Founding Member
+                      {t("profile.foundingMember")}
                     </Badge>
                   )}
                 </div>
                 <CardDescription className="flex items-center gap-2 mt-1 text-stone-700">
                   {!isAppleBuild && <Sparkles className="w-4 h-4 text-violet-600" />}
-                  {isAppleBuild ? 'Organize your collection preferences' : 'Personalize your AI recommendations'}
+                  {isAppleBuild ? t("profile.organizeCollectionPrefs") : t("profile.personalizeAIRecommendations")}
                 </CardDescription>
               </div>
               </div>
@@ -661,7 +661,7 @@ export default function ProfilePage() {
                   </div>
                   )}
                   <div className="space-y-2 pt-2 border-t">
-                    <h4 className="text-sm font-semibold text-stone-700">Public Profile Privacy</h4>
+                    <h4 className="text-sm font-semibold text-stone-700">{t("profile.publicProfilePrivacy")}</h4>
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -671,8 +671,8 @@ export default function ProfilePage() {
                         className="w-4 h-4 rounded border-stone-300"
                       />
                       <Label htmlFor="privacy_hide_values" className="text-sm text-stone-700 cursor-pointer">
-                        Hide pipe values in public profile
-                      </Label>
+                         {t("profile.hidePipeValues")}
+                       </Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -683,8 +683,8 @@ export default function ProfilePage() {
                         className="w-4 h-4 rounded border-stone-300"
                       />
                       <Label htmlFor="privacy_hide_inventory" className="text-sm text-stone-700 cursor-pointer">
-                        Hide tobacco inventory quantities
-                      </Label>
+                         {t("profile.hideTobaccoInventory")}
+                       </Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -695,8 +695,8 @@ export default function ProfilePage() {
                         className="w-4 h-4 rounded border-stone-300"
                       />
                       <Label htmlFor="privacy_hide_collection_counts" className="text-sm text-stone-700 cursor-pointer">
-                        Hide collection counts
-                      </Label>
+                         {t("profile.hideCollectionCounts")}
+                       </Label>
                     </div>
                   </div>
 
