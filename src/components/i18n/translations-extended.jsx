@@ -4972,9 +4972,9 @@ export const translationsExtended = {
       agingReport: "Relatório de Envelhecimento",
       cellaredStartDate: "Data de Início de Envelhecimento",
       cellaredEndDate: "Data de Término de Envelhecimento",
-    }
+    },
   }},
-  nl: { common: {
+  nl: {
     nav: {
       home: "Thuis",
       pipes: "Pijpen",
