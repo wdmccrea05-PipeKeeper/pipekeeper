@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { CalendarClock, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import { useTranslation } from 'react-i18next';
 
 export default function RotationPlanner({ user }) {
+  const { t } = useTranslation();
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const { data: pipes = [] } = useQuery({
@@ -70,7 +72,7 @@ export default function RotationPlanner({ user }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="w-5 h-5" />
-            Rotation Planner
+            {t("tobacconist.rotationPlanner")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -79,7 +81,7 @@ export default function RotationPlanner({ user }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <h3 className="font-semibold text-sm">Needs Rotation ({needsRotation.length})</h3>
+                  <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
                 </div>
                 <div className="space-y-2">
                   {needsRotation.slice(0, 5).map(pipe => (
@@ -92,7 +94,7 @@ export default function RotationPlanner({ user }) {
                         <div>
                           <p className="font-medium text-sm">{pipe.name}</p>
                           <p className="text-xs text-stone-500">
-                            Last smoked {pipe.daysSince} days ago
+                            {t("tobacconist.lastSmokedDaysAgo")} {pipe.daysSince} {t("tobacconist.daysAgo")}
                           </p>
                         </div>
                         <Badge variant="outline" className="text-orange-600 border-orange-300">
@@ -110,7 +112,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-red-500" />
-                    <h3 className="font-semibold text-sm">Never Smoked ({neverSmoked.length})</h3>
+                    <h3 className="font-semibold text-sm">{t("tobacconist.neverSmoked")} ({neverSmoked.length})</h3>
                   </div>
                   {neverSmoked.length > 3 && (
                     <Button
@@ -120,9 +122,9 @@ export default function RotationPlanner({ user }) {
                       className="h-7 text-xs"
                     >
                       {expandedNeverSmoked ? (
-                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
+                        <>{t("tobacconist.showLess")} <ChevronUp className="w-3 h-3 ml-1" /></>
                       ) : (
-                        <>Show All <ChevronDown className="w-3 h-3 ml-1" /></>
+                        <>{t("tobacconist.showAll")} <ChevronDown className="w-3 h-3 ml-1" /></>
                       )}
                     </Button>
                   )}
@@ -137,10 +139,10 @@ export default function RotationPlanner({ user }) {
                       <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
                         <div>
                           <p className="font-medium text-sm">{pipe.name}</p>
-                          <p className="text-xs text-stone-500">No usage sessions recorded</p>
+                          <p className="text-xs text-stone-500">{t("tobacconist.noUsageSessionsRecorded")}</p>
                         </div>
                         <Badge variant="outline" className="text-red-600 border-red-300">
-                          New
+                          {t("tobacconist.new")}
                         </Badge>
                       </div>
                     </Link>
@@ -154,7 +156,7 @@ export default function RotationPlanner({ user }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <h3 className="font-semibold text-sm">Recently Used</h3>
+                    <h3 className="font-semibold text-sm">{t("tobacconist.recentlyUsed")}</h3>
                   </div>
                   {recentlySmoked.length > 3 && (
                     <Button
@@ -164,9 +166,9 @@ export default function RotationPlanner({ user }) {
                       className="h-7 text-xs"
                     >
                       {expandedRecentlySmoked ? (
-                        <>Show Less <ChevronUp className="w-3 h-3 ml-1" /></>
+                        <>{t("tobacconist.showLess")} <ChevronUp className="w-3 h-3 ml-1" /></>
                       ) : (
-                        <>Show More <ChevronDown className="w-3 h-3 ml-1" /></>
+                        <>{t("tobacconist.showMore")} <ChevronDown className="w-3 h-3 ml-1" /></>
                       )}
                     </Button>
                   )}
@@ -180,11 +182,11 @@ export default function RotationPlanner({ user }) {
                       <div>
                         <p className="font-medium text-sm">{pipe.name}</p>
                         <p className="text-xs text-stone-500">
-                          {pipe.daysSince === 0 ? 'Today' : `${pipe.daysSince} day${pipe.daysSince > 1 ? 's' : ''} ago`}
+                          {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
                         </p>
                       </div>
                       <Badge variant="outline" className="text-green-600 border-green-300">
-                        Active
+                        {t("tobacconist.active")}
                       </Badge>
                     </div>
                   ))}
@@ -194,7 +196,7 @@ export default function RotationPlanner({ user }) {
 
             {needsRotation.length === 0 && neverSmoked.length === 0 && recentlySmoked.length === 0 && (
               <p className="text-center text-stone-500 py-8">
-                No pipes in collection yet
+                {t("tobacconist.noPipesInCollection")}
               </p>
             )}
           </div>

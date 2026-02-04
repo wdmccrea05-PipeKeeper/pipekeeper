@@ -8,8 +8,10 @@ import { Progress } from "@/components/ui/progress";
 import { Wine, Clock, TrendingUp, Package } from "lucide-react";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "react-i18next";
 
 export default function CellarAgingDashboard({ user }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const { data: blends = [], isLoading } = useQuery({
@@ -138,7 +140,7 @@ export default function CellarAgingDashboard({ user }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-[#E0D8C8]/60">Loading cellar data...</div>
+        <div className="text-[#E0D8C8]/60">{t("common.loading")}</div>
       </div>
     );
   }
@@ -147,9 +149,9 @@ export default function CellarAgingDashboard({ user }) {
     return (
       <div className="text-center py-12 space-y-3">
         <Wine className="w-12 h-12 mx-auto text-[#A35C5C]/40" />
-        <h3 className="text-lg font-semibold text-[#E0D8C8]">No Cellared Tobacco Yet</h3>
+        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("tobacconist.noCellaredTobaccoYet")}</h3>
         <p className="text-sm text-[#E0D8C8]/70 max-w-md mx-auto">
-          Start cellaring tobacco to track aging progress and get recommendations for optimal aging times.
+          {t("tobacconist.noCellaredTobaccoDesc")}
         </p>
       </div>
     );
@@ -169,7 +171,7 @@ export default function CellarAgingDashboard({ user }) {
             <Package className="w-8 h-8 text-[#E0D8C8]" />
             <div>
               <div className="text-2xl font-bold text-white">{cellarBlends.length}</div>
-              <div className="text-xs text-white/90 font-medium">Cellared Blends</div>
+              <div className="text-xs text-white/90 font-medium">{t("tobacconist.cellaredBlends")}</div>
             </div>
           </div>
         </Card>
@@ -179,7 +181,7 @@ export default function CellarAgingDashboard({ user }) {
             <TrendingUp className="w-8 h-8 text-[#E0D8C8]" />
             <div>
               <div className="text-2xl font-bold text-white">{totalWeight.toFixed(1)} oz</div>
-              <div className="text-xs text-white/90 font-medium">Total Cellared</div>
+              <div className="text-xs text-white/90 font-medium">{t("stats.totalCellared")}</div>
             </div>
           </div>
         </Card>
@@ -189,7 +191,7 @@ export default function CellarAgingDashboard({ user }) {
             <Clock className="w-8 h-8 text-[#E0D8C8]" />
             <div>
               <div className="text-2xl font-bold text-white">{Math.round(avgMonths)}m</div>
-              <div className="text-xs text-white/90 font-medium">Avg Age</div>
+              <div className="text-xs text-white/90 font-medium">{t("tobacconist.avgAge")}</div>
             </div>
           </div>
         </Card>
@@ -221,11 +223,11 @@ export default function CellarAgingDashboard({ user }) {
                   <div className="flex-1">
                     <h4 className="font-semibold text-white mb-1">{blend.name}</h4>
                     <div className="flex flex-wrap gap-2 items-center text-xs text-white/80 font-medium">
-                      <span>{totalOz.toFixed(1)} oz cellared</span>
+                      <span>{totalOz.toFixed(1)} {t("stats.ozCellared")}</span>
                       {aging.oldestDate && (
                         <>
                           <span>•</span>
-                          <span>Since {format(aging.oldestDate, 'MMM yyyy')}</span>
+                          <span>{t("tobacconist.sinceDateFormat")} {format(aging.oldestDate, 'MMM yyyy')}</span>
                           <span>•</span>
                           <span className="font-medium">{aging.months}m {aging.days % 30}d</span>
                         </>
@@ -247,7 +249,7 @@ export default function CellarAgingDashboard({ user }) {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-white/80 font-medium">
-                    <span>Aging Progress</span>
+                    <span>{t("tobacconist.agingProgress")}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <Progress value={progress} className="h-2" />

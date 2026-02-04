@@ -22,8 +22,10 @@ import { regeneratePairingsConsistent } from "@/components/utils/pairingRegenera
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import InfoTooltip from "@/components/ui/InfoTooltip";
+import { useTranslation } from "react-i18next";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
+  const { t } = useTranslation();
   const entitlements = useEntitlements();
   const navigate = useNavigate();
 
@@ -424,9 +426,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         <div className="flex items-start gap-3 mb-3">
           <Tags className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">Tobacco Blend Classification</h3>
+            <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.tobaccoBlendClassification")}</h3>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
+              {t("tobacconist.tobaccoBlendClassificationDesc")}
             </p>
           </div>
         </div>
@@ -441,7 +443,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           ) : (
             <Tags className="w-3 h-3 mr-1" />
           )}
-          Reclassify Blends ({(blends || []).length} total)
+          {t("tobacconist.reclassifyBlends")} ({(blends || []).length} {t("tobacconist.total")})
         </Button>
       </div>
 
@@ -454,8 +456,8 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
-              <InfoTooltip text="Generates 0-10 compatibility scores for every pipe-tobacco combination. Considers pipe focus, blend characteristics, and your preferences." />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.pairingMatrix")}</h3>
+              <InfoTooltip text={t("tobacconist.pairingMatrixTooltip")} />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
@@ -475,7 +477,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="border-gray-300 text-[#1a2c42]"
           >
             <Undo className="w-3 h-3 mr-1" />
-            Undo
+            {t("tobacconist.undo")}
           </Button>
           <Button
             size="sm"
@@ -484,7 +486,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
             {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-            Regenerate
+            {t("tobacconist.regenerate")}
           </Button>
         </div>
       </div>
@@ -498,8 +500,8 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
-              <InfoTooltip text="AI suggests which pipes to specialize for specific tobacco families, identifies collection gaps, and recommends next purchases." />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.collectionOptimizationTitle")}</h3>
+              <InfoTooltip text={t("tobacconist.collectionOptimizationTooltip")} />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
@@ -519,7 +521,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="border-gray-300 text-[#1a2c42]"
           >
             <Undo className="w-3 h-3 mr-1" />
-            Undo
+            {t("tobacconist.undo")}
           </Button>
           <Button
             size="sm"
@@ -528,7 +530,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
           >
             {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-            Regenerate
+            {t("tobacconist.regenerate")}
           </Button>
         </div>
       </div>
@@ -538,11 +540,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <Ruler className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Analyze Pipe Geometry</h3>
-              <InfoTooltip text="AI analyzes pipe photos and dimensions to classify shape (Billiard, Dublin, etc.), bowl style (cylindrical, conical), shank shape, bend, and size class. Only updates missing/Unknown fields." />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.analyzePipeGeometry")}</h3>
+              <InfoTooltip text={t("tobacconist.analyzePipeGeometryTooltip")} />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              Classify geometry from photos (primary method)
+              {t("tobacconist.classifyGeometryFromPhotos")}
             </p>
           </div>
         </div>
@@ -554,7 +556,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="bg-gradient-to-r from-emerald-600 to-emerald-700"
           >
             <Ruler className="w-3 h-3 mr-1" />
-            Analyze Geometry from Photos
+            {t("tobacconist.analyzeGeometryFromPhotos")}
           </Button>
           
           <Button
@@ -564,13 +566,13 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             className="border-gray-300 text-[#1a2c42]"
           >
             <Info className="w-3 h-3 mr-1" />
-            {showVerifiedLookup ? "Hide" : "Find"} Verified Manufacturer Specs (optional)
+            {showVerifiedLookup ? t("tobacconist.hide") : t("tobacconist.findVerifiedSpecs")}
           </Button>
 
           {showVerifiedLookup && (
             <div className="mt-2 pt-2 border-t border-gray-200">
               <p className="text-xs text-[#1a2c42]/70 mb-2">
-                Only works for some production pipes. Searches manufacturer catalogs and databases.
+                {t("tobacconist.findSpecsDesc")}
               </p>
               <Button
                 size="sm"
@@ -580,7 +582,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
                 className="border-gray-300 text-[#1a2c42] w-full"
               >
                 {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
-                Find Specs
+                {t("tobacconist.findSpecs")}
               </Button>
             </div>
           )}
@@ -592,11 +594,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Break-In Schedules</h3>
-              <InfoTooltip text="Progressive conditioning stages for new pipes. Starts with mild blends, transitions to your pipe's intended focus. Track bowl-by-bowl progress." />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.breakInSchedules")}</h3>
+              <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip")} />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              Regeneration is handled per pipe on the Pipe detail page (with undo/history).
+              {t("tobacconist.breakInSchedulesDesc")}
             </p>
           </div>
         </div>
