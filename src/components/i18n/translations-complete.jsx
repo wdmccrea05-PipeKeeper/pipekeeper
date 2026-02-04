@@ -668,7 +668,27 @@ export const translationsComplete = {
   },
   nl: {
     collectionInsights: {
-      summaryTooltip: "Deze sectie geeft een samenvatting van patronen en totalen in uw collectie op basis van de gegevens die u hebt ingevoerd."
+      summaryTooltip: "Deze sectie geeft een samenvatting van patronen en totalen in uw collectie op basis van de gegevens die u hebt ingevoerd.",
+      reportTooltip: "Genereer exporteerbare samenvattingen van uw collectie voor referentie of documentatie.",
+      agingTooltip: "Bewaak gerijpte tabak en krijg aanbevelingen over optimale rijpingstijden."
+    },
+    insights: {
+      title: "Collectie-informatie",
+      titleInventory: "Tabakalder",
+      subtitle: "Collectie-overzicht",
+      stats: "Statistieken",
+      log: "Logboek",
+      pairingGrid: "Paaringsrooster",
+      rotation: "Rotatie",
+      aging: "Rijping",
+      reports: "Rapporten",
+      statsEmpty: "Voeg pijpen of tabak toe om collectiestatistieken te zien",
+      addFirstItem: "Voeg Eerste Item Toe",
+      reportsEmpty: "Geen items om rapporten te genereren",
+      reportsEmptyDesc: "Voeg pijpen en tabak toe aan uw collectie om rapporten te genereren",
+      reportsSubtitle: "Exporteer uw collectiegegevens",
+      agingDashboard: "Rijpingsdashboard",
+      agingSubtitle: "Alderbewaking"
     },
     smokingLog: {
       totalBowls: "{{total}} totaal kommetjes",
