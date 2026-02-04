@@ -245,35 +245,45 @@ export default function HomePage() {
   }, [showTestingNotice]);
 
   const handleOnboardingComplete = async () => {
-    if (onboardingStatus) {
-      await updateOnboardingMutation.mutateAsync({
-        id: onboardingStatus.id,
-        data: { completed: true, current_step: 5 }
-      });
-    } else if (user?.email) {
-      await createOnboardingMutation.mutateAsync({
-        user_email: user.email,
-        completed: true,
-        current_step: 5
-      });
+    try {
+      if (onboardingStatus) {
+        await updateOnboardingMutation.mutateAsync({
+          id: onboardingStatus.id,
+          data: { completed: true, current_step: 5 }
+        });
+      } else if (user?.email) {
+        await createOnboardingMutation.mutateAsync({
+          user_email: user.email,
+          completed: true,
+          current_step: 5
+        });
+      }
+      setShowOnboarding(false);
+    } catch (err) {
+      console.error('[Home] Onboarding complete error:', err);
+      setShowOnboarding(false);
     }
-    setShowOnboarding(false);
   };
 
   const handleOnboardingSkip = async () => {
-    if (onboardingStatus) {
-      await updateOnboardingMutation.mutateAsync({
-        id: onboardingStatus.id,
-        data: { skipped: true }
-      });
-    } else if (user?.email) {
-      await createOnboardingMutation.mutateAsync({
-        user_email: user.email,
-        skipped: true,
-        current_step: 0
-      });
+    try {
+      if (onboardingStatus) {
+        await updateOnboardingMutation.mutateAsync({
+          id: onboardingStatus.id,
+          data: { skipped: true }
+        });
+      } else if (user?.email) {
+        await createOnboardingMutation.mutateAsync({
+          user_email: user.email,
+          skipped: true,
+          current_step: 0
+        });
+      }
+      setShowOnboarding(false);
+    } catch (err) {
+      console.error('[Home] Onboarding skip error:', err);
+      setShowOnboarding(false);
     }
-    setShowOnboarding(false);
   };
 
   if (userLoading) {
