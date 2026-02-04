@@ -16,10 +16,12 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useTranslation } from "react-i18next";
 
 export default function CommunityPage() {
   if (isAppleBuild) return null;
 
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [locationFilters, setLocationFilters] = useState({
@@ -228,8 +230,8 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Community</h1>
-          <p className="text-[#e8d5b7]/70">Connect with fellow pipe enthusiasts</p>
+          <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("nav.community")}</h1>
+          <p className="text-[#e8d5b7]/70">{t("communityExtended.connectEnthusiasts")}</p>
         </div>
 
         <Tabs defaultValue="discover" className="space-y-6">
@@ -237,15 +239,15 @@ export default function CommunityPage() {
             <TabsList className="bg-[#223447]/60 border border-[#E0D8C8]/15 inline-flex min-w-full sm:w-auto">
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Discover</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.discover")}</span>
               </TabsTrigger>
               <TabsTrigger value="friends" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <UserCog className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Friends</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.friends")}</span>
               </TabsTrigger>
               <TabsTrigger value="requests" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
                 <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Requests</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.requests")}</span>
                 {friendRequests.length > 0 && (
                   <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-amber-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {friendRequests.length}
@@ -254,19 +256,19 @@ export default function CommunityPage() {
               </TabsTrigger>
               <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Inbox</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox")}</span>
               </TabsTrigger>
               <TabsTrigger value="following" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Following</span>
+                <span className="hidden sm:inline ml-2">{t("nav.following")}</span>
               </TabsTrigger>
               <TabsTrigger value="myprofile" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <User className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Profile</span>
+                <span className="hidden sm:inline ml-2">{t("nav.profile")}</span>
               </TabsTrigger>
               <TabsTrigger value="invite" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Send className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">Invite</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.invite")}</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -276,11 +278,11 @@ export default function CommunityPage() {
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-4">
                   <p className="text-sm text-[#E0D8C8]/70 mb-2">
-                    <strong>Your profile is private.</strong> Enable public visibility in your Profile settings to be discovered by other users.
+                    <strong>{t("communityExtended.profilePrivate")}</strong> {t("communityExtended.profilePrivateDesc")}
                   </p>
                   <a href={createPageUrl('Profile')}>
                     <Button size="sm" variant="outline">
-                      Update Settings
+                      {t("communityExtended.updateSettings")}
                     </Button>
                   </a>
                 </CardContent>
@@ -289,7 +291,7 @@ export default function CommunityPage() {
 
             <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
-                <CardTitle className="text-[#E0D8C8]">Find Users</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.findUsers")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6">
@@ -297,7 +299,7 @@ export default function CommunityPage() {
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/50" />
                       <Input
-                        placeholder="Search by name or email..."
+                        placeholder={t("communityExtended.searchByName")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && setActiveSearchQuery(searchQuery)}
@@ -311,14 +313,14 @@ export default function CommunityPage() {
                       }}
                     >
                       <Search className="w-4 h-4 mr-2" />
-                      Search
+                      {t("common.search")}
                     </Button>
                   </div>
 
                   <div className="space-y-3 p-4 bg-[#1E2F43] rounded-lg border border-[#E0D8C8]/15">
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin className="w-4 h-4 text-[#E0D8C8]/70" />
-                      <h4 className="font-semibold text-[#E0D8C8] text-sm">Search by Location</h4>
+                      <h4 className="font-semibold text-[#E0D8C8] text-sm">{t("communityExtended.searchByLocation")}</h4>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -333,7 +335,7 @@ export default function CommunityPage() {
                           <SelectValue placeholder="Select country..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__ALL__">All Countries</SelectItem>
+                          <SelectItem value="__ALL__">{t("communityExtended.allCountries")}</SelectItem>
                           <SelectItem value="United States">United States</SelectItem>
                           <SelectItem value="Canada">Canada</SelectItem>
                           <SelectItem value="United Kingdom">United Kingdom</SelectItem>
@@ -357,17 +359,17 @@ export default function CommunityPage() {
                         </SelectContent>
                       </Select>
                       <Input
-                        placeholder="City (e.g., Seattle)"
+                        placeholder={t("communityExtended.cityPlaceholder")}
                         value={locationFilters.city}
                         onChange={(e) => setLocationFilters({...locationFilters, city: e.target.value})}
                       />
                       <Input
-                        placeholder="State/Province (e.g., WA)"
+                        placeholder={t("communityExtended.statePlaceholder")}
                         value={locationFilters.state}
                         onChange={(e) => setLocationFilters({...locationFilters, state: e.target.value})}
                       />
                       <Input
-                        placeholder="Zip/Postal Code (e.g., 98101)"
+                        placeholder={t("communityExtended.zipPlaceholder")}
                         value={locationFilters.zipCode}
                         onChange={(e) => setLocationFilters({...locationFilters, zipCode: e.target.value})}
                       />
@@ -382,7 +384,7 @@ export default function CommunityPage() {
                         className="flex-1"
                       >
                         <Search className="w-4 h-4 mr-2" />
-                        Search Location
+                        {t("communityExtended.searchLocation")}
                       </Button>
                       <Button
                         variant="outline"
@@ -391,7 +393,7 @@ export default function CommunityPage() {
                           setActiveLocationFilters({ country: '', city: '', state: '', zipCode: '' });
                         }}
                       >
-                        Clear
+                        {t("communityExtended.clear")}
                       </Button>
                     </div>
                   </div>
@@ -403,14 +405,14 @@ export default function CommunityPage() {
             <Sheet open={showResults} onOpenChange={setShowResults}>
               <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
                 <SheetHeader>
-                  <SheetTitle>Search Results</SheetTitle>
+                  <SheetTitle>{t("communityExtended.searchResults")}</SheetTitle>
                   <SheetDescription>
-                    {publicProfiles.filter(p => p.user_email !== user?.email).length} users found
+                    {publicProfiles.filter(p => p.user_email !== user?.email).length} {t("communityExtended.usersFound")}
                   </SheetDescription>
                   <div className="flex gap-2 mt-4">
                     <a href={createPageUrl('Home')} className="flex-1">
                       <Button variant="outline" className="w-full">
-                        Return to Home
+                        {t("nav.home")}
                       </Button>
                     </a>
                     <Button 
@@ -418,7 +420,7 @@ export default function CommunityPage() {
                       className="flex-1"
                       onClick={() => setShowResults(false)}
                     >
-                      Return to Search
+                      {t("communityExtended.returnToSearch")}
                     </Button>
                   </div>
                 </SheetHeader>
@@ -451,12 +453,12 @@ export default function CommunityPage() {
                           {isFriend(profile.user_email) ? (
                             <Badge variant="outline" className="text-emerald-700 border-emerald-300 whitespace-nowrap text-center">
                               <UserCheck className="w-3 h-3 mr-1" />
-                              Friends
+                              {t("communityExtended.friendStatus")}
                             </Badge>
                           ) : hasPendingRequest(profile.user_email) ? (
                             <Badge variant="outline" className="text-amber-700 border-amber-300 whitespace-nowrap text-center">
                               <Clock className="w-3 h-3 mr-1" />
-                              Pending
+                              {t("communityExtended.pendingStatus")}
                             </Badge>
                           ) : (
                             <Button
@@ -467,7 +469,7 @@ export default function CommunityPage() {
                               className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 whitespace-nowrap w-full"
                             >
                               <UserPlus className="w-4 h-4 mr-1" />
-                              Friend
+                              {t("communityExtended.addFriend")}
                             </Button>
                           )}
                           {isFollowing(profile.user_email) ? (
@@ -500,7 +502,7 @@ export default function CommunityPage() {
                   {publicProfiles.filter(p => p.user_email !== user?.email).length === 0 && (
                     <div className="text-center py-12 text-[#E0D8C8]/70">
                       <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                      <p>No users found matching your search</p>
+                      <p>{t("communityExtended.noUsersFound")}</p>
                     </div>
                   )}
                 </div>
@@ -520,8 +522,8 @@ export default function CommunityPage() {
                 <Card className="bg-[#223447] border-[#E0D8C8]/15">
                   <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                     <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                    <p>No friends to message yet</p>
-                    <p className="text-sm mt-2">Add friends from the Discover tab to start messaging</p>
+                    <p>{t("communityExtended.noFriendsToMessage")}</p>
+                    <p className="text-sm mt-2">{t("communityExtended.noFriendsToMessageDesc")}</p>
                   </CardContent>
                 </Card>
               )
@@ -529,14 +531,14 @@ export default function CommunityPage() {
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/70" />
-                  <h3 className="font-semibold text-[#E0D8C8] mb-2">Instant Messaging Disabled</h3>
+                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("communityExtended.messagingDisabled")}</h3>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    Enable instant messaging in your Profile settings to chat with friends in real-time.
+                    {t("communityExtended.messagingDisabledDesc")}
                   </p>
                   <a href={createPageUrl('Profile')}>
                     <Button>
                       <Settings className="w-4 h-4 mr-2" />
-                      Go to Profile Settings
+                      {t("communityExtended.goToProfileSettings")}
                     </Button>
                   </a>
                 </CardContent>
@@ -550,14 +552,14 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <UserCog className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>You don't have any friends yet</p>
-                  <p className="text-sm mt-2">Send friend requests from the Discover tab</p>
+                  <p>{t("communityExtended.noFriendsYet")}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.noFriendsYetDesc")}</p>
                 </CardContent>
               </Card>
             ) : (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardHeader>
-                  <CardTitle className="text-[#E0D8C8]">Your Friends</CardTitle>
+                  <CardTitle className="text-[#E0D8C8]">{t("communityExtended.yourFriends")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {acceptedFriends.map((friendship) => {
@@ -594,7 +596,7 @@ export default function CommunityPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                if (window.confirm('Remove this friend?')) {
+                                if (window.confirm(t("communityExtended.removeFriendConfirm"))) {
                                   removeFriendMutation.mutate(friendship.id);
                                 }
                               }}
@@ -602,7 +604,7 @@ export default function CommunityPage() {
                               className="text-rose-600 hover:bg-rose-50 flex-shrink-0"
                             >
                               <UserX className="w-4 h-4 sm:mr-2" />
-                              <span className="hidden sm:inline">Remove</span>
+                              <span className="hidden sm:inline">{t("communityExtended.remove")}</span>
                             </Button>
                           </div>
                         </CardContent>
@@ -619,14 +621,14 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>No pending friend requests</p>
-                  <p className="text-sm mt-2">Friend requests will appear here</p>
+                  <p>{t("communityExtended.noPendingRequests")}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc")}</p>
                 </CardContent>
               </Card>
             ) : (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardHeader>
-                  <CardTitle className="text-[#E0D8C8]">Pending Friend Requests</CardTitle>
+                  <CardTitle className="text-[#E0D8C8]">{t("communityExtended.pendingFriendRequests")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {friendRequests.map((request) => {
@@ -647,7 +649,7 @@ export default function CommunityPage() {
                                   {profile?.display_name || request.requester_email}
                                 </h3>
                               </a>
-                              <p className="text-xs text-[#E0D8C8]/60">Wants to be friends</p>
+                              <p className="text-xs text-[#E0D8C8]/60">{t("communityExtended.wantsToBeFriends")}</p>
                             </div>
                             <div className="flex flex-col gap-2 flex-shrink-0">
                               <Button
@@ -657,7 +659,7 @@ export default function CommunityPage() {
                                 className="bg-emerald-600 hover:bg-emerald-700 whitespace-nowrap"
                               >
                                 <CheckCircle className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">Accept</span>
+                                <span className="hidden sm:inline">{t("communityExtended.acceptRequest")}</span>
                               </Button>
                               <Button
                                 size="sm"
@@ -667,7 +669,7 @@ export default function CommunityPage() {
                                 className="text-rose-600 hover:bg-rose-50 whitespace-nowrap"
                               >
                                 <XCircle className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">Decline</span>
+                                <span className="hidden sm:inline">{t("communityExtended.declineRequest")}</span>
                               </Button>
                             </div>
                           </div>
@@ -685,8 +687,8 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>You're not following anyone yet</p>
-                  <p className="text-sm mt-2">Discover users to follow in the Discover tab</p>
+                  <p>{t("communityExtended.notFollowingYet")}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.notFollowingYetDesc")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -725,7 +727,7 @@ export default function CommunityPage() {
                           className="flex-shrink-0"
                         >
                           <UserX className="w-4 h-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Remove</span>
+                          <span className="hidden sm:inline">{t("communityExtended.remove")}</span>
                         </Button>
                       </div>
                     </CardContent>
@@ -739,12 +741,12 @@ export default function CommunityPage() {
             <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                <CardTitle className="text-[#E0D8C8]">Your Public Profile</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.yourPublicProfile")}</CardTitle>
                 {user?.email && (
                   <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${userProfile?.is_public ? '' : '&preview=true'}`)}>
                     <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 mr-2" />
-                      {userProfile?.is_public ? 'View Profile' : 'Preview Profile'}
+                      {userProfile?.is_public ? t("communityExtended.viewProfile") : t("communityExtended.previewProfile")}
                     </Button>
                   </a>
                 )}
@@ -755,27 +757,27 @@ export default function CommunityPage() {
                   <>
                     <div className="p-4 bg-[#2EAF6F]/20 border border-[#2EAF6F]/30 rounded-lg">
                       <p className="text-sm text-[#2EAF6F]">
-                        ✅ Your profile is public and searchable by other users.
+                        ✅ {t("communityExtended.profilePublic")}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-[#E0D8C8]">Profile Settings</h4>
+                      <h4 className="font-semibold text-[#E0D8C8]">{t("communityExtended.profileSettings")}</h4>
                       <p className="text-sm text-[#E0D8C8]/70">
-                        Display Name: <strong>{userProfile.display_name || 'Not set'}</strong>
+                        {t("communityExtended.displayName")}: <strong>{userProfile.display_name || t("communityExtended.notSet")}</strong>
                       </p>
                       {userProfile.bio && (
                         <p className="text-sm text-[#E0D8C8]/70">
-                          Bio: {userProfile.bio}
+                          {t("communityExtended.bio")}: {userProfile.bio}
                         </p>
                       )}
                       <p className="text-sm text-[#E0D8C8]/70">
-                        Comments: <strong>{userProfile.allow_comments ? 'Enabled' : 'Disabled'}</strong>
+                        {t("communityExtended.commentsLabel")}: <strong>{userProfile.allow_comments ? t("community.commentsEnabled") : t("community.commentsDisabled")}</strong>
                       </p>
                     </div>
                     <a href={createPageUrl('Profile')}>
                       <Button variant="outline" className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
-                        Edit Profile Settings
+                        {t("communityExtended.editProfileSettings")}
                       </Button>
                     </a>
                   </>
@@ -783,13 +785,13 @@ export default function CommunityPage() {
                   <>
                     <div className="p-4 bg-[#1E2F43] border border-[#E0D8C8]/15 rounded-lg">
                       <p className="text-sm text-[#E0D8C8]/70 mb-2">
-                        Your profile is currently private. Enable public visibility to connect with other users.
+                        {t("communityExtended.profileCurrentlyPrivate")}
                       </p>
                     </div>
                     <a href={createPageUrl('Profile')}>
                       <Button className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
-                        Make Profile Public
+                        {t("communityExtended.makeProfilePublic")}
                       </Button>
                     </a>
                   </>
@@ -801,16 +803,16 @@ export default function CommunityPage() {
           <TabsContent value="invite">
             <Card className="bg-[#223447] border-[#E0D8C8]/15">
               <CardHeader>
-                <CardTitle className="text-[#E0D8C8]">Invite Friends to PipeKeeper</CardTitle>
+                <CardTitle className="text-[#E0D8C8]">{t("communityExtended.inviteFriends")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-[#E0D8C8]/70 mb-4">
-                  Know someone who would love PipeKeeper? Invite them to join the community!
+                  {t("communityExtended.inviteFriendsDesc")}
                 </p>
                 <a href={createPageUrl('Invite')}>
                   <Button>
                     <Mail className="w-4 h-4 mr-2" />
-                    Send Invitations
+                    {t("communityExtended.sendInvitations")}
                   </Button>
                 </a>
               </CardContent>

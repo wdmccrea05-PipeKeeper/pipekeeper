@@ -22,6 +22,7 @@ import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
+import { useTranslation } from "react-i18next";
 
 const BLEND_TYPES = ["Virginia", "Virginia/Perique", "English", "English Aromatic", "Balkan", "Aromatic", "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish", "Navy Flake", "Dark Fired", "Cavendish", "Other"];
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -33,6 +34,7 @@ const AGING_POTENTIAL = ["Poor", "Fair", "Good", "Excellent"];
 const COMMON_FLAVOR_NOTES = ["Earthy", "Sweet", "Nutty", "Woody", "Smoky", "Spicy", "Fruity", "Floral", "Tangy", "Creamy", "Peppery", "Chocolate", "Coffee", "Vanilla", "Honey", "Leather", "Grass", "Hay", "Citrus", "Plum", "Fig", "Raisin"];
 
 export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState(blend || {
     name: '',
     manufacturer: '',
@@ -389,10 +391,10 @@ Return complete and accurate information based on the blend name or description 
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
                 <Search className="w-5 h-5" />
-                Search for Tobacco Blend
+                {t("tobaccoExtended.searchForBlend")}
               </CardTitle>
               <p className="text-sm text-stone-600">
-                Search by name or manufacturer to auto-fill details
+                {t("tobaccoExtended.searchDesc")}
               </p>
             </CardHeader>
             <CardContent>
@@ -418,7 +420,7 @@ Return complete and accurate information based on the blend name or description 
                   ) : (
                     <>
                       <Search className="w-4 h-4 mr-2" />
-                      Search
+                      {t("common.search")}
                     </>
                   )}
                 </Button>
@@ -431,7 +433,7 @@ Return complete and accurate information based on the blend name or description 
               <div className="w-full border-t border-stone-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-stone-500">Or enter manually</span>
+              <span className="bg-white px-2 text-stone-500">{t("formsExtended.orEnterManually")}</span>
             </div>
           </div>
         </>
@@ -441,9 +443,9 @@ Return complete and accurate information based on the blend name or description 
       {logoMatches.length > 1 && (
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-[#E0D8C8]">Select Logo</CardTitle>
+            <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.selectLogo")}</CardTitle>
             <p className="text-sm text-stone-600">
-              Multiple logos found for "{formData.manufacturer}". Choose one:
+              {t("tobaccoExtended.selectLogoDesc", { manufacturer: formData.manufacturer })}
             </p>
           </CardHeader>
           <CardContent>
@@ -483,18 +485,18 @@ Return complete and accurate information based on the blend name or description 
       {/* Photo & Logo */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Images</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.images")}</CardTitle>
           {formData.logo && !uploading && !uploadingLogo && (
             <p className="text-xs text-stone-500">
-              Logo auto-populated from library. You can upload a custom one to replace it.
+              {t("tobaccoExtended.logoAutoPopulated")}
             </p>
           )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tin Photo */}
-             <div className="space-y-2">
-               <Label className="text-sm font-medium">Tin Photo</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("tobaccoExtended.tinPhoto")}</Label>
                <div className="flex items-center gap-4">
                  {formData.photo ? (
                    <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
@@ -541,7 +543,7 @@ Return complete and accurate information based on the blend name or description 
             {/* Label/Logo */}
              <div className="space-y-2">
                <div className="flex items-center justify-between">
-                 <Label className="text-sm font-medium">Label/Logo</Label>
+                 <Label className="text-sm font-medium">{t("tobaccoExtended.labelLogo")}</Label>
                  <Button
                    type="button"
                    variant="outline"
@@ -550,7 +552,7 @@ Return complete and accurate information based on the blend name or description 
                    className="text-xs"
                  >
                    <Library className="w-3 h-3 mr-1" />
-                   Browse Library
+                   {t("tobaccoExtended.browseLibrary")}
                  </Button>
                </div>
                <div className="flex items-center gap-4">
@@ -602,7 +604,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Basic Info */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Basic Information</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -690,8 +692,8 @@ Return complete and accurate information based on the blend name or description 
       {/* Tobacco Components */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Tobacco Components</CardTitle>
-          <p className="text-sm text-stone-500">List the types of tobacco in this blend</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.tobaccoComponents")}</CardTitle>
+          <p className="text-sm text-stone-500">{t("tobaccoExtended.tobaccoComponentsDesc")}</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
@@ -722,8 +724,8 @@ Return complete and accurate information based on the blend name or description 
       {/* Flavor Notes */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Flavor Notes</CardTitle>
-          <p className="text-sm text-stone-500">Select all that apply</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.flavorNotes")}</CardTitle>
+          <p className="text-sm text-stone-500">{t("tobaccoExtended.flavorNotesDesc")}</p>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -748,22 +750,22 @@ Return complete and accurate information based on the blend name or description 
       {/* Inventory & Status */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Inventory & Status</CardTitle>
-          <p className="text-sm text-stone-500">Track your tobacco across tins, bulk, and pouches</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.inventoryStatus")}</CardTitle>
+          <p className="text-sm text-stone-500">{t("tobaccoExtended.inventoryStatusDesc")}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="tins">Tins</TabsTrigger>
-              <TabsTrigger value="bulk">Bulk</TabsTrigger>
-              <TabsTrigger value="pouches">Pouches</TabsTrigger>
+              <TabsTrigger value="tins">{t("tobaccoExtended.tins")}</TabsTrigger>
+              <TabsTrigger value="bulk">{t("tobaccoExtended.bulk")}</TabsTrigger>
+              <TabsTrigger value="pouches">{t("tobaccoExtended.pouches")}</TabsTrigger>
             </TabsList>
 
             {/* Tins Tab */}
             <TabsContent value="tins" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Tin Size (oz)</Label>
+                  <Label>{t("tobaccoExtended.tinSize")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -780,7 +782,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Total Tins</Label>
+                  <Label>{t("tobaccoExtended.totalTins")}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -796,20 +798,20 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Total Quantity (oz)</Label>
+                  <Label>{t("tobaccoExtended.totalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
                     min="0"
                     value={formData.tin_total_quantity_oz || ''}
                     onChange={(e) => handleChange('tin_total_quantity_oz', e.target.value)}
-                    placeholder="Auto-calculated"
+                    placeholder={t("tobaccoExtended.autoCalculated")}
                     className="border-stone-200 bg-stone-50"
                     readOnly
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>Tins Open</Label>
+                   <Label>{t("tobaccoExtended.tinsOpen")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -825,7 +827,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>Tins Cellared</Label>
+                   <Label>{t("tobaccoExtended.tinsCellared")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -856,7 +858,7 @@ Return complete and accurate information based on the blend name or description 
             <TabsContent value="bulk" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Total Bulk Quantity (oz)</Label>
+                  <Label>{t("tobaccoExtended.bulkTotalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -868,7 +870,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>Bulk Open (oz)</Label>
+                   <Label>{t("tobaccoExtended.bulkOpen")}</Label>
                    <Input
                      type="number"
                      step="0.01"
@@ -885,7 +887,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>Bulk Cellared (oz)</Label>
+                   <Label>{t("tobaccoExtended.bulkCellared")}</Label>
                    <Input
                      type="number"
                      step="0.01"
@@ -917,7 +919,7 @@ Return complete and accurate information based on the blend name or description 
             <TabsContent value="pouches" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Pouch Size (oz)</Label>
+                  <Label>{t("tobaccoExtended.pouchSize")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -934,7 +936,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Total Pouches</Label>
+                  <Label>{t("tobaccoExtended.totalPouches")}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -950,20 +952,20 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Total Quantity (oz)</Label>
+                  <Label>{t("tobaccoExtended.totalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
                     min="0"
                     value={formData.pouch_total_quantity_oz || ''}
                     onChange={(e) => handleChange('pouch_total_quantity_oz', e.target.value)}
-                    placeholder="Auto-calculated"
+                    placeholder={t("tobaccoExtended.autoCalculated")}
                     className="border-stone-200 bg-stone-50"
                     readOnly
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>Pouches Open</Label>
+                   <Label>{t("tobaccoExtended.pouchesOpen")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -979,7 +981,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>Pouches Cellared</Label>
+                   <Label>{t("tobaccoExtended.pouchesCellared")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -1010,7 +1012,7 @@ Return complete and accurate information based on the blend name or description 
           {/* Common fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
             <div className="space-y-2">
-              <Label>Production Status</Label>
+              <Label>{t("tobaccoExtended.productionStatus")}</Label>
               <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
                 <SelectTrigger className="border-stone-200">
                   <SelectValue placeholder="Select status" />
@@ -1021,7 +1023,7 @@ Return complete and accurate information based on the blend name or description 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Aging Potential</Label>
+              <Label>{t("tobaccoExtended.agingPotential")}</Label>
               <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
                 <SelectTrigger className="border-stone-200">
                   <SelectValue placeholder="Select potential" />
@@ -1032,7 +1034,7 @@ Return complete and accurate information based on the blend name or description 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Your Rating (1-5)</Label>
+              <Label>{t("tobaccoExtended.yourRating")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -1078,7 +1080,7 @@ Return complete and accurate information based on the blend name or description 
               checked={formData.is_favorite}
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
-            <Label>Mark as Favorite</Label>
+            <Label>{t("formsExtended.markAsFavorite")}</Label>
           </div>
         </CardContent>
       </Card>
@@ -1094,7 +1096,7 @@ Return complete and accurate information based on the blend name or description 
           className="bg-amber-700 hover:bg-amber-800"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          {blend ? 'Update Blend' : 'Add Blend'}
+          {blend ? t("tobaccoExtended.updateBlend") : t("tobaccoExtended.addBlend")}
         </Button>
       </div>
     </form>
