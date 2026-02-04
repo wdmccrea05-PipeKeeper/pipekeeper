@@ -1087,6 +1087,13 @@ export const translationsExtended = {
       allowAIWebLookups: "Allow AI to use external web lookups for enrichment",
       howYouAppearToOtherUsers: "How you appear to other users",
       tellOthersAboutPipeJourney: "Tell others about your pipe journey...",
+      cityPlaceholder: "e.g., Seattle",
+      statePlaceholder: "e.g., WA",
+      countryPlaceholder: "Type or select country...",
+      zipPlaceholder: "e.g., 98101",
+      typeDELETE: "Type DELETE",
+      premiumSubscriptionWebOnly: "Premium subscriptions are available on the web. To manage billing or subscribe, visit",
+      changeEmailInstructions: "Your email address cannot be changed directly through PipeKeeper.\n\nIf you need to use a different email:\n\n1. Invite your new email as an Admin to this app\n2. Log in with the new email\n3. Clone the app (new email becomes owner)\n\nNote: Cloning copies app structure but not data. You'll need to export/import your collection manually.\n\nContact support@pipekeeper.app for assistance.",
     },
     // === TOBACCO PAGE KEYS ===
     tobaccoPage: {

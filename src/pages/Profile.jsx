@@ -390,7 +390,7 @@ export default function ProfilePage() {
                     </>
                   ) : (
                     <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
-                      Premium subscriptions are available on the web. To manage billing or subscribe, visit{" "}
+                      {t("profile.premiumSubscriptionWebOnly")}{" "}
                       <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
                         pipekeeper.app
                       </a>.
@@ -455,7 +455,7 @@ export default function ProfilePage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const message = `Your email address cannot be changed directly through PipeKeeper.\n\nIf you need to use a different email:\n\n1. Invite your new email as an Admin to this app\n2. Log in with the new email\n3. Clone the app (new email becomes owner)\n\nNote: Cloning copies app structure but not data. You'll need to export/import your collection manually.\n\nContact support@pipekeeper.app for assistance.`;
+                          const message = t("profile.changeEmailInstructions");
                           alert(message);
                         }}
                         className="border-violet-300 text-violet-700 whitespace-nowrap"
@@ -783,7 +783,7 @@ export default function ProfilePage() {
                         <Input
                           value={formData.city}
                           onChange={(e) => setFormData({...formData, city: e.target.value})}
-                          placeholder="e.g., Seattle"
+                          placeholder={t("profile.cityPlaceholder")}
                           className="mt-2"
                         />
                       </div>
@@ -792,7 +792,7 @@ export default function ProfilePage() {
                         <Input
                           value={formData.state_province}
                           onChange={(e) => setFormData({...formData, state_province: e.target.value})}
-                          placeholder="e.g., WA"
+                          placeholder={t("profile.statePlaceholder")}
                           className="mt-2"
                         />
                       </div>
@@ -805,7 +805,7 @@ export default function ProfilePage() {
                           list="countries"
                           value={formData.country}
                           onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                          placeholder="Type or select country..."
+                          placeholder={t("profile.countryPlaceholder")}
                           className="mt-2"
                         />
                         <datalist id="countries">
@@ -836,7 +836,7 @@ export default function ProfilePage() {
                         <Input
                           value={formData.postal_code}
                           onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
-                          placeholder="e.g., 98101"
+                          placeholder={t("profile.zipPlaceholder")}
                           className="mt-2"
                         />
                       </div>
@@ -1167,7 +1167,7 @@ export default function ProfilePage() {
               {t("profile.typeDeleteToConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="Type DELETE" />
+          <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder={t("profile.typeDELETE")} />
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
