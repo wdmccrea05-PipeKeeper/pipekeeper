@@ -363,7 +363,7 @@ export const helpContentFinal = {
         }
       }
     }
-  }
+  },
 };
 
-export default helpContentFinal;
+export { helpContentFinal };
