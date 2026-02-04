@@ -265,6 +265,52 @@ export const translationsComplete = {
     }
   },
   de: {
+    collectionInsights: {
+      summaryTooltip: "Dieser Abschnitt fasst Muster und Gesamtwerte Ihrer Sammlung zusammen."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} Schüsseln gesamt",
+      breakInBowls: "{{breakIn}} Einrauchung",
+      totalBreakIn: "{{total}} Einrauchung",
+      title: "Verwendungsprotokoll",
+      addSession: "Sitzung Hinzufügen"
+    },
+    blendTypes: {
+      american: "Amerikanisch",
+      aromatic: "Aromatisch",
+      balkan: "Balkan",
+      burley: "Burley",
+      burleyBased: "Burley-basiert",
+      cavendish: "Cavendish",
+      codgerBlend: "Codger-Mischung",
+      darkFiredKentucky: "Dunkel geräuchertes Kentucky",
+      english: "Englisch",
+      englishAromatic: "Englisch Aromatisch",
+      englishBalkan: "Englisch Balkan",
+      fullEnglishOriental: "Vollständig Englisch/Orientalisch",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Latakia-Mischung",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Orientalisch/Türkisch",
+      other: "Sonstiges",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Orientalisch",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Ihre Sammlung hat sich seit der letzten Optimierung geändert. Regenerieren Sie, um aktualisierte Empfehlungen zu erhalten.",
+      regenerate: "Neu Generieren",
+      undo: "Rückgängig",
+      notNow: "Nicht Jetzt",
+      undoLastChange: "Letzte Änderung Rückgängig Machen"
+    },
+    tobaccoPage: {
+      exportCSV: "CSV Exportieren"
+    },
     pipes: { search: 'Suchen', filter: 'Filtern', shape: 'Form', material: 'Material', allShapes: 'Alle Formen', allMaterials: 'Alle Materialien' },
     tobacco: { allTypes: 'Alle Typen', allStrengths: 'Alle Stärken', search: 'Suchen' },
     common: { loading: 'Lädt...', refresh: 'Aktualisieren', cancel: 'Abbrechen', save: 'Speichern', delete: 'Löschen', close: 'Schließen', unknown: 'Unbekannt', of: 'von' },
