@@ -459,7 +459,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
                   <p className="text-sm text-[#E0D8C8]/70 mt-1">
-                    {t("smokingLog.totalBowls", { total: totalBowls.toString(), breakIn: breakInBowls.toString() })}
+                   {t("smokingLog.totalBowls", { total: totalBowls, breakIn: breakInBowls })}
                   </p>
                 </div>
               </CollapsibleTrigger>

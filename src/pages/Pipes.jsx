@@ -174,7 +174,7 @@ export default function PipesPage() {
           <div>
             <PkPageTitle>{t("pipesPage.myPipes")}</PkPageTitle>
             <PkText className="mt-1">
-              {pipes.length} {t("pipes.pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
+              {pipes.length} {t("pipesPage.pipes", "pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
