@@ -72,7 +72,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
       setBowlForm({ ...bowlForm, photo: file_url });
     } catch (error) {
       console.error("Error uploading photo:", error);
-      alert("Failed to upload photo. Please try again.");
+      alert(t("bowls.photoUploadError", "Failed to upload photo. Please try again."));
     } finally {
       setUploadingPhoto(false);
     }
@@ -139,7 +139,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
   };
 
   const handleDeleteBowl = (index) => {
-    if (!window.confirm("Remove this bowl from the list?")) return;
+    if (!window.confirm(t("bowls.removeBowlConfirm", "Remove this bowl from the list?"))) return;
     const updatedBowls = interchangeableBowls.filter((_, i) => i !== index);
     // re-stabilize ids for display/selection if you want consistent ordering
     const rekeyed = updatedBowls.map((b, i) => ({ ...b, bowl_variant_id: b.bowl_variant_id || `bowl_${i}` }));
