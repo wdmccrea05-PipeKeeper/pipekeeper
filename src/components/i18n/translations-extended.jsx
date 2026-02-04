@@ -3340,9 +3340,9 @@ export const translationsExtended = {
       termsOfService: "Conditions d'Utilisation",
       privacyPolicy: "Politique de Confidentialité",
       subscriptionBilling: "Abonnement et Facturation",
-    }
+    },
   }},
-  de: { common: {
+  de: {
     nav: {
       home: "Startseite",
       pipes: "Pfeifen",
