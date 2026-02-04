@@ -165,7 +165,7 @@ export default function TobaccoPage() {
     },
     onSuccess: (count) => {
       invalidateBlendQueries(queryClient, user?.email);
-      toast.success(`Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`);
+      toast.success(t("tobaccoPage.successfullyUpdated", `Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`));
       exitQuickEdit();
     },
     onError: (error) => {
