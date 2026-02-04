@@ -46,7 +46,7 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       to={createPageUrl(item.page)}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 transform hover:scale-105 flex-shrink-0",
+        "flex items-center gap-1.5 px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 transform hover:scale-105 flex-shrink-0 whitespace-nowrap",
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
@@ -515,7 +515,7 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 </div>
 
-                <div className="flex items-center gap-0 flex-1 justify-start min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide px-2">
+                <div className="flex items-center gap-1 flex-1 justify-start min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide px-2">
                    {navItems.map((item) => (
                      <NavLink
                        key={item.page}
