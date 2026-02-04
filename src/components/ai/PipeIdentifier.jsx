@@ -294,7 +294,7 @@ Provide the identification in JSON format with:
                   </div>
                   <div>
                     <p className="text-sm text-stone-500">{t("tobacconist.era")}</p>
-                    <p className="font-semibold text-stone-800">{identification.estimated_era || 'Unknown'}</p>
+                    <p className="font-semibold text-stone-800">{identification.estimated_era || t("common.unknown")}</p>
                   </div>
                   <div>
                     <p className="text-sm text-stone-500">{t("tobacconist.country")}</p>
