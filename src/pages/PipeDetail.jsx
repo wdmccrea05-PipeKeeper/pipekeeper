@@ -238,7 +238,7 @@ export default function PipeDetailPage() {
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/021ed482a_smoking-pipe-silhouette-vintage-accessories-icon-sign-and-symbol-tobacco-pipe-illustration-vector.jpg"
-            alt="Pipe not found"
+            alt={t("pipesExtended.pipeNotFound")}
             className="w-24 h-24 mx-auto mb-4 object-contain opacity-50"
             style={{ filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)' }}
           />

@@ -215,9 +215,9 @@ export default function TobaccoDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🍂</div>
-          <h2 className="text-2xl font-semibold text-stone-800 mb-2">Blend not found</h2>
+          <h2 className="text-2xl font-semibold text-stone-800 mb-2">{t("tobaccoExtended.blendNotFound")}</h2>
           <a href={createPageUrl('Tobacco')}>
-            <Button variant="outline">Back to Tobacco</Button>
+            <Button variant="outline">{t("tobaccoExtended.backToTobacco")}</Button>
           </a>
         </div>
       </div>
@@ -367,7 +367,7 @@ export default function TobaccoDetailPage() {
                   onClick={() => updateMutation.mutate({ rating: i })}
                 />
               ))}
-              {blend.rating && <span className="text-white ml-2">{blend.rating}/5</span>}
+              {blend.rating && <span className="text-white ml-2">{blend.rating}{t("units.outOf5")}</span>}
             </div>
 
             {/* Top Pipe Matches */}
@@ -412,7 +412,7 @@ export default function TobaccoDetailPage() {
             {blend.tobacco_components?.length > 0 && (
               <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-[#E0D8C8]/70 mb-2">Tobacco Components</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.tobaccoComponents")}</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.tobacco_components.map((comp, idx) => (
                       <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
@@ -428,7 +428,7 @@ export default function TobaccoDetailPage() {
             {blend.flavor_notes?.length > 0 && (
               <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-[#E0D8C8]/70 mb-2">Flavor Notes</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.flavorNotes")}</p>
                   <div className="flex flex-wrap gap-2">
                     {blend.flavor_notes.map((note, idx) => (
                       <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
@@ -444,7 +444,7 @@ export default function TobaccoDetailPage() {
             {blend.aging_potential && (
               <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Aging Potential</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("tobaccoExtended.agingPotential")}</p>
                   <p className="font-medium text-[#E0D8C8]">{blend.aging_potential}</p>
                 </CardContent>
               </Card>
@@ -454,7 +454,7 @@ export default function TobaccoDetailPage() {
             {blend.notes && (
               <Card className="border-white/10">
                 <CardContent className="p-4">
-                  <p className="text-xs text-[#E0D8C8]/70 mb-1">Notes</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.notes")}</p>
                   <p className="text-[#E0D8C8]/80">{blend.notes}</p>
                 </CardContent>
               </Card>
