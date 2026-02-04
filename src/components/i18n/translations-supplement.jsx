@@ -222,6 +222,29 @@ export const translationsSupplement = {
 
   // Portuguese Brazil (PT-BR)
   "pt-BR": {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "Análise Inicial",
+        additionalInfoNeeded: "Informações Adicionais Necessárias",
+        yourAnswer: "Sua resposta...",
+        analyzing: "Analisando...",
+        continueIdentification: "Continuar Identificação",
+        skipIdentifyNow: "Pular e Identificar Agora",
+        uploadPhotos: "Enviar Fotos",
+        takePhoto: "Tirar Foto",
+        optionalHints: "Opcional: forneça dicas para melhorar a identificação",
+        nameDesc: "Nome/Descrição",
+        brandMaker: "Marca/Fabricante",
+        shape: "Formato",
+        stampings: "Marcações",
+        identifying: "Identificando...",
+        identifyPipe: "Identificar Cachimbo",
+        unknownMaker: "Fabricante Desconhecido",
+        add: "Adicionar à Coleção",
+        adding: "Adicionando...",
+        tryAnother: "Tentar Outro"
+      }
+    },
     pipesExtended: {
       unknownMaker: "Fabricante desconhecido",
       searchForPipe: "Buscar Cachimbo",
