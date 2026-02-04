@@ -596,7 +596,7 @@ export default function ProfilePage() {
                     <Input
                       value={formData.display_name}
                       onChange={(e) => setFormData({...formData, display_name: e.target.value})}
-                      placeholder="How you appear to other users"
+                      placeholder={t("profile.howYouAppearToOtherUsers")}
                       className="mt-2"
                     />
                   </div>
@@ -605,7 +605,7 @@ export default function ProfilePage() {
                     <Textarea
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                      placeholder="Tell others about your pipe journey..."
+                      placeholder={t("profile.tellOthersAboutPipeJourney")}
                       className="mt-2 min-h-[80px]"
                     />
                   </div>
