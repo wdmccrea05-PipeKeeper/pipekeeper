@@ -974,6 +974,29 @@ export const translationsSupplement = {
 
   // Chinese Simplified (ZH-HANS)
   "zh-Hans": {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "初步分析",
+        additionalInfoNeeded: "需要额外信息",
+        yourAnswer: "您的答案...",
+        analyzing: "分析中...",
+        continueIdentification: "继续识别",
+        skipIdentifyNow: "跳过并立即识别",
+        uploadPhotos: "上传照片",
+        takePhoto: "拍照",
+        optionalHints: "可选：提供提示以改进识别",
+        nameDesc: "名称/描述",
+        brandMaker: "品牌/制造商",
+        shape: "形状",
+        stampings: "印章",
+        identifying: "识别中...",
+        identifyPipe: "识别烟斗",
+        unknownMaker: "未知制造商",
+        add: "添加到收藏",
+        adding: "添加中...",
+        tryAnother: "尝试另一个"
+      }
+    },
     pipesExtended: {
       unknownMaker: "未知制造商",
       searchForPipe: "搜索烟斗",
