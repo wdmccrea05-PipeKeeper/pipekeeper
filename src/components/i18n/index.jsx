@@ -5,6 +5,7 @@ import { translations } from './translations';
 import { translationsExtended } from './translations-extended';
 import { helpContent } from './helpContent';
 import { homeTranslations } from './homeContent';
+import { translationsComplete } from './translations-complete';
 
 // Deep merge helper
 function deepMerge(...objects) {
@@ -31,7 +32,8 @@ languages.forEach(lang => {
       translations[lang] || {},
       translationsExtended[lang]?.common || {},
       { helpContent: helpContent[lang] || helpContent.en },
-      homeTranslations[lang] || homeTranslations.en
+      homeTranslations[lang] || homeTranslations.en,
+      translationsComplete[lang] || translationsComplete.en
     )
   };
 });
