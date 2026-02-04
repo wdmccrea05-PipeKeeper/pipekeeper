@@ -24,16 +24,16 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
-const SHAPES = ["All Shapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
-const MATERIALS = ["All Materials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
+const SHAPES = ["pipes.allShapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const MATERIALS = ["pipes.allMaterials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
 
 export default function PipesPage() {
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [shapeFilter, setShapeFilter] = useState('All Shapes');
-  const [materialFilter, setMaterialFilter] = useState('All Materials');
+  const [shapeFilter, setShapeFilter] = useState('pipes.allShapes');
+  const [materialFilter, setMaterialFilter] = useState('pipes.allMaterials');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('pipesViewMode') || 'grid';
   });
@@ -132,8 +132,8 @@ export default function PipesPage() {
     const matchesSearch = !searchQuery || 
       pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesShape = shapeFilter === 'All Shapes' || pipe.shape === shapeFilter;
-    const matchesMaterial = materialFilter === 'All Materials' || pipe.bowl_material === materialFilter;
+    const matchesShape = shapeFilter === 'pipes.allShapes' || pipe.shape === shapeFilter;
+    const matchesMaterial = materialFilter === 'pipes.allMaterials' || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
   }).sort((a, b) => {
     try {
@@ -234,7 +234,7 @@ export default function PipesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                {SHAPES.map(s => <SelectItem key={s} value={s}>{s.startsWith('pipes.') ? t(s) : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
@@ -242,7 +242,7 @@ export default function PipesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MATERIALS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                {MATERIALS.map(m => <SelectItem key={m} value={m}>{m.startsWith('pipes.') ? t(m) : m}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -308,7 +308,7 @@ export default function PipesPage() {
             actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe", "Add Your First Pipe") : null}
             onAction={pipes.length === 0 ? () => setShowForm(true) : null}
             secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter !== 'All Shapes' || materialFilter !== 'All Materials' ? t("pipesPage.clearFilters", "Clear Filters") : null}
-            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter('All Shapes'); setMaterialFilter('All Materials'); }}
+            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter('pipes.allShapes'); setMaterialFilter('pipes.allMaterials'); }}
           />
         ) : (
           <motion.div 
