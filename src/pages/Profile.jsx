@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe, Plus, Trash2, Star, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -48,6 +49,7 @@ const PIPE_SHAPES = [
 ];
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -170,7 +172,7 @@ export default function ProfilePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile', user?.email] });
-      toast.success('Profile saved successfully');
+      toast.success(t("notifications.saved"));
     },
   });
 
@@ -283,7 +285,7 @@ export default function ProfilePage() {
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
         <div className="text-center">
           <div className="text-4xl mb-4">⚙️</div>
-          <p className={PK_THEME.textMuted}>Loading profile...</p>
+          <p className={PK_THEME.textMuted}>{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -436,12 +438,12 @@ export default function ProfilePage() {
                 {/* Account Email Section */}
                 <div className="space-y-4 pb-6 border-b">
                   <h3 className="font-semibold text-violet-800 flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Account Information
+                   <User className="w-4 h-4" />
+                   {t("profile.accountInformation")}
                   </h3>
                   
                   <div>
-                    <Label className="text-stone-700 font-medium mb-2 block">Email Address</Label>
+                    <Label className="text-stone-700 font-medium mb-2 block">{t("profile.emailAddress")}</Label>
                     <div className="flex items-center gap-3">
                       <Input
                         value={user?.email || ''}
@@ -457,12 +459,12 @@ export default function ProfilePage() {
                           alert(message);
                         }}
                         className="border-violet-300 text-violet-700 whitespace-nowrap"
-                      >
-                        Change Email?
-                      </Button>
+                        >
+                         {t("profile.changeEmail")}
+                        </Button>
                     </div>
                     <p className="text-xs text-stone-500 mt-2">
-                      This is your login email address. Contact support for help changing it.
+                      {t("profile.emailHelpText")}
                     </p>
                   </div>
                 </div>
@@ -472,7 +474,7 @@ export default function ProfilePage() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h3 className="font-semibold text-violet-800 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      Community Profile
+                      {t("profile.communityProfile")}
                     </h3>
                     {user?.email && (
                       <Button 
@@ -491,13 +493,13 @@ export default function ProfilePage() {
                         disabled={saveMutation.isPending}
                       >
                         <Eye className="w-4 h-4 mr-2" />
-                        Preview Profile
+                        {t("profile.previewProfile")}
                       </Button>
                     )}
                   </div>
                   
                   <div>
-                    <Label className="text-stone-700 font-medium mb-2 block">Profile Picture</Label>
+                    <Label className="text-stone-700 font-medium mb-2 block">{t("profile.profilePicture")}</Label>
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center overflow-hidden">
@@ -542,7 +544,7 @@ export default function ProfilePage() {
                             className="flex-1 border-stone-400 text-stone-700 hover:bg-stone-100"
                           >
                             <Camera className="w-4 h-4 mr-2" />
-                            Camera
+                            {t("profile.camera")}
                           </Button>
                           <Button
                             type="button"
@@ -570,7 +572,7 @@ export default function ProfilePage() {
                             className="flex-1 border-stone-400 text-stone-700 hover:bg-stone-100"
                           >
                             <Upload className="w-4 h-4 mr-2" />
-                            Upload
+                            {t("profile.upload")}
                           </Button>
                         </div>
                         {formData.avatar_url && (
@@ -582,7 +584,7 @@ export default function ProfilePage() {
                             className="text-rose-600 hover:text-rose-700 w-full"
                           >
                             <X className="w-4 h-4 mr-2" />
-                            Remove Photo
+                            {t("profile.removePhoto")}
                           </Button>
                         )}
                       </div>
@@ -590,7 +592,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <Label className="text-stone-700 font-medium">Display Name</Label>
+                    <Label className="text-stone-700 font-medium">{t("profile.displayName")}</Label>
                     <Input
                       value={formData.display_name}
                       onChange={(e) => setFormData({...formData, display_name: e.target.value})}
@@ -599,7 +601,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-stone-700 font-medium">Bio</Label>
+                    <Label className="text-stone-700 font-medium">{t("profile.bio")}</Label>
                     <Textarea
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
