@@ -6,6 +6,7 @@
  */
 
 import { useTranslation as useI18nTranslation } from 'react-i18next';
+import { logMissingKey } from './missingKeyHandler';
 
 /**
  * Safe wrapper around useTranslation that never throws
@@ -20,9 +21,16 @@ export function useTranslation() {
       try {
         const translated = result.t(key);
         
-        // If translation returns the key itself (not found), use fallback
+        // If translation returns the key itself (not found), use fallback and log
         if (typeof translated === 'string' && translated === key && fallback) {
+          logMissingKey(key, result.i18n.language);
           return fallback;
+        }
+        
+        // If translation returns the key itself (not found) with no fallback, log
+        if (typeof translated === 'string' && translated === key && !fallback) {
+          logMissingKey(key, result.i18n.language);
+          return key;
         }
         
         // If translation returns a non-string, use fallback or key
