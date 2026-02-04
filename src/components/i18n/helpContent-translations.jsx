@@ -381,7 +381,10 @@ export const helpContentTranslations = {
         }
       }
     }
-  }
+  },
+  pl: {},
+  ja: {},
+  "zh-Hans": {}
 };
 
 export { helpContentTranslations };
