@@ -364,6 +364,7 @@ export const helpContentFinal = {
       }
     }
   }
+  }
 };
 
 export { helpContentFinal };
