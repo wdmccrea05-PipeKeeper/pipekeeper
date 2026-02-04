@@ -3343,7 +3343,8 @@ export const translationsExtended = {
     },
   }},
   de: {
-    nav: {
+    common: {
+      nav: {
       home: "Startseite",
       pipes: "Pfeifen",
       tobacco: "Tabak",
