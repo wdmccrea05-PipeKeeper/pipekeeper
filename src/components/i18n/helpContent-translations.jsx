@@ -1,6 +1,5 @@
-
 /**
- * Help Center Translations for IT, PT-BR, NL, PL, JA, ZH-HANS
+ * Help Center Translations for IT, PT-BR, NL
  * Full parity with EN structure: 34 FAQ questions + How-To + Troubleshooting
  */
 
@@ -10,10 +9,7 @@ export const helpContentTranslations = {
   de: {},
   it: {},
   "pt-BR": {},
-  nl: {},
-  pl: {},
-  ja: {},
-  "zh-Hans": {}
+  nl: {}
 };
 
 export { helpContentTranslations };

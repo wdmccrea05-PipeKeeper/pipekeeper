@@ -363,8 +363,7 @@ export const helpContentFinal = {
         }
       }
     }
-  },
-  _placeholder: {}
+  }
 };
 
 export { helpContentFinal };
