@@ -901,17 +901,17 @@ Return complete and accurate information based on the blend name or description 
                      }}
                      placeholder="e.g., 14"
                      className="border-stone-200"
-                   />
-                 </div>
-                <div className="space-y-2">
-                  <Label>Date Cellared</Label>
-                  <Input
-                    type="date"
-                    value={formData.bulk_cellared_date || ''}
-                    onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
-                    className="border-stone-200"
-                  />
-                </div>
+                     />
+                     </div>
+                     <div className="space-y-2">
+                     <Label>{t("tobaccoExtended.dateCellared")}</Label>
+                     <Input
+                     type="date"
+                     value={formData.bulk_cellared_date || ''}
+                     onChange={(e) => handleChange('bulk_cellared_date', e.target.value)}
+                     className="border-stone-200"
+                     />
+                     </div>
               </div>
             </TabsContent>
 
@@ -994,17 +994,17 @@ Return complete and accurate information based on the blend name or description 
                      }}
                      placeholder="e.g., 2"
                      className="border-stone-200"
-                   />
-                 </div>
-                <div className="space-y-2">
-                  <Label>Date Cellared</Label>
-                  <Input
-                    type="date"
-                    value={formData.pouch_cellared_date || ''}
-                    onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
-                    className="border-stone-200"
-                  />
-                </div>
+                     />
+                     </div>
+                     <div className="space-y-2">
+                     <Label>{t("tobaccoExtended.dateCellared")}</Label>
+                     <Input
+                     type="date"
+                     value={formData.pouch_cellared_date || ''}
+                     onChange={(e) => handleChange('pouch_cellared_date', e.target.value)}
+                     className="border-stone-200"
+                     />
+                     </div>
               </div>
             </TabsContent>
           </Tabs>
