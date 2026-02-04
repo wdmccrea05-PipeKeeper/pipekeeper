@@ -29,7 +29,7 @@ function isInvalidKey(key: string) {
 async function readRemoteConfigKey(base44: any, environment: "live" | "preview") {
   try {
     const recs = await base44.asServiceRole.entities.RemoteConfig.filter({
-      key: Deno.env.get("STRIPE_SECRET_KEY"),
+      key: "STRIPE_SECRET_KEY",
       environment,
     });
     const val = recs?.[0]?.value ? String(recs[0].value).trim() : "";
