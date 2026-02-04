@@ -243,7 +243,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('bulkOpen', { blends: blends.filter(b => (b.bulk_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-sky-600">{bulkOpenOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
@@ -278,7 +278,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('pouchOpen', { blends: blends.filter(b => (b.pouch_pouches_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-sky-600">{pouchOpenOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
@@ -397,7 +397,7 @@ export default function TobaccoCollectionStats() {
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-stone-800">{brand}</h3>
                         <Badge className="bg-emerald-100 text-emerald-800">
-                          {brandBlends.length} blend{brandBlends.length > 1 ? 's' : ''}
+                          {brandBlends.length} {brandBlends.length > 1 ? t("stats.blends") : t("stats.blend")}
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -407,7 +407,7 @@ export default function TobaccoCollectionStats() {
                               <span className="text-sm text-stone-700">{blend.name}</span>
                               {blend.quantity_owned > 0 && (
                                 <Badge variant="outline" className="text-xs">
-                                  {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
+                                  {blend.quantity_owned} {blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}
                                 </Badge>
                                 )}
                               </div>
@@ -497,7 +497,7 @@ export default function TobaccoCollectionStats() {
                         <p className="font-medium text-stone-800 truncate">{blend.name}</p>
                         <p className="text-sm text-stone-500 truncate">
                           {blend.manufacturer}
-                          {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} tin${blend.quantity_owned > 1 ? 's' : ''}`}
+                          {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} ${blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}`}
                         </p>
                       </div>
                     </div>
@@ -520,14 +520,14 @@ export default function TobaccoCollectionStats() {
                     const cellared = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
                     quantityText = drillDown.type === 'tinOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
                                    drillDown.type === 'tinCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${tins} tin${tins > 1 ? 's' : ''} • ${oz.toFixed(2)} oz`;
+                                   `${tins} ${tins > 1 ? t("units.tinPlural") : t("units.tin")} • ${oz.toFixed(2)} oz`;
                   } else if (drillDown.type.startsWith('bulk')) {
                     const total = blend.bulk_total_quantity_oz || 0;
                     const open = blend.bulk_open || 0;
                     const cellared = blend.bulk_cellared || 0;
                     quantityText = drillDown.type === 'bulkOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
                                    drillDown.type === 'bulkCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${total.toFixed(2)} oz bulk`;
+                                   `${total.toFixed(2)} ${t("stats.ozBulk")}`;
                   } else if (drillDown.type.startsWith('pouch')) {
                     const pouches = blend.pouch_total_pouches || 0;
                     const oz = blend.pouch_total_quantity_oz || 0;
@@ -535,7 +535,7 @@ export default function TobaccoCollectionStats() {
                     const cellared = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
                     quantityText = drillDown.type === 'pouchOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
                                    drillDown.type === 'pouchCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${pouches} pouch${pouches > 1 ? 'es' : ''} • ${oz.toFixed(2)} oz`;
+                                   `${pouches} ${pouches > 1 ? t("units.pouchPlural") : t("units.pouch")} • ${oz.toFixed(2)} oz`;
                   } else {
                     const tinOz = blend.tin_total_quantity_oz || 0;
                     const bulkOz = blend.bulk_total_quantity_oz || 0;
