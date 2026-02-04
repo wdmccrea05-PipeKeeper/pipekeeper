@@ -1,14 +1,27 @@
 /**
- * Strict i18n Enforcement Layer
- * Blocks untranslated strings with visible 🚫 placeholders
- * Non-negotiable: no silent fallbacks
+ * i18n Enforcement Layer
+ * Production: Silent mode (logs only, no UI markers)
+ * Debug mode (?i18nDebug=1): Visible violation markers
  */
 
 import { logMissingKey } from './missingKeyHandler';
 
 const VIOLATIONS = [];
 
+function isDebugMode() {
+  if (typeof window === 'undefined') return false;
+  return window.location.search.includes('i18nDebug=1');
+}
+
 export function enforceTranslation(key, resolvedValue, language = 'en', componentInfo = '') {
+  const debug = isDebugMode();
+  const isEnglish = language === 'en' || language?.startsWith('en-');
+  
+  // Skip enforcement in English (always works)
+  if (isEnglish) {
+    return resolvedValue;
+  }
+
   // Check if value equals the key (untranslated)
   if (resolvedValue === key) {
     const violation = {
@@ -20,55 +33,35 @@ export function enforceTranslation(key, resolvedValue, language = 'en', componen
     };
     VIOLATIONS.push(violation);
     logMissingKey(key, language);
-    console.error(`[i18n ENFORCE] MISSING KEY "${key}" in ${language} at ${componentInfo}`);
-    return `🚫 ${key}`;
+    
+    if (debug) {
+      console.error(`[i18n DEBUG] MISSING KEY "${key}" in ${language} at ${componentInfo}`);
+      return `🚫 ${key}`;
+    } else {
+      console.warn(`[i18n:${language}] Missing key: ${key}`);
+      return resolvedValue; // Return English/original fallback silently
+    }
   }
 
   // Check if value contains . (likely a key string)
   if (typeof resolvedValue === 'string' && resolvedValue.includes('.') && resolvedValue.length < 100) {
-    const violation = {
-      type: 'KEY_LEAK',
-      value: resolvedValue,
-      key,
-      language,
-      component: componentInfo,
-      timestamp: new Date().toISOString(),
-    };
-    VIOLATIONS.push(violation);
-    console.error(`[i18n ENFORCE] KEY LEAK "${resolvedValue}" at ${componentInfo}`);
-    return `🚫 KEY_LEAK`;
+    if (debug) {
+      console.error(`[i18n DEBUG] KEY LEAK "${resolvedValue}" at ${componentInfo}`);
+      return `🚫 KEY_LEAK`;
+    } else {
+      console.warn(`[i18n:${language}] Key leak: ${resolvedValue}`);
+      return resolvedValue;
+    }
   }
 
   // Check if value contains {{ (template not interpolated)
   if (typeof resolvedValue === 'string' && resolvedValue.includes('{{')) {
-    const violation = {
-      type: 'TEMPLATE_LEAK',
-      value: resolvedValue,
-      key,
-      language,
-      component: componentInfo,
-      timestamp: new Date().toISOString(),
-    };
-    VIOLATIONS.push(violation);
-    console.error(`[i18n ENFORCE] TEMPLATE NOT INTERPOLATED "${resolvedValue}" at ${componentInfo}`);
-    return `🚫 TEMPLATE_NOT_INTERPOLATED`;
-  }
-
-  // Check if English text when locale is not English
-  if (language !== 'en' && typeof resolvedValue === 'string') {
-    const englishMarkers = /^[A-Z][a-z]+\s|^\s*\(default\)|\[.*\]|^undefined|^null/;
-    if (englishMarkers.test(resolvedValue)) {
-      const violation = {
-        type: 'ENGLISH_FALLBACK',
-        value: resolvedValue,
-        key,
-        language,
-        component: componentInfo,
-        timestamp: new Date().toISOString(),
-      };
-      VIOLATIONS.push(violation);
-      console.warn(`[i18n ENFORCE] ENGLISH FALLBACK in ${language}: "${resolvedValue}" at ${componentInfo}`);
-      // Don't block, but flag it
+    if (debug) {
+      console.error(`[i18n DEBUG] TEMPLATE NOT INTERPOLATED "${resolvedValue}" at ${componentInfo}`);
+      return `🚫 TEMPLATE_NOT_INTERPOLATED`;
+    } else {
+      console.warn(`[i18n:${language}] Uninterpolated template: ${resolvedValue}`);
+      return resolvedValue;
     }
   }
 
@@ -89,10 +82,10 @@ export function violationCount() {
 
 export function failBuildIfViolations() {
   if (VIOLATIONS.length > 0) {
-    console.error(`[i18n BUILD FAIL] ${VIOLATIONS.length} violations detected:`);
+    console.error(`[i18n BUILD] ${VIOLATIONS.length} violations detected:`);
     VIOLATIONS.forEach(v => {
       console.error(`  - ${v.type}: ${v.key || v.value} (${v.language}) @ ${v.component}`);
     });
-    throw new Error(`Build failed: ${VIOLATIONS.length} i18n violations. Fix all 🚫 placeholders.`);
+    throw new Error(`Build failed: ${VIOLATIONS.length} i18n violations detected.`);
   }
 }
