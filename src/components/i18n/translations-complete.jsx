@@ -782,7 +782,27 @@ export const translationsComplete = {
   },
   pl: {
     collectionInsights: {
-      summaryTooltip: "Ta sekcja podsumowuje wzorce i totały w Twojej kolekcji na podstawie wprowadzonych danych."
+      summaryTooltip: "Ta sekcja podsumowuje wzorce i totały w Twojej kolekcji na podstawie wprowadzonych danych.",
+      reportTooltip: "Generuj eksportowalne podsumowania Twojej kolekcji w celach referencyjnych lub dokumentacyjnych.",
+      agingTooltip: "Monitoruj wylegitymowany tytoń i uzyskaj rekomendacje dotyczące optymalnych czasów dojrzewania."
+    },
+    insights: {
+      title: "Informacje o Kolekcji",
+      titleInventory: "Piwnica Tytoniowa",
+      subtitle: "Przegląd Kolekcji",
+      stats: "Statystyki",
+      log: "Dziennik",
+      pairingGrid: "Siatka Połączeń",
+      rotation: "Rotacja",
+      aging: "Dojrzewanie",
+      reports: "Raporty",
+      statsEmpty: "Dodaj fajki lub tytoń, aby wyświetlić statystyki kolekcji",
+      addFirstItem: "Dodaj Pierwszy Element",
+      reportsEmpty: "Brak elementów do generowania raportów",
+      reportsEmptyDesc: "Dodaj fajki i tytoń do swojej kolekcji, aby generować raporty",
+      reportsSubtitle: "Eksportuj dane swojej kolekcji",
+      agingDashboard: "Panel Dojrzewania",
+      agingSubtitle: "Monitorowanie Piwnicy"
     },
     smokingLog: {
       totalBowls: "{{total}} łącznych misek",
