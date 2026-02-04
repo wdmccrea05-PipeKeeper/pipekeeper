@@ -21,20 +21,36 @@ export function enforceTranslation(key, resolvedValue, language = "en", componen
   const debugEnabled = debugParam || debugLocal;
 
   // If missing, i18next often returns the key itself
-  const isMissing = resolvedValue === key || resolvedValue == null;
+  const looksMissing = 
+    !resolvedValue ||
+    resolvedValue === key ||
+    (typeof resolvedValue === "string" && resolvedValue.includes("🚫")) ||
+    (typeof resolvedValue === "string" && resolvedValue.includes("undefined"));
 
-  // Never show markers in prod. Just fall back to the resolvedValue.
+  // In production: fallback to English instead of leaking keys
   if (isProd) {
-    if (isMissing) return key;
+    if (looksMissing) {
+      // Try to get English fallback
+      try {
+        const i18nInstance = typeof window !== "undefined" && window.i18n;
+        if (i18nInstance) {
+          const enFallback = i18nInstance.t(key, { lng: "en" });
+          if (enFallback && enFallback !== key) return enFallback;
+        }
+      } catch (e) {
+        // Ignore fallback errors
+      }
+      return ""; // last resort: blank (better than raw keys)
+    }
     return resolvedValue;
   }
 
   // In dev, show markers only if debug is enabled, AND non-English locale.
   if (!debugEnabled || isEnglish) {
-    return isMissing ? key : resolvedValue;
+    return looksMissing ? key : resolvedValue;
   }
 
-  if (isMissing) {
+  if (looksMissing) {
     console.warn(`[i18n] Missing key: "${key}" in ${language} (${component})`);
     return `🚫 ${key}`;
   }
