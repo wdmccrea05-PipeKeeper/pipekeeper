@@ -3,6 +3,8 @@
  * All FAQ, HowTo, Troubleshooting content in structured format
  */
 
+// DEPRECATED: Use helpContent-full.js and helpContent-translations.js instead
+// Kept for backwards compatibility only
 export const helpContent = {
   en: {
     faqFull: {
