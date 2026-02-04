@@ -18,16 +18,37 @@ export function useTranslation() {
     const result = useI18nTranslation();
     
     // Defensive wrapper around t() function with enforcement
-    const safeT = (key, fallback) => {
+    // Signature: safeT(key, optionsOrFallback, maybeFallback)
+    const safeT = (key, optionsOrFallback, maybeFallback) => {
       try {
-        const translated = result.t(key);
+        let i18nOptions = {};
+        let fallback = '';
         
-        // ENFORCE: Check for violations
+        // Parse arguments: handle both safeT(key, options) and safeT(key, fallback)
+        if (optionsOrFallback !== undefined) {
+          if (typeof optionsOrFallback === 'object' && !Array.isArray(optionsOrFallback)) {
+            // Treat as i18next options (e.g., returnObjects: true, variables)
+            i18nOptions = optionsOrFallback;
+          } else if (typeof optionsOrFallback === 'string') {
+            // Treat as fallback string
+            fallback = optionsOrFallback;
+          }
+        }
+        
+        // Use maybeFallback if provided (overrides string optionsOrFallback)
+        if (typeof maybeFallback === 'string') {
+          fallback = maybeFallback;
+        }
+        
+        // Call i18next with options (includes returnObjects, variables for interpolation, etc.)
+        const translated = result.t(key, i18nOptions);
+        
+        // ENFORCE: Check for violations - pass actual key for enforcement checking
         const componentInfo = `useTranslation(${key})`;
-        const enforced = enforceTranslation(translated, translated, result.i18n.language, componentInfo);
+        const enforced = enforceTranslation(translated, key, result.i18n.language, componentInfo);
         
         // If enforcement returned a placeholder, return it
-        if (enforced.includes('🚫')) {
+        if (typeof enforced === 'string' && enforced.includes('🚫')) {
           return enforced;
         }
         
@@ -38,16 +59,16 @@ export function useTranslation() {
           return `🚫 ${key}`;
         }
         
-        // If translation returns a non-string, use fallback or key
+        // If translation returns a non-string (returnObjects: true), return it as-is
         if (typeof translated !== 'string') {
-          console.warn(`[safeTranslation] Translation for "${key}" returned non-string:`, translated);
-          return fallback || `🚫 NON_STRING`;
+          // This is OK for returnObjects: true - return the object/array directly
+          return translated;
         }
         
         return translated;
       } catch (error) {
         console.error(`[safeTranslation] Error translating "${key}":`, error);
-        return `🚫 ERROR`;
+        return fallback || `🚫 ERROR`;
       }
     };
     
@@ -60,8 +81,9 @@ export function useTranslation() {
     
     // Emergency fallback - return a mock translation function
     return {
-      t: (key, fallback) => {
+      t: (key, optionsOrFallback, maybeFallback) => {
         console.warn(`[safeTranslation] Using fallback for key "${key}"`);
+        const fallback = typeof optionsOrFallback === 'string' ? optionsOrFallback : maybeFallback;
         return fallback || `🚫 ${key}`;
       },
       i18n: { language: 'en' },
