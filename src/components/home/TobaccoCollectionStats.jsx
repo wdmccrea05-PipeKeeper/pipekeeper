@@ -14,8 +14,10 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
+import { useTranslation } from "react-i18next";
 
 export default function TobaccoCollectionStats() {
+  const { t } = useTranslation();
   const [drillDown, setDrillDown] = useState(null);
   const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
     return parseFloat(localStorage.getItem('lowInventoryThreshold')) || 2.0;
@@ -133,7 +135,7 @@ export default function TobaccoCollectionStats() {
             <CollapsibleTrigger className="flex-1">
               <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
                 <BarChart3 className="w-6 h-6" />
-                Tobacco Collection Stats
+                {t("stats.tobaccoCollectionStats")}
                 <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </CardTitle>
             </CollapsibleTrigger>
@@ -149,7 +151,7 @@ export default function TobaccoCollectionStats() {
               className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Trends {!isPro && '🔒'}
+              {t("stats.trends")} {!isPro && '🔒'}
             </Button>
           </div>
         </CardHeader>
@@ -160,18 +162,18 @@ export default function TobaccoCollectionStats() {
           <div className="space-y-3">
             <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
               <Leaf className="w-4 h-4 text-emerald-600" />
-              Quick Stats
+              {t("stats.quickStats")}
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center py-1.5 px-3 bg-white rounded-lg">
-                <span className="text-stone-600">Total Blends</span>
+                <span className="text-stone-600">{t("stats.totalBlends")}</span>
                 <span className="font-semibold text-emerald-700">{totalBlends}</span>
               </div>
               <button
                 onClick={() => handleDrillDown('brands', brandBreakdown)}
                 className="w-full flex justify-between items-center py-1.5 px-3 bg-white rounded-lg hover:bg-emerald-50 transition-colors group"
               >
-                <span className="text-stone-600">Unique Brands</span>
+                <span className="text-stone-600">{t("stats.uniqueBrands")}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-emerald-700">{uniqueBrands}</span>
                   <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-600" />
@@ -183,7 +185,7 @@ export default function TobaccoCollectionStats() {
               >
                 <span className="text-stone-600 flex items-center gap-1">
                   <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                  Favorites
+                  {t("stats.favorites")}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-emerald-700">{favoriteBlends.length}</span>
@@ -191,12 +193,12 @@ export default function TobaccoCollectionStats() {
                 </div>
               </button>
               <div className="space-y-2 bg-amber-50/50 rounded-lg p-2 border border-amber-200/50">
-                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">Tins</p>
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">{t("stats.tins")}</p>
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_tins || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total Tins</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalTins")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{totalTins}</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
@@ -206,7 +208,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-amber-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{tinWeightOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-amber-600" />
@@ -216,7 +218,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('tinOpen', { blends: blends.filter(b => (b.tin_tins_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Open</span>
+                  <span className="text-xs text-stone-600">{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-sky-600">{tinOpenOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
@@ -226,7 +228,7 @@ export default function TobaccoCollectionStats() {
               </div>
               
               <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
-                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Bulk</p>
+                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">{t("stats.bulk")}</p>
                 <button
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
@@ -251,12 +253,12 @@ export default function TobaccoCollectionStats() {
               </div>
               
               <div className="space-y-2 bg-purple-50/50 rounded-lg p-2 border border-purple-200/50">
-                <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">Pouches</p>
+                <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide">{t("stats.pouches")}</p>
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total Pouches</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalPouches")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{totalPouches}</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
@@ -286,14 +288,14 @@ export default function TobaccoCollectionStats() {
               </div>
               
               <div className="space-y-2 bg-stone-50 rounded-lg p-2 border border-stone-200">
-                <p className="text-xs font-semibold text-stone-800 uppercase tracking-wide">Overall</p>
+                <p className="text-xs font-semibold text-stone-800 uppercase tracking-wide">{t("stats.overall")}</p>
                 <button
                   onClick={() => handleDrillDown('allInventory', { blends: blends.filter(b => 
                     (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
                   )})}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-stone-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total Weight</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalWeight")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-emerald-700">{totalWeight.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-600" />
@@ -305,14 +307,14 @@ export default function TobaccoCollectionStats() {
                   )})}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-sky-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total Open</span>
+                  <span className="text-xs text-stone-600">{t("stats.totalOpen")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-sky-600">{totalOpenOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-sky-600" />
                   </div>
                 </button>
                 <div className="w-full flex justify-between items-center py-1 px-2 bg-emerald-50 rounded border border-emerald-200">
-                  <span className="text-xs text-stone-600 font-medium">Total Cellared</span>
+                  <span className="text-xs text-stone-600 font-medium">{t("stats.totalCellared")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-emerald-700">{totalCellaredOz.toFixed(1)} oz</span>
                   </div>
@@ -325,7 +327,7 @@ export default function TobaccoCollectionStats() {
           <div className="space-y-3">
             <h3 className="font-semibold text-stone-700 flex items-center gap-2 mb-3">
               <TrendingUp className="w-4 h-4 text-emerald-600" />
-              Blend Type Breakdown
+              {t("stats.blendTypeBreakdown")}
             </h3>
             <div className="space-y-2">
               {sortedBlendTypes.map(([type, count]) => {
@@ -365,23 +367,23 @@ export default function TobaccoCollectionStats() {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {drillDown?.type === 'brands' && 'Brands Breakdown'}
-              {drillDown?.type === 'favorites' && 'Favorite Blends'}
-              {drillDown?.type === 'opened' && 'Opened Blends'}
-              {drillDown?.type === 'blendType' && `${drillDown.data.type} Blends`}
-              {drillDown?.type === 'tinInventory' && 'Tin Inventory'}
-              {drillDown?.type === 'tinOpen' && 'Opened Tins'}
-              {drillDown?.type === 'tinCellared' && 'Cellared Tins'}
-              {drillDown?.type === 'bulkInventory' && 'Bulk Inventory'}
-              {drillDown?.type === 'bulkOpen' && 'Opened Bulk'}
-              {drillDown?.type === 'bulkCellared' && 'Cellared Bulk'}
-              {drillDown?.type === 'pouchInventory' && 'Pouch Inventory'}
-              {drillDown?.type === 'pouchOpen' && 'Opened Pouches'}
-              {drillDown?.type === 'pouchCellared' && 'Cellared Pouches'}
-              {drillDown?.type === 'allInventory' && 'All Inventory'}
-              {drillDown?.type === 'allOpen' && 'All Opened Tobacco'}
-              {drillDown?.type === 'allCellared' && 'All Cellared Tobacco'}
-              {drillDown?.type === 'lowInventory' && 'Low Inventory Alert'}
+              {drillDown?.type === 'brands' && t("stats.brandsBreakdown")}
+              {drillDown?.type === 'favorites' && t("stats.favoriteBlends")}
+              {drillDown?.type === 'opened' && t("stats.openedBlends")}
+              {drillDown?.type === 'blendType' && `${drillDown.data.type} ${t("common.tobacco.title")}`}
+              {drillDown?.type === 'tinInventory' && t("stats.tinInventory")}
+              {drillDown?.type === 'tinOpen' && t("stats.openedTins")}
+              {drillDown?.type === 'tinCellared' && t("stats.cellaredTins")}
+              {drillDown?.type === 'bulkInventory' && t("stats.bulkInventory")}
+              {drillDown?.type === 'bulkOpen' && t("stats.openedBulk")}
+              {drillDown?.type === 'bulkCellared' && t("stats.cellaredBulk")}
+              {drillDown?.type === 'pouchInventory' && t("stats.pouchInventory")}
+              {drillDown?.type === 'pouchOpen' && t("stats.openedPouches")}
+              {drillDown?.type === 'pouchCellared' && t("stats.cellaredPouches")}
+              {drillDown?.type === 'allInventory' && t("stats.allInventory")}
+              {drillDown?.type === 'allOpen' && t("stats.allOpenedTobacco")}
+              {drillDown?.type === 'allCellared' && t("stats.allCellaredTobacco")}
+              {drillDown?.type === 'lowInventory' && t("stats.lowInventoryAlert")}
             </DialogTitle>
           </DialogHeader>
 
@@ -468,7 +470,7 @@ export default function TobaccoCollectionStats() {
                           {blend.quantity_owned > 0 && ` • ${blend.quantity_owned} tin${blend.quantity_owned > 1 ? 's' : ''}`}
                         </p>
                       </div>
-                      <Badge className="bg-blue-100 text-blue-800">Opened</Badge>
+                      <Badge className="bg-blue-100 text-blue-800">{t("stats.opened")}</Badge>
                     </div>
                   </a>
                 ))}
@@ -516,30 +518,30 @@ export default function TobaccoCollectionStats() {
                     const oz = blend.tin_total_quantity_oz || 0;
                     const open = (blend.tin_tins_open || 0) * (blend.tin_size_oz || 0);
                     const cellared = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
-                    quantityText = drillDown.type === 'tinOpen' ? `${open.toFixed(2)} oz open` :
-                                   drillDown.type === 'tinCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                    quantityText = drillDown.type === 'tinOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'tinCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
                                    `${tins} tin${tins > 1 ? 's' : ''} • ${oz.toFixed(2)} oz`;
                   } else if (drillDown.type.startsWith('bulk')) {
                     const total = blend.bulk_total_quantity_oz || 0;
                     const open = blend.bulk_open || 0;
                     const cellared = blend.bulk_cellared || 0;
-                    quantityText = drillDown.type === 'bulkOpen' ? `${open.toFixed(2)} oz open` :
-                                   drillDown.type === 'bulkCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                    quantityText = drillDown.type === 'bulkOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'bulkCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
                                    `${total.toFixed(2)} oz bulk`;
                   } else if (drillDown.type.startsWith('pouch')) {
                     const pouches = blend.pouch_total_pouches || 0;
                     const oz = blend.pouch_total_quantity_oz || 0;
                     const open = (blend.pouch_pouches_open || 0) * (blend.pouch_size_oz || 0);
                     const cellared = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
-                    quantityText = drillDown.type === 'pouchOpen' ? `${open.toFixed(2)} oz open` :
-                                   drillDown.type === 'pouchCellared' ? `${cellared.toFixed(2)} oz cellared` :
+                    quantityText = drillDown.type === 'pouchOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'pouchCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
                                    `${pouches} pouch${pouches > 1 ? 'es' : ''} • ${oz.toFixed(2)} oz`;
                   } else {
                     const tinOz = blend.tin_total_quantity_oz || 0;
                     const bulkOz = blend.bulk_total_quantity_oz || 0;
                     const pouchOz = blend.pouch_total_quantity_oz || 0;
                     const total = tinOz + bulkOz + pouchOz;
-                    quantityText = `${total.toFixed(2)} oz total`;
+                    quantityText = `${total.toFixed(2)} ${t("stats.ozTotal")}`;
                   }
                   
                   return (
@@ -591,7 +593,7 @@ export default function TobaccoCollectionStats() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-stone-800 truncate">{blend.name}</p>
                         <p className="text-sm text-amber-700">
-                          {blend.cellared_amount?.toFixed(2)} oz remaining
+                          {blend.cellared_amount?.toFixed(2)} {t("stats.ozRemaining")}
                         </p>
                       </div>
                       <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
@@ -608,7 +610,7 @@ export default function TobaccoCollectionStats() {
       <Dialog open={showTrends} onOpenChange={setShowTrends}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="sr-only">Trends Report</DialogTitle>
+            <DialogTitle className="sr-only">{t("stats.trendsReport")}</DialogTitle>
           </DialogHeader>
           <TrendsReport
             logs={smokingLogs}
@@ -623,11 +625,11 @@ export default function TobaccoCollectionStats() {
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Inventory Alert Settings</DialogTitle>
+            <DialogTitle>{t("stats.inventoryAlertSettings")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Low Inventory Threshold (oz)</Label>
+              <Label>{t("stats.lowInventoryThreshold")}</Label>
               <Input
                 type="number"
                 min="0"
@@ -636,15 +638,15 @@ export default function TobaccoCollectionStats() {
                 onChange={(e) => setLowInventoryThreshold(parseFloat(e.target.value) || 0)}
               />
               <p className="text-xs text-stone-500">
-                You'll be notified when cellared tobacco drops to or below this amount
+                {t("stats.notifyWhenDrops")}
               </p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setShowSettings(false)} className="flex-1">
-                Cancel
+                {t("forms.cancel")}
               </Button>
               <Button onClick={handleThresholdSave} className="flex-1">
-                Save Settings
+                {t("stats.saveSettings")}
               </Button>
             </div>
           </div>
