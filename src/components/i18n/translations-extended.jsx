@@ -4102,7 +4102,8 @@ export const translationsExtended = {
     },
   }},
   it: {
-    nav: {
+    common: {
+      nav: {
       home: "Home",
       pipes: "Pipe",
       tobacco: "Tabacco",
