@@ -24,16 +24,16 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
-const SHAPES = ["pipes.allShapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
-const MATERIALS = ["pipes.allMaterials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
+const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
+const MATERIALS = ["Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
 
 export default function PipesPage() {
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [shapeFilter, setShapeFilter] = useState('pipes.allShapes');
-  const [materialFilter, setMaterialFilter] = useState('pipes.allMaterials');
+  const [shapeFilter, setShapeFilter] = useState('');
+  const [materialFilter, setMaterialFilter] = useState('');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('pipesViewMode') || 'grid';
   });
@@ -132,8 +132,8 @@ export default function PipesPage() {
     const matchesSearch = !searchQuery || 
       pipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pipe.maker?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesShape = shapeFilter === 'pipes.allShapes' || pipe.shape === shapeFilter;
-    const matchesMaterial = materialFilter === 'pipes.allMaterials' || pipe.bowl_material === materialFilter;
+    const matchesShape = !shapeFilter || pipe.shape === shapeFilter;
+    const matchesMaterial = !materialFilter || pipe.bowl_material === materialFilter;
     return matchesSearch && matchesShape && matchesMaterial;
   }).sort((a, b) => {
     try {
@@ -230,21 +230,23 @@ export default function PipesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
-              <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.filters")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape.startsWith('pipes.') ? t(shape) : shape}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={materialFilter} onValueChange={setMaterialFilter}>
-              <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.material")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {MATERIALS.map(material => <SelectItem key={material} value={material}>{material.startsWith('pipes.') ? t(material) : material}</SelectItem>)}
-              </SelectContent>
-            </Select>
+               <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.shape")}>
+                 <SelectValue placeholder={t("pipes.allShapes")} />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value={null}>{t("pipes.allShapes")}</SelectItem>
+                 {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
+               </SelectContent>
+             </Select>
+             <Select value={materialFilter} onValueChange={setMaterialFilter}>
+               <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.material")}>
+                 <SelectValue placeholder={t("pipes.allMaterials")} />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value={null}>{t("pipes.allMaterials")}</SelectItem>
+                 {MATERIALS.map(material => <SelectItem key={material} value={material}>{material}</SelectItem>)}
+               </SelectContent>
+             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy", "Sort by")}>
                 <SelectValue placeholder={t("pipesPage.sortBy", "Sort by")} />
@@ -307,8 +309,8 @@ export default function PipesPage() {
             }
             actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe", "Add Your First Pipe") : null}
             onAction={pipes.length === 0 ? () => setShowForm(true) : null}
-            secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter !== 'All Shapes' || materialFilter !== 'All Materials' ? t("pipesPage.clearFilters", "Clear Filters") : null}
-            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter('pipes.allShapes'); setMaterialFilter('pipes.allMaterials'); }}
+            secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter || materialFilter ? t("pipesPage.clearFilters") : null}
+            onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter(''); setMaterialFilter(''); }}
           />
         ) : (
           <motion.div 

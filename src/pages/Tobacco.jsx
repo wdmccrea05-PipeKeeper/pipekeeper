@@ -29,7 +29,6 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
 const BLEND_TYPES = [
-  "tobacco.allTypes",
   "American",
   "Aromatic",
   "Balkan",
@@ -55,7 +54,7 @@ const BLEND_TYPES = [
   "Virginia/Oriental",
   "Virginia/Perique"
 ];
-const STRENGTHS = ["tobacco.allStrengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
+const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
   { value: "-created_date", label: "tobaccoPage.recentlyAdded" },
   { value: "favorites", label: "tobaccoPage.favoritesFirst" },
@@ -71,8 +70,8 @@ export default function TobaccoPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBlend, setEditingBlend] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('tobacco.allTypes');
-  const [strengthFilter, setStrengthFilter] = useState('tobacco.allStrengths');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [strengthFilter, setStrengthFilter] = useState('');
   const [sortBy, setSortBy] = useState('-created_date');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
@@ -217,8 +216,8 @@ export default function TobaccoPage() {
     const matchesSearch = !searchQuery || 
       blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === 'tobacco.allTypes' || blend.blend_type === typeFilter;
-    const matchesStrength = strengthFilter === 'tobacco.allStrengths' || blend.strength === strengthFilter;
+    const matchesType = !typeFilter || blend.blend_type === typeFilter;
+    const matchesStrength = !strengthFilter || blend.strength === strengthFilter;
     return matchesSearch && matchesType && matchesStrength;
   });
 
@@ -346,18 +345,20 @@ export default function TobaccoPage() {
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className={`w-full sm:w-40 ${PK_THEME.input}`}>
-              <SelectValue />
+              <SelectValue placeholder={t("tobacco.allTypes")} />
             </SelectTrigger>
             <SelectContent>
-              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type.startsWith('tobacco.') ? t(type) : type}</SelectItem>)}
+              <SelectItem value={null}>{t("tobacco.allTypes")}</SelectItem>
+              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
             <SelectTrigger className={`w-full sm:w-40 ${PK_THEME.input}`}>
-              <SelectValue />
+              <SelectValue placeholder={t("tobacco.allStrengths")} />
             </SelectTrigger>
             <SelectContent>
-              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength.startsWith('tobacco.') ? t(strength) : strength}</SelectItem>)}
+              <SelectItem value={null}>{t("tobacco.allStrengths")}</SelectItem>
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -414,8 +415,8 @@ export default function TobaccoPage() {
             }
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend", "Add Your First Blend") : null}
             onAction={blends.length === 0 ? () => setShowForm(true) : null}
-            secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter !== 'tobacco.allTypes' || strengthFilter !== 'tobacco.allStrengths' ? t("pipesPage.clearFilters") : null}
-            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter('tobacco.allTypes'); setStrengthFilter('tobacco.allStrengths'); }}
+            secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter || strengthFilter ? t("pipesPage.clearFilters") : null}
+            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter(''); setStrengthFilter(''); }}
           />
         ) : (
           <motion.div 
