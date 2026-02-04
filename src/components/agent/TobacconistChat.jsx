@@ -14,6 +14,7 @@ import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { generatePairingsAI, generateOptimizationAI } from "@/components/utils/aiGenerators";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function MessageBubble({ message }) {
   const isUser = message.role === 'user';
@@ -52,6 +53,7 @@ function MessageBubble({ message }) {
 }
 
 export default function TobacconistChat({ open, onOpenChange, pipes = [], blends = [] }) {
+  const { t } = useTranslation();
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -302,16 +304,16 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
               />
             </div>
             <div>
-              <SheetTitle>Master Tobacconist</SheetTitle>
-              <p className="text-xs text-stone-500 mt-0.5">Expert consultation & AI updates</p>
+              <SheetTitle>{t("tobacconist.title")}</SheetTitle>
+              <p className="text-xs text-stone-500 mt-0.5">{t("tobacconist.subtitle")}</p>
             </div>
           </div>
         </SheetHeader>
 
         <Tabs defaultValue="chat" className="flex-1 flex flex-col">
           <TabsList className="mx-6 mt-4 bg-stone-100">
-            <TabsTrigger value="chat">Chat</TabsTrigger>
-            <TabsTrigger value="updates">AI Updates</TabsTrigger>
+            <TabsTrigger value="chat">{t("tobacconist.chatTab")}</TabsTrigger>
+            <TabsTrigger value="updates">{t("tobacconist.updatesTab")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat" className="flex-1 flex flex-col mt-0 data-[state=inactive]:hidden"  style={{display: 'flex', flexDirection: 'column', flex: 1}}>
@@ -319,9 +321,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-stone-50 to-white">
           {!conversationId ? (
             <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-stone-400" />
-              <p className="text-sm text-stone-600">Starting conversation...</p>
-            </div>
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-stone-400" />
+                <p className="text-sm text-stone-600">{t("tobacconist.startingConversation")}</p>
+              </div>
           ) : (
             <>
               {messages.length === 0 && !sending && (
@@ -333,9 +335,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                       className="w-full h-full object-cover scale-110"
                     />
                   </div>
-                  <h3 className="font-semibold text-stone-800 mb-2">Welcome to Your Personal Tobacconist</h3>
+                  <h3 className="font-semibold text-stone-800 mb-2">{t("tobacconist.welcomeTitle")}</h3>
                   <p className="text-sm text-stone-600 max-w-md mx-auto">
-                    Ask me about pipe recommendations, tobacco pairings, or collection optimization.
+                   {t("tobacconist.welcomeMessage")}
                   </p>
                 </div>
               )}
@@ -346,16 +348,16 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                   {msg.role === 'assistant' && idx === messages.length - 1 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" className="text-xs border-violet-300 text-violet-700" onClick={() => {
-                        setInput('Generate pairing recommendations for my collection');
+                        setInput(t("tobacconist.generatePairingsPrompt"));
                       }}>
                         <Sparkles className="w-3 h-3 mr-1" />
-                        Generate Pairings
+                        {t("tobacconist.generatePairings")}
                       </Button>
                       <Button size="sm" variant="outline" className="text-xs border-blue-300 text-blue-700" onClick={() => {
-                        setInput('Run optimization analysis on my collection');
+                        setInput(t("tobacconist.runOptimizationPrompt"));
                       }}>
                         <Target className="w-3 h-3 mr-1" />
-                        Run Optimization
+                        {t("tobacconist.runOptimization")}
                       </Button>
                     </div>
                   )}
@@ -384,7 +386,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         <div className="p-4 border-t bg-white">
           <div className="flex gap-2 mb-2">
             <Button variant="outline" size="sm" onClick={handleReset}>
-              New Conversation
+              {t("tobacconist.newConversation")}
             </Button>
           </div>
           <div className="flex gap-2">
@@ -392,7 +394,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
-              placeholder="Ask about pairings, recommendations, or your collection..."
+              placeholder={t("tobacconist.inputPlaceholder")}
               disabled={sending || !conversationId}
             />
             <Button 
@@ -416,39 +418,39 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <h3 className="font-semibold text-stone-800">Pairing Matrix</h3>
-                    <p className="text-sm text-stone-600 mt-1">
-                      {pairingsStale ? (
-                        <span className="text-amber-600 font-medium">Out of date - regeneration recommended</span>
-                      ) : (
-                        <span className="text-emerald-600 font-medium">Up to date</span>
-                      )}
-                    </p>
-                  </div>
+                     <h3 className="font-semibold text-stone-800">{t("tobacconist.pairingMatrix")}</h3>
+                     <p className="text-sm text-stone-600 mt-1">
+                       {pairingsStale ? (
+                         <span className="text-amber-600 font-medium">{t("tobacconist.outOfDate")}</span>
+                       ) : (
+                         <span className="text-emerald-600 font-medium">{t("tobacconist.upToDate")}</span>
+                       )}
+                     </p>
+                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!activePairings?.previous_active_id || busy}
-                    onClick={() => undoPairings.mutate()}
-                  >
-                    <Undo className="w-3 h-3 mr-1" />
-                    Undo
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={!pairingsStale || busy}
-                    onClick={() => regenPairings.mutate()}
-                    className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-                  >
-                    {busy ? (
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                    )}
-                    Regenerate
-                  </Button>
+                     variant="outline"
+                     size="sm"
+                     disabled={!activePairings?.previous_active_id || busy}
+                     onClick={() => undoPairings.mutate()}
+                   >
+                     <Undo className="w-3 h-3 mr-1" />
+                     {t("tobacconist.undo")}
+                   </Button>
+                   <Button
+                     size="sm"
+                     disabled={!pairingsStale || busy}
+                     onClick={() => regenPairings.mutate()}
+                     className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+                   >
+                     {busy ? (
+                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                     ) : (
+                       <RefreshCw className="w-3 h-3 mr-1" />
+                     )}
+                     {t("tobacconist.regenerate")}
+                   </Button>
                 </div>
               </div>
 
@@ -460,39 +462,39 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <h3 className="font-semibold text-stone-800">Collection Optimization</h3>
-                    <p className="text-sm text-stone-600 mt-1">
-                      {optStale ? (
-                        <span className="text-amber-600 font-medium">Out of date - regeneration recommended</span>
-                      ) : (
-                        <span className="text-emerald-600 font-medium">Up to date</span>
-                      )}
-                    </p>
-                  </div>
+                     <h3 className="font-semibold text-stone-800">{t("tobacconist.collectionOptimization")}</h3>
+                     <p className="text-sm text-stone-600 mt-1">
+                       {optStale ? (
+                         <span className="text-amber-600 font-medium">{t("tobacconist.outOfDate")}</span>
+                       ) : (
+                         <span className="text-emerald-600 font-medium">{t("tobacconist.upToDate")}</span>
+                       )}
+                     </p>
+                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!activeOpt?.previous_active_id || busy}
-                    onClick={() => undoOpt.mutate()}
-                  >
-                    <Undo className="w-3 h-3 mr-1" />
-                    Undo
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={!optStale || busy}
-                    onClick={() => regenOpt.mutate()}
-                    className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
-                  >
-                    {busy ? (
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                    )}
-                    Regenerate
-                  </Button>
+                     variant="outline"
+                     size="sm"
+                     disabled={!activeOpt?.previous_active_id || busy}
+                     onClick={() => undoOpt.mutate()}
+                   >
+                     <Undo className="w-3 h-3 mr-1" />
+                     {t("tobacconist.undo")}
+                   </Button>
+                   <Button
+                     size="sm"
+                     disabled={!optStale || busy}
+                     onClick={() => regenOpt.mutate()}
+                     className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+                   >
+                     {busy ? (
+                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                     ) : (
+                       <RefreshCw className="w-3 h-3 mr-1" />
+                     )}
+                     {t("tobacconist.regenerate")}
+                   </Button>
                 </div>
               </div>
 
@@ -500,9 +502,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-stone-800">Break-In Schedules</h3>
+                    <h3 className="font-semibold text-stone-800">{t("tobacconist.breakInSchedules")}</h3>
                     <p className="text-sm text-stone-600 mt-1">
-                      Regeneration is handled per pipe on the Pipe detail page (with undo/history).
+                      {t("tobacconist.breakInNote")}
                     </p>
                   </div>
                 </div>
