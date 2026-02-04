@@ -5855,7 +5855,8 @@ export const translationsExtended = {
     },
   }},
   ja: {
-    nav: {
+    common: {
+      nav: {
       home: "ホーム",
       pipes: "パイプ",
       tobacco: "タバコ",
