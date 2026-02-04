@@ -5,6 +5,52 @@
 
 export const translationsComplete = {
   en: {
+    collectionInsights: {
+      summaryTooltip: "This section summarizes patterns and totals across your collection based on the data you've entered."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} total bowls",
+      breakInBowls: "{{breakIn}} break-in",
+      totalBreakIn: "{{total}} break-in",
+      title: "Usage Log",
+      addSession: "Add Session"
+    },
+    blendTypes: {
+      american: "American",
+      aromatic: "Aromatic",
+      balkan: "Balkan",
+      burley: "Burley",
+      burleyBased: "Burley-based",
+      cavendish: "Cavendish",
+      codgerBlend: "Codger Blend",
+      darkFiredKentucky: "Dark Fired Kentucky",
+      english: "English",
+      englishAromatic: "English Aromatic",
+      englishBalkan: "English Balkan",
+      fullEnglishOriental: "Full English/Oriental",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Latakia Blend",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Oriental/Turkish",
+      other: "Other",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Oriental",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Your collection has changed since the last optimization. Regenerate to get updated recommendations.",
+      regenerate: "Regenerate",
+      undo: "Undo",
+      notNow: "Not Now",
+      undoLastChange: "Undo Last Change"
+    },
+    tobaccoPage: {
+      exportCSV: "Export CSV"
+    },
     helpContent: {
       faqFull: {
         pageTitle: "PipeKeeper FAQ",
