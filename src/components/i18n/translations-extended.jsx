@@ -4626,8 +4626,9 @@ export const translationsExtended = {
       copyright: "© 2025 PipeKeeper. Todos os direitos reservados.",
     },
     auth: {
-      login: "Fazer Login",
-      loginPrompt: "Faça login para continuar",
+    login: "Fazer Login",
+    loginPrompt: "Faça login para continuar",
+    loginRequired: "Login necessário",
     },
     error: {
       pageNotFound: "Página Não Encontrada",
@@ -5071,8 +5072,9 @@ export const translationsExtended = {
       copyright: "© 2025 PipeKeeper. Alle rechten voorbehouden.",
     },
     auth: {
-      login: "Inloggen",
-      loginPrompt: "Log in om door te gaan",
+    login: "Inloggen",
+    loginPrompt: "Log in om door te gaan",
+    loginRequired: "Inloggen vereist",
     },
     error: {
       pageNotFound: "Pagina Niet Gevonden",
@@ -5523,8 +5525,9 @@ export const translationsExtended = {
       copyright: "© 2025 PipeKeeper. Wszelkie prawa zastrzeżone.",
     },
     auth: {
-      login: "Zaloguj się",
-      loginPrompt: "Zaloguj się, aby kontynuować",
+    login: "Zaloguj się",
+    loginPrompt: "Zaloguj się, aby kontynuować",
+    loginRequired: "Wymagane logowanie",
     },
     error: {
       pageNotFound: "Strona Nie Znaleziona",
@@ -6012,8 +6015,9 @@ export const translationsExtended = {
       regenerateSuccess: "ペアリングが正常に再生成されました",
     },
     auth: {
-      login: "ログイン",
-      loginPrompt: "続行するにはログインしてください",
+    login: "ログイン",
+    loginPrompt: "続行するにはログインしてください",
+    loginRequired: "ログインが必要です",
     },
     error: {
       pageNotFound: "ページが見つかりません",
@@ -6464,8 +6468,9 @@ export const translationsExtended = {
       copyright: "© 2025 PipeKeeper. 保留所有权利。",
     },
     auth: {
-      login: "登录",
-      loginPrompt: "请登录以继续",
+    login: "登录",
+    loginPrompt: "请登录以继续",
+    loginRequired: "需要登录",
     },
     error: {
       pageNotFound: "页面未找到",
