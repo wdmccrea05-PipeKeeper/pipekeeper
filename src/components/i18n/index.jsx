@@ -6,62 +6,57 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { translations } from "./translations";
 import { translationsExtended } from "./translations-extended";
 import { translationsComplete } from "./translations-complete";
+import { translationsSupplement } from "./translations-supplement";
 
 import { homeTranslations } from "./homeContent";
 import { helpContentFull } from "./helpContent-full";
-import { helpContentTranslations } from "./helpContent-translations";
-import { helpContentFinal } from "./helpContent-final";
 
-function isPlainObject(v) {
-  return v && typeof v === "object" && !Array.isArray(v);
-}
-
-function deepMerge(target, source) {
-  if (!isPlainObject(target)) return source;
-  if (!isPlainObject(source)) return target;
-
-  const out = { ...target };
-  for (const [k, v] of Object.entries(source)) {
-    if (isPlainObject(v) && isPlainObject(out[k])) out[k] = deepMerge(out[k], v);
-    else out[k] = v;
-  }
-  return out;
-}
-
-// Some locale files are shaped { common: {...} }, others are flat {...}
 function normalizeLocale(localeObj) {
   if (!localeObj) return {};
-  if (localeObj.common && isPlainObject(localeObj.common)) return localeObj.common;
+  // If wrapped in { common: {...} }, unwrap
+  if (localeObj.common && typeof localeObj.common === "object") return localeObj.common;
   return localeObj;
 }
 
-// Wrap help content so pages can call helpContent.faqFull.sections etc.
-function wrapHelp(helpObj) {
-  if (!helpObj) return {};
-  // help files export { faqFull, howTo, troubleshooting }
-  return { helpContent: helpObj };
+// Deep merge so we never overwrite whole namespaces accidentally
+function deepMerge(target, source) {
+  if (!source || typeof source !== "object") return target;
+  for (const key of Object.keys(source)) {
+    const sVal = source[key];
+    const tVal = target[key];
+    if (Array.isArray(sVal)) {
+      // Arrays: replace (help sections/items rely on arrays being exact)
+      target[key] = sVal.slice();
+    } else if (sVal && typeof sVal === "object") {
+      target[key] = (tVal && typeof tVal === "object" && !Array.isArray(tVal)) ? tVal : {};
+      deepMerge(target[key], sVal);
+    } else {
+      target[key] = sVal;
+    }
+  }
+  return target;
 }
 
 function buildLocale(lang) {
-  const base =
-    deepMerge(
-      normalizeLocale(translations?.[lang]),
-      normalizeLocale(translationsExtended?.[lang])
-    );
+  const base = {};
 
-  // translationsComplete already includes helpContent in some builds,
-  // but keep it merged in case it has other keys.
-  const complete = normalizeLocale(translationsComplete?.[lang]);
+  // Merge in correct precedence order (later can override *individual keys* safely)
+  deepMerge(base, normalizeLocale(translations?.[lang]));
+  deepMerge(base, normalizeLocale(translationsExtended?.[lang]));
+  deepMerge(base, normalizeLocale(translationsSupplement?.[lang]));
+  deepMerge(base, normalizeLocale(translationsComplete?.[lang]));
+  deepMerge(base, normalizeLocale(homeTranslations?.[lang]));
 
-  const home = homeTranslations?.[lang] ?? {};
+  // HELP FIX:
+  // helpContent-full.jsx is shaped { faqFull, howTo, troubleshooting } — must be nested under helpContent
+  const help = normalizeLocale(helpContentFull?.[lang]);
+  if (help && typeof help === "object" && !help.helpContent) {
+    deepMerge(base, { helpContent: help });
+  } else {
+    deepMerge(base, help);
+  }
 
-  const help =
-    deepMerge(
-      deepMerge(wrapHelp(helpContentFull?.[lang]), wrapHelp(helpContentTranslations?.[lang])),
-      wrapHelp(helpContentFinal?.[lang])
-    );
-
-  return deepMerge(deepMerge(deepMerge(base, complete), home), help);
+  return base;
 }
 
 const supported = ["en", "es", "fr", "de", "it", "pt-BR", "nl", "pl", "ja", "zh-Hans"];
