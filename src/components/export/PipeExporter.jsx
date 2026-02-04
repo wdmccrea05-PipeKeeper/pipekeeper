@@ -5,8 +5,10 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useTranslation } from "react-i18next";
 
 export default function PipeExporter() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const { data: user } = useQuery({
@@ -239,7 +241,7 @@ export default function PipeExporter() {
         disabled={loading || pipes.length === 0}
       >
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Export CSV
+        {t("pipesPage.exportCSV")}
       </Button>
       <Button
         variant="outline"
@@ -250,7 +252,7 @@ export default function PipeExporter() {
       >
         {!isPremiumUser && <Crown className="w-4 h-4 mr-2 text-amber-500" />}
         <Shield className="w-4 h-4 mr-2" />
-        Insurance Report
+        {t("pipesPage.insuranceReport")}
       </Button>
     </div>
   );

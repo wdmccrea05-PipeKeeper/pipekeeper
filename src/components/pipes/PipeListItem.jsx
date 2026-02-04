@@ -65,17 +65,17 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
             <div className="flex flex-wrap gap-2 mb-3">
               {pipe.shape && (
                 <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs">
-                  {pipe.shape}
+                  {t(`shapes.${pipe.shape}`, pipe.shape)}
                 </Badge>
               )}
               {pipe.bowl_material && (
                 <Badge variant="secondary" className="bg-slate-700 text-slate-100 border-slate-600/50 text-xs">
-                  {pipe.bowl_material}
+                  {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
                 </Badge>
               )}
               {pipe.chamber_volume && (
                 <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs">
-                  {pipe.chamber_volume}
+                  {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)}
                 </Badge>
               )}
             </div>

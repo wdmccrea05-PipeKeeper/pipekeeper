@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, Image as ImageIcon, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], maxPhotos = 10 }) {
+  const { t } = useTranslation();
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -35,8 +37,8 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           className="flex-1 bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">From Gallery</span>
-          <span className="sm:hidden">Gallery</span>
+          <span className="hidden sm:inline">{t("photos.fromGallery")}</span>
+          <span className="sm:hidden">{t("photos.gallery")}</span>
         </Button>
         <Button
           type="button"
@@ -47,8 +49,8 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
           className="flex-1 bg-stone-700 border-stone-600 text-white hover:bg-stone-800"
         >
           <Camera className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Take Photo</span>
-          <span className="sm:hidden">Camera</span>
+          <span className="hidden sm:inline">{t("aiIdentifier.takePhoto")}</span>
+          <span className="sm:hidden">{t("photos.camera")}</span>
         </Button>
       </div>
 
@@ -81,7 +83,7 @@ export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], m
       )}
 
       {!canAddMore && (
-        <p className="text-xs text-[#E0D8C8]/70 mt-2">Maximum photos reached</p>
+        <p className="text-xs text-[#E0D8C8]/70 mt-2">{t("photos.maxReached")}</p>
       )}
     </div>
   );

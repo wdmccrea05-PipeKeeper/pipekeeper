@@ -250,10 +250,10 @@ export default function PipesPage() {
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date">Newest First</SelectItem>
-                <SelectItem value="favorites">Favorites First</SelectItem>
-                <SelectItem value="maker">By Maker</SelectItem>
-                <SelectItem value="name">By Name</SelectItem>
+                <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
+                <SelectItem value="favorites">{t("pipesPage.favoritesFirst")}</SelectItem>
+                <SelectItem value="maker">{t("pipesPage.byMaker")}</SelectItem>
+                <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
               </SelectContent>
             </Select>
             <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label="View mode">
