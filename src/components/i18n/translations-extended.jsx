@@ -2581,9 +2581,9 @@ export const translationsExtended = {
       termsOfService: "Términos de Servicio",
       privacyPolicy: "Política de Privacidad",
       subscriptionBilling: "Suscripción y Facturación",
-    }
+    },
   }},
-  fr: { common: {
+  fr: {
     nav: {
       home: "Accueil",
       pipes: "Pipes",
