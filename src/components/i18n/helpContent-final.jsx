@@ -361,8 +361,9 @@ export const helpContentFinal = {
             { id: "no-auto-update", q: "为什么价值不自动更新?", intro: "AI估值按需生成以保留积分和性能。", points: ["点击'运行AI估值'以更新估计", "计划自动刷新可能会在将来的专业版更新中添加"] }
           ]
         }
-        }
-        }
-        };
+      }
+    }
+  }
+};
 
-        export { helpContentFinal };
+export { helpContentFinal };
