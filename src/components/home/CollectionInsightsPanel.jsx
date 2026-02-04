@@ -96,7 +96,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
               className="mb-0"
             />
-            <InfoTooltip text={t("collectionInsights.summaryTooltip")} />
+            <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
           </div>
           <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
         </div>
@@ -215,7 +215,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
-                        <InfoTooltip text={t("insights.reportTooltip")} />
+                        <InfoTooltip text="Generate exportable summaries of your collection for reference or documentation." />
                       </div>
                       <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle")}</p>
                     </div>
@@ -241,7 +241,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
-                        <InfoTooltip text={t("insights.agingTooltip")} />
+                        <InfoTooltip text="Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics." />
                       </div>
                       <p className="text-sm text-[#E0D8C8]/60">{t("insights.agingSubtitle")}</p>
                     </div>
