@@ -3,7 +3,7 @@
  * Respects user's selected language (i18n.language)
  */
 
-import i18n from "@/components/i18n";
+import i18n from "i18next";
 
 /**
  * Get locale code from i18n language
