@@ -322,7 +322,16 @@ export const translationsComplete = {
     pipes: { search: 'Szukaj', filter: 'Filtruj', shape: 'Kształt', material: 'Materiał', allShapes: 'Wszystkie kształty', allMaterials: 'Wszystkie materiały' },
     tobacco: { allTypes: 'Wszystkie typy', allStrengths: 'Wszystkie moce', search: 'Szukaj' },
     common: { loading: 'Ładowanie...', refresh: 'Odśwież', cancel: 'Anuluj', save: 'Zapisz', delete: 'Usuń', close: 'Zamknij', unknown: 'Nieznany', of: 'z' },
-    units: { tin: 'puszka', tinPlural: 'puszki' },
+    units: { tin: 'puszka', tinPlural: 'puszki', bowl: 'misa' },
+    pipesPage: {
+      exportCSV: "Eksportuj CSV"
+    },
+    tobaccoPage: {
+      exportCSV: "Eksportuj CSV",
+      exportPDF: "Eksportuj PDF",
+      quickEdit: "Szybka Edycja",
+      quickSearchAdd: "Szybkie Wyszukiwanie i Dodaj"
+    },
     helpContent: {
       faqFull: {
         pageTitle: "Pytania Часто Zadawane PipeKeeper",
@@ -363,7 +372,13 @@ export const translationsComplete = {
       undo: 'Cofnij',
       regenerate: 'Regeneruj',
       breakInSchedules: 'Harmonogramy Przećwiczenia',
-      breakInNote: 'Regeneracja jest obsługiwana dla każdego pipa na stronie szczegółów pipa (z cofnięciem/historią).'
+      breakInNote: 'Regeneracja jest obsługiwana dla każdego pipa na stronie szczegółów pipa (z cofnięciem/historią).',
+      noRecommendation: 'Brak konkretnych rekomendacji',
+      versatilePattern: 'Wszechstronny - odpowiedni dla wielu typów mieszanek',
+      strategicSpecializations: 'Strategiczne specjalizacje dla maksymalnych wyników połączeń',
+      usagePattern: 'Wzór Użycia',
+      currentFocus: 'Obecny Fokus',
+      recommendedFor: 'Rekomendowane dla'
     }
   },
   ja: {
@@ -411,8 +426,24 @@ export const translationsComplete = {
       undo: '元に戻す',
       regenerate: '再生成',
       breakInSchedules: 'ブレイク・イン スケジュール',
-      breakInNote: '再生成はパイプ詳細ページでパイプごとに処理されます (取り消し/履歴付き)。'
-    }
+      breakInNote: '再生成はパイプ詳細ページでパイプごとに処理されます (取り消し/履歴付き)。',
+      noRecommendation: '具体的な推奨なし',
+      versatilePattern: '汎用性 - 複数のブレンドタイプに適しています',
+      strategicSpecializations: '最大ペアリングスコアのための戦略的専門化',
+      usagePattern: '使用パターン',
+      currentFocus: '現在のフォーカス',
+      recommendedFor: '推奨対象'
+    },
+    pipesPage: {
+      exportCSV: "CSVエクスポート"
+    },
+    tobaccoPage: {
+      exportCSV: "CSVエクスポート",
+      exportPDF: "PDFエクスポート",
+      quickEdit: "クイック編集",
+      quickSearchAdd: "クイック検索 & 追加"
+    },
+    units: { tin: '缶', tinPlural: '缶', bowl: 'ボウル' }
   },
   'zh-Hans': {
     pipes: { search: '搜索', filter: '筛选', shape: '形状', material: '材料', allShapes: '所有形状', allMaterials: '所有材料' },
