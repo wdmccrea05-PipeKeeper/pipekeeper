@@ -47,6 +47,11 @@ export const translationsComplete = {
           ],
           note: "Incluya su dirección de correo electrónico al ponerse en contacto con el soporte para que podamos ayudarle rápidamente."
         }
+      },
+      tooltips: {
+        collectionPatterns: "This section summarizes patterns and totals across your collection based on the data you've entered.",
+        reports: "Generate exportable summaries of your collection for reference or documentation.",
+        agingDashboard: "Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics."
       }
     },
     tobacconist: {
