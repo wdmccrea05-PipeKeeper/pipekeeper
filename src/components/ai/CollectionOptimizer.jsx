@@ -400,7 +400,7 @@ function CollectionOptimizerInner({
       }
     } catch (err) {
       console.error("Error analyzing collection:", err);
-      toast.error("Failed to analyze collection. Please try again.");
+      toast.error(t("errors.failedToAnalyze"));
     } finally {
       setLoading(false);
     }
@@ -506,10 +506,10 @@ User Feedback: ${feedback}
       setSelectedChanges({});
       setUserFeedbackHistory("");
 
-      toast.success("Optimization applied", { description: "Regenerate pairings to see updated recommendations" });
+      toast.success(t("tobacconist.optimizationApplied"), { description: t("tobacconist.regeneratePairingsNote") });
     } catch (err) {
       console.error("Error accepting recommendations:", err);
-      toast.error("Failed to apply recommendations. Please try again.");
+      toast.error(t("errors.failedToApply"));
     } finally {
       setAcceptingAll(false);
     }
@@ -537,7 +537,7 @@ User Feedback: ${feedback}
       });
     } catch (err) {
       console.error("applySpecialization error:", err);
-      toast.error("Failed to apply focus. Please try again.");
+      toast.error(t("errors.failedToApplyFocus"));
     }
   };
 
@@ -609,11 +609,11 @@ User Feedback: ${feedback}
     if (!userText?.trim()) return;
 
     if (contextLoading) {
-      toast.error("Loading your collection data...");
+      toast.error(t("errors.loadingCollection"));
       return;
     }
     if (!pipes?.length) {
-      toast.error("No pipes found in your collection.");
+      toast.error(t("errors.noPipes"));
       return;
     }
 
@@ -716,7 +716,7 @@ ${userText}
       setWhatIfPhotos([]);
     } catch (err) {
       console.error("sendToExpertAgent error:", err);
-      toast.error("Failed to process your question. Please try again.");
+      toast.error(t("errors.failedToProcess"));
       setConversationMessages((prev) => [
         ...prev,
         {
@@ -796,7 +796,7 @@ ${userText}
       setWhatIfResult(impactAnalysis);
     } catch (err) {
       console.error("analyzeCollectionImpact error:", err);
-      toast.error("Failed to analyze impact. Please try again.");
+      toast.error(t("errors.failedToAnalyzeImpact"));
     } finally {
       setWhatIfLoading(false);
     }
@@ -888,8 +888,8 @@ ${userText}
 
   // --- UI guards ---
   if (!pipes?.length || !blends?.length) return null;
-  if (optLoading) return <div className="text-sm text-stone-600">Loading optimization...</div>;
-  if (!optimization) return <div className="text-sm text-stone-600">No optimization data yet. Regenerate to get suggestions.</div>;
+  if (optLoading) return <div className="text-sm text-stone-600">{t("tobacconist.loadingOptimization")}</div>;
+  if (!optimization) return <div className="text-sm text-stone-600">{t("tobacconist.noOptimizationYet")}</div>;
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
@@ -1005,7 +1005,7 @@ ${userText}
                               className="border-blue-300 text-blue-700 hover:bg-blue-50"
                             >
                               {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
-                              Analyze Impact
+                              {t("tobacconist.analyzeImpact")}
                             </Button>
                           </div>
                         )}
@@ -1095,7 +1095,7 @@ ${userText}
                   className="bg-indigo-600 hover:bg-indigo-700 w-full"
                 >
                   {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <HelpCircle className="w-4 h-4 mr-2" />}
-                  Send Message
+                  {t("tobacconist.sendMessage")}
                 </Button>
 
                 <div className="flex gap-2">
@@ -1110,7 +1110,7 @@ ${userText}
                   </Button>
 
                   <Button variant="outline" onClick={resetWhatIf} className="flex-1 bg-stone-700 text-white hover:bg-stone-800 border-stone-600">
-                    Reset
+                    {t("tobacconist.reset")}
                   </Button>
                 </div>
               </>
@@ -1128,12 +1128,12 @@ ${userText}
                 {whatIfLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Starting...
+                    {t("tobacconist.starting")}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Start Conversation
+                    {t("tobacconist.startConversation")}
                   </>
                 )}
               </Button>
@@ -1316,13 +1316,13 @@ ${userText}
             })}
 
             {optimization?.pipe_specializations?.filter((s) => s.recommended_blend_types?.length > 0).length === 0 && (
-              <p className="text-center text-stone-500 py-8">No changes to apply</p>
+              <p className="text-center text-stone-500 py-8">{t("tobacconist.noChanges")}</p>
             )}
           </div>
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowConfirmation(false)} disabled={acceptingAll} className="w-full sm:w-auto">
-              {t("forms.cancel")}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleConfirmChanges}
@@ -1356,7 +1356,7 @@ ${userText}
                     <Target className="w-5 h-5 flex-shrink-0" />
                     <span className="truncate">{t("tobacconist.optimizationTitle")}</span>
                   </CardTitle>
-                  <InfoTooltip text="AI analyzes your collection and recommends which pipes to specialize for specific tobacco types to maximize pairing scores and collection coverage." />
+                  <InfoTooltip text={t("tobacconist.optimizationTooltip")} />
                 </div>
                 <Button variant="ghost" size="sm" onClick={toggleCollapse} className="text-blue-600 hover:text-blue-800 flex-shrink-0">
                   {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -1478,7 +1478,7 @@ ${userText}
                                       </h4>
                                     </a>
                                   ) : (
-                                    <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title="Pipe not found in collection.">
+                                    <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title={t("tobacconist.pipeNotFound")}>
                                       {asText(displaySpec.pipe_name)}
                                     </h4>
                                   )}
@@ -1491,17 +1491,17 @@ ${userText}
                                   ) : displaySpec.recommended_blend_types?.length > 0 ? (
                                     <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-xs gap-1 flex-shrink-0">
                                       <Star className="w-3 h-3" />
-                                      <span className="hidden sm:inline">Recommended</span>
+                                      <span className="hidden sm:inline">{t("tobacconist.recommended")}</span>
                                     </Badge>
                                   ) : (
                                     <Badge className={`${getVersatilityColor(displaySpec.versatility_score)} text-xs flex-shrink-0`}>
-                                      <span className="hidden sm:inline">Ver. {asText(displaySpec.versatility_score)}/10</span>
+                                      <span className="hidden sm:inline">{t("tobacconist.versatility")} {asText(displaySpec.versatility_score)}/10</span>
                                       <span className="sm:hidden">{asText(displaySpec.versatility_score)}/10</span>
                                     </Badge>
                                   )}
-                                </div>
+                                  </div>
 
-                                {pv.focus && pv.focus.length > 0 && (
+                                  {pv.focus && pv.focus.length > 0 && (
                                   <div className="mb-3">
                                     <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
                                     <div className="flex flex-wrap gap-1">
@@ -1516,7 +1516,7 @@ ${userText}
 
                                 {displaySpec.recommended_blend_types?.length > 0 && (
                                   <div className="mb-3">
-                                    <p className="text-sm font-medium text-blue-900 mb-1">{t("tobacconist.specializeFo")}</p>
+                                    <p className="text-sm font-medium text-blue-900 mb-1">{t("tobacconist.specializeFor")}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {displaySpec.recommended_blend_types.map((type, i) => (
                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
@@ -1534,7 +1534,7 @@ ${userText}
 
                                 {displaySpec.score_improvement && (
                                   <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
-                                    <p className="text-xs font-medium text-emerald-700">📈 Score Impact:</p>
+                                    <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact")}:</p>
                                     <p className="text-xs text-emerald-800 font-semibold">{asText(displaySpec.score_improvement)}</p>
                                   </div>
                                 )}
@@ -1543,7 +1543,7 @@ ${userText}
                                   <div className="bg-amber-50 rounded-lg p-2 border border-amber-200 mb-2">
                                     <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
                                       <Trophy className="w-3 h-3" />
-                                      Trophy Matches (9-10 scores):
+                                      {t("tobacconist.trophyMatches")}:
                                     </p>
                                     <p className="text-xs text-amber-800">{asText(displaySpec.trophy_blends.join(", "))}</p>
                                   </div>
@@ -1574,7 +1574,7 @@ ${userText}
                                     onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
                                   >
                                     <RefreshCw className="w-4 h-4 mr-1" />
-                                    {showFeedbackFor === variantKey ? t("forms.cancel") : t("tobacconist.disputeAddInfo")}
+                                    {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.disputeAddInfo")}
                                   </Button>
                                 </div>
 
@@ -1584,9 +1584,9 @@ ${userText}
                                     animate={{ opacity: 1, height: "auto" }}
                                     className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
                                   >
-                                    <p className="text-xs font-medium text-amber-800 mb-2">Share your thoughts on this recommendation:</p>
+                                    <p className="text-xs font-medium text-amber-800 mb-2">{t("tobacconist.shareThoughts")}:</p>
                                     <Textarea
-                                      placeholder="e.g., 'I prefer using this pipe for Latakia blends, not Virginias'"
+                                      placeholder={t("tobacconist.feedbackPlaceholder")}
                                       value={pipeFeedback[variantKey] || ""}
                                       onChange={(e) => setPipeFeedback({ ...pipeFeedback, [variantKey]: e.target.value })}
                                       className="min-h-[60px] text-sm mb-2 bg-white text-stone-900 placeholder:text-stone-500"
@@ -1600,12 +1600,12 @@ ${userText}
                                       {loading ? (
                                         <>
                                           <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                          Re-analyzing...
+                                          {t("tobacconist.reanalyzing")}
                                         </>
                                       ) : (
                                         <>
                                           <Sparkles className="w-3 h-3 mr-1" />
-                                          Submit & Re-analyze
+                                          {t("tobacconist.submitReanalyze")}
                                         </>
                                       )}
                                     </Button>
@@ -1674,17 +1674,17 @@ ${userText}
                   <Target className="w-5 h-5 text-indigo-600" />
                   {t("tobacconist.askTheExpert")}
                 </h3>
-                <InfoTooltip text="Get personalized collection advice based on your pipes, tobacco, and usage history. Follow-ups continue the conversation without repeating earlier answers." />
+                <InfoTooltip text={t("tobacconist.askExpertTooltip")} />
               </div>
 
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">
                   <p className="text-sm text-stone-900">
-                    Ask for personalized advice. Follow-ups stay in the same conversation and won&apos;t repeat earlier answers.
+                    {t("tobacconist.askExpertInstructions")}
                   </p>
 
                   <Textarea
-                    placeholder="e.g., 'Which pipe should I dedicate to Latakia blends?'"
+                    placeholder={t("tobacconist.askPlaceholder")}
                     value={whatIfQuery}
                     onChange={(e) => setWhatIfQuery(e.target.value)}
                     className="min-h-[70px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1709,7 +1709,7 @@ ${userText}
                       disabled={!conversationMessages.length || whatIfLoading}
                       variant="outline"
                       className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
-                      title={!conversationMessages.length ? "Ask something first to analyze impact" : "Analyze impact"}
+                      title={!conversationMessages.length ? t("tobacconist.askFirstToAnalyze") : t("tobacconist.analyzeImpact")}
                     >
                       {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
                       {t("tobacconist.analyzeImpact")}
@@ -1738,7 +1738,7 @@ ${userText}
                               <div className="inline-block bg-stone-100 rounded-lg px-3 py-2 max-w-[85%] text-left">
                                 {isImpact ? (
                                   <div className="text-xs sm:text-sm text-stone-800 space-y-2">
-                                    <p className="font-semibold">Impact Score: {asText(c?.impact_score)}/10</p>
+                                    <p className="font-semibold">{t("tobacconist.impactScore")}: {asText(c?.impact_score)}/10</p>
                                     <p>{asText(c?.recommendation_category)}</p>
                                     <p className="text-stone-700">{asText(c?.detailed_reasoning)}</p>
                                   </div>
@@ -1747,7 +1747,7 @@ ${userText}
                                     <FormattedTobacconistResponse content={asText(c?.advice)} style="light_structure" />
                                     {c?.routed_to && (
                                       <p className="text-[11px] font-mono text-stone-600 border-t border-stone-300 pt-2">
-                                        Answered by: {asText(c.routed_to)}
+                                        {t("tobacconist.answeredBy")}: {asText(c.routed_to)}
                                       </p>
                                     )}
                                   </div>
@@ -1769,7 +1769,7 @@ ${userText}
 
             {/* Footer */}
             <div className="text-center pt-2 text-xs text-stone-500">
-              {optimization?.generated_date && <p>Last updated: {new Date(optimization.generated_date).toLocaleDateString()}</p>}
+              {optimization?.generated_date && <p>{t("common.lastUpdated")}: {new Date(optimization.generated_date).toLocaleDateString()}</p>}
             </div>
           </CardContent>
         )}

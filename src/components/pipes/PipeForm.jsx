@@ -246,8 +246,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       if (!canAdd) {
         toast.error(
           entitlements.isFreeGrandfathered
-            ? "You've reached the free limit. Upgrade to add more pipes, or delete some existing ones."
-            : `Free tier limited to ${entitlements.limits.pipes} pipes. Upgrade to add more.`
+            ? t("limits.freeLimitReached")
+            : t("limits.pipesLimit", { limit: entitlements.limits.pipes })
         );
         return;
       }
@@ -256,7 +256,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     // Check photo limits
     const totalPhotos = (formData.photos?.length || 0) + (formData.stamping_photos?.length || 0);
     if (totalPhotos > entitlements.limits.photosPerItem) {
-      toast.error(`Free tier limited to ${entitlements.limits.photosPerItem} photo per pipe. Upgrade for unlimited.`);
+      toast.error(t("limits.photosLimit", { limit: entitlements.limits.photosPerItem }));
       return;
     }
 
@@ -434,56 +434,56 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
-            label="Name" 
+            label={t("pipesExtended.name")} 
             required 
-            helpText="A descriptive name for your pipe. Can be based on shape, maker, or your own nickname."
+            helpText={t("pipesExtended.nameHelp")}
           >
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="e.g., My Favorite Billiard"
+              placeholder={t("pipesExtended.namePlaceholder")}
               required
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Maker / Brand" 
-            helpText="The pipe manufacturer or maker (e.g., Dunhill, Peterson, Savinelli)."
+            label={t("pipesExtended.maker")} 
+            helpText={t("pipesExtended.makerHelp")}
           >
             <Combobox
               value={formData.maker}
               onValueChange={(v) => handleChange('maker', v)}
               options={recentMakers}
-              placeholder="e.g., Dunhill, Peterson"
-              searchPlaceholder="Search makers..."
+              placeholder={t("pipesExtended.makerPlaceholder")}
+              searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Country of Origin" 
-            helpText="Where the pipe was manufactured (e.g., England, Denmark, Italy)."
+            label={t("pipesExtended.country")} 
+            helpText={t("pipesExtended.countryHelp")}
           >
             <Combobox
               value={formData.country_of_origin}
               onValueChange={(v) => handleChange('country_of_origin', v)}
               options={recentCountries}
-              placeholder="e.g., England, Denmark"
-              searchPlaceholder="Search countries..."
+              placeholder={t("pipesExtended.countryPlaceholder")}
+              searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
             />
           </FieldWithInfo>
           <FieldWithInfo 
-          label="Year Made" 
-          helpText="Year or era the pipe was made. Can be approximate (e.g., '1970s', 'c. 2005')."
+          label={t("pipesExtended.yearMade")} 
+          helpText={t("pipesExtended.yearMadeHelp")}
           >
           <Input
             value={formData.year_made}
             onChange={(e) => handleChange('year_made', e.target.value)}
-            placeholder="e.g., 1970s, 2020"
+            placeholder={t("pipesExtended.yearMadePlaceholder")}
           />
           </FieldWithInfo>
           <FieldWithInfo 
-          label="Purchase Date" 
-          helpText="Date when you acquired this pipe"
+          label={t("pipesExtended.purchaseDate")} 
+          helpText={t("pipesExtended.purchaseDateHelp")}
           >
           <Input
             type="date"
@@ -492,22 +492,22 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Stamping / Markings" 
-            helpText="Text, logos, or markings stamped on the pipe (usually on the shank or stem)."
+            label={t("pipesExtended.stamping")} 
+            helpText={t("pipesExtended.stampingHelp")}
           >
             <Input
               value={formData.stamping}
               onChange={(e) => handleChange('stamping', e.target.value)}
-              placeholder="Text on the pipe"
+              placeholder={t("pipesExtended.stampingPlaceholder")}
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Condition" 
-            helpText="Overall condition of the pipe from mint (perfect) to poor (heavily damaged)."
+            label={t("pipesExtended.condition")} 
+            helpText={t("pipesExtended.conditionHelp")}
           >
             <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select condition" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -525,13 +525,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
-            label="Shape" 
+            label={t("pipesExtended.shape")} 
             required
-            helpText="Primary shape classification of your pipe"
+            helpText={t("pipesExtended.shapeHelp")}
           >
             <Select value={formData.shape || "Unknown"} onValueChange={(v) => handleChange('shape', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select shape" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -539,12 +539,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Bowl Style" 
-            helpText="Internal bowl shape classification"
+            label={t("pipesExtended.bowlStyle")} 
+            helpText={t("pipesExtended.bowlStyleHelp")}
           >
             <Select value={formData.bowlStyle || "Unknown"} onValueChange={(v) => handleChange('bowlStyle', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select bowl style" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {BOWL_STYLES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -552,12 +552,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Shank Shape" 
-            helpText="Cross-sectional shape of the shank"
+            label={t("pipesExtended.shankShape")} 
+            helpText={t("pipesExtended.shankShapeHelp")}
           >
             <Select value={formData.shankShape || "Unknown"} onValueChange={(v) => handleChange('shankShape', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select shank shape" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {SHANK_SHAPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -565,12 +565,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Bend" 
-            helpText="Degree of bend from stem to bowl"
+            label={t("pipesExtended.bend")} 
+            helpText={t("pipesExtended.bendHelp")}
           >
             <Select value={formData.bend || "Unknown"} onValueChange={(v) => handleChange('bend', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select bend" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {BENDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -578,12 +578,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Size Class" 
-            helpText="Overall size classification"
+            label={t("pipesExtended.sizeClass")} 
+            helpText={t("pipesExtended.sizeClassHelp")}
           >
             <Select value={formData.sizeClass || "Standard"} onValueChange={(v) => handleChange('sizeClass', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select size class" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {SIZE_CLASSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -615,38 +615,38 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FieldWithInfo 
-            label="Bowl Material" 
-            helpText="What the tobacco chamber is made from. Briar is most common; Meerschaum is prized for cool sessions."
+            label={t("pipesExtended.bowlMaterial")} 
+            helpText={t("pipesExtended.bowlMaterialHelp")}
           >
             <Combobox
               value={formData.bowl_material}
               onValueChange={(v) => handleChange('bowl_material', v)}
               options={[...new Set([...BOWL_MATERIALS, ...recentBowlMaterials])]}
-              placeholder="Select material"
-              searchPlaceholder="Search materials..."
+              placeholder={t("common.selectPlaceholder")}
+              searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={false}
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Stem Material" 
-            helpText="What the mouthpiece is made from. Vulcanite is traditional but oxidizes; Acrylic is more durable."
+            label={t("pipesExtended.stemMaterial")} 
+            helpText={t("pipesExtended.stemMaterialHelp")}
           >
             <Combobox
               value={formData.stem_material}
               onValueChange={(v) => handleChange('stem_material', v)}
               options={[...new Set([...STEM_MATERIALS, ...recentStemMaterials])]}
-              placeholder="Select material"
-              searchPlaceholder="Search materials..."
+              placeholder={t("common.selectPlaceholder")}
+              searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={false}
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Finish" 
-            helpText="Surface treatment of the bowl. Smooth shows the wood grain; Sandblast reveals ring grain texture."
+            label={t("pipesExtended.finish")} 
+            helpText={t("pipesExtended.finishHelp")}
           >
             <Select value={formData.finish} onValueChange={(v) => handleChange('finish', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select finish" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {FINISHES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
@@ -654,12 +654,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Chamber Volume" 
-            helpText="Overall size of the tobacco chamber. Small = 15-30 min session, Medium = 30-45 min, Large = 45-60 min, Extra Large = 60+ min."
+            label={t("pipesExtended.chamberVolume")} 
+            helpText={t("pipesExtended.chamberVolumeHelp")}
           >
             <Select value={formData.chamber_volume} onValueChange={(v) => handleChange('chamber_volume', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select volume" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {CHAMBER_VOLUMES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
@@ -667,12 +667,12 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Filter Type" 
-            helpText="Size of removable filter or 'None' if filterless. 9mm filters absorb moisture and cool the session."
+            label={t("pipesExtended.filterType")} 
+            helpText={t("pipesExtended.filterTypeHelp")}
           >
             <Select value={formData.filter_type} onValueChange={(v) => handleChange('filter_type', v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select filter" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {FILTER_TYPES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
@@ -680,7 +680,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <div className="space-y-2">
-            <Label>Length ({getLengthUnit()})</Label>
+            <Label>{t("pipesExtended.length")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -702,7 +702,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Weight ({getWeightUnit()})</Label>
+            <Label>{t("pipesExtended.weight")} ({getWeightUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -724,7 +724,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Bowl Height ({getLengthUnit()})</Label>
+            <Label>{t("pipesExtended.bowlHeight")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -746,7 +746,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Bowl Width ({getLengthUnit()})</Label>
+            <Label>{t("pipesExtended.bowlWidth")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -768,7 +768,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Chamber Diameter ({getLengthUnit()})</Label>
+            <Label>{t("pipesExtended.chamberDiameter")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -790,7 +790,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Chamber Depth ({getLengthUnit()})</Label>
+            <Label>{t("pipesExtended.chamberDepth")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -822,42 +822,42 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Purchase Price ($)</Label>
+              <Label>{t("pipesExtended.purchasePrice")}</Label>
               <Input
                 type="number"
                 value={formData.purchase_price}
                 onChange={(e) => handleChange('purchase_price', e.target.value)}
-                placeholder="What you paid"
+                placeholder={t("pipesExtended.purchasePricePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Estimated Value ($)</Label>
+              <Label>{t("pipesExtended.estimatedValue")}</Label>
               <Input
                 type="number"
                 value={formData.estimated_value}
                 onChange={(e) => handleChange('estimated_value', e.target.value)}
-                placeholder="Current market value"
+                placeholder={t("pipesExtended.estimatedValuePlaceholder")}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Usage Characteristics</Label>
+            <Label>{t("pipesExtended.usageCharacteristics")}</Label>
             <Textarea
               value={formData.usage_characteristics || formData.smoking_characteristics}
               onChange={(e) => {
                 handleChange('usage_characteristics', e.target.value);
                 handleChange('smoking_characteristics', '');
               }}
-              placeholder="How does it perform? Hot/cool, wet/dry, flavor notes..."
+              placeholder={t("pipesExtended.usageCharacteristicsPlaceholder")}
               rows={2}
             />
           </div>
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t("common.notes")}</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Any additional notes about this pipe..."
+              placeholder={t("pipesExtended.notesPlaceholder")}
               rows={3}
             />
           </div>
@@ -907,7 +907,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Actions */}
       <div className="sticky bottom-0 bg-gradient-to-t from-[#243548] to-[#243548]/80 backdrop-blur-sm border-t border-[#E0D8C8]/15 p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
         <Button type="button" variant="outline" onClick={onCancel} className="bg-white/10 border-white/30 text-[#E0D8C8] hover:bg-white/20">
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button 
           type="submit" 

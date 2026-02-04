@@ -277,8 +277,8 @@ Return complete and accurate information based on the blend name or description 
       if (!canAdd) {
         toast.error(
           entitlements.isFreeGrandfathered
-            ? "You've reached the free limit. Upgrade to add more tobacco, or delete some existing ones."
-            : `Free tier limited to ${entitlements.limits.tobaccos} tobacco blends. Upgrade to add more.`
+            ? t("limits.freeLimitReached")
+            : t("limits.tobaccoLimit", { limit: entitlements.limits.tobaccos })
         );
         return;
       }
@@ -328,9 +328,9 @@ Return complete and accurate information based on the blend name or description 
       <Dialog open={showLogoBrowser} onOpenChange={setShowLogoBrowser}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Browse Logo Library</DialogTitle>
+            <DialogTitle>{t("tobaccoExtended.browseLibrary")}</DialogTitle>
             <DialogDescription>
-              Select a logo from the library or upload a custom one
+              {t("tobaccoExtended.browseLibraryDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -339,7 +339,7 @@ Return complete and accurate information based on the blend name or description 
               <Input
                 value={logoBrowserSearch}
                 onChange={(e) => setLogoBrowserSearch(e.target.value)}
-                placeholder="Search brands..."
+                placeholder={t("tobaccoExtended.searchBrands")}
                 className="pl-10"
               />
             </div>
@@ -376,7 +376,7 @@ Return complete and accurate information based on the blend name or description 
             {filteredLogos.length === 0 && (
               <div className="text-center py-12 text-stone-500">
                 <Library className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                <p>No logos found</p>
+                <p>{t("tobaccoExtended.noLogos")}</p>
               </div>
             )}
           </div>
@@ -402,7 +402,7 @@ Return complete and accurate information based on the blend name or description 
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="e.g., Peterson Irish Flake, Dunhill Nightcap..."
+                  placeholder={t("tobaccoExtended.searchPlaceholder")}
                   className="border-stone-200"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                 />
@@ -415,7 +415,7 @@ Return complete and accurate information based on the blend name or description 
                   {searching ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Searching...
+                      {t("common.searching")}
                     </>
                   ) : (
                     <>
@@ -443,7 +443,7 @@ Return complete and accurate information based on the blend name or description 
       {logoMatches.length > 1 && (
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-[#E0D8C8]">{t("tobaccoExtended.selectLogo")}</CardTitle>
+            <CardTitle className="text-lg text-stone-800">{t("tobaccoExtended.selectLogo")}</CardTitle>
             <p className="text-sm text-stone-600">
               {t("tobaccoExtended.selectLogoDesc", { manufacturer: formData.manufacturer })}
             </p>
@@ -608,39 +608,39 @@ Return complete and accurate information based on the blend name or description 
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
-            label="Blend Name" 
+            label={t("tobaccoExtended.blendName")} 
             required 
-            helpText="The official or common name of the tobacco blend."
+            helpText={t("tobaccoExtended.blendNameHelp")}
           >
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="e.g., Orlik Golden Sliced"
+              placeholder={t("tobaccoExtended.blendNamePlaceholder")}
               required
               className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Manufacturer" 
-            helpText="The company or brand that makes this blend (e.g., Peterson, Dunhill, Sutliff)."
+            label={t("tobaccoExtended.manufacturer")} 
+            helpText={t("tobaccoExtended.manufacturerHelp")}
           >
             <Combobox
               value={formData.manufacturer}
               onValueChange={(v) => handleChange('manufacturer', v)}
               options={recentManufacturers}
-              placeholder="e.g., Orlik, Peterson"
-              searchPlaceholder="Search manufacturers..."
+              placeholder={t("tobaccoExtended.manufacturerPlaceholder")}
+              searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
               className="border-stone-200"
             />
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Blend Type" 
-            helpText="The primary tobacco category. Virginia is sweet, English has Latakia (smoky), Aromatic has toppings."
+            label={t("tobaccoExtended.blendType")} 
+            helpText={t("tobaccoExtended.blendTypeHelp")}
           >
             <Select value={formData.blend_type} onValueChange={(v) => handleChange('blend_type', v)}>
               <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -648,12 +648,12 @@ Return complete and accurate information based on the blend name or description 
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Cut" 
-            helpText="How the tobacco is processed. Flake requires rubbing out, Ribbon is ready to smoke, Plug needs slicing."
+            label={t("tobaccoExtended.cut")} 
+            helpText={t("tobaccoExtended.cutHelp")}
           >
             <Select value={formData.cut} onValueChange={(v) => handleChange('cut', v)}>
               <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select cut" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {CUTS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -661,12 +661,12 @@ Return complete and accurate information based on the blend name or description 
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Strength" 
-            helpText="Nicotine content and body. Mild is gentle, Full is strong. Affects your smoking experience significantly."
+            label={t("tobaccoExtended.strength")} 
+            helpText={t("tobaccoExtended.strengthHelp")}
           >
             <Select value={formData.strength} onValueChange={(v) => handleChange('strength', v)}>
               <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select strength" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -674,12 +674,12 @@ Return complete and accurate information based on the blend name or description 
             </Select>
           </FieldWithInfo>
           <FieldWithInfo 
-            label="Room Note" 
-            helpText="How the smoke smells to people around you. Pleasant aromatics vs stronger, more pronounced scents."
+            label={t("tobaccoExtended.roomNote")} 
+            helpText={t("tobaccoExtended.roomNoteHelp")}
           >
             <Select value={formData.room_note} onValueChange={(v) => handleChange('room_note', v)}>
               <SelectTrigger className="border-stone-200">
-                <SelectValue placeholder="Select room note" />
+                <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {ROOM_NOTES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -700,7 +700,7 @@ Return complete and accurate information based on the blend name or description 
             <Input
               value={newComponent}
               onChange={(e) => setNewComponent(e.target.value)}
-              placeholder="e.g., Virginia, Latakia, Perique..."
+              placeholder={t("tobaccoExtended.componentPlaceholder")}
               className="border-stone-200"
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addComponent())}
             />
@@ -1052,7 +1052,7 @@ Return complete and accurate information based on the blend name or description 
                     handleChange('rating', Math.round(Number(e.target.value)));
                   }
                 }}
-                placeholder="Optional"
+                placeholder={t("tobaccoExtended.ratingPlaceholder")}
                 className="border-stone-200"
               />
             </div>
@@ -1063,14 +1063,14 @@ Return complete and accurate information based on the blend name or description 
       {/* Notes */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">Notes</CardTitle>
+          <CardTitle className="text-lg text-stone-800">{t("common.notes")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Your tasting notes, storage info, etc..."
+              placeholder={t("tobaccoExtended.notesPlaceholder")}
               className="border-stone-200"
               rows={4}
             />
@@ -1088,7 +1088,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-2">
         <Button type="button" variant="outline" onClick={onCancel} className="text-stone-800">
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button 
           type="submit" 
