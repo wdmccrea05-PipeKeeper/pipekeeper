@@ -453,6 +453,52 @@ export const translationsComplete = {
     }
   },
   'pt-BR': {
+    collectionInsights: {
+      summaryTooltip: "Esta seção resume padrões e totais da sua coleção com base nos dados que você inseriu."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} cuencos totais",
+      breakInBowls: "{{breakIn}} amaciamento",
+      totalBreakIn: "{{total}} amaciamento",
+      title: "Registro de Uso",
+      addSession: "Adicionar Sessão"
+    },
+    blendTypes: {
+      american: "Americano",
+      aromatic: "Aromático",
+      balkan: "Balcânico",
+      burley: "Burley",
+      burleyBased: "À Base de Burley",
+      cavendish: "Cavendish",
+      codgerBlend: "Mistura Codger",
+      darkFiredKentucky: "Kentucky Escuro Defumado",
+      english: "Inglês",
+      englishAromatic: "Inglês Aromático",
+      englishBalkan: "Inglês Balcânico",
+      fullEnglishOriental: "Inglês/Oriental Completo",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Mistura Latakia",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Oriental/Turco",
+      other: "Outro",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Oriental",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Sua coleção mudou desde a última otimização. Regenere para obter recomendações atualizadas.",
+      regenerate: "Regenerar",
+      undo: "Desfazer",
+      notNow: "Não Agora",
+      undoLastChange: "Desfazer Última Alteração"
+    },
+    tobaccoPage: {
+      exportCSV: "Exportar CSV"
+    },
     pipes: { search: 'Pesquisar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas as formas', allMaterials: 'Todos os materiais' },
     tobacco: { allTypes: 'Todos os tipos', allStrengths: 'Todas as potências', search: 'Pesquisar' },
     common: { loading: 'Carregando...', refresh: 'Atualizar', cancel: 'Cancelar', save: 'Salvar', delete: 'Excluir', close: 'Fechar', unknown: 'Desconhecido', of: 'de' },
