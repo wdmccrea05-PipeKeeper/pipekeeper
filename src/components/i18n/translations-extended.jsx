@@ -4099,9 +4099,9 @@ export const translationsExtended = {
       termsOfService: "Nutzungsbedingungen",
       privacyPolicy: "Datenschutzerklärung",
       subscriptionBilling: "Abonnement & Abrechnung",
-    }
+    },
   }},
-  it: { common: {
+  it: {
     nav: {
       home: "Home",
       pipes: "Pipe",
