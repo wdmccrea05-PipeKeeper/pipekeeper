@@ -16,8 +16,8 @@ export default function PipeIdentifier({ pipe, onUpdatePipe }) {
   if (!entitlements.canUse("AI_IDENTIFY")) {
     return (
       <UpgradePrompt 
-        featureName="AI Pipe Identification"
-        description="Identify pipes from photos using AI analysis of stamps, hallmarks, and physical characteristics. Requires Pro tier."
+        featureName={t("tobacconist.aiPipeIdentifier")}
+        description={t("tobacconist.identificationUpgradeDesc")}
       />
     );
   }
@@ -208,13 +208,13 @@ Provide the identification in JSON format with:
           {/* Captured Photos Preview */}
           {capturedPhotos.length > 0 && (
             <div className="mb-6">
-              <p className="text-sm text-stone-500 mb-3">Photos for identification:</p>
+              <p className="text-sm text-stone-500 mb-3">{t("tobacconist.photosForIdentification")}:</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {capturedPhotos.map((photo, idx) => (
                   <div key={idx} className="relative">
                     <img
                       src={photo}
-                      alt={`Captured ${idx + 1}`}
+                      alt={t("tobacconist.capturedPhoto", { number: idx + 1 })}
                       className="w-20 h-20 object-cover rounded-lg border-2 border-stone-200"
                     />
                     <button
@@ -285,20 +285,20 @@ Provide the identification in JSON format with:
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-stone-500">Maker</p>
-                    <p className="font-semibold text-stone-800">{identification.identified_maker || 'Unknown'}</p>
+                    <p className="text-sm text-stone-500">{t("tobacconist.maker")}</p>
+                    <p className="font-semibold text-stone-800">{identification.identified_maker || t("common.unknown")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-stone-500">Model/Line</p>
-                    <p className="font-semibold text-stone-800">{identification.model_line || 'Unknown'}</p>
+                    <p className="text-sm text-stone-500">{t("tobacconist.modelLine")}</p>
+                    <p className="font-semibold text-stone-800">{identification.model_line || t("common.unknown")}</p>
                   </div>
                   <div>
                     <p className="text-sm text-stone-500">{t("tobacconist.era")}</p>
                     <p className="font-semibold text-stone-800">{identification.estimated_era || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-stone-500">Country</p>
-                    <p className="font-semibold text-stone-800">{identification.country || 'Unknown'}</p>
+                    <p className="text-sm text-stone-500">{t("tobacconist.country")}</p>
+                    <p className="font-semibold text-stone-800">{identification.country || t("common.unknown")}</p>
                   </div>
                 </div>
 
