@@ -981,6 +981,28 @@ export const translationsExtended = {
       valueLookupDesc: "Get instant market value estimates for your pipes based on maker, model, condition, and current market trends.",
       identifyPipeDesc: "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.",
     },
+    // === PROFILE KEYS ===
+    profile: {
+      proActive: "Pro Active",
+      premiumActive: "Premium Active",
+      fullAccess: "Full access to all features",
+      freeTrialActive: "Free Trial Active",
+      sevenDaysFree: "7 days free access",
+      freeAccount: "Free Account",
+      limitedFeatures: "Limited features available",
+      accountInformation: "Account Information",
+      emailAddress: "Email Address",
+      changeEmail: "Change Email?",
+      emailHelpText: "This is your login email address. Contact support for help changing it.",
+      communityProfile: "Community Profile",
+      previewProfile: "Preview Profile",
+      profilePicture: "Profile Picture",
+      camera: "Camera",
+      upload: "Upload",
+      removePhoto: "Remove Photo",
+      displayName: "Display Name",
+      bio: "Bio",
+    },
     // === TOBACCO PAGE KEYS ===
     tobaccoPage: {
       blends: "blends",
