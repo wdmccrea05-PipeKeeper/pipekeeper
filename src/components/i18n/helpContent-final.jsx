@@ -363,9 +363,6 @@ export const helpContentFinal = {
         }
       }
     }
-  },
-  "zh-Hans": {
-
   }
 };
 
