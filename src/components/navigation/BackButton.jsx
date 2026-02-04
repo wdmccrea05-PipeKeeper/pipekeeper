@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "react-i18next";
 
 // Fallback map for pages without history
 const FALLBACK_MAP = {
@@ -48,6 +49,7 @@ const ROOT_PAGES = new Set([
 let navigationDepth = 0;
 
 export default function BackButton({ currentPageName, className = "" }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [canGoBack, setCanGoBack] = useState(false);
@@ -88,10 +90,10 @@ export default function BackButton({ currentPageName, className = "" }) {
       size="sm"
       onClick={handleBack}
       className={`text-[#E0D8C8] hover:bg-white/10 ${className}`}
-      aria-label="Go back"
+      aria-label={t("common.back")}
     >
       <ArrowLeft className="w-4 h-4 mr-1" />
-      <span className="hidden sm:inline">Back</span>
+      <span className="hidden sm:inline">{t("common.back")}</span>
     </Button>
   );
 }
