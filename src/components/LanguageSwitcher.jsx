@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -27,10 +27,21 @@ export default function LanguageSwitcher({ className = "" }) {
   }, [i18n.language]);
 
   const setLang = async (lng) => {
-    await i18n.changeLanguage(lng);
     try {
-      localStorage.setItem("pk_lang", lng);
-    } catch {}
+      await i18n.changeLanguage(lng);
+      try {
+        localStorage.setItem("pk_lang", lng);
+        // Force entitlement refresh after language change
+        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
+      } catch {}
+    } catch (error) {
+      console.error('[LanguageSwitcher] Failed to change language:', error);
+      // Fallback to English if language change fails
+      try {
+        await i18n.changeLanguage('en');
+        localStorage.setItem("pk_lang", 'en');
+      } catch {}
+    }
   };
 
   return (
