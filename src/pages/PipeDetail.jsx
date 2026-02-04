@@ -242,9 +242,9 @@ export default function PipeDetailPage() {
             className="w-24 h-24 mx-auto mb-4 object-contain opacity-50"
             style={{ filter: 'brightness(0) saturate(100%) invert(91%) sepia(13%) saturate(485%) hue-rotate(330deg) brightness(100%) contrast(91%)' }}
           />
-          <h2 className="text-2xl font-semibold text-[#e8d5b7] mb-2">Pipe not found</h2>
+          <h2 className="text-2xl font-semibold text-[#e8d5b7] mb-2">{t("pipesExtended.pipeNotFound")}</h2>
           <a href={createPageUrl('Pipes')}>
-            <Button variant="outline" className="border-[#e8d5b7]/30 text-[#e8d5b7]">Back to Pipes</Button>
+            <Button variant="outline" className="border-[#e8d5b7]/30 text-[#e8d5b7]">{t("pipesExtended.backToPipes")}</Button>
           </a>
         </div>
       </div>
@@ -270,12 +270,12 @@ export default function PipeDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#E0D8C8]">
                 <Sparkles className="w-5 h-5" />
-                AI Specialization Suggestion
+                {t("pipeDetailTabs.aiSpecializationSuggestion", "AI Specialization Suggestion")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.
+                {t("pipeDetailTabs.aiSpecializationDesc", "Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.")}
               </p>
               <SpecializationRecommender 
                 pipe={pipe}
@@ -372,7 +372,7 @@ export default function PipeDetailPage() {
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-stone-400 text-center">
                     <PipeShapeIcon shape={pipe.shape} className="text-9xl mb-4" />
-                    <p>{pipe.shape || 'No photos'}</p>
+                    <p>{pipe.shape || t("pipesExtended.noPhoto")}</p>
                   </div>
                 </div>
               )}
@@ -551,7 +551,7 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.bowl_diameter_mm && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Chamber Diameter</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.chamberDiameter")}</p>
                       <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_diameter_mm).toFixed(2)}mm`}
                       </p>
@@ -559,7 +559,7 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.bowl_depth_mm && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Chamber Depth</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.chamberDepth")}</p>
                       <p className="font-medium text-[#E0D8C8]">
                         {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_depth_mm).toFixed(2)}mm`}
                       </p>
@@ -569,7 +569,7 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">Origin</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.origin")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.country_of_origin}</p>
                       </div>
                     </div>
@@ -578,26 +578,26 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">Year</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.year")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.year_made}</p>
                       </div>
                     </div>
                   )}
                   {pipe.stem_material && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Stem</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stem")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.stem_material}</p>
                     </div>
                   )}
                   {pipe.finish && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Finish</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.finish")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.finish}</p>
                     </div>
                   )}
                   {pipe.filter_type && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">Filter</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filter")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.filter_type}</p>
                     </div>
                   )}
@@ -606,9 +606,9 @@ export default function PipeDetailPage() {
                   <div className="mt-4 pt-4 border-t border-white/10">
                       <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs">
                         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <span className="font-medium text-emerald-200">Verified measurements</span>
+                        <span className="font-medium text-emerald-200">{t("pipesExtended.verifiedMeasurements")}</span>
                         {pipe?.dimensions_source && (
-                          <span className="text-emerald-300">Source: {pipe.dimensions_source}</span>
+                          <span className="text-emerald-300">{t("pipesExtended.source")} {pipe.dimensions_source}</span>
                         )}
                       </div>
                     </div>
@@ -620,7 +620,7 @@ export default function PipeDetailPage() {
              {pipe.stamping && (
                <Card className="border-white/10">
                  <CardContent className="p-6">
-                   <p className="text-xs text-[#E0D8C8]/60 mb-1">Stamping</p>
+                   <p className="text-xs text-[#E0D8C8]/60 mb-1">{t("pipesExtended.stamping")}</p>
                    <p className="font-medium text-[#E0D8C8]">{pipe.stamping}</p>
                 </CardContent>
               </Card>
@@ -632,13 +632,13 @@ export default function PipeDetailPage() {
                 <CardContent className="p-6 space-y-4">
                   {getUsageCharacteristics(pipe) && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Usage Characteristics</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.usageCharacteristics")}</p>
                       <p className="text-[#E0D8C8]/80">{getUsageCharacteristics(pipe)}</p>
                     </div>
                   )}
                   {pipe.notes && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">Notes</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.notes")}</p>
                       <p className="text-[#E0D8C8]/80">{pipe.notes}</p>
                     </div>
                   )}
@@ -653,18 +653,18 @@ export default function PipeDetailPage() {
           <TabsList className="bg-transparent border border-white/10 p-1 overflow-x-auto flex-nowrap w-full">
             <TabsTrigger value="match" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Tobacco Matching</span>
-              <span className="sm:hidden">Matching</span>
+              <span className="hidden sm:inline">{t("pipesExtended.tobaccoMatching")}</span>
+              <span className="sm:hidden">{t("pipesExtended.matching")}</span>
             </TabsTrigger>
             <TabsTrigger value="value" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <DollarSign className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Value Lookup</span>
-              <span className="sm:hidden">Value</span>
+              <span className="hidden sm:inline">{t("pipesExtended.valueLookup")}</span>
+              <span className="sm:hidden">{t("pipesExtended.value")}</span>
             </TabsTrigger>
             <TabsTrigger value="identify" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Identify Pipe</span>
-              <span className="sm:hidden">Identify</span>
+              <span className="hidden sm:inline">{t("pipesExtended.identifyPipe")}</span>
+              <span className="sm:hidden">{t("pipesExtended.identify")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -683,8 +683,8 @@ export default function PipeDetailPage() {
                   <ValueLookup pipe={pipe} onUpdateValue={handleValueUpdate} />
                 ) : (
                   <UpgradePrompt 
-                    featureName="AI Value Lookup"
-                    description="Get instant market value estimates for your pipes based on maker, model, condition, and current market trends."
+                    featureName={t("pipesExtended.valueLookup")}
+                    description={t("pipeDetailTabs.valueLookupDesc", "Get instant market value estimates for your pipes based on maker, model, condition, and current market trends.")}
                   />
                 )}
               </CardContent>
@@ -703,8 +703,8 @@ export default function PipeDetailPage() {
                   </>
                 ) : (
                   <UpgradePrompt 
-                    featureName="AI Pipe Identification"
-                    description="Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics."
+                    featureName={t("pipesExtended.identifyPipe")}
+                    description={t("pipeDetailTabs.identifyPipeDesc", "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.")}
                   />
                 )}
               </CardContent>
