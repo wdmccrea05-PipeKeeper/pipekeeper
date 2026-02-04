@@ -14,10 +14,12 @@ import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import { useTranslation } from "react-i18next";
 
 export default function BreakInSchedule({ pipe, blends }) {
   if (isAppleBuild) return null;
 
+  const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
   const [collapsed, setCollapsed] = useState(true);
@@ -234,11 +236,11 @@ export default function BreakInSchedule({ pipe, blends }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <PKHeader 
-              title={<span className="flex items-center gap-2"><Sparkles className="w-5 h-5" />Break-In Schedule</span>}
+              title={<span className="flex items-center gap-2"><Sparkles className="w-5 h-5" />{t("breakInSchedule.breakInSchedule")}</span>}
             />
             {schedule.length > 0 && (
               <p className="text-sm text-[#E0D8C8]/60 mt-1">
-                {completedBowls} / {totalBowls} bowls completed ({progress}%)
+                {completedBowls} / {totalBowls} {t("breakInSchedule.bowlsCompleted")} ({progress}%)
               </p>
             )}
           </div>
@@ -251,12 +253,12 @@ export default function BreakInSchedule({ pipe, blends }) {
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
+                  {t("breakInSchedule.generating")}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Schedule
+                  {t("breakInSchedule.generateSchedule")}
                 </>
               )}
             </Button>
@@ -268,7 +270,7 @@ export default function BreakInSchedule({ pipe, blends }) {
                onClick={() => setCollapsed(!collapsed)}
                className="bg-[#223447]/5 text-[#E0D8C8] border border-white/10 hover:bg-[#223447]/10"
              >
-               {collapsed ? 'Show' : 'Hide'}
+               {collapsed ? t("breakInSchedule.show") : t("breakInSchedule.hide")}
              </Button>
              <Button
                size="sm"
@@ -276,7 +278,7 @@ export default function BreakInSchedule({ pipe, blends }) {
                disabled={generating}
                className="bg-[#A35C5C] text-[#FFF7ED] hover:bg-[#8B4A4A]"
              >
-               Regenerate
+               {t("optimizer.regenerate")}
              </Button>
            </div>
           )}
@@ -311,13 +313,13 @@ export default function BreakInSchedule({ pipe, blends }) {
                         {isComplete && (
                             <Badge className="bg-green-600/80 text-white">
                               <Check className="w-3 h-3 mr-1" />
-                              Complete
+                              {t("breakInSchedule.complete")}
                             </Badge>
                           )}
                         </div>
                         <p className="text-sm text-[#E0D8C8]/70 mb-2">{item.reasoning}</p>
                         <p className="text-xs text-[#E0D8C8]/50">
-                        Suggested: {item.suggested_bowls} bowls
+                        {t("breakInSchedule.suggested")} {item.suggested_bowls} {t("breakInSchedule.bowls")}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -350,7 +352,7 @@ export default function BreakInSchedule({ pipe, blends }) {
       {blends.length === 0 && (
         <div className="px-6 pb-6">
           <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
-            Add tobacco blends to your collection to generate a break-in schedule
+            {t("breakInSchedule.addBlendPrompt")}
           </p>
         </div>
       )}

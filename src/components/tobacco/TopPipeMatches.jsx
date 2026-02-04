@@ -8,8 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
+import { useTranslation } from "react-i18next";
 
 export default function TopPipeMatches({ blend, pipes }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -141,7 +143,7 @@ export default function TopPipeMatches({ blend, pipes }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#8b3a3a]" />
-              <span className="text-sm text-white font-bold">Find best pipe matches for this blend</span>
+              <span className="text-sm text-white font-bold">{t("topPipeMatches.findBestMatches")}</span>
             </div>
             <Button
               size="sm"
@@ -152,12 +154,12 @@ export default function TopPipeMatches({ blend, pipes }) {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  Analyzing...
+                  {t("aiIdentifier.analyzing")}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-1" />
-                  Find Matches
+                  {t("topPipeMatches.findMatches")}
                 </>
               )}
             </Button>
@@ -167,7 +169,7 @@ export default function TopPipeMatches({ blend, pipes }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#8b3a3a]" />
-                <span className="font-bold text-[#e8d5b7] text-base">Top Pipe Matches</span>
+                <span className="font-bold text-[#e8d5b7] text-base">{t("topPipeMatches.topPipeMatches")}</span>
               </div>
               <Button 
                 size="sm" 
@@ -175,7 +177,7 @@ export default function TopPipeMatches({ blend, pipes }) {
                 onClick={() => setCollapsed(!collapsed)}
                 className="text-[#e8d5b7] hover:text-[#e8d5b7] hover:bg-[#8b3a3a]/20"
               >
-                {collapsed ? 'Show' : 'Hide'}
+                {collapsed ? t("breakInSchedule.show") : t("breakInSchedule.hide")}
               </Button>
             </div>
 

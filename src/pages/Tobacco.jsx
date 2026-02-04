@@ -258,7 +258,7 @@ export default function TobaccoPage() {
           <div>
             <PkPageTitle>{isAppleBuild ? t("nav.cellar") : t("nav.tobacco")}</PkPageTitle>
             <PkText className="mt-1">
-              {blends.length} blends {totalTins > 0 && `• ${totalTins} tins in cellar`}
+              {blends.length} {t("tobaccoPage.blends")} {totalTins > 0 && `• ${totalTins} ${t("tobaccoPage.tinsInCellar")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -276,7 +276,7 @@ export default function TobaccoPage() {
                 }
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                {quickEditMode ? 'Exit Quick Edit' : 'Quick Edit'}
+                {quickEditMode ? t("tobaccoPage.exitQuickEdit") : t("tobaccoPage.quickEdit")}
               </Button>
             )}
             <Button 
@@ -284,7 +284,7 @@ export default function TobaccoPage() {
               className={PK_THEME.buttonSecondary}
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Quick Search & Add
+              {t("pipesPage.quickSearchAdd")}
             </Button>
             <Button 
               onClick={async () => {
@@ -292,7 +292,7 @@ export default function TobaccoPage() {
                 if (!limitCheck.canCreate) {
                   toast.error(limitCheck.reason, {
                     action: {
-                      label: 'Upgrade',
+                      label: t("subscription.upgrade"),
                       onClick: () => window.location.href = createPageUrl('Subscription')
                     }
                   });
@@ -304,7 +304,7 @@ export default function TobaccoPage() {
               className={PK_THEME.buttonPrimary}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Blend
+              {t("tobaccoPage.addBlend")}
             </Button>
           </div>
         </motion.div>
@@ -322,7 +322,7 @@ export default function TobaccoPage() {
               className="touch-none pointer-events-none"
             />
             <span className={`font-medium ${PK_THEME.textBody}`}>
-              Select All ({selectedForEdit.length} of {filteredBlends.length} selected)
+              {t("tobaccoPage.selectAll")} ({selectedForEdit.length} {t("common.of")} {filteredBlends.length} {t("tobaccoPage.selected")})
             </span>
           </div>
         )}
@@ -337,7 +337,7 @@ export default function TobaccoPage() {
           <div className="relative flex-1">
             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${PK_THEME.textMuted}`} />
             <Input
-              placeholder="Search by name, manufacturer, or blend type..."
+              placeholder={t("tobaccoPage.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`pl-10 ${PK_THEME.input}`}
@@ -486,7 +486,7 @@ export default function TobaccoPage() {
         <Sheet open={showForm} onOpenChange={setShowForm}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>{editingBlend ? 'Edit Blend' : 'Add New Blend'}</SheetTitle>
+              <SheetTitle>{editingBlend ? t("tobaccoPage.editBlend") : t("tobaccoPage.addNewBlend")}</SheetTitle>
             </SheetHeader>
             <TobaccoForm
               blend={editingBlend}
@@ -513,7 +513,7 @@ export default function TobaccoPage() {
               size="lg"
             >
               <Edit3 className="w-5 h-5 mr-2" />
-              Edit {selectedForEdit.length} Selected
+              {t("forms.edit")} {selectedForEdit.length} {t("tobaccoPage.selected")}
             </Button>
           </div>
         )}

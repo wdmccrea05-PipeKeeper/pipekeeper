@@ -21,11 +21,14 @@ import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/components/utils/localeFormatters";
 
 const SHAPES = ["All Shapes", "Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["All Materials", "Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
 
 export default function PipesPage() {
+  const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -169,9 +172,9 @@ export default function PipesPage() {
           className="flex flex-col gap-4 mb-8"
         >
           <div>
-            <PkPageTitle>My Pipes</PkPageTitle>
+            <PkPageTitle>{t("pipesPage.myPipes")}</PkPageTitle>
             <PkText className="mt-1">
-              {pipes.length} pipes {totalValue > 0 && `• $${totalValue.toLocaleString()} total value`}
+              {pipes.length} {t("pipes.pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -182,8 +185,8 @@ export default function PipesPage() {
               className="border-[#E0D8C8]/50 text-[#E0D8C8] font-semibold flex-shrink-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Quick Search & Add</span>
-              <span className="sm:hidden">Quick Search</span>
+              <span className="hidden sm:inline">{t("pipesPage.quickSearchAdd")}</span>
+              <span className="sm:hidden">{t("pipesPage.quickSearch")}</span>
             </Button>
             <Button 
               onClick={async () => {
@@ -191,7 +194,7 @@ export default function PipesPage() {
                 if (!limitCheck.canCreate) {
                   toast.error(limitCheck.reason, {
                     action: {
-                      label: 'Upgrade',
+                      label: t("subscription.upgrade"),
                       onClick: () => window.location.href = createPageUrl('Subscription')
                     }
                   });
@@ -203,7 +206,7 @@ export default function PipesPage() {
               className="bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#A35C5C] shadow-md hover:shadow-lg flex-shrink-0"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Pipe
+              {t("pipesPage.addPipe")}
             </Button>
           </div>
         </motion.div>
@@ -218,7 +221,7 @@ export default function PipesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
-              placeholder="Search by name, maker, or shape..."
+              placeholder={t("pipesPage.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`pl-10 ${PK_THEME.input}`}
@@ -341,7 +344,7 @@ export default function PipesPage() {
         <Sheet open={showForm} onOpenChange={setShowForm}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>{editingPipe ? 'Edit Pipe' : 'Add New Pipe'}</SheetTitle>
+              <SheetTitle>{editingPipe ? t("pipesPage.editPipe") : t("pipesPage.addNewPipe")}</SheetTitle>
             </SheetHeader>
             <PipeForm
               pipe={editingPipe}

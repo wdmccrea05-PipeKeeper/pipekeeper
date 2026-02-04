@@ -20,52 +20,52 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     {
       icon: Package,
       label: t("nav.pipes"),
-      description: "Catalog and value your pipes",
+      description: t("quickAccess.catalogPipes"),
       page: "Pipes",
     },
     {
       icon: Leaf,
       label: t("nav.tobacco"),
-      description: "Manage blends and cellar",
+      description: t("quickAccess.manageBlendsAndCellar"),
       page: "Tobacco",
     },
     {
       icon: BarChart3,
-      label: "Collection Insights",
-      description: "View pairings, usage trends, and reports",
+      label: t("quickAccess.collectionInsights"),
+      description: t("quickAccess.viewPairingsUsageTrends"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: FileText,
-      label: "Reports & Exports",
-      description: "Generate PDF/CSV collection reports",
+      label: t("quickAccess.reportsExports"),
+      description: t("quickAccess.generatePDFCSV"),
       page: "Home",
       hash: "#insights",
     },
     {
       icon: Sparkles,
-      label: "AI Tools",
-      description: "Photo identification, optimization, what-if scenarios",
+      label: t("quickAccess.aiTools"),
+      description: t("quickAccess.photoIdentificationOptimization"),
       page: "Home",
       hash: "#ai-tools",
     },
     {
       icon: CreditCard,
       label: t("subscription.title"),
-      description: "Manage subscription and plan",
+      description: t("quickAccess.manageSubscription"),
       page: "Subscription",
     },
     {
       icon: User,
       label: t("nav.profile"),
-      description: "Account settings and preferences",
+      description: t("quickAccess.accountSettings"),
       page: "Profile",
     },
     {
       icon: HelpCircle,
       label: t("nav.help"),
-      description: "FAQ, troubleshooting, and support",
+      description: t("nav.faq"),
       page: "Help",
     },
   ];
@@ -80,8 +80,8 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Quick Access</DialogTitle>
-          <p className="text-sm text-[#E0D8C8]/70">Jump to features and settings</p>
+          <DialogTitle className="text-xl">{t("quickAccess.quickAccess")}</DialogTitle>
+          <p className="text-sm text-[#E0D8C8]/70">{t("quickAccess.jumpToFeatures")}</p>
         </DialogHeader>
         
         <div className="grid gap-3 mt-4">

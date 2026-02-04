@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { HelpCircle, BookOpen, Wrench } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Help() {
+  const { t } = useTranslation();
   const helpCategories = [
     {
       title: "FAQ",
@@ -67,9 +69,9 @@ export default function Help() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8b3a3a]/20 mb-6">
             <HelpCircle className="w-10 h-10 text-blue-400" />
           </div>
-          <h1 className="text-5xl font-bold text-[#E0D8C8] mb-4">Help Center</h1>
+          <h1 className="text-5xl font-bold text-[#E0D8C8] mb-4">{t("helpCenter.helpCenter")}</h1>
           <p className="text-xl text-[#E0D8C8]/80 max-w-2xl mx-auto">
-            Find answers, learn features, and troubleshoot issues
+            {t("helpCenter.findAnswers")}
           </p>
         </div>
 
@@ -112,20 +114,20 @@ export default function Help() {
         {/* Quick Links */}
         <Card className="border-gray-200 bg-white">
           <CardHeader>
-            <CardTitle className="text-gray-900">Quick Links</CardTitle>
+            <CardTitle className="text-gray-900">{t("helpCenter.quickLinks")}</CardTitle>
           </CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-4">
             <Link to={createPageUrl("Support")} className="text-blue-500 hover:text-blue-700 hover:underline">
-              → Contact Support
+              → {t("helpCenter.contactSupport")}
             </Link>
             <Link to={createPageUrl("TermsOfService")} className="text-blue-500 hover:text-blue-700 hover:underline">
-              → Terms of Service
+              → {t("helpCenter.termsOfService")}
             </Link>
             <Link to={createPageUrl("PrivacyPolicy")} className="text-blue-500 hover:text-blue-700 hover:underline">
-              → Privacy Policy
+              → {t("helpCenter.privacyPolicy")}
             </Link>
             <Link to={createPageUrl("Subscription")} className="text-blue-500 hover:text-blue-700 hover:underline">
-              → Subscription & Billing
+              → {t("helpCenter.subscriptionBilling")}
             </Link>
           </CardContent>
         </Card>
@@ -133,11 +135,11 @@ export default function Help() {
         {/* Contact Section */}
         <div className="mt-12 text-center">
           <p className="text-[#E0D8C8]/80 mb-4">
-            Can't find what you're looking for?
+            {t("helpCenter.cantFind")}
           </p>
           <Link to={createPageUrl("Support")}>
             <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-              Contact Support
+              {t("helpCenter.contactSupport")}
             </button>
           </Link>
         </div>

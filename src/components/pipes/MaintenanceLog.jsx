@@ -10,8 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Wrench, Plus, Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function MaintenanceLog({ pipeId, pipeName }) {
+  const { t } = useTranslation();
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
     maintenance_type: 'cleaning',
@@ -88,17 +90,17 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Wrench className="w-5 h-5" />
-            Maintenance Log
+            {t("maintenanceLog.maintenanceLog")}
           </CardTitle>
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="w-4 h-4 mr-1" />
-            Add Entry
+            {t("maintenanceLog.addEntry")}
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {logs.length === 0 ? (
-          <p className="text-center text-stone-500 py-8">No maintenance records yet</p>
+          <p className="text-center text-stone-500 py-8">{t("maintenanceLog.noRecordsYet")}</p>
         ) : (
           <div className="space-y-3">
             {logs.map((log) => (
@@ -125,7 +127,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                 </div>
                 <div className="flex items-center gap-4 text-xs text-stone-500">
                   {log.performed_by && (
-                    <span>By: {log.performed_by}</span>
+                    <span>{t("maintenanceLog.by")} {log.performed_by}</span>
                   )}
                   {log.cost && (
                     <span className="flex items-center gap-1">
@@ -143,11 +145,11 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Maintenance Entry</DialogTitle>
+            <DialogTitle>{t("maintenanceLog.addMaintenanceEntry")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Type</Label>
+              <Label>{t("maintenanceLog.type")}</Label>
               <Select 
                 value={formData.maintenance_type}
                 onValueChange={(value) => setFormData({ ...formData, maintenance_type: value })}
@@ -164,7 +166,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             </div>
 
             <div>
-              <Label>Date</Label>
+              <Label>{t("maintenanceLog.date")}</Label>
               <Input
                 type="date"
                 value={formData.date}
@@ -174,26 +176,26 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             </div>
 
             <div>
-              <Label>Description</Label>
+              <Label>{t("maintenanceLog.description")}</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Details of maintenance performed..."
+                placeholder={t("maintenanceLog.descriptionPlaceholder")}
                 rows={3}
               />
             </div>
 
             <div>
-              <Label>Performed By</Label>
+              <Label>{t("maintenanceLog.performedBy")}</Label>
               <Input
                 value={formData.performed_by}
                 onChange={(e) => setFormData({ ...formData, performed_by: e.target.value })}
-                placeholder="Self, Professional, etc."
+                placeholder={t("maintenanceLog.performedByPlaceholder")}
               />
             </div>
 
             <div>
-              <Label>Cost (optional)</Label>
+              <Label>{t("maintenanceLog.costOptional")}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -205,9 +207,9 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
 
             <div className="flex gap-2 justify-end">
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                Cancel
+                {t("forms.cancel")}
               </Button>
-              <Button type="submit">Save Entry</Button>
+              <Button type="submit">{t("maintenanceLog.saveEntry")}</Button>
             </div>
           </form>
         </DialogContent>

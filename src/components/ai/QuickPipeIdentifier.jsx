@@ -11,8 +11,10 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
+import { useTranslation } from "react-i18next";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
+  const { t } = useTranslation();
   const [photos, setPhotos] = useState([]);
   const [hints, setHints] = useState({
     name: '',
@@ -450,19 +452,19 @@ Return JSON:
            <div className="space-y-4">
              {/* Initial Observations */}
              <div className="bg-[#1E2F43] rounded-lg p-4 border border-[#E0D8C8]/15">
-               <p className="text-xs text-[#E0D8C8]/60 font-semibold mb-2">Initial Analysis</p>
+               <p className="text-xs text-[#E0D8C8]/60 font-semibold mb-2">{t("aiIdentifier.initialAnalysis")}</p>
                <p className="text-sm text-[#E0D8C8]">{clarificationNeeded.initial_observations}</p>
              </div>
 
              {/* Clarification Questions */}
              <div className="bg-[#1E2F43] border border-[#E0D8C8]/15 rounded-lg p-4">
-               <p className="text-sm font-semibold text-[#E0D8C8] mb-3">Additional Information Needed</p>
+               <p className="text-sm font-semibold text-[#E0D8C8] mb-3">{t("aiIdentifier.additionalInfoNeeded")}</p>
                <div className="space-y-3">
                  {clarificationNeeded.clarification_questions?.map((question, idx) => (
                    <div key={idx}>
                      <Label className="text-sm text-[#E0D8C8] mb-1.5 block font-medium">{question}</Label>
                      <Input
-                       placeholder="Your answer..."
+                       placeholder={t("aiIdentifier.yourAnswer")}
                        value={clarificationResponses[question] || ''}
                        onChange={(e) => setClarificationResponses({
                          ...clarificationResponses,
@@ -483,10 +485,10 @@ Return JSON:
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
+                    {t("aiIdentifier.analyzing")}
                   </>
                 ) : (
-                  'Continue Identification'
+                  t("aiIdentifier.continueIdentification")
                 )}
               </Button>
               <Button
@@ -497,7 +499,7 @@ Return JSON:
                 variant="outline"
                 className="border-[#e8d5b7]/30"
               >
-                Skip & Identify Now
+                {t("aiIdentifier.skipIdentifyNow")}
               </Button>
             </div>
           </div>
@@ -508,7 +510,7 @@ Return JSON:
             <label className="cursor-pointer">
               <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
                 <Upload className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
-                <span className="text-xs text-[#E0D8C8]/60 font-medium">Upload Photos</span>
+                <span className="text-xs text-[#E0D8C8]/60 font-medium">{t("aiIdentifier.uploadPhotos")}</span>
               </div>
               <input
                 type="file"
@@ -523,7 +525,7 @@ Return JSON:
             <label className="cursor-pointer">
               <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
                 <Camera className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
-                <span className="text-xs text-[#E0D8C8]/60 font-medium">Take Photo</span>
+                <span className="text-xs text-[#E0D8C8]/60 font-medium">{t("aiIdentifier.takePhoto")}</span>
               </div>
               <input
                 type="file"
@@ -550,26 +552,26 @@ Return JSON:
             {/* Optional Hint Fields */}
             <div className="space-y-3 pt-2">
               <Label className="text-sm text-[#E0D8C8] font-medium">
-                Optional: Provide hints to improve identification
+                {t("aiIdentifier.optionalHints")}
               </Label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
-                  placeholder="Name/Description"
+                  placeholder={t("aiIdentifier.nameDesc")}
                   value={hints.name}
                   onChange={(e) => setHints({...hints, name: e.target.value})}
                 />
                 <Input
-                  placeholder="Brand/Maker"
+                  placeholder={t("aiIdentifier.brandMaker")}
                   value={hints.maker}
                   onChange={(e) => setHints({...hints, maker: e.target.value})}
                 />
                 <Input
-                  placeholder="Shape"
+                  placeholder={t("aiIdentifier.shape")}
                   value={hints.shape}
                   onChange={(e) => setHints({...hints, shape: e.target.value})}
                 />
                 <Input
-                  placeholder="Stampings"
+                  placeholder={t("aiIdentifier.stampings")}
                   value={hints.stamping}
                   onChange={(e) => setHints({...hints, stamping: e.target.value})}
                 />
@@ -585,12 +587,12 @@ Return JSON:
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Identifying...
+                  {t("aiIdentifier.identifying")}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Identify Pipe
+                  {t("aiIdentifier.identifyPipe")}
                 </>
               )}
             </Button>
@@ -602,7 +604,7 @@ Return JSON:
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-[#E0D8C8] text-lg">{identified.name}</p>
-                  <p className="text-sm text-[#E0D8C8]/70">{identified.maker || 'Unknown Maker'}</p>
+                  <p className="text-sm text-[#E0D8C8]/70">{identified.maker || t("aiIdentifier.unknownMaker")}</p>
                 </div>
                 <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#2EAF6F]/20 border border-[#2EAF6F]/30">
                   <CheckCircle2 className="w-3 h-3 text-[#2EAF6F]" />
@@ -689,12 +691,12 @@ Return JSON:
                     {analyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Analyzing...
+                        {t("aiIdentifier.analyzing")}
                       </>
                     ) : (
                       <>
                         <TrendingUp className="w-4 h-4 mr-2" />
-                        Analyze Impact
+                        {t("optimizer.analyzeImpact")}
                       </>
                     )}
                   </Button>
@@ -703,10 +705,10 @@ Return JSON:
                     variant="outline"
                     className="border-[#e8d5b7]/30"
                   >
-                    Cancel
+                    {t("forms.cancel")}
                   </Button>
                 </>
-              ) : (
+                ) : (
                 <>
                   <Button
                     onClick={handleAddToCollection}
@@ -715,12 +717,12 @@ Return JSON:
                     {adding ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Adding...
+                        {t("aiIdentifier.adding")}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Add
+                        {t("aiIdentifier.add")}
                       </>
                     )}
                   </Button>
@@ -729,7 +731,7 @@ Return JSON:
                     variant="outline"
                     className="border-[#e8d5b7]/30"
                   >
-                    Cancel
+                    {t("forms.cancel")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -739,10 +741,10 @@ Return JSON:
                     variant="outline"
                     className="border-[#e8d5b7]/30"
                   >
-                    Try Another
+                    {t("aiIdentifier.tryAnother")}
                   </Button>
                 </>
-              )}
+                )}
             </div>
           </div>
         )}
