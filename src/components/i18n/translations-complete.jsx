@@ -72,6 +72,52 @@ export const translationsComplete = {
     }
   },
   es: {
+    collectionInsights: {
+      summaryTooltip: "Esta sección resume patrones y totales en tu colección según los datos que has ingresado."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} cuencos totales",
+      breakInBowls: "{{breakIn}} rodaje",
+      totalBreakIn: "{{total}} rodaje",
+      title: "Registro de Uso",
+      addSession: "Agregar Sesión"
+    },
+    blendTypes: {
+      american: "Americano",
+      aromatic: "Aromático",
+      balkan: "Balcan",
+      burley: "Burley",
+      burleyBased: "Basado en Burley",
+      cavendish: "Cavendish",
+      codgerBlend: "Mezcla Codger",
+      darkFiredKentucky: "Kentucky Oscuro Ahumado",
+      english: "Inglés",
+      englishAromatic: "Inglés Aromático",
+      englishBalkan: "Inglés Balcan",
+      fullEnglishOriental: "Inglés/Oriental Completo",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Mezcla Latakia",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Oriental/Turco",
+      other: "Otro",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Oriental",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Tu colección ha cambiado desde la última optimización. Regenera para obtener recomendaciones actualizadas.",
+      regenerate: "Regenerar",
+      undo: "Deshacer",
+      notNow: "Ahora No",
+      undoLastChange: "Deshacer Último Cambio"
+    },
+    tobaccoPage: {
+      exportCSV: "Exportar CSV"
+    },
     pipes: { search: 'Buscar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas las formas', allMaterials: 'Todos los materiales' },
     tobacco: { allTypes: 'Todos los tipos', allStrengths: 'Todas las fuerzas', search: 'Buscar' },
     common: { loading: 'Cargando...', refresh: 'Actualizar', cancel: 'Cancelar', save: 'Guardar', delete: 'Eliminar', close: 'Cerrar', unknown: 'Desconocido', of: 'de' },
