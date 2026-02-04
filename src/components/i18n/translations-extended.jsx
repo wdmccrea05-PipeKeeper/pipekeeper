@@ -727,6 +727,7 @@ export const translationsExtended = {
       loading: "Loading...",
       ago: "ago",
       search: "Search",
+      searching: "Searching...",
       of: "of",
       pipes: "pipes",
       pipe: "pipe",
@@ -745,6 +746,9 @@ export const translationsExtended = {
       saving: "Saving...",
       note: "Note",
       refresh: "Refresh",
+      unknown: "Unknown",
+      selectPlaceholder: "Select an option...",
+      searchPlaceholder: "Search...",
     },
     // === SHAPE & MATERIAL ENUMS ===
     shapes: {
@@ -930,6 +934,15 @@ export const translationsExtended = {
       apply: "Apply",
       applyChanges: "Changes",
     },
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "All Shapes",
+      allMaterials: "All Materials",
+    },
+    tobacco: {
+      allTypes: "All Types",
+      allStrengths: "All Strengths",
+    },
     // === PIPES PAGE KEYS ===
     pipesPage: {
       myPipes: "My Pipes",
@@ -958,6 +971,11 @@ export const translationsExtended = {
       addFirstPipe: "Add Your First Pipe",
       clearFilters: "Clear Filters",
       failedToAddPipe: "Failed to add pipe",
+      favoritesFirst: "Favorites First",
+      byMaker: "By Maker",
+      byName: "By Name",
+      nameAZ: "Name (A-Z)",
+      nameZA: "Name (Z-A)",
     },
     // === PIPE DETAIL TAB KEYS ===
     pipeDetailTabs: {
@@ -1107,6 +1125,13 @@ export const translationsExtended = {
       allTypes: "All Types",
       allStrengths: "All Strengths",
       recentlyAdded: "Recently Added",
+      favoritesFirst: "Favorites First",
+      nameAZ: "Name (A-Z)",
+      nameZA: "Name (Z-A)",
+      highestRated: "Highest Rated",
+      lowestRated: "Lowest Rated",
+      oldestInCellar: "Oldest in Cellar",
+      newestInCellar: "Newest in Cellar",
       editBlend: "Edit Blend",
       addNewBlend: "Add New Blend",
       selectAll: "Select All",
@@ -1306,7 +1331,7 @@ export const translationsExtended = {
       notes: "Notes:",
       na: "N/A",
     },
-    // === QUICK ACCESS KEYS ===
+    // === QUICK ACCESS & SEARCH KEYS ===
     quickAccess: {
       quickAccess: "Quick Access",
       jumpToFeatures: "Jump to features and settings",
@@ -1320,6 +1345,32 @@ export const translationsExtended = {
       photoIdentificationOptimization: "Photo identification, optimization, what-if scenarios",
       manageSubscription: "Manage subscription and plan",
       accountSettings: "Account settings and preferences",
+    },
+    quickSearch: {
+      quickSearchAddPipe: "Quick Search & Add Pipe",
+      quickSearchAddTobacco: "Quick Search & Add Tobacco",
+      searchPipeDesc: "Search the web for pipe information",
+      searchTobaccoDesc: "Search the web for tobacco blend information",
+      pipePlaceholder: "e.g., Peterson System, Savinelli Autograph",
+      tobaccoPlaceholder: "e.g., McClelland Frog Morton, Dunhill My Mixture",
+      foundResults: "Found {{count}} results",
+      noResults: "No results found",
+      enterPipeName: "Enter a pipe maker, model, or brand to search",
+      enterTobaccoName: "Enter a tobacco blend name or manufacturer to search",
+      pipeExamples: "Examples: \"Peterson 305\", \"Savinelli Autograph\"",
+      tobaccoExamples: "Examples: \"Dunhill Nightcap\", \"McClelland 5100\"",
+      adding: "Adding...",
+      addToCollection: "Add to Collection",
+      addToCellar: "Add to Cellar",
+      madeIn: "Made in {{country}}",
+      era: "Era",
+      flavors: "Flavors",
+      components: "Components",
+      tinSize: "Tin size",
+      avgRating: "Avg. rating",
+      bowl: "Bowl",
+      deep: "deep",
+      typicalValue: "Typical Value",
     },
     // === MASSIVE FORM FIELD TRANSLATIONS ===
     formsExtended: {
