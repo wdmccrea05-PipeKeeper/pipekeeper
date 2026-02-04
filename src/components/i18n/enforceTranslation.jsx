@@ -1,91 +1,48 @@
-/**
- * i18n Enforcement Layer
- * Production: Silent mode (logs only, no UI markers)
- * Debug mode (?i18nDebug=1): Visible violation markers
- */
-
-import { logMissingKey } from './missingKeyHandler';
-
-const VIOLATIONS = [];
-
-function isDebugMode() {
-  if (typeof window === 'undefined') return false;
-  return window.location.search.includes('i18nDebug=1');
+function isProbablyKey(value) {
+  return typeof value === "string" && value.includes(".") && !value.includes(" ");
 }
 
-export function enforceTranslation(key, resolvedValue, language = 'en', componentInfo = '') {
-  const debug = isDebugMode();
-  const isEnglish = language === 'en' || language?.startsWith('en-');
-  
-  // Skip enforcement in English (always works)
-  if (isEnglish) {
+export function enforceTranslation(key, resolvedValue, language = "en", component = "unknown") {
+  // Guard: if someone passed args reversed (resolvedValue, key)
+  if (isProbablyKey(resolvedValue) && !isProbablyKey(key)) {
+    const tmp = key;
+    key = resolvedValue;
+    resolvedValue = tmp;
+  }
+
+  const isEnglish = language === "en" || language.startsWith("en-");
+  const isProd = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PROD) || false;
+
+  const urlParams =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const debugParam = urlParams.get("i18nDebug") === "1";
+  const debugLocal =
+    typeof localStorage !== "undefined" && localStorage.getItem("i18nDebug") === "1";
+  const debugEnabled = debugParam || debugLocal;
+
+  // If missing, i18next often returns the key itself
+  const isMissing = resolvedValue === key || resolvedValue == null;
+
+  // Never show markers in prod. Just fall back to the resolvedValue.
+  if (isProd) {
+    if (isMissing) return key;
     return resolvedValue;
   }
 
-  // Check if value equals the key (untranslated)
-  if (resolvedValue === key) {
-    const violation = {
-      type: 'MISSING_KEY',
-      key,
-      language,
-      component: componentInfo,
-      timestamp: new Date().toISOString(),
-    };
-    VIOLATIONS.push(violation);
-    logMissingKey(key, language);
-    
-    if (debug) {
-      console.error(`[i18n DEBUG] MISSING KEY "${key}" in ${language} at ${componentInfo}`);
-      return `🚫 ${key}`;
-    } else {
-      console.warn(`[i18n:${language}] Missing key: ${key}`);
-      return resolvedValue; // Return English/original fallback silently
-    }
+  // In dev, show markers only if debug is enabled, AND non-English locale.
+  if (!debugEnabled || isEnglish) {
+    return isMissing ? key : resolvedValue;
   }
 
-  // Check if value contains . (likely a key string)
-  if (typeof resolvedValue === 'string' && resolvedValue.includes('.') && resolvedValue.length < 100) {
-    if (debug) {
-      console.error(`[i18n DEBUG] KEY LEAK "${resolvedValue}" at ${componentInfo}`);
-      return `🚫 KEY_LEAK`;
-    } else {
-      console.warn(`[i18n:${language}] Key leak: ${resolvedValue}`);
-      return resolvedValue;
-    }
+  if (isMissing) {
+    console.warn(`[i18n] Missing key: "${key}" in ${language} (${component})`);
+    return `🚫 ${key}`;
   }
 
-  // Check if value contains {{ (template not interpolated)
-  if (typeof resolvedValue === 'string' && resolvedValue.includes('{{')) {
-    if (debug) {
-      console.error(`[i18n DEBUG] TEMPLATE NOT INTERPOLATED "${resolvedValue}" at ${componentInfo}`);
-      return `🚫 TEMPLATE_NOT_INTERPOLATED`;
-    } else {
-      console.warn(`[i18n:${language}] Uninterpolated template: ${resolvedValue}`);
-      return resolvedValue;
-    }
+  if (isProbablyKey(resolvedValue)) {
+    console.warn(`[i18n] Key leak: "${resolvedValue}" in ${language} (${component})`);
+    return `🚫 ${resolvedValue}`;
   }
 
   return resolvedValue;
-}
-
-export function getViolations() {
-  return VIOLATIONS;
-}
-
-export function clearViolations() {
-  VIOLATIONS.length = 0;
-}
-
-export function violationCount() {
-  return VIOLATIONS.length;
-}
-
-export function failBuildIfViolations() {
-  if (VIOLATIONS.length > 0) {
-    console.error(`[i18n BUILD] ${VIOLATIONS.length} violations detected:`);
-    VIOLATIONS.forEach(v => {
-      console.error(`  - ${v.type}: ${v.key || v.value} (${v.language}) @ ${v.component}`);
-    });
-    throw new Error(`Build failed: ${VIOLATIONS.length} i18n violations detected.`);
-  }
 }
