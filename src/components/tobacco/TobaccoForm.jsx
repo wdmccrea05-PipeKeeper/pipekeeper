@@ -262,7 +262,7 @@ Return complete and accurate information based on the blend name or description 
   const toggleFlavorNote = (note) => {
     const current = formData.flavor_notes || [];
     if (current.includes(note)) {
-      handleChange('flavor_notes', current.filter(n => n !== note));
+      handleChange('flavor_notes', current.filter(fn => fn !== note));
     } else {
       handleChange('flavor_notes', [...current, note]);
     }
@@ -643,7 +643,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -656,7 +656,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {CUTS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {CUTS.map(cut => <SelectItem key={cut} value={cut}>{cut}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -669,7 +669,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -682,7 +682,7 @@ Return complete and accurate information based on the blend name or description 
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {ROOM_NOTES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                {ROOM_NOTES.map(note => <SelectItem key={note} value={note}>{note}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -1018,7 +1018,7 @@ Return complete and accurate information based on the blend name or description 
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRODUCTION_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {PRODUCTION_STATUS.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -1029,7 +1029,7 @@ Return complete and accurate information based on the blend name or description 
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {AGING_POTENTIAL.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                  {AGING_POTENTIAL.map(potential => <SelectItem key={potential} value={potential}>{potential}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
