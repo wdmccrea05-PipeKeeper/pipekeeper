@@ -1,8 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Scans for user-facing numeric values that should use formatters
- * Outputs: i18n_formatting_report.json
+ * A3) Formatter Coverage Scanner
+ * Finds numeric/date/currency rendering not using shared formatters
+ * Output: i18n_formatting_report.json
  */
 
 Deno.serve(async (req) => {
@@ -11,52 +12,36 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Patterns to detect unformatted values
-    const patterns = [
-      { type: 'currency', regex: /\${.*?}/g, should_use: 'formatCurrency' },
-      { type: 'date', regex: /\.toLocaleDateString\(\)/g, should_use: 'formatDate' },
-      { type: 'number', regex: /\.toLocaleString\(\)/g, should_use: 'formatNumber' },
-      { type: 'percentage', regex: /\d+%/g, should_use: 'formatPercentage' },
-    ];
-
-    const findings = [
-      // Example findings
-      {
-        file: 'pages/PipeDetail',
-        line: 245,
-        pattern: '${pipe.estimated_value}',
-        type: 'currency',
-        should_use: 'formatCurrency(pipe.estimated_value)',
-        severity: 'HIGH',
-      },
-      {
-        file: 'components/tobacco/TobaccoCard',
-        line: 67,
-        pattern: 'new Date().toLocaleDateString()',
-        type: 'date',
-        should_use: 'formatDate(new Date())',
-        severity: 'MEDIUM',
-      },
-    ];
-
     return Response.json({
-      scan_date: new Date().toISOString(),
-      total_findings: findings.length,
-      findings,
-      summary: {
-        by_type: {
-          currency: findings.filter(f => f.type === 'currency').length,
-          date: findings.filter(f => f.type === 'date').length,
-          number: findings.filter(f => f.type === 'number').length,
-          percentage: findings.filter(f => f.type === 'percentage').length,
-        },
-        high_severity: findings.filter(f => f.severity === 'HIGH').length,
-        medium_severity: findings.filter(f => f.severity === 'MEDIUM').length,
-      },
-      status: findings.length === 0 ? 'COMPLETE' : 'INCOMPLETE',
+      message: "This audit must run client-side. Use the formatter coverage tool in components/i18n/auditTool.jsx",
+      structure: {
+        format: "i18n_formatting_report.json",
+        schema: {
+          findings: [
+            {
+              file: "string",
+              line: "number or null",
+              code: "the problematic code snippet",
+              type: "currency | number | date | percent | unit",
+              issue: "description of what's wrong",
+              recommended_fix: "suggested formatter to use"
+            }
+          ],
+          summary: {
+            total_findings: "number",
+            by_type: {
+              currency: "number",
+              number: "number",
+              date: "number",
+              percent: "number",
+              unit: "number"
+            }
+          }
+        }
+      }
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

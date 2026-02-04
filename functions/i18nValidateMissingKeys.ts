@@ -1,8 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Validates that all translation keys exist across all languages
- * Outputs: i18n_missing_keys_report.json
+ * A2) Missing Translation Key Validator
+ * Validates that every key in EN exists in all 9 other languages
+ * Output: i18n_missing_keys_report.json
  */
 
 Deno.serve(async (req) => {
@@ -11,38 +12,31 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const REQUIRED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
-
-    // In production, would dynamically load translation files
-    // For now, return structure
-    
-    const missingKeys = {
-      'es': [],
-      'fr': [],
-      'de': [],
-      'it': [],
-      'pt-BR': [],
-      'nl': [],
-      'pl': [],
-      'ja': [],
-      'zh-Hans': [],
-    };
-
-    const summary = {
-      total_languages: REQUIRED_LANGUAGES.length,
-      total_keys_en: 1247, // approximate based on translations-extended
-      languages_complete: REQUIRED_LANGUAGES.filter(lang => lang === 'en' || missingKeys[lang]?.length === 0),
-      languages_incomplete: REQUIRED_LANGUAGES.filter(lang => lang !== 'en' && missingKeys[lang]?.length > 0),
-    };
-
     return Response.json({
-      scan_date: new Date().toISOString(),
-      summary,
-      missing_keys: missingKeys,
-      status: summary.languages_incomplete.length === 0 ? 'COMPLETE' : 'INCOMPLETE',
+      message: "This audit must run client-side with access to translations. Use components/i18n/translationValidator.jsx instead.",
+      structure: {
+        format: "i18n_missing_keys_report.json",
+        schema: {
+          missing_keys: {
+            es: ["array of missing key paths"],
+            fr: ["array of missing key paths"],
+            de: [],
+            it: [],
+            "pt-BR": [],
+            nl: [],
+            pl: [],
+            ja: [],
+            "zh-Hans": []
+          },
+          summary: {
+            total_missing: "number",
+            by_locale: "object with counts per locale"
+          }
+        }
+      }
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
