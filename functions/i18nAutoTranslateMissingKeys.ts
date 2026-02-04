@@ -23,21 +23,25 @@ function saveCheckpoint(checkpoint) {
   Deno.writeTextFileSync(CHECKPOINT_FILE, JSON.stringify(checkpoint, null, 2));
 }
 
-async function generateTranslations(base44, keys, locale, enTranslations) {
-  const prompt = `You are a professional translator. Translate the following keys from English to ${locale} (locale code: ${locale}).
-Return ONLY valid JSON with no markdown, no comments.
-Preserve all interpolation tokens exactly ({{key}}, etc).
-Preserve punctuation and formatting.
-If a value is an object/array, translate only the leaf strings.
+async function generateTranslations(base44, keys, locale) {
+  if (!keys.length) return {};
+  
+  const prompt = `You are an expert translator for a pipe smoking collection management app.
+Translate these English strings to **${locale}** (${locale}).
 
-Keys to translate:
-${JSON.stringify(keys.reduce((acc, key) => {
-  const enValue = getNestedValue(enTranslations, key);
-  acc[key] = enValue;
-  return acc;
-}, {}), null, 2)}
+**CRITICAL RULES:**
+1. Return ONLY valid JSON, no markdown/comments
+2. Preserve all {{interpolation}} tokens exactly
+3. Preserve punctuation, line breaks, formatting
+4. Preserve field names like "Q:" and "A:"
+5. Translate UI text naturally, not literally
+6. Keep translations concise and professional
+7. If already translated correctly, return as-is
 
-Return format: { "key.path": "translated value", ... }`;
+**Keys to translate (${keys.length}):**
+${keys.slice(0, 30).join(', ')}${keys.length > 30 ? '... (and ' + (keys.length - 30) + ' more)' : ''}
+
+**Output format:** { "key1": "translated value 1", "key2": "translated value 2", ... }`;
 
   try {
     const response = await base44.integrations.Core.InvokeLLM({
@@ -77,50 +81,54 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    // TODO: Load pk32_missing_keys.json from storage/request
-    // For now, read from environment or request body
-    const missingKeysReport = await req.json().catch(() => ({}));
-    const missingKeys = missingKeysReport.keys || [];
+    const payload = await req.json().catch(() => ({}));
+    const { missingByLang } = payload;
 
-    if (!missingKeys.length) {
-      return Response.json({ success: true, message: 'No missing keys' });
+    if (!missingByLang || !Object.keys(missingByLang).length) {
+      return Response.json({ error: 'missingByLang required', status: 400 });
     }
 
     const checkpoint = loadCheckpoint();
-    const startIdx = checkpoint.lastProcessedIndex || 0;
-    const batch = missingKeys.slice(startIdx, startIdx + BATCH_SIZE);
+    const allLocales = Object.keys(missingByLang);
+    
+    // Process first batch for each locale
+    const results = { ...checkpoint.results };
+    let totalProcessed = 0;
 
-    if (!batch.length) {
-      return Response.json({ 
-        success: true, 
-        message: 'All keys translated', 
-        results: checkpoint.results 
-      });
+    for (const locale of allLocales) {
+      const missingKeysForLocale = Array.isArray(missingByLang[locale]) 
+        ? missingByLang[locale] 
+        : [];
+      
+      if (!missingKeysForLocale.length) continue;
+
+      const startIdx = checkpoint.results[locale]?.processed || 0;
+      const batch = missingKeysForLocale.slice(startIdx, startIdx + BATCH_SIZE);
+
+      if (!batch.length) continue;
+
+      console.log(`[i18n] Translating ${batch.length} keys for ${locale}...`);
+      const translations = await generateTranslations(base44, batch, locale);
+      
+      if (!results[locale]) results[locale] = {};
+      results[locale].data = { ...results[locale].data, ...translations };
+      results[locale].processed = startIdx + batch.length;
+      totalProcessed += batch.length;
     }
 
-    // Load EN translations as reference
-    const enTranslations = missingKeysReport.enTranslations || {};
-
-    // Generate translations for each locale
-    const allResults = { ...checkpoint.results };
-    for (const locale of LOCALES) {
-      const translations = await generateTranslations(base44, batch, locale, enTranslations);
-      allResults[locale] = { ...allResults[locale], ...translations };
-    }
-
-    // Save checkpoint
-    checkpoint.lastProcessedIndex = startIdx + batch.length;
-    checkpoint.results = allResults;
+    checkpoint.results = results;
+    checkpoint.lastUpdated = new Date().toISOString();
     saveCheckpoint(checkpoint);
 
     return Response.json({
       success: true,
-      processed: batch.length,
-      totalProcessed: checkpoint.lastProcessedIndex,
-      totalKeys: missingKeys.length,
-      nextBatch: missingKeys.slice(startIdx + BATCH_SIZE, startIdx + BATCH_SIZE * 2).length > 0
+      processed: totalProcessed,
+      locales: allLocales.length,
+      message: `Processed ${totalProcessed} keys. Re-run to continue.`,
+      checkpoint
     });
   } catch (error) {
+    console.error('[i18n] Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
