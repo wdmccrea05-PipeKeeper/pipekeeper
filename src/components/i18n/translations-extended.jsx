@@ -945,37 +945,34 @@ export const translationsExtended = {
     },
     // === PIPES PAGE KEYS ===
     pipesPage: {
-      myPipes: "My Pipes",
-      totalValue: "total value",
-      exportCSV: "Export CSV",
-      insuranceReport: "Insurance Report",
-      quickSearchAdd: "Quick Search & Add",
-      quickSearch: "Quick Search",
-      addPipe: "Add Pipe",
-      searchPlaceholder: "Search by name, maker, or shape...",
-      allShapes: "All Shapes",
-      allMaterials: "All Materials",
-      newestFirst: "Newest First",
-      favoritesFirst: "Favorites First",
-      byMaker: "By Maker",
-      byName: "By Name",
-      editPipe: "Edit Pipe",
-      addNewPipe: "Add New Pipe",
-      sortBy: "Sort by",
-      viewMode: "View mode",
-      startCollection: "Start Your Collection",
-      startCollectionDesc: "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place.",
-      noPipesFound: "No Pipes Found",
-      noMatchSearch: "No pipes match your search. Try adjusting your search or filters.",
-      noMatchFilters: "No pipes match your current filters. Try adjusting your selections.",
-      addFirstPipe: "Add Your First Pipe",
-      clearFilters: "Clear Filters",
-      failedToAddPipe: "Failed to add pipe",
-      favoritesFirst: "Favorites First",
-      byMaker: "By Maker",
-      byName: "By Name",
-      nameAZ: "Name (A-Z)",
-      nameZA: "Name (Z-A)",
+      myPipes: "Mis Pipas",
+      totalValue: "valor total",
+      exportCSV: "Exportar CSV",
+      insuranceReport: "Reporte de Seguro",
+      quickSearchAdd: "Búsqueda Rápida y Añadir",
+      quickSearch: "Búsqueda Rápida",
+      addPipe: "Añadir Pipa",
+      searchPlaceholder: "Buscar por nombre, fabricante o forma...",
+      allShapes: "Todas las Formas",
+      allMaterials: "Todos los Materiales",
+      newestFirst: "Más Reciente Primero",
+      favoritesFirst: "Favoritos Primero",
+      byMaker: "Por Fabricante",
+      byName: "Por Nombre",
+      nameAZ: "Nombre (A-Z)",
+      nameZA: "Nombre (Z-A)",
+      editPipe: "Editar Pipa",
+      addNewPipe: "Añadir Nueva Pipa",
+      sortBy: "Ordenar por",
+      viewMode: "Modo de vista",
+      startCollection: "Comienza Tu Colección",
+      startCollectionDesc: "Comienza tu viaje de pipas añadiendo tu primera pieza. Rastrea detalles, fotos y notas de fumada todo en un lugar.",
+      noPipesFound: "No se Encontraron Pipas",
+      noMatchSearch: "Ninguna pipa coincide con tu búsqueda. Intenta ajustar tu búsqueda o filtros.",
+      noMatchFilters: "Ninguna pipa coincide con tus filtros actuales. Intenta ajustar tus selecciones.",
+      addFirstPipe: "Añade Tu Primera Pipa",
+      clearFilters: "Limpiar Filtros",
+      failedToAddPipe: "Error al añadir pipa",
     },
     // === PIPE DETAIL TAB KEYS ===
     pipeDetailTabs: {
@@ -1891,6 +1888,15 @@ export const translationsExtended = {
     },
   }},
   es: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Todas las Formas",
+      allMaterials: "Todos los Materiales",
+    },
+    tobacco: {
+      allTypes: "Todos los Tipos",
+      allStrengths: "Todas las Fuerzas",
+    },
     common: {
       nav: {
       home: "Inicio",
@@ -2585,6 +2591,7 @@ export const translationsExtended = {
       loading: "Cargando...",
       ago: "hace",
       search: "Buscar",
+      searching: "Buscando...",
       of: "de",
       pipes: "pipas",
       pipe: "pipa",
@@ -2604,6 +2611,8 @@ export const translationsExtended = {
       note: "Nota",
       refresh: "Actualizar",
       unknown: "Desconocido",
+      selectPlaceholder: "Seleccionar una opción...",
+      searchPlaceholder: "Buscar...",
     },
     units: {
       tin: "lata",
@@ -2648,6 +2657,15 @@ export const translationsExtended = {
     },
   }},
   fr: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Toutes les Formes",
+      allMaterials: "Tous les Matériaux",
+    },
+    tobacco: {
+      allTypes: "Tous les Types",
+      allStrengths: "Toutes les Forces",
+    },
     common: {
       nav: {
       home: "Accueil",
@@ -3357,6 +3375,7 @@ export const translationsExtended = {
       loading: "Chargement...",
       ago: "il y a",
       search: "Rechercher",
+      searching: "Recherche en cours...",
       of: "de",
       pipes: "pipes",
       pipe: "pipe",
@@ -3376,6 +3395,8 @@ export const translationsExtended = {
       note: "Note",
       refresh: "Rafraîchir",
       unknown: "Inconnu",
+      selectPlaceholder: "Sélectionner une option...",
+      searchPlaceholder: "Rechercher...",
     },
     units: {
       tin: "boîte",
@@ -3420,6 +3441,15 @@ export const translationsExtended = {
     },
   }},
   de: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Alle Formen",
+      allMaterials: "Alle Materialien",
+    },
+    tobacco: {
+      allTypes: "Alle Typen",
+      allStrengths: "Alle Stärken",
+    },
     common: {
       nav: {
       home: "Startseite",
@@ -4129,6 +4159,7 @@ export const translationsExtended = {
       loading: "Wird geladen...",
       ago: "vor",
       search: "Suche",
+      searching: "Suche läuft...",
       of: "von",
       pipes: "Pfeifen",
       pipe: "Pfeife",
@@ -4148,6 +4179,8 @@ export const translationsExtended = {
       note: "Notiz",
       refresh: "Aktualisieren",
       unknown: "Unbekannt",
+      selectPlaceholder: "Option wählen...",
+      searchPlaceholder: "Suchen...",
     },
     units: {
       tin: "Dose",
@@ -4192,6 +4225,15 @@ export const translationsExtended = {
     },
   }},
   it: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Tutte le Forme",
+      allMaterials: "Tutti i Materiali",
+    },
+    tobacco: {
+      allTypes: "Tutti i Tipi",
+      allStrengths: "Tutte le Forze",
+    },
     common: {
       nav: {
       home: "Home",
@@ -4214,6 +4256,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "Sconosciuto",
+      loading: "Caricamento...",
+      searching: "Ricerca in corso...",
+      selectPlaceholder: "Seleziona un'opzione...",
+      searchPlaceholder: "Cerca...",
     },
     units: {
       tin: "latta",
@@ -4645,6 +4691,15 @@ export const translationsExtended = {
     },
   }},
   "pt-BR": {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Todas as Formas",
+      allMaterials: "Todos os Materiais",
+    },
+    tobacco: {
+      allTypes: "Todos os Tipos",
+      allStrengths: "Todas as Forças",
+    },
     common: {
       nav: {
       home: "Início",
@@ -4667,6 +4722,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "Desconhecido",
+      loading: "Carregando...",
+      searching: "Buscando...",
+      selectPlaceholder: "Selecionar uma opção...",
+      searchPlaceholder: "Buscar...",
     },
     units: {
       tin: "lata",
@@ -5091,6 +5150,15 @@ export const translationsExtended = {
     },
   }},
   nl: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Alle Vormen",
+      allMaterials: "Alle Materialen",
+    },
+    tobacco: {
+      allTypes: "Alle Typen",
+      allStrengths: "Alle Sterktes",
+    },
     common: {
       nav: {
       home: "Thuis",
@@ -5113,6 +5181,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "Onbekend",
+      loading: "Laden...",
+      searching: "Zoeken...",
+      selectPlaceholder: "Selecteer een optie...",
+      searchPlaceholder: "Zoeken...",
     },
     units: {
       tin: "blik",
@@ -5544,6 +5616,15 @@ export const translationsExtended = {
     },
   }},
   pl: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "Wszystkie Kształty",
+      allMaterials: "Wszystkie Materiały",
+    },
+    tobacco: {
+      allTypes: "Wszystkie Typy",
+      allStrengths: "Wszystkie Siły",
+    },
     common: {
       nav: {
       home: "Strona Główna",
@@ -5566,6 +5647,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "Nieznany",
+      loading: "Ładowanie...",
+      searching: "Wyszukiwanie...",
+      selectPlaceholder: "Wybierz opcję...",
+      searchPlaceholder: "Szukaj...",
     },
     units: {
       tin: "puszka",
@@ -5997,6 +6082,15 @@ export const translationsExtended = {
     },
   }},
   ja: {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "すべての形状",
+      allMaterials: "すべての素材",
+    },
+    tobacco: {
+      allTypes: "すべてのタイプ",
+      allStrengths: "すべての強度",
+    },
     common: {
       nav: {
       home: "ホーム",
@@ -6019,6 +6113,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "不明",
+      loading: "読み込み中...",
+      searching: "検索中...",
+      selectPlaceholder: "オプションを選択...",
+      searchPlaceholder: "検索...",
     },
     units: {
       tin: "缶",
@@ -6487,6 +6585,15 @@ export const translationsExtended = {
     },
   }},
   "zh-Hans": {
+    // === FILTER OPTIONS ===
+    pipes: {
+      allShapes: "所有形状",
+      allMaterials: "所有材料",
+    },
+    tobacco: {
+      allTypes: "所有类型",
+      allStrengths: "所有强度",
+    },
     common: {
       nav: {
       home: "首页",
@@ -6509,6 +6616,10 @@ export const translationsExtended = {
     },
     common: {
       unknown: "未知",
+      loading: "加载中...",
+      searching: "搜索中...",
+      selectPlaceholder: "选择一个选项...",
+      searchPlaceholder: "搜索...",
     },
     units: {
       tin: "罐",
