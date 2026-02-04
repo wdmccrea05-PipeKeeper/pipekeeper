@@ -117,8 +117,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   if (!isPaidUser) {
     return (
       <UpgradePrompt
-        featureName="AI Tobacco Matching"
-        description="Get top blend recommendations for each pipe (and for each interchangeable bowl)."
+        featureName={t("matching.aiTobaccoMatching")}
+        description={t("matching.upgradeDesc")}
       />
     );
   }
@@ -133,7 +133,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   }
 
   if (!pipe?.id) {
-    return <div className="text-sm text-stone-600">{t("errors.pipeNotAvailable")}</div>;
+    return <div className="text-sm text-[#E0D8C8]/60">{t("errors.pipeNotAvailable")}</div>;
   }
 
   const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
@@ -213,13 +213,13 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
                   <div key={`${variantKey}-top-${idx}`} className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-stone-400 truncate font-medium">{r.tobacco_name}</span>
-                    <Badge className="bg-stone-200 text-stone-900 font-semibold">{r.score ?? "—"}</Badge>
+                    <span className="text-sm text-[#E0D8C8]/60 truncate font-medium">{r.tobacco_name}</span>
+                    <Badge className="bg-[#E0D8C8]/20 text-[#E0D8C8] font-semibold">{r.score ?? "—"}</Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-stone-700">{t("matching.noDataYet")}</div>
+              <div className="text-sm text-[#E0D8C8]/60">{t("matching.noDataYet")}</div>
             )}
           </div>
 
@@ -240,8 +240,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
             {selectedBlend ? (
                <div className="mt-2 flex items-center justify-between">
-                 <span className="text-sm text-stone-400 truncate font-medium">{selectedBlend.name}</span>
-                 <span className="text-sm text-stone-200 font-semibold">{selectedBlendScore ?? t("matching.noScore")}</span>
+                 <span className="text-sm text-[#E0D8C8]/60 truncate font-medium">{selectedBlend.name}</span>
+                 <span className="text-sm text-[#E0D8C8] font-semibold">{selectedBlendScore ?? t("matching.noScore")}</span>
                </div>
              ) : null}
           </div>

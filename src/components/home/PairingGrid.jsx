@@ -134,7 +134,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     setRegenerating(true);
     try {
       if (!allPipes?.length || !allBlends?.length) {
-        toast.error("No pipes or blends to generate pairings");
+        toast.error(t("errors.noPipesOrBlends"));
         return;
       }
       const result = await regeneratePairingsConsistent({
@@ -148,13 +148,13 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       });
 
       if (result?.skipped) {
-        toast.success("Pairings are already up to date");
+        toast.success(t("pairingGrid.alreadyUpToDate"));
       } else {
-        toast.success("Pairings regenerated successfully");
+        toast.success(t("pairingGrid.regenerateSuccess"));
       }
     } catch (error) {
       console.error("Regeneration error:", error);
-      toast.error("Failed to regenerate pairings");
+      toast.error(t("errors.regenerateFailed"));
     } finally {
       setRegenerating(false);
     }
@@ -164,7 +164,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     return (
       <div className="flex items-center justify-center py-12 text-[#E0D8C8]/60">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading pairing grid...
+        {t("pairingGrid.loading")}
       </div>
     );
   }
@@ -176,7 +176,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           <div>
             <div className="flex items-center gap-2">
               <CardTitle>{t("pairingGrid.title")}</CardTitle>
-              <InfoTooltip text="AI-generated compatibility scores for each pipe-tobacco pairing. Higher scores indicate better matches based on pipe characteristics, blend type, and your preferences." />
+              <InfoTooltip text={t("pairingGrid.tooltipText")} />
             </div>
             <CardDescription>{t("pairingGrid.subtitle")}</CardDescription>
             </div>
@@ -208,7 +208,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       {!collapsed && (
         <CardContent className="space-y-3">
           {rows.length === 0 ? (
-            <div className="text-sm text-[#E0D8C8]/60">No pipes found.</div>
+            <div className="text-sm text-[#E0D8C8]/60">{t("pairingGrid.noPipes")}</div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {rows.map((r) => (
@@ -337,7 +337,7 @@ function PipeCard({ row, allBlends }) {
   const selectedBlendName = useMemo(() => {
     if (!selectedBlendId) return null;
     const blend = allBlends.find(b => String(b.id) === String(selectedBlendId));
-    return blend?.name || "Unknown";
+    return blend?.name || t("common.unknown");
   }, [selectedBlendId, allBlends]);
 
   return (
@@ -356,13 +356,13 @@ function PipeCard({ row, allBlends }) {
           <div className="text-sm space-y-1">
             {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
-                <span className="truncate">{rec.tobacco_name || rec.name || "Tobacco"}</span>
+                <span className="truncate">{rec.tobacco_name || rec.name || t("common.tobacco")}</span>
                  <span className="font-medium">{rec.score ?? "—"}</span>
               </div>
             ))}
           </div>
         ) : (
-          <span className="text-xs">No recommendations yet.</span>
+          <span className="text-xs">{t("pairingGrid.noRecommendations")}</span>
         )}
       </div>
 
@@ -385,7 +385,7 @@ function PipeCard({ row, allBlends }) {
             <div className="flex justify-between gap-2 text-sm">
               <span className="truncate">{selectedBlendName}</span>
               <span className="font-medium">
-                {selectedBlendScore !== null ? selectedBlendScore : "No score"}
+                {selectedBlendScore !== null ? selectedBlendScore : t("pairingGrid.noScore")}
               </span>
             </div>
             {selectedBlendScore === null && (
@@ -395,7 +395,7 @@ function PipeCard({ row, allBlends }) {
                 onClick={calculateScore}
                 className="w-full"
               >
-                Get Score
+                {t("pairingGrid.getScore")}
               </Button>
             )}
           </div>
