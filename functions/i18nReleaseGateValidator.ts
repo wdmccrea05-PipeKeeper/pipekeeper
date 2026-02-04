@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     const allViolations = [];
     
     // Check English as baseline
-    const en Translations = {
+    const enTranslations = {
       tobacconist: {
         title: 'Expert Tobacconist',
         subtitle: 'Expert consultation and AI updates',
