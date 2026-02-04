@@ -175,10 +175,10 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle>Pairing Grid</CardTitle>
+              <CardTitle>{t("pairingGrid.title")}</CardTitle>
               <InfoTooltip text="AI-generated compatibility scores for each pipe-tobacco pairing. Higher scores indicate better matches based on pipe characteristics, blend type, and your preferences." />
             </div>
-            <CardDescription>Top-rated matches and on-demand scoring for any blend</CardDescription>
+            <CardDescription>{t("pairingGrid.subtitle")}</CardDescription>
             </div>
             <div className="flex gap-2">
             <Button
@@ -187,7 +187,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
               onClick={() => setCollapsed(!collapsed)}
               className="text-white hover:text-white hover:bg-[#A35C5C]/30"
             >
-              {collapsed ? 'Show' : 'Hide'}
+              {collapsed ? t("tobacconist.show") : t("tobacconist.hide")}
             </Button>
             <Button
               variant="outline"
@@ -200,7 +200,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
               ) : (
                 <RefreshCw className="h-3 w-3 mr-1" />
               )}
-              Refresh
+              {t("pairingGrid.refresh")}
             </Button>
           </div>
         </div>
@@ -343,14 +343,14 @@ function PipeCard({ row, allBlends }) {
     <div className="border rounded-lg p-3 bg-[#1A2B3A]/50">
       <div className="font-semibold">{row.name}</div>
       <div className="text-xs text-[#E0D8C8]/60 mt-1">
-        Focus: {row.focus?.length ? row.focus.join(", ") : "—"}
+        {t("pairingGrid.focus")} {row.focus?.length ? row.focus.join(", ") : "—"}
       </div>
       <div className="text-xs text-[#E0D8C8]/60">
-        Dim: {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
+        {t("pairingGrid.dim")} {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold">Top Matches:</div>
+        <div className="text-xs font-semibold">{t("pairingGrid.topMatches")}</div>
         {topMatches.length > 0 ? (
           <div className="text-sm space-y-1">
             {topMatches.map((rec, idx) => (
@@ -366,10 +366,10 @@ function PipeCard({ row, allBlends }) {
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold">Check Any Blend:</div>
+        <div className="text-xs font-semibold">{t("pairingGrid.checkAnyBlend")}</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
           <SelectTrigger className="text-sm">
-            <SelectValue placeholder="Select a blend..." />
+            <SelectValue placeholder={t("pairingGrid.selectABlend")} />
           </SelectTrigger>
           <SelectContent>
             {allBlends.map(b => (
