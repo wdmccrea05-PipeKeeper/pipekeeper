@@ -18,7 +18,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Download } from "lucide-react";
 import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
