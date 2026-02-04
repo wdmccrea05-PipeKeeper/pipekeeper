@@ -1169,7 +1169,7 @@ export default function ProfilePage() {
           </AlertDialogHeader>
           <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder={t("profile.typeDELETE")} />
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={deleteConfirm !== 'DELETE'}
               className="bg-rose-600 hover:bg-rose-700"
