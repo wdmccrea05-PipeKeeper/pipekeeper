@@ -48,6 +48,7 @@ import MaintenanceLog from "@/components/pipes/MaintenanceLog";
 
 export default function PipeDetailPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const pipeId = urlParams.get("id")?.trim();
 
@@ -57,7 +58,6 @@ export default function PipeDetailPage() {
   const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const { useImperial, setUseImperial } = useMeasurement();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
