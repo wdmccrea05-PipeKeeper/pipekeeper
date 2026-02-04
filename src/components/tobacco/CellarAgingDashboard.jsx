@@ -103,28 +103,28 @@ export default function CellarAgingDashboard({ user }) {
     const aging = getAgingInfo(blend);
     const potential = blend.aging_potential;
     
-    if (!potential) return { status: "unknown", message: "No aging potential set", color: "gray" };
+    if (!potential) return { status: "unknown", message: t("tobacconist.noAgingPotential"), color: "gray" };
     
     const months = aging.months;
     
     if (potential === "Excellent") {
-      if (months < 6) return { status: "young", message: "Just beginning - best after 1-2 years", color: "blue" };
-      if (months < 24) return { status: "developing", message: "Developing nicely - continue aging", color: "yellow" };
-      return { status: "peak", message: "Peak aging achieved!", color: "green" };
+      if (months < 6) return { status: "young", message: t("tobacconist.agingExcellentYoung"), color: "blue" };
+      if (months < 24) return { status: "developing", message: t("tobacconist.agingExcellentDeveloping"), color: "yellow" };
+      return { status: "peak", message: t("tobacconist.agingExcellentPeak"), color: "green" };
     }
     
     if (potential === "Good") {
-      if (months < 3) return { status: "young", message: "Early stage - best after 6-12 months", color: "blue" };
-      if (months < 12) return { status: "developing", message: "Coming along well", color: "yellow" };
-      return { status: "peak", message: "Ready to enjoy!", color: "green" };
+      if (months < 3) return { status: "young", message: t("tobacconist.agingGoodYoung"), color: "blue" };
+      if (months < 12) return { status: "developing", message: t("tobacconist.agingGoodDeveloping"), color: "yellow" };
+      return { status: "peak", message: t("tobacconist.agingGoodPeak"), color: "green" };
     }
     
     if (potential === "Fair") {
-      if (months < 3) return { status: "young", message: "Brief aging may help", color: "blue" };
-      return { status: "ready", message: "Ready - minimal aging benefit", color: "green" };
+      if (months < 3) return { status: "young", message: t("tobacconist.agingFairYoung"), color: "blue" };
+      return { status: "ready", message: t("tobacconist.agingFairReady"), color: "green" };
     }
     
-    return { status: "ready", message: "Best used fresh", color: "green" };
+    return { status: "ready", message: t("tobacconist.agingBestFresh"), color: "green" };
   };
 
   const getTotalCellarWeight = () => {

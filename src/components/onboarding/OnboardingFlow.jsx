@@ -19,8 +19,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
   const steps = [
     {
-      title: "Welcome to PipeKeeper",
-      description: "Your intelligent pipe & tobacco collection manager",
+      title: t("onboarding.welcomeTitle"),
+      description: t("onboarding.welcomeDescription"),
       icon: PIPE_ICON,
       content: (
         <div className="space-y-4 text-center">
@@ -30,36 +30,35 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             className="w-24 h-24 mx-auto object-contain mix-blend-multiply"
           />
           <p className="text-[#E0D8C8]/70 text-lg">
-            Manage your collection with AI-powered features for identification, 
-            valuation, and personalized tobacco pairing recommendations.
+            {t("onboarding.welcomeBody")}
           </p>
           <div className="grid grid-cols-2 gap-3 mt-6 text-left">
             <Card>
               <CardContent className="p-4">
                 <Camera className="w-6 h-6 text-amber-400 mb-2" />
-                <h4 className="font-semibold text-sm">Photo ID</h4>
-                <p className="text-xs text-[#E0D8C8]/70">Identify pipes from photos</p>
+                <h4 className="font-semibold text-sm">{t("onboarding.photoIDTitle")}</h4>
+                <p className="text-xs text-[#E0D8C8]/70">{t("onboarding.photoIDDesc")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <Search className="w-6 h-6 text-emerald-400 mb-2" />
-                <h4 className="font-semibold text-sm">AI Search</h4>
-                <p className="text-xs text-[#E0D8C8]/70">Auto-fill details from web</p>
+                <h4 className="font-semibold text-sm">{t("onboarding.aiSearchTitle")}</h4>
+                <p className="text-xs text-[#E0D8C8]/70">{t("onboarding.aiSearchDesc")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <Star className="w-6 h-6 text-violet-400 mb-2" />
-                <h4 className="font-semibold text-sm">Pairings</h4>
-                <p className="text-xs text-[#E0D8C8]/70">Match pipes with tobacco</p>
+                <h4 className="font-semibold text-sm">{t("onboarding.pairingsTitle")}</h4>
+                <p className="text-xs text-[#E0D8C8]/70">{t("onboarding.pairingsDesc")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <Sparkles className="w-6 h-6 text-blue-400 mb-2" />
-                <h4 className="font-semibold text-sm">Optimize</h4>
-                <p className="text-xs text-[#E0D8C8]/70">Get collection insights</p>
+                <h4 className="font-semibold text-sm">{t("onboarding.optimizeTitle")}</h4>
+                <p className="text-xs text-[#E0D8C8]/70">{t("onboarding.optimizeDesc")}</p>
               </CardContent>
             </Card>
           </div>
@@ -67,8 +66,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
-      title: "Set Your Preferences",
-      description: "Tell us about your smoking style for personalized recommendations",
+      title: t("onboarding.preferencesTitle"),
+      description: t("onboarding.preferencesDescription"),
       icon: Users,
       content: (
         <div className="space-y-4">
@@ -76,23 +75,23 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <CardContent className="p-6">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                User Profile
+                {t("onboarding.userProfile")}
               </h4>
               <p className="text-[#E0D8C8]/70 mb-4">
-                Create your smoking profile to get personalized recommendations based on:
+                {t("onboarding.userProfileDesc")}
               </p>
               <ul className="space-y-2 text-sm text-[#E0D8C8]/70">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Preferred tobacco blend types (Virginia, English, Aromatic, etc.)</span>
+                  <span>{t("onboarding.profileItem1")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Strength preference (Mild to Full)</span>
+                  <span>{t("onboarding.profileItem2")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Pipe size and shape preferences</span>
+                  <span>{t("onboarding.profileItem3")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
