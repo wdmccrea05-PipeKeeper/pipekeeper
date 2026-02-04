@@ -123,10 +123,10 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="w-5 h-5 text-amber-600" />
-            Quick Search & Add Pipe
+            {t("quickSearch.quickSearchAddPipe")}
           </DialogTitle>
           <DialogDescription>
-            Search by maker, model, or brand and add to your collection
+            {t("quickSearch.searchPipeDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +135,7 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., 'Peterson Sherlock Holmes', 'Savinelli Autograph'"
+              placeholder={t("quickSearch.pipePlaceholder")}
               className="border-stone-200"
               autoFocus
             />
@@ -149,7 +149,7 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
               ) : (
                 <>
                   <Search className="w-4 h-4 mr-2" />
-                  Search
+                  {t("common.search")}
                 </>
               )}
             </Button>
@@ -164,7 +164,7 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                 className="space-y-3"
               >
                 <p className="text-sm text-stone-600">
-                  Found {results.length} result{results.length > 1 ? 's' : ''}. Click "Add to Collection" to add.
+                  {t("quickSearch.foundResults", { count: results.length })}
                 </p>
                 {results.map((pipe, idx) => (
                   <Card
@@ -179,10 +179,10 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                           </div>
                           <p className="text-sm text-stone-600 font-medium">{pipe.maker}</p>
                           {pipe.country_of_origin && (
-                            <p className="text-xs text-stone-500 mt-1">Made in {pipe.country_of_origin}</p>
+                            <p className="text-xs text-stone-500 mt-1">{t("quickSearch.madeIn", { country: pipe.country_of_origin })}</p>
                           )}
                           {pipe.era && (
-                            <p className="text-xs text-stone-500">Era: {pipe.era}</p>
+                            <p className="text-xs text-stone-500">{t("quickSearch.era")}: {pipe.era}</p>
                           )}
                           {pipe.description && (
                             <p className="text-sm text-stone-600 mt-2 leading-relaxed">{pipe.description}</p>
@@ -206,16 +206,16 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                           </div>
                           {(pipe.bowl_diameter_mm || pipe.bowl_depth_mm) && (
                             <p className="text-xs text-stone-500 mt-2">
-                              Bowl: {pipe.bowl_diameter_mm && `${pipe.bowl_diameter_mm}mm ⌀`}
+                              {t("quickSearch.bowl")}: {pipe.bowl_diameter_mm && `${pipe.bowl_diameter_mm}mm ⌀`}
                               {pipe.bowl_diameter_mm && pipe.bowl_depth_mm && ' × '}
-                              {pipe.bowl_depth_mm && `${pipe.bowl_depth_mm}mm deep`}
+                              {pipe.bowl_depth_mm && `${pipe.bowl_depth_mm}mm ${t("quickSearch.deep")}`}
                             </p>
                           )}
                         </div>
                         <div className="shrink-0 text-right space-y-3">
                           {(pipe.price_range_low || pipe.price_range_high) && (
                             <div>
-                              <p className="text-xs text-stone-500">Typical Value</p>
+                              <p className="text-xs text-stone-500">{t("quickSearch.typicalValue")}</p>
                               <p className="font-semibold text-emerald-700 text-sm">
                                 ${pipe.price_range_low?.toLocaleString()}
                                 {pipe.price_range_high && pipe.price_range_high !== pipe.price_range_low && 
@@ -231,12 +231,12 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                             {adding === pipe.name ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Adding...
+                                {t("quickSearch.adding")}
                               </>
                             ) : (
                               <>
                                 <Plus className="w-4 h-4 mr-2" />
-                                Add to Collection
+                                {t("quickSearch.addToCollection")}
                               </>
                             )}
                           </Button>
@@ -251,16 +251,16 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
 
           {!loading && results.length === 0 && query && (
             <div className="text-center py-8">
-              <p className="text-stone-500">No results found. Try a different search term.</p>
+              <p className="text-stone-500">{t("quickSearch.noResults")}</p>
             </div>
           )}
 
           {!query && !loading && results.length === 0 && (
             <div className="text-center py-8">
               <div className="text-4xl mb-3">🔍</div>
-              <p className="text-stone-500">Enter a pipe maker or model name to search</p>
+              <p className="text-stone-500">{t("quickSearch.enterPipeName")}</p>
               <p className="text-xs text-stone-400 mt-2">
-                Examples: "Peterson System", "Savinelli Autograph", "Dunhill Shell Briar"
+                {t("quickSearch.pipeExamples")}
               </p>
             </div>
           )}

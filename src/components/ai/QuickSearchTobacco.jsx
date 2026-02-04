@@ -135,10 +135,10 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="w-5 h-5 text-amber-600" />
-            Quick Search & Add Tobacco
+            {t("quickSearch.quickSearchAddTobacco")}
           </DialogTitle>
           <DialogDescription>
-            Search by blend name or manufacturer and add to your cellar
+            {t("quickSearch.searchTobaccoDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -147,7 +147,7 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., 'Orlik Golden Sliced', 'Peterson Nightcap'"
+              placeholder={t("quickSearch.tobaccoPlaceholder")}
               className="border-stone-200"
               autoFocus
             />
@@ -161,7 +161,7 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
               ) : (
                 <>
                   <Search className="w-4 h-4 mr-2" />
-                  Search
+                  {t("common.search")}
                 </>
               )}
             </Button>
@@ -176,7 +176,7 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                 className="space-y-3"
               >
                 <p className="text-sm text-stone-600">
-                  Found {results.length} result{results.length > 1 ? 's' : ''}. Click "Add to Collection" to add.
+                  {t("quickSearch.foundResults", { count: results.length })}
                 </p>
                 {results.map((blend, idx) => (
                   <Card
@@ -228,27 +228,27 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                           {blend.flavor_notes && blend.flavor_notes.length > 0 && (
                             <div className="mt-2">
                               <p className="text-xs text-stone-500">
-                                Flavors: {blend.flavor_notes.slice(0, 5).join(', ')}
+                                {t("quickSearch.flavors")}: {blend.flavor_notes.slice(0, 5).join(', ')}
                               </p>
                             </div>
                           )}
                           {blend.tobacco_components && blend.tobacco_components.length > 0 && (
                             <div className="mt-1">
                               <p className="text-xs text-stone-500">
-                                Components: {blend.tobacco_components.join(', ')}
+                                {t("quickSearch.components")}: {blend.tobacco_components.join(', ')}
                               </p>
                             </div>
                           )}
                           {blend.tin_size_oz && (
                             <p className="text-xs text-stone-500 mt-1">
-                              Tin Size: {blend.tin_size_oz}oz
+                              {t("quickSearch.tinSize")}: {blend.tin_size_oz}oz
                             </p>
                           )}
                         </div>
                         <div className="shrink-0 text-right space-y-3">
                           {blend.typical_rating && (
                             <div>
-                              <p className="text-xs text-stone-500">Avg Rating</p>
+                              <p className="text-xs text-stone-500">{t("quickSearch.avgRating")}</p>
                               <p className="font-semibold text-amber-700 text-sm flex items-center gap-1">
                                 ⭐ {blend.typical_rating}/5
                               </p>
@@ -262,12 +262,12 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                             {adding === blend.name ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Adding...
+                                {t("quickSearch.adding")}
                               </>
                             ) : (
                               <>
                                 <Plus className="w-4 h-4 mr-2" />
-                                Add to Cellar
+                                {t("quickSearch.addToCellar")}
                               </>
                             )}
                           </Button>
@@ -282,16 +282,16 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
 
           {!loading && results.length === 0 && query && (
             <div className="text-center py-8">
-              <p className="text-stone-500">No results found. Try a different search term.</p>
+              <p className="text-stone-500">{t("quickSearch.noResults")}</p>
             </div>
           )}
 
           {!query && !loading && results.length === 0 && (
             <div className="text-center py-8">
               <div className="text-4xl mb-3">🔍</div>
-              <p className="text-stone-500">Enter a tobacco blend name to search</p>
+              <p className="text-stone-500">{t("quickSearch.enterTobaccoName")}</p>
               <p className="text-xs text-stone-400 mt-2">
-                Examples: "Orlik Golden Sliced", "Peterson Nightcap", "Dunhill Early Morning"
+                {t("quickSearch.tobaccoExamples")}
               </p>
             </div>
           )}
