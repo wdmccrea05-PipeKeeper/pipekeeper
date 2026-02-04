@@ -4161,6 +4161,17 @@ export const translationsExtended = {
       goHome: "Vai a Home",
       following: "Seguiti",
     },
+    common: {
+      unknown: "Sconosciuto",
+    },
+    units: {
+      tin: "latta",
+      tinPlural: "latte",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Tutti i diritti riservati.",
+    },
     auth: {
       login: "Accedi",
       loginPrompt: "Accedi per continuare",
@@ -4601,6 +4612,18 @@ export const translationsExtended = {
       quickAccess: "Acesso Rápido",
       syncing: "Sincronizando…",
       goHome: "Ir para Início",
+      following: "Seguindo",
+    },
+    common: {
+      unknown: "Desconhecido",
+    },
+    units: {
+      tin: "lata",
+      tinPlural: "latas",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Todos os direitos reservados.",
     },
     auth: {
       login: "Fazer Login",
@@ -5034,6 +5057,18 @@ export const translationsExtended = {
       quickAccess: "Snelle Toegang",
       syncing: "Synchroniseren…",
       goHome: "Naar Thuis",
+      following: "Volgt",
+    },
+    common: {
+      unknown: "Onbekend",
+    },
+    units: {
+      tin: "blik",
+      tinPlural: "blikken",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Alle rechten voorbehouden.",
     },
     auth: {
       login: "Inloggen",
@@ -5474,6 +5509,18 @@ export const translationsExtended = {
       quickAccess: "Szybki Dostęp",
       syncing: "Synchronizacja…",
       goHome: "Powrót na Stronę Główną",
+      following: "Obserwujesz",
+    },
+    common: {
+      unknown: "Nieznany",
+    },
+    units: {
+      tin: "puszka",
+      tinPlural: "puszki",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Wszelkie prawa zastrzeżone.",
     },
     auth: {
       login: "Zaloguj się",
@@ -5914,6 +5961,18 @@ export const translationsExtended = {
       quickAccess: "クイック アクセス",
       syncing: "同期中…",
       goHome: "ホームに戻る",
+      following: "フォロー中",
+    },
+    common: {
+      unknown: "不明",
+    },
+    units: {
+      tin: "缶",
+      tinPlural: "缶",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. 無断転載禁止。",
     },
     pipeDetailTabs: {
       specialization: "専門化",
@@ -6391,6 +6450,18 @@ export const translationsExtended = {
       quickAccess: "快速访问",
       syncing: "同步中…",
       goHome: "返回首页",
+      following: "正在关注",
+    },
+    common: {
+      unknown: "未知",
+    },
+    units: {
+      tin: "罐",
+      tinPlural: "罐",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. 保留所有权利。",
     },
     auth: {
       login: "登录",
