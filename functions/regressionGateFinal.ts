@@ -69,10 +69,10 @@ Deno.serve(async (req) => {
     }
 
     // TOBACCO CRUD
-    const blends = await base44.entities.TobaccoBlend.list();
+    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
     log('TOBACCO', 'List loads with data', blends?.length > 0 ? 'PASS' : 'FAIL', { count: blends?.length || 0 });
 
-    const blendsByType = await base44.entities.TobaccoBlend.filter({ blend_type: 'English' });
+    const blendsByType = await base44.entities.TobaccoBlend.filter({ created_by: user?.email, blend_type: 'English' });
     log('TOBACCO', 'Filter works', blendsByType?.length >= 0 ? 'PASS' : 'FAIL', { results: blendsByType?.length || 0 });
 
     if (blends?.length > 0) {
