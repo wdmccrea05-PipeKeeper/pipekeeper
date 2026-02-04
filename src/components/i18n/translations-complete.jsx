@@ -440,7 +440,27 @@ export const translationsComplete = {
   },
   it: {
     collectionInsights: {
-      summaryTooltip: "Questa sezione riepiloga i modelli e i totali della tua collezione in base ai dati inseriti."
+      summaryTooltip: "Questa sezione riepiloga i modelli e i totali della tua collezione in base ai dati inseriti.",
+      reportTooltip: "Genera riepiloghi esportabili della tua collezione per riferimento o documentazione.",
+      agingTooltip: "Monitora il tabacco invecchiato e ottieni raccomandazioni sui tempi di invecchiamento ottimali."
+    },
+    insights: {
+      title: "Informazioni Collezione",
+      titleInventory: "Cantina di Tabacco",
+      subtitle: "Panoramica Collezione",
+      stats: "Statistiche",
+      log: "Registro",
+      pairingGrid: "Griglia Abbinamenti",
+      rotation: "Rotazione",
+      aging: "Invecchiamento",
+      reports: "Rapporti",
+      statsEmpty: "Aggiungi pipe o tabacco per vedere le statistiche di collezione",
+      addFirstItem: "Aggiungi Primo Elemento",
+      reportsEmpty: "Nessun elemento per generare rapporti",
+      reportsEmptyDesc: "Aggiungi pipe e tabacco alla tua collezione per generare rapporti",
+      reportsSubtitle: "Esporta i dati della tua collezione",
+      agingDashboard: "Dashboard Invecchiamento",
+      agingSubtitle: "Monitoraggio Cantina"
     },
     smokingLog: {
       totalBowls: "{{total}} ciotole totali",
