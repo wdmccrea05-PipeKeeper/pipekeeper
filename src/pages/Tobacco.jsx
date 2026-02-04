@@ -29,7 +29,7 @@ import { useTranslation } from "react-i18next";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
 const BLEND_TYPES = [
-  "All Types",
+  "tobacco.allTypes",
   "American",
   "Aromatic",
   "Balkan",
@@ -55,24 +55,24 @@ const BLEND_TYPES = [
   "Virginia/Oriental",
   "Virginia/Perique"
 ];
-const STRENGTHS = ["All Strengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
+const STRENGTHS = ["tobacco.allStrengths", "Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const SORT_OPTIONS = [
-  { value: "-created_date", label: "Recently Added" },
-  { value: "favorites", label: "Favorites First" },
-  { value: "name", label: "Name (A-Z)" },
-  { value: "-name", label: "Name (Z-A)" },
-  { value: "-rating", label: "Highest Rated" },
-  { value: "rating", label: "Lowest Rated" },
-  { value: "cellared_date", label: "Oldest in Cellar" },
-  { value: "-cellared_date", label: "Newest in Cellar" }
+  { value: "-created_date", label: "tobaccoPage.recentlyAdded" },
+  { value: "favorites", label: "tobaccoPage.favoritesFirst" },
+  { value: "name", label: "tobaccoPage.nameAZ" },
+  { value: "-name", label: "tobaccoPage.nameZA" },
+  { value: "-rating", label: "tobaccoPage.highestRated" },
+  { value: "rating", label: "tobaccoPage.lowestRated" },
+  { value: "cellared_date", label: "tobaccoPage.oldestInCellar" },
+  { value: "-cellared_date", label: "tobaccoPage.newestInCellar" }
 ];
 
 export default function TobaccoPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBlend, setEditingBlend] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('All Types');
-  const [strengthFilter, setStrengthFilter] = useState('All Strengths');
+  const [typeFilter, setTypeFilter] = useState('tobacco.allTypes');
+  const [strengthFilter, setStrengthFilter] = useState('tobacco.allStrengths');
   const [sortBy, setSortBy] = useState('-created_date');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
@@ -217,8 +217,8 @@ export default function TobaccoPage() {
     const matchesSearch = !searchQuery || 
       blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === 'All Types' || blend.blend_type === typeFilter;
-    const matchesStrength = strengthFilter === 'All Strengths' || blend.strength === strengthFilter;
+    const matchesType = typeFilter === 'tobacco.allTypes' || blend.blend_type === typeFilter;
+    const matchesStrength = strengthFilter === 'tobacco.allStrengths' || blend.strength === strengthFilter;
     return matchesSearch && matchesType && matchesStrength;
   });
 
@@ -349,7 +349,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t.startsWith('tobacco.') ? t(t) : t}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
@@ -357,7 +357,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s.startsWith('tobacco.') ? t(s) : s}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -365,7 +365,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {SORT_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
+              {SORT_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label.startsWith('tobaccoPage.') ? t(opt.label) : opt.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className={`flex border rounded-lg ${PK_THEME.card}`}>
@@ -414,8 +414,8 @@ export default function TobaccoPage() {
             }
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend", "Add Your First Blend") : null}
             onAction={blends.length === 0 ? () => setShowForm(true) : null}
-            secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter !== 'All Types' || strengthFilter !== 'All Strengths' ? t("pipesPage.clearFilters") : null}
-            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter('All Types'); setStrengthFilter('All Strengths'); }}
+            secondaryActionLabel={blends.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || typeFilter !== 'tobacco.allTypes' || strengthFilter !== 'tobacco.allStrengths' ? t("pipesPage.clearFilters") : null}
+            onSecondaryAction={blends.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setTypeFilter('tobacco.allTypes'); setStrengthFilter('tobacco.allStrengths'); }}
           />
         ) : (
           <motion.div 
