@@ -2584,7 +2584,8 @@ export const translationsExtended = {
     },
   }},
   fr: {
-    nav: {
+    common: {
+      nav: {
       home: "Accueil",
       pipes: "Pipes",
       tobacco: "Tabac",
