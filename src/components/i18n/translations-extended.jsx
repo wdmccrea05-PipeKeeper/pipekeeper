@@ -1109,6 +1109,25 @@ export const translationsExtended = {
       tinPhoto: "Tin Photo",
       labelLogo: "Label/Logo",
       browseLibrary: "Browse Library",
+      uploading: "Uploading...",
+    },
+    // === BOWLS (Interchangeable Bowls Component) ===
+    bowls: {
+      addBowl: "Add Bowl",
+      editBowl: "Edit Bowl",
+      addInterchangeableBowl: "Add Interchangeable Bowl",
+      bowlName: "Bowl Name",
+      bowlNamePlaceholder: "e.g., Standard Bowl, Meerschaum Bowl",
+      bowlSpecialization: "Bowl Specialization (Focus)",
+      specializationPlaceholder: "e.g., English, Virginia/Perique",
+      separateCommas: "Separate multiple types with commas",
+      bowlPhoto: "Bowl Photo",
+      preview: "Preview",
+      squarePhotosNote: "Square photos work best",
+      notesPlaceholder: "Any additional notes about this bowl...",
+      bowl: "Bowl",
+      noBowlsYet: "No additional bowls added yet",
+      trackBowlOptions: "Track different bowl options for this pipe system",
     },
     // === PIPE EXPORTER KEYS ===
     pipeExporter: {
