@@ -210,16 +210,8 @@ export default function CommunityPage() {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <UpgradePrompt
-            title="Community Features"
-            description="Connect with fellow pipe enthusiasts, share your collection, and discover new pipes and tobacco blends."
-            features={[
-              "Create a public profile to showcase your collection",
-              "Follow other collectors and see their pipes & tobacco",
-              "Comment on and discuss collections with the community",
-              "Get inspired by other enthusiasts' setups",
-              "Share your expertise and learn from others"
-            ]}
-            icon={<Users className="w-12 h-12" />}
+            featureName={t("communityExtended.communityFeatures")}
+            description={t("communityExtended.upgradePromptDesc")}
           />
         </div>
       </div>
@@ -332,7 +324,7 @@ export default function CommunityPage() {
                         })}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select country..." />
+                          <SelectValue placeholder={t("communityExtended.selectCountry")} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__ALL__">{t("communityExtended.allCountries")}</SelectItem>
@@ -481,7 +473,7 @@ export default function CommunityPage() {
                               className="whitespace-nowrap w-full"
                             >
                               <UserCheck className="w-4 h-4 mr-1" />
-                              Following
+                              {t("communityExtended.following")}
                             </Button>
                           ) : (
                             <Button
@@ -491,7 +483,7 @@ export default function CommunityPage() {
                               className="whitespace-nowrap w-full"
                             >
                               <UserPlus className="w-4 h-4 mr-1" />
-                              Follow
+                              {t("communityExtended.follow")}
                             </Button>
                           )}
                         </div>
