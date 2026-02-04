@@ -116,9 +116,9 @@ class PKErrorBoundary extends React.Component {
       return (
         <div className="p-4">
           <div className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-            <div className="font-semibold text-rose-900">Something went wrong</div>
+            <div className="font-semibold text-rose-900">{t("errors.somethingWrong")}</div>
             <div className="mt-2 text-sm text-rose-800">
-              {String(this.state.error?.message || this.state.error || "Unknown error")}
+              {String(this.state.error?.message || this.state.error || t("errors.unknownError"))}
             </div>
           </div>
         </div>
@@ -532,8 +532,8 @@ User Feedback: ${feedback}
       }
 
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(bowlVariantId ? "Bowl focus updated" : "Pipe focus updated", {
-        description: "Regenerate pairings to see updated recommendations",
+      toast.success(bowlVariantId ? t("tobacconist.bowlFocusUpdated") : t("tobacconist.pipeFocusUpdated"), {
+        description: t("tobacconist.regeneratePairingsNote"),
       });
     } catch (err) {
       console.error("applySpecialization error:", err);
@@ -949,7 +949,7 @@ ${userText}
 
                               {!!c?.detailed_reasoning && (
                                 <div className="space-y-2">
-                                  <p className="text-stone-900 font-semibold text-sm">Analysis:</p>
+                                  <p className="text-stone-900 font-semibold text-sm">{t("tobacconist.analysis")}:</p>
                                   <div className="text-stone-900">
                                     <FormattedTobacconistResponse content={asText(c?.detailed_reasoning)} style="simple_paragraphs" />
                                   </div>
@@ -958,7 +958,7 @@ ${userText}
 
                               {Array.isArray(c?.trophy_pairings) && c.trophy_pairings.length > 0 && (
                                 <div>
-                                  <p className="text-stone-900 font-semibold text-xs mb-1">Trophy Pairings:</p>
+                                  <p className="text-stone-900 font-semibold text-xs mb-1">{t("tobacconist.trophyPairings")}:</p>
                                   <div className="flex flex-wrap gap-1">
                                     {c.trophy_pairings.map((blend, i) => (
                                       <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">
@@ -976,7 +976,7 @@ ${userText}
                               {c?.routed_to && (
                                 <div className="mt-2 pt-2 border-t border-stone-400">
                                   <p className="text-xs font-mono text-stone-700 bg-stone-200 px-2 py-1 rounded break-all">
-                                    Answered by: {asText(c.routed_to)}
+                                   {t("tobacconist.answeredBy")}: {asText(c.routed_to)}
                                   </p>
                                 </div>
                               )}
@@ -987,7 +987,7 @@ ${userText}
                               {c?.routed_to && (
                                 <div className="mt-2 pt-2 border-t border-stone-400">
                                   <p className="text-xs font-mono text-stone-700 bg-stone-200 px-2 py-1 rounded break-all">
-                                    Answered by: {asText(c.routed_to)}
+                                   {t("tobacconist.answeredBy")}: {asText(c.routed_to)}
                                   </p>
                                 </div>
                               )}
@@ -1020,7 +1020,7 @@ ${userText}
           {/* Inputs */}
           <div>
             <label className="text-sm font-medium text-stone-800 mb-2 block">
-              {conversationMessages.length > 0 ? "Continue the conversation..." : t("tobacconist.chatWithTobacconist")}
+              {conversationMessages.length > 0 ? t("tobacconist.continueConversation") : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
               placeholder={t("tobacconist.askExpertPlaceholder")}
@@ -1106,8 +1106,8 @@ ${userText}
                     className="border-blue-400 bg-blue-600 text-white hover:bg-blue-700 hover:text-white flex-1"
                   >
                     {whatIfLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
-                    Analyze Impact
-                  </Button>
+                    {t("tobacconist.analyzeImpact")}
+                    </Button>
 
                   <Button variant="outline" onClick={resetWhatIf} className="flex-1 bg-stone-700 text-white hover:bg-stone-800 border-stone-600">
                     {t("tobacconist.reset")}
@@ -1146,7 +1146,7 @@ ${userText}
               <Button
                 onClick={async () => {
                   await applyOptimizationChangesWithUndo(whatIfResult.applyable_changes);
-                  toast.success("Changes applied to your collection");
+                  toast.success(t("tobacconist.changesApplied"));
                   resetWhatIf();
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 w-full"
@@ -1439,9 +1439,9 @@ ${userText}
                       bowl_variant_id: pv.bowl_variant_id || null,
                       pipe_name: pv.name,
                       recommended_blend_types: [],
-                      reasoning: "No specific recommendation generated. Consider running the optimization again.",
+                      reasoning: t("tobacconist.noRecommendation"),
                       versatility_score: 5,
-                      usage_pattern: "Versatile - suitable for multiple blend types",
+                      usage_pattern: t("tobacconist.versatilePattern"),
                     };
 
                     return (
@@ -1486,7 +1486,7 @@ ${userText}
                                   {(pv?.focus?.length > 0 || pipe?.focus?.length > 0) ? (
                                     <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-xs gap-1 flex-shrink-0">
                                       <Star className="w-3 h-3" />
-                                      <span className="hidden sm:inline">Specialized</span>
+                                      <span className="hidden sm:inline">{t("tobacconist.specialized")}</span>
                                     </Badge>
                                   ) : displaySpec.recommended_blend_types?.length > 0 ? (
                                     <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-xs gap-1 flex-shrink-0">
