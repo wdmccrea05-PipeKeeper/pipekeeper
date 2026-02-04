@@ -749,6 +749,7 @@ export const translationsExtended = {
       unknown: "Unknown",
       selectPlaceholder: "Select an option...",
       searchPlaceholder: "Search...",
+      clearAll: "Clear All",
     },
     // === SHAPE & MATERIAL ENUMS ===
     shapes: {
@@ -2646,6 +2647,7 @@ export const translationsExtended = {
       unknown: "Desconocido",
       selectPlaceholder: "Seleccionar una opción...",
       searchPlaceholder: "Buscar...",
+      clearAll: "Limpiar Todo",
     },
     units: {
       tin: "lata",
@@ -3515,6 +3517,7 @@ export const translationsExtended = {
       unknown: "Inconnu",
       selectPlaceholder: "Sélectionner une option...",
       searchPlaceholder: "Rechercher...",
+      clearAll: "Tout Effacer",
     },
     units: {
       tin: "boîte",
@@ -4384,6 +4387,7 @@ export const translationsExtended = {
       unknown: "Unbekannt",
       selectPlaceholder: "Option wählen...",
       searchPlaceholder: "Suchen...",
+      clearAll: "Alle Löschen",
     },
     units: {
       tin: "Dose",
