@@ -96,7 +96,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
               className="mb-0"
             />
-            <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
+            <InfoTooltip text={t("collectionInsights.summaryTooltip")} />
           </div>
           <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
         </div>
