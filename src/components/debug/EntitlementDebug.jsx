@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isLegacyPremium, isFoundingMember } from '@/components/utils/premiumAccess';
-import { ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { downloadMissingKeysReport, clearMissingKeys } from '@/components/i18n/missingKeyRegistry';
 
 // Detect dev mode using Vite's import.meta.env (browser-safe)
 function isDevMode() {
@@ -86,6 +87,16 @@ export default function EntitlementDebug() {
     }
   };
 
+  const handleDownloadI18nReport = () => {
+    downloadMissingKeysReport();
+    toast.success('i18n report downloaded');
+  };
+
+  const handleClearI18nReport = () => {
+    clearMissingKeys();
+    toast.success('i18n report cleared');
+  };
+
   return (
     <div className="fixed bottom-4 right-4 max-w-xs bg-black/95 text-white/80 text-xs p-3 rounded-lg border border-yellow-600/50 font-mono z-40 shadow-lg">
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -94,6 +105,13 @@ export default function EntitlementDebug() {
           {!isDevMode() && <span className="text-blue-400 text-[10px]">(Admin)</span>}
         </div>
         <div className="flex gap-1">
+          <button
+            onClick={handleDownloadI18nReport}
+            className="hover:bg-white/10 p-1 rounded transition-colors"
+            title="Download i18n report"
+          >
+            <Download className="w-3 h-3 text-white/60" />
+          </button>
           <button
             onClick={handleCopySnapshot}
             className="hover:bg-white/10 p-1 rounded transition-colors"
