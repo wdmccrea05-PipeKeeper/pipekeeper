@@ -57,6 +57,9 @@ function buildLocale(lang) {
     deepMerge(base, help);
   }
 
+  // GENERATED LAST: wins over all previous sources
+  deepMerge(base, normalizeLocale(translationsGenerated?.[lang]));
+
   return base;
 }
 
