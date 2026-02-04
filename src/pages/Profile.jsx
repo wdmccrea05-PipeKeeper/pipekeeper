@@ -242,10 +242,10 @@ export default function ProfilePage() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       setFormData({ ...formData, avatar_url: file_url });
-      toast.success('Avatar uploaded successfully');
+      toast.success(t("profile.avatarUploadedSuccessfully"));
     } catch (err) {
       console.error('Error uploading avatar:', err);
-      toast.error('Failed to upload image. Please try again.');
+      toast.error(t("profile.failedToUploadImage"));
     } finally {
       setUploadingAvatar(false);
       setImageToCrop(null);
@@ -1120,17 +1120,17 @@ export default function ProfilePage() {
         >
           <Card className="bg-white/95 border-rose-200">
             <CardHeader>
-              <CardTitle className="text-rose-700">Delete Account</CardTitle>
+              <CardTitle className="text-rose-700">{t("profile.deleteAccount")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-stone-600">
-                This will permanently remove your PipeKeeper content (pipes, blends, logs, messages, comments).
+                {t("profile.permanentlyRemovePipeKeeperContent")}
               </p>
               <Button
                 variant="destructive"
                 onClick={() => setDeleteOpen(true)}
               >
-                Delete My Account
+                {t("profile.deleteMyAccount")}
               </Button>
             </CardContent>
           </Card>
@@ -1147,11 +1147,11 @@ export default function ProfilePage() {
             <CardContent className="p-4">
               <div className="flex flex-wrap items-center justify-center gap-6">
                 <a href={createPageUrl('TermsOfService')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
-                  Terms of Service
+                  {t("profile.termsOfService")}
                 </a>
                 <span className="text-stone-300">•</span>
                 <a href={createPageUrl('PrivacyPolicy')} className="text-sm text-stone-600 hover:text-stone-900 transition-colors">
-                  Privacy Policy
+                  {t("profile.privacyPolicy")}
                 </a>
               </div>
             </CardContent>
@@ -1162,9 +1162,9 @@ export default function ProfilePage() {
         <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm account deletion</AlertDialogTitle>
+            <AlertDialogTitle>{t("profile.confirmAccountDeletion")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Type <strong>DELETE</strong> to confirm. This cannot be undone.
+              {t("profile.typeDeleteToConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="Type DELETE" />
@@ -1175,7 +1175,7 @@ export default function ProfilePage() {
               className="bg-rose-600 hover:bg-rose-700"
               onClick={handleDeleteAccount}
             >
-              Permanently Delete
+              {t("profile.permanentlyDelete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1184,9 +1184,9 @@ export default function ProfilePage() {
         <AlertDialog open={deleteAIOpen} onOpenChange={setDeleteAIOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete AI History</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will delete all old AI-generated versions (pairings, optimizations, schedules). Current active versions will be kept. This cannot be undone.
+            <AlertDialogTitle>{t("profile.deleteAIHistory")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("profile.deleteAllOldAIVersions")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1214,13 +1214,13 @@ export default function ProfilePage() {
 
                   queryClient.invalidateQueries();
                   setDeleteAIOpen(false);
-                  toast.success('AI history cleared successfully');
+                  toast.success(t("profile.aiHistoryClearedSuccessfully"));
                 } catch (err) {
                   toast.error('Error: ' + err.message);
                 }
               }}
             >
-              Delete History
+              {t("profile.deleteHistory")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
