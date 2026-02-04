@@ -95,16 +95,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Smoking session duration</span>
+                  <span>{t("onboarding.profileItem4")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                  <span>Clenching style</span>
+                  <span>{t("onboarding.profileItem5")}</span>
                 </li>
               </ul>
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  💡 Your profile influences all AI recommendations with highest priority
+                  {t("onboarding.profileTip")}
                 </p>
               </div>
             </CardContent>
@@ -113,8 +113,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
-      title: "Recommendation Priority",
-      description: "How PipeKeeper ranks tobacco pairings",
+      title: t("onboarding.priorityTitle"),
+      description: t("onboarding.priorityDescription"),
       icon: Star,
       content: (
         <div className="space-y-4">
@@ -124,48 +124,46 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 <div className="flex items-start gap-3">
                    <Badge className="bg-amber-600 text-white shrink-0">1</Badge>
                    <div>
-                     <h4 className="font-semibold">Your Profile Preferences</h4>
+                     <h4 className="font-semibold">{t("onboarding.priorityProfileTitle")}</h4>
                      <p className="text-sm text-[#E0D8C8]/70">
-                       Highest priority. Recommendations favor your preferred blend types and strengths.
+                       {t("onboarding.priorityProfileDesc")}
                      </p>
                    </div>
                  </div>
                  <div className="flex items-start gap-3">
                    <Badge className="bg-amber-500 text-white shrink-0">2</Badge>
                    <div>
-                     <h4 className="font-semibold">Pipe Focus</h4>
+                     <h4 className="font-semibold">{t("onboarding.priorityPipeFocusTitle")}</h4>
                      <p className="text-sm text-[#E0D8C8]/70">
-                       If you designate a pipe for specific blends (e.g., "English", "Aromatic"), 
-                       matches are heavily prioritized.
+                       {t("onboarding.priorityPipeFocusDesc")}
                      </p>
                    </div>
                  </div>
                  <div className="flex items-start gap-3">
                    <Badge className="bg-slate-500 text-white shrink-0">3</Badge>
                    <div>
-                     <h4 className="font-semibold">Pipe Characteristics</h4>
+                     <h4 className="font-semibold">{t("onboarding.priorityPipeCharsTitle")}</h4>
                      <p className="text-sm text-[#E0D8C8]/70">
-                       Bowl size, shape, material, and chamber volume determine which blends smoke best.
+                       {t("onboarding.priorityPipeCharsDesc")}
                      </p>
                    </div>
                  </div>
                  <div className="flex items-start gap-3">
                    <Badge className="bg-slate-400 text-white shrink-0">4</Badge>
                    <div>
-                     <h4 className="font-semibold">Blend Characteristics</h4>
+                     <h4 className="font-semibold">{t("onboarding.priorityBlendCharsTitle")}</h4>
                      <p className="text-sm text-[#E0D8C8]/70">
-                       Cut, strength, and flavor profile of the tobacco.
+                       {t("onboarding.priorityBlendCharsDesc")}
                      </p>
                    </div>
                  </div>
                </div>
                <div className="mt-6 p-4 rounded-lg border border-[#E0D8C8]/15 bg-[#1A2B3A]/50">
                  <p className="text-sm font-medium mb-2">
-                   ✨ Personalization in Action
+                   {t("onboarding.personalizationTitle")}
                  </p>
                  <p className="text-xs text-[#E0D8C8]/70">
-                   A pipe with "English" focus + your preference for English blends = 
-                   maximum boost (+3.5 points). Scores are saved and only update when you request.
+                   {t("onboarding.personalizationDesc")}
                  </p>
                </div>
             </CardContent>
@@ -174,8 +172,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
-      title: "Get Help When You Need It",
-      description: "Comprehensive guides and support resources",
+      title: t("onboarding.helpTitle"),
+      description: t("onboarding.helpDescription"),
       icon: HelpCircle,
       content: (
         <div className="space-y-4">
@@ -187,38 +185,38 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                     <HelpCircle className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold mb-1">Help Section</h4>
+                    <h4 className="font-semibold mb-1">{t("onboarding.helpSectionTitle")}</h4>
                     <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                      Access comprehensive help resources from the main navigation menu
+                      {t("onboarding.helpSectionDesc")}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3 ml-13 pl-4 border-l-2 border-[#E0D8C8]/20">
                   <div>
-                    <h5 className="font-medium text-sm mb-1">FAQ</h5>
+                    <h5 className="font-medium text-sm mb-1">{t("onboarding.faqTitle")}</h5>
                     <p className="text-xs text-[#E0D8C8]/70">
-                      Quick answers to common questions about features, subscriptions, and functionality
+                      {t("onboarding.faqDesc")}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-medium text-sm mb-1">How-To Guides</h5>
+                    <h5 className="font-medium text-sm mb-1">{t("onboarding.howToTitle")}</h5>
                     <p className="text-xs text-[#E0D8C8]/70">
-                      Step-by-step instructions for using AI tools, managing inventory, analyzing geometry from photos, and more
+                      {t("onboarding.howToDesc")}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-medium text-sm mb-1">Troubleshooting</h5>
+                    <h5 className="font-medium text-sm mb-1">{t("onboarding.troubleshootingTitle")}</h5>
                     <p className="text-xs text-[#E0D8C8]/70">
-                      Solutions for common issues with AI features, inventory updates, search, and data sync
+                      {t("onboarding.troubleshootingDesc")}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-blue-800">
-                    💡 Tip: Click "Help" in the navigation menu anytime to access these resources
-                  </p>
+                    {t("onboarding.helpTip")}
+                    </p>
                 </div>
               </div>
             </CardContent>
@@ -227,8 +225,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
-      title: "Key Features",
-      description: "Everything you can do with PipeKeeper",
+      title: t("onboarding.featuresTitle"),
+      description: t("onboarding.featuresDescription"),
       icon: Sparkles,
       content: (
         <div className="space-y-3">
@@ -237,9 +235,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Camera className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Photo Identification & Geometry Analysis</h4>
+                   <h4 className="font-semibold">{t("onboarding.feature1Title")}</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Upload photos to identify pipes and analyze geometry (shape, bowl style, measurements)
+                     {t("onboarding.feature1Desc")}
                    </p>
                  </div>
                </div>
@@ -251,9 +249,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Search className="w-6 h-6 text-emerald-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Market Valuation & Verified Specs</h4>
+                   <h4 className="font-semibold">{t("onboarding.feature2Title")}</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     AI-powered price lookups and manufacturer specification searches
+                     {t("onboarding.feature2Desc")}
                    </p>
                  </div>
                </div>
@@ -265,9 +263,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Star className="w-6 h-6 text-violet-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Smart Tobacco Pairing</h4>
+                   <h4 className="font-semibold">{t("onboarding.feature3Title")}</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     AI matches pipes with tobacco based on geometry, focus, and your preferences
+                     {t("onboarding.feature3Desc")}
                    </p>
                  </div>
                </div>
@@ -279,9 +277,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Sparkles className="w-6 h-6 text-blue-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Collection Optimization</h4>
+                   <h4 className="font-semibold">{t("onboarding.feature4Title")}</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Analyze gaps, get specialization recommendations, and plan your next purchase
+                     {t("onboarding.feature4Desc")}
                    </p>
                  </div>
                </div>
@@ -293,9 +291,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                <div className="flex items-start gap-3">
                  <Leaf className="w-6 h-6 text-purple-400 shrink-0 mt-1" />
                  <div>
-                   <h4 className="font-semibold">Inventory & Cellar Management</h4>
+                   <h4 className="font-semibold">{t("onboarding.feature5Title")}</h4>
                    <p className="text-sm text-[#E0D8C8]/70">
-                     Track containers, aging logs, and manage tobacco inventory with Quick Edit mode
+                     {t("onboarding.feature5Desc")}
                    </p>
                  </div>
                </div>
@@ -305,8 +303,8 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       )
     },
     {
-      title: "Ready to Start",
-      description: "Begin building your collection",
+      title: t("onboarding.readyTitle"),
+      description: t("onboarding.readyDescription"),
       icon: Check,
       content: (
         <div className="space-y-6 text-center">
@@ -314,10 +312,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
             <Check className="w-10 h-10 text-amber-700" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold mb-2">You're All Set!</h3>
+            <h3 className="text-2xl font-bold mb-2">{t("onboarding.allSetTitle")}</h3>
              <p className="text-[#E0D8C8]/70">
-               Start by adding your first pipe or tobacco blend. 
-               Visit your Profile page to set your smoking preferences.
+               {t("onboarding.allSetDesc")}
              </p>
           </div>
           <div className="grid gap-3 max-w-md mx-auto">
@@ -325,7 +322,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                className="w-full justify-between group"
                onClick={() => { onComplete(); navigate(createPageUrl('Profile')); }}
              >
-              <span>Set Up Profile First</span>
+              <span>{t("onboarding.setupProfile")}</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
@@ -333,7 +330,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
               className="w-full justify-between group"
               onClick={() => { onComplete(); navigate(createPageUrl('Pipes')); }}
             >
-              <span>Add Pipes</span>
+              <span>{t("onboarding.addPipes")}</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
@@ -341,7 +338,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
               className="w-full justify-between group"
               onClick={() => { onComplete(); navigate(createPageUrl('Tobacco')); }}
             >
-              <span>Add Tobacco</span>
+              <span>{t("onboarding.addTobacco")}</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -397,7 +394,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   onClick={onSkip}
                   className="text-[#E0D8C8]/60 hover:text-[#E0D8C8]"
                 >
-                  Skip <X className="w-4 h-4 ml-1" />
+                  {t("onboarding.skip")} <X className="w-4 h-4 ml-1" />
                 </Button>
               </div>
               <CardTitle className="text-xl sm:text-2xl">{currentStepData.title}</CardTitle>
@@ -427,7 +424,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                 className="sm:size-default"
               >
                 <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Back</span>
+                <span className="hidden sm:inline">{t("common.back")}</span>
               </Button>
               <div className="text-xs sm:text-sm text-[#E0D8C8]/60">
                 {currentStep + 1}/{steps.length}
@@ -438,13 +435,13 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
               >
                 {currentStep === steps.length - 1 ? (
                   <>
-                    <span className="hidden sm:inline">Get Started</span>
-                    <span className="sm:hidden">Start</span>
+                    <span className="hidden sm:inline">{t("onboarding.getStarted")}</span>
+                    <span className="sm:hidden">{t("onboarding.start")}</span>
                     <Check className="w-4 h-4 sm:ml-2" />
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">Next</span>
+                    <span className="hidden sm:inline">{t("common.next")}</span>
                     <ArrowRight className="w-4 h-4 sm:ml-2" />
                   </>
                 )}
