@@ -133,19 +133,21 @@ export default function HomePage() {
     staleTime: 10000,
   });
 
-  const { data: pipes = [], isLoading: pipesLoading, refetch: refetchPipes } = useQuery({
+  const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
+        console.log('[Home] Loading pipes for:', user?.email);
         const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 10000);
+        console.log('[Home] Pipes loaded:', result?.length);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err);
-        return [];
+        throw err;
       }
     },
     enabled: !!user?.email,
-    retry: 1,
+    retry: 2,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
