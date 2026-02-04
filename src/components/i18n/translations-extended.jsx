@@ -3387,10 +3387,12 @@ export const translationsExtended = {
       quickAccess: "Schnellzugriff",
       syncing: "Synchronisierung läuft…",
       goHome: "Zur Startseite",
+      following: "Abonniert",
     },
     auth: {
       login: "Anmelden",
       loginPrompt: "Bitte melden Sie sich an, um fortzufahren",
+      loginRequired: "Anmeldung erforderlich",
     },
     error: {
       pageNotFound: "Seite Nicht Gefunden",
@@ -4024,6 +4026,8 @@ export const translationsExtended = {
       displayName: "Anzeigename",
       bio: "Biografie",
       commentsLabel: "Kommentare",
+      commentsEnabled: "Aktiviert",
+      commentsDisabled: "Deaktiviert",
       editProfileSettings: "Profileinstellungen Bearbeiten",
       profileCurrentlyPrivate: "Ihr Profil ist derzeit privat. Aktivieren Sie die öffentliche Sichtbarkeit, um sich mit anderen Benutzern zu verbinden.",
       makeProfilePublic: "Profil Öffentlich Machen",
@@ -4092,6 +4096,15 @@ export const translationsExtended = {
       saving: "Speichern...",
       note: "Notiz",
       refresh: "Aktualisieren",
+      unknown: "Unbekannt",
+    },
+    units: {
+      tin: "Dose",
+      tinPlural: "Dosen",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Alle Rechte vorbehalten.",
     },
     helpCenter: {
       helpCenter: "Hilfezentrum",
@@ -4146,10 +4159,12 @@ export const translationsExtended = {
       quickAccess: "Accesso Rapido",
       syncing: "Sincronizzazione…",
       goHome: "Vai a Home",
+      following: "Seguiti",
     },
     auth: {
       login: "Accedi",
       loginPrompt: "Accedi per continuare",
+      loginRequired: "Accesso richiesto",
     },
     error: {
       pageNotFound: "Pagina Non Trovata",
