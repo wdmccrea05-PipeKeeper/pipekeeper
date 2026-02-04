@@ -256,7 +256,7 @@ export default function ProfilePage() {
     if (formData.preferred_blend_types.includes(type)) {
       setFormData({
         ...formData,
-        preferred_blend_types: formData.preferred_blend_types.filter(t => t !== type)
+        preferred_blend_types: formData.preferred_blend_types.filter(bt => bt !== type)
       });
     } else {
       setFormData({
@@ -270,7 +270,7 @@ export default function ProfilePage() {
     if (formData.preferred_shapes.includes(shape)) {
       setFormData({
         ...formData,
-        preferred_shapes: formData.preferred_shapes.filter(s => s !== shape)
+        preferred_shapes: formData.preferred_shapes.filter(sh => sh !== shape)
       });
     } else {
       setFormData({

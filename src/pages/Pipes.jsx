@@ -234,7 +234,7 @@ export default function PipesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SHAPES.map(s => <SelectItem key={s} value={s}>{s.startsWith('pipes.') ? t(s) : s}</SelectItem>)}
+                {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape.startsWith('pipes.') ? t(shape) : shape}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
@@ -242,7 +242,7 @@ export default function PipesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MATERIALS.map(m => <SelectItem key={m} value={m}>{m.startsWith('pipes.') ? t(m) : m}</SelectItem>)}
+                {MATERIALS.map(material => <SelectItem key={material} value={material}>{material.startsWith('pipes.') ? t(material) : material}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
