@@ -5415,7 +5415,8 @@ export const translationsExtended = {
     },
   }},
   pl: {
-    nav: {
+    common: {
+      nav: {
       home: "Strona Główna",
       pipes: "Fajki",
       tobacco: "Tytoń",
