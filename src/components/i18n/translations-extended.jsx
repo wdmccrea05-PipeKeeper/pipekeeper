@@ -5412,9 +5412,9 @@ export const translationsExtended = {
       agingReport: "Rijping Rapport",
       cellaredStartDate: "Opslag Startdatum",
       cellaredEndDate: "Opslag Einddatum",
-    }
+    },
   }},
-  pl: { common: {
+  pl: {
     nav: {
       home: "Strona Główna",
       pipes: "Fajki",
