@@ -829,6 +829,52 @@ export const translationsComplete = {
     }
   },
   'zh-Hans': {
+    collectionInsights: {
+      summaryTooltip: "本部分根据您输入的数据总结了您的收藏中的模式和总计。"
+    },
+    smokingLog: {
+      totalBowls: "{{total}} 个碗总计",
+      breakInBowls: "{{breakIn}} 磨合",
+      totalBreakIn: "{{total}} 磨合",
+      title: "使用日志",
+      addSession: "添加会话"
+    },
+    blendTypes: {
+      american: "美式",
+      aromatic: "香气",
+      balkan: "巴尔干",
+      burley: "伯利烟叶",
+      burleyBased: "基于伯利烟叶",
+      cavendish: "卡文迪什",
+      codgerBlend: "Codger混合",
+      darkFiredKentucky: "深色烟熏肯塔基",
+      english: "英式",
+      englishAromatic: "英式香气",
+      englishBalkan: "英式巴尔干",
+      fullEnglishOriental: "完整英式/东方",
+      kentucky: "肯塔基",
+      lakeland: "湖区",
+      latakiaBlend: "拉塔基亚混合",
+      navyFlake: "Navy烟片",
+      orientalTurkish: "东方/土耳其",
+      other: "其他",
+      perique: "佩里克",
+      shag: "细烟丝",
+      virginia: "弗吉尼亚",
+      virginiaburley: "弗吉尼亚/伯利",
+      virginiaoriental: "弗吉尼亚/东方",
+      virginiaperique: "弗吉尼亚/佩里克"
+    },
+    aiTools: {
+      outOfDate: "自上次优化以来，您的收藏已更改。重新生成以获取更新的建议。",
+      regenerate: "重新生成",
+      undo: "撤销",
+      notNow: "稍后",
+      undoLastChange: "撤销上一步更改"
+    },
+    tobaccoPage: {
+      exportCSV: "导出CSV"
+    },
     pipes: { search: '搜索', filter: '筛选', shape: '形状', material: '材料', allShapes: '所有形状', allMaterials: '所有材料' },
     tobacco: { allTypes: '所有类型', allStrengths: '所有强度', search: '搜索' },
     common: { loading: '加载中...', refresh: '刷新', cancel: '取消', save: '保存', delete: '删除', close: '关闭', unknown: '未知', of: '的' },
