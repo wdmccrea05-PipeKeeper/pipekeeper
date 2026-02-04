@@ -363,8 +363,9 @@ export const helpContentTranslations = {
           { id: "sync-issues", q: "Mijn gegevens worden niet gesynchroniseerd", path: "Profiel → Vernieuwen / Afmelden en aanmelden", a: "Probeer uw browser te vernieuwen of u af te melden en opnieuw aan te melden. Uw verzameling wordt automatisch gesynchroniseerd met de cloud wanneer u wijzigingen maakt." }
         ]
       }
-    },
-    troubleshooting: {
+    }
+  },
+  troubleshooting: {
       pageTitle: "Probleemoplossing",
       pageSubtitle: "Veelgestelde problemen en oplossingen",
       navFAQ: "Veelgestelde vragen",

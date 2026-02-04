@@ -1,4 +1,3 @@
-
 /**
  * Complete Help Content for PL, JA, ZH-HANS
  * Full parity with EN: 34 FAQ + How-To + Troubleshooting per locale
@@ -106,8 +105,9 @@ export const helpContentFinal = {
           { id: "sync-issues", q: "Moje dane się nie synchronizują", path: "Profil → Odśwież / Wyloguj się i zaloguj", a: "Spróbuj odświeżyć przeglądarkę lub wyloguj się i zaloguj ponownie. Twoja kolekcja automatycznie synchronizuje się z chmurą po wprowadzeniu zmian." }
         ]
       }
-    },
-    troubleshooting: {
+    }
+  },
+  troubleshooting: {
       pageTitle: "Rozwiązywanie problemów",
       pageSubtitle: "Typowe problemy i rozwiązania",
       navFAQ: "Często zadawane pytania",
