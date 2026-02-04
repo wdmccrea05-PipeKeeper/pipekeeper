@@ -164,8 +164,8 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b bg-stone-50">
           <div className="flex-1">
-            <div className="text-sm font-semibold text-stone-800">{t("matching.recommendationsFor")}</div>
-            <div className="text-xs text-stone-600">{pipe.name}</div>
+            <div className="text-sm font-semibold text-[#E0D8C8]">{t("matching.recommendationsFor")}</div>
+            <div className="text-xs text-[#E0D8C8]/60">{pipe.name}</div>
           </div>
 
           <div className="flex gap-2 items-start">
@@ -174,7 +174,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
               size="sm"
               onClick={regenPairings}
               disabled={regenerating}
-              className="shrink-0 text-stone-800"
+              className="shrink-0 text-[#E0D8C8]"
             >
               {regenerating ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -186,7 +186,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           </div>
 
           <div className="w-full md:w-64">
-            <div className="text-xs font-semibold text-stone-600 mb-1">{t("matching.bowlVariant")}</div>
+            <div className="text-xs font-semibold text-[#E0D8C8]/70 mb-1">{t("matching.bowlVariant")}</div>
             <Select
              value={activeBowlVariantId || ""}
              onValueChange={setActiveBowlVariantId}
@@ -208,7 +208,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
         <div className="p-4 space-y-4">
           <div>
-            <div className="text-xs font-bold text-stone-600 mb-2">{t("matching.top3Matches")}</div>
+            <div className="text-xs font-bold text-[#E0D8C8]/70 mb-2">{t("matching.top3Matches")}</div>
             {top3.length ? (
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
@@ -224,7 +224,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           </div>
 
           <div className="pt-3 border-t">
-            <div className="text-xs font-semibold text-stone-600 mb-2">{t("matching.checkAnyBlend")}</div>
+            <div className="text-xs font-semibold text-[#E0D8C8]/70 mb-2">{t("matching.checkAnyBlend")}</div>
             <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder={t("matching.selectBlend")} />

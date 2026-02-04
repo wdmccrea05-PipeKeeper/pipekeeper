@@ -187,10 +187,10 @@ export default function BreakInSchedule({ pipe, blends }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Break-In Schedule Out of Date
+              {t("breakInSchedule.outOfDate")}
             </DialogTitle>
             <DialogDescription>
-              Pipe details, blends, or preferences have changed. Regenerate schedule now? You can undo this action.
+              {t("breakInSchedule.outOfDateDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -198,7 +198,7 @@ export default function BreakInSchedule({ pipe, blends }) {
               setShowRegenDialog(false);
               setDismissedFingerprint(currentFingerprint);
             }}>
-              Not Now
+              {t("breakInSchedule.notNow")}
             </Button>
             {pipe?.break_in_schedule_history?.[0] && (
               <Button
@@ -207,7 +207,7 @@ export default function BreakInSchedule({ pipe, blends }) {
                 disabled={undoScheduleMutation.isPending}
               >
                 <Undo className="w-4 h-4 mr-2" />
-                Undo Last Change
+                {t("breakInSchedule.undoLast")}
               </Button>
             )}
             <Button
@@ -221,10 +221,10 @@ export default function BreakInSchedule({ pipe, blends }) {
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Regenerating...
+                  {t("breakInSchedule.regenerating")}
                 </>
               ) : (
-                'Regenerate'
+                t("optimizer.regenerate")
               )}
             </Button>
           </DialogFooter>
