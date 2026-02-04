@@ -4,8 +4,59 @@
  */
 
 export const translationsSupplement = {
+  // English (EN)
+  en: {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "Initial Analysis",
+        additionalInfoNeeded: "Additional Information Needed",
+        yourAnswer: "Your answer...",
+        analyzing: "Analyzing...",
+        continueIdentification: "Continue Identification",
+        skipIdentifyNow: "Skip & Identify Now",
+        uploadPhotos: "Upload Photos",
+        takePhoto: "Take Photo",
+        optionalHints: "Optional: Provide hints to improve identification",
+        nameDesc: "Name/Description",
+        brandMaker: "Brand/Maker",
+        shape: "Shape",
+        stampings: "Stampings",
+        identifying: "Identifying...",
+        identifyPipe: "Identify Pipe",
+        unknownMaker: "Unknown Maker",
+        add: "Add to Collection",
+        adding: "Adding...",
+        tryAnother: "Try Another"
+      }
+    },
+    common: {}
+  },
+
   // Italian (IT)
   it: {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "Analisi Iniziale",
+        additionalInfoNeeded: "Informazioni Aggiuntive Necessarie",
+        yourAnswer: "La tua risposta...",
+        analyzing: "Analisi in corso...",
+        continueIdentification: "Continua Identificazione",
+        skipIdentifyNow: "Salta e Identifica Ora",
+        uploadPhotos: "Carica Foto",
+        takePhoto: "Scatta Foto",
+        optionalHints: "Facoltativo: fornisci suggerimenti per migliorare l'identificazione",
+        nameDesc: "Nome/Descrizione",
+        brandMaker: "Marca/Produttore",
+        shape: "Forma",
+        stampings: "Timbri",
+        identifying: "Identificazione in corso...",
+        identifyPipe: "Identifica Pipa",
+        unknownMaker: "Produttore Sconosciuto",
+        add: "Aggiungi alla Collezione",
+        adding: "Aggiunta in corso...",
+        tryAnother: "Prova Un'Altra"
+      }
+    },
     pipesExtended: {
       unknownMaker: "Produttore sconosciuto",
       searchForPipe: "Cerca Pipa",
