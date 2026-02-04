@@ -4975,7 +4975,8 @@ export const translationsExtended = {
     },
   }},
   nl: {
-    nav: {
+    common: {
+      nav: {
       home: "Thuis",
       pipes: "Pijpen",
       tobacco: "Tabak",
