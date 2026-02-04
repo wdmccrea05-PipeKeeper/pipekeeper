@@ -382,7 +382,6 @@ export const helpContentTranslations = {
       }
     }
   }
-  }
 };
 
 export { helpContentTranslations };
