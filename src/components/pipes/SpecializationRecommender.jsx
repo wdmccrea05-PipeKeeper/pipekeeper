@@ -62,8 +62,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
     return (
       <div className="w-full">
         <UpgradePrompt 
-          featureName="AI Pipe Specialization"
-          description="Get AI-powered recommendations for dedicating pipes to specific tobacco types with Pro or legacy Premium access."
+          featureName={t("pipeDetailTabs.pipeSpecialization")}
+          description={t("specializationRec.upgradeDesc")}
         />
       </div>
     );

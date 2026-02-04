@@ -49,9 +49,9 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
         cost: '',
         performed_by: 'Self',
       });
-      toast.success('Maintenance log added');
+      toast.success(t("maintenanceLog.logAdded"));
     },
-    onError: () => toast.error('Failed to add log'),
+    onError: () => toast.error(t("maintenanceLog.logAddFailed")),
   });
 
   const deleteLogMutation = useMutation({
@@ -60,9 +60,9 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-logs', pipeId] });
-      toast.success('Log deleted');
+      toast.success(t("maintenanceLog.logDeleted"));
     },
-    onError: () => toast.error('Failed to delete log'),
+    onError: () => toast.error(t("maintenanceLog.logDeleteFailed")),
   });
 
   const handleSubmit = (e) => {
@@ -75,13 +75,13 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
   };
 
   const maintenanceTypes = {
-    cleaning: 'Cleaning',
-    restoration: 'Restoration',
-    repair: 'Repair',
-    reaming: 'Reaming',
-    polishing: 'Polishing',
-    stem_work: 'Stem Work',
-    other: 'Other',
+    cleaning: t("maintenanceLog.cleaning"),
+    restoration: t("maintenanceLog.restoration"),
+    repair: t("maintenanceLog.repair"),
+    reaming: t("maintenanceLog.reaming"),
+    polishing: t("maintenanceLog.polishing"),
+    stem_work: t("maintenanceLog.stemWork"),
+    other: t("maintenanceLog.other"),
   };
 
   return (
