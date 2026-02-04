@@ -7,42 +7,47 @@
 
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 import { logMissingKey } from './missingKeyHandler';
+import { enforceTranslation } from './enforceTranslation';
 
 /**
- * Safe wrapper around useTranslation that never throws
- * Returns English fallback if hook fails
+ * Safe wrapper around useTranslation + Enforcement
+ * Never throws, logs violations, renders 🚫 placeholders
  */
 export function useTranslation() {
   try {
     const result = useI18nTranslation();
     
-    // Defensive wrapper around t() function
+    // Defensive wrapper around t() function with enforcement
     const safeT = (key, fallback) => {
       try {
         const translated = result.t(key);
         
-        // If translation returns the key itself (not found), use fallback and log
-        if (typeof translated === 'string' && translated === key && fallback) {
-          logMissingKey(key, result.i18n.language);
-          return fallback;
+        // ENFORCE: Check for violations
+        const componentInfo = `useTranslation(${key})`;
+        const enforced = enforceTranslation(translated, translated, result.i18n.language, componentInfo);
+        
+        // If enforcement returned a placeholder, return it
+        if (enforced.includes('🚫')) {
+          return enforced;
         }
         
-        // If translation returns the key itself (not found) with no fallback, log
-        if (typeof translated === 'string' && translated === key && !fallback) {
+        // If translation returns the key itself (not found), log and use fallback
+        if (typeof translated === 'string' && translated === key) {
           logMissingKey(key, result.i18n.language);
-          return key;
+          if (fallback) return fallback;
+          return `🚫 ${key}`;
         }
         
         // If translation returns a non-string, use fallback or key
         if (typeof translated !== 'string') {
           console.warn(`[safeTranslation] Translation for "${key}" returned non-string:`, translated);
-          return fallback || key;
+          return fallback || `🚫 NON_STRING`;
         }
         
         return translated;
       } catch (error) {
         console.error(`[safeTranslation] Error translating "${key}":`, error);
-        return fallback || key;
+        return `🚫 ERROR`;
       }
     };
     
@@ -57,7 +62,7 @@ export function useTranslation() {
     return {
       t: (key, fallback) => {
         console.warn(`[safeTranslation] Using fallback for key "${key}"`);
-        return fallback || key;
+        return fallback || `🚫 ${key}`;
       },
       i18n: { language: 'en' },
       ready: false,
