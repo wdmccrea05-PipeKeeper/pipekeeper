@@ -641,6 +641,52 @@ export const translationsComplete = {
     }
   },
   pl: {
+    collectionInsights: {
+      summaryTooltip: "Ta sekcja podsumowuje wzorce i totały w Twojej kolekcji na podstawie wprowadzonych danych."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} łącznych misek",
+      breakInBowls: "{{breakIn}} przełamywanie",
+      totalBreakIn: "{{total}} przełamywanie",
+      title: "Dziennik Użycia",
+      addSession: "Dodaj Sesję"
+    },
+    blendTypes: {
+      american: "Amerykański",
+      aromatic: "Aromatyczny",
+      balkan: "Bałkański",
+      burley: "Burley",
+      burleyBased: "Na bazie Burley",
+      cavendish: "Cavendish",
+      codgerBlend: "Mieszanka Codger",
+      darkFiredKentucky: "Ciemny Wędzony Kentucky",
+      english: "Angielski",
+      englishAromatic: "Angielski Aromatyczny",
+      englishBalkan: "Angielski Bałkański",
+      fullEnglishOriental: "Pełny Angielski/Orientalny",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Mieszanka Latakia",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Orientalny/Turecki",
+      other: "Inne",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Orientalny",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Twoja kolekcja zmieniła się od ostatniej optymalizacji. Regeneruj, aby uzyskać zaktualizowane rekomendacje.",
+      regenerate: "Regeneruj",
+      undo: "Cofnij",
+      notNow: "Nie Teraz",
+      undoLastChange: "Cofnij Ostatnią Zmianę"
+    },
+    tobaccoPage: {
+      exportCSV: "Eksportuj CSV"
+    },
     pipes: { search: 'Szukaj', filter: 'Filtruj', shape: 'Kształt', material: 'Materiał', allShapes: 'Wszystkie kształty', allMaterials: 'Wszystkie materiały' },
     tobacco: { allTypes: 'Wszystkie typy', allStrengths: 'Wszystkie moce', search: 'Szukaj' },
     common: { loading: 'Ładowanie...', refresh: 'Odśwież', cancel: 'Anuluj', save: 'Zapisz', delete: 'Usuń', close: 'Zamknij', unknown: 'Nieznany', of: 'z' },
