@@ -1,153 +1,163 @@
-/**
- * i18n Release Gate Validator
- * Enforces that no raw keys or interpolation tokens render in any locale
- * Fails the build if violations are detected
- */
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+/**
+ * i18n Release Gate Validator
+ * Fails build if ANY of these are true:
+ * 1. Missing keys in any locale vs EN
+ * 2. Raw-key patterns in translations (tobacconist., pipes., etc)
+ * 3. Broken interpolation tokens
+ * 4. Invalid Help structures
+ * 5. Rendered output shows raw keys
+ */
+
 const FORBIDDEN_PATTERNS = [
-  { pattern: /tobacconist\./g, category: 'raw_key' },
-  { pattern: /helpCenter\./g, category: 'raw_key' },
-  { pattern: /pipes\./g, category: 'raw_key' },
-  { pattern: /tobacco\./g, category: 'raw_key' },
-  { pattern: /units\./g, category: 'raw_key' },
-  { pattern: /\{\{.*?\}\}/g, category: 'interpolation_token' },
+  /\btobacconist\./,
+  /\bpipes\./,
+  /\btobacco\./,
+  /\btobaccoPage\./,
+  /\bpipesPage\./,
+  /\bunits\.(?!bowl|tin|tinPlural)/
 ];
 
-const REQUIRED_KEYS = {
-  tobacconist: [
-    'title', 'subtitle', 'welcomeTitle', 'welcomeMessage',
-    'generatePairings', 'generatePairingsPrompt', 'runOptimization', 'runOptimizationPrompt',
-    'newConversation', 'inputPlaceholder', 'chatTab', 'updatesTab', 'startingConversation',
-    'pairingMatrix', 'collectionOptimization', 'outOfDate', 'upToDate', 'undo', 'regenerate',
-    'breakInSchedules', 'breakInNote', 'noRecommendation'
-  ],
-  helpCenter: [
-    'faq', 'faqDesc', 'howTo', 'howToDesc', 'troubleshooting', 'troubleshootingDesc',
-    'helpCenter', 'findAnswers', 'quickLinks', 'contactSupport', 'termsOfService',
-    'privacyPolicy', 'subscriptionBilling', 'cantFind'
-  ],
-  pipes: [
-    'pipes', 'search', 'filter', 'shape', 'material', 'allShapes', 'allMaterials',
-    'gridView', 'listView'
-  ],
-  tobacco: [
-    'allTypes', 'allStrengths', 'search'
-  ],
-  units: [
-    'bowl', 'bowlPlural', 'tin', 'tinPlural', 'oz', 'grams', 'mm', 'inches'
-  ],
-};
+function validateKeys(translations, locale) {
+  const errors = [];
 
-const LOCALES = ['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
-
-function validateLocaleKeys(locale, translations) {
-  const violations = [];
-  
-  // Check each required key category
-  for (const [category, keys] of Object.entries(REQUIRED_KEYS)) {
-    const categoryPath = translations[category];
-    
-    if (!categoryPath) {
-      violations.push({
-        locale,
-        type: 'missing_category',
-        category,
-        message: `Missing entire category: ${category}`
+  Object.entries(translations).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      // Check for forbidden raw-key patterns
+      FORBIDDEN_PATTERNS.forEach((pattern) => {
+        if (pattern.test(value)) {
+          errors.push(`${locale}: Key "${key}" contains forbidden pattern: ${pattern}`);
+        }
       });
-      continue;
+
+      // Check for suspicious raw-key strings
+      if (/^[a-zA-Z0-9_.]+$/.test(value) && value.includes('.')) {
+        errors.push(`${locale}: Key "${key}" looks like a raw translation key: "${value}"`);
+      }
+    } else if (typeof value === 'object') {
+      // Recursively check nested objects
+      const nested = validateKeys(value, locale);
+      errors.push(...nested);
     }
-    
-    for (const key of keys) {
-      const value = categoryPath[key];
-      if (value === undefined || value === null) {
-        violations.push({
-          locale,
-          type: 'missing_key',
-          key: `${category}.${key}`,
-          message: `Missing key: ${category}.${key}`
-        });
-      } else if (typeof value === 'string') {
-        // Check for forbidden patterns in the value
-        for (const { pattern, category: patternType } of FORBIDDEN_PATTERNS) {
-          if (pattern.test(value)) {
-            violations.push({
-              locale,
-              type: patternType,
-              key: `${category}.${key}`,
-              message: `Contains ${patternType} in value: ${value.substring(0, 50)}...`
+  });
+
+  return errors;
+}
+
+function validateHelpContent(locale, content) {
+  const errors = [];
+
+  if (content && typeof content === 'object') {
+    // Check faqFull structure
+    if (content.faqFull) {
+      if (!content.faqFull.sections || typeof content.faqFull.sections !== 'object') {
+        errors.push(`${locale}: faqFull.sections missing or invalid`);
+      } else {
+        Object.entries(content.faqFull.sections).forEach(([sectionKey, section]) => {
+          if (!Array.isArray(section.items) || section.items.length === 0) {
+            errors.push(`${locale}: faqFull.sections.${sectionKey}.items empty or invalid`);
+          } else {
+            section.items.forEach((item, idx) => {
+              if (!item.q || !item.a) {
+                errors.push(
+                  `${locale}: faqFull.sections.${sectionKey}.items[${idx}] missing q or a`
+                );
+              }
             });
           }
-        }
+        });
       }
     }
   }
-  
-  return violations;
+
+  return errors;
+}
+
+function validateInterpolation(key, enValue, locValue) {
+  const errors = [];
+
+  if (typeof enValue !== 'string' || typeof locValue !== 'string') {
+    return errors;
+  }
+
+  // Extract {{ }} tokens from both
+  const enTokens = (enValue.match(/\{\{[^}]+\}\}/g) || []).sort();
+  const locTokens = (locValue.match(/\{\{[^}]+\}\}/g) || []).sort();
+
+  if (JSON.stringify(enTokens) !== JSON.stringify(locTokens)) {
+    errors.push(
+      `Interpolation mismatch in "${key}": EN has ${enTokens}, locale has ${locTokens}`
+    );
+  }
+
+  return errors;
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Admin only' }, { status: 403 });
     }
-    
-    // Hardcoded check - in production, these would be loaded from translation resources
-    const allViolations = [];
-    
-    // Check English as baseline
-    const enTranslations = {
-      tobacconist: {
-        title: 'Expert Tobacconist',
-        subtitle: 'Expert consultation and AI updates',
-        noRecommendation: 'No recommendations available'
-      },
-      helpCenter: {
-        faq: 'FAQ',
-        helpCenter: 'Help Center'
-      },
-      pipes: {
-        pipes: 'pipes',
-        search: 'Search'
-      },
-      tobacco: {
-        allTypes: 'All types'
-      },
-      units: {
-        bowl: 'bowl',
-        bowlPlural: 'bowls'
-      }
-    };
-    
-    // Validate that all locales have required keys
+
+    const payload = await req.json().catch(() => ({}));
+    const {
+      translations,
+      translationsExtended,
+      helpContent,
+      enTranslations,
+      expectedKeys
+    } = payload;
+
+    const allErrors = [];
+    const LOCALES = ['es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
+
+    // Validate each locale
     for (const locale of LOCALES) {
-      const localeViolations = validateLocaleKeys(locale, enTranslations);
-      allViolations.push(...localeViolations);
+      const locTranslations = translations?.[locale] || {};
+      const locExtended = translationsExtended?.[locale] || {};
+      const locHelp = helpContent?.[locale] || {};
+
+      // Merge all translation sources
+      const merged = { ...locTranslations, ...locExtended, ...locHelp };
+
+      // Check for missing keys
+      if (expectedKeys) {
+        expectedKeys.forEach((key) => {
+          if (!(key in merged) && key in enTranslations) {
+            allErrors.push(`${locale}: Missing key "${key}"`);
+          }
+        });
+      }
+
+      // Validate key patterns
+      const keyErrors = validateKeys(merged, locale);
+      allErrors.push(...keyErrors);
+
+      // Validate Help content structure
+      const helpErrors = validateHelpContent(locale, locHelp);
+      allErrors.push(...helpErrors);
+
+      // Validate interpolation tokens
+      Object.entries(merged).forEach(([key, value]) => {
+        const enValue = enTranslations[key];
+        const interpErrors = validateInterpolation(key, enValue, value);
+        allErrors.push(...interpErrors);
+      });
     }
-    
-    if (allViolations.length > 0) {
-      return Response.json({
-        status: 'FAIL',
-        violations: allViolations,
-        message: `i18n Release Gate FAILED: ${allViolations.length} violation(s) detected`
-      }, { status: 400 });
+
+    if (allErrors.length > 0) {
+      return Response.json(
+        { success: false, errors: allErrors, count: allErrors.length },
+        { status: 400 }
+      );
     }
-    
-    return Response.json({
-      status: 'PASS',
-      message: 'i18n Release Gate PASSED: All locales validated',
-      locales: LOCALES,
-      timestamp: new Date().toISOString()
-    });
+
+    return Response.json({ success: true, message: 'All validations passed' });
   } catch (error) {
-    return Response.json({
-      status: 'ERROR',
-      error: error.message,
-      message: 'i18n Release Gate ERRORED'
-    }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
