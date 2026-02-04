@@ -244,6 +244,7 @@ export const helpContentFinal = {
       }
     }
   },
+  ja: {},
   "zh-Hans": {
     faqFull: {
       pageTitle: "PipeKeeper常见问题",
