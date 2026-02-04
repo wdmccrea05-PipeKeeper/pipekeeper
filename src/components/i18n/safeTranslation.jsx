@@ -1,5 +1,6 @@
 import { useTranslation as useI18nextTranslation } from "react-i18next";
 import { enforceTranslation } from "./enforceTranslation";
+import { recordMissingKey } from "./missingKeyRegistry";
 
 /**
  * Safe translation wrapper that:
@@ -36,6 +37,16 @@ export function useTranslation(componentInfo = "unknown") {
 
     // Enforcement MUST be called as: (key, resolvedValue, language, componentInfo)
     const enforced = enforceTranslation(key, translated, i18n?.language, componentInfo);
+
+    // Track missing keys for runtime debugging
+    const looksMissing =
+      translated === key ||
+      translated === "" ||
+      (typeof translated === "string" && translated.includes("{{"));
+
+    if (looksMissing && i18n?.language) {
+      recordMissingKey(i18n.language, key, componentInfo);
+    }
 
     // If returnObjects:true, enforced might be an object/array. Return as-is.
     if (options?.returnObjects) return enforced;

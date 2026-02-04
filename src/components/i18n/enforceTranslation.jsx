@@ -1,8 +1,22 @@
+// src/components/i18n/enforceTranslation.jsx
+const isDebug = () => {
+  try {
+    if (typeof window === "undefined") return false;
+    const url = new URL(window.location.href);
+    return url.searchParams.get("i18nDebug") === "1";
+  } catch {
+    return false;
+  }
+};
+
 function isProbablyKey(value) {
-  return typeof value === "string" && value.includes(".") && !value.includes(" ");
+  if (typeof value !== "string") return false;
+  if (value.length > 100) return false;
+  if (value.includes(".") && !value.includes(" ") && value.length < 60) return true;
+  return false;
 }
 
-export function enforceTranslation(key, resolvedValue, language = "en", component = "unknown") {
+export function enforceTranslation(key, resolvedValue, language, componentInfo) {
   // Guard: if someone passed args reversed (resolvedValue, key)
   if (isProbablyKey(resolvedValue) && !isProbablyKey(key)) {
     const tmp = key;
@@ -10,54 +24,30 @@ export function enforceTranslation(key, resolvedValue, language = "en", componen
     resolvedValue = tmp;
   }
 
-  const isEnglish = language === "en" || language.startsWith("en-");
-  const isProd = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PROD) || false;
+  const debug = isDebug();
+  const isProd = import.meta?.env?.PROD === true;
 
-  const urlParams =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  const debugParam = urlParams.get("i18nDebug") === "1";
-  const debugLocal =
-    typeof localStorage !== "undefined" && localStorage.getItem("i18nDebug") === "1";
-  const debugEnabled = debugParam || debugLocal;
-
-  // If missing, i18next often returns the key itself
-  const looksMissing = 
-    !resolvedValue ||
+  const looksMissing =
+    resolvedValue === undefined ||
+    resolvedValue === null ||
+    resolvedValue === "" ||
     resolvedValue === key ||
-    (typeof resolvedValue === "string" && resolvedValue.includes("🚫")) ||
-    (typeof resolvedValue === "string" && resolvedValue.includes("undefined"));
+    (typeof resolvedValue === "string" && resolvedValue.includes("{{"));
 
-  // In production: fallback to English instead of leaking keys
-  if (isProd) {
-    if (looksMissing) {
-      // Try to get English fallback
-      try {
-        const i18nInstance = typeof window !== "undefined" && window.i18n;
-        if (i18nInstance) {
-          const enFallback = i18nInstance.t(key, { lng: "en" });
-          if (enFallback && enFallback !== key) return enFallback;
-        }
-      } catch (e) {
-        // Ignore fallback errors
-      }
-      return ""; // last resort: blank (better than raw keys)
-    }
-    return resolvedValue;
-  }
-
-  // In dev, show markers only if debug is enabled, AND non-English locale.
-  if (!debugEnabled || isEnglish) {
-    return looksMissing ? key : resolvedValue;
-  }
-
-  if (looksMissing) {
-    console.warn(`[i18n] Missing key: "${key}" in ${language} (${component})`);
+  // In debug: show explicit markers so you can hunt them down.
+  if (debug && looksMissing) {
     return `🚫 ${key}`;
   }
 
-  if (isProbablyKey(resolvedValue)) {
-    console.warn(`[i18n] Key leak: "${resolvedValue}" in ${language} (${component})`);
-    return `🚫 ${resolvedValue}`;
+  // In production: NEVER return empty.  Fall back to key (or English via i18next fallbackLng).
+  // Returning "" is what makes whole sections disappear.
+  if (isProd && looksMissing) {
+    return key; // i18next fallbackLng should resolve if EN exists; otherwise at least visible.
+  }
+
+  // In dev non-debug: avoid key spam if possible, but never blank UI.
+  if (!isProd && looksMissing) {
+    return key;
   }
 
   return resolvedValue;
