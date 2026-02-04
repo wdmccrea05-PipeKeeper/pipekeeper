@@ -4539,9 +4539,9 @@ export const translationsExtended = {
       agingReport: "Rapporto Invecchiamento",
       cellaredStartDate: "Data Inizio Invecchiamento",
       cellaredEndDate: "Data Fine Invecchiamento",
-    }
+    },
   }},
-  "pt-BR": { common: {
+  "pt-BR": {
     nav: {
       home: "Início",
       pipes: "Cachimbos",
