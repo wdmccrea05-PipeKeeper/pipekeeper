@@ -512,7 +512,7 @@ export default function HomePage() {
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title="Refresh"
+                          title={t("common.refresh")}
                         >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
@@ -571,7 +571,7 @@ export default function HomePage() {
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title="Refresh"
+                          title={t("common.refresh")}
                         >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
