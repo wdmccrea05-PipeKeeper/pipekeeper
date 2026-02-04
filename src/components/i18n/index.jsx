@@ -7,6 +7,7 @@ import { translations } from "./translations";
 import { translationsExtended } from "./translations-extended";
 import { translationsComplete } from "./translations-complete";
 import { translationsSupplement } from "./translations-supplement";
+import { translationsGenerated } from "./translations-generated";
 
 import { homeTranslations } from "./homeContent";
 import { helpContentFull } from "./helpContent-full";
