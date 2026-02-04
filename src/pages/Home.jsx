@@ -725,7 +725,7 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate text-sm sm:text-base">{pipe.name}</p>
-                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || pipe.shape || 'Unknown'}</p>
+                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || pipe.shape || t("common.unknown")}</p>
                             </div>
                             {pipe.estimated_value && (
                               <Badge variant="success" className="text-xs sm:text-sm flex-shrink-0">
@@ -775,11 +775,11 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate text-sm sm:text-base">{blend.name}</p>
-                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || blend.blend_type || 'Unknown'}</p>
+                              <p className="text-xs sm:text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || blend.blend_type || t("common.unknown")}</p>
                             </div>
                             {blend.quantity_owned > 0 && (
                               <Badge className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                                {blend.quantity_owned} tin{blend.quantity_owned > 1 ? 's' : ''}
+                                {blend.quantity_owned} {blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}
                               </Badge>
                             )}
                           </div>
