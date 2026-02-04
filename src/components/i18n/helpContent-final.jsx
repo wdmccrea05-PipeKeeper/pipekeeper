@@ -363,7 +363,9 @@ export const helpContentFinal = {
         }
       }
     }
-  }
-};
+    }
+    }
+    }
+    };
 
-export { helpContentFinal };
+    export { helpContentFinal };
