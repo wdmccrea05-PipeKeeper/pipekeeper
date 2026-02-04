@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { translations } from './translations';
 import { translationsExtended } from './translations-extended';
 import { helpContent } from './helpContent';
+import { homeTranslations } from './homeContent';
 
 // Deep merge helper
 function deepMerge(...objects) {
@@ -29,7 +30,8 @@ languages.forEach(lang => {
     translation: deepMerge(
       translations[lang] || {},
       translationsExtended[lang]?.common || {},
-      { helpContent: helpContent[lang] || helpContent.en }
+      { helpContent: helpContent[lang] || helpContent.en },
+      homeTranslations[lang] || homeTranslations.en
     )
   };
 });
