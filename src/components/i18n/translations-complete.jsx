@@ -547,6 +547,52 @@ export const translationsComplete = {
     }
   },
   nl: {
+    collectionInsights: {
+      summaryTooltip: "Deze sectie geeft een samenvatting van patronen en totalen in uw collectie op basis van de gegevens die u hebt ingevoerd."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} totaal kommetjes",
+      breakInBowls: "{{breakIn}} inroken",
+      totalBreakIn: "{{total}} inroken",
+      title: "Gebruikslogboek",
+      addSession: "Sessie Toevoegen"
+    },
+    blendTypes: {
+      american: "Amerikaans",
+      aromatic: "Aromatisch",
+      balkan: "Balkan",
+      burley: "Burley",
+      burleyBased: "Op Burley gebaseerd",
+      cavendish: "Cavendish",
+      codgerBlend: "Codger-mengsel",
+      darkFiredKentucky: "Donker Gerookt Kentucky",
+      english: "Engels",
+      englishAromatic: "Engels Aromatisch",
+      englishBalkan: "Engels Balkan",
+      fullEnglishOriental: "Volledig Engels/Oriëntaals",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Latakia-mengsel",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Oriëntaals/Turks",
+      other: "Overig",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Oriëntaals",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "Uw collectie is gewijzigd sinds de laatste optimalisatie. Regenereer voor bijgewerkte aanbevelingen.",
+      regenerate: "Opnieuw Genereren",
+      undo: "Ongedaan Maken",
+      notNow: "Niet Nu",
+      undoLastChange: "Laatste Wijziging Ongedaan Maken"
+    },
+    tobaccoPage: {
+      exportCSV: "CSV Exporteren"
+    },
     pipes: { search: 'Zoeken', filter: 'Filteren', shape: 'Vorm', material: 'Materiaal', allShapes: 'Alle vormen', allMaterials: 'Alle materialen' },
     tobacco: { allTypes: 'Alle typen', allStrengths: 'Alle sterktes', search: 'Zoeken' },
     common: { loading: 'Bezig met laden...', refresh: 'Vernieuwen', cancel: 'Annuleren', save: 'Opslaan', delete: 'Verwijderen', close: 'Sluiten', unknown: 'Onbekend', of: 'van' },
