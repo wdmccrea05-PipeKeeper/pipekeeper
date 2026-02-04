@@ -379,9 +379,8 @@ export const helpContentTranslations = {
             { id: "no-auto-update", q: "Waarom wordt waarde niet automatisch bijgewerkt?", intro: "AI-waarderingen worden on-demand gegenereerd om tegoed en prestaties te behouden.", points: ["Klik op 'AI-waardering uitvoeren' om schattingen bij te werken", "Automatische geplande vernieuwing kan in toekomstige Pro-updates worden toegevoegd"] }
           ]
         }
-      }
-    }
-  }
-};
+        }
+        }
+        };
 
-export { helpContentTranslations };
+        export { helpContentTranslations };
