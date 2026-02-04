@@ -26,6 +26,11 @@ export default function RotationPlanner({ user }) {
   });
 
   // Calculate last smoked date for each pipe (safe from invalid dates)
+   const getBowlsUsed = (log) => {
+     if (!log) return 0;
+     return log.bowls_used || log.bowls_smoked || 1;
+   };
+
    const pipeRotation = (pipes || []).map(pipe => {
      try {
        const pipeLogs = (logs || []).filter(log => log && log.pipe_id === pipe.id);
