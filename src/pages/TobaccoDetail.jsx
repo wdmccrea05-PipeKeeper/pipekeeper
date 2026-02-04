@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   AlertDialog,
   AlertDialogAction,
