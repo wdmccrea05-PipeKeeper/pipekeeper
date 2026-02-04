@@ -10,8 +10,10 @@ import { toast } from "sonner";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
+import { useTranslation } from "react-i18next";
 
 export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
+  const { t } = useTranslation();
   const [regenerating, setRegenerating] = useState(false);
   const queryClient = useQueryClient();
 
@@ -125,13 +127,13 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
     return (
       <div className="flex items-center justify-center py-10 text-stone-600">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading recommendations...
+        {t("common.loading")}
       </div>
     );
   }
 
   if (!pipe?.id) {
-    return <div className="text-sm text-stone-600">Pipe not available.</div>;
+    return <div className="text-sm text-stone-600">{t("errors.pipeNotAvailable")}</div>;
   }
 
   const normalizedBowlId = (!activeBowlVariantId || activeBowlVariantId === "main") ? null : activeBowlVariantId;
@@ -149,9 +151,9 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
         activePairings,
         skipIfUpToDate: true,
       });
-      toast.success("Pairings regenerated successfully");
+      toast.success(t("matching.regenerateSuccess"));
     } catch (error) {
-      toast.error("Failed to regenerate pairings");
+      toast.error(t("errors.regenerateFailed"));
     } finally {
       setRegenerating(false);
     }
@@ -162,7 +164,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b bg-stone-50">
           <div className="flex-1">
-            <div className="text-sm font-semibold text-stone-800">Recommendations for</div>
+            <div className="text-sm font-semibold text-stone-800">{t("matching.recommendationsFor")}</div>
             <div className="text-xs text-stone-600">{pipe.name}</div>
           </div>
 
@@ -179,19 +181,19 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
               ) : (
                 <RefreshCw className="h-3 w-3 mr-1" />
               )}
-              Regenerate
+              {t("matching.regenerate")}
             </Button>
           </div>
 
           <div className="w-full md:w-64">
-            <div className="text-xs font-semibold text-stone-600 mb-1">Bowl Variant</div>
+            <div className="text-xs font-semibold text-stone-600 mb-1">{t("matching.bowlVariant")}</div>
             <Select
              value={activeBowlVariantId || ""}
              onValueChange={setActiveBowlVariantId}
              disabled={!hasBowls}
             >
              <SelectTrigger>
-               <SelectValue placeholder="Select bowl..." />
+               <SelectValue placeholder={t("matching.selectBowl")} />
              </SelectTrigger>
              <SelectContent>
                {bowlOptions.map((b) => (
@@ -206,7 +208,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
         <div className="p-4 space-y-4">
           <div>
-            <div className="text-xs font-bold text-stone-600 mb-2">Top 3 matches (from Pairing Grid)</div>
+            <div className="text-xs font-bold text-stone-600 mb-2">{t("matching.top3Matches")}</div>
             {top3.length ? (
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
@@ -217,15 +219,15 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-stone-700">No pairing data yet. Regenerate Pairings.</div>
+              <div className="text-sm text-stone-700">{t("matching.noDataYet")}</div>
             )}
           </div>
 
           <div className="pt-3 border-t">
-            <div className="text-xs font-semibold text-stone-600 mb-2">Check any blend</div>
+            <div className="text-xs font-semibold text-stone-600 mb-2">{t("matching.checkAnyBlend")}</div>
             <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
               <SelectTrigger className="text-sm">
-                <SelectValue placeholder="Select a blend..." />
+                <SelectValue placeholder={t("matching.selectBlend")} />
               </SelectTrigger>
               <SelectContent>
                 {blends.map((b) => (
@@ -239,7 +241,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
             {selectedBlend ? (
                <div className="mt-2 flex items-center justify-between">
                  <span className="text-sm text-stone-400 truncate font-medium">{selectedBlend.name}</span>
-                 <span className="text-sm text-stone-200 font-semibold">{selectedBlendScore ?? "No score"}</span>
+                 <span className="text-sm text-stone-200 font-semibold">{selectedBlendScore ?? t("matching.noScore")}</span>
                </div>
              ) : null}
           </div>

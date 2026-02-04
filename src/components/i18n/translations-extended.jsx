@@ -742,6 +742,9 @@ export const translationsExtended = {
       no: "No",
       back: "Back",
       done: "Done",
+      saving: "Saving...",
+      note: "Note",
+      refresh: "Refresh",
     },
     // === SHAPE & MATERIAL ENUMS ===
     shapes: {
@@ -1421,6 +1424,51 @@ export const translationsExtended = {
       alternativeUses: "Alternative Uses",
       applySpecializations: "Apply Specializations",
       close: "Close",
+      applied: "Specialization applied!",
+      appliedDesc: "AI recommendations will update to reflect this change",
+    },
+    // === MATCHING ENGINE ===
+    matching: {
+      recommendationsFor: "Recommendations for",
+      regenerate: "Regenerate",
+      regenerateSuccess: "Pairings regenerated successfully",
+      bowlVariant: "Bowl Variant",
+      selectBowl: "Select bowl...",
+      top3Matches: "Top 3 matches (from Pairing Grid)",
+      noDataYet: "No pairing data yet. Regenerate Pairings.",
+      checkAnyBlend: "Check any blend",
+      selectBlend: "Select a blend...",
+      noScore: "No score",
+      marketValueLookup: "Market Value Lookup",
+      searchMarketDesc: "Search current market data to estimate this pipe's value",
+      searchingMarkets: "Searching Markets...",
+      lookupCurrentValue: "Lookup Current Value",
+      results: "Results",
+      estimatedValue: "Estimated Value",
+      confidence: "confidence",
+      range: "Range:",
+      applyThisValue: "Apply This Value to Pipe",
+      marketFactors: "Market Factors",
+      comparableSales: "Comparable Sales",
+      importantNotes: "Important Notes",
+      searchAgain: "Search Again",
+    },
+    // === INVENTORY MANAGEMENT ===
+    inventory: {
+      totalOpen: "Total Open",
+      readyToSmoke: "Ready to smoke",
+      openInventory: "Open Inventory",
+      autoDeductNote: "When logging smoking sessions, the system will automatically deduct from open quantities first.",
+      addedToCellar: "Added to cellar log",
+      saveChanges: "Save Changes",
+      trackDesc: "Track your tobacco across tins, bulk, and pouches. Automatic reductions (e.g., smoking logs) deduct from Open quantities first.",
+    },
+    // === ERROR MESSAGES ===
+    errors: {
+      recommendationFailed: "Failed to generate recommendation",
+      regenerateFailed: "Failed to regenerate pairings",
+      pipeNotAvailable: "Pipe not available.",
+      addToCellarFailed: "Failed to add to cellar log",
     },
     // === HELP CENTER KEYS ===
     helpCenter: {

@@ -5,8 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function ValueLookup({ pipe, onUpdateValue }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -109,9 +112,9 @@ Provide a detailed valuation in JSON format with:
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
             <DollarSign className="w-8 h-8 text-emerald-600" />
           </div>
-          <h3 className="text-lg font-semibold text-stone-800 mb-2">Market Value Lookup</h3>
+          <h3 className="text-lg font-semibold text-stone-800 mb-2">{t("matching.marketValueLookup")}</h3>
           <p className="text-stone-500 mb-6 max-w-md mx-auto">
-            Search current market data to estimate this pipe's value
+            {t("matching.searchMarketDesc")}
           </p>
           <Button
             onClick={lookupValue}
@@ -121,12 +124,12 @@ Provide a detailed valuation in JSON format with:
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Searching Markets...
+                {t("matching.searchingMarkets")}
               </>
             ) : (
               <>
                 <Search className="w-4 h-4 mr-2" />
-                Lookup Current Value
+                {t("matching.lookupCurrentValue")}
               </>
             )}
           </Button>
@@ -141,13 +144,13 @@ Provide a detailed valuation in JSON format with:
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-stone-800">Results</h3>
+              <h3 className="font-semibold text-stone-800">{t("matching.results")}</h3>
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => setCollapsed(!collapsed)}
               >
-                {collapsed ? 'Show' : 'Hide'}
+                {collapsed ? t("common.show") : t("common.hide")}
               </Button>
             </div>
 
@@ -159,11 +162,11 @@ Provide a detailed valuation in JSON format with:
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <DollarSign className="w-5 h-5 text-emerald-600" />
-                    Estimated Value
+                    {t("matching.estimatedValue")}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge className={confidenceColors[valuation.confidence]}>
-                      {valuation.confidence} confidence
+                      {valuation.confidence} {t("matching.confidence")}
                     </Badge>
                     {valuation.value_trend && (
                       <div className="flex items-center gap-1 text-sm text-stone-600">
@@ -177,17 +180,17 @@ Provide a detailed valuation in JSON format with:
               <CardContent>
                 <div className="text-center py-4">
                   <div className="text-4xl font-bold text-emerald-700 mb-2">
-                    ${valuation.estimated_value_mid?.toLocaleString()}
+                    {formatCurrency(valuation.estimated_value_mid)}
                   </div>
                   <div className="text-sm text-stone-500">
-                    Range: ${valuation.estimated_value_low?.toLocaleString()} - ${valuation.estimated_value_high?.toLocaleString()}
+                    {t("matching.range")} {formatCurrency(valuation.estimated_value_low)} - {formatCurrency(valuation.estimated_value_high)}
                   </div>
                 </div>
                 <Button 
                   onClick={handleApplyValue}
                   className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700"
                 >
-                  Apply This Value to Pipe
+                  {t("matching.applyThisValue")}
                 </Button>
               </CardContent>
             </Card>
@@ -195,7 +198,7 @@ Provide a detailed valuation in JSON format with:
             {/* Market Factors */}
             <Card className="border-stone-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Market Factors</CardTitle>
+                <CardTitle className="text-lg">{t("matching.marketFactors")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
@@ -212,7 +215,7 @@ Provide a detailed valuation in JSON format with:
             {/* Comparable Sales */}
             <Card className="border-stone-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Comparable Sales</CardTitle>
+                <CardTitle className="text-lg">{t("matching.comparableSales")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-stone-600">{valuation.comparable_sales}</p>
@@ -225,7 +228,7 @@ Provide a detailed valuation in JSON format with:
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-blue-600" />
-                    Important Notes
+                    {t("matching.importantNotes")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -236,7 +239,7 @@ Provide a detailed valuation in JSON format with:
 
               <div className="text-center">
                 <Button variant="outline" onClick={() => setValuation(null)}>
-                  Search Again
+                  {t("matching.searchAgain")}
                 </Button>
               </div>
             </div>

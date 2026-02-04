@@ -14,8 +14,10 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { useTranslation } from "react-i18next";
 
 export default function SpecializationRecommender({ pipe, onApplyRecommendation }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,11 +36,11 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         setRecommendation(data.recommendation);
         setIsOpen(true);
       } else {
-        toast.error('Failed to generate recommendation');
+        toast.error(t("errors.recommendationFailed"));
       }
     } catch (error) {
       console.error('Error getting recommendation:', error);
-      toast.error('Failed to generate recommendation');
+      toast.error(t("errors.recommendationFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +51,8 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
       onApplyRecommendation({
         focus: recommendation.recommended_specializations
       });
-      toast.success('Specialization applied!', {
-        description: 'AI recommendations will update to reflect this change'
+      toast.success(t("specializationRec.applied"), {
+        description: t("specializationRec.appliedDesc")
       });
       setIsOpen(false);
     }
@@ -77,7 +79,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto"
       >
         <Sparkles className="w-4 h-4 mr-1" />
-        <span className="truncate">{isLoading ? 'Analyzing...' : 'Get AI Recommendation'}</span>
+        <span className="truncate">{isLoading ? t("specializationRec.analyzing") : t("pipeDetailTabs.getAIRecommendation")}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -85,10 +87,10 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-purple-600" />
-              Specialization Recommendation
+              {t("specializationRec.specializationRecommendation")}
             </DialogTitle>
             <DialogDescription>
-              AI-powered analysis for {pipe.name}
+              {t("specializationRec.aiAnalysisFor")} {pipe.name}
             </DialogDescription>
           </DialogHeader>
 
@@ -100,7 +102,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                   <div className="flex items-start gap-2 mb-3">
                     <CheckCircle2 className="w-5 h-5 text-purple-600 mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-purple-900">Recommended Specializations</h3>
+                      <h3 className="font-semibold text-purple-900">{t("specializationRec.recommendedSpecializations")}</h3>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {recommendation.recommended_specializations?.map((spec, idx) => (
                           <Badge key={idx} className="bg-purple-100 text-purple-800 border-purple-300">
@@ -119,7 +121,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-amber-600" />
-                      Why This Works
+                      {t("specializationRec.whyThisWorks")}
                     </h3>
                     <p className="text-sm text-stone-300 leading-relaxed">
                       {recommendation.reasoning}
@@ -132,7 +134,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               {recommendation.collection_fit && (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-300 mb-2">Collection Fit</h3>
+                    <h3 className="font-semibold text-stone-300 mb-2">{t("specializationRec.collectionFit")}</h3>
                     <p className="text-sm text-stone-400 leading-relaxed">
                       {recommendation.collection_fit}
                     </p>
@@ -144,7 +146,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               {recommendation.specific_blends && recommendation.specific_blends.length > 0 && (
                 <Card className="border-emerald-200 bg-emerald-50/30">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-emerald-900 mb-2">Recommended Blends from Your Collection</h3>
+                    <h3 className="font-semibold text-emerald-900 mb-2">{t("specializationRec.recommendedBlendsFromCollection")}</h3>
                     <div className="flex flex-wrap gap-2">
                       {recommendation.specific_blends.map((blend, idx) => (
                         <Badge key={idx} variant="outline" className="border-emerald-300 text-emerald-800">
@@ -163,7 +165,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-amber-400 mb-1">Important Considerations</h3>
+                        <h3 className="font-semibold text-amber-400 mb-1">{t("specializationRec.importantConsiderations")}</h3>
                         <p className="text-sm text-amber-300 leading-relaxed">
                           {recommendation.considerations}
                         </p>
@@ -177,7 +179,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               {recommendation.alternative_uses && (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-300 mb-2">Alternative Uses</h3>
+                    <h3 className="font-semibold text-stone-300 mb-2">{t("specializationRec.alternativeUses")}</h3>
                     <p className="text-sm text-stone-400 leading-relaxed">
                       {recommendation.alternative_uses}
                     </p>
@@ -192,14 +194,14 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                   className="flex-1 bg-purple-600 hover:bg-purple-700"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Apply Specializations
+                  {t("specializationRec.applySpecializations")}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setIsOpen(false)}
                   className="flex-1"
                 >
-                  Close
+                  {t("specializationRec.close")}
                 </Button>
               </div>
             </div>

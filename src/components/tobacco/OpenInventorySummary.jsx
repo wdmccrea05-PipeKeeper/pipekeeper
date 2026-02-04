@@ -2,8 +2,10 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function OpenInventorySummary({ blend }) {
+  const { t } = useTranslation();
   const tinOpen = blend.tin_tins_open || 0;
   const tinSize = blend.tin_size_oz || 0;
   const bulkOpen = blend.bulk_open || 0;
@@ -21,8 +23,8 @@ export default function OpenInventorySummary({ blend }) {
     return (
       <div className="text-center py-8 bg-white rounded-lg p-4">
         <Package className="w-12 h-12 mx-auto mb-3 text-[#1a2c42]/40" />
-        <p className="text-sm font-semibold text-[#1a2c42]">No open tobacco yet</p>
-        <p className="text-xs mt-1 text-[#1a2c42]/80">Update the Inventory tab to track open quantities</p>
+        <p className="text-sm font-semibold text-[#1a2c42]">{t("tobaccoExtended.noOpenTobaccoYet")}</p>
+        <p className="text-xs mt-1 text-[#1a2c42]/80">{t("tobaccoExtended.updateInventoryTab")}</p>
       </div>
     );
   }
@@ -33,15 +35,15 @@ export default function OpenInventorySummary({ blend }) {
       <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
         <div className="flex items-center gap-2 mb-2">
           <Package className="w-5 h-5 text-amber-700" />
-          <h3 className="font-semibold text-amber-900">Total Open</h3>
+          <h3 className="font-semibold text-amber-900">{t("inventory.totalOpen")}</h3>
         </div>
         <p className="text-3xl font-bold text-amber-900">{totalOpenOz.toFixed(2)} oz</p>
-        <p className="text-sm text-amber-700 mt-1">Ready to smoke</p>
+        <p className="text-sm text-amber-700 mt-1">{t("inventory.readyToSmoke")}</p>
       </div>
 
       {/* Breakdown */}
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-[#1a2c42] uppercase tracking-wide mb-3">Open Inventory</p>
+        <p className="text-xs font-semibold text-[#1a2c42] uppercase tracking-wide mb-3">{t("inventory.openInventory")}</p>
         
         {tinOpen > 0 && (
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-[#1a2c42]/20">
@@ -113,7 +115,7 @@ export default function OpenInventorySummary({ blend }) {
       <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-700">
-          <strong>Note:</strong> When logging smoking sessions, the system will automatically deduct from open quantities first.
+          <strong>{t("common.note")}:</strong> {t("inventory.autoDeductNote")}
         </p>
       </div>
     </div>

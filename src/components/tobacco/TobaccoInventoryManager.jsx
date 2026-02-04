@@ -7,8 +7,10 @@ import { Package, Box, Briefcase, Plus, Minus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [addingToCellar, setAddingToCellar] = useState(null);
 
@@ -148,10 +150,10 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
       
       setFormData(updatedFormData);
       queryClient.invalidateQueries({ queryKey: ['cellar-logs', blend.id] });
-      toast.success(`${amount} oz added to cellar log`);
+      toast.success(t("inventory.addedToCellar"));
     } catch (err) {
       console.error('Error adding to cellar log:', err);
-      toast.error('Failed to add to cellar log');
+      toast.error(t("errors.addToCellarFailed"));
     } finally {
       setAddingToCellar(null);
     }
@@ -162,7 +164,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-[#E0D8C8]" />
-          <h3 className="font-semibold text-[#E0D8C8]">Inventory & Status</h3>
+          <h3 className="font-semibold text-[#E0D8C8]">{t("tobaccoExtended.inventoryStatus")}</h3>
         </div>
         <Button 
           size="sm" 
@@ -170,12 +172,12 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
           disabled={isUpdating}
           className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold"
         >
-          {isUpdating ? 'Saving...' : 'Save Changes'}
+          {isUpdating ? t("common.saving") : t("inventory.saveChanges")}
         </Button>
       </div>
 
       <p className="text-sm text-[#E0D8C8]/70">
-        Track your tobacco across tins, bulk, and pouches. Automatic reductions (e.g., smoking logs) deduct from Open quantities first.
+        {t("inventory.trackDesc")}
       </p>
 
       <Tabs defaultValue="tins" className="w-full">
