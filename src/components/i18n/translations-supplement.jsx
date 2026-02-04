@@ -786,6 +786,29 @@ export const translationsSupplement = {
 
   // Japanese (JA)
   ja: {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "初期分析",
+        additionalInfoNeeded: "追加情報が必要です",
+        yourAnswer: "あなたの答え...",
+        analyzing: "分析中...",
+        continueIdentification: "識別を続ける",
+        skipIdentifyNow: "スキップして今すぐ識別",
+        uploadPhotos: "写真をアップロード",
+        takePhoto: "写真を撮る",
+        optionalHints: "オプション：識別を改善するためのヒントを提供します",
+        nameDesc: "名前/説明",
+        brandMaker: "ブランド/メーカー",
+        shape: "形状",
+        stampings: "刻印",
+        identifying: "識別中...",
+        identifyPipe: "パイプを識別",
+        unknownMaker: "不明なメーカー",
+        add: "コレクションに追加",
+        adding: "追加中...",
+        tryAnother: "別のを試す"
+      }
+    },
     pipesExtended: {
       unknownMaker: "不明なメーカー",
       searchForPipe: "パイプを検索",
