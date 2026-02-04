@@ -4542,7 +4542,8 @@ export const translationsExtended = {
     },
   }},
   "pt-BR": {
-    nav: {
+    common: {
+      nav: {
       home: "Início",
       pipes: "Cachimbos",
       tobacco: "Tabaco",
