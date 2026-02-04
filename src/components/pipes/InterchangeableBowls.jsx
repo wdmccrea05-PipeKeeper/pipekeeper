@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit, Layers, Camera, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "react-i18next";
 
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
@@ -23,6 +24,7 @@ function toNumberOrNull(v) {
 }
 
 export default function InterchangeableBowls({ pipe, onUpdate }) {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [useMetric, setUseMetric] = useState(true);
@@ -150,7 +152,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2 text-amber-800">
             <Layers className="w-5 h-5" />
-            Interchangeable Bowls
+            {t("formsExtended.interchangeableBowls")}
           </CardTitle>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -167,30 +169,30 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
             <DialogTrigger asChild>
               <Button size="sm" className="bg-amber-600 hover:bg-amber-700 flex-1 sm:flex-none" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-1" />
-                Add Bowl
+                {t("bowls.addBowl", "Add Bowl")}
               </Button>
             </DialogTrigger>
 
             <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{editingIndex !== null ? "Edit Bowl" : "Add Interchangeable Bowl"}</DialogTitle>
+                <DialogTitle>{editingIndex !== null ? t("bowls.editBowl", "Edit Bowl") : t("bowls.addInterchangeableBowl", "Add Interchangeable Bowl")}</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Bowl Name</Label>
+                    <Label>{t("bowls.bowlName", "Bowl Name")}</Label>
                     <Input
                       value={bowlForm.name}
                       onChange={(e) => setBowlForm({ ...bowlForm, name: e.target.value })}
-                      placeholder="e.g., Standard Bowl, Meerschaum Bowl"
+                      placeholder={t("bowls.bowlNamePlaceholder", "e.g., Standard Bowl, Meerschaum Bowl")}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Shape</Label>
+                    <Label>{t("formsExtended.shape")}</Label>
                     <Select value={bowlForm.shape} onValueChange={(v) => setBowlForm({ ...bowlForm, shape: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select shape" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("formsExtended.selectShape")} /></SelectTrigger>
                       <SelectContent>
                         {SHAPES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
@@ -198,9 +200,9 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Material</Label>
+                    <Label>{t("formsExtended.material", "Material")}</Label>
                     <Select value={bowlForm.bowl_material} onValueChange={(v) => setBowlForm({ ...bowlForm, bowl_material: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select material" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("formsExtended.selectMaterial")} /></SelectTrigger>
                       <SelectContent>
                         {BOWL_MATERIALS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                       </SelectContent>
@@ -208,9 +210,9 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Chamber Volume</Label>
+                    <Label>{t("formsExtended.chamberVolume")}</Label>
                     <Select value={bowlForm.chamber_volume} onValueChange={(v) => setBowlForm({ ...bowlForm, chamber_volume: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select volume" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("formsExtended.selectVolume")} /></SelectTrigger>
                       <SelectContent>
                         {CHAMBER_VOLUMES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
                       </SelectContent>
@@ -218,7 +220,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Bowl Height ({useMetric ? 'mm' : 'in'})</Label>
+                    <Label>{t("formsExtended.bowlHeight")} ({useMetric ? t("units.mm") : t("units.in")})</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -241,7 +243,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Bowl Width ({useMetric ? 'mm' : 'in'})</Label>
+                    <Label>{t("formsExtended.bowlWidth")} ({useMetric ? t("units.mm") : t("units.in")})</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -264,7 +266,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Chamber Diameter ({useMetric ? 'mm' : 'in'})</Label>
+                    <Label>{t("formsExtended.chamberDiameter")} ({useMetric ? t("units.mm") : t("units.in")})</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -287,7 +289,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Chamber Depth ({useMetric ? 'mm' : 'in'})</Label>
+                    <Label>{t("formsExtended.chamberDepth")} ({useMetric ? t("units.mm") : t("units.in")})</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -311,25 +313,25 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Bowl Specialization (Focus)</Label>
+                  <Label>{t("bowls.bowlSpecialization", "Bowl Specialization (Focus)")}</Label>
                   <Input
                     value={bowlForm.focus?.join(", ") || ""}
                     onChange={(e) => {
                       const focuses = e.target.value.split(",").map((f) => f.trim()).filter(Boolean);
                       setBowlForm({ ...bowlForm, focus: focuses });
                     }}
-                    placeholder="e.g., English, Virginia/Perique"
+                    placeholder={t("bowls.specializationPlaceholder", "e.g., English, Virginia/Perique")}
                   />
-                  <p className="text-xs text-stone-500">Separate multiple types with commas</p>
+                  <p className="text-xs text-stone-500">{t("bowls.separateCommas", "Separate multiple types with commas")}</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Bowl Photo</Label>
+                  <Label>{t("bowls.bowlPhoto", "Bowl Photo")}</Label>
                   {bowlForm.photo && (
                     <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 mb-2">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                        <span className="text-xs font-semibold text-amber-900">Preview</span>
+                        <span className="text-xs font-semibold text-amber-900">{t("bowls.preview", "Preview")}</span>
                       </div>
                       <div className="flex justify-center">
                         <img src={bowlForm.photo} alt="Bowl preview" className="w-24 h-24 object-cover rounded-lg border-2 border-amber-400" />
@@ -363,7 +365,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                           <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
                             <span className="cursor-pointer">
                               <Camera className="w-4 h-4 mr-2" />
-                              {uploadingPhoto ? "Uploading..." : "Camera"}
+                              {uploadingPhoto ? t("photos.uploading", "Uploading...") : t("photos.camera")}
                             </span>
                           </Button>
                         </label>
@@ -378,29 +380,29 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                         <label htmlFor="bowl-photo-gallery">
                           <Button type="button" variant="outline" size="sm" disabled={uploadingPhoto} asChild>
                             <span className="cursor-pointer">
-                              📷 Gallery
+                              📷 {t("photos.gallery")}
                             </span>
                           </Button>
                         </label>
                       </div>
-                      <p className="text-xs text-stone-500 mt-1">Square photos work best</p>
+                      <p className="text-xs text-stone-500 mt-1">{t("bowls.squarePhotosNote", "Square photos work best")}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Notes</Label>
+                  <Label>{t("formsExtended.notes")}</Label>
                   <Input
                     value={bowlForm.notes}
                     onChange={(e) => setBowlForm({ ...bowlForm, notes: e.target.value })}
-                    placeholder="Any additional notes about this bowl..."
+                    placeholder={t("bowls.notesPlaceholder", "Any additional notes about this bowl...")}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
                   <Button onClick={handleSaveBowl} className="bg-amber-600 hover:bg-amber-700">
-                    {editingIndex !== null ? "Update" : "Add"} Bowl
+                    {editingIndex !== null ? t("common.update") : t("common.add")} {t("bowls.bowl", "Bowl")}
                   </Button>
                 </div>
               </div>
@@ -414,8 +416,8 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
         {interchangeableBowls.length === 0 ? (
           <div className="text-center py-6 text-stone-500">
             <Layers className="w-12 h-12 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No additional bowls added yet</p>
-            <p className="text-xs mt-1">Track different bowl options for this pipe system</p>
+            <p className="text-sm">{t("bowls.noBowlsYet", "No additional bowls added yet")}</p>
+            <p className="text-xs mt-1">{t("bowls.trackBowlOptions", "Track different bowl options for this pipe system")}</p>
           </div>
         ) : (
           <div className="space-y-3">
