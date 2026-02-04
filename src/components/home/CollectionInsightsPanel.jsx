@@ -215,7 +215,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
-                        <InfoTooltip text="Generate exportable summaries of your collection for reference or documentation." />
+                        <InfoTooltip text={t("insights.reportTooltip")} />
                       </div>
                       <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle")}</p>
                     </div>
