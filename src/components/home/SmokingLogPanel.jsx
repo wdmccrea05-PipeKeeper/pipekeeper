@@ -35,8 +35,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   if (!hasPaidAccess) {
     return (
       <UpgradePrompt 
-        featureName="Usage Log"
-        description="Track your usage sessions, monitor pipe rest periods, manage break-in schedules, and automatically reduce tobacco inventory. Build a detailed history to power AI recommendations."
+        featureName={t("smokingLog.usageLog")}
+        description={t("smokingLog.upgradeDesc")}
       />
     );
   }
@@ -129,14 +129,14 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
        const daysRested = Math.floor(hoursSinceSmoke / 24);
 
        if (hoursSinceSmoke >= 24) {
-         return { ready: true, message: `Rested ${daysRested} day${daysRested > 1 ? 's' : ''} - ready!` };
+         return { ready: true, message: t("smokingLog.restedDays", { days: daysRested }) };
        } else {
          const hoursLeft = Math.max(0, 24 - hoursSinceSmoke);
-         return { ready: false, message: `Needs ${hoursLeft.toFixed(1)} more hour${hoursLeft > 1 ? 's' : ''} rest` };
+         return { ready: false, message: t("smokingLog.needsHours", { hours: hoursLeft.toFixed(1) }) };
        }
      } catch (err) {
        console.warn('getPipeRestStatus error:', err);
-       return { ready: true, message: 'No usage logged yet.' };
+       return { ready: true, message: t("smokingLog.noUsageLogged") };
      }
    };
 
@@ -210,10 +210,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 ...schedule,
                 {
                   blend_id: newData.blend_id,
-                  blend_name: resolvedBlendName || "Unknown Blend",
+                  blend_name: resolvedBlendName || t("common.unknownBlend"),
                   suggested_bowls: 5,
                   bowls_completed: Number(newData.bowls_smoked || 1),
-                  reasoning: "Added automatically from an edited break-in smoking log entry.",
+                  reasoning: t("smokingLog.autoAddedEditReasoning"),
                 },
               ];
             }
@@ -365,10 +365,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               ...schedule,
               {
                 blend_id: variables.blend_id,
-                blend_name: resolvedBlendName || 'Unknown Blend',
+                blend_name: resolvedBlendName || t("common.unknownBlend"),
                 suggested_bowls: 5,
                 bowls_completed: bowlsToAdd,
-                reasoning: 'Added automatically from a break-in smoking log entry.',
+                reasoning: t("smokingLog.autoAddedReasoning"),
               },
             ];
           }
@@ -495,7 +495,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                       <Calendar className="w-3 h-3" />
                       {format(new Date(log.date), 'MMM d, yyyy')}
                       <span>•</span>
-                      <span className="text-[#E0D8C8]">{getBowlsUsed(log)} bowl{getBowlsUsed(log) > 1 ? 's' : ''}</span>
+                      <span className="text-[#E0D8C8]">{getBowlsUsed(log)} {getBowlsUsed(log) > 1 ? t("units.bowlPlural") : t("units.bowl")}</span>
                     </div>
                     {log.notes && (
                       <p className="text-xs text-[#E0D8C8]/70 mt-1">{log.notes}</p>
@@ -571,14 +571,14 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 <Select value={formData.bowl_variant_id} onValueChange={(v) => setFormData({ ...formData, bowl_variant_id: v })}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
-                  </SelectTrigger>
-                  <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                     <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
                         <SelectItem key={bowlId} value={bowlId}>
-                          {bowl.name || `Bowl ${idx + 1}`}
+                          {bowl.name || t("smokingLog.bowlNumber", { number: idx + 1 })}
                         </SelectItem>
                       );
                     })}
