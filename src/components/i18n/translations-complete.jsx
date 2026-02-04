@@ -326,7 +326,27 @@ export const translationsComplete = {
   },
   de: {
     collectionInsights: {
-      summaryTooltip: "Dieser Abschnitt fasst Muster und Gesamtwerte Ihrer Sammlung zusammen."
+      summaryTooltip: "Dieser Abschnitt fasst Muster und Gesamtwerte Ihrer Sammlung zusammen.",
+      reportTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zu Referenz- oder Dokumentationszwecken.",
+      agingTooltip: "Überwachen Sie gealtertes Tabak und erhalten Sie Empfehlungen zu optimalen Reifezeiten."
+    },
+    insights: {
+      title: "Sammlungsstatistiken",
+      titleInventory: "Tabakkeller",
+      subtitle: "Sammlungsübersicht",
+      stats: "Statistiken",
+      log: "Protokoll",
+      pairingGrid: "Paarungsgitter",
+      rotation: "Rotation",
+      aging: "Alterung",
+      reports: "Berichte",
+      statsEmpty: "Fügen Sie Pfeifen oder Tabak hinzu, um Sammlungsstatistiken zu sehen",
+      addFirstItem: "Erstes Element Hinzufügen",
+      reportsEmpty: "Keine Elemente zum Generieren von Berichten",
+      reportsEmptyDesc: "Fügen Sie Ihrer Sammlung Pfeifen und Tabak hinzu, um Berichte zu erstellen",
+      reportsSubtitle: "Exportieren Sie Ihre Sammlungsdaten",
+      agingDashboard: "Reifungs-Dashboard",
+      agingSubtitle: "Kellerverwaltung"
     },
     smokingLog: {
       totalBowls: "{{total}} Schüsseln gesamt",
