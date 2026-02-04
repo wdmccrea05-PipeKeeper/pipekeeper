@@ -93,41 +93,41 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
             <PKHeader 
-              title={isAppleBuild ? "Inventory Insights" : "Collection Insights"}
+              title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
               className="mb-0"
             />
             <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
           </div>
-          <p className="text-sm text-[#E0D8C8]/60">Summaries and trends across your collection</p>
+          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
-                <span>Stats</span>
+                <span>{t("insights.stats")}</span>
               </TabsTrigger>
             ) : (
               <>
                 <TabsTrigger value="log" className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Log</span>
+                  <span className="hidden sm:inline">{t("insights.log")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="reference" className="flex items-center gap-2">
                   <Grid3x3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Pairing Grid</span>
+                  <span className="hidden sm:inline">{t("insights.pairingGrid")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="rotation" className="flex items-center gap-2">
                   <CalendarClock className="w-4 h-4" />
-                  <span className="hidden sm:inline">Rotation</span>
+                  <span className="hidden sm:inline">{t("insights.rotation")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="stats" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Stats</span>
+                  <span className="hidden sm:inline">{t("insights.stats")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex items-center gap-2 relative">
                   <Clock className="w-4 h-4" />
-                  <span className="hidden sm:inline">Aging</span>
+                  <span className="hidden sm:inline">{t("insights.aging")}</span>
                   {agingAlertCount > 0 && (
                     <div className="absolute -top-1 -right-1 flex items-center justify-center">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -137,7 +137,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Reports</span>
+                  <span className="hidden sm:inline">{t("insights.reports")}</span>
                 </TabsTrigger>
               </>
             )}
@@ -147,9 +147,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             {pipes.length === 0 && blends.length === 0 ? (
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                <p className="text-[#E0D8C8]/60 mb-4">Insights appear after you add a few items.</p>
+                <p className="text-[#E0D8C8]/60 mb-4">{t("insights.statsEmpty")}</p>
                 <a href={createPageUrl('Pipes')}>
-                  <Button>Add first item</Button>
+                  <Button>{t("insights.addFirstItem")}</Button>
                 </a>
               </div>
             ) : (
@@ -168,12 +168,12 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <div className="flex gap-3 justify-center">
                       {pipes.length === 0 && (
                         <a href={createPageUrl('Pipes')}>
-                          <Button size="sm">Add First Pipe</Button>
+                          <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
                         </a>
                       )}
                       {blends.length === 0 && (
                         <a href={createPageUrl('Tobacco')}>
-                          <Button size="sm" variant="outline">Add First Blend</Button>
+                          <Button size="sm" variant="outline">{t("tobacconist.addFirstBlend")}</Button>
                         </a>
                       )}
                     </div>
@@ -195,7 +195,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <p className="text-[#E0D8C8]/60 mb-2">{t("empty.rotationNoPipes")}</p>
                     <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.rotationAction")}</p>
                     <a href={createPageUrl('Pipes')}>
-                      <Button size="sm">Add First Pipe</Button>
+                      <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
                     </a>
                   </div>
                 ) : (
@@ -207,17 +207,17 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 && blends.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-1">Reports become available once your collection has entries.</p>
-                    <p className="text-sm text-[#E0D8C8]/40">Generate exportable summaries of your collection for reference or documentation.</p>
+                    <p className="text-[#E0D8C8]/60 mb-1">{t("insights.reportsEmpty")}</p>
+                    <p className="text-sm text-[#E0D8C8]/40">{t("insights.reportsEmptyDesc")}</p>
                   </div>
                 ) : (
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">Reports</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
                         <InfoTooltip text="Generate exportable summaries of your collection for reference or documentation." />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">Exportable summaries and documentation</p>
+                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle")}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
@@ -233,17 +233,17 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <p className="text-[#E0D8C8]/60 mb-2">{t("empty.agingNoBlends")}</p>
                     <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.agingAction")}</p>
                     <a href={createPageUrl('Tobacco')}>
-                      <Button size="sm">Add First Blend</Button>
+                      <Button size="sm">{t("tobacconist.addFirstBlend")}</Button>
                     </a>
                   </div>
                 ) : (
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">Aging Dashboard</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
                         <InfoTooltip text="Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics." />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">Track aging progress and readiness</p>
+                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.agingSubtitle")}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>
