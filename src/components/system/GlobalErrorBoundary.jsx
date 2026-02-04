@@ -13,25 +13,62 @@ class GlobalErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[GlobalErrorBoundary] Caught error:', error, errorInfo);
+    // Enhanced logging for i18n debugging
+    const currentLang = (() => {
+      try {
+        return localStorage.getItem('pk_lang') || 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    })();
+
+    const currentRoute = (() => {
+      try {
+        return window.location.pathname || 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    })();
+
+    const errorDetails = {
+      error: error?.toString() || 'Unknown error',
+      message: error?.message || '',
+      stack: error?.stack || '',
+      componentStack: errorInfo?.componentStack || '',
+      language: currentLang,
+      route: currentRoute,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.error('[GlobalErrorBoundary] Error caught:', errorDetails);
     
+    // Check for i18n-related errors
+    if (error?.message?.includes('is not a function') || 
+        error?.message?.includes('useTranslation') ||
+        error?.message?.includes('formatCurrency')) {
+      console.error('[GlobalErrorBoundary] ⚠️ i18n/formatter error detected!', {
+        language: currentLang,
+        route: currentRoute,
+        errorMsg: error?.message
+      });
+    }
+
     // Send to logging endpoint (non-blocking)
     try {
       fetch('/api/log-client-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          error: error?.message || String(error),
-          stack: error?.stack || '',
-          componentStack: errorInfo?.componentStack || '',
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(errorDetails),
       }).catch(() => {});
     } catch {}
   }
 
   render() {
     if (this.state.hasError) {
+      const isI18nError = this.state.error?.message?.includes('useTranslation') || 
+                          this.state.error?.message?.includes('is not a function') ||
+                          this.state.error?.message?.includes('formatCurrency');
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-[#1A2B3A] rounded-2xl p-8 border border-[#A35C5C]/30 shadow-2xl">
@@ -47,6 +84,16 @@ class GlobalErrorBoundary extends React.Component {
                 </p>
               </div>
               
+              {isI18nError && (
+                <div className="w-full p-3 bg-amber-900/20 border border-amber-600/30 rounded text-left">
+                  <p className="text-xs text-amber-400">
+                    ⚠️ <strong>Translation error detected</strong><br/>
+                    Language: {this.state.errorInfo?.language || 'unknown'}<br/>
+                    Route: {this.state.errorInfo?.route || 'unknown'}
+                  </p>
+                </div>
+              )}
+              
               {process.env.NODE_ENV === 'development' && (
                 <details className="w-full mt-4 text-left">
                   <summary className="text-xs text-[#E0D8C8]/50 cursor-pointer hover:text-[#E0D8C8]/70">
@@ -58,15 +105,29 @@ class GlobalErrorBoundary extends React.Component {
                 </details>
               )}
               
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3 mt-4 w-full">
                 <Button
                   variant="outline"
-                  onClick={() => this.setState({ hasError: false, error: null })}
+                  onClick={() => {
+                    // Clear potential bad i18n state
+                    try {
+                      localStorage.setItem('pk_lang', 'en');
+                    } catch {}
+                    this.setState({ hasError: false, error: null, errorInfo: null });
+                  }}
+                  className="flex-1"
                 >
                   Try Again
                 </Button>
                 <Button
-                  onClick={() => window.location.reload()}
+                  onClick={() => {
+                    // Reset to English on critical errors
+                    try {
+                      if (isI18nError) localStorage.setItem('pk_lang', 'en');
+                    } catch {}
+                    window.location.reload();
+                  }}
+                  className="flex-1"
                 >
                   Reload Page
                 </Button>
