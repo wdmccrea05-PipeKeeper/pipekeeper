@@ -896,7 +896,27 @@ export const translationsComplete = {
   },
   ja: {
     collectionInsights: {
-      summaryTooltip: "このセクションは、入力したデータに基づいたコレクション全体のパターンと合計を要約しています。"
+      summaryTooltip: "このセクションは、入力したデータに基づいたコレクション全体のパターンと合計を要約しています。",
+      reportTooltip: "コレクションのエクスポート可能な要約を生成して、参照またはドキュメンテーション用に使用します。",
+      agingTooltip: "樽詰めされたタバコを監視し、最適な熟成時間に関する推奨事項を取得します。"
+    },
+    insights: {
+      title: "コレクション情報",
+      titleInventory: "タバコセラー",
+      subtitle: "コレクション概要",
+      stats: "統計",
+      log: "ログ",
+      pairingGrid: "ペアリンググリッド",
+      rotation: "ローテーション",
+      aging: "熟成",
+      reports: "レポート",
+      statsEmpty: "パイプまたはタバコを追加してコレクション統計を表示",
+      addFirstItem: "最初のアイテムを追加",
+      reportsEmpty: "レポート生成するアイテムなし",
+      reportsEmptyDesc: "レポートを生成するにはパイプとタバコをコレクションに追加してください",
+      reportsSubtitle: "コレクションデータをエクスポート",
+      agingDashboard: "熟成ダッシュボード",
+      agingSubtitle: "セラー監視"
     },
     smokingLog: {
       totalBowls: "{{total}} ボウル合計",
