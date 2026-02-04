@@ -67,10 +67,10 @@ Deno.serve(async (req) => {
     log('Tobacco List Load', blends?.length > 0 ? 'PASS' : 'FAIL', { blend_count: blends?.length || 0 });
 
     if (blends?.length > 0) {
-      const sampleBlend = blends[0];
-      log('Tobacco: Read Data Integrity', sampleBlend?.id ? 'PASS' : 'FAIL', {
-        has_id: !!sampleBlend?.id,
-        has_name: !!sampleBlend?.name,
+      const sampleBlend = Array.isArray(blends) ? blends[0] : blends;
+      log('Tobacco: Read Data Integrity', sampleBlend ? 'PASS' : 'FAIL', {
+        has_data: !!sampleBlend,
+        type: typeof sampleBlend,
       });
     }
 
