@@ -349,7 +349,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {BLEND_TYPES.map(t => <SelectItem key={t} value={t}>{t.startsWith('tobacco.') ? t(t) : t}</SelectItem>)}
+              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type.startsWith('tobacco.') ? t(type) : type}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
@@ -357,7 +357,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STRENGTHS.map(s => <SelectItem key={s} value={s}>{s.startsWith('tobacco.') ? t(s) : s}</SelectItem>)}
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength.startsWith('tobacco.') ? t(strength) : strength}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -365,7 +365,7 @@ export default function TobaccoPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {SORT_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label.startsWith('tobaccoPage.') ? t(opt.label) : opt.label}</SelectItem>)}
+              {SORT_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label.startsWith('tobaccoPage.') ? t(option.label) : option.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className={`flex border rounded-lg ${PK_THEME.card}`}>
