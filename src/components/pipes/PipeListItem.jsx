@@ -4,8 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
+  const { t } = useTranslation();
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -49,12 +52,12 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-[#E0D8C8] text-lg truncate">{pipe.name}</h3>
-                <p className="text-sm text-[#E0D8C8]/60">{pipe.maker || 'Unknown maker'}</p>
+                <p className="text-sm text-[#E0D8C8]/60">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
               </div>
               {pipe.estimated_value && (
                 <div className="text-right shrink-0">
-                  <p className="text-xs text-emerald-400">Value</p>
-                  <p className="font-semibold text-emerald-300">${(+pipe.estimated_value).toFixed(2)}</p>
+                  <p className="text-xs text-emerald-400">{t("forms.value")}</p>
+                  <p className="font-semibold text-emerald-300">{formatCurrency(+pipe.estimated_value)}</p>
                 </div>
               )}
             </div>

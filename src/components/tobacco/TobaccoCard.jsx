@@ -6,6 +6,8 @@ import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
+import { useTranslation } from "react-i18next";
+import { formatWeight } from "@/components/utils/localeFormatters";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-600 text-yellow-100 border-yellow-500/60",
@@ -23,6 +25,7 @@ const BLEND_COLORS = {
 };
 
 export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
+  const { t } = useTranslation();
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
   const agingRec = getAgingRecommendation(blend);
   
@@ -84,16 +87,16 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  Tin: {(+(blend.tin_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.tin")}: {formatWeight(+(blend.tin_total_quantity_oz || 0))}
                 </Badge>
                 {(blend.tin_tins_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.tin_tins_open || 0) * +(blend.tin_size_oz || 0)).toFixed(2)}oz open
+                    {formatWeight(+(blend.tin_tins_open || 0) * +(blend.tin_size_oz || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(blend.tin_tins_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.tin_tins_cellared || 0) * +(blend.tin_size_oz || 0)).toFixed(2)}oz cellared
+                    {formatWeight(+(blend.tin_tins_cellared || 0) * +(blend.tin_size_oz || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
@@ -101,16 +104,16 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             {(blend.bulk_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  Bulk: {(+(blend.bulk_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.bulk")}: {formatWeight(+(blend.bulk_total_quantity_oz || 0))}
                 </Badge>
                 {(blend.bulk_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.bulk_open || 0)).toFixed(2)}oz open
+                    {formatWeight(+(blend.bulk_open || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(blend.bulk_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.bulk_cellared || 0)).toFixed(2)}oz cellared
+                    {formatWeight(+(blend.bulk_cellared || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
@@ -118,16 +121,16 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             {(blend.pouch_total_quantity_oz || 0) > 0 && (
               <div className="flex gap-1">
                 <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  Pouch: {(+(blend.pouch_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.pouches")}: {formatWeight(+(blend.pouch_total_quantity_oz || 0))}
                 </Badge>
                 {(blend.pouch_pouches_open || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.pouch_pouches_open || 0) * +(blend.pouch_size_oz || 0)).toFixed(2)}oz open
+                    {formatWeight(+(blend.pouch_pouches_open || 0) * +(blend.pouch_size_oz || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
                 {(blend.pouch_pouches_cellared || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {(+(blend.pouch_pouches_cellared || 0) * +(blend.pouch_size_oz || 0)).toFixed(2)}oz cellared
+                    {formatWeight(+(blend.pouch_pouches_cellared || 0) * +(blend.pouch_size_oz || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
@@ -138,7 +141,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
          <div className="flex items-start justify-between gap-2">
            <div className="flex-1 min-w-0">
              <h3 className="font-semibold text-[#E0D8C8] truncate">{blend.name}</h3>
-             <p className="text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || 'Unknown maker'}</p>
+             <p className="text-sm text-[#E0D8C8]/60 truncate">{blend.manufacturer || t("tobaccoExtended.unknownMaker")}</p>
             </div>
             {blend.rating && (
               <div className="flex items-center gap-0.5 shrink-0">

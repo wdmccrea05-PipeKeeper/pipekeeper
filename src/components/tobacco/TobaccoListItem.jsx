@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
+import { useTranslation } from "react-i18next";
+import { formatWeight } from "@/components/utils/localeFormatters";
 
 const BLEND_COLORS = {
   "Virginia": "bg-yellow-600 text-yellow-100 border-yellow-500/60",
@@ -22,6 +24,7 @@ const BLEND_COLORS = {
 };
 
 export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
+  const { t } = useTranslation();
   const colorClass = BLEND_COLORS[blend.blend_type] || "bg-slate-700 text-slate-100 border-slate-600/60";
   const agingRec = getAgingRecommendation(blend);
   
@@ -85,7 +88,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-[#E0D8C8] text-lg truncate">{blend.name}</h3>
-                <p className="text-sm text-[#E0D8C8]/60">{blend.manufacturer || 'Unknown maker'}</p>
+                <p className="text-sm text-[#E0D8C8]/60">{blend.manufacturer || t("tobaccoExtended.unknownMaker")}</p>
               </div>
               <div className="shrink-0 flex items-center gap-3">
                 {blend.rating && (
@@ -125,24 +128,24 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               )}
               {(blend.tin_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-amber-600/90 text-white border-0 text-xs font-semibold">
-                  Tin: {(+(blend.tin_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.tin")}: {formatWeight(+(blend.tin_total_quantity_oz || 0))}
                 </Badge>
               )}
               {(blend.bulk_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-blue-600/90 text-white border-0 text-xs font-semibold">
-                  Bulk: {(+(blend.bulk_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.bulk")}: {formatWeight(+(blend.bulk_total_quantity_oz || 0))}
                 </Badge>
               )}
               {(blend.pouch_total_quantity_oz || 0) > 0 && (
                 <Badge className="bg-purple-600/90 text-white border-0 text-xs font-semibold">
-                  Pouch: {(+(blend.pouch_total_quantity_oz || 0)).toFixed(2)}oz
+                  {t("tobaccoExtended.pouches")}: {formatWeight(+(blend.pouch_total_quantity_oz || 0))}
                 </Badge>
               )}
             </div>
 
             {blend.flavor_notes && blend.flavor_notes.length > 0 && (
               <p className="text-xs text-[#E0D8C8]/60 truncate">
-                Flavors: {blend.flavor_notes.slice(0, 5).join(', ')}
+                {t("tobaccoExtended.flavors")}: {blend.flavor_notes.slice(0, 5).join(', ')}
               </p>
             )}
           </div>

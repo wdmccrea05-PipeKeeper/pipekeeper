@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import PipeShapeIcon from "./PipeShapeIcon";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
+  const { t } = useTranslation();
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -29,7 +32,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             <div className="w-full h-full flex items-center justify-center">
             <div className="text-[#E0D8C8]/50 text-center">
                 <PipeShapeIcon shape={pipe.shape} className="text-5xl mb-2" />
-                <p className="text-xs">{pipe.shape || 'No photo'}</p>
+                <p className="text-xs">{pipe.shape || t("pipesExtended.noPhoto")}</p>
               </div>
             </div>
           )}
@@ -50,14 +53,14 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
           {pipe.estimated_value && (
             <div className="absolute bottom-3 left-3">
               <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm">
-                ${(+pipe.estimated_value).toFixed(2)}
+                {formatCurrency(+pipe.estimated_value)}
               </Badge>
             </div>
           )}
         </div>
         <div className="p-4">
          <h3 className="font-semibold text-[#E0D8C8] truncate">{pipe.name}</h3>
-         <p className="text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || 'Unknown maker'}</p>
+         <p className="text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
               <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
