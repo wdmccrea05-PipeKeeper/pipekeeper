@@ -359,6 +359,52 @@ export const translationsComplete = {
     }
   },
   it: {
+    collectionInsights: {
+      summaryTooltip: "Questa sezione riepiloga i modelli e i totali della tua collezione in base ai dati inseriti."
+    },
+    smokingLog: {
+      totalBowls: "{{total}} ciotole totali",
+      breakInBowls: "{{breakIn}} rodaggio",
+      totalBreakIn: "{{total}} rodaggio",
+      title: "Registro di Utilizzo",
+      addSession: "Aggiungi Sessione"
+    },
+    blendTypes: {
+      american: "Americano",
+      aromatic: "Aromatico",
+      balkan: "Balcani",
+      burley: "Burley",
+      burleyBased: "A base di Burley",
+      cavendish: "Cavendish",
+      codgerBlend: "Miscela Codger",
+      darkFiredKentucky: "Kentucky Affumicato Scuro",
+      english: "Inglese",
+      englishAromatic: "Inglese Aromatico",
+      englishBalkan: "Inglese Balcani",
+      fullEnglishOriental: "Inglese/Orientale Completo",
+      kentucky: "Kentucky",
+      lakeland: "Lakeland",
+      latakiaBlend: "Miscela Latakia",
+      navyFlake: "Navy Flake",
+      orientalTurkish: "Orientale/Turco",
+      other: "Altro",
+      perique: "Perique",
+      shag: "Shag",
+      virginia: "Virginia",
+      virginiaburley: "Virginia/Burley",
+      virginiaoriental: "Virginia/Orientale",
+      virginiaperique: "Virginia/Perique"
+    },
+    aiTools: {
+      outOfDate: "La tua collezione è cambiata dall'ultima ottimizzazione. Rigenera per ottenere raccomandazioni aggiornate.",
+      regenerate: "Rigenera",
+      undo: "Annulla",
+      notNow: "Non Ora",
+      undoLastChange: "Annulla Ultimo Cambio"
+    },
+    tobaccoPage: {
+      exportCSV: "Esporta CSV"
+    },
     pipes: { search: 'Cerca', filter: 'Filtro', shape: 'Forma', material: 'Materiale', allShapes: 'Tutte le forme', allMaterials: 'Tutti i materiali' },
     tobacco: { allTypes: 'Tutti i tipi', allStrengths: 'Tutte le intensità', search: 'Cerca' },
     common: { loading: 'Caricamento...', refresh: 'Aggiorna', cancel: 'Annulla', save: 'Salva', delete: 'Elimina', close: 'Chiudi', unknown: 'Sconosciuto', of: 'di' },
