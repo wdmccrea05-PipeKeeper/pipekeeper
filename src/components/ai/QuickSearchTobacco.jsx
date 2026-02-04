@@ -28,6 +28,7 @@ const BLEND_COLORS = {
 };
 
 export default function QuickSearchTobacco({ open, onOpenChange, onAdd }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
