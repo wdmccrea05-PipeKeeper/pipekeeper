@@ -1,3 +1,4 @@
+
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -9,6 +10,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
  */
 
 import { translationsExtended } from './translations-extended';
+import { useTranslation, translateIfKey, isSafeTranslationKey } from './safeTranslation'; // Added this import
 
 const SUPPORTED = ["en","es","fr","de","it","pt-BR","nl","pl","ja","zh-Hans"];
 
@@ -622,3 +624,11 @@ i18n.on("missingKey", (lng, ns, key) => {
 });
 
 export default i18n;
+
+/**
+ * Single source of truth for all i18n utilities
+ * Exports: useTranslation, t, safeT, and all formatters
+ */
+
+export { useTranslation };
+export { translateIfKey, isSafeTranslationKey };
