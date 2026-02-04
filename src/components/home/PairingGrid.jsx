@@ -223,6 +223,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 }
 
 function PipeCard({ row, allBlends }) {
+  const { t } = useTranslation();
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
   
