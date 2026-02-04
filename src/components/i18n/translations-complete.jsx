@@ -212,7 +212,27 @@ export const translationsComplete = {
   },
   fr: {
     collectionInsights: {
-      summaryTooltip: "Cette section résume les modèles et les totaux de votre collection en fonction des données saisies."
+      summaryTooltip: "Cette section résume les modèles et les totaux de votre collection en fonction des données saisies.",
+      reportTooltip: "Générer des résumés exportables de votre collection à titre de référence ou de documentation.",
+      agingTooltip: "Surveillez le tabac vieilli et obtenez des recommandations sur les délais de vieillissement optimaux."
+    },
+    insights: {
+      title: "Informations sur la Collection",
+      titleInventory: "Bodega de Tabac",
+      subtitle: "Aperçu de la Collection",
+      stats: "Statistiques",
+      log: "Journal",
+      pairingGrid: "Grille d'Accords",
+      rotation: "Rotation",
+      aging: "Vieillissement",
+      reports: "Rapports",
+      statsEmpty: "Ajoutez des pipes ou du tabac pour voir les statistiques de collection",
+      addFirstItem: "Ajouter le Premier Élément",
+      reportsEmpty: "Aucun élément pour générer des rapports",
+      reportsEmptyDesc: "Ajoutez des pipes et du tabac à votre collection pour générer des rapports",
+      reportsSubtitle: "Exportez les données de votre collection",
+      agingDashboard: "Tableau de Bord du Vieillissement",
+      agingSubtitle: "Surveillance de la Bodega"
     },
     smokingLog: {
       totalBowls: "{{total}} bols au total",
