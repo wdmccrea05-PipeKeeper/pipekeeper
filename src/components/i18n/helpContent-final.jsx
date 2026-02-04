@@ -244,7 +244,7 @@ export const helpContentFinal = {
       }
     }
   },
-  "zh-HANS": {
+  "zh-Hans": {
     faqFull: {
       pageTitle: "PipeKeeper常见问题",
       pageSubtitle: "定义、一般信息和免责声明",
