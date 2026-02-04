@@ -377,9 +377,8 @@ export const helpContentTranslations = {
           ]
         }
       }
-      }
-      }
-      }
-      };
+    }
+  }
+};
 
-      export { helpContentTranslations };
+export { helpContentTranslations };
