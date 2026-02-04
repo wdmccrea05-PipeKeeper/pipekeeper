@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { User, Save, X, Sparkles, Crown, ArrowRight, LogOut, Upload, Eye, Camera, Database, Globe, Plus, Trash2, Star, AlertCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { toast } from "sonner";
 import { motion } from "framer-motion";

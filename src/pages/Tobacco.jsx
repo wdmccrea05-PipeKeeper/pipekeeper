@@ -25,7 +25,7 @@ import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
 const BLEND_TYPES = [

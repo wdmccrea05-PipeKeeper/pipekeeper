@@ -29,7 +29,7 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 

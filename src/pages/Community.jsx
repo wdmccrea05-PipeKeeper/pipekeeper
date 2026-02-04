@@ -16,7 +16,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
 export default function CommunityPage() {
