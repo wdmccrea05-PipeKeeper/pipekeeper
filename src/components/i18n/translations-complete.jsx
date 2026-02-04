@@ -554,7 +554,27 @@ export const translationsComplete = {
   },
   'pt-BR': {
     collectionInsights: {
-      summaryTooltip: "Esta seção resume padrões e totais da sua coleção com base nos dados que você inseriu."
+      summaryTooltip: "Esta seção resume padrões e totais da sua coleção com base nos dados que você inseriu.",
+      reportTooltip: "Gere resumos exportáveis da sua coleção para referência ou documentação.",
+      agingTooltip: "Monitore o tabaco envelhecido e obtenha recomendações sobre tempos de envelhecimento ótimos."
+    },
+    insights: {
+      title: "Informações da Coleção",
+      titleInventory: "Adega de Tabaco",
+      subtitle: "Visão Geral da Coleção",
+      stats: "Estatísticas",
+      log: "Registro",
+      pairingGrid: "Grade de Combinações",
+      rotation: "Rotação",
+      aging: "Envelhecimento",
+      reports: "Relatórios",
+      statsEmpty: "Adicione cachimbos ou tabaco para ver as estatísticas de coleção",
+      addFirstItem: "Adicionar Primeiro Item",
+      reportsEmpty: "Nenhum item para gerar relatórios",
+      reportsEmptyDesc: "Adicione cachimbos e tabaco à sua coleção para gerar relatórios",
+      reportsSubtitle: "Exporte os dados da sua coleção",
+      agingDashboard: "Painel de Envelhecimento",
+      agingSubtitle: "Monitoramento da Adega"
     },
     smokingLog: {
       totalBowls: "{{total}} cuencos totais",
