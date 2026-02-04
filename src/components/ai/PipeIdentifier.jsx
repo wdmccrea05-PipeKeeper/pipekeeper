@@ -7,8 +7,10 @@ import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { useTranslation } from "react-i18next";
 
 export default function PipeIdentifier({ pipe, onUpdatePipe }) {
+  const { t } = useTranslation();
   const entitlements = useEntitlements();
 
   if (!entitlements.canUse("AI_IDENTIFY")) {
@@ -157,9 +159,9 @@ Provide the identification in JSON format with:
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center">
             <ScanSearch className="w-8 h-8 text-violet-600" />
           </div>
-          <h3 className="text-lg font-semibold text-stone-800 mb-2">AI Pipe Identification</h3>
+          <h3 className="text-lg font-semibold text-stone-800 mb-2">{t("tobacconist.aiPipeIdentifier")}</h3>
           <p className="text-stone-500 mb-4 max-w-md mx-auto">
-            Take or upload photos of your pipe and its stamping for AI identification
+            {t("tobacconist.uploadPhotos")}
           </p>
 
           {/* Photo Upload Options */}
@@ -191,7 +193,7 @@ Provide the identification in JSON format with:
               ) : (
                 <Camera className="w-4 h-4 mr-2" />
               )}
-              Take Photo
+              {t("tobacconist.takePhoto")}
             </Button>
             <Button
               variant="outline"
@@ -199,7 +201,7 @@ Provide the identification in JSON format with:
               disabled={uploading}
             >
               <Upload className="w-4 h-4 mr-2" />
-              Upload Photo
+              {t("tobacconist.uploadPhoto")}
             </Button>
           </div>
 
@@ -235,12 +237,12 @@ Provide the identification in JSON format with:
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing...
+                {t("tobacconist.analyzing")}
               </>
             ) : (
               <>
                 <ScanSearch className="w-4 h-4 mr-2" />
-                Identify Pipe
+                {t("tobacconist.identifyPipe")}
               </>
             )}
           </Button>
@@ -255,13 +257,13 @@ Provide the identification in JSON format with:
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-stone-800">Results</h3>
+              <h3 className="font-semibold text-stone-800">{t("tobacconist.results")}</h3>
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => setCollapsed(!collapsed)}
               >
-                {collapsed ? 'Show' : 'Hide'}
+                {collapsed ? t("tobacconist.show") : t("tobacconist.hide")}
               </Button>
             </div>
 
@@ -273,10 +275,10 @@ Provide the identification in JSON format with:
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <ScanSearch className="w-5 h-5 text-violet-600" />
-                    Identification Result
+                    {t("tobacconist.identificationResult")}
                   </CardTitle>
                   <Badge className={confidenceColors[identification.confidence]}>
-                    {identification.confidence} confidence
+                    {identification.confidence} {t("tobacconist.confidence")}
                   </Badge>
                 </div>
               </CardHeader>
@@ -291,7 +293,7 @@ Provide the identification in JSON format with:
                     <p className="font-semibold text-stone-800">{identification.model_line || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-stone-500">Era</p>
+                    <p className="text-sm text-stone-500">{t("tobacconist.era")}</p>
                     <p className="font-semibold text-stone-800">{identification.estimated_era || 'Unknown'}</p>
                   </div>
                   <div>
@@ -305,7 +307,7 @@ Provide the identification in JSON format with:
                     onClick={handleApplyUpdates}
                     className="w-full bg-violet-600 hover:bg-violet-700"
                   >
-                    Apply Suggested Updates
+                    {t("tobacconist.applySuggested")}
                   </Button>
                 )}
               </CardContent>
@@ -314,7 +316,7 @@ Provide the identification in JSON format with:
             {/* Identification Basis */}
             <Card className="border-stone-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">How We Identified It</CardTitle>
+                <CardTitle className="text-lg">{t("tobacconist.howWeIdentified")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-stone-600">{identification.identification_basis}</p>
@@ -327,7 +329,7 @@ Provide the identification in JSON format with:
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Info className="w-5 h-5 text-amber-600" />
-                    Authenticity Notes
+                    {t("tobacconist.authenticityNotes")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -340,7 +342,7 @@ Provide the identification in JSON format with:
             {identification.additional_info && (
               <Card className="border-stone-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">About This Pipe</CardTitle>
+                  <CardTitle className="text-lg">{t("tobacconist.aboutThisPipe")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-stone-600">{identification.additional_info}</p>
@@ -353,7 +355,7 @@ Provide the identification in JSON format with:
                   setIdentification(null);
                   setCapturedPhotos([]);
                 }}>
-                  Identify Again
+                  {t("tobacconist.identifyAgain")}
                 </Button>
               </div>
             </div>
