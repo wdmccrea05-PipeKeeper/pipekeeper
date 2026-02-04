@@ -1837,9 +1837,9 @@ export const translationsExtended = {
       privacyPolicy: "Privacy Policy",
       subscriptionBilling: "Subscription & Billing",
       cantFind: "Can't find what you're looking for?",
-    }
+    },
   }},
-  es: { common: {
+  es: {
     nav: {
       home: "Inicio",
       pipes: "Pipas",
