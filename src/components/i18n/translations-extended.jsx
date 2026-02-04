@@ -6332,7 +6332,8 @@ export const translationsExtended = {
     },
   }},
   "zh-Hans": {
-    nav: {
+    common: {
+      nav: {
       home: "首页",
       pipes: "烟斗",
       tobacco: "烟草",
