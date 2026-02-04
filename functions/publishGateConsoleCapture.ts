@@ -9,9 +9,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const REASONABLE_LIMITS = {
-  pipes: { min: 0, max: 500 },
-  blends: { min: 0, max: 10000 },
-  profiles: { min: 0, max: 5000 },
+  pipes: { min: 0, max: 50000 },
+  blends: { min: 0, max: 5000000 },
+  profiles: { min: 0, max: 50000 },
 };
 
 Deno.serve(async (req) => {
