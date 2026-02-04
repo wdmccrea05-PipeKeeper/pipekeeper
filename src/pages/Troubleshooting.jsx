@@ -4,8 +4,10 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ChevronDown, HelpCircle, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function Troubleshooting() {
+  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState({});
 
   const toggleItem = (id) => {

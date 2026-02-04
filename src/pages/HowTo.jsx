@@ -5,8 +5,10 @@ import { ChevronDown, HelpCircle, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function HowTo() {
+  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState({});
 
   const toggleItem = (id) => {
