@@ -6,7 +6,27 @@
 export const translationsComplete = {
   en: {
     collectionInsights: {
-      summaryTooltip: "This section summarizes patterns and totals across your collection based on the data you've entered."
+      summaryTooltip: "This section summarizes patterns and totals across your collection based on the data you've entered.",
+      reportTooltip: "Generate exportable summaries of your collection for reference or documentation.",
+      agingTooltip: "Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics."
+    },
+    insights: {
+      title: "Collection Insights",
+      titleInventory: "Tobacco Cellar",
+      subtitle: "Collection Overview",
+      stats: "Statistics",
+      log: "Log",
+      pairingGrid: "Pairing Grid",
+      rotation: "Rotation",
+      aging: "Aging",
+      reports: "Reports",
+      statsEmpty: "Add pipes or tobacco to see collection statistics",
+      addFirstItem: "Add First Item",
+      reportsEmpty: "No items to generate reports",
+      reportsEmptyDesc: "Add pipes and tobacco to your collection to generate reports",
+      reportsSubtitle: "Export your collection data",
+      agingDashboard: "Aging Dashboard",
+      agingSubtitle: "Cellar Monitoring"
     },
     smokingLog: {
       totalBowls: "{{total}} total bowls",
