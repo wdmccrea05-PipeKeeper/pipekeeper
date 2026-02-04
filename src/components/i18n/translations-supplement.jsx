@@ -410,6 +410,29 @@ export const translationsSupplement = {
 
   // Dutch (NL)
   nl: {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "Initiële Analyse",
+        additionalInfoNeeded: "Extra Informatie Nodig",
+        yourAnswer: "Uw antwoord...",
+        analyzing: "Analyseren...",
+        continueIdentification: "Identificatie Voortzetten",
+        skipIdentifyNow: "Overslaan en Nu Identificeren",
+        uploadPhotos: "Foto's Uploaden",
+        takePhoto: "Foto Maken",
+        optionalHints: "Optioneel: geef hints om identificatie te verbeteren",
+        nameDesc: "Naam/Beschrijving",
+        brandMaker: "Merk/Fabrikant",
+        shape: "Vorm",
+        stampings: "Stempels",
+        identifying: "Identificeren...",
+        identifyPipe: "Pijp Identificeren",
+        unknownMaker: "Onbekende Fabrikant",
+        add: "Aan Collectie Toevoegen",
+        adding: "Toevoegen...",
+        tryAnother: "Probeer Een Ander"
+      }
+    },
     pipesExtended: {
       unknownMaker: "Onbekende fabrikant",
       searchForPipe: "Pijp Zoeken",
