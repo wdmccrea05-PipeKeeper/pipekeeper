@@ -3,51 +3,66 @@
  * 
  * Provides defensive wrappers around i18n to prevent crashes
  * and ensure graceful fallbacks for missing keys.
+ * 
+ * PRODUCTION MODE: Never renders raw keys or enforcement markers.
+ * Missing keys silently fall back to EN without visible indicators.
+ * DEBUG MODE: Enable with ?i18nDebug=1 to see missing keys visually.
  */
 
 import { useTranslation as useI18nTranslation } from 'react-i18next';
 import { logMissingKey } from './missingKeyHandler';
-import { enforceTranslation } from './enforceTranslation';
+
+const debugMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('i18nDebug') === '1';
 
 /**
- * Safe wrapper around useTranslation + Enforcement
- * Never throws, logs violations, renders 🚫 placeholders
+ * Safe wrapper around useTranslation
+ * PRODUCTION: Missing keys silently fall back to EN without markers.
+ * DEBUG: Missing keys show visual indicator only when ?i18nDebug=1.
  */
 export function useTranslation() {
   try {
     const result = useI18nTranslation();
     
-    // Defensive wrapper around t() function with enforcement
+    // Defensive wrapper around t() function
     const safeT = (key, fallback) => {
       try {
         const translated = result.t(key);
         
-        // ENFORCE: Check for violations
-        const componentInfo = `useTranslation(${key})`;
-        const enforced = enforceTranslation(translated, translated, result.i18n.language, componentInfo);
-        
-        // If enforcement returned a placeholder, return it
-        if (enforced.includes('🚫')) {
-          return enforced;
-        }
-        
-        // If translation returns the key itself (not found), log and use fallback
+        // If translation returns the key itself (not found)
         if (typeof translated === 'string' && translated === key) {
           logMissingKey(key, result.i18n.language);
+          
+          // PRODUCTION: silently use fallback or try EN
           if (fallback) return fallback;
-          return `🚫 ${key}`;
+          
+          // Try falling back to EN version of the key
+          if (result.i18n.language !== 'en') {
+            const enFallback = result.i18n.t(key, { lng: 'en' });
+            if (enFallback && enFallback !== key) {
+              return enFallback;
+            }
+          }
+          
+          // DEBUG: only show indicator if debug mode enabled
+          if (debugMode) {
+            return `⚠️ ${key}`;
+          }
+          
+          // PRODUCTION: return empty string instead of raw key
+          return '';
         }
         
-        // If translation returns a non-string, use fallback or key
+        // If translation returns a non-string, use fallback
         if (typeof translated !== 'string') {
           console.warn(`[safeTranslation] Translation for "${key}" returned non-string:`, translated);
-          return fallback || `🚫 NON_STRING`;
+          if (fallback) return fallback;
+          return '';
         }
         
         return translated;
       } catch (error) {
         console.error(`[safeTranslation] Error translating "${key}":`, error);
-        return `🚫 ERROR`;
+        return fallback || '';
       }
     };
     
@@ -62,7 +77,7 @@ export function useTranslation() {
     return {
       t: (key, fallback) => {
         console.warn(`[safeTranslation] Using fallback for key "${key}"`);
-        return fallback || `🚫 ${key}`;
+        return fallback || '';
       },
       i18n: { language: 'en' },
       ready: false,
