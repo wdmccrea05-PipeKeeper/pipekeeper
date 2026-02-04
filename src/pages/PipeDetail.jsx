@@ -56,9 +56,8 @@ export default function PipeDetailPage() {
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [expandedImage, setExpandedImage] = useState(null);
 
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { useImperial, setUseImperial, formatLength, formatWeight } = useMeasurement();
+  const { useImperial, setUseImperial } = useMeasurement();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
@@ -516,8 +515,8 @@ export default function PipeDetailPage() {
                        <div>
                          <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.length")}</p>
                          <p className="font-medium text-[#E0D8C8]">
-                          {formatLength(pipe.length_mm, useImperial)}
-                        </p>
+                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${pipe.length_mm.toFixed(0)} mm`}
+                         </p>
                       </div>
                     </div>
                   )}
@@ -527,7 +526,7 @@ export default function PipeDetailPage() {
                       <div>
                         <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.weight")}</p>
                         <p className="font-medium text-[#E0D8C8]">
-                          {formatWeight(pipe.weight_grams, useImperial)}
+                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)} oz` : `${pipe.weight_grams.toFixed(0)} g`}
                         </p>
                       </div>
                     </div>
@@ -536,7 +535,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlHeight")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {formatLength(pipe.bowl_height_mm, useImperial)}
+                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_height_mm.toFixed(0)} mm`}
                       </p>
                     </div>
                   )}
@@ -544,7 +543,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlWidth")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {formatLength(pipe.bowl_width_mm, useImperial)}
+                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_width_mm.toFixed(0)} mm`}
                       </p>
                     </div>
                   )}
