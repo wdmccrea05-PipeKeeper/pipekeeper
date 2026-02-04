@@ -17,7 +17,7 @@ export default function UpgradePrompt({ featureName, description }) {
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#A35C5C]/20 border border-[#A35C5C]/40">
             <Lock className="w-5 h-5 text-[#E0D8C8]" />
           </span>
-          <span className="text-[#E0D8C8]">Premium Feature</span>
+          <span className="text-[#E0D8C8]">{t("subscription.premiumFeature")}</span>
         </CardTitle>
       </CardHeader>
 
@@ -36,10 +36,10 @@ export default function UpgradePrompt({ featureName, description }) {
               </Button>
             </a>
             <p className="text-xs text-center text-[#E0D8C8]/70 leading-relaxed">
-              Unlimited pipes & tobacco, advanced tools, cellar tracking, and comprehensive reports
+              {t("subscription.premiumBenefits")}
             </p>
             <p className="text-xs text-center text-[#E0D8C8]/50">
-              Cancel anytime • {t("subscription.dataNotAffected")}
+              {t("subscription.cancelAnytime")} • {t("subscription.dataNotAffected")}
             </p>
           </>
         ) : (

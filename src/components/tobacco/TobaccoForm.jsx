@@ -843,7 +843,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                 <div className="space-y-2">
-                  <Label>Date Cellared</Label>
+                  <Label>{t("tobaccoExtended.dateCellared")}</Label>
                   <Input
                     type="date"
                     value={formData.tin_cellared_date || ''}
@@ -1015,7 +1015,7 @@ Return complete and accurate information based on the blend name or description 
               <Label>{t("tobaccoExtended.productionStatus")}</Label>
               <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
                 <SelectTrigger className="border-stone-200">
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {PRODUCTION_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -1026,7 +1026,7 @@ Return complete and accurate information based on the blend name or description 
               <Label>{t("tobaccoExtended.agingPotential")}</Label>
               <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
                 <SelectTrigger className="border-stone-200">
-                  <SelectValue placeholder="Select potential" />
+                  <SelectValue placeholder={t("common.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {AGING_POTENTIAL.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
