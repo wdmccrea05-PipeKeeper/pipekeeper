@@ -57,7 +57,12 @@ export default function PipeDetailPage() {
   const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
-  const { useImperial, setUseImperial } = useMeasurement();
+  const { useImperial, setUseImperial, formatLength, formatWeight } = useMeasurement();
+  
+  const formatCurrency = (value) => {
+    if (!value) return '$0';
+    return `$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  };
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
