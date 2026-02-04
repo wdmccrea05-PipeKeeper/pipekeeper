@@ -598,6 +598,29 @@ export const translationsSupplement = {
 
   // Polish (PL)
   pl: {
+    ai: {
+      pipeIdentifier: {
+        initialAnalysis: "Analiza Wstępna",
+        additionalInfoNeeded: "Potrzebne Dodatkowe Informacje",
+        yourAnswer: "Twoja odpowiedź...",
+        analyzing: "Analiza...",
+        continueIdentification: "Kontynuuj Identyfikację",
+        skipIdentifyNow: "Pomiń i Zidentyfikuj Teraz",
+        uploadPhotos: "Prześlij Zdjęcia",
+        takePhoto: "Zrób Zdjęcie",
+        optionalHints: "Opcjonalnie: podaj wskazówki, aby poprawić identyfikację",
+        nameDesc: "Nazwa/Opis",
+        brandMaker: "Marka/Producent",
+        shape: "Kształt",
+        stampings: "Stemple",
+        identifying: "Identyfikowanie...",
+        identifyPipe: "Zidentyfikuj Fajkę",
+        unknownMaker: "Nieznany Producent",
+        add: "Dodaj do Kolekcji",
+        adding: "Dodawanie...",
+        tryAnother: "Spróbuj Inną"
+      }
+    },
     pipesExtended: {
       unknownMaker: "Nieznany producent",
       searchForPipe: "Szukaj Fajki",
