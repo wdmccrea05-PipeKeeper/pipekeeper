@@ -1840,7 +1840,8 @@ export const translationsExtended = {
     },
   }},
   es: {
-    nav: {
+    common: {
+      nav: {
       home: "Inicio",
       pipes: "Pipas",
       tobacco: "Tabaco",
