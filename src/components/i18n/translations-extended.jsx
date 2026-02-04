@@ -2615,10 +2615,12 @@ export const translationsExtended = {
       quickAccess: "Accès Rapide",
       syncing: "Synchronisation…",
       goHome: "Aller à l'Accueil",
+      following: "Abonnements",
     },
     auth: {
       login: "Se Connecter",
       loginPrompt: "Veuillez vous connecter pour continuer",
+      loginRequired: "Connexion requise",
     },
     error: {
       pageNotFound: "Page Non Trouvée",
@@ -2732,7 +2734,7 @@ export const translationsExtended = {
       following: "Abonnements",
       pipes: "Pipes",
       tobacco: "Tabac",
-      message: "Mensaje",
+      message: "Message",
       comment: "Commentaire",
       like: "J'aime",
       unlike: "Je n'aime pas",
@@ -3252,6 +3254,8 @@ export const translationsExtended = {
       displayName: "Nom d'Affichage",
       bio: "Bio",
       commentsLabel: "Commentaires",
+      commentsEnabled: "Activé",
+      commentsDisabled: "Désactivé",
       editProfileSettings: "Modifier les Paramètres de Profil",
       profileCurrentlyPrivate: "Votre profil est actuellement privé. Activez la visibilité publique pour vous connecter avec d'autres utilisateurs.",
       makeProfilePublic: "Rendre le Profil Public",
@@ -3320,6 +3324,15 @@ export const translationsExtended = {
       saving: "Enregistrement...",
       note: "Note",
       refresh: "Rafraîchir",
+      unknown: "Inconnu",
+    },
+    units: {
+      tin: "boîte",
+      tinPlural: "boîtes",
+      outOf5: "/5",
+    },
+    footer: {
+      copyright: "© 2025 PipeKeeper. Tous droits réservés.",
     },
     helpCenter: {
       helpCenter: "Centre d'Aide",
