@@ -948,6 +948,16 @@ export const translationsExtended = {
       byName: "By Name",
       editPipe: "Edit Pipe",
       addNewPipe: "Add New Pipe",
+      sortBy: "Sort by",
+      viewMode: "View mode",
+      startCollection: "Start Your Collection",
+      startCollectionDesc: "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place.",
+      noPipesFound: "No Pipes Found",
+      noMatchSearch: "No pipes match your search. Try adjusting your search or filters.",
+      noMatchFilters: "No pipes match your current filters. Try adjusting your selections.",
+      addFirstPipe: "Add Your First Pipe",
+      clearFilters: "Clear Filters",
+      failedToAddPipe: "Failed to add pipe",
     },
     // === TOBACCO PAGE KEYS ===
     tobaccoPage: {

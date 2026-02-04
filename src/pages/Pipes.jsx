@@ -72,10 +72,10 @@ export default function PipesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
       setShowForm(false);
-      toast.success('Pipe added successfully!');
+      toast.success(t("notifications.created"));
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to add pipe');
+      toast.error(error.message || t("pipesPage.failedToAddPipe", "Failed to add pipe"));
     }
   });
 
@@ -225,12 +225,12 @@ export default function PipesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`pl-10 ${PK_THEME.input}`}
-              aria-label="Search pipes"
+              aria-label={t("pipes.search")}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
             <Select value={shapeFilter} onValueChange={setShapeFilter}>
-              <SelectTrigger className={PK_THEME.input} aria-label="Filter by shape">
+              <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.filters")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -238,7 +238,7 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={materialFilter} onValueChange={setMaterialFilter}>
-              <SelectTrigger className={PK_THEME.input} aria-label="Filter by material">
+              <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.material")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -246,8 +246,8 @@ export default function PipesPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className={PK_THEME.input} aria-label="Sort by">
-                <SelectValue placeholder="Sort by..." />
+              <SelectTrigger className={PK_THEME.input} aria-label={t("pipesPage.sortBy", "Sort by")}>
+                <SelectValue placeholder={t("pipesPage.sortBy", "Sort by")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
@@ -256,7 +256,7 @@ export default function PipesPage() {
                 <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
               </SelectContent>
             </Select>
-            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label="View mode">
+            <div className={`flex border rounded-lg w-full sm:w-fit justify-center sm:justify-start ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode", "View mode")}>
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -265,7 +265,7 @@ export default function PipesPage() {
                   localStorage.setItem('pipesViewMode', 'grid');
                 }}
                 className={`rounded-r-none flex-1 sm:flex-none ${viewMode === 'grid' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-                aria-label="Grid view"
+                aria-label={t("pipes.gridView")}
                 aria-pressed={viewMode === 'grid'}
               >
                 <Grid3X3 className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function PipesPage() {
                   localStorage.setItem('pipesViewMode', 'list');
                 }}
                 className={`rounded-l-none flex-1 sm:flex-none ${viewMode === 'list' ? PK_THEME.buttonPrimary : `${PK_THEME.textSubtle} hover:bg-[#2C3E55]/50`}`}
-                aria-label="List view"
+                aria-label={t("pipes.listView")}
                 aria-pressed={viewMode === 'list'}
               >
                 <List className="w-4 h-4" />
@@ -297,17 +297,17 @@ export default function PipesPage() {
         ) : filteredPipes.length === 0 ? (
           <EmptyState
             icon={Package}
-            title={pipes.length === 0 ? "Start Your Collection" : "No Pipes Found"}
+            title={pipes.length === 0 ? t("pipesPage.startCollection", "Start Your Collection") : t("pipesPage.noPipesFound", "No Pipes Found")}
             description={
               pipes.length === 0 
-                ? "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place."
+                ? t("pipesPage.startCollectionDesc", "Begin your pipe journey by adding your first piece. Track details, photos, and smoking notes all in one place.")
                 : searchQuery 
-                  ? `No pipes match "${searchQuery}". Try adjusting your search or filters.`
-                  : "No pipes match your current filters. Try adjusting your selections."
+                  ? t("pipesPage.noMatchSearch", `No pipes match "${searchQuery}". Try adjusting your search or filters.`)
+                  : t("pipesPage.noMatchFilters", "No pipes match your current filters. Try adjusting your selections.")
             }
-            actionLabel={pipes.length === 0 ? "Add Your First Pipe" : null}
+            actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe", "Add Your First Pipe") : null}
             onAction={pipes.length === 0 ? () => setShowForm(true) : null}
-            secondaryActionLabel={pipes.length === 0 ? "Quick Search & Add" : searchQuery || shapeFilter !== 'All Shapes' || materialFilter !== 'All Materials' ? "Clear Filters" : null}
+            secondaryActionLabel={pipes.length === 0 ? t("pipesPage.quickSearchAdd") : searchQuery || shapeFilter !== 'All Shapes' || materialFilter !== 'All Materials' ? t("pipesPage.clearFilters", "Clear Filters") : null}
             onSecondaryAction={pipes.length === 0 ? () => setShowQuickSearch(true) : () => { setSearchQuery(''); setShapeFilter('All Shapes'); setMaterialFilter('All Materials'); }}
           />
         ) : (
