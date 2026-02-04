@@ -14,8 +14,10 @@ import {
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
+import { useTranslation } from "react-i18next";
 
 export default function CollectionReportExporter({ user }) {
+  const { t } = useTranslation();
   const entitlements = useEntitlements();
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
@@ -336,17 +338,17 @@ export default function CollectionReportExporter({ user }) {
               className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Pipe Collection Report
+              {t("reports.pipeCollectionReport")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleReport('pipe', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
-              Download CSV
+              {t("reports.downloadCSV")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleReport('pipe', 'pdf')}>
               <FileText className="w-4 h-4 mr-2" />
-              Preview PDF
+              {t("reports.previewPDF")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -360,17 +362,17 @@ export default function CollectionReportExporter({ user }) {
               className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Tobacco Collection Report
+              {t("reports.tobaccoCollectionReport")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleReport('tobacco', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
-              Download CSV
+              {t("reports.downloadCSV")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleReport('tobacco', 'pdf')}>
               <FileText className="w-4 h-4 mr-2" />
-              Preview PDF
+              {t("reports.previewPDF")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -384,17 +386,17 @@ export default function CollectionReportExporter({ user }) {
               className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Insurance Report
+              {t("reports.insuranceReport")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleReport('insurance', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
-              Download CSV
+              {t("reports.downloadCSV")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleReport('insurance', 'pdf')}>
               <FileText className="w-4 h-4 mr-2" />
-              Preview PDF
+              {t("reports.previewPDF")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -408,17 +410,17 @@ export default function CollectionReportExporter({ user }) {
               className="w-full justify-start border-[#1e3a5f]/30 text-[#E0D8C8] hover:bg-[#1e3a5f]/10"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Collection Stats Report
+              {t("reports.collectionStatsReport")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => handleReport('stats', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
-              Download CSV
+              {t("reports.downloadCSV")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleReport('stats', 'pdf')}>
               <FileText className="w-4 h-4 mr-2" />
-              Preview PDF
+              {t("reports.previewPDF")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -446,11 +448,11 @@ export default function CollectionReportExporter({ user }) {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setPdfPreview(null)}>
-              Cancel
+              {t("forms.cancel")}
             </Button>
             <Button onClick={downloadPDF}>
               <FileText className="w-4 h-4 mr-2" />
-              Print/Download PDF
+              {t("reports.printDownloadPDF")}
             </Button>
           </DialogFooter>
         </DialogContent>

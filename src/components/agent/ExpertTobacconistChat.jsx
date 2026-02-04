@@ -10,6 +10,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import { FormattedTobacconistResponse, formatTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { classifyQuestion } from "@/components/utils/questionClassifier";
+import { useTranslation } from "react-i18next";
 
 const TOBACCONIST_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";
@@ -18,6 +19,7 @@ const TOBACCONIST_ICON =
  * Expert Tobacconist chat (stability + continuity fixed)
  */
 export default function ExpertTobacconistChat() {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
 
   const [conversationId, setConversationId] = useState(null);
@@ -230,8 +232,8 @@ export default function ExpertTobacconistChat() {
       <div className="flex items-center gap-3">
         <img src={TOBACCONIST_ICON} alt="AI Tobacconist" className="w-8 h-8 rounded-full object-cover" />
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">Ask the Expert</h3>
-          <p className="text-sm text-white/70">Ask questions and discuss the hobby</p>
+          <h3 className="text-lg font-semibold text-white">{t("tobacconist.askTheExpert")}</h3>
+          <p className="text-sm text-white/70">{t("tobacconist.askTheExpertDesc")}</p>
         </div>
         <Sparkles className="w-5 h-5 text-white/70" />
       </div>
@@ -278,7 +280,7 @@ export default function ExpertTobacconistChat() {
           <div className="text-left">
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
               <Loader2 className="w-4 h-4 animate-spin text-white/70" />
-              <p className="text-sm text-white/70">Thinking…</p>
+              <p className="text-sm text-white/70">{t("ai.thinking")}</p>
             </div>
           </div>
         )}
@@ -298,7 +300,7 @@ export default function ExpertTobacconistChat() {
         <div className="flex justify-end">
           <Button onClick={handleSend} disabled={loading || !input.trim()} className="gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            Send
+            {t("tobacconist.sendMessage")}
           </Button>
         </div>
       </div>
