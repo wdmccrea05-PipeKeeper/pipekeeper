@@ -1023,11 +1023,7 @@ ${userText}
               {conversationMessages.length > 0 ? "Continue the conversation..." : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
-              placeholder={
-                conversationMessages.length > 0
-                  ? "Ask a follow-up (Cmd+Enter to send)"
-                  : t("tobacconist.askAnything")
-              }
+              placeholder={t("tobacconist.askExpertPlaceholder")}
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => (conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value))}
               className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
