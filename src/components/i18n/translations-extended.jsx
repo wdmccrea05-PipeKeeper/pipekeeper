@@ -5852,9 +5852,9 @@ export const translationsExtended = {
       agingReport: "Raport Starzenia",
       cellaredStartDate: "Data Początkowa Składowania",
       cellaredEndDate: "Data Końcowa Składowania",
-    }
+    },
   }},
-  ja: { common: {
+  ja: {
     nav: {
       home: "ホーム",
       pipes: "パイプ",
