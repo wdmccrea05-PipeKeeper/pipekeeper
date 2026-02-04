@@ -541,7 +541,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => {
-                                    if (window.confirm('Delete this message?')) {
+                                    if (window.confirm(t("messaging.deleteConfirm"))) {
                                       deleteMessageMutation.mutate(message.id);
                                     }
                                   }}
