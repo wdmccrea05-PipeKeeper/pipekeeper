@@ -1,4 +1,3 @@
-
 /**
  * Comprehensive translation keys for all features
  * Covers: pipes, tobacco, community, reports, AI, forms, notifications
@@ -182,6 +181,11 @@ export const translationsExtended = {
       renewsAuto: "Renews automatically",
       cancelAnytime: "Cancel anytime",
       learnMore: "Learn more",
+      premiumActive: "Premium Active",
+      premiumActiveSubtextPaid: "Full access to all premium features",
+      trialEndedTitle: "Your trial has ended",
+      trialEndedBody: "Subscribe to continue using premium features.",
+      continueFree: "Continue with Free",
     },
     // === REPORTS ===
     reports: {
@@ -473,6 +477,11 @@ export const translationsExtended = {
       renewsAuto: "Se renueva automáticamente",
       cancelAnytime: "Cancelar en cualquier momento",
       learnMore: "Más información",
+      premiumActive: "Premium Activo",
+      premiumActiveSubtextPaid: "Acceso completo a todas las características premium",
+      trialEndedTitle: "Tu prueba ha terminado",
+      trialEndedBody: "Suscríbete para continuar usando características premium.",
+      continueFree: "Continuar con Gratis",
     },
     reports: {
       title: "Reportes",
@@ -759,6 +768,11 @@ export const translationsExtended = {
       renewsAuto: "Se renouvelle automatiquement",
       cancelAnytime: "Annuler à tout moment",
       learnMore: "En savoir plus",
+      premiumActive: "Premium Actif",
+      premiumActiveSubtextPaid: "Accès complet à toutes les fonctionnalités premium",
+      trialEndedTitle: "Votre essai est terminé",
+      trialEndedBody: "Abonnez-vous pour continuer à utiliser les fonctionnalités premium.",
+      continueFree: "Continuer avec Gratuit",
     },
     reports: {
       title: "Rapports",
@@ -1045,6 +1059,11 @@ export const translationsExtended = {
       renewsAuto: "Wird automatisch erneuert",
       cancelAnytime: "Jederzeit kündbar",
       learnMore: "Mehr Erfahren",
+      premiumActive: "Premium Aktiv",
+      premiumActiveSubtextPaid: "Vollständiger Zugriff auf alle Premium-Funktionen",
+      trialEndedTitle: "Ihre Testversion ist beendet",
+      trialEndedBody: "Abonnieren Sie, um weiterhin Premium-Funktionen zu nutzen.",
+      continueFree: "Mit Kostenlos Fortfahren",
     },
     reports: {
       title: "Berichte",
@@ -1331,6 +1350,11 @@ export const translationsExtended = {
       renewsAuto: "Si rinnova automaticamente",
       cancelAnytime: "Annulla in qualsiasi momento",
       learnMore: "Scopri di Più",
+      premiumActive: "Premium Attivo",
+      premiumActiveSubtextPaid: "Accesso completo a tutte le funzionalità premium",
+      trialEndedTitle: "La tua prova è terminata",
+      trialEndedBody: "Abbonati per continuare a usare le funzionalità premium.",
+      continueFree: "Continua con Gratuito",
     },
     reports: {
       title: "Rapporti",
@@ -1617,6 +1641,11 @@ export const translationsExtended = {
       renewsAuto: "Se renova automaticamente",
       cancelAnytime: "Cancelar a qualquer momento",
       learnMore: "Saiba Mais",
+      premiumActive: "Premium Ativo",
+      premiumActiveSubtextPaid: "Acesso completo a todos os recursos premium",
+      trialEndedTitle: "Seu teste terminou",
+      trialEndedBody: "Assine para continuar usando recursos premium.",
+      continueFree: "Continuar com Gratuito",
     },
     reports: {
       title: "Relatórios",
@@ -1903,6 +1932,11 @@ export const translationsExtended = {
       renewsAuto: "Wordt automatisch verlengt",
       cancelAnytime: "Op elk moment opzeggen",
       learnMore: "Meer Informatie",
+      premiumActive: "Premium Actief",
+      premiumActiveSubtextPaid: "Volledige toegang tot alle premium functies",
+      trialEndedTitle: "Je proef is afgelopen",
+      trialEndedBody: "Abonneer om premium functies te blijven gebruiken.",
+      continueFree: "Doorgaan met Gratis",
     },
     reports: {
       title: "Rapporten",
@@ -2189,6 +2223,11 @@ export const translationsExtended = {
       renewsAuto: "Odnawia się automatycznie",
       cancelAnytime: "Anuluj w dowolnym momencie",
       learnMore: "Dowiedz Się Więcej",
+      premiumActive: "Premium Aktywny",
+      premiumActiveSubtextPaid: "Pełny dostęp do wszystkich funkcji premium",
+      trialEndedTitle: "Twoja próba się zakończyła",
+      trialEndedBody: "Subskrybuj, aby kontynuować korzystanie z funkcji premium.",
+      continueFree: "Kontynuuj z Darmową",
     },
     reports: {
       title: "Raporty",
@@ -2475,6 +2514,11 @@ export const translationsExtended = {
       renewsAuto: "自動更新されます",
       cancelAnytime: "いつでもキャンセル可能",
       learnMore: "詳しく知る",
+      premiumActive: "プレミアム アクティブ",
+      premiumActiveSubtextPaid: "すべてのプレミアム機能へのフルアクセス",
+      trialEndedTitle: "トライアルが終了しました",
+      trialEndedBody: "プレミアム機能を引き続き使用するにはサブスクリプションをご利用ください。",
+      continueFree: "無料で続ける",
     },
     reports: {
       title: "レポート",
@@ -2761,6 +2805,11 @@ export const translationsExtended = {
       renewsAuto: "自动续订",
       cancelAnytime: "随时取消",
       learnMore: "了解更多",
+      premiumActive: "高级版激活",
+      premiumActiveSubtextPaid: "完全访问所有高级功能",
+      trialEndedTitle: "您的试用已结束",
+      trialEndedBody: "订阅以继续使用高级功能。",
+      continueFree: "继续使用免费版",
     },
     reports: {
       title: "报告",
