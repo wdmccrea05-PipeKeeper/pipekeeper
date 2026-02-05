@@ -30,10 +30,21 @@ export default function TermsGate({ user }) {
 
     try {
       const ISO = new Date().toISOString();
-      await base44.auth.updateMe({ tos_accepted_at: ISO });
-
-      // Base44-safe: reload so Layout's me() refreshes and gate disappears
-      window.location.reload();
+      // Retry logic for network issues
+      let lastError = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await base44.auth.updateMe({ tos_accepted_at: ISO });
+          setTimeout(() => window.location.reload(), 100);
+          return;
+        } catch (e) {
+          lastError = e;
+          if (attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 500 + attempt * 500));
+          }
+        }
+      }
+      throw lastError;
     } catch (e) {
       setErr(
         e?.message ||
