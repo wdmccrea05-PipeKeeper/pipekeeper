@@ -191,7 +191,7 @@ export function useCurrentUser() {
   const computedProvider = resolveProviderFromProfile(profile);
 
   // Compute derived flags
-  const isLoading = userLoading || subLoading || profileLoading;
+  const isLoading = userLoading || subLoading;
   const hasPremium = hasPremiumAccess(rawUser, subscription);
   const hasPaid = hasPaidAccess(rawUser, subscription);
 
