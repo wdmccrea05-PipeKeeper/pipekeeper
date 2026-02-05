@@ -4,31 +4,34 @@
  * 
  * Rules:
  * - Provider is derived from subscription data, NOT platform/UI state
- * - If both active subscriptions exist, Stripe wins (web canonical)
+ * - NO DEFAULTS - return null if uncertain
+ * - Stripe ALWAYS wins if present
+ * - Apple ONLY if explicit provider field or originalTransactionId present
  * - Platform MUST NEVER imply provider
- * - Provider must be computed at runtime
  */
 
 export function resolveSubscriptionProvider(subscription) {
   if (!subscription) return null;
 
-  // PRIORITY 1: Explicit provider field (most reliable)
-  const provider = (subscription?.provider || "").toLowerCase();
-  if (provider === "stripe" || provider === "apple") {
-    return provider;
-  }
-
-  // PRIORITY 2: Fallback to stripe_customer_id
-  if (subscription.stripe_customer_id) {
+  // PRIORITY 1: Stripe always wins if present
+  if (subscription.stripeCustomerId || subscription.stripe_customer_id) {
     return "stripe";
   }
 
-  // PRIORITY 3: Fallback to apple originalTransactionId
-  if (subscription.provider_subscription_id && subscription.provider === "apple") {
+  // PRIORITY 2: Explicit provider field (if apple)
+  if (subscription.provider === "apple") {
     return "apple";
   }
 
-  // No provider resolved
+  // PRIORITY 3: Apple originalTransactionId (legacy)
+  if (subscription.appleOriginalTransactionId || subscription.provider_subscription_id) {
+    // Only return apple if provider wasn't already stripe
+    if (subscription.provider === "apple") {
+      return "apple";
+    }
+  }
+
+  // NO DEFAULTS - return null if uncertain
   return null;
 }
 

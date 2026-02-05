@@ -29,6 +29,7 @@ import { handleManageSubscription } from "@/components/utils/manageSubscription"
 
 // Canonical user/sub state (already in your repo)
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -299,14 +300,23 @@ export default function ProfilePage() {
                 {!isIOSCompanion() ? (
                   <>
                     {subscription?.status === "active" || subscription?.status === "trialing" ? (
-                       <Button
-                         className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                         onClick={() => handleManageSubscription(user, subscription, navigate, createPageUrl)}
-                       >
-                         {t("profile.manageSubscription")}
-                         <ArrowRight className="w-4 h-4 ml-2" />
-                       </Button>
-                     ) : null}
+                        <Button
+                          className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                          onClick={() => {
+                            const provider = resolveSubscriptionProvider(subscription);
+                            if (provider === "stripe") {
+                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Kravgbm00";
+                            } else if (provider === "apple") {
+                              window.location.href = "itms-apps://apps.apple.com/account/subscriptions";
+                            } else {
+                              navigate(createPageUrl("Subscription"));
+                            }
+                          }}
+                        >
+                          {t("profile.manageSubscription")}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      ) : null}
 
                     {shouldShowPurchaseUI() && !hasActiveSubscription && (
                       <Button
@@ -367,9 +377,12 @@ export default function ProfilePage() {
               <Badge className="bg-[#A35C5C] text-white border-0">
                 {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
               </Badge>
-              {subscriptionProvider ? (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: {subscriptionProvider}</Badge>
-              ) : null}
+              {resolveSubscriptionProvider(subscription) === "stripe" && (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
+              )}
+              {resolveSubscriptionProvider(subscription) === "apple" && (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Apple</Badge>
+              )}
               {subscription?.status ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Status: {subscription.status}</Badge>
               ) : null}
