@@ -182,7 +182,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Initialize Stripe using centralized helper
-    const stripe = getStripeClient();
+    const stripe = await getStripeClient(req);
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default to true
