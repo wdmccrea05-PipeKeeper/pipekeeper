@@ -4,31 +4,17 @@
  */
 
 import { isIOSWebView, openAppleSubscriptions } from "@/components/utils/nativeIAPBridge";
-import { base44 } from "@/api/base44Client";
+import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+
+const STRIPE_PORTAL_URL = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
 
 export async function handleManageSubscription(user, subscription, navigate, createPageUrl) {
-  const provider = subscription?.provider ? (subscription.provider).toLowerCase() : null;
+  const provider = resolveSubscriptionProvider(subscription);
 
   // Stripe subscription: open customer portal
   if (provider === "stripe") {
-    try {
-      const res = await base44.functions.invoke("createCustomerPortalSession", {
-        return_url: window.location.origin + createPageUrl("Profile"),
-      });
-
-      if (res?.data?.url) {
-        window.location.href = res.data.url;
-        return;
-      }
-
-      // Fallback to Stripe billing login (explicitly allowed)
-      window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
-      return;
-    } catch (err) {
-      console.error("[manageSubscription] Stripe portal error:", err);
-      // Fallback
-      window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
-    }
+    // Open Stripe portal in new tab (no proxy, no iframe)
+    window.open(STRIPE_PORTAL_URL, "_blank");
     return;
   }
 
@@ -38,7 +24,8 @@ export async function handleManageSubscription(user, subscription, navigate, cre
       openAppleSubscriptions();
       return;
     }
-    // Web: navigate to App Store (user must manage on device)
+    // On web, direct user to App Store (must manage on device)
+    window.open("https://apps.apple.com/app/pipekeeper/id1234567890?action=write-review", "_blank");
     return;
   }
 

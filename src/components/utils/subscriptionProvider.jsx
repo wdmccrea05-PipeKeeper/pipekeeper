@@ -12,21 +12,23 @@
 export function resolveSubscriptionProvider(subscription) {
   if (!subscription) return null;
 
-  // CRITICAL: Check provider field from subscription entity
+  // PRIORITY 1: Explicit provider field (most reliable)
   const provider = (subscription?.provider || "").toLowerCase();
-  
-  // If subscription is active, use its declared provider
-  if (subscription.status === "active" || subscription.status === "trialing") {
-    if (provider === "stripe" || provider === "apple") {
-      return provider;
-    }
-  }
-
-  // For incomplete/past_due subscriptions, still return provider if set
   if (provider === "stripe" || provider === "apple") {
     return provider;
   }
 
+  // PRIORITY 2: Fallback to stripe_customer_id
+  if (subscription.stripe_customer_id) {
+    return "stripe";
+  }
+
+  // PRIORITY 3: Fallback to apple originalTransactionId
+  if (subscription.provider_subscription_id && subscription.provider === "apple") {
+    return "apple";
+  }
+
+  // No provider resolved
   return null;
 }
 
