@@ -176,7 +176,8 @@ export function useCurrentUser() {
   const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
 
   // Compute provider at runtime (canonical source)
-  const computedProvider = subscription?.provider ? (subscription.provider).toLowerCase() : null;
+  import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+  const computedProvider = resolveSubscriptionProvider(subscription);
 
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
