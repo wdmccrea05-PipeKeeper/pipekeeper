@@ -1,264 +1,97 @@
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/TermsGate.jsx
+import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/components/utils/createPageUrl";
 
-const LOCAL_BYPASS_KEY = "pk_tos_accepted_local_v1";
+const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
+
+function is429(err) {
+  const msg = String(err?.message || err || "");
+  return msg.includes("429") || msg.toLowerCase().includes("rate limit");
+}
 
 export default function TermsGate({ user }) {
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
 
-  const tosUrl = useMemo(() => `${createPageUrl("TermsOfService")}?view=1`, []);
-  const privacyUrl = useMemo(() => `${createPageUrl("PrivacyPolicy")}?view=1`, []);
-
-  // If the component remounts (due to query invalidation / refresh), keep the checkbox checked.
-  useEffect(() => {
+  const accepted = useMemo(() => {
     try {
-      const v = localStorage.getItem("pk_tos_checkbox_v1");
-      if (v === "1") setChecked(true);
+      if (localStorage.getItem(LOCAL_ACCEPT_KEY) === "1") return true;
     } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("pk_tos_checkbox_v1", checked ? "1" : "0");
-    } catch {}
-  }, [checked]);
-
-  // Treat ToS as accepted if either:
-  // - backend profile has an accepted timestamp
-  // - local bypass exists (emergency escape hatch)
-  const alreadyAccepted = useMemo(() => {
-    try {
-      if (localStorage.getItem(LOCAL_BYPASS_KEY) === "1") return true;
-    } catch {}
-
     const iso = user?.tos_accepted_at || user?.userProfile?.tos_accepted_at;
-    if (!iso) return false;
-    const t = Date.parse(iso);
-    return Number.isFinite(t);
+    return Boolean(iso);
   }, [user]);
 
   if (!user) return null;
-  if (alreadyAccepted) return null;
+  if (accepted) return null;
 
-  async function acceptOnServer() {
+  async function onAccept() {
+    if (!checked) {
+      setMsg("Please check the box to confirm you agree.");
+      return;
+    }
+
     setSubmitting(true);
-    setErr("");
+    setMsg("");
 
     try {
-      // Explicit POST + robust response handling
-      const res = await base44.functions.invoke("acceptTermsForMe", {
-        method: "POST",
-        body: {},
-      });
+      const res = await base44.functions.invoke("acceptTermsForMe", { method: "POST", body: {} });
+      if (!res?.data?.ok) throw new Error(res?.data?.error || "Failed to accept terms");
 
-      const ok = Boolean(res?.data?.ok);
-      if (!ok) {
-        const msg = res?.data?.error || "Failed to accept terms";
-        throw new Error(msg);
-      }
-
-      // Backend accepted: clear local bypass & reload to refresh profile
-      try {
-        localStorage.removeItem(LOCAL_BYPASS_KEY);
-        localStorage.removeItem("pk_tos_checkbox_v1");
-      } catch {}
-
-      setTimeout(() => window.location.reload(), 150);
+      // Don’t hard-reload; just soft refresh the app state
+      // (rate limits + reload loops are killing you)
+      setMsg("Saved.  Continuing…");
+      setTimeout(() => {
+        // Let React Query refetch naturally later; we just remove the gate now.
+        try { localStorage.removeItem(LOCAL_ACCEPT_KEY); } catch {}
+        window.location.href = "/"; // simple nav; no repeated reloads
+      }, 300);
     } catch (e) {
       console.error("[TermsGate] accept failed:", e);
-      setErr("Could not save acceptance right now. You may continue temporarily or try again.");
+
+      // If rate-limited, allow temporary local acceptance so you can proceed without hammering APIs
+      if (is429(e)) {
+        try { localStorage.setItem(LOCAL_ACCEPT_KEY, "1"); } catch {}
+        setMsg("Base44 is rate-limiting requests.  Continuing temporarily…");
+        setTimeout(() => (window.location.href = "/"), 300);
+      } else {
+        setMsg("Could not save right now. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
-  function continueTemporarily() {
-    // Emergency escape hatch:
-    // Allows app use even if server acceptance fails due to duplicates / transient API issues.
-    try {
-      localStorage.setItem(LOCAL_BYPASS_KEY, "1");
-    } catch {}
-    setTimeout(() => window.location.reload(), 50);
-  }
-
-  const disabled = submitting; // DO NOT lock behind checkbox anymore (checkbox is still shown)
-
   return (
-    <div style={styles.overlay} role="dialog" aria-modal="true">
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <div style={styles.title}>Before you continue</div>
-          <div style={styles.subtitle}>
-            Please review and accept the Terms of Service and Privacy Policy.
-          </div>
+    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#101b2a] p-5 shadow-2xl">
+        <div className="text-xl font-bold text-[#E0D8C8]">Terms of Service</div>
+        <div className="mt-2 text-sm text-[#E0D8C8]/70">
+          Please accept to continue.
         </div>
 
-        <div style={styles.linksRow}>
-          <a href={tosUrl} target="_blank" rel="noreferrer" style={styles.link}>
-            Terms of Service
-          </a>
-          <span style={styles.dot}>•</span>
-          <a href={privacyUrl} target="_blank" rel="noreferrer" style={styles.link}>
-            Privacy Policy
-          </a>
-        </div>
-
-        <label style={styles.checkboxRow}>
+        <label className="mt-4 flex gap-2 items-start text-[#E0D8C8]">
           <input
             type="checkbox"
             checked={checked}
             onChange={(e) => setChecked(e.target.checked)}
-            style={styles.checkbox}
+            className="mt-1"
           />
-          <span style={styles.checkboxText}>
-            I have read and agree to the Terms of Service and Privacy Policy.
+          <span className="text-sm">
+            I agree to the Terms of Service and Privacy Policy.
           </span>
         </label>
 
-        {err ? <div style={styles.error}>{err}</div> : null}
+        {msg ? <div className="mt-3 text-xs text-[#E0D8C8]/70">{msg}</div> : null}
 
         <button
-          onClick={() => {
-            // Still require the checkbox logically, but don’t “lock” forever if remounting happens.
-            if (!checked) {
-              setErr("Please check the box to confirm you agree.");
-              return;
-            }
-            if (!submitting) acceptOnServer();
-          }}
-          disabled={disabled}
-          style={{
-            ...styles.button,
-            opacity: disabled ? 0.7 : 1,
-            cursor: disabled ? "not-allowed" : "pointer",
-          }}
-        >
-          {submitting ? "Saving..." : "Accept and Continue"}
-        </button>
-
-        <button
-          onClick={continueTemporarily}
+          onClick={onAccept}
           disabled={submitting}
-          style={{
-            ...styles.secondaryButton,
-            opacity: submitting ? 0.7 : 1,
-            cursor: submitting ? "not-allowed" : "pointer",
-          }}
+          className="mt-4 w-full rounded-xl bg-[#7b2d2d] px-4 py-3 font-bold text-white disabled:opacity-70"
         >
-          Continue temporarily (if saving fails)
+          {submitting ? "Saving…" : "Accept and Continue"}
         </button>
-
-        <p style={styles.small}>
-          If acceptance fails repeatedly, it usually means your user profile record is duplicated or
-          permissions are misconfigured. This temporary option lets you use the app while we repair it.
-        </p>
       </div>
     </div>
   );
 }
-
-const styles = {
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    zIndex: 999999,
-    background: "rgba(0,0,0,0.65)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    width: "min(720px, 100%)",
-    borderRadius: 16,
-    background:
-      "linear-gradient(180deg, rgba(20,34,52,0.98), rgba(14,24,38,0.98))",
-    border: "1px solid rgba(255,255,255,0.10)",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
-    padding: 20,
-    color: "#f3e7d3",
-  },
-  header: { marginBottom: 14 },
-  title: {
-    fontSize: 22,
-    fontWeight: 800,
-    letterSpacing: "-0.01em",
-    color: "#ffffff",
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "rgba(243,231,211,0.85)",
-    lineHeight: 1.4,
-  },
-  linksRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 10,
-    marginBottom: 14,
-    flexWrap: "wrap",
-  },
-  link: {
-    color: "#f3e7d3",
-    textDecoration: "underline",
-    fontWeight: 700,
-  },
-  dot: { color: "rgba(243,231,211,0.55)" },
-  checkboxRow: {
-    display: "flex",
-    gap: 10,
-    alignItems: "flex-start",
-    userSelect: "none",
-    marginBottom: 12,
-  },
-  checkbox: { marginTop: 3 },
-  checkboxText: {
-    fontSize: 14,
-    color: "rgba(243,231,211,0.95)",
-    lineHeight: 1.35,
-  },
-  error: {
-    marginTop: 10,
-    marginBottom: 10,
-    padding: "10px 12px",
-    borderRadius: 10,
-    background: "rgba(180, 60, 60, 0.18)",
-    border: "1px solid rgba(180, 60, 60, 0.35)",
-    color: "#ffd7d7",
-    fontSize: 13,
-    lineHeight: 1.35,
-  },
-  button: {
-    width: "100%",
-    marginTop: 8,
-    border: "none",
-    borderRadius: 12,
-    padding: "12px 14px",
-    background: "#7b2d2d",
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: 800,
-  },
-  secondaryButton: {
-    width: "100%",
-    marginTop: 10,
-    borderRadius: 12,
-    padding: "10px 14px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    color: "#f3e7d3",
-    fontSize: 13,
-    fontWeight: 700,
-  },
-  small: {
-    marginTop: 10,
-    marginBottom: 0,
-    fontSize: 12,
-    color: "rgba(243,231,211,0.65)",
-    lineHeight: 1.35,
-  },
-};
