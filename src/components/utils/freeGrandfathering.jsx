@@ -17,7 +17,7 @@ export async function ensureFreeGrandfatherFlag(email) {
     const created = await base44.entities.UserProfile.create({
       user_email: userEmail,
       legacy_premium: true,
-      subscription_tier: "PREMIUM",
+      subscription_tier: "premium",
     });
     return { ok: true, created: true, id: created?.id || null };
   }
@@ -30,7 +30,7 @@ export async function ensureFreeGrandfatherFlag(email) {
   // Update existing profile
   await base44.entities.UserProfile.update(profile.id, {
     legacy_premium: true,
-    subscription_tier: profile?.subscription_tier || "PREMIUM",
+    subscription_tier: profile?.subscription_tier || "premium",
   });
 
   return { ok: true, updated: true, id: profile?.id || null };
