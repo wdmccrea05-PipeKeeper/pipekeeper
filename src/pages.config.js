@@ -58,7 +58,6 @@ import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
-import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -77,7 +76,6 @@ import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
 import TermsOfService from './pages/TermsOfService';
-import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
@@ -85,6 +83,8 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import Tobacco from './pages/Tobacco';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -100,7 +100,6 @@ export const PAGES = {
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
-    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
     "Invite": Invite,
@@ -119,7 +118,6 @@ export const PAGES = {
     "Support": Support,
     "SupportFull": SupportFull,
     "TermsOfService": TermsOfService,
-    "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
@@ -127,6 +125,8 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "Tobacco": Tobacco,
+    "Home": Home,
 }
 
 export const pagesConfig = {
