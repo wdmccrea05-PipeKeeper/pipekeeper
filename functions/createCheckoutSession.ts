@@ -229,14 +229,14 @@ Deno.serve(async (req) => {
     return Response.json({ ok: true, url: session.url });
   } catch (error) {
     const msg = error?.message || String(error);
-    console.error("[createCheckoutSession] Fatal error:", msg);
+    console.error("[createCheckoutSession] Fallback triggered:", msg);
     
-    // Return structured error so frontend can trigger backup mode
+    // Return 200 with fallback flag so frontend knows to use direct links
     return Response.json({
       ok: false,
-      error: "CHECKOUT_CREATION_FAILED",
-      message: msg,
-      fallback: true
-    }, { status: 200 });
+      fallback: true,
+      error: "CHECKOUT_UNAVAILABLE",
+      message: "Using backup checkout method"
+    });
   }
 });
