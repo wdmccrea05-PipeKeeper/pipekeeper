@@ -25,9 +25,9 @@ import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFro
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
-  const { t } = useTranslation();
   if (isAppleBuild) return null;
 
+  const { t } = useTranslation();
   const hasPaidAccess = user?.hasPremium || user?.isPremium || false;
   const entitlements = useEntitlements();
 
