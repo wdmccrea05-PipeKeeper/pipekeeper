@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation as useI18nextTranslation } from "react-i18next";
 import { humanizeKey } from "./index.jsx";
 
 /**
@@ -7,8 +7,8 @@ import { humanizeKey } from "./index.jsx";
  * - Never returns raw keys
  * - Uses provided fallback if supplied, otherwise humanizes the key
  */
-export function useSafeTranslation() {
-  const { t, i18n } = useTranslation();
+export function useTranslation() {
+  const { t, i18n } = useI18nextTranslation();
 
   function safeT(key, fallback) {
     if (!key) return "";
