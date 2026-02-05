@@ -1,5 +1,7 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { scopedEntities } from "@/components/api/scopedEntities";
 
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
@@ -8,19 +10,17 @@ import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 
 export default function Home() {
   const { user, isLoading, error } = useCurrentUser();
-  const { useQuery } = require("@tanstack/react-query");
-  const { base44 } = require("@/api/base44Client");
 
   const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes-home', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
+    queryKey: ["home-pipes", user?.email],
+    queryFn: () => scopedEntities.Pipe.listForUser(user?.email),
     enabled: !!user?.email,
     initialData: [],
   });
 
   const { data: blends = [] } = useQuery({
-    queryKey: ['blends-home', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-updated_date', 500),
+    queryKey: ["home-blends", user?.email],
+    queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
     enabled: !!user?.email,
     initialData: [],
   });
@@ -43,7 +43,7 @@ export default function Home() {
     );
   }
 
-  const tier = (user?.subscription_tier || "free").toUpperCase();
+  const tier = String(user?.subscription_tier || "free").toUpperCase();
 
   return (
     <div className="min-h-screen p-4">
@@ -62,9 +62,10 @@ export default function Home() {
             <TobaccoCollectionStats />
             <PairingGrid user={user} pipes={pipes} blends={blends} />
           </div>
+
           <div className="space-y-4">
-            <CollectionInsightsPanel pipes={pipes} blends={blends} user={user} />
-            <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+            <CollectionInsightsPanel user={user} pipes={pipes} blends={blends} />
+            <SmokingLogPanel user={user} pipes={pipes} blends={blends} />
           </div>
         </div>
       </div>
