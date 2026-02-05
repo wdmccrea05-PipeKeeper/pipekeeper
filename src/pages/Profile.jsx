@@ -62,10 +62,29 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, profile, provider, subscription, isLoading: userLoading } = useCurrentUser();
+  const { user, provider, subscription, isLoading: userLoading } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
+
+  // Load UserProfile separately
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["user-profile", userId, email],
+    queryFn: async () => {
+      if (!userId && !email) return null;
+      try {
+        const records = await base44.entities.UserProfile.filter({
+          user_email: email,
+        });
+        return pickBestProfile(records) || null;
+      } catch (e) {
+        console.warn("[Profile] Could not load UserProfile:", e);
+        return null;
+      }
+    },
+    enabled: !!(userId || email),
+    staleTime: 30_000,
+  });
 
   // Sanity check: detect provider conflicts (dev/admin only)
   useEffect(() => {
