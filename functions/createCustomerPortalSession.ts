@@ -2,6 +2,7 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
+
 // Inline getStripeClient to avoid import issues
 import Stripe from "npm:stripe@17.5.0";
 
