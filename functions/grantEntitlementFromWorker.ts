@@ -72,7 +72,12 @@ Deno.serve(async (req: Request) => {
       subscription_level: "paid",
       subscription_tier: normalizedTier,
       subscription_status: "active",
+      subscription_interval: normalizedInterval,
+      subscription_provider: provider || "stripe",
     };
+
+    if (stripe_customer_id) userUpdates.stripe_customer_id = stripe_customer_id;
+    if (stripe_subscription_id) userUpdates.stripe_subscription_id = stripe_subscription_id;
 
     await base44.asServiceRole.entities.User.update(user.id, userUpdates);
 
