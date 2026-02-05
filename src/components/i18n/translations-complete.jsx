@@ -1,3 +1,4 @@
+
 /**
  * Complete translation map for all locales
  * Fills all missing keys identified in audit
@@ -5,12 +6,10 @@
 
 export const translationsComplete = {
   en: {
-   tobacconist: {
-     identificationTooltip: 'Upload photos for quick identification',
-     whatIfTooltip: 'Run hypothetical scenarios',
-     updatesTooltip: 'Check automatic suggestions',
-     outOfDateRegenRec: 'Out of date - regeneration recommended'
-   },
+   identificationTooltip: 'Upload photos for quick identification',
+   whatIfTooltip: 'Run hypothetical scenarios',
+   updatesTooltip: 'Check automatic suggestions',
+   outOfDateRegenRec: 'Out of date - regeneration recommended',
    helpContent: {
       faqFull: {
         pageTitle: "PipeKeeper FAQ",
@@ -60,6 +59,10 @@ export const translationsComplete = {
         agingDashboard: "Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics."
       }
     },
+    identificationTooltip: 'Sube fotos para identificación rápida',
+    whatIfTooltip: 'Ejecuta escenarios hipotéticos',
+    updatesTooltip: 'Revisa recomendaciones automáticas',
+    outOfDateRegenRec: 'Desactualizado - se recomienda regeneración',
     tobacconist: {
       title: 'Tabaquista Experto',
       subtitle: 'Consulta de expertos y actualizaciones de IA',
@@ -69,7 +72,6 @@ export const translationsComplete = {
       aiUpdates: 'Actualizaciones IA',
       identificationTitle: 'Identificador de Tuberías de IA',
       identificationSubtitle: 'Carga fotos para obtener ayuda de identificación rápida',
-      identificationTooltip: 'Sube fotos de tus tuberías para una rápida identificación con IA',
       identificationEmpty: 'Comienza añadiendo tus primeras pipas o mezclas de tabaco',
       addFirstPipe: 'Añadir Primera Pipa',
       addFirstBlend: 'Añadir Primera Mezcla',
@@ -79,7 +81,6 @@ export const translationsComplete = {
       optimizationEmpty: 'Comienza añadiendo pipas a tu colección',
       whatIfTitle: 'Análisis de Escenarios',
       whatIfSubtitle: 'Haz preguntas sobre estrategia de colección',
-      whatIfTooltip: 'Ejecuta escenarios hipotéticos sobre tu colección',
       whatIfEmpty: 'Comienza añadiendo pipas y mezclas',
       updatesTitle: 'Actualizaciones de IA',
       updatesSubtitle: 'Recomendaciones automáticas basadas en tu colección',
@@ -116,11 +117,7 @@ export const translationsComplete = {
       hide: 'Ocultar',
       rotationPlanner: 'Planificador de Rotación',
       neverSmoked: 'Nunca Fumado',
-      noUsageSessionsRecorded: 'Sin sesiones de fumar registradas',
-      identificationTooltip: 'Sube fotos para identificación rápida',
-      whatIfTooltip: 'Ejecuta escenarios hipotéticos',
-      updatesTooltip: 'Revisa recomendaciones automáticas',
-      outOfDateRegenRec: 'Desactualizado - se recomienda regeneración'
+      noUsageSessionsRecorded: 'Sin sesiones de fumar registradas'
       }
       },
   fr: {
@@ -147,6 +144,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Téléchargez des photos pour identification rapide',
+    whatIfTooltip: 'Exécutez des scénarios hypothétiques',
+    updatesTooltip: 'Consultez les recommandations automatiques',
+    outOfDateRegenRec: 'Obsolète - régénération recommandée',
     tobacconist: {
        title: 'Maître Tabaccologue',
        subtitle: 'Consultation d\'expert et mises à jour IA',
@@ -156,7 +157,6 @@ export const translationsComplete = {
        aiUpdates: 'Mises à Jour IA',
        identificationTitle: 'Identificateur de Pipes IA',
        identificationSubtitle: 'Téléchargez des photos pour obtenir une aide d\'identification rapide',
-       identificationTooltip: 'Téléchargez des photos de vos pipes pour une identification rapide par IA',
        identificationEmpty: 'Commencez par ajouter vos premiers pipes ou mélanges de tabac',
        addFirstPipe: 'Ajouter Premier Pipe',
        addFirstBlend: 'Ajouter Premier Mélange',
@@ -166,7 +166,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Commencez par ajouter des pipes à votre collection',
        whatIfTitle: 'Analyse de Scénarios',
        whatIfSubtitle: 'Posez des questions sur la stratégie de collection',
-       whatIfTooltip: 'Exécutez des scénarios hypothétiques sur votre collection',
        whatIfEmpty: 'Commencez par ajouter des pipes et des mélanges',
        updatesTitle: 'Mises à Jour IA',
        updatesSubtitle: 'Recommandations automatiques basées sur votre collection',
@@ -203,11 +202,7 @@ export const translationsComplete = {
       hide: 'Masquer',
       rotationPlanner: 'Planificateur de Rotation',
       neverSmoked: 'Jamais Fumé',
-      noUsageSessionsRecorded: 'Aucune session de fumage enregistrée',
-      identificationTooltip: 'Téléchargez des photos pour identification rapide',
-      whatIfTooltip: 'Exécutez des scénarios hypothétiques',
-      updatesTooltip: 'Consultez les recommandations automatiques',
-      outOfDateRegenRec: 'Obsolète - régénération recommandée'
+      noUsageSessionsRecorded: 'Aucune session de fumage enregistrée'
       }
       },
   de: {
@@ -234,6 +229,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Laden Sie Fotos für schnelle Identifizierung hoch',
+    whatIfTooltip: 'Führen Sie hypothetische Szenarien aus',
+    updatesTooltip: 'Überprüfen Sie automatische Empfehlungen',
+    outOfDateRegenRec: 'Veraltet - Neugenerierung empfohlen',
     tobacconist: {
        title: 'Meister Tabakkenner',
        subtitle: 'Expertenberatung und KI-Updates',
@@ -243,7 +242,6 @@ export const translationsComplete = {
        aiUpdates: 'KI-Updates',
        identificationTitle: 'KI-Pfeifenidentifizierer',
        identificationSubtitle: 'Laden Sie Fotos hoch, um schnelle Identifizierungshilfe zu erhalten',
-       identificationTooltip: 'Laden Sie Fotos Ihrer Pfeifen hoch für schnelle KI-Identifizierung',
        identificationEmpty: 'Beginnen Sie damit, Ihre ersten Pfeifen oder Tabakblends hinzuzufügen',
        addFirstPipe: 'Erste Pfeife Hinzufügen',
        addFirstBlend: 'Erste Mischung Hinzufügen',
@@ -253,7 +251,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Beginnen Sie, Pfeifen zu Ihrer Sammlung hinzuzufügen',
        whatIfTitle: 'Szenarioanalyse',
        whatIfSubtitle: 'Stellen Sie Fragen zur Sammlungsstrategie',
-       whatIfTooltip: 'Führen Sie hypothetische Szenarien für Ihre Sammlung aus',
        whatIfEmpty: 'Beginnen Sie, Pfeifen und Blends hinzuzufügen',
        updatesTitle: 'KI-Updates',
        updatesSubtitle: 'Automatische Empfehlungen basierend auf Ihrer Sammlung',
@@ -290,11 +287,7 @@ export const translationsComplete = {
       hide: 'Ausblenden',
       rotationPlanner: 'Rotationsplaner',
       neverSmoked: 'Nie Geraucht',
-      noUsageSessionsRecorded: 'Keine Rauchsitzungen aufgezeichnet',
-      identificationTooltip: 'Laden Sie Fotos für schnelle Identifizierung hoch',
-      whatIfTooltip: 'Führen Sie hypothetische Szenarien aus',
-      updatesTooltip: 'Überprüfen Sie automatische Empfehlungen',
-      outOfDateRegenRec: 'Veraltet - Neugenerierung empfohlen'
+      noUsageSessionsRecorded: 'Keine Rauchsitzungen aufgezeichnet'
       }
       },
   it: {
@@ -321,6 +314,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Carica foto per identificazione rapida',
+    whatIfTooltip: 'Esegui scenari ipotetici',
+    updatesTooltip: 'Controlla i suggerimenti automatici',
+    outOfDateRegenRec: 'Non aggiornato - rigenerazione consigliata',
     tobacconist: {
        title: 'Maestro Tabaccaio',
        subtitle: 'Consulenza di esperti e aggiornamenti IA',
@@ -330,7 +327,6 @@ export const translationsComplete = {
        aiUpdates: 'Aggiornamenti IA',
        identificationTitle: 'Identificatore di Pipe IA',
        identificationSubtitle: 'Carica foto per ottenere aiuto di identificazione rapida',
-       identificationTooltip: 'Carica foto delle tue pipe per identificazione rapida IA',
        identificationEmpty: 'Inizia aggiungendo i tuoi primi pipe o blend di tabacco',
        addFirstPipe: 'Aggiungi Prima Pipa',
        addFirstBlend: 'Aggiungi Prima Miscela',
@@ -340,7 +336,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Inizia aggiungendo pipe alla tua collezione',
        whatIfTitle: 'Analisi di Scenari',
        whatIfSubtitle: 'Poni domande sulla strategia di collezione',
-       whatIfTooltip: 'Esegui scenari ipotetici sulla tua collezione',
        whatIfEmpty: 'Inizia aggiungendo pipe e blend',
        updatesTitle: 'Aggiornamenti IA',
        updatesSubtitle: 'Raccomandazioni automatiche basate sulla tua collezione',
@@ -377,11 +372,7 @@ export const translationsComplete = {
       hide: 'Nascondi',
       rotationPlanner: 'Pianificatore di Rotazione',
       neverSmoked: 'Mai Fumato',
-      noUsageSessionsRecorded: 'Nessuna sessione di fumo registrata',
-      identificationTooltip: 'Carica foto per identificazione rapida',
-      whatIfTooltip: 'Esegui scenari ipotetici',
-      updatesTooltip: 'Controlla i suggerimenti automatici',
-      outOfDateRegenRec: 'Non aggiornato - rigenerazione consigliata'
+      noUsageSessionsRecorded: 'Nessuna sessione di fumo registrata'
       }
       },
   'pt-BR': {
@@ -408,6 +399,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Carregue fotos para identificação rápida',
+    whatIfTooltip: 'Execute cenários hipotéticos',
+    updatesTooltip: 'Confira recomendações automáticas',
+    outOfDateRegenRec: 'Desatualizado - regeneração recomendada',
     tobacconist: {
        title: 'Mestre Tabacário',
        subtitle: 'Consultoria de especialistas e atualizações de IA',
@@ -417,7 +412,6 @@ export const translationsComplete = {
        aiUpdates: 'Atualizações IA',
        identificationTitle: 'Identificador de Cachimbos IA',
        identificationSubtitle: 'Carregue fotos para obter ajuda de identificação rápida',
-       identificationTooltip: 'Carregue fotos de seus cachimbos para identificação rápida por IA',
        identificationEmpty: 'Comece adicionando seus primeiros cachimbos ou blends de tabaco',
        addFirstPipe: 'Adicionar Primeiro Cachimbo',
        addFirstBlend: 'Adicionar Primeira Mistura',
@@ -427,7 +421,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Comece adicionando cachimbos à sua coleção',
        whatIfTitle: 'Análise de Cenários',
        whatIfSubtitle: 'Faça perguntas sobre estratégia de coleção',
-       whatIfTooltip: 'Execute cenários hipotéticos em sua coleção',
        whatIfEmpty: 'Comece adicionando cachimbos e blends',
        updatesTitle: 'Atualizações IA',
        updatesSubtitle: 'Recomendações automáticas baseadas em sua coleção',
@@ -464,11 +457,7 @@ export const translationsComplete = {
       hide: 'Ocultar',
       rotationPlanner: 'Planejador de Rotação',
       neverSmoked: 'Nunca Fumado',
-      noUsageSessionsRecorded: 'Nenhuma sessão de fumo registrada',
-      identificationTooltip: 'Carregue fotos para identificação rápida',
-      whatIfTooltip: 'Execute cenários hipotéticos',
-      updatesTooltip: 'Confira recomendações automáticas',
-      outOfDateRegenRec: 'Desatualizado - regeneração recomendada'
+      noUsageSessionsRecorded: 'Nenhuma sessão de fumo registrada'
       }
       },
   nl: {
@@ -495,6 +484,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Upload foto\'s voor snelle identificatie',
+    whatIfTooltip: 'Voer hypothetische scenario\'s uit',
+    updatesTooltip: 'Controleer automatische suggesties',
+    outOfDateRegenRec: 'Verouderd - regeneratie aanbevolen',
     tobacconist: {
        title: 'Meesterbesteller',
        subtitle: 'Deskundig advies en AI-updates',
@@ -504,7 +497,6 @@ export const translationsComplete = {
        aiUpdates: 'AI-Updates',
        identificationTitle: 'AI-Pijpenidentificeerder',
        identificationSubtitle: 'Upload foto\'s voor snelle identificatiehulp',
-       identificationTooltip: 'Upload foto\'s van uw pijpen voor snelle AI-identificatie',
        identificationEmpty: 'Begin met het toevoegen van uw eerste pijpen of tabaksmengsels',
        addFirstPipe: 'Eerste Pijp Toevoegen',
        addFirstBlend: 'Eerste Mengsel Toevoegen',
@@ -514,7 +506,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Begin met het toevoegen van pijpen aan uw verzameling',
        whatIfTitle: 'Scenarioanalyse',
        whatIfSubtitle: 'Stel vragen over verzamelingsstrategie',
-       whatIfTooltip: 'Voer hypothetische scenario\'s op uw verzameling uit',
        whatIfEmpty: 'Begin met het toevoegen van pijpen en mengsels',
        updatesTitle: 'AI-Updates',
        updatesSubtitle: 'Automatische aanbevelingen op basis van uw verzameling',
@@ -551,11 +542,7 @@ export const translationsComplete = {
       hide: 'Verbergen',
       rotationPlanner: 'Rotatieplannen',
       neverSmoked: 'Nooit Gerookt',
-      noUsageSessionsRecorded: 'Geen rooksessies opgenomen',
-      identificationTooltip: 'Upload foto\'s voor snelle identificatie',
-      whatIfTooltip: 'Voer hypothetische scenario\'s uit',
-      updatesTooltip: 'Controleer automatische suggesties',
-      outOfDateRegenRec: 'Verouderd - regeneratie aanbevolen'
+      noUsageSessionsRecorded: 'Geen rooksessies opgenomen'
       }
       },
   pl: {
@@ -574,7 +561,7 @@ export const translationsComplete = {
     },
     helpContent: {
       faqFull: {
-        pageTitle: "Pytania Часто Zadawane PipeKeeper",
+        pageTitle: "Pytania Często Zadawane PipeKeeper",
         pageSubtitle: "Definicje, informacje ogólne i zastrzeżenia",
         navHowTo: "Przewodniki",
         navTroubleshooting: "Rozwiązywanie Problemów",
@@ -591,6 +578,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: 'Prześlij zdjęcia do szybkiej identyfikacji',
+    whatIfTooltip: 'Uruchom scenariusze hipoteczne',
+    updatesTooltip: 'Sprawdź automatyczne sugestje',
+    outOfDateRegenRec: 'Nieaktualne - zalecana regeneracja',
     tobacconist: {
        title: 'Mistrz Tytoniowy',
        subtitle: 'Porada ekspertów i aktualizacje AI',
@@ -600,7 +591,6 @@ export const translationsComplete = {
        aiUpdates: 'Aktualizacje AI',
        identificationTitle: 'Identyfikator Pipa AI',
        identificationSubtitle: 'Prześlij zdjęcia, aby uzyskać szybką pomoc w identyfikacji',
-       identificationTooltip: 'Prześlij zdjęcia swoich pip, aby szybko zidentyfikować AI',
        identificationEmpty: 'Zacznij od dodania swoich pierwszych pip lub mieszanek tytoniu',
        addFirstPipe: 'Dodaj Pierwszą Pipę',
        addFirstBlend: 'Dodaj Pierwszą Mieszankę',
@@ -610,7 +600,6 @@ export const translationsComplete = {
        optimizationEmpty: 'Zacznij od dodania pip do twojej kolekcji',
        whatIfTitle: 'Analiza Scenariuszy',
        whatIfSubtitle: 'Zadaj pytania dotyczące strategii kolekcji',
-       whatIfTooltip: 'Uruchom hipotetyczne scenariusze na twojej kolekcji',
        whatIfEmpty: 'Zacznij od dodania pip i mieszanek',
        updatesTitle: 'Aktualizacje AI',
        updatesSubtitle: 'Automatyczne rekomendacje oparte na twojej kolekcji',
@@ -651,11 +640,7 @@ export const translationsComplete = {
       hide: 'Ukryj',
       rotationPlanner: 'Planner Rotacji',
       neverSmoked: 'Nigdy Palony',
-      noUsageSessionsRecorded: 'Brak zarejestrowanych sesji palenia',
-      identificationTooltip: 'Prześlij zdjęcia do szybkiej identyfikacji',
-      whatIfTooltip: 'Uruchom scenariusze hipoteczne',
-      updatesTooltip: 'Sprawdź automatyczne sugestie',
-      outOfDateRegenRec: 'Nieaktualne - zalecana regeneracja'
+      noUsageSessionsRecorded: 'Brak zarejestrowanych sesji palenia'
       }
       },
   ja: {
@@ -682,6 +667,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: '写真をアップロードして迅速に識別',
+    whatIfTooltip: '仮説的シナリオを実行',
+    updatesTooltip: '自動提案を確認',
+    outOfDateRegenRec: '期限切れ - 再生成推奨',
     tobacconist: {
        title: 'マスター・タバコニスト',
        subtitle: 'エキスパート・コンサルテーション & AI アップデート',
@@ -691,7 +680,6 @@ export const translationsComplete = {
        aiUpdates: 'AI アップデート',
        identificationTitle: 'AI パイプ識別器',
        identificationSubtitle: '写真をアップロードして、迅速な識別支援を取得',
-       identificationTooltip: 'パイプの写真をアップロードして、AI による迅速な識別を取得',
        identificationEmpty: '最初のパイプまたはタバコ ブレンドの追加を開始',
        addFirstPipe: '最初のパイプを追加',
        addFirstBlend: '最初のブレンドを追加',
@@ -701,7 +689,6 @@ export const translationsComplete = {
        optimizationEmpty: 'コレクションへのパイプの追加を開始',
        whatIfTitle: 'シナリオ分析',
        whatIfSubtitle: 'コレクション戦略についての質問を投げかけます',
-       whatIfTooltip: 'コレクション上の仮想シナリオを実行',
        whatIfEmpty: 'パイプとブレンドの追加を開始',
        updatesTitle: 'AI アップデート',
        updatesSubtitle: 'コレクションに基づいた自動推奨',
@@ -742,11 +729,7 @@ export const translationsComplete = {
       hide: '隠す',
       rotationPlanner: 'ローテーション計画',
       neverSmoked: '未喫煙',
-      noUsageSessionsRecorded: '喫煙セッションが記録されていません',
-      identificationTooltip: '写真をアップロードして迅速に識別',
-      whatIfTooltip: '仮説的シナリオを実行',
-      updatesTooltip: '自動提案を確認',
-      outOfDateRegenRec: '期限切れ - 再生成推奨'
+      noUsageSessionsRecorded: '喫煙セッションが記録されていません'
       },
     pipesPage: {
       exportCSV: "CSVエクスポート"
@@ -783,6 +766,10 @@ export const translationsComplete = {
         }
       }
     },
+    identificationTooltip: '上传照片以快速识别',
+    whatIfTooltip: '运行假设情景',
+    updatesTooltip: '查看自动建议',
+    outOfDateRegenRec: '过期-建议重新生成',
     tobacconist: {
        title: '烟草大师',
        subtitle: '专家咨询和AI更新',
@@ -792,7 +779,6 @@ export const translationsComplete = {
        aiUpdates: 'AI更新',
        identificationTitle: 'AI烟斗识别器',
        identificationSubtitle: '上传照片以获得快速识别帮助',
-       identificationTooltip: '上传烟斗照片以获得快速 AI 识别',
        identificationEmpty: '开始添加您的第一批烟斗或烟草混合物',
        addFirstPipe: '添加第一个烟斗',
        addFirstBlend: '添加第一个混合',
@@ -802,7 +788,6 @@ export const translationsComplete = {
        optimizationEmpty: '开始向您的收集中添加烟斗',
        whatIfTitle: '情景分析',
        whatIfSubtitle: '提出关于收集策略的问题',
-       whatIfTooltip: '对您的收集运行假设情景',
        whatIfEmpty: '开始添加烟斗和混合',
        updatesTitle: 'AI更新',
        updatesSubtitle: '基于您的收集的自动建议',
@@ -839,11 +824,7 @@ export const translationsComplete = {
       hide: '隐藏',
       rotationPlanner: '轮换计划',
       neverSmoked: '从未吸过',
-      noUsageSessionsRecorded: '没有记录吸烟会话',
-      identificationTooltip: '上传照片以快速识别',
-      whatIfTooltip: '运行假设情景',
-      updatesTooltip: '查看自动建议',
-      outOfDateRegenRec: '过期-建议重新生成'
+      noUsageSessionsRecorded: '没有记录吸烟会话'
       }
       }
       };
