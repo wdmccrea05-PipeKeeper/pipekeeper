@@ -347,17 +347,10 @@ export default function ProfilePage() {
                       {shouldShowManageSubscription(subscription, user) && (
                         <Button
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
-                          onClick={async () => {
-                            try {
-                              if (isAppleBuild) {
-                                // iOS uses App Store subscription settings
-                                await openAppleSettings();
-                              } else {
-                                await openManageSubscription(() => setShowBackupModal(true));
-                              }
-                            } catch (e) {
-                              const message = e?.message || "Unable to open subscription management portal";
-                              console.error('[Profile] Manage subscription error:', message);
+                          onClick={() => {
+                            if (isAppleBuild) {
+                              openAppleSettings();
+                            } else {
                               setShowBackupModal(true);
                             }
                           }}
