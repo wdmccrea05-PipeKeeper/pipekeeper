@@ -175,6 +175,9 @@ export function useCurrentUser() {
   const userTier = (rawUser?.subscription_tier || rawUser?.tier || "").toLowerCase();
   const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
 
+  // Compute provider at runtime (canonical source)
+  const computedProvider = subscription?.provider ? (subscription.provider).toLowerCase() : null;
+
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
   const trialDaysRemaining = getTrialDaysRemaining(rawUser);
@@ -215,6 +218,7 @@ export function useCurrentUser() {
   return {
     user: rawUser,
     subscription,
+    subscriptionProvider: computedProvider,
     isLoading,
     error: userError,
     hasPremium,
