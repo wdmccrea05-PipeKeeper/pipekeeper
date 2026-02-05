@@ -5,6 +5,11 @@
 
 export const translationsComplete = {
   en: {
+    common: {
+      pageTitle: '',
+      pageSubtitle: '',
+      ...translationsComplete.en?.common,
+    },
     identificationTooltip: 'Upload photos for quick identification',
     whatIfTooltip: 'Run hypothetical scenarios',
     updatesTooltip: 'Check automatic suggestions',
