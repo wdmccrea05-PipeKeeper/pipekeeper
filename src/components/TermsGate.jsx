@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+
+const LOCAL_BYPASS_KEY = "pk_tos_accepted_local_v1";
 
 export default function TermsGate({ user }) {
   const [checked, setChecked] = useState(false);
@@ -8,13 +10,31 @@ export default function TermsGate({ user }) {
   const [err, setErr] = useState("");
 
   const tosUrl = useMemo(() => `${createPageUrl("TermsOfService")}?view=1`, []);
-  const privacyUrl = useMemo(
-    () => `${createPageUrl("PrivacyPolicy")}?view=1`,
-    []
-  );
+  const privacyUrl = useMemo(() => `${createPageUrl("PrivacyPolicy")}?view=1`, []);
 
+  // If the component remounts (due to query invalidation / refresh), keep the checkbox checked.
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("pk_tos_checkbox_v1");
+      if (v === "1") setChecked(true);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("pk_tos_checkbox_v1", checked ? "1" : "0");
+    } catch {}
+  }, [checked]);
+
+  // Treat ToS as accepted if either:
+  // - backend profile has an accepted timestamp
+  // - local bypass exists (emergency escape hatch)
   const alreadyAccepted = useMemo(() => {
-    const iso = user?.tos_accepted_at;
+    try {
+      if (localStorage.getItem(LOCAL_BYPASS_KEY) === "1") return true;
+    } catch {}
+
+    const iso = user?.tos_accepted_at || user?.userProfile?.tos_accepted_at;
     if (!iso) return false;
     const t = Date.parse(iso);
     return Number.isFinite(t);
@@ -23,27 +43,48 @@ export default function TermsGate({ user }) {
   if (!user) return null;
   if (alreadyAccepted) return null;
 
-  async function onAccept() {
-    if (!checked || submitting) return;
+  async function acceptOnServer() {
     setSubmitting(true);
     setErr("");
 
     try {
-      // Use service-role function to ensure ToS acceptance sticks
-      const res = await base44.functions.invoke('acceptTermsForMe', {});
-      if (res.data?.ok) {
-        // Reload to refresh auth + profile
-        setTimeout(() => window.location.reload(), 100);
-        return;
+      // Explicit POST + robust response handling
+      const res = await base44.functions.invoke("acceptTermsForMe", {
+        method: "POST",
+        body: {},
+      });
+
+      const ok = Boolean(res?.data?.ok);
+      if (!ok) {
+        const msg = res?.data?.error || "Failed to accept terms";
+        throw new Error(msg);
       }
-      throw new Error(res.data?.error || 'Failed to accept terms');
+
+      // Backend accepted: clear local bypass & reload to refresh profile
+      try {
+        localStorage.removeItem(LOCAL_BYPASS_KEY);
+        localStorage.removeItem("pk_tos_checkbox_v1");
+      } catch {}
+
+      setTimeout(() => window.location.reload(), 150);
     } catch (e) {
-      console.error("[TermsGate]", e);
-      setErr("Connection issue. Please check your internet and try again.");
+      console.error("[TermsGate] accept failed:", e);
+      setErr("Could not save acceptance right now. You may continue temporarily or try again.");
     } finally {
       setSubmitting(false);
     }
   }
+
+  function continueTemporarily() {
+    // Emergency escape hatch:
+    // Allows app use even if server acceptance fails due to duplicates / transient API issues.
+    try {
+      localStorage.setItem(LOCAL_BYPASS_KEY, "1");
+    } catch {}
+    setTimeout(() => window.location.reload(), 50);
+  }
+
+  const disabled = submitting; // DO NOT lock behind checkbox anymore (checkbox is still shown)
 
   return (
     <div style={styles.overlay} role="dialog" aria-modal="true">
@@ -60,12 +101,7 @@ export default function TermsGate({ user }) {
             Terms of Service
           </a>
           <span style={styles.dot}>•</span>
-          <a
-            href={privacyUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={styles.link}
-          >
+          <a href={privacyUrl} target="_blank" rel="noreferrer" style={styles.link}>
             Privacy Policy
           </a>
         </div>
@@ -85,20 +121,39 @@ export default function TermsGate({ user }) {
         {err ? <div style={styles.error}>{err}</div> : null}
 
         <button
-          onClick={onAccept}
-          disabled={!checked || submitting}
+          onClick={() => {
+            // Still require the checkbox logically, but don’t “lock” forever if remounting happens.
+            if (!checked) {
+              setErr("Please check the box to confirm you agree.");
+              return;
+            }
+            if (!submitting) acceptOnServer();
+          }}
+          disabled={disabled}
           style={{
             ...styles.button,
-            opacity: !checked || submitting ? 0.6 : 1,
-            cursor: !checked || submitting ? "not-allowed" : "pointer",
+            opacity: disabled ? 0.7 : 1,
+            cursor: disabled ? "not-allowed" : "pointer",
           }}
         >
           {submitting ? "Saving..." : "Accept and Continue"}
         </button>
 
+        <button
+          onClick={continueTemporarily}
+          disabled={submitting}
+          style={{
+            ...styles.secondaryButton,
+            opacity: submitting ? 0.7 : 1,
+            cursor: submitting ? "not-allowed" : "pointer",
+          }}
+        >
+          Continue temporarily (if saving fails)
+        </button>
+
         <p style={styles.small}>
-          You can review these documents at any time from Help or your Profile
-          menu.
+          If acceptance fails repeatedly, it usually means your user profile record is duplicated or
+          permissions are misconfigured. This temporary option lets you use the app while we repair it.
         </p>
       </div>
     </div>
@@ -109,7 +164,7 @@ const styles = {
   overlay: {
     position: "fixed",
     inset: 0,
-    zIndex: 9999,
+    zIndex: 999999,
     background: "rgba(0,0,0,0.65)",
     display: "flex",
     alignItems: "center",
@@ -187,6 +242,17 @@ const styles = {
     color: "#fff",
     fontSize: 15,
     fontWeight: 800,
+  },
+  secondaryButton: {
+    width: "100%",
+    marginTop: 10,
+    borderRadius: 12,
+    padding: "10px 14px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    color: "#f3e7d3",
+    fontSize: 13,
+    fontWeight: 700,
   },
   small: {
     marginTop: 10,
