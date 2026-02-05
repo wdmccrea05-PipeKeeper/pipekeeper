@@ -64,6 +64,11 @@ async function fetchCurrentUser() {
     id: authUser?.id || authUser?.user_id || null,
     email,
     name: authUser?.name || authUser?.full_name || null,
+    full_name: authUser?.full_name || authUser?.name || null,
+    role: authUser?.role || "user",
+    created_date: authUser?.created_at || authUser?.created_date || null,
+    isFoundingMember: userProfile?.isFoundingMember || false,
+    foundingMemberAcknowledged: userProfile?.foundingMemberAcknowledged || false,
 
     // Profile (canonical)
     userProfile,
@@ -72,6 +77,8 @@ async function fetchCurrentUser() {
     subscription,
     subscription_tier: tier,
     subscriptionTier: tier,
+    subscription_status: subscription?.status || "free",
+    subscription_level: (tier !== "FREE") ? "paid" : "free",
     subscription_interval: interval,
     subscriptionInterval: interval,
     legacy_premium: legacyPremium,
@@ -79,6 +86,9 @@ async function fetchCurrentUser() {
     // Convenience flags
     isPremium: tier === "PREMIUM" || tier === "PRO",
     isPro: tier === "PRO",
+    hasPremium: tier === "PREMIUM" || tier === "PRO",
+    hasPaid: tier === "PREMIUM" || tier === "PRO",
+    isAdmin: authUser?.role === "admin",
   };
 }
 
