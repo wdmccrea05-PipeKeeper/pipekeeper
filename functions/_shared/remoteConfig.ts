@@ -18,11 +18,11 @@ function readFlags(req?: Request) {
 }
 
 /**
- * Fetch a "live" Stripe secret key from RemoteConfig, with env-var fallback.
- * RemoteConfig record expected:
- *   key: "STRIPE_SECRET_KEY"
- *   value: "sk_live_..."
- *   environment: "live"
+ * Fetch a "live" Stripe secret key - prioritizes env var (standard), with RemoteConfig as backup.
+ * 
+ * Priority:
+ * 1. ENV VAR (standard Stripe process)
+ * 2. RemoteConfig (backup if env var fails)
  */
 export async function getStripeSecretKeyLive(req?: Request): Promise<{
   value: string;
@@ -31,9 +31,22 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
   const { forceRefresh, forceRemote } = readFlags(req);
   
   console.log("[remoteConfig] ===== NEW REQUEST =====");
-  console.log("[remoteConfig] Flags:", { forceRefresh, forceRemote });
+  console.log("[remoteConfig] Strategy: ENV-first (standard), RemoteConfig as backup");
 
-  // 1) Try RemoteConfig (service role) - ALWAYS prioritize this
+  // 1) STANDARD PROCESS: Try env var first
+  const envVal = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+  if (envVal && envVal.startsWith("sk_live_")) {
+    console.log("[remoteConfig] ✅ Using live key from ENV (standard):", envVal.slice(0, 8), "...", envVal.slice(-4));
+    return { value: envVal, source: "env" };
+  }
+  
+  if (envVal) {
+    console.warn("[remoteConfig] ⚠️ ENV key found but not sk_live_:", envVal.slice(0, 8));
+  } else {
+    console.warn("[remoteConfig] ⚠️ No STRIPE_SECRET_KEY in ENV, trying RemoteConfig backup...");
+  }
+
+  // 2) BACKUP: Try RemoteConfig if env var failed
   try {
     if (!req) {
       console.warn("[remoteConfig] No request provided, skipping RemoteConfig");
@@ -43,54 +56,48 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
     const base44 = createClientFromRequest(req);
     const srv = base44.asServiceRole;
 
-    console.log("[remoteConfig] Fetching from RemoteConfig via asServiceRole...");
+    console.log("[remoteConfig] Fetching from RemoteConfig via asServiceRole (backup)...");
     
     const recs = await srv.entities.RemoteConfig.list();
     console.log("[remoteConfig] Total RemoteConfig records:", recs?.length || 0);
-    
-    if (recs && recs.length > 0) {
-      console.log("[remoteConfig] RemoteConfig records found:", recs.map(r => ({ key: r.key, env: r.environment, active: r.is_active })));
-    }
 
     const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live" && r.is_active);
-    console.log("[remoteConfig] Found live key record:", !!rec0);
-    console.log("[remoteConfig] Record details:", rec0 ? { key: rec0.key, env: rec0.environment, active: rec0.is_active, valuePrefix: rec0.value?.slice(0, 4) } : "null");
-    
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
 
     // Validate it's a real Stripe key (not test/invalid)
     if (remoteVal && remoteVal.startsWith("sk_live_")) {
-      console.log("[remoteConfig] ✅ Using live key from RemoteConfig:", remoteVal.slice(0, 8), "...", remoteVal.slice(-4));
+      console.log("[remoteConfig] ✅ Using live key from RemoteConfig (backup):", remoteVal.slice(0, 8), "...", remoteVal.slice(-4));
       return { value: remoteVal, source: "remote" };
     }
     
     if (remoteVal) {
-      console.warn("[remoteConfig] ⚠️ Found key but not sk_live_:", remoteVal.slice(0, 8));
+      console.warn("[remoteConfig] ⚠️ Found RemoteConfig key but not sk_live_:", remoteVal.slice(0, 8));
     } else {
-      console.warn("[remoteConfig] ⚠️ No RemoteConfig value found for STRIPE_SECRET_KEY + live");
+      console.warn("[remoteConfig] ⚠️ No valid RemoteConfig key found");
     }
   } catch (e) {
     console.error("[remoteConfig] ❌ RemoteConfig fetch failed:", e?.message || e);
   }
 
-  // 2) ENV VAR FALLBACK - Use if RemoteConfig failed
-  const envVal = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
-  if (envVal && envVal.startsWith("sk_live_")) {
-    console.log("[remoteConfig] ✅ Using sk_live_ key from ENV (RemoteConfig unavailable):", envVal.slice(0, 8), "...", envVal.slice(-4));
-    return { value: envVal, source: "env" };
-  }
-
-  console.log("[remoteConfig] ❌ No valid key found from RemoteConfig or ENV");
+  console.log("[remoteConfig] ❌ No valid key found from ENV or RemoteConfig");
   return { value: "", source: "missing" };
 }
 
 /**
- * Fetch Stripe webhook secret from RemoteConfig, with env-var fallback.
+ * Fetch Stripe webhook secret - prioritizes env var (standard), with RemoteConfig as backup.
  */
 export async function getStripeWebhookSecretLive(req?: Request): Promise<{
   value: string;
   source: "remote" | "env" | "missing";
 }> {
+  // 1) Standard: Try env var first
+  const envVal = (Deno.env.get("STRIPE_WEBHOOK_SECRET") || "").trim();
+  if (envVal) {
+    console.log("[remoteConfig] ✅ Using webhook secret from ENV (standard)");
+    return { value: envVal, source: "env" };
+  }
+
+  // 2) Backup: Try RemoteConfig
   try {
     if (!req) throw new Error("Request required for RemoteConfig fetch");
     const base44 = createClientFromRequest(req);
@@ -105,18 +112,14 @@ export async function getStripeWebhookSecretLive(req?: Request): Promise<{
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
 
     if (remoteVal) {
+      console.log("[remoteConfig] ✅ Using webhook secret from RemoteConfig (backup)");
       return { value: remoteVal, source: "remote" };
     }
   } catch (e) {
     console.warn("[remoteConfig] RemoteConfig fetch failed for webhook secret:", String(e?.message || e));
   }
 
-  // Env fallback
-  const envVal = (Deno.env.get("STRIPE_WEBHOOK_SECRET") || "").trim();
-  if (envVal) {
-    return { value: envVal, source: "env" };
-  }
-
+  console.warn("[remoteConfig] ❌ No webhook secret found in ENV or RemoteConfig");
   return { value: "", source: "missing" };
 }
 
