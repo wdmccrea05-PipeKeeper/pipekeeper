@@ -164,19 +164,13 @@ export default function SubscriptionFull() {
 
     // Non-iOS: Stripe customer portal
     try {
-      // Start auto-sync timeout (Option B fallback after 8 seconds)
-      const timeout = setTimeout(async () => {
-        setMessage("Still waiting for updates... Click refresh to check manually.");
-      }, 8000);
-      setRefreshTimeout(timeout);
-
-      await openManageSubscription(() => {
-        // If portal fails, fall back to backup modal
-        clearTimeout(timeout);
-        setShowBackupModal(true);
-      });
+      const response = await base44.functions.invoke('createCustomerPortalSession', {});
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        setMessage("Error: Could not open subscription management");
+      }
     } catch (e) {
-      clearTimeout(refreshTimeout);
       setMessage("Error: Could not open subscription management");
     }
   };
