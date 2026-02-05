@@ -1,9 +1,23 @@
 // Single source of truth: Reconcile user entitlements from all sources (Stripe, Apple)
 // Fixes cross-platform issues where web Stripe purchase → iOS login loses paid status
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./stripeClientSingleton.js";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
+
+function getStripeClient() {
+  const key = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY is not set in environment");
+  }
+  
+  if (!key.startsWith("sk_")) {
+    throw new Error(`Invalid STRIPE_SECRET_KEY: must start with sk_ (got: ${key.slice(0, 3)}...)`);
+  }
+  
+  return new Stripe(key, { apiVersion: "2024-06-20" });
+}
 
 interface ReconcileResult {
   ok: boolean;

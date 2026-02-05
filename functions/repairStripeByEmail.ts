@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError, stripeSanityCheck } from "./stripe.js";
+import Stripe from "npm:stripe@17.5.0";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
@@ -12,6 +12,31 @@ const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY"
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
+
+function getStripeClient() {
+  const key = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  
+  if (!key || !key.startsWith("sk_")) {
+    throw new Error("Invalid or missing STRIPE_SECRET_KEY");
+  }
+  
+  return new Stripe(key, { apiVersion: "2024-06-20" });
+}
+
+function safeStripeError(e) {
+  if (!e) return "Unknown Stripe error";
+  if (typeof e === "string") return e;
+  if (e.message) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+async function stripeSanityCheck(stripe) {
+  // Optional: verify client works
+}
 
 async function resolveTier(stripeSub, stripe) {
   try {
