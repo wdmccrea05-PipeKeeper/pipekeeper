@@ -29,25 +29,14 @@ export default function TermsGate({ user }) {
     setErr("");
 
     try {
-      const ISO = new Date().toISOString();
-      
-      // Retry logic for network issues
-      let lastError = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          await base44.auth.updateMe({ tos_accepted_at: ISO });
-          // Success - reload after brief delay
-          setTimeout(() => window.location.reload(), 100);
-          return;
-        } catch (e) {
-          lastError = e;
-          if (attempt < 2) {
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 500 + attempt * 500));
-          }
-        }
+      // Use service-role function to ensure ToS acceptance sticks
+      const res = await base44.functions.invoke('acceptTermsForMe', {});
+      if (res.data?.ok) {
+        // Reload to refresh auth + profile
+        setTimeout(() => window.location.reload(), 100);
+        return;
       }
-      throw lastError;
+      throw new Error(res.data?.error || 'Failed to accept terms');
     } catch (e) {
       console.error("[TermsGate]", e);
       setErr("Connection issue. Please check your internet and try again.");
