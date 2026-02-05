@@ -181,8 +181,29 @@ Deno.serve(async (req: Request) => {
       }, { status: 403 });
     }
 
+    console.log("[repairStripeTiers] Initializing Stripe client...");
+    console.log("[repairStripeTiers] ENV check:", Deno.env.get("STRIPE_SECRET_KEY") ? "exists" : "missing");
+    
     // Initialize Stripe using centralized helper
     const stripe = await getStripeClient(req);
+    
+    console.log("[repairStripeTiers] Stripe client initialized successfully");
+    
+    // Sanity check: try a simple API call
+    try {
+      await stripe.balance.retrieve();
+      console.log("[repairStripeTiers] ✅ Stripe authentication verified");
+    } catch (authError: any) {
+      console.error("[repairStripeTiers] ❌ Stripe auth failed:", authError.message);
+      return Response.json({
+        ok: false,
+        error: "STRIPE_AUTH_FAILED",
+        message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
+        details: authError.message,
+        keyPrefix: "sk",
+        stripeSanityOk: false
+      }, { status: 500 });
+    }
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default to true
