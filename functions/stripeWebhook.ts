@@ -195,7 +195,13 @@ Deno.serve(async (req) => {
       const userRow = await findUserByEmail(email);
       if (!userRow) return { ok: false, reason: "User not found" };
 
-      await base44.asServiceRole.entities.User.update(userRow.id, fields);
+      // CRITICAL: Never overwrite subscription_provider unless explicitly setting it
+      const updateFields = { ...fields };
+      if (fields.subscription_provider === undefined) {
+        delete updateFields.subscription_provider;
+      }
+
+      await base44.asServiceRole.entities.User.update(userRow.id, updateFields);
       return { ok: true };
     }
 
@@ -207,8 +213,17 @@ Deno.serve(async (req) => {
           full_name: "User from Stripe",
           role: "user",
           subscription_level: "paid",
+          subscription_provider: "stripe",
           stripe_customer_id: customerId || null,
         });
+      } else if (!userRow.stripe_customer_id && customerId) {
+        // ONLY set stripe_customer_id if empty, never resolve by email
+        await base44.asServiceRole.entities.User.update(userRow.id, {
+          stripe_customer_id: customerId,
+          subscription_provider: "stripe",
+        });
+        userRow.stripe_customer_id = customerId;
+        userRow.subscription_provider = "stripe";
       }
       return userRow;
     }
@@ -252,6 +267,7 @@ Deno.serve(async (req) => {
             subscription_status: "active",
             subscription_tier: tierValue,
             stripe_customer_id: customerId || null,
+            subscription_provider: "stripe",
           });
           console.log(`[stripeWebhook] checkout.session.completed entitlement update: ${result.ok ? 'SUCCESS' : 'FAILED'} for ${user_email}`);
         } catch (err) {
@@ -379,10 +395,11 @@ Deno.serve(async (req) => {
             subscription_status: sub.status,
             subscription_tier: payload.tier || null,
             stripe_customer_id: customerId || null,
+            subscription_provider: "stripe",
           });
           
           if (result.ok) {
-            console.log(`[stripeWebhook] SUCCESS: Entitlements updated for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}`);
+            console.log(`[stripeWebhook] SUCCESS: Entitlements updated for ${user_email}: level=${isPaid ? "paid" : "free"}, status=${sub.status}, tier=${payload.tier || "null"}, provider=stripe`);
           } else {
             console.error(`[stripeWebhook] FAILED: Entitlement update failed for ${user_email}: ${result.reason || 'unknown'}`);
           }
