@@ -250,7 +250,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (userLoading) {
+  if (userLoading || profileLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
         <div className="text-center">
