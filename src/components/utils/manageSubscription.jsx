@@ -14,20 +14,32 @@ export async function handleManageSubscription(user, subscription, navigate, cre
 
   // Stripe subscription: open customer portal using stored customer ID
   if (provider === "stripe") {
+    let portalUrl = null;
+
     if (user?.stripe_customer_id) {
-      // Use stored customer ID for customer portal
+      // Try to create portal session with customer ID
       try {
         const result = await base44.functions.invoke('createCustomerPortalSessionForMe', {});
         if (result?.data?.url) {
-          window.open(result.data.url, "_blank");
-          return;
+          portalUrl = result.data.url;
         }
       } catch (e) {
-        console.error("Failed to create customer portal session:", e);
+        console.error("Failed to create customer portal session, using fallback:", e);
       }
     }
-    // Fallback to direct Stripe portal
-    window.open(STRIPE_PORTAL_URL, "_blank");
+
+    // Use fallback portal URL if no session URL available
+    if (!portalUrl) {
+      portalUrl = STRIPE_PORTAL_URL;
+    }
+
+    // Open portal (use location.href if window.open is blocked)
+    try {
+      window.open(portalUrl, "_blank");
+    } catch (e) {
+      console.warn("window.open blocked, redirecting:", e);
+      window.location.href = portalUrl;
+    }
     return;
   }
 
