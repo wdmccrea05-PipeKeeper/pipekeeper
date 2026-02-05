@@ -1,3 +1,4 @@
+// Batch entitlement reconciliation for admin use
 // Runtime guard: Enforce Deno environment
 if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");

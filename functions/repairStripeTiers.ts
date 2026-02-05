@@ -1,3 +1,4 @@
+// Repair Stripe subscription tiers from live data
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
 

@@ -1,3 +1,4 @@
+// Runtime key checker for Stripe configuration
 import { getStripeClient } from "./_shared/getStripeClient.ts";
 
 function json(status: number, body: any) {
