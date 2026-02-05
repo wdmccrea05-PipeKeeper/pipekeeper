@@ -138,8 +138,8 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: Open backup modal with direct Stripe links
-    setShowBackupModal(true);
+    // Non-iOS: Do nothing (upgrade buttons directly call checkout, or show "Continue with Premium/Pro")
+    // Checkout is handled via createCheckoutSession
   };
 
   const handleManage = async () => {
@@ -151,11 +151,34 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: Stripe customer portal with backup fallback
+    // Non-iOS: Stripe customer portal
     try {
-      await openManageSubscription(() => setShowBackupModal(true));
+      // Start auto-sync timeout (Option B fallback after 8 seconds)
+      const timeout = setTimeout(async () => {
+        setMessage("Still waiting for updates... Click refresh to check manually.");
+      }, 8000);
+      setRefreshTimeout(timeout);
+
+      await openManageSubscription(() => {
+        // If portal fails, fall back to backup modal
+        clearTimeout(timeout);
+        setShowBackupModal(true);
+      });
     } catch (e) {
+      clearTimeout(refreshTimeout);
       setMessage("Error: Could not open subscription management");
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    setMessage("");
+    try {
+      await refetch();
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      setMessage("✅ Subscription updated");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (e) {
+      setMessage("Could not refresh. Please try again.");
     }
   };
 
