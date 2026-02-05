@@ -138,8 +138,19 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: Do nothing (upgrade buttons directly call checkout, or show "Continue with Premium/Pro")
-    // Checkout is handled via createCheckoutSession
+    // Non-iOS: Open Stripe checkout
+    try {
+      const priceId = selectedTier === "premium" 
+        ? (selectedInterval === "monthly" ? process.env.REACT_APP_STRIPE_PRICE_PREMIUM_MONTHLY : process.env.REACT_APP_STRIPE_PRICE_PREMIUM_ANNUAL)
+        : (selectedInterval === "monthly" ? process.env.REACT_APP_STRIPE_PRICE_PRO_MONTHLY : process.env.REACT_APP_STRIPE_PRICE_PRO_ANNUAL);
+      
+      const response = await base44.functions.invoke('createCheckoutSession', { priceId });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (e) {
+      setMessage("Error starting checkout. Please try again.");
+    }
   };
 
   const handleManage = async () => {
