@@ -8,6 +8,7 @@ import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/componen
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
+import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect, useState } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -176,7 +177,6 @@ export function useCurrentUser() {
   const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
 
   // Compute provider at runtime (canonical source)
-  import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
   const computedProvider = resolveSubscriptionProvider(subscription);
 
   const hasTrial = hasTrialAccess(rawUser);
