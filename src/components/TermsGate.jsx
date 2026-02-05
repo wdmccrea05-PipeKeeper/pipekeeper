@@ -30,26 +30,27 @@ export default function TermsGate({ user }) {
 
     try {
       const ISO = new Date().toISOString();
+      
       // Retry logic for network issues
       let lastError = null;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           await base44.auth.updateMe({ tos_accepted_at: ISO });
+          // Success - reload after brief delay
           setTimeout(() => window.location.reload(), 100);
           return;
         } catch (e) {
           lastError = e;
           if (attempt < 2) {
+            // Wait before retrying
             await new Promise(resolve => setTimeout(resolve, 500 + attempt * 500));
           }
         }
       }
       throw lastError;
     } catch (e) {
-      setErr(
-        e?.message ||
-          "We couldn’t save your acceptance. Please try again (or contact support)."
-      );
+      console.error("[TermsGate]", e);
+      setErr("Connection issue. Please check your internet and try again.");
     } finally {
       setSubmitting(false);
     }
