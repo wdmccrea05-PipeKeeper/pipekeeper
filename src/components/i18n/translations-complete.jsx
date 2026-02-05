@@ -1,4 +1,3 @@
-
 /**
  * Complete translation map for all locales
  * Fills all missing keys identified in audit
@@ -6,11 +5,23 @@
 
 export const translationsComplete = {
   en: {
-   identificationTooltip: 'Upload photos for quick identification',
-   whatIfTooltip: 'Run hypothetical scenarios',
-   updatesTooltip: 'Check automatic suggestions',
-   outOfDateRegenRec: 'Out of date - regeneration recommended',
-   helpContent: {
+    identificationTooltip: 'Upload photos for quick identification',
+    whatIfTooltip: 'Run hypothetical scenarios',
+    updatesTooltip: 'Check automatic suggestions',
+    outOfDateRegenRec: 'Out of date - regeneration recommended',
+    tobacconist: {
+      noRecommendation: 'No Recommendation',
+      versatilePattern: 'Versatile Pattern',
+      tobaccoBlendClassification: 'Tobacco Blend Classification',
+      tobaccoBlendClassificationDesc: 'Review and refine your blend categories',
+      reclassifyBlends: 'Reclassify Blends',
+      pairingMatrix: 'Pairing Matrix',
+      undo: 'Undo'
+    },
+    profile: {
+      manageSubscription: 'Manage Subscription'
+    },
+    helpContent: {
       faqFull: {
         pageTitle: "PipeKeeper FAQ",
         pageSubtitle: "Definitions, general information, and disclaimers",
