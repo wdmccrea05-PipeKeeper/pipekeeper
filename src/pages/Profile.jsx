@@ -445,10 +445,12 @@ export default function ProfilePage() {
                 <Label className="text-stone-700 font-medium">Location</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-stone-600">Show on profile</span>
-                  <Switch
-                    checked={formData.show_location}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
-                  />
+                  <div className={`w-12 h-7 rounded-full transition-colors ${formData.show_location ? "bg-green-600" : "bg-red-600"}`}>
+                    <Switch
+                      checked={formData.show_location}
+                      onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -563,10 +565,12 @@ export default function ProfilePage() {
                 <div className="font-medium text-stone-800">Public community profile</div>
                 <div className="text-sm text-stone-600">Allow others to view your profile in the community.</div>
               </div>
-              <Switch
-                checked={formData.is_public}
-                onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
-              />
+              <div className={`w-12 h-7 rounded-full transition-colors ${formData.is_public ? "bg-green-600" : "bg-red-600"}`}>
+                <Switch
+                  checked={formData.is_public}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
+                />
+              </div>
             </div>
 
             {/* Save */}
