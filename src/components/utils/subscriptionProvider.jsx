@@ -1,37 +1,22 @@
 /**
- * Canonical provider resolution from UserProfile
- * AUTHORITATIVE SOURCE: UserProfile stripe_customer_id and apple_original_transaction_id
+ * Provider resolution from User.subscription_provider field
+ * AUTHORITATIVE SOURCE: User.subscription_provider (set via Stripe webhooks or Apple validation)
  * 
- * Rules:
- * - stripe_customer_id ALWAYS means "stripe"
- * - apple_original_transaction_id ALWAYS means "apple"
- * - If neither exists → provider is null (NEVER default to Apple)
- * - NO inference from platform, subscription status, or tier
+ * CRITICAL RULES:
+ * - Never infer provider from platform, subscription status, tier, or customer_id
+ * - subscription_provider is AUTHORITATIVE and NEVER defaults
+ * - Fallback to null if not explicitly set
  */
 
-export function resolveProviderFromProfile(profile) {
-  if (!profile) return null;
-
-  // STRIPE ALWAYS WINS if customer exists
-  if (profile.stripe_customer_id || profile.stripeCustomerId) {
-    return "stripe";
-  }
-
-  // Apple ONLY if original transaction exists
-  if (profile.apple_original_transaction_id || profile.appleOriginalTransactionId) {
-    return "apple";
-  }
-
-  // NO DEFAULTS - return null
-  return null;
+export function resolveProviderFromUser(user) {
+  if (!user) return null;
+  return user.subscription_provider || null;
 }
 
-// Legacy alias for backwards compatibility
+// Subscription-level provider resolution (for compatibility)
 export function resolveSubscriptionProvider(subscription) {
   if (!subscription) return null;
-  if (subscription.stripe_customer_id || subscription.stripeCustomerId) return "stripe";
-  if (subscription.provider === "apple" && (subscription.appleOriginalTransactionId || subscription.provider_subscription_id)) return "apple";
-  return null;
+  return subscription.provider || null;
 }
 
 /**

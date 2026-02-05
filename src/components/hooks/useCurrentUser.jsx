@@ -1,6 +1,6 @@
 // components/hooks/useCurrentUser.jsx
 // CANONICAL USER STATE HOOK - Account-linked subscription system
-// Resolves entitlements by user_id first, then email fallback for legacy Stripe
+// Provider is now AUTHORITATIVE from User.subscription_provider field
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { hasPremiumAccess, hasPaidAccess } from "@/components/utils/premiumAccess";
@@ -8,7 +8,6 @@ import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/componen
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
-
 import { useEffect, useState } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -132,37 +131,6 @@ export function useCurrentUser() {
     retry: 1,
   });
 
-  // Load UserProfile (authoritative source for provider)
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile-provider", userId, email],
-    queryFn: async () => {
-      try {
-        if (!userId && !email) return null;
-        let rows = [];
-        
-        // Prefer user_id lookup
-        if (userId) {
-          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
-          if (Array.isArray(byUserId) && byUserId.length) rows = rows.concat(byUserId);
-        }
-        
-        // Fallback to email
-        if (email && rows.length === 0) {
-          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
-          if (Array.isArray(byEmail) && byEmail.length) rows = rows.concat(byEmail);
-        }
-        
-        return rows?.[0] || null;
-      } catch (e) {
-        console.warn("[useCurrentUser] Could not load UserProfile for provider:", e);
-        return null;
-      }
-    },
-    enabled: !!(userId || email),
-    staleTime: 15_000,
-    retry: 1,
-  });
-
   // Ensure User entity exists and has platform set
   useEffect(() => {
     if (userLoading || !rawUser?.email || ensuredUser) return;
@@ -187,8 +155,8 @@ export function useCurrentUser() {
     })();
   }, [userLoading, rawUser?.email, ensuredUser, refetchUser]);
 
-  // Compute provider from UserProfile (authoritative source)
-  const computedProvider = resolveProviderFromProfile(profile);
+  // Provider is authoritative from User.subscription_provider field
+  const computedProvider = rawUser?.subscription_provider || null;
 
   // Compute derived flags
   const isLoading = userLoading || subLoading;
