@@ -1,103 +1,105 @@
+/**
+ * Stripe Diagnostics - Validate configuration
+ * Returns deployment health status for UI
+ */
+
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeSecretKeyLive, getStripeWebhookSecretLive, getStripePriceId } from "./_shared/remoteConfig.ts";
+import Stripe from "npm:stripe@17.6.0";
+
+function getRuntimeEnv(req: Request): "live" | "preview" {
+  const hinted = (Deno.env.get("BASE44_ENVIRONMENT") || Deno.env.get("ENVIRONMENT") || "").toLowerCase();
+  if (hinted.includes("live")) return "live";
+  if (hinted.includes("preview") || hinted.includes("dev")) return "preview";
+  
+  const host = new URL(req.url).host.toLowerCase();
+  if (host.includes("app.base44.com") || host.includes("preview") || host.includes("sandbox")) return "preview";
+  return "live";
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Only admins can view diagnostics
     if (user?.role !== "admin") {
-      return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Check all required Stripe configs
-    const secretKey = await getStripeSecretKeyLive(req);
-    const webhookSecret = await getStripeWebhookSecretLive(req);
-    const premiumMonthly = await getStripePriceId("PREMIUM_MONTHLY", req);
-    const premiumAnnual = await getStripePriceId("PREMIUM_ANNUAL", req);
-    const proMonthly = await getStripePriceId("PRO_MONTHLY", req);
-    const proAnnual = await getStripePriceId("PRO_ANNUAL", req);
-
-    const diagnostics = {
+    const environment = getRuntimeEnv(req);
+    const results = {
       timestamp: new Date().toISOString(),
-      app_version: "2.0",
-      stripe_config: {
-        secret_key: {
-          present: !!secretKey.value,
-          source: secretKey.source,
-          masked: secretKey.value ? `${secretKey.value.slice(0, 7)}...${secretKey.value.slice(-4)}` : null,
-        },
-        webhook_secret: {
-          present: !!webhookSecret.value,
-          source: webhookSecret.source,
-        },
-        price_ids: {
-          premium_monthly: {
-            present: !!premiumMonthly.value,
-            source: premiumMonthly.source,
-            value: premiumMonthly.value,
-          },
-          premium_annual: {
-            present: !!premiumAnnual.value,
-            source: premiumAnnual.source,
-            value: premiumAnnual.value,
-          },
-          pro_monthly: {
-            present: !!proMonthly.value,
-            source: proMonthly.source,
-            value: proMonthly.value,
-          },
-          pro_annual: {
-            present: !!proAnnual.value,
-            source: proAnnual.source,
-            value: proAnnual.value,
-          },
-        },
+      environment,
+      health: "HEALTHY" as "HEALTHY" | "UNHEALTHY",
+      checks: {
+        secret_present: false,
+        stripe_init: false,
+        api_connect: false,
       },
-      overall_status: secretKey.value && webhookSecret.value ? "operational" : "degraded",
-      recommendations: [],
+      details: {} as any,
     };
 
-    // Generate recommendations
-    if (!secretKey.value) {
-      diagnostics.recommendations.push(
-        "CRITICAL: STRIPE_SECRET_KEY is missing from both env vars and RemoteConfig"
-      );
-    } else if (secretKey.source === "remote") {
-      diagnostics.recommendations.push(
-        "WARNING: Using RemoteConfig for STRIPE_SECRET_KEY - env var is missing or stale"
-      );
+    // Check 1: Secret present
+    const secretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    results.checks.secret_present = !!secretKey && secretKey.startsWith("sk_");
+    results.details.secret_key = secretKey ? `${secretKey.slice(0, 8)}...` : "MISSING";
+
+    if (!results.checks.secret_present) {
+      results.health = "UNHEALTHY";
+      results.details.error = "STRIPE_SECRET_KEY not found or invalid";
+      return Response.json(results);
     }
 
-    if (!webhookSecret.value) {
-      diagnostics.recommendations.push(
-        "WARNING: STRIPE_WEBHOOK_SECRET is missing from both sources"
-      );
+    // Check 2: Stripe initialization
+    try {
+      const stripe = new Stripe(secretKey, {
+        apiVersion: "2024-12-18.acacia",
+      });
+      results.checks.stripe_init = true;
+
+      // Check 3: API connectivity
+      try {
+        const prices = await stripe.prices.list({ limit: 1 });
+        results.checks.api_connect = true;
+        results.details.stripe_mode = secretKey.startsWith("sk_live_") ? "live" : "test";
+        results.details.price_count = prices.data.length;
+      } catch (apiErr: any) {
+        results.checks.api_connect = false;
+        results.details.api_error = apiErr.message;
+        results.health = "UNHEALTHY";
+      }
+    } catch (initErr: any) {
+      results.checks.stripe_init = false;
+      results.details.init_error = initErr.message;
+      results.health = "UNHEALTHY";
     }
 
-    const missingPrices = [];
-    if (!premiumMonthly.value) missingPrices.push("PREMIUM_MONTHLY");
-    if (!premiumAnnual.value) missingPrices.push("PREMIUM_ANNUAL");
-    if (!proMonthly.value) missingPrices.push("PRO_MONTHLY");
-    if (!proAnnual.value) missingPrices.push("PRO_ANNUAL");
+    // Additional config checks
+    results.details.price_ids = {
+      premium_monthly: Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "MISSING",
+      premium_annual: Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "MISSING",
+      pro_monthly: Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "MISSING",
+      pro_annual: Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "MISSING",
+    };
 
-    if (missingPrices.length > 0) {
-      diagnostics.recommendations.push(
-        `Missing price IDs: ${missingPrices.join(", ")}`
-      );
-    }
+    results.details.webhook_secret = Deno.env.get("STRIPE_WEBHOOK_SECRET") 
+      ? `${Deno.env.get("STRIPE_WEBHOOK_SECRET")!.slice(0, 8)}...` 
+      : "MISSING";
 
-    return Response.json(diagnostics);
-  } catch (error) {
-    console.error("[stripeDiagnostics] error:", error);
-    return Response.json(
-      {
-        error: "DIAGNOSTICS_FAILED",
-        message: error?.message || String(error),
-        timestamp: new Date().toISOString(),
+    return Response.json(results);
+  } catch (err: any) {
+    console.error("[stripeDiagnostics]", err);
+    return Response.json({
+      timestamp: new Date().toISOString(),
+      environment: "unknown",
+      health: "UNHEALTHY",
+      checks: {
+        secret_present: false,
+        stripe_init: false,
+        api_connect: false,
       },
-      { status: 500 }
-    );
+      details: {
+        error: err.message || "Unknown error",
+      },
+    }, { status: 500 });
   }
 });
