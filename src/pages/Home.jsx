@@ -59,7 +59,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
-            <TobaccoCollectionStats />
+            <TobaccoCollectionStats blends={blends} pipes={pipes} user={user} />
             <PairingGrid user={user} pipes={pipes} blends={blends} />
           </div>
 
