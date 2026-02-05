@@ -291,6 +291,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => {
                 setSelectedTier("premium");
+                setSelectedInterval(selectedInterval);
                 handleUpgrade();
               }}
             >
@@ -325,6 +326,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => {
                 setSelectedTier("pro");
+                setSelectedInterval(selectedInterval);
                 handleUpgrade();
               }}
             >
@@ -337,7 +339,7 @@ export default function SubscriptionFull() {
       {/* Reassurance Copy */}
       <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
          <p>• Cancel anytime</p>
-         <p>• Subscription managed through {isIOSApp ? "Apple" : "Stripe"}</p>
+         {!isIOSApp && <p>• Subscription managed through Stripe</p>}
          <p>• Your existing data is never affected</p>
        </div>
 
