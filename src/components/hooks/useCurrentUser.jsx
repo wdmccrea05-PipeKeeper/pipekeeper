@@ -16,30 +16,50 @@ function normalizeTier(raw) {
 async function fetchCurrentUser() {
   // Auth identity
   const authUser = await base44.auth.me();
+  const userId = authUser?.id;
   const email = normEmail(authUser?.email);
-  if (!email) throw new Error("Auth user missing email");
+  
+  if (!userId || !email) {
+    throw new Error("Auth missing id or email");
+  }
 
-  // UserProfile (canonical)
+  // Find canonical profile: prefer user_id, fallback email
   let userProfile = null;
   try {
-    const profiles = await base44.entities.UserProfile.filter({ user_email: email });
+    // Try by user_id first
+    let profiles = await base44.entities.UserProfile.filter({ user_id: userId });
     userProfile = Array.isArray(profiles) ? (profiles[0] || null) : null;
 
-    // If missing, try to create it (so first login actually works)
+    // Fallback: try by email
     if (!userProfile) {
-      try {
-        userProfile = await base44.entities.UserProfile.create({
-          user_email: email,
-          display_name: authUser?.name || authUser?.full_name || "",
-          subscription_tier: "free",
-        });
-      } catch (e) {
-        // If create is blocked by permissions/RLS, don't hard fail
-        console.warn("[useCurrentUser] UserProfile create failed:", e);
-      }
+      profiles = await base44.entities.UserProfile.filter({ user_email: email });
+      userProfile = Array.isArray(profiles) ? (profiles[0] || null) : null;
+    }
+
+    // Create if missing
+    if (!userProfile) {
+      userProfile = await base44.entities.UserProfile.create({
+        user_id: userId,
+        user_email: email,
+        display_name: authUser?.name || authUser?.full_name || "",
+        subscription_tier: "free",
+      });
+    } else if (!userProfile.user_id || userProfile.user_email !== email) {
+      // Backfill user_id or fix email casing
+      await base44.entities.UserProfile.update(userProfile.id, {
+        user_id: userId,
+        user_email: email,
+      });
+      // Refresh the profile
+      userProfile = {
+        ...userProfile,
+        user_id: userId,
+        user_email: email,
+      };
     }
   } catch (e) {
-    console.warn("[useCurrentUser] UserProfile lookup failed:", e);
+    console.warn("[useCurrentUser] UserProfile lookup/create failed:", e);
+    // Don't hard-fail, continue without profile
   }
 
   // Subscription (optional)
@@ -51,6 +71,7 @@ async function fetchCurrentUser() {
     console.warn("[useCurrentUser] Subscription lookup failed:", e);
   }
 
+  // Normalize tier (always lowercase)
   const tier = normalizeTier(
     userProfile?.subscription_tier ||
       subscription?.tier ||
@@ -72,12 +93,13 @@ async function fetchCurrentUser() {
 
   return {
     // auth
-    id: authUser?.id || authUser?.user_id || null,
+    id: userId,
     email,
     name: authUser?.name || authUser?.full_name || null,
     full_name: authUser?.full_name || authUser?.name || null,
-    role: authUser?.role || "user",
+    role: String(authUser?.role || "").toLowerCase(),
     created_date: authUser?.created_at || authUser?.created_date || null,
+    tos_accepted_at: userProfile?.tos_accepted_at || authUser?.tos_accepted_at || null,
 
     // canonical entities
     userProfile,
@@ -102,16 +124,14 @@ async function fetchCurrentUser() {
 
 export function useCurrentUser() {
   const q = useQuery({
-    queryKey: ["current-user"], // IMPORTANT: match the rest of the app
+    queryKey: ["current-user"],
     queryFn: fetchCurrentUser,
     staleTime: 60_000,
     retry: 1,
     refetchOnMount: "always",
   });
 
-  // Backward compatibility layer:
-  // - supports const { data } = useCurrentUser()
-  // - supports const { user } = useCurrentUser()
+  // Backward compatibility: support both `.data` and `.user`
   const user = q.data || null;
 
   return {
