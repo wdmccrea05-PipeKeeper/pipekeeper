@@ -193,20 +193,28 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Update user if entitlements changed
-    const needsUpdate =
-      user.subscription_level !== result.subscription_level ||
-      user.subscription_status !== result.subscription_status ||
-      user.subscription_tier !== result.subscription_tier;
-
-    if (needsUpdate) {
-      await base44.asServiceRole.entities.User.update(user.id, {
-        subscription_level: result.subscription_level,
-        subscription_status: result.subscription_status,
-        subscription_tier: result.subscription_tier,
+    // Update UserProfile if entitlements changed
+    let profile = (await base44.asServiceRole.entities.UserProfile.filter({ user_email: result.email }))?.[0];
+    
+    if (profile) {
+      const needsUpdate =
+        profile.subscription_tier !== result.subscription_tier;
+      
+      if (needsUpdate) {
+        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
+          subscription_tier: result.subscription_tier || 'PREMIUM',
+        });
+        result.updated = true;
+        console.log(`[reconcile] Updated ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
+      }
+    } else {
+      // Create profile if doesn't exist
+      await base44.asServiceRole.entities.UserProfile.create({
+        user_email: result.email,
+        subscription_tier: result.subscription_tier || 'PREMIUM',
       });
       result.updated = true;
-      console.log(`[reconcile] Updated ${result.email}: ${result.source} → level=${result.subscription_level} tier=${result.subscription_tier}`);
+      console.log(`[reconcile] Created ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
     }
 
     return Response.json(result);
