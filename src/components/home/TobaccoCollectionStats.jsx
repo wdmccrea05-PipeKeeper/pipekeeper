@@ -17,7 +17,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function TobaccoCollectionStats() {
+export default function TobaccoCollectionStats({ blends, pipes, user, smokingLogs }) {
   const { t } = useTranslation();
   const [drillDown, setDrillDown] = useState(null);
   const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
@@ -26,33 +26,10 @@ export default function TobaccoCollectionStats() {
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [showTrends, setShowTrends] = useState(false);
-  
-  const { user, isPro } = useCurrentUser();
-
-  const { data: blends = [] } = useQuery({
-    queryKey: ['tobacco-blends', user?.email],
-    queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
-    enabled: !!user?.email,
-    initialData: [],
-  });
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
-    enabled: !!user?.email,
-    initialData: [],
-  });
-
-  const { data: smokingLogs = [] } = useQuery({
-    queryKey: ['smoking-logs-all', user?.email],
-    queryFn: () => scopedEntities.SmokingLog.listForUser(user?.email, '-date', 500),
-    enabled: !!user?.email,
-    initialData: [],
-  });
-
-  const { data: pipes = [] } = useQuery({
-    queryKey: ['pipes-all', user?.email],
-    queryFn: () => scopedEntities.Pipe.listForUser(user?.email),
     enabled: !!user?.email,
     initialData: [],
   });
