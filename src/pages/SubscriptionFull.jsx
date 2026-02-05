@@ -78,6 +78,23 @@ export default function SubscriptionFull() {
     return cleanup;
   }, [isIOSApp]);
 
+  // Auto-sync on window refocus (Option A)
+  useEffect(() => {
+    if (isIOSApp) return;
+
+    const handleFocus = async () => {
+      try {
+        await refetch();
+        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      } catch (e) {
+        console.warn("[SubscriptionFull] Auto-sync on refocus failed:", e);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [isIOSApp, refetch, queryClient]);
+
   const tierPrices = {
     premium: { monthly: 1.99, annual: 19.99 },
     pro: { monthly: 2.99, annual: 29.99 },
