@@ -364,7 +364,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleLogout}>
+                <Button variant="outline" onClick={handleLogout} className="text-stone-700 hover:text-stone-900">
                   <LogOut className="w-4 h-4 mr-2" />
                   {t("profile.logout")}
                 </Button>
@@ -379,10 +379,10 @@ export default function ProfilePage() {
                 {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
               </Badge>
               {subscription?.provider ? (
-                <Badge variant="secondary">Provider: {subscription.provider}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: {subscription.provider}</Badge>
               ) : null}
               {subscription?.status ? (
-                <Badge variant="secondary">Status: {subscription.status}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Status: {subscription.status}</Badge>
               ) : null}
             </div>
 
@@ -406,7 +406,7 @@ export default function ProfilePage() {
                       className="hidden"
                       disabled={uploadingAvatar}
                     />
-                    <Button type="button" variant="outline" disabled={uploadingAvatar}>
+                    <Button type="button" variant="outline" disabled={uploadingAvatar} className="text-stone-700 hover:text-stone-900">
                       <Upload className="w-4 h-4 mr-2" />
                       {uploadingAvatar ? "Uploading…" : "Upload"}
                     </Button>
@@ -485,6 +485,7 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
+                  className={formData.privacy_hide_values ? "bg-green-600" : "bg-red-600"}
                 />
               </div>
 
@@ -493,6 +494,7 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
+                  className={formData.privacy_hide_inventory ? "bg-green-600" : "bg-red-600"}
                 />
               </div>
 
@@ -501,6 +503,7 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                  className={formData.privacy_hide_collection_counts ? "bg-green-600" : "bg-red-600"}
                 />
               </div>
             </div>
