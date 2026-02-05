@@ -1,32 +1,76 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+
+import { User, Crown, ArrowRight, LogOut, Upload, AlertCircle } from "lucide-react";
+
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
+import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
+import { shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
+import { isAppleBuild } from "@/components/utils/appVariant";
+import { openAppleSettings } from "@/components/utils/appleIAP";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { isTrialWindow } from "@/components/utils/access";
+import { PK_THEME } from "@/components/utils/pkTheme";
+
+// Canonical user/sub state (already in your repo)
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+const BLEND_TYPES = [
+  "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
+  "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
+  "Navy Flake", "Dark Fired", "Cavendish",
+];
+
+const PIPE_SHAPES = [
+  "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent",
+  "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker",
+  "Prince", "Rhodesian", "Zulu", "Calabash",
+];
+
+function pickBestProfile(rows = []) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  // Prefer record with tos_accepted_at / display_name / most recently updated/created
+  const scored = rows.map((r) => {
+    const updated = Date.parse(r.updated_at || r.updatedAt || "") || 0;
+    const created = Date.parse(r.created_at || r.createdAt || "") || 0;
+    const hasName = r.display_name ? 1 : 0;
+    const hasTos = r.tos_accepted_at ? 1 : 0;
+    const hasAvatar = r.avatar_url ? 1 : 0;
+    const score = hasTos * 10 + hasName * 5 + hasAvatar * 2 + (updated || created) / 1e12;
+    return { r, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].r;
+}
+
 export default function ProfilePage() {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { user, subscription, hasPremium, hasPaid, isPro, isLoading: userLoading } = useCurrentUser();
-  const emailLower = useMemo(() => normEmail(user?.email), [user?.email]);
-  const userId = user?.auth_user_id || user?.id;
+  const { user, subscription, isLoading: userLoading } = useCurrentUser();
+
+  const email = useMemo(() => normEmail(user?.email), [user?.email]);
+  const userId = user?.auth_user_id || user?.id || null;
+
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [formData, setFormData] = useState({
     display_name: "",
@@ -44,7 +88,6 @@ export default function ProfilePage() {
     privacy_hide_values: false,
     privacy_hide_inventory: false,
     privacy_hide_collection_counts: false,
-    social_media: [],
     show_social_media: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
@@ -52,49 +95,55 @@ export default function ProfilePage() {
     pipe_size_preference: "No Preference",
     preferred_shapes: [],
     strength_preference: "No Preference",
-    notes: ""
+    notes: "",
   });
 
-  // Load UserProfile with stable identity (user_id first, email fallback)
+  // Paid / trial display (your existing logic)
+  const isWithinTrial = isTrialWindow(user?.created_date || user?.createdAt || user?.created_at);
+  const hasActiveSubscription = hasPremiumAccess(user, subscription);
+
   const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile", userId, emailLower],
-    enabled: !!(userId || emailLower),
-    staleTime: 30_000,
+    queryKey: ["user-profile", userId, email],
+    enabled: !!(userId || email),
+    staleTime: 20_000,
     retry: 1,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       try {
-        // Prefer user_id if your UserProfile entity supports it
+        let rows = [];
+
+        // Prefer user_id linkage when available (stable across provider/platform)
         if (userId) {
-          const byId = await base44.entities.UserProfile.filter({ user_id: userId });
-          if (Array.isArray(byId) && byId.length) return byId[0];
+          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
+          if (Array.isArray(byUserId) && byUserId.length) rows = rows.concat(byUserId);
         }
 
-        // Fallback: normalized email
-        if (emailLower) {
-          const byEmail = await base44.entities.UserProfile.filter({ user_email: emailLower });
-          if (!Array.isArray(byEmail) || !byEmail.length) return null;
-
-          // If duplicates exist, prefer most recently updated/created
-          const sorted = [...byEmail].sort((a, b) => {
-            const ta = Date.parse(a.updated_date || a.created_date || 0) || 0;
-            const tb = Date.parse(b.updated_date || b.created_date || 0) || 0;
-            return tb - ta;
-          });
-          return sorted[0];
+        // Fallback to normalized email for legacy records
+        if (email) {
+          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
+          if (Array.isArray(byEmail) && byEmail.length) rows = rows.concat(byEmail);
         }
 
-        return null;
+        // De-dupe by id
+        const seen = new Set();
+        rows = rows.filter((r) => {
+          if (!r?.id) return false;
+          if (seen.has(r.id)) return false;
+          seen.add(r.id);
+          return true;
+        });
+
+        return pickBestProfile(rows);
       } catch (err) {
-        console.error("[Profile] UserProfile load error:", err);
+        console.error("[Profile] load profile error:", err);
         return null;
       }
-    }
+    },
   });
 
+  // Hydrate form from profile
   useEffect(() => {
     if (!profile) return;
+
     setFormData((prev) => ({
       ...prev,
       display_name: profile.display_name || "",
@@ -112,7 +161,6 @@ export default function ProfilePage() {
       privacy_hide_values: !!profile.privacy_hide_values,
       privacy_hide_inventory: !!profile.privacy_hide_inventory,
       privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
-      social_media: Array.isArray(profile.social_media) ? profile.social_media : [],
       show_social_media: !!profile.show_social_media,
       clenching_preference: profile.clenching_preference || "Sometimes",
       smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
@@ -120,114 +168,433 @@ export default function ProfilePage() {
       pipe_size_preference: profile.pipe_size_preference || "No Preference",
       preferred_shapes: Array.isArray(profile.preferred_shapes) ? profile.preferred_shapes : [],
       strength_preference: profile.strength_preference || "No Preference",
-      notes: profile.notes || ""
+      notes: profile.notes || "",
     }));
   }, [profile]);
 
   const saveMutation = useMutation({
-    mutationFn: async (data) => {
-      if (!emailLower && !userId) throw new Error("Missing user identity");
+    mutationFn: async () => {
+      if (!userId && !email) throw new Error("Missing identity");
+
       const payload = {
-        ...data,
-        user_email: emailLower || undefined,
-        user_id: userId || undefined
+        ...formData,
+        user_id: userId || undefined,
+        user_email: email || undefined, // ALWAYS normalized
       };
 
       if (profile?.id) {
-        // Use normalized email for ownership check
-        return safeUpdate("UserProfile", profile.id, payload, emailLower);
-      }
-
-      // Prevent duplicates: if any profile exists by email, update newest
-      if (emailLower) {
-        const existing = await base44.entities.UserProfile.filter({ user_email: emailLower });
-        if (Array.isArray(existing) && existing.length) {
-          const sorted = [...existing].sort((a, b) => {
-            const ta = Date.parse(a.updated_date || a.created_date || 0) || 0;
-            const tb = Date.parse(b.updated_date || b.created_date || 0) || 0;
-            return tb - ta;
-          });
-          return safeUpdate("UserProfile", sorted[0].id, payload, emailLower);
-        }
+        return safeUpdate("UserProfile", profile.id, payload, email);
       }
 
       return base44.entities.UserProfile.create(payload);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, emailLower] });
       toast.success(t("notifications.saved"));
+      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
     },
-    onError: (e) => {
-      console.error("[Profile] Save failed:", e);
-      toast.error(e?.message || "Save failed");
-    }
+    onError: (err) => {
+      console.error("[Profile] save failed:", err);
+      toast.error("Could not save profile. Please try again.");
+    },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    saveMutation.mutate(formData);
-  };
+  async function handleAvatarUpload(e) {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
 
-  const handleLogout = async () => {
-    await base44.auth.logout();
-    window.location.assign(createPageUrl("Index"));
-  };
+    setUploadingAvatar(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData((p) => ({ ...p, avatar_url: file_url }));
+      toast.success(t("profile.avatarUploadedSuccessfully"));
+    } catch (err) {
+      console.error("[Profile] avatar upload error:", err);
+      toast.error(t("profile.failedToUploadImage"));
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = "";
+    }
+  }
 
-  const showBackup = !hasPaid; // if you want: only show direct links when not paid
+  function toggleBlendType(type) {
+    setFormData((p) => {
+      const has = p.preferred_blend_types.includes(type);
+      return {
+        ...p,
+        preferred_blend_types: has
+          ? p.preferred_blend_types.filter((x) => x !== type)
+          : [...p.preferred_blend_types, type],
+      };
+    });
+  }
+
+  function toggleShape(shape) {
+    setFormData((p) => {
+      const has = p.preferred_shapes.includes(shape);
+      return {
+        ...p,
+        preferred_shapes: has
+          ? p.preferred_shapes.filter((x) => x !== shape)
+          : [...p.preferred_shapes, shape],
+      };
+    });
+  }
+
+  async function handleLogout() {
+    try {
+      await base44.auth.logout();
+    } finally {
+      window.location.href = "/";
+    }
+  }
+
+  if (userLoading || profileLoading) {
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="text-4xl mb-4">⚙️</div>
+          <p className={PK_THEME.textMuted}>{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("nav.profile")}</CardTitle>
-          <CardDescription>
-            {userLoading || profileLoading ? "Loading…" : null}
-          </CardDescription>
+    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-          <div className="flex flex-wrap gap-2 mt-2">
-            <Badge variant={hasPaid ? "default" : "secondary"}>
-              {hasPaid ? "Paid" : "Free"}
-            </Badge>
-            <Badge variant={isPro ? "default" : "secondary"}>
-              {isPro ? "Pro" : (hasPremium ? "Premium" : "Free")}
-            </Badge>
-            <Badge variant="secondary">
-              {subscription?.provider ? `Provider: ${subscription.provider}` : "Provider: none"}
-            </Badge>
-          </div>
-        </CardHeader>
+        {/* Subscription Status / Management */}
+        <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  {hasActiveSubscription ? (
+                    <>
+                      <div className="font-semibold text-amber-900">
+                        {user?.subscription_tier === "pro" ? t("profile.proActive") : t("profile.premiumActive")}
+                      </div>
+                      <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
+                    </>
+                  ) : isWithinTrial ? (
+                    <>
+                      <div className="font-semibold text-amber-900">{t("profile.freeTrialActive")}</div>
+                      <div className="text-sm text-amber-700">{t("profile.sevenDaysFree")}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-semibold text-stone-800">{t("profile.freeAccount")}</div>
+                      <div className="text-sm text-stone-600">{t("profile.limitedFeatures")}</div>
+                    </>
+                  )}
+                </div>
+              </div>
 
-        <CardContent>
-          {showBackup ? <SubscriptionBackupModeModal /> : null}
+              <div className="w-full md:w-auto flex flex-col gap-2">
+                {!isIOSCompanion() ? (
+                  <>
+                    {shouldShowManageSubscription(subscription, user) && (
+                      <Button
+                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                        onClick={() => {
+                          if (isAppleBuild) openAppleSettings();
+                          else setShowBackupModal(true);
+                        }}
+                      >
+                        {isAppleBuild ? t("profile.manageSubscriptionAppStore") : getManageSubscriptionLabel()}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label>Display name</Label>
-              <Input
-                value={formData.display_name}
-                onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-              />
+                    {shouldShowPurchaseUI() && !hasActiveSubscription && (
+                      <Button
+                        onClick={() => navigate(createPageUrl("Subscription"))}
+                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                      >
+                        {t("profile.upgrade")}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
+
+                    {!shouldShowPurchaseUI() && (
+                      <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
+                        {getSubscriptionManagementMessage()}
+                      </div>
+                    )}
+
+                    <Button
+                      variant="outline"
+                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                      onClick={() => setShowBackupModal(true)}
+                    >
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      {t("profile.manualSubscribe")}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
+                    {t("profile.premiumSubscriptionWebOnly")}{" "}
+                    <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
+                      pipekeeper.app
+                    </a>
+                    .
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile */}
+        <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="text-2xl text-violet-900">{t("profile.smokingProfile")}</CardTitle>
+                <CardDescription className="text-stone-700">
+                  {t("profile.personalizeAIRecommendations")}
+                </CardDescription>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {t("profile.logout")}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Badges (kept visible) */}
+            <div className="flex gap-2 flex-wrap">
+              <Badge className="bg-[#A35C5C] text-white border-0">
+                {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
+              </Badge>
+              {subscription?.provider ? (
+                <Badge variant="secondary">Provider: {subscription.provider}</Badge>
+              ) : null}
+              {subscription?.status ? (
+                <Badge variant="secondary">Status: {subscription.status}</Badge>
+              ) : null}
+            </div>
+
+            {/* Avatar */}
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium">Profile picture</Label>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center">
+                  {formData.avatar_url ? (
+                    <img src={formData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-10 h-10 text-amber-700" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                      disabled={uploadingAvatar}
+                    />
+                    <Button type="button" variant="outline" disabled={uploadingAvatar}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingAvatar ? "Uploading…" : "Upload"}
+                    </Button>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Basic */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-stone-700 font-medium">Display name</Label>
+                <Input
+                  value={formData.display_name}
+                  onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label className="text-stone-700 font-medium">Email</Label>
+                <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
+              </div>
             </div>
 
             <div>
-              <Label>Bio</Label>
+              <Label className="text-stone-700 font-medium">Bio</Label>
               <Textarea
                 value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
+                rows={4}
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={saveMutation.isPending}>
+            {/* Location */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-stone-700 font-medium">Location</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-stone-600">Show on profile</span>
+                  <Switch
+                    checked={formData.show_location}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="City"
+                  value={formData.city}
+                  onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                />
+                <Input
+                  placeholder="State/Province"
+                  value={formData.state_province}
+                  onChange={(e) => setFormData((p) => ({ ...p, state_province: e.target.value }))}
+                />
+                <Input
+                  placeholder="Country"
+                  value={formData.country}
+                  onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
+                />
+                <Input
+                  placeholder="Postal code"
+                  value={formData.postal_code}
+                  onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {/* Privacy */}
+            <div className="space-y-3">
+              <Label className="text-stone-700 font-medium">Privacy</Label>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-stone-700">Hide values</span>
+                <Switch
+                  checked={formData.privacy_hide_values}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-stone-700">Hide inventory</span>
+                <Switch
+                  checked={formData.privacy_hide_inventory}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-stone-700">Hide collection counts</span>
+                <Switch
+                  checked={formData.privacy_hide_collection_counts}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                />
+              </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="space-y-3">
+              <Label className="text-stone-700 font-medium">Preferred blend types</Label>
+              <div className="flex flex-wrap gap-2">
+                {BLEND_TYPES.map((bt) => {
+                  const active = formData.preferred_blend_types.includes(bt);
+                  return (
+                    <Badge
+                      key={bt}
+                      onClick={() => toggleBlendType(bt)}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                    >
+                      {bt}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-stone-700 font-medium">Preferred pipe shapes</Label>
+              <div className="flex flex-wrap gap-2">
+                {PIPE_SHAPES.map((sh) => {
+                  const active = formData.preferred_shapes.includes(sh);
+                  return (
+                    <Badge
+                      key={sh}
+                      onClick={() => toggleShape(sh)}
+                      className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                    >
+                      {sh}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-stone-700 font-medium">Notes</Label>
+              <Textarea
+                value={formData.notes}
+                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
+                rows={4}
+              />
+            </div>
+
+            {/* Public profile toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-stone-800">Public community profile</div>
+                <div className="text-sm text-stone-600">Allow others to view your profile in the community.</div>
+              </div>
+              <Switch
+                checked={formData.is_public}
+                onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
+              />
+            </div>
+
+            {/* Save */}
+            <div className="flex flex-col md:flex-row gap-3">
+              <Button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
+              >
                 {saveMutation.isPending ? "Saving…" : "Save"}
               </Button>
-              <Button type="button" variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
+
+              {user?.email ? (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      await saveMutation.mutateAsync();
+                      navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
+                    } catch {}
+                  }}
+                >
+                  Preview public profile
+                </Button>
+              ) : null}
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <SubscriptionBackupModeModal
+          isOpen={showBackupModal}
+          onClose={() => setShowBackupModal(false)}
+        />
+      </div>
     </div>
   );
 }
