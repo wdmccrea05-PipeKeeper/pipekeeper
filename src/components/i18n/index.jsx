@@ -1,22 +1,9 @@
-// src/components/i18n/index.jsx
-import i18n from "i18next";
+import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-// Existing sources
 import { translationsGenerated } from "./translations-generated.jsx";
 import { translationsComplete } from "./translations-complete.jsx";
-
-function deepMerge(target, source) {
-  const output = { ...target };
-  Object.keys(source || {}).forEach((key) => {
-    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
-      output[key] = deepMerge(output[key] || {}, source[key]);
-    } else {
-      output[key] = source[key];
-    }
-  });
-  return output;
-}
 
 function humanizeKey(key) {
   const last = String(key || "").split(".").pop() || String(key || "");
@@ -28,79 +15,108 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-// Normalize translations so "bad values" that look like keys don't leak into UI.
-// If a value is a key-ish string (contains dots like a.b.c), replace it with a humanized label.
-function normalizeTranslationTree(node, path = "") {
-  if (!node || typeof node !== "object") return node;
+// Deep merge
+function deepMerge(target, source) {
+  if (!source || typeof source !== "object") return target;
+  for (const key of Object.keys(source)) {
+    const sVal = source[key];
+    const tVal = target[key];
+    if (Array.isArray(sVal)) {
+      target[key] = sVal.slice();
+    } else if (sVal && typeof sVal === "object") {
+      target[key] = (tVal && typeof tVal === "object" && !Array.isArray(tVal)) ? tVal : {};
+      deepMerge(target[key], sVal);
+    } else {
+      target[key] = sVal;
+    }
+  }
+  return target;
+}
 
-  const out = Array.isArray(node) ? [...node] : { ...node };
-
+// Normalize: catch key-like strings that leaked as values
+function normalizeLeakedKeys(obj, path = "") {
+  if (!obj || typeof obj !== "object") return obj;
+  const out = Array.isArray(obj) ? [...obj] : { ...obj };
+  
   Object.keys(out).forEach((k) => {
     const v = out[k];
     const nextPath = path ? `${path}.${k}` : k;
-
+    
     if (v && typeof v === "object") {
-      out[k] = normalizeTranslationTree(v, nextPath);
-      return;
-    }
-
-    if (typeof v === "string") {
-      // If the stored value looks like an i18n key, it's wrong — humanize instead.
-      // Example bad value: "tobacconist.identify"
+      out[k] = normalizeLeakedKeys(v, nextPath);
+    } else if (typeof v === "string") {
+      // If value looks like a key (dotted path), humanize it
       if (/^[a-z0-9]+(\.[a-z0-9_-]+)+$/i.test(v)) {
         out[k] = humanizeKey(nextPath);
       }
-      // Also prevent empty strings
-      if (out[k].trim() === "") {
+      // Prevent empty strings
+      if (String(out[k] || "").trim() === "") {
         out[k] = humanizeKey(nextPath);
       }
     }
   });
-
+  
   return out;
 }
 
-// Build resources
-const generatedEn = translationsGenerated?.en || {};
-const completeEn = translationsComplete?.en || {};
+const supported = ["en", "es", "fr", "de", "it", "pt-BR", "nl", "pl", "ja", "zh-Hans"];
 
-const mergedEn = deepMerge(generatedEn, completeEn);
-const normalizedEn = normalizeTranslationTree(mergedEn);
+// Build resources: merge all sources + normalize
+const resources = supported.reduce((acc, lang) => {
+  const base = {};
+  
+  // Merge: generated overridden by complete
+  deepMerge(base, translationsGenerated?.[lang] || {});
+  deepMerge(base, translationsComplete?.[lang] || {});
+  
+  // Normalize leaked keys
+  const normalized = normalizeLeakedKeys(base);
+  
+  acc[lang] = { translation: normalized };
+  return acc;
+}, {});
 
-const resources = {
-  en: { translation: normalizedEn },
+if (!i18next.isInitialized) {
+  i18next
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: "en",
+      fallbackLng: "en",
+      supportedLngs: supported,
+      interpolation: { escapeValue: false },
+      returnEmptyString: false,
+      returnNull: false,
+      detection: {
+        order: ["localStorage", "navigator"],
+        caches: ["localStorage"],
+        lookupLocalStorage: "pipekeeper_language",
+      },
+      react: {
+        useSuspense: false,
+      },
+      // Never return raw keys — humanize instead
+      parseMissingKeyHandler: (key) => humanizeKey(key),
+    });
+}
+
+// Monkey-patch: catch any key that still escapes
+const _t = i18next.t.bind(i18next);
+i18next.t = (key, options) => {
+  const result = _t(key, options);
+  if (typeof result === "string") {
+    // If it returned the key itself or a key-like string, humanize
+    if (result === key || /^[a-z0-9]+(\.[a-z0-9_-]+)+$/i.test(result)) {
+      return humanizeKey(key);
+    }
+    // If empty, humanize
+    if (result.trim() === "") {
+      return humanizeKey(key);
+    }
+  }
+  return result;
 };
 
-// i18n init
-i18n.use(initReactI18next).init({
-  resources,
-  lng: "en",
-  fallbackLng: "en",
-
-  // Prevent null/empty/object returns
-  returnNull: false,
-  returnEmptyString: false,
-  returnObjects: false,
-
-  // CRITICAL: This is what actually prevents "key returns key"
-  parseMissingKeyHandler: (key) => humanizeKey(key),
-
-  interpolation: { escapeValue: false },
-
-  // Don't emit missing keys to backend
-  saveMissing: false,
-});
-
-// EXTRA HARD GUARANTEE:
-// Monkey-patch i18n.t so ANY direct `t("a.b")` call can never leak a key.
-// If i18n returns the key, we humanize it.
-const _t = i18n.t.bind(i18n);
-i18n.t = (key, options) => {
-  const value = _t(key, options);
-  if (typeof value === "string" && value === key) return humanizeKey(key);
-  if (typeof value === "string" && /^[a-z0-9]+(\.[a-z0-9_-]+)+$/i.test(value)) return humanizeKey(key);
-  if (typeof value === "string" && value.trim() === "") return humanizeKey(key);
-  return value;
-};
-
-export default i18n;
+export default i18next;
+export { resources, supported };
