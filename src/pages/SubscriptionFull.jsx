@@ -128,13 +128,15 @@ export default function SubscriptionFull() {
         interval: selectedInterval,
       });
 
-      if (response?.data?.url) {
+      // Check if we got a successful URL
+      if (response?.data?.ok && response?.data?.url) {
         window.location.href = response.data.url;
-      } else {
-        // Checkout creation failed: show backup mode instead
-        console.warn("[SubscriptionFull] Checkout failed, opening backup mode:", response?.data?.error);
-        setShowBackupModal(true);
+        return;
       }
+
+      // Any other response (error or fallback): open backup mode
+      console.warn("[SubscriptionFull] Checkout failed, opening backup mode:", response?.data?.error || response?.data?.message);
+      setShowBackupModal(true);
     } catch (e) {
       // Checkout invocation failed: show backup mode instead
       console.error("[SubscriptionFull] Checkout error, opening backup mode:", e?.message || e);

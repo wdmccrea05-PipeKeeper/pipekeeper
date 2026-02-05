@@ -226,13 +226,17 @@ Deno.serve(async (req) => {
       },
     });
 
-    return Response.json({ url: session.url });
+    return Response.json({ ok: true, url: session.url });
   } catch (error) {
-    console.error("[createCheckoutSession] Fatal error:", error);
+    const msg = error?.message || String(error);
+    console.error("[createCheckoutSession] Fatal error:", msg);
+    
+    // Return structured error so frontend can trigger backup mode
     return Response.json({
       ok: false,
       error: "CHECKOUT_CREATION_FAILED",
-      message: error?.message || String(error)
-    }, { status: 500 });
+      message: msg,
+      fallback: true
+    }, { status: 200 });
   }
 });
