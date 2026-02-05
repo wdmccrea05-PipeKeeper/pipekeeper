@@ -13,6 +13,7 @@ import {
 import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { useTranslation } from "react-i18next";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
   return (
@@ -51,12 +52,12 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 export default function SubscriptionFull() {
   const { t } = useTranslation();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
+  const { user } = useCurrentUser();
   const [isPro, setIsPro] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedTier, setSelectedTier] = useState("premium");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(true);
 
   useEffect(() => {
     if (!isIOSApp) return;
@@ -111,19 +112,14 @@ export default function SubscriptionFull() {
   };
 
   const handleUpgrade = async () => {
-    setMessage("");
-    setIsLoading(true);
-
     // iOS WKWebView -> StoreKit paywall (native)
     if (isIOSApp) {
       openNativePaywall();
-      setIsLoading(false);
       return;
     }
 
-    // Non-iOS: Use direct Stripe links (backup mode is primary)
+    // Non-iOS: Open backup modal with direct Stripe links
     setShowBackupModal(true);
-    setIsLoading(false);
   };
 
   const handleManage = async () => {
@@ -247,11 +243,11 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => {
                 setSelectedTier("premium");
+                setSelectedInterval("monthly");
                 handleUpgrade();
               }}
-              disabled={isLoading}
             >
-              {isLoading && selectedTier === "premium" ? "Processing..." : "Continue with Premium"}
+              Continue with Premium
             </Button>
           </CardContent>
         </Card>
@@ -282,11 +278,11 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => {
                 setSelectedTier("pro");
+                setSelectedInterval("monthly");
                 handleUpgrade();
               }}
-              disabled={isLoading}
             >
-              {isLoading && selectedTier === "pro" ? "Processing..." : "Upgrade to Pro"}
+              Upgrade to Pro
             </Button>
           </CardContent>
         </Card>
@@ -294,29 +290,22 @@ export default function SubscriptionFull() {
 
       {/* Reassurance Copy */}
       <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
-        <p>• Cancel anytime</p>
-        <p>• Subscription managed through {isIOSApp ? "Apple" : "Stripe"}</p>
-        <p>• Your existing data is never affected</p>
-      </div>
+         <p>• Cancel anytime</p>
+         <p>• Subscription managed through {isIOSApp ? "Apple" : "Stripe"}</p>
+         <p>• Your existing data is never affected</p>
+       </div>
 
-      {/* Manage Subscription */}
-      <Button variant="outline" className="w-full" onClick={handleManage} disabled={isLoading}>
-        Manage Subscription
-      </Button>
+       {/* Manage Subscription */}
+       <Button variant="outline" className="w-full" onClick={handleManage}>
+         Manage Subscription
+       </Button>
 
-      {message && (
-        <Card className={`border-${message.includes("Error") ? "red" : "green"}-500`}>
-          <CardContent className={`pt-6 text-${message.includes("Error") ? "red" : "green"}-500`}>
-            {message}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Backup checkout modal for Stripe failures */}
-      <SubscriptionBackupModeModal
-        isOpen={showBackupModal}
-        onClose={() => setShowBackupModal(false)}
-      />
+       {/* Direct Stripe checkout modal - PRIMARY METHOD */}
+       <SubscriptionBackupModeModal
+         isOpen={showBackupModal}
+         onClose={() => setShowBackupModal(false)}
+         user={user}
+       />
     </div>
   );
 }
