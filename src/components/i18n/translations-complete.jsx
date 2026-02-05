@@ -28,50 +28,7 @@ export const translationsComplete = {
           note: "Include your email address when contacting support so we can help you quickly."
         }
       }
-    },
-    profile: {
-      manageSubscription: "Manage subscription",
-      subscribe: "Subscribe",
-      manualSubscribe: "Manual subscribe",
-      logout: "Log out",
-      smokingProfile: "Smoking Profile",
-      personalizeAI: "Personalize your AI recommendations",
-      provider: "Provider",
-      status: "Status",
-      displayName: "Display name",
-      email: "Email",
-      bio: "Bio",
-      save: "Save",
-    },
-
-    tobacconist: {
-      identify: "Identify",
-      optimize: "Optimize",
-      whatIf: "What If",
-      aiUpdates: "AI Updates",
-
-      identificationTitle: "AI Pipe Identifier",
-      identificationSubtitle: "Upload photos to identify and add pipes instantly",
-    },
-
-    nav: {
-      home: "Home",
-      pipes: "Pipes",
-      tobacco: "Tobacco",
-      community: "Community",
-      profile: "Profile",
-      settings: "Settings",
-      search: "Search",
-    },
-
-    common: {
-      save: "Save",
-      cancel: "Cancel",
-      close: "Close",
-      continue: "Continue",
-      back: "Back",
-      ok: "OK",
-    },
+    }
   },
   es: {
     pipes: { search: 'Buscar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas las formas', allMaterials: 'Todos los materiales' },
@@ -212,7 +169,7 @@ export const translationsComplete = {
        whatIfEmpty: 'Commencez par ajouter des pipes et des mélanges',
        updatesTitle: 'Mises à Jour IA',
        updatesSubtitle: 'Recommandations automatiques basées sur votre collection',
-       updateTooltip: 'Consultez les mises à Jour IA périodiques',
+       updateTooltip: 'Consultez les mises à jour IA périodiques',
        optional: 'Optionnel',
        tooltipText: 'Les outils IA vous aident à optimiser votre collection',
        askTheExpert: 'Demander à l\'Experte',
