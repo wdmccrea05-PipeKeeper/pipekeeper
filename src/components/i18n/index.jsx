@@ -1,12 +1,16 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { translationsComplete } from "./translations-complete";
+import { translations } from "./translations";
 
-import { translationsComplete } from "./translations-complete.jsx";
-import { translationsGenerated } from "./translations-generated.jsx";
-
-// Turn "tobacconist.tobaccoBlendClassificationDesc" into "Tobacco Blend Classification Desc"
-function humanizeKey(key) {
-  const last = String(key || "").split(".").pop() || String(key || "");
+/**
+ * Humanize a translation key into readable text.
+ * Examples:
+ *  - "tobacconist.identificationTitle" -> "Identification Title"
+ *  - "profile.manageSubscription" -> "Manage Subscription"
+ */
+export function humanizeKey(key) {
+  const last = String(key || "").split(".").pop() || "";
   return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
@@ -15,50 +19,88 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-// Build i18n resources from the existing locale objects (whatever exists is used)
-function buildResources() {
-  const locales = new Set([
-    ...Object.keys(translationsComplete || {}),
-    ...Object.keys(translationsGenerated || {}),
-  ]);
+function isKeyLikeString(value) {
+  if (typeof value !== "string") return false;
+  // Looks like "section.subSection.label"
+  return /^[a-z0-9]+(\.[a-z0-9]+)+$/i.test(value.trim());
+}
 
-  const resources = {};
-  for (const lng of locales) {
-    const complete = translationsComplete?.[lng] || {};
-    const generated = translationsGenerated?.[lng] || {};
-    resources[lng] = { translation: { ...complete, ...generated } };
+// Deep merge where empty strings / key-like placeholders do NOT overwrite real copy.
+function mergeDeep(base, patch) {
+  const out = Array.isArray(base) ? [...base] : { ...base };
+  if (!patch || typeof patch !== "object") return out;
+
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === null || v === undefined) continue;
+
+    if (typeof v === "string") {
+      const trimmed = v.trim();
+      if (!trimmed) continue; // ignore empty
+      if (isKeyLikeString(trimmed)) continue; // ignore placeholders that are literally keys
+      out[k] = v;
+      continue;
+    }
+
+    if (Array.isArray(v)) {
+      out[k] = v;
+      continue;
+    }
+
+    if (typeof v === "object") {
+      out[k] = mergeDeep(out[k] && typeof out[k] === "object" ? out[k] : {}, v);
+      continue;
+    }
+
+    out[k] = v;
   }
 
-  // Always ensure English exists as fallback
-  if (!resources.en) resources.en = { translation: {} };
+  return out;
+}
+
+function buildResources() {
+  // Only languages that actually exist in the shipped translation objects.
+  const lngs = ["en", "es", "fr", "de", "it", "pt", "zh", "ja"];
+  const resources = {};
+
+  for (const lng of lngs) {
+    // Complete = base truth, translations = overrides/legacy
+    const merged = mergeDeep(
+      mergeDeep({}, translationsComplete?.[lng] || {}),
+      translations?.[lng] || {}
+    );
+
+    resources[lng] = { translation: merged };
+  }
 
   return resources;
 }
 
 const resources = buildResources();
 
-// IMPORTANT:
-// - missingKeyHandler does NOT change what t() returns.
-// - parseMissingKeyHandler DOES. That's what prevents key leaks.
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
+// Restore language preference if present
+const savedLng =
+  (typeof window !== "undefined" &&
+    window.localStorage &&
+    window.localStorage.getItem("pk_lang")) ||
+  "en";
 
-    // Default language; user can change later, but fallback must be English
-    lng: "en",
-    fallbackLng: "en",
+const initialLng = resources[savedLng] ? savedLng : "en";
 
-    // Prevent null/empty object surprises
-    returnNull: false,
-    returnEmptyString: false,
-    returnObjects: false,
+i18n.use(initReactI18next).init({
+  resources,
+  lng: initialLng,
+  fallbackLng: "en",
 
-    interpolation: { escapeValue: false },
+  // never leak null/empty/object values into UI
+  returnNull: false,
+  returnEmptyString: false,
+  returnObjects: false,
 
-    // CRITICAL: never show raw keys
-    parseMissingKeyHandler: (key) => humanizeKey(key),
-  });
+  // If missing, show readable fallback (NOT the raw key)
+  parseMissingKeyHandler: (key) => humanizeKey(key),
+
+  interpolation: { escapeValue: false },
+});
 
 export default i18n;
 export { humanizeKey };
