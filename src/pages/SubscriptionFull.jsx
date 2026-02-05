@@ -121,29 +121,9 @@ export default function SubscriptionFull() {
       return;
     }
 
-    // Non-iOS: Stripe checkout
-    try {
-      const response = await base44.functions.invoke("createCheckoutSession", {
-        tier: selectedTier,
-        interval: selectedInterval,
-      });
-
-      // Check if we got a successful URL
-      if (response?.data?.ok && response?.data?.url) {
-        window.location.href = response.data.url;
-        return;
-      }
-
-      // Any other response (error or fallback): open backup mode
-      console.warn("[SubscriptionFull] Checkout failed, opening backup mode:", response?.data?.error || response?.data?.message);
-      setShowBackupModal(true);
-    } catch (e) {
-      // Checkout invocation failed: show backup mode instead
-      console.error("[SubscriptionFull] Checkout error, opening backup mode:", e?.message || e);
-      setShowBackupModal(true);
-    } finally {
-      setIsLoading(false);
-    }
+    // Non-iOS: Use direct Stripe links (backup mode is primary)
+    setShowBackupModal(true);
+    setIsLoading(false);
   };
 
   const handleManage = async () => {
