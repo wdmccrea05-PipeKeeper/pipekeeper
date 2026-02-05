@@ -231,10 +231,14 @@ export default function Layout({ children, currentPageName }) {
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
 
-  // Anti-regression: Check nav labels for key leaks (dev-only)
+  // Anti-regression: Check nav labels for key leaks & prevent placeholders (dev-only)
   useEffect(() => {
     if (import.meta?.env?.DEV && navItems.length > 0) {
+      const PLACEHOLDER_PATTERNS = /^(Title|Subtitle|Page Title|Page Subtitle|Optional|Info|Description|Label)$/i;
       navItems.forEach(item => {
+        if (PLACEHOLDER_PATTERNS.test(item.name)) {
+          console.error('[i18n] Placeholder text rendered —', item.name, '— fix required');
+        }
         warnIfLooksLikeKey(item.name, `Nav: ${item.page}`);
       });
     }
