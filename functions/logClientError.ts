@@ -3,6 +3,7 @@
  * Stores error logs for observability and post-release diagnostics.
  */
 
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
