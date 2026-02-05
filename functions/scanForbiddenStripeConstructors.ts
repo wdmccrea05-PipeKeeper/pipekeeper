@@ -1,5 +1,4 @@
 // Scan for forbidden Stripe constructors - callable function
-
 Deno.serve(async (_req) => {
   const forbidden: string[] = [];
   try {

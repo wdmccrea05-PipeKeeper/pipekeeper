@@ -1,23 +1,9 @@
 // Single source of truth: Reconcile user entitlements from all sources (Stripe, Apple)
 // Fixes cross-platform issues where web Stripe purchase → iOS login loses paid status
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import Stripe from "npm:stripe@17.5.0";
+import { getStripeClient } from "./_shared/stripeClientSingleton.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
-
-function getStripeClient() {
-  const key = Deno.env.get("STRIPE_SECRET_KEY") || "";
-  
-  if (!key) {
-    throw new Error("STRIPE_SECRET_KEY is not set in environment");
-  }
-  
-  if (!key.startsWith("sk_")) {
-    throw new Error(`Invalid STRIPE_SECRET_KEY: must start with sk_ (got: ${key.slice(0, 3)}...)`);
-  }
-  
-  return new Stripe(key, { apiVersion: "2024-06-20" });
-}
 
 interface ReconcileResult {
   ok: boolean;
@@ -149,19 +135,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get auth user (we already have caller from base44.auth.me())
-    // Only allow reconciliation for self or admin
-    if (!isAdmin && targetEmail !== normEmail(caller.email)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+    // Find user
+    let user;
+    if (targetUserId) {
+      const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
+      user = users?.[0];
+    } else {
+      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
+      user = users?.[0];
     }
-    
-    // Use caller as the user being reconciled (or could be admin reconciling another user)
-    const user = { 
-      id: caller.id, 
-      email: normEmail(caller.email),
-      stripe_customer_id: null,
-      platform: null
-    };
+
+    if (!user) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
 
     // CRITICAL: Check Apple first if platform=ios, then fallback to Stripe
     // Platform is informational ONLY - never let it override actual entitlement
@@ -193,28 +179,20 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Update UserProfile if entitlements changed
-    let profile = (await base44.asServiceRole.entities.UserProfile.filter({ user_email: result.email }))?.[0];
-    
-    if (profile) {
-      const needsUpdate =
-        profile.subscription_tier !== result.subscription_tier;
-      
-      if (needsUpdate) {
-        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-          subscription_tier: result.subscription_tier || 'PREMIUM',
-        });
-        result.updated = true;
-        console.log(`[reconcile] Updated ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
-      }
-    } else {
-      // Create profile if doesn't exist
-      await base44.asServiceRole.entities.UserProfile.create({
-        user_email: result.email,
-        subscription_tier: result.subscription_tier || 'PREMIUM',
+    // Update user if entitlements changed
+    const needsUpdate =
+      user.subscription_level !== result.subscription_level ||
+      user.subscription_status !== result.subscription_status ||
+      user.subscription_tier !== result.subscription_tier;
+
+    if (needsUpdate) {
+      await base44.asServiceRole.entities.User.update(user.id, {
+        subscription_level: result.subscription_level,
+        subscription_status: result.subscription_status,
+        subscription_tier: result.subscription_tier,
       });
       result.updated = true;
-      console.log(`[reconcile] Created ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
+      console.log(`[reconcile] Updated ${result.email}: ${result.source} → level=${result.subscription_level} tier=${result.subscription_tier}`);
     }
 
     return Response.json(result);

@@ -1,37 +1,32 @@
 import { base44 } from "@/api/base44Client";
 
-/**
- * If you are using “legacy premium / grandfathering”, store it on UserProfile.
- * Do NOT write to entities.User (schema does not exist).
- */
+const FREE_LIMITS = { pipes: 5, tobaccos: 10 };
 
-export async function ensureFreeGrandfatherFlag(email) {
-  const userEmail = (email || "").trim().toLowerCase();
-  if (!userEmail) return { ok: false, reason: "missing_email" };
+export async function ensureFreeGrandfatherFlag(user) {
+  if (!user?.id || !user?.email) return;
 
-  const rows = await base44.entities.UserProfile.filter({ user_email: userEmail });
-  const profile = rows?.[0];
+  // Called only when hasPaid === false in useCurrentUser,
+  // so we do not need extra "paid" checks here.
+  if (user.isFreeGrandfathered) return;
 
-  // If no profile exists, create one (safe)
-  if (!profile) {
-    const created = await base44.entities.UserProfile.create({
-      user_email: userEmail,
-      legacy_premium: true,
-      subscription_tier: "premium",
+  try {
+    const pipes = await base44.entities.Pipe.filter({ created_by: user.email });
+    const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: user.email });
+
+    const pipeCount = pipes?.length || 0;
+    const tobaccoCount = tobaccos?.length || 0;
+
+    const overLimit =
+      pipeCount > FREE_LIMITS.pipes || tobaccoCount > FREE_LIMITS.tobaccos;
+
+    if (!overLimit) return;
+
+    // Update the User ENTITY record (not auth profile)
+    await base44.entities.User.update(user.id, {
+      isFreeGrandfathered: true,
+      freeGrandfatheredAt: new Date().toISOString(),
     });
-    return { ok: true, created: true, id: created?.id || null };
+  } catch (err) {
+    console.warn("Failed to check grandfather status:", err);
   }
-
-  // If already flagged, no-op
-  if (profile?.legacy_premium) {
-    return { ok: true, already: true, id: profile?.id || null };
-  }
-
-  // Update existing profile
-  await base44.entities.UserProfile.update(profile.id, {
-    legacy_premium: true,
-    subscription_tier: profile?.subscription_tier || "premium",
-  });
-
-  return { ok: true, updated: true, id: profile?.id || null };
 }

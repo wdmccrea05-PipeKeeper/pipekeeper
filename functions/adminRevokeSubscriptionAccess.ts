@@ -1,6 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
-
 function json(status: number, body: any) {
   return new Response(JSON.stringify(body), {
     status,

@@ -18,6 +18,7 @@ import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
@@ -26,9 +27,19 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
-  const entitlements = useEntitlements();
-  const queryClient = useQueryClient();
+  if (isAppleBuild) return null;
 
+  const hasPaidAccess = hasPremiumAccess(user);
+  const entitlements = useEntitlements();
+
+  if (!hasPaidAccess) {
+    return (
+      <UpgradePrompt 
+        featureName={t("smokingLog.usageLog")}
+        description={t("smokingLog.upgradeDesc")}
+      />
+    );
+  }
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
@@ -44,11 +55,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     notes: ''
   });
 
-  const { data: logs = [] } = useQuery({
-    queryKey: ['smoking-logs', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
-    enabled: !!user?.email,
-  });
+  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
+  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
+
+  const queryClient = useQueryClient();
 
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", user?.email, formData?.blend_id],
@@ -67,257 +77,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     },
   });
 
-  const updateBlendMutation = useMutation({
-    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
-    onSuccess: () => {
-      invalidateBlendQueries(queryClient, user?.email);
-    },
-  });
-
-  const updateLogMutation = useMutation({
-    mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
-    onSuccess: async (_, variables) => {
-      const oldLog = logs.find(l => l.id === variables.id);
-      const newData = variables.data;
-      
-      if (oldLog && (oldLog.is_break_in !== newData.is_break_in || 
-                     oldLog.bowls_smoked !== newData.bowls_smoked ||
-                     oldLog.blend_id !== newData.blend_id ||
-                     oldLog.pipe_id !== newData.pipe_id)) {
-        
-        if (oldLog.is_break_in && oldLog.pipe_id) {
-          const freshOldPipes = await base44.entities.Pipe.filter({ id: oldLog.pipe_id });
-          const oldPipe = freshOldPipes[0];
-          const oldSchedule = Array.isArray(oldPipe?.break_in_schedule) ? oldPipe.break_in_schedule : [];
-          if (oldSchedule.length > 0) {
-            const updatedSchedule = oldSchedule.map(item => {
-              if (scheduleMatches(item, oldLog.blend_id, oldLog.blend_name)) {
-                return {
-                  ...item,
-                  bowls_completed: Math.max(0, (item.bowls_completed || 0) - oldLog.bowls_smoked)
-                };
-              }
-              return item;
-            });
-            await safeUpdate('Pipe', oldPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
-          }
-        }
-        
-        if (newData.is_break_in && newData.pipe_id) {
-          const freshNewPipes = await base44.entities.Pipe.filter({ id: newData.pipe_id });
-          const newPipe = freshNewPipes[0];
-          if (newPipe) {
-            const schedule = Array.isArray(newPipe.break_in_schedule) ? newPipe.break_in_schedule : [];
-            const resolvedBlendName =
-              newData.blend_name ||
-              blends.find((b) => b.id === newData.blend_id)?.name ||
-              '';
-            const idx = schedule.findIndex((item) =>
-              scheduleMatches(item, newData.blend_id, resolvedBlendName)
-            );
-            let updatedSchedule;
-            if (idx >= 0) {
-              updatedSchedule = schedule.map((item, i) =>
-                i !== idx
-                  ? item
-                  : { ...item, bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked }
-              );
-            } else {
-              updatedSchedule = [
-                ...schedule,
-                {
-                  blend_id: newData.blend_id,
-                  blend_name: resolvedBlendName || t("common.unknownBlend"),
-                  suggested_bowls: 5,
-                  bowls_completed: Number(newData.bowls_smoked || 1),
-                  reasoning: t("smokingLog.autoAddedEditReasoning"),
-                },
-              ];
-            }
-            await safeUpdate('Pipe', newPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
-          }
-        }
-        
-        invalidatePipeQueries(queryClient, user?.email);
-      }
-
-      if (oldLog?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', oldLog.pipe_id] });
-      if (newData?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', newData.pipe_id] });
-      
-      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
-      setEditingLog(null);
-    },
-  });
-
-  const deleteLogMutation = useMutation({
-    mutationFn: (id) => base44.entities.SmokingLog.delete(id),
-    onSuccess: async (_, logId) => {
-      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
-      setEditingLog(null);
-      
-      const log = logs.find(l => l.id === logId);
-      if (log?.is_break_in && log?.pipe_id) {
-        const freshPipes = await base44.entities.Pipe.filter({ id: log.pipe_id });
-        const pipe = freshPipes[0];
-        const currentSchedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
-        if (currentSchedule.length > 0) {
-          const updatedSchedule = currentSchedule.map(item => {
-            if (scheduleMatches(item, log.blend_id, log.blend_name)) {
-              return {
-                ...item,
-                bowls_completed: Math.max(0, (item.bowls_completed || 0) - log.bowls_smoked)
-              };
-            }
-            return item;
-          });
-          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
-          invalidatePipeQueries(queryClient, user?.email);
-          queryClient.invalidateQueries({ queryKey: ['pipe', log.pipe_id] });
-        }
-      }
-    },
-  });
-
-  const createLogMutation = useMutation({
-    mutationFn: (data) => base44.entities.SmokingLog.create(data),
-    onSuccess: async (createdLog, variables) => {
-      if (variables.container_id) {
-        try {
-          const containerRes = await base44.entities.TobaccoContainer.filter({ id: variables.container_id });
-          const container = containerRes?.[0];
-          if (container?.id) {
-            const gramsUsed = variables.tobaccoUsed * 28.35;
-            await safeUpdate('TobaccoContainer', container.id, {
-              quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
-              updated_date: new Date().toISOString(),
-            }, user?.email);
-            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, variables.blend_id] });
-          }
-        } catch (err) {
-          console.error('Failed to update container:', err);
-        }
-      }
-
-      if (autoReduceInventory && variables.tobaccoUsed > 0) {
-        const blend = blends.find(b => b.id === variables.blend_id);
-        if (blend) {
-          let remaining = variables.tobaccoUsed;
-          const updateData = {};
-          
-          if (blend.bulk_open > 0 && remaining > 0) {
-            const toReduce = Math.min(blend.bulk_open, remaining);
-            updateData.bulk_open = Math.max(0, blend.bulk_open - toReduce);
-            updateData.bulk_total_quantity_oz = Math.max(0, (blend.bulk_total_quantity_oz || 0) - toReduce);
-            remaining -= toReduce;
-          }
-          
-          if (blend.tin_tins_open > 0 && remaining > 0 && blend.tin_size_oz) {
-            const tinCapacity = blend.tin_size_oz;
-            const tinsToReduce = Math.ceil(remaining / tinCapacity);
-            const actualReduction = Math.min(tinsToReduce, blend.tin_tins_open);
-            updateData.tin_tins_open = Math.max(0, blend.tin_tins_open - actualReduction);
-            updateData.tin_total_tins = Math.max(0, (blend.tin_total_tins || 0) - actualReduction);
-            updateData.tin_total_quantity_oz = Math.max(0, (blend.tin_total_quantity_oz || 0) - (actualReduction * tinCapacity));
-            remaining -= (actualReduction * tinCapacity);
-          }
-          
-          if (blend.pouch_pouches_open > 0 && remaining > 0 && blend.pouch_size_oz) {
-            const pouchCapacity = blend.pouch_size_oz;
-            const pouchesToReduce = Math.ceil(remaining / pouchCapacity);
-            const actualReduction = Math.min(pouchesToReduce, blend.pouch_pouches_open);
-            updateData.pouch_pouches_open = Math.max(0, blend.pouch_pouches_open - actualReduction);
-            updateData.pouch_total_pouches = Math.max(0, (blend.pouch_total_pouches || 0) - actualReduction);
-            updateData.pouch_total_quantity_oz = Math.max(0, (blend.pouch_total_quantity_oz || 0) - (actualReduction * pouchCapacity));
-          }
-          
-          if (Object.keys(updateData).length > 0) {
-            try {
-              await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
-            } catch (err) {
-              console.error('Failed to update blend inventory:', err);
-            }
-          }
-        }
-      }
-      
-      if (variables.is_break_in && variables.pipe_id && variables.blend_id) {
-        const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
-        const pipe = freshPipes[0];
-
-        if (pipe?.id) {
-          const bowlsToAdd = Number(variables.bowls_smoked || 1);
-          const schedule = Array.isArray(pipe.break_in_schedule) ? pipe.break_in_schedule : [];
-          const resolvedBlendName =
-            variables.blend_name ||
-            blends.find((b) => b.id === variables.blend_id)?.name ||
-            '';
-          const matchIndex = schedule.findIndex((item) =>
-            scheduleMatches(item, variables.blend_id, resolvedBlendName)
-          );
-          let updatedSchedule;
-
-          if (matchIndex >= 0) {
-            updatedSchedule = schedule.map((item, idx) =>
-              idx !== matchIndex
-                ? item
-                : { ...item, bowls_completed: (item.bowls_completed || 0) + bowlsToAdd }
-            );
-          } else {
-            updatedSchedule = [
-              ...schedule,
-              {
-                blend_id: variables.blend_id,
-                blend_name: resolvedBlendName || t("common.unknownBlend"),
-                suggested_bowls: 5,
-                bowls_completed: bowlsToAdd,
-                reasoning: t("smokingLog.autoAddedReasoning"),
-              },
-            ];
-          }
-
-          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
-          invalidatePipeQueries(queryClient, user?.email);
-          queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
-        }
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
-      invalidateBlendQueries(queryClient, user?.email);
-      setShowAddLog(false);
-      setFormData({
-        pipe_id: '',
-        bowl_variant_id: '',
-        blend_id: '',
-        container_id: '',
-        bowls_smoked: 1,
-        is_break_in: false,
-        date: new Date().toISOString().split('T')[0],
-        notes: ''
-      });
-    },
-  });
-
-  // Early returns AFTER all hooks
-  if (isAppleBuild) return null;
-
-  const hasPaidAccess = user?.hasPremium || user?.isPremium || false;
-  if (!hasPaidAccess) {
-    return (
-      <UpgradePrompt 
-        featureName={t("smokingLog.usageLog")}
-        description={t("smokingLog.upgradeDesc")}
-      />
-    );
-  }
-
-  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
-  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
-
   // Helper for matching schedule items by ID or name
   const norm = (s) => (s || '').trim().toLowerCase();
   const scheduleMatches = (item, blendId, blendName) =>
     (item?.blend_id && blendId && item.blend_id === blendId) ||
     (item?.blend_name && blendName && norm(item.blend_name) === norm(blendName));
+
+  const { data: logs = [] } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
+    enabled: !!user?.email,
+  });
 
   // Calculate tobacco usage based on pipe bowl size
   const estimateTobaccoUsage = (pipe, bowls) => {
@@ -369,6 +139,263 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
        return { ready: true, message: t("smokingLog.noUsageLogged") };
      }
    };
+
+  const updateBlendMutation = useMutation({
+    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
+    onSuccess: () => {
+      invalidateBlendQueries(queryClient, user?.email);
+    },
+  });
+
+  const updateLogMutation = useMutation({
+    mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
+    onSuccess: async (_, variables) => {
+      // Update break-in schedule when log is edited
+      const oldLog = logs.find(l => l.id === variables.id);
+      const newData = variables.data;
+      
+      // If break-in status or bowl count changed, update the pipe's schedule
+      if (oldLog && (oldLog.is_break_in !== newData.is_break_in || 
+                     oldLog.bowls_smoked !== newData.bowls_smoked ||
+                     oldLog.blend_id !== newData.blend_id ||
+                     oldLog.pipe_id !== newData.pipe_id)) {
+        
+        // Remove contribution from old pipe/blend
+        if (oldLog.is_break_in && oldLog.pipe_id) {
+          const freshOldPipes = await base44.entities.Pipe.filter({ id: oldLog.pipe_id });
+          const oldPipe = freshOldPipes[0];
+          const oldSchedule = Array.isArray(oldPipe?.break_in_schedule) ? oldPipe.break_in_schedule : [];
+          if (oldSchedule.length > 0) {
+            const updatedSchedule = oldSchedule.map(item => {
+              if (scheduleMatches(item, oldLog.blend_id, oldLog.blend_name)) {
+                return {
+                  ...item,
+                  bowls_completed: Math.max(0, (item.bowls_completed || 0) - oldLog.bowls_smoked)
+                };
+              }
+              return item;
+            });
+            await safeUpdate('Pipe', oldPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
+          }
+        }
+        
+        // Add contribution to new pipe/blend
+        if (newData.is_break_in && newData.pipe_id) {
+          const freshNewPipes = await base44.entities.Pipe.filter({ id: newData.pipe_id });
+          const newPipe = freshNewPipes[0];
+          if (newPipe) {
+            const schedule = Array.isArray(newPipe.break_in_schedule) ? newPipe.break_in_schedule : [];
+
+            const resolvedBlendName =
+              newData.blend_name ||
+              blends.find((b) => b.id === newData.blend_id)?.name ||
+              '';
+
+            const idx = schedule.findIndex((item) =>
+              scheduleMatches(item, newData.blend_id, resolvedBlendName)
+            );
+
+            let updatedSchedule;
+
+            if (idx >= 0) {
+              // Update existing item
+              updatedSchedule = schedule.map((item, i) =>
+                i !== idx
+                  ? item
+                  : { ...item, bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked }
+              );
+            } else {
+              // Append new item
+              updatedSchedule = [
+                ...schedule,
+                {
+                  blend_id: newData.blend_id,
+                  blend_name: resolvedBlendName || t("common.unknownBlend"),
+                  suggested_bowls: 5,
+                  bowls_completed: Number(newData.bowls_smoked || 1),
+                  reasoning: t("smokingLog.autoAddedEditReasoning"),
+                },
+              ];
+            }
+
+            await safeUpdate('Pipe', newPipe.id, { break_in_schedule: updatedSchedule }, user?.email);
+          }
+        }
+        
+        invalidatePipeQueries(queryClient, user?.email);
+      }
+
+      if (oldLog?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', oldLog.pipe_id] });
+      if (newData?.pipe_id) queryClient.invalidateQueries({ queryKey: ['pipe', newData.pipe_id] });
+      
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+    },
+  });
+
+  const deleteLogMutation = useMutation({
+    mutationFn: (id) => base44.entities.SmokingLog.delete(id),
+    onSuccess: async (_, logId) => {
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+      
+      // Update break-in schedules for affected pipe
+      const log = logs.find(l => l.id === logId);
+      if (log?.is_break_in && log?.pipe_id) {
+        const freshPipes = await base44.entities.Pipe.filter({ id: log.pipe_id });
+        const pipe = freshPipes[0];
+        const currentSchedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
+        if (currentSchedule.length > 0) {
+          const updatedSchedule = currentSchedule.map(item => {
+            if (scheduleMatches(item, log.blend_id, log.blend_name)) {
+              return {
+                ...item,
+                bowls_completed: Math.max(0, (item.bowls_completed || 0) - log.bowls_smoked)
+              };
+            }
+            return item;
+          });
+          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
+          invalidatePipeQueries(queryClient, user?.email);
+          queryClient.invalidateQueries({ queryKey: ['pipe', log.pipe_id] });
+        }
+      }
+    },
+  });
+
+  const createLogMutation = useMutation({
+    mutationFn: (data) => base44.entities.SmokingLog.create(data),
+    onSuccess: async (createdLog, variables) => {
+      // Decrement container if chosen
+      if (variables.container_id) {
+        try {
+          const containerRes = await base44.entities.TobaccoContainer.filter({ id: variables.container_id });
+          const container = containerRes?.[0];
+          if (container?.id) {
+            const gramsUsed = variables.tobaccoUsed * 28.35; // Convert oz to grams
+            await safeUpdate('TobaccoContainer', container.id, {
+              quantity_grams: Math.max(0, Number(container.quantity_grams || 0) - gramsUsed),
+              updated_date: new Date().toISOString(),
+            }, user?.email);
+            queryClient.invalidateQueries({ queryKey: ["containers", user?.email, variables.blend_id] });
+          }
+        } catch (err) {
+          console.error('Failed to update container:', err);
+        }
+      }
+
+      // Reduce tobacco inventory
+      if (autoReduceInventory && variables.tobaccoUsed > 0) {
+        const blend = blends.find(b => b.id === variables.blend_id);
+        if (blend) {
+          // Reduce from opened inventory first
+          let remaining = variables.tobaccoUsed;
+          const updateData = {};
+          
+          // Try to reduce from open bulk first
+          if (blend.bulk_open > 0 && remaining > 0) {
+            const toReduce = Math.min(blend.bulk_open, remaining);
+            updateData.bulk_open = Math.max(0, blend.bulk_open - toReduce);
+            updateData.bulk_total_quantity_oz = Math.max(0, (blend.bulk_total_quantity_oz || 0) - toReduce);
+            remaining -= toReduce;
+          }
+          
+          // Then open tins (convert to oz and reduce)
+          if (blend.tin_tins_open > 0 && remaining > 0 && blend.tin_size_oz) {
+            const tinCapacity = blend.tin_size_oz;
+            const tinsToReduce = Math.ceil(remaining / tinCapacity);
+            const actualReduction = Math.min(tinsToReduce, blend.tin_tins_open);
+            updateData.tin_tins_open = Math.max(0, blend.tin_tins_open - actualReduction);
+            updateData.tin_total_tins = Math.max(0, (blend.tin_total_tins || 0) - actualReduction);
+            updateData.tin_total_quantity_oz = Math.max(0, (blend.tin_total_quantity_oz || 0) - (actualReduction * tinCapacity));
+            remaining -= (actualReduction * tinCapacity);
+          }
+          
+          // Then open pouches
+          if (blend.pouch_pouches_open > 0 && remaining > 0 && blend.pouch_size_oz) {
+            const pouchCapacity = blend.pouch_size_oz;
+            const pouchesToReduce = Math.ceil(remaining / pouchCapacity);
+            const actualReduction = Math.min(pouchesToReduce, blend.pouch_pouches_open);
+            updateData.pouch_pouches_open = Math.max(0, blend.pouch_pouches_open - actualReduction);
+            updateData.pouch_total_pouches = Math.max(0, (blend.pouch_total_pouches || 0) - actualReduction);
+            updateData.pouch_total_quantity_oz = Math.max(0, (blend.pouch_total_quantity_oz || 0) - (actualReduction * pouchCapacity));
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            try {
+              await updateBlendMutation.mutateAsync({ id: blend.id, data: updateData });
+            } catch (err) {
+              console.error('Failed to update blend inventory:', err);
+            }
+          }
+        }
+      }
+      
+      // Update break-in schedule if this is a break-in session
+      if (variables.is_break_in && variables.pipe_id && variables.blend_id) {
+        const freshPipes = await base44.entities.Pipe.filter({ id: variables.pipe_id });
+        const pipe = freshPipes[0];
+
+        // If pipe isn't found, skip schedule update but DO NOT abort the onSuccess flow
+        if (pipe?.id) {
+          const bowlsToAdd = Number(variables.bowls_smoked || 1);
+
+          const schedule = Array.isArray(pipe.break_in_schedule) ? pipe.break_in_schedule : [];
+
+          // Resolve blend name once so matching works even if variables.blend_name is missing
+          const resolvedBlendName =
+            variables.blend_name ||
+            blends.find((b) => b.id === variables.blend_id)?.name ||
+            '';
+
+          const matchIndex = schedule.findIndex((item) =>
+            scheduleMatches(item, variables.blend_id, resolvedBlendName)
+          );
+
+          let updatedSchedule;
+
+          if (matchIndex >= 0) {
+            updatedSchedule = schedule.map((item, idx) =>
+              idx !== matchIndex
+                ? item
+                : { ...item, bowls_completed: (item.bowls_completed || 0) + bowlsToAdd }
+            );
+          } else {
+            updatedSchedule = [
+              ...schedule,
+              {
+                blend_id: variables.blend_id,
+                blend_name: resolvedBlendName || t("common.unknownBlend"),
+                suggested_bowls: 5,
+                bowls_completed: bowlsToAdd,
+                reasoning: t("smokingLog.autoAddedReasoning"),
+              },
+            ];
+          }
+
+          await safeUpdate('Pipe', pipe.id, { break_in_schedule: updatedSchedule }, user?.email);
+
+          // Refresh list + pipe detail
+          invalidatePipeQueries(queryClient, user?.email);
+          queryClient.invalidateQueries({ queryKey: ['pipe', variables.pipe_id] });
+        }
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      invalidateBlendQueries(queryClient, user?.email);
+      setShowAddLog(false);
+      setFormData({
+        pipe_id: '',
+        bowl_variant_id: '',
+        blend_id: '',
+        container_id: '',
+        bowls_smoked: 1,
+        is_break_in: false,
+        date: new Date().toISOString().split('T')[0],
+        notes: ''
+      });
+    },
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();

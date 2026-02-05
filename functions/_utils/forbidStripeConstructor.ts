@@ -1,5 +1,5 @@
 export async function scanForForbiddenStripeConstructors() {
-  const forbidden = [];
+  const forbidden: string[] = [];
   try {
     for await (const entry of Deno.readDir("./functions")) {
       await walkEntry(entry.name, forbidden);
@@ -7,11 +7,11 @@ export async function scanForForbiddenStripeConstructors() {
     return { ok: true, forbidden };
   } catch (e) {
     // If filesystem access is denied, return scan unavailable rather than silently passing
-    return { ok: false, error: String(e?.message || e), forbidden: [] };
+    return { ok: false, error: String(e?.message || e), forbidden: [] as string[] };
   }
 }
 
-async function walkEntry(path, forbidden) {
+async function walkEntry(path: string, forbidden: string[]) {
   const full = `./functions/${path}`;
   const stat = await Deno.stat(full);
 

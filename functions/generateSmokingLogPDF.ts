@@ -1,65 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
-
-// Inlined requireEntitlement function
-function normEmail(email: string): string {
-  return String(email || "").trim().toLowerCase();
-}
-
-async function requireEntitlement(base44: any, user: any, _feature: string): Promise<void> {
-  if (!user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  const email = normEmail(user.email);
-
-  const isActive = (s: any): boolean => {
-    const status = String(s?.status || "").toLowerCase();
-    if (status === "active" || status === "trialing") return true;
-    
-    if (status === "incomplete") {
-      const periodEnd = s?.current_period_end;
-      return periodEnd && new Date(periodEnd).getTime() > Date.now();
-    }
-    
-    return false;
-  };
-
-  try {
-    const byUserId = await base44.entities.Subscription.filter({ user_id: user.id });
-    if (Array.isArray(byUserId) && byUserId.some(isActive)) {
-      return;
-    }
-  } catch (e) {
-    console.warn("[requireEntitlement] user_id lookup failed:", e);
-  }
-
-  if (email) {
-    try {
-      const byEmail = await base44.entities.Subscription.filter({ 
-        provider: "stripe", 
-        user_email: email 
-      });
-      if (Array.isArray(byEmail) && byEmail.some(isActive)) {
-        return;
-      }
-    } catch (e) {
-      console.warn("[requireEntitlement] email lookup failed:", e);
-    }
-  }
-
-  try {
-    const users = await base44.entities.User.filter({ email });
-    const u = Array.isArray(users) ? users[0] : null;
-    if (u?.subscription_level === "paid") {
-      return;
-    }
-  } catch (e) {
-    console.warn("[requireEntitlement] User entity fallback failed:", e);
-  }
-
-  throw new Error("NO_ENTITLEMENT");
-}
+import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 Deno.serve(async (req) => {
   try {

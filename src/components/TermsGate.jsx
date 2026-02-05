@@ -1,118 +1,197 @@
-// src/components/TermsGate.jsx
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useQueryClient } from "@tanstack/react-query";
-
-const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
-
-function is429(err) {
-  const msg = String(err?.message || err || "");
-  return msg.includes("429") || msg.toLowerCase().includes("rate limit");
-}
 
 export default function TermsGate({ user }) {
-  const qc = useQueryClient();
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
 
-  const accepted = useMemo(() => {
-    try {
-      if (localStorage.getItem(LOCAL_ACCEPT_KEY) === "1") return true;
-    } catch {}
-    const iso = user?.tos_accepted_at || user?.userProfile?.tos_accepted_at;
-    return Boolean(iso);
+  const tosUrl = useMemo(() => `${createPageUrl("TermsOfService")}?view=1`, []);
+  const privacyUrl = useMemo(
+    () => `${createPageUrl("PrivacyPolicy")}?view=1`,
+    []
+  );
+
+  const alreadyAccepted = useMemo(() => {
+    const iso = user?.tos_accepted_at;
+    if (!iso) return false;
+    const t = Date.parse(iso);
+    return Number.isFinite(t);
   }, [user]);
 
-  // If no user or already accepted, don’t show the gate
   if (!user) return null;
-  if (accepted) return null;
-
-  const homeUrl = useMemo(() => createPageUrl("Home"), []);
-
-  async function continueToApp() {
-    // Refresh user state without full reload
-    await qc.invalidateQueries({ queryKey: ["current-user"] });
-    // Navigate using Base44-safe URL (NOT "/")
-    window.location.assign(homeUrl);
-  }
+  if (alreadyAccepted) return null;
 
   async function onAccept() {
-    if (!checked) {
-      setMsg("Please check the box to confirm you agree.");
-      return;
-    }
-
+    if (!checked || submitting) return;
     setSubmitting(true);
-    setMsg("");
+    setErr("");
 
     try {
-      const res = await base44.functions.invoke("acceptTermsForMe", {
-        method: "POST",
-        body: {},
-      });
+      const ISO = new Date().toISOString();
+      await base44.auth.updateMe({ tos_accepted_at: ISO });
 
-      if (!res?.data?.ok) throw new Error(res?.data?.error || "Failed to accept terms");
-
-      try {
-        localStorage.removeItem(LOCAL_ACCEPT_KEY);
-      } catch {}
-
-      setMsg("Saved. Continuing…");
-      setTimeout(() => {
-        continueToApp();
-      }, 150);
+      // Base44-safe: reload so Layout's me() refreshes and gate disappears
+      window.location.reload();
     } catch (e) {
-      console.error("[TermsGate] accept failed:", e);
-
-      // If rate limited, allow temporary access so you stop hammering APIs
-      if (is429(e)) {
-        try {
-          localStorage.setItem(LOCAL_ACCEPT_KEY, "1");
-        } catch {}
-        setMsg("Rate-limited right now. Continuing temporarily…");
-        setTimeout(() => {
-          continueToApp();
-        }, 150);
-      } else {
-        setMsg("Could not save right now. Please try again.");
-      }
+      setErr(
+        e?.message ||
+          "We couldn’t save your acceptance. Please try again (or contact support)."
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#101b2a] p-5 shadow-2xl">
-        <div className="text-xl font-bold text-[#E0D8C8]">Terms of Service</div>
-        <div className="mt-2 text-sm text-[#E0D8C8]/70">
-          Please accept to continue.
+    <div style={styles.overlay} role="dialog" aria-modal="true">
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <div style={styles.title}>Before you continue</div>
+          <div style={styles.subtitle}>
+            Please review and accept the Terms of Service and Privacy Policy.
+          </div>
         </div>
 
-        <label className="mt-4 flex gap-2 items-start text-[#E0D8C8]">
+        <div style={styles.linksRow}>
+          <a href={tosUrl} target="_blank" rel="noreferrer" style={styles.link}>
+            Terms of Service
+          </a>
+          <span style={styles.dot}>•</span>
+          <a
+            href={privacyUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={styles.link}
+          >
+            Privacy Policy
+          </a>
+        </div>
+
+        <label style={styles.checkboxRow}>
           <input
             type="checkbox"
             checked={checked}
             onChange={(e) => setChecked(e.target.checked)}
-            className="mt-1"
+            style={styles.checkbox}
           />
-          <span className="text-sm">
-            I agree to the Terms of Service and Privacy Policy.
+          <span style={styles.checkboxText}>
+            I have read and agree to the Terms of Service and Privacy Policy.
           </span>
         </label>
 
-        {msg ? <div className="mt-3 text-xs text-[#E0D8C8]/70">{msg}</div> : null}
+        {err ? <div style={styles.error}>{err}</div> : null}
 
         <button
           onClick={onAccept}
-          disabled={submitting}
-          className="mt-4 w-full rounded-xl bg-[#7b2d2d] px-4 py-3 font-bold text-white disabled:opacity-70"
+          disabled={!checked || submitting}
+          style={{
+            ...styles.button,
+            opacity: !checked || submitting ? 0.6 : 1,
+            cursor: !checked || submitting ? "not-allowed" : "pointer",
+          }}
         >
-          {submitting ? "Saving…" : "Accept and Continue"}
+          {submitting ? "Saving..." : "Accept and Continue"}
         </button>
+
+        <p style={styles.small}>
+          You can review these documents at any time from Help or your Profile
+          menu.
+        </p>
       </div>
     </div>
   );
 }
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 9999,
+    background: "rgba(0,0,0,0.65)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
+  card: {
+    width: "min(720px, 100%)",
+    borderRadius: 16,
+    background:
+      "linear-gradient(180deg, rgba(20,34,52,0.98), rgba(14,24,38,0.98))",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+    padding: 20,
+    color: "#f3e7d3",
+  },
+  header: { marginBottom: 14 },
+  title: {
+    fontSize: 22,
+    fontWeight: 800,
+    letterSpacing: "-0.01em",
+    color: "#ffffff",
+  },
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "rgba(243,231,211,0.85)",
+    lineHeight: 1.4,
+  },
+  linksRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
+    marginBottom: 14,
+    flexWrap: "wrap",
+  },
+  link: {
+    color: "#f3e7d3",
+    textDecoration: "underline",
+    fontWeight: 700,
+  },
+  dot: { color: "rgba(243,231,211,0.55)" },
+  checkboxRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+    userSelect: "none",
+    marginBottom: 12,
+  },
+  checkbox: { marginTop: 3 },
+  checkboxText: {
+    fontSize: 14,
+    color: "rgba(243,231,211,0.95)",
+    lineHeight: 1.35,
+  },
+  error: {
+    marginTop: 10,
+    marginBottom: 10,
+    padding: "10px 12px",
+    borderRadius: 10,
+    background: "rgba(180, 60, 60, 0.18)",
+    border: "1px solid rgba(180, 60, 60, 0.35)",
+    color: "#ffd7d7",
+    fontSize: 13,
+    lineHeight: 1.35,
+  },
+  button: {
+    width: "100%",
+    marginTop: 8,
+    border: "none",
+    borderRadius: 12,
+    padding: "12px 14px",
+    background: "#7b2d2d",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: 800,
+  },
+  small: {
+    marginTop: 10,
+    marginBottom: 0,
+    fontSize: 12,
+    color: "rgba(243,231,211,0.65)",
+    lineHeight: 1.35,
+  },
+};

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-
+import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

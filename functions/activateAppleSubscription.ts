@@ -20,7 +20,6 @@ Deno.serve(async (req) => {
       user_email: email.toLowerCase().trim(),
       id: subscriptionId
     });
-    
 
     if (subs.length === 0) {
       return Response.json({ error: 'Subscription not found' }, { status: 404 });

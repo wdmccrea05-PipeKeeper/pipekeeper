@@ -24,41 +24,57 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
 
-  // Calculate aging alerts from blends prop (no fetching)
-  const agingAlertCount = (blends || []).reduce((count, b) => {
-    if (!b) return count;
-    const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
-                        (Number(b.bulk_cellared) || 0) > 0 || 
-                        (Number(b.pouch_pouches_cellared) || 0) > 0;
-    if (!hasCellared) return count;
-    
-    const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-    const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
-      try {
-        const dTime = new Date(d).getTime();
-        const oldTime = new Date(oldest).getTime();
-        if (Number.isNaN(dTime) || Number.isNaN(oldTime)) return oldest;
-        return dTime < oldTime ? d : oldest;
-      } catch {
-        return oldest;
-      }
-    }) : null;
+  // Check for aging alerts
+  const { data: agingAlertCount = 0 } = useQuery({
+    queryKey: ["aging-alerts", user?.email],
+    queryFn: async () => {
+      const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      
+      const cellarBlends = (tobaccoBlends || []).filter(b => {
+       if (!b) return false;
+       const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
+                           (Number(b.bulk_cellared) || 0) > 0 || 
+                           (Number(b.pouch_pouches_cellared) || 0) > 0;
+       return hasCellared;
+      });
 
-    if (oldestDate) {
-      try {
-        const parsed = new Date(oldestDate);
-        if (Number.isNaN(parsed.getTime())) return count;
-        const months = differenceInMonths(new Date(), parsed);
-        const potential = b.aging_potential;
-        if (potential === "Excellent" && months >= 24) return count + 1;
-        if (potential === "Good" && months >= 12) return count + 1;
-        if (potential === "Fair" && months >= 3) return count + 1;
-      } catch {
-        // ignore
-      }
-    }
-    return count;
-  }, 0);
+      let alertCount = 0;
+      cellarBlends.forEach(b => {
+        if (!b) return;
+        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+        const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
+          try {
+            const dTime = new Date(d).getTime();
+            const oldTime = new Date(oldest).getTime();
+            if (Number.isNaN(dTime) || Number.isNaN(oldTime)) return oldest;
+            return dTime < oldTime ? d : oldest;
+          } catch {
+            return oldest;
+          }
+        }) : null;
+
+       if (oldestDate) {
+         try {
+           const parsed = new Date(oldestDate);
+           if (Number.isNaN(parsed.getTime())) return;
+           const months = differenceInMonths(new Date(), parsed);
+           const potential = b.aging_potential;
+
+           // Alert if tobacco has reached optimal aging
+           if (potential === "Excellent" && months >= 24) alertCount++;
+           else if (potential === "Good" && months >= 12) alertCount++;
+           else if (potential === "Fair" && months >= 3) alertCount++;
+         } catch {
+           // ignore invalid dates
+         }
+       }
+      });
+      
+      return alertCount;
+    },
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
 
   // ✅ Fetch the same user profile used by the AI Updates panel
   const { data: userProfile } = useQuery({
@@ -128,7 +144,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           </TabsList>
 
           <TabsContent value="stats" className="mt-0">
-            {(Array.isArray(pipes) ? pipes.length : 0) === 0 && (Array.isArray(blends) ? blends.length : 0) === 0 ? (
+            {pipes.length === 0 && blends.length === 0 ? (
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                 <p className="text-[#E0D8C8]/60 mb-4">{t("insights.statsEmpty")}</p>
@@ -137,7 +153,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </a>
               </div>
             ) : (
-              <TobaccoCollectionStats blends={blends} pipes={pipes} user={user} smokingLogs={[]} />
+              <TobaccoCollectionStats />
             )}
           </TabsContent>
 

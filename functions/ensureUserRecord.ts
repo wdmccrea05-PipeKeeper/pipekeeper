@@ -3,7 +3,6 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();

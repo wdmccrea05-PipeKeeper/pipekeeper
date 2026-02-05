@@ -17,7 +17,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function TobaccoCollectionStats({ blends, pipes, user, smokingLogs }) {
+export default function TobaccoCollectionStats() {
   const { t } = useTranslation();
   const [drillDown, setDrillDown] = useState(null);
   const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
@@ -27,7 +27,14 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   const [isOpen, setIsOpen] = useState(true);
   const [showTrends, setShowTrends] = useState(false);
   
-  const isPro = user?.isPro || false;
+  const { user, isPro } = useCurrentUser();
+
+  const { data: blends = [] } = useQuery({
+    queryKey: ['tobacco-blends', user?.email],
+    queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
+    enabled: !!user?.email,
+    initialData: [],
+  });
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
@@ -36,36 +43,45 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
     initialData: [],
   });
 
-  // Ensure data is safe
-  const safeBlends = Array.isArray(blends) ? blends : [];
-  const safePipes = Array.isArray(pipes) ? pipes : [];
-  const safeLogs = Array.isArray(smokingLogs) ? smokingLogs : [];
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ['smoking-logs-all', user?.email],
+    queryFn: () => scopedEntities.SmokingLog.listForUser(user?.email, '-date', 500),
+    enabled: !!user?.email,
+    initialData: [],
+  });
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ['pipes-all', user?.email],
+    queryFn: () => scopedEntities.Pipe.listForUser(user?.email),
+    enabled: !!user?.email,
+    initialData: [],
+  });
 
   // Calculate statistics (safe from null/undefined)
-  const totalBlends = safeBlends.length;
-  const uniqueBrands = [...new Set(safeBlends.map(b => b?.manufacturer).filter(Boolean))].length;
-  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
+  const totalBlends = (blends || []).length;
+  const uniqueBrands = [...new Set((blends || []).map(b => b?.manufacturer).filter(Boolean))].length;
+  const favoriteBlends = (blends || []).filter(b => b?.is_favorite);
   
   // Use canonical quantity helpers (SOURCE OF TRUTH)
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   
   // Tin statistics
-  const totalTins = safeBlends.reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
-  const tinWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
-  const tinOpenOz = safeBlends.reduce((sum, b) => {
+  const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
+  const tinWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
+  const tinOpenOz = (blends || []).reduce((sum, b) => {
     const open = Number(b?.tin_tins_open) || 0;
     const size = Number(b?.tin_size_oz) || 0;
     return sum + (open * size);
   }, 0);
 
   // Bulk statistics
-  const bulkWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.bulk_total_quantity_oz) || 0), 0);
-  const bulkOpenOz = safeBlends.reduce((sum, b) => sum + (Number(b?.bulk_open) || 0), 0);
+  const bulkWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_total_quantity_oz) || 0), 0);
+  const bulkOpenOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_open) || 0), 0);
 
   // Pouch statistics
-  const totalPouches = safeBlends.reduce((sum, b) => sum + (Number(b?.pouch_total_pouches) || 0), 0);
-  const pouchWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.pouch_total_quantity_oz) || 0), 0);
-  const pouchOpenOz = safeBlends.reduce((sum, b) => {
+  const totalPouches = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_pouches) || 0), 0);
+  const pouchWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_quantity_oz) || 0), 0);
+  const pouchOpenOz = (blends || []).reduce((sum, b) => {
     const open = Number(b?.pouch_pouches_open) || 0;
     const size = Number(b?.pouch_size_oz) || 0;
     return sum + (open * size);
@@ -76,7 +92,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
 
   // Brand breakdown (safe from null/undefined)
-  const brandBreakdown = safeBlends.reduce((acc, b) => {
+  const brandBreakdown = (blends || []).reduce((acc, b) => {
     if (!b) return acc;
     const brand = b.manufacturer || 'Unknown';
     if (!acc[brand]) acc[brand] = [];
@@ -85,7 +101,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   }, {});
 
   // Blend type breakdown
-  const blendTypes = safeBlends.reduce((acc, b) => {
+  const blendTypes = (blends || []).reduce((acc, b) => {
     if (!b) return acc;
     const type = b.blend_type || 'Unassigned';
     acc[type] = (acc[type] || 0) + 1;
@@ -106,7 +122,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   };
 
   // Check for low inventory blends
-  const lowInventoryBlends = safeBlends.filter(b => {
+  const lowInventoryBlends = blends.filter(b => {
     const cellared = b.cellared_amount || 0;
     return cellared > 0 && cellared <= lowInventoryThreshold;
   });
