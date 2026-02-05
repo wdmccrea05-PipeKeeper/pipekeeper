@@ -210,40 +210,6 @@ export function useCurrentUser() {
   const userTier = (rawUser?.subscription_tier || rawUser?.tier || "").toLowerCase();
   const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
 
-  // Load UserProfile (authoritative source for provider via stripe_customer_id/apple_original_transaction_id)
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile-provider", userId, email],
-    queryFn: async () => {
-      try {
-        if (!userId && !email) return null;
-        let rows = [];
-        
-        // Prefer user_id lookup
-        if (userId) {
-          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
-          if (Array.isArray(byUserId) && byUserId.length) rows = rows.concat(byUserId);
-        }
-        
-        // Fallback to email
-        if (email && rows.length === 0) {
-          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
-          if (Array.isArray(byEmail) && byEmail.length) rows = rows.concat(byEmail);
-        }
-        
-        return rows?.[0] || null;
-      } catch (e) {
-        console.warn("[useCurrentUser] Could not load UserProfile for provider:", e);
-        return null;
-      }
-    },
-    enabled: !!(userId || email),
-    staleTime: 15_000,
-    retry: 1,
-  });
-
-  // Compute provider from UserProfile (authoritative source)
-  const computedProvider = resolveProviderFromProfile(profile);
-
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
   const trialDaysRemaining = getTrialDaysRemaining(rawUser);
@@ -267,7 +233,7 @@ export function useCurrentUser() {
         email: rawUser.email,
         emailNormalized: email,
         tier: subscription?.tier || 'free',
-        provider: subscription?.provider || 'none',
+        provider: computedProvider || 'none',
         isOnTrial: isInTrial,
         isLegacyPremium: subscription?.tier === 'premium' && subscription?.subscriptionStartedAt && 
           new Date(subscription.subscriptionStartedAt) < new Date('2026-02-01T00:00:00.000Z'),
@@ -279,7 +245,7 @@ export function useCurrentUser() {
       };
       console.log('[PipeKeeper Dev] Entitlements:', debugInfo);
     }
-  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email, userId]);
+  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email, userId, computedProvider]);
 
   return {
     user: rawUser,
