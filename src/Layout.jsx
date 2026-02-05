@@ -15,6 +15,7 @@ import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
