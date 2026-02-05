@@ -26,19 +26,9 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
-  const hasPaidAccess = user?.hasPremium || user?.isPremium || false;
   const entitlements = useEntitlements();
+  const queryClient = useQueryClient();
 
-  if (isAppleBuild) return null;
-
-  if (!hasPaidAccess) {
-    return (
-      <UpgradePrompt 
-        featureName={t("smokingLog.usageLog")}
-        description={t("smokingLog.upgradeDesc")}
-      />
-    );
-  }
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
@@ -53,11 +43,6 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
-
-  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
-  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
-
-  const queryClient = useQueryClient();
 
   const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
@@ -81,6 +66,66 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
     },
   });
+
+  const updateBlendMutation = useMutation({
+    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
+    onSuccess: () => {
+      invalidateBlendQueries(queryClient, user?.email);
+    },
+  });
+
+  const updateLogMutation = useMutation({
+    mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
+    onSuccess: async (_, variables) => {
+      // ... mutation logic
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+    },
+  });
+
+  const deleteLogMutation = useMutation({
+    mutationFn: (id) => base44.entities.SmokingLog.delete(id),
+    onSuccess: async (_, logId) => {
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      setEditingLog(null);
+    },
+  });
+
+  const createLogMutation = useMutation({
+    mutationFn: (data) => base44.entities.SmokingLog.create(data),
+    onSuccess: async (createdLog, variables) => {
+      // ... mutation logic
+      queryClient.invalidateQueries({ queryKey: ['smoking-logs'] });
+      invalidateBlendQueries(queryClient, user?.email);
+      setShowAddLog(false);
+      setFormData({
+        pipe_id: '',
+        bowl_variant_id: '',
+        blend_id: '',
+        container_id: '',
+        bowls_smoked: 1,
+        is_break_in: false,
+        date: new Date().toISOString().split('T')[0],
+        notes: ''
+      });
+    },
+  });
+
+  // Early returns AFTER all hooks
+  if (isAppleBuild) return null;
+
+  const hasPaidAccess = user?.hasPremium || user?.isPremium || false;
+  if (!hasPaidAccess) {
+    return (
+      <UpgradePrompt 
+        featureName={t("smokingLog.usageLog")}
+        description={t("smokingLog.upgradeDesc")}
+      />
+    );
+  }
+
+  const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
+  const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
 
   // Helper for matching schedule items by ID or name
   const norm = (s) => (s || '').trim().toLowerCase();
