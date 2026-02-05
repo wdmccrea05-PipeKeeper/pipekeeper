@@ -291,7 +291,6 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => {
                 setSelectedTier("premium");
-                setSelectedInterval("monthly");
                 handleUpgrade();
               }}
             >
