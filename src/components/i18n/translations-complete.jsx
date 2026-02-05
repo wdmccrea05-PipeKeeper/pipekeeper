@@ -165,6 +165,187 @@ export const translationsComplete = {
             "Contact support directly at admin@pipekeeperapp.com"
           ],
           note: "Include your email address when contacting support so we can help you quickly."
+        },
+        sections: {
+          general: {
+            title: "General",
+            items: [
+              {
+                id: "what-is-pipekeeper",
+                q: "What is PipeKeeper?",
+                a: "PipeKeeper is a comprehensive pipe and tobacco collection management app designed for pipe smokers. It helps you catalog your pipes, track tobacco inventory, log smoking sessions, and get AI-powered insights to optimize your collection."
+              },
+              {
+                id: "who-is-pipekeeper-for",
+                q: "Who is PipeKeeper for?",
+                a: "PipeKeeper is for pipe enthusiasts of all levels—from casual smokers to serious collectors. Whether you're just starting out or managing a large collection, PipeKeeper provides tools to organize, document, and understand your pipes and tobaccos."
+              }
+            ]
+          },
+          gettingStarted: {
+            title: "Getting Started",
+            items: [
+              {
+                id: "first-steps",
+                q: "What are my first steps with PipeKeeper?",
+                a: "Start by creating your first pipe or tobacco entry. Use the intuitive forms to add details like shape, material, and condition. You can also bulk import from CSV if you already have a collection list.",
+                cta: "Restart tutorial"
+              },
+              {
+                id: "add-pipes",
+                q: "How do I add pipes to my collection?",
+                a: "Navigate to the Pipes section and click 'Add Pipe'. Fill in details like name, maker, shape, material, and condition. Photos and measurements are optional but help you identify and value pipes accurately."
+              },
+              {
+                id: "add-tobacco",
+                q: "How do I add tobacco blends?",
+                a: "Go to the Tobacco section and click 'Add Blend'. Enter the blend name, manufacturer, type, and quantity. Track whether tobacco is open or cellared for aging."
+              }
+            ]
+          },
+          fieldDefinitions: {
+            title: "Field Definitions",
+            items: [
+              {
+                id: "pipe-shape",
+                q: "What pipe shapes are available?",
+                a: "PipeKeeper supports 40+ standard pipe shapes including Billiard, Bent Apple, Dublin, Bulldog, Rhodesian, Churchwarden, and more. Select 'Unknown' if your pipe doesn't fit a standard category."
+              },
+              {
+                id: "tobacco-types",
+                q: "What tobacco blend types are supported?",
+                a: "We support Virginia, Burley, Oriental, Perique, Cavendish, English, Balkan, Aromatic, and many other recognized blend categories. You can also use 'Other' for custom classifications."
+              },
+              {
+                id: "condition-ratings",
+                q: "How do I rate pipe condition?",
+                a: "Condition options range from 'Mint' (never used) to 'Poor' (heavily damaged). 'Estate' ratings are for vintage/secondhand pipes in their original unrestored state. Choose the category that best reflects your pipe's actual appearance and function."
+              },
+              {
+                id: "bowl-styles",
+                q: "What are bowl styles?",
+                a: "Bowl style describes the internal chamber shape: Cylindrical (straight walls), Conical (tapered), Rounded/Ball, Oval/Egg, Squat/Pot, Chimney (tall), or Freeform. This affects how tobacco burns and the smoking experience."
+              }
+            ]
+          },
+          tobaccoValuation: {
+            title: "Tobacco Valuation",
+            items: [
+              {
+                id: "tobacco-value",
+                q: "How is tobacco value calculated?",
+                a: "PipeKeeper can estimate tobacco value based on current market prices, blend rarity, condition, and age. Premium users get access to AI-powered valuation with confidence ranges. You can also manually enter known market values."
+              },
+              {
+                id: "cellaring-value",
+                q: "Do cellared blends increase in value?",
+                a: "Some high-quality tobacco blends (Virginia-based, latakia blends) improve with age and can increase in value. PipeKeeper tracks when tobacco was cellared to help you monitor aging potential and optimal aging windows."
+              },
+              {
+                id: "discontinued-blends",
+                q: "How are discontinued blends valued?",
+                a: "Discontinued blends often become more valuable as supply decreases. PipeKeeper helps you track production status and provides market comparisons for rare or out-of-production blends."
+              }
+            ]
+          },
+          featuresAndTools: {
+            title: "Features & Tools",
+            items: [
+              {
+                id: "pairing-matrix",
+                q: "What is the Pairing Matrix?",
+                intro: "The Pairing Matrix is an AI-generated recommendation engine that suggests optimal pipe-tobacco combinations from your collection.",
+                points: [
+                  "Analyzes pipe characteristics (size, chamber, heat profile)",
+                  "Matches with tobacco types you own",
+                  "Scores pairings for balance and enjoyment",
+                  "Updates as you add new pipes and blends"
+                ]
+              },
+              {
+                id: "smoking-log",
+                q: "How do I use the Smoking Log?",
+                a: "Log each smoking session with date, pipe, blend, and duration. Track notes about flavor, performance, and break-in progress. Your logs fuel insights and help optimize your rotation and pairing recommendations."
+              },
+              {
+                id: "break-in-schedule",
+                q: "What is the Break-In Schedule?",
+                a: "New pipes benefit from gradual break-in with varied tobacco types. PipeKeeper generates personalized break-in schedules recommending tobacco progressions to develop a carbon cake naturally and ensure optimal performance."
+              },
+              {
+                id: "collection-optimization",
+                q: "What does Collection Optimization do?",
+                intro: "This AI feature analyzes your entire collection and provides strategic recommendations:",
+                points: [
+                  "Identifies specializations for each pipe",
+                  "Highlights collection gaps and redundancies",
+                  "Suggests next purchases to improve balance",
+                  "Ranks pairings by optimal score"
+                ]
+              },
+              {
+                id: "expert-tobacconist",
+                q: "Who is the Expert Tobacconist?",
+                a: "An AI-powered advisor trained on pipe smoking knowledge. Ask questions about blends, pairings, aging, maintenance, or strategy. Get personalized recommendations based on your specific collection and preferences."
+              }
+            ]
+          },
+          accountsAndData: {
+            title: "Accounts & Data",
+            items: [
+              {
+                id: "privacy",
+                q: "Is my data private and secure?",
+                a: "Yes. Your collection data is stored securely and only visible to you unless you choose to make your profile public. PipeKeeper does not sell or share your data. See our Privacy Policy for full details."
+              },
+              {
+                id: "export-data",
+                q: "Can I export my collection?",
+                a: "Yes. Premium users can export pipes and tobacco as CSV, generate PDF reports, and create aging/smoking logs. This helps with backup and sharing collection information."
+              },
+              {
+                id: "delete-account",
+                q: "How do I delete my account?",
+                a: "Contact support at admin@pipekeeperapp.com. Your account and all associated data will be permanently deleted. This action cannot be undone."
+              },
+              {
+                id: "multiple-accounts",
+                q: "Can I have multiple accounts?",
+                a: "You can sign up with different email addresses to manage separate collections. However, each account is independent and data cannot be transferred between them."
+              }
+            ]
+          },
+          ai: {
+            title: "AI Features & Accuracy",
+            items: [
+              {
+                id: "pipe-identification",
+                q: "How accurate is AI pipe identification?",
+                a: "AI identification provides helpful suggestions and analysis—it's a tool to assist, not a guarantee. For vintage or rare pipes, expert authentication may still be needed. Always verify with the pipe maker's catalogs or expert forums when possible."
+              },
+              {
+                id: "valuation-confidence",
+                q: "How confident are tobacco valuations?",
+                a: "AI valuations include confidence ratings (High, Medium, Low) based on available market data. Discontinued blends and rare vintages have lower confidence. Use our estimates as guides, not fixed values."
+              },
+              {
+                id: "ai-learning",
+                q: "Does the AI learn from my collection?",
+                a: "Yes. As you log data, add photos, and provide feedback, the system refines recommendations specifically for your collection style and preferences. The more you use PipeKeeper, the better the suggestions become."
+              },
+              {
+                id: "ai-accuracy-disclaimer",
+                q: "What are the limitations of AI recommendations?",
+                a: "AI is powerful but not perfect. Pairing scores, valuations, and identification suggestions should be used as starting points for your own judgment. Personal preference, pipe condition, and tobacco freshness also impact real-world results."
+              }
+            ]
+          },
+          support: {
+            title: "Support",
+            contactQ: "How do I contact support?",
+            contactIntro: "Have questions or issues? Reach out at admin@pipekeeperapp.com or visit",
+            contactLinks: "You can also view our Terms of Service and Privacy Policy:"
+          }
         }
       }
     }
