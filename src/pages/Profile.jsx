@@ -284,7 +284,7 @@ export default function ProfilePage() {
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                           onClick={() => {
                             if (provider === "stripe") {
-                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Kravgbm00";
+                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
                             } else if (provider === "apple") {
                               window.location.href = "https://apps.apple.com/account/subscriptions";
                             } else {
@@ -292,7 +292,7 @@ export default function ProfilePage() {
                             }
                           }}
                         >
-                          {t("profile.manageSubscription")}
+                          Manage Subscription
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       ) : null}
