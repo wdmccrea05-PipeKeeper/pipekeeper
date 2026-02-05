@@ -67,6 +67,28 @@ export default function ProfilePage() {
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
 
+  // Sanity check: detect provider conflicts (dev/admin only)
+  useEffect(() => {
+    if (!profile || !import.meta.env.DEV) return;
+
+    const hasStripe = !!(profile.stripe_customer_id || profile.stripeCustomerId);
+    const hasApple = !!(profile.apple_original_transaction_id || profile.appleOriginalTransactionId);
+
+    if (hasStripe && hasApple && provider !== "stripe") {
+      console.warn(
+        "[Profile] Provider conflict: Both Stripe and Apple IDs exist but provider resolved to:",
+        provider
+      );
+    }
+
+    if (hasStripe && provider !== "stripe") {
+      console.error(
+        "[Profile] CRITICAL: stripe_customer_id exists but provider is not 'stripe'",
+        { provider, profile_id: profile.id }
+      );
+    }
+  }, [profile, provider]);
+
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
