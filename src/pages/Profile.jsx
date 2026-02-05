@@ -25,6 +25,7 @@ import { openAppleSettings } from "@/components/utils/appleIAP";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
+import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 // Canonical user/sub state (already in your repo)
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -64,7 +65,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, subscription, isLoading: userLoading } = useCurrentUser();
+  const { user, subscription, isLoading: userLoading, subscriptionProvider } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
@@ -297,18 +298,15 @@ export default function ProfilePage() {
               <div className="w-full md:w-auto flex flex-col gap-2">
                 {!isIOSCompanion() ? (
                   <>
-                    {shouldShowManageSubscription(subscription, user) && (
-                      <Button
-                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                        onClick={() => {
-                          if (isAppleBuild) openAppleSettings();
-                          else setShowBackupModal(true);
-                        }}
-                      >
-                        {isAppleBuild ? t("profile.manageSubscriptionAppStore") : getManageSubscriptionLabel()}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    )}
+                    {subscription?.status === "active" || subscription?.status === "trialing" ? (
+                       <Button
+                         className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                         onClick={() => handleManageSubscription(user, subscription, navigate, createPageUrl)}
+                       >
+                         {t("profile.manageSubscription")}
+                         <ArrowRight className="w-4 h-4 ml-2" />
+                       </Button>
+                     ) : null}
 
                     {shouldShowPurchaseUI() && !hasActiveSubscription && (
                       <Button
@@ -378,8 +376,8 @@ export default function ProfilePage() {
               <Badge className="bg-[#A35C5C] text-white border-0">
                 {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
               </Badge>
-              {subscription?.provider ? (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: {subscription.provider}</Badge>
+              {subscriptionProvider ? (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: {subscriptionProvider}</Badge>
               ) : null}
               {subscription?.status ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Status: {subscription.status}</Badge>
