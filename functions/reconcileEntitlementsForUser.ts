@@ -149,19 +149,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Find user
-    let user;
-    if (targetUserId) {
-      const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
-      user = users?.[0];
-    } else {
-      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-      user = users?.[0];
+    // Get auth user (we already have caller from base44.auth.me())
+    // Only allow reconciliation for self or admin
+    if (!isAdmin && targetEmail !== normEmail(caller.email)) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     }
-
-    if (!user) {
-      return Response.json({ error: "User not found" }, { status: 404 });
-    }
+    
+    // Use caller as the user being reconciled (or could be admin reconciling another user)
+    const user = { 
+      id: caller.id, 
+      email: normEmail(caller.email),
+      stripe_customer_id: null,
+      platform: null
+    };
 
     // CRITICAL: Check Apple first if platform=ios, then fallback to Stripe
     // Platform is informational ONLY - never let it override actual entitlement
