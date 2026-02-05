@@ -1,22 +1,23 @@
 // Stripe client factory - ENV ONLY, no fallbacks
 import Stripe from "npm:stripe@17.5.0";
 
-let cachedStripe: Stripe | null = null;
-let cachedKeyFingerprint: string | null = null;
+let cachedStripe = null;
+let cachedKeyFingerprint = null;
 
-function fingerprint(key: string): string {
+function fingerprint(key) {
   return `${key.slice(0, 7)}_${key.length}_${key.slice(-4)}`;
 }
 
-function maskKey(key: string): string {
+function maskKey(key) {
   if (!key || key.length < 12) return "****";
   return `${key.slice(0, 8)}...${key.slice(-4)}`;
 }
 
 export class StripeKeyError extends Error {
-  constructor(public code: string, message: string) {
+  constructor(code, message) {
     super(message);
     this.name = "StripeKeyError";
+    this.code = code;
   }
 }
 
@@ -24,10 +25,7 @@ export class StripeKeyError extends Error {
  * Get Stripe client - ENV ONLY, no fallbacks
  * Throws StripeKeyError if missing or invalid
  */
-export function getStripeClient(options?: { forceRefresh?: boolean }): {
-  stripe: Stripe;
-  meta: { masked: string; environment: "live" | "test" };
-} {
+export function getStripeClient(options) {
   const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
 
   // Validate key presence
@@ -69,7 +67,7 @@ export function getStripeClient(options?: { forceRefresh?: boolean }): {
   };
 }
 
-export function safeStripeError(error: any): string {
+export function safeStripeError(error) {
   if (typeof error === "string") return error;
   if (error?.message) return String(error.message);
   if (error?.raw?.message) return String(error.raw.message);

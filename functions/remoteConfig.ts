@@ -1,7 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
-// CACHE COMPLETELY DISABLED - Always fetch fresh
-function readFlags(req?: Request) {
+function readFlags(req) {
   if (!req) return { forceRefresh: false, forceRemote: false };
   try {
     const u = new URL(req.url);
@@ -19,15 +18,8 @@ function readFlags(req?: Request) {
 
 /**
  * Fetch a "live" Stripe secret key - prioritizes env var (standard), with RemoteConfig as backup.
- * 
- * Priority:
- * 1. ENV VAR (standard Stripe process)
- * 2. RemoteConfig (backup if env var fails)
  */
-export async function getStripeSecretKeyLive(req?: Request): Promise<{
-  value: string;
-  source: "remote" | "env" | "missing";
-}> {
+export async function getStripeSecretKeyLive(req) {
   const { forceRefresh, forceRemote } = readFlags(req);
   
   console.log("[remoteConfig] ===== NEW REQUEST =====");
@@ -86,10 +78,7 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
 /**
  * Fetch Stripe webhook secret - prioritizes env var (standard), with RemoteConfig as backup.
  */
-export async function getStripeWebhookSecretLive(req?: Request): Promise<{
-  value: string;
-  source: "remote" | "env" | "missing";
-}> {
+export async function getStripeWebhookSecretLive(req) {
   // 1) Standard: Try env var first
   const envVal = (Deno.env.get("STRIPE_WEBHOOK_SECRET") || "").trim();
   if (envVal) {
@@ -123,7 +112,7 @@ export async function getStripeWebhookSecretLive(req?: Request): Promise<{
   return { value: "", source: "missing" };
 }
 
-function maskKey(k: string): string {
+function maskKey(k) {
   if (!k) return "(empty)";
   if (k.length < 12) return "***";
   return k.slice(0, 8) + "***" + k.slice(-4);

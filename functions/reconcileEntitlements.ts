@@ -3,36 +3,52 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-import { getStripeClient, safeStripeError } from "./stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
-const normEmail = (email: string) => String(email || "").trim().toLowerCase();
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-function isActiveStatus(status: string): boolean {
+function isActiveStatus(status) {
   const activeStatuses = ["active", "trialing", "trial"];
   return activeStatuses.includes((status || "").toLowerCase());
 }
 
-function getTierPriority(tier: string): number {
+function getTierPriority(tier) {
   const t = (tier || "").toLowerCase();
   if (t === "pro") return 3;
   if (t === "premium") return 2;
   return 1;
 }
 
-export interface ReconcileResult {
-  finalTier: string;
-  finalLevel: string;
-  finalStatus: string;
-  stripeCustomerId: string | null;
-  providerUsed: string;
-  changed: boolean;
+function safeStripeError(e) {
+  if (!e) return "Unknown Stripe error";
+  if (typeof e === "string") return e;
+  if (e.message) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+async function getStripeClient(req) {
+  const key = Deno.env.get("STRIPE_SECRET_KEY") || "";
+  
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY not set");
+  }
+  
+  if (!key.startsWith("sk_")) {
+    throw new Error(`Invalid Stripe key format: ${key.slice(0, 3)}`);
+  }
+  
+  return { stripe: new Stripe(key, { apiVersion: "2024-06-20" }) };
 }
 
 export async function reconcileUserEntitlements(
-  base44: any,
-  user: any,
-  options: { forceStripeCheck?: boolean; req?: any } = {}
-): Promise<ReconcileResult> {
+  base44,
+  user,
+  options = {}
+) {
   const email = normEmail(user.email);
   
   console.log(`[reconcileUserEntitlements] Start: ${email}, forceStripeCheck=${options.forceStripeCheck}`);
@@ -86,7 +102,7 @@ export async function reconcileUserEntitlements(
         });
 
         if (subsResponse.data?.length > 0) {
-          const activeSub = subsResponse.data.find((s: any) => 
+          const activeSub = subsResponse.data.find((s) => 
             s.status === "active" || s.status === "trialing"
           );
           const bestSub = activeSub || subsResponse.data[0];
@@ -104,7 +120,7 @@ export async function reconcileUserEntitlements(
           }
         }
       }
-    } catch (e: any) {
+    } catch (e) {
       console.warn("[reconcileUserEntitlements] Stripe recovery failed:", safeStripeError(e));
     }
   } else {
@@ -122,7 +138,7 @@ export async function reconcileUserEntitlements(
     });
 
     if (Array.isArray(appleSubs) && appleSubs.length > 0) {
-      const activeSub = appleSubs.find((s: any) => s && isActiveStatus(s.status));
+      const activeSub = appleSubs.find((s) => s && isActiveStatus(s.status));
       const bestSub = activeSub || appleSubs[0];
 
       if (bestSub) {
@@ -132,7 +148,7 @@ export async function reconcileUserEntitlements(
         }
       }
     }
-  } catch (e: any) {
+  } catch (e) {
     console.warn("[reconcileUserEntitlements] Apple check failed:", e);
   }
 

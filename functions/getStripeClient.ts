@@ -1,24 +1,23 @@
 // Resilient Stripe client loader: ENV -> RemoteConfig fallback
 // Hard-blocks mk_ keys. Supports preview/live separation.
 
-
 import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
-let cachedStripe: Stripe | null = null;
-let cachedKeyFingerprint: string | null = null;
+let cachedStripe = null;
+let cachedKeyFingerprint = null;
 
-function maskKey(key: string) {
+function maskKey(key) {
   if (!key) return "(missing)";
   if (key.length < 10) return "****";
   return `${key.slice(0, 4)}…${key.slice(-4)}`;
 }
 
-function fingerprint(key: string) {
+function fingerprint(key) {
   return `${key.slice(0, 7)}_${key.length}_${key.slice(-4)}`;
 }
 
-function isInvalidKey(key: string) {
+function isInvalidKey(key) {
   const k = (key || "").trim();
   if (!k) return true;
   if (k.startsWith("mk_")) return true; // Hard-block Base44 keys
@@ -26,7 +25,7 @@ function isInvalidKey(key: string) {
   return false;
 }
 
-async function readRemoteConfigKey(req: Request, environment: "live" | "preview") {
+async function readRemoteConfigKey(req, environment) {
   try {
     const base44 = createClientFromRequest(req);
     const recs = await base44.asServiceRole.entities.RemoteConfig.filter({
@@ -41,7 +40,7 @@ async function readRemoteConfigKey(req: Request, environment: "live" | "preview"
   }
 }
 
-export async function getRuntimeEnv(req: Request): Promise<"live" | "preview"> {
+export async function getRuntimeEnv(req) {
   const hinted = (Deno.env.get("BASE44_ENVIRONMENT") || Deno.env.get("ENVIRONMENT") || "").toLowerCase();
   if (hinted.includes("live")) return "live";
   if (hinted.includes("preview") || hinted.includes("dev")) return "preview";
@@ -51,12 +50,7 @@ export async function getRuntimeEnv(req: Request): Promise<"live" | "preview"> {
   return "live";
 }
 
-export async function getStripeSecretKey(req: Request): Promise<{
-  key: string;
-  source: "env" | "remoteConfig";
-  masked: string;
-  environment: "live" | "preview";
-}> {
+export async function getStripeSecretKey(req) {
   const environment = await getRuntimeEnv(req);
 
   const envKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
@@ -79,10 +73,7 @@ export async function getStripeSecretKey(req: Request): Promise<{
   );
 }
 
-export async function getStripeClient(req: Request): Promise<{
-  stripe: Stripe;
-  meta: { source: "env" | "remoteConfig"; masked: string; environment: "live" | "preview" };
-}> {
+export async function getStripeClient(req, options) {
   const { key, source, masked, environment } = await getStripeSecretKey(req);
   const fp = fingerprint(key);
 
@@ -94,20 +85,3 @@ export async function getStripeClient(req: Request): Promise<{
 
   return { stripe: cachedStripe, meta: { source, masked, environment } };
 }
-
-Deno.serve(async (req) => {
-  try {
-    const result = await getStripeClient(req);
-    return Response.json({
-      ok: true,
-      source: result.meta.source,
-      masked: result.meta.masked,
-      environment: result.meta.environment,
-    });
-  } catch (error) {
-    return Response.json({
-      ok: false,
-      error: error?.message || String(error),
-    }, { status: 500 });
-  }
-});

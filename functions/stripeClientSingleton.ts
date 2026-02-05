@@ -1,13 +1,7 @@
 // Centralized Stripe client singleton - prevents stale/expired key issues
 import Stripe from "npm:stripe@17.5.0";
 
-interface StripeClientCache {
-  client: Stripe | null;
-  keyFingerprint: string | null;
-  createdAt: number;
-}
-
-const cache: StripeClientCache = {
+const cache = {
   client: null,
   keyFingerprint: null,
   createdAt: 0,
@@ -15,12 +9,12 @@ const cache: StripeClientCache = {
 
 const MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes - prevent stale clients
 
-function maskKey(key: string): string {
+function maskKey(key) {
   if (!key || key.length < 12) return "***";
   return `${key.slice(0, 7)}...${key.slice(-4)}`;
 }
 
-function getKeyFingerprint(key: string): string {
+function getKeyFingerprint(key) {
   // Simple hash to detect key changes without storing full key
   let hash = 0;
   for (let i = 0; i < key.length; i++) {
@@ -31,7 +25,7 @@ function getKeyFingerprint(key: string): string {
   return hash.toString(36);
 }
 
-export function getStripeSecretKey(): string {
+export function getStripeSecretKey() {
   const key = Deno.env.get("STRIPE_SECRET_KEY") || "";
   
   if (!key) {
@@ -50,7 +44,7 @@ export function getStripeSecretKey(): string {
   return key;
 }
 
-export function getStripeClient(options?: { forceRefresh?: boolean }): Stripe {
+export function getStripeClient(options) {
   const key = getStripeSecretKey();
   const keyHash = getKeyFingerprint(key);
   const now = Date.now();
@@ -69,17 +63,17 @@ export function getStripeClient(options?: { forceRefresh?: boolean }): Stripe {
     cache.createdAt = now;
   }
   
-  return cache.client!;
+  return cache.client;
 }
 
-export function clearStripeClientCache(): void {
+export function clearStripeClientCache() {
   console.log("[StripeClient] Cache cleared");
   cache.client = null;
   cache.keyFingerprint = null;
   cache.createdAt = 0;
 }
 
-export async function verifyStripeConnection(): Promise<{ ok: boolean; error?: string }> {
+export async function verifyStripeConnection() {
   try {
     const stripe = getStripeClient();
     await stripe.balance.retrieve();
