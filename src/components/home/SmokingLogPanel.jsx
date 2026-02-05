@@ -59,6 +59,12 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const queryClient = useQueryClient();
 
+  const { data: logs = [] } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
+    enabled: !!user?.email,
+  });
+
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", user?.email, formData?.blend_id],
     enabled: !!user?.email && !!formData?.blend_id,
@@ -81,12 +87,6 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const scheduleMatches = (item, blendId, blendName) =>
     (item?.blend_id && blendId && item.blend_id === blendId) ||
     (item?.blend_name && blendName && norm(item.blend_name) === norm(blendName));
-
-  const { data: logs = [] } = useQuery({
-    queryKey: ['smoking-logs', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 50),
-    enabled: !!user?.email,
-  });
 
   // Calculate tobacco usage based on pipe bowl size
   const estimateTobaccoUsage = (pipe, bowls) => {
