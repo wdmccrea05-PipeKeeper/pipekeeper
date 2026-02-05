@@ -62,11 +62,16 @@ async function fetchCurrentUser() {
     // Don't hard-fail, continue without profile
   }
 
-  // Subscription (optional)
+  // Subscription (optional) - try user_id first, then email
   let subscription = null;
   try {
-    const subs = await base44.entities.Subscription.filter({ user_email: email });
+    let subs = await base44.entities.Subscription.filter({ user_id: userId });
     subscription = Array.isArray(subs) ? (subs[0] || null) : null;
+
+    if (!subscription) {
+      subs = await base44.entities.Subscription.filter({ user_email: email });
+      subscription = Array.isArray(subs) ? (subs[0] || null) : null;
+    }
   } catch (e) {
     console.warn("[useCurrentUser] Subscription lookup failed:", e);
   }
