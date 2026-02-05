@@ -24,14 +24,14 @@ export default function Home() {
     return (
       userProfile?.subscription_tier ||
       currentUser?.subscription_tier ||
-      "FREE"
+      "free"
     );
   }, [userProfile, currentUser]);
 
   if (userLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-sm opacity-80">Loading…</div>
+        <div className="text-sm text-[#E0D8C8]/80">Loading…</div>
       </div>
     );
   }
@@ -46,21 +46,33 @@ export default function Home() {
     );
   }
 
-  // --- Your existing Home UI below ---
-  // IMPORTANT: wherever Home previously used `userRecord` from entities.User,
-  // replace it with `userProfile` and/or `currentUser`.
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-4">
-          <div className="text-2xl font-semibold">Welcome{currentUser?.name ? `, ${currentUser.name}` : ""}</div>
-          <div className="text-sm opacity-80">
-            Tier: <span className="font-medium">{tier}</span>
+        <div className="mb-8">
+          <div className="text-3xl font-bold text-[#E0D8C8]">
+            Welcome{currentUser?.name ? `, ${currentUser.name}` : ""}
+          </div>
+          <div className="text-sm text-[#E0D8C8]/70 mt-2">
+            Tier: <span className="font-medium text-[#E0D8C8]">{String(tier)}</span>
           </div>
         </div>
 
-        {/* KEEP the rest of your existing Home content/components exactly as-is */}
-        {/* Just ensure nothing references base44.entities.User anywhere. */}
+        {/* Dashboard cards placeholder */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-[#1A2B3A]/50 border border-[#A35C5C]/30 rounded-lg p-6">
+            <div className="text-[#E0D8C8]/70 text-sm">Collection Overview</div>
+            <div className="text-[#E0D8C8] text-lg font-semibold mt-2">Coming Soon</div>
+          </div>
+          <div className="bg-[#1A2B3A]/50 border border-[#A35C5C]/30 rounded-lg p-6">
+            <div className="text-[#E0D8C8]/70 text-sm">Smoking Stats</div>
+            <div className="text-[#E0D8C8] text-lg font-semibold mt-2">Coming Soon</div>
+          </div>
+          <div className="bg-[#1A2B3A]/50 border border-[#A35C5C]/30 rounded-lg p-6">
+            <div className="text-[#E0D8C8]/70 text-sm">Recommendations</div>
+            <div className="text-[#E0D8C8] text-lg font-semibold mt-2">Coming Soon</div>
+          </div>
+        </div>
       </div>
     </div>
   );
