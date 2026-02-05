@@ -29,7 +29,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
   if (isAppleBuild) return null;
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  const hasPaidAccess = user?.hasPremium || user?.isPremium || false;
   const entitlements = useEntitlements();
 
   if (!hasPaidAccess) {
