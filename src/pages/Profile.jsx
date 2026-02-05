@@ -100,44 +100,6 @@ export default function ProfilePage() {
   const isWithinTrial = isTrialWindow(user?.created_date || user?.createdAt || user?.created_at);
   const hasActiveSubscription = hasPremiumAccess(user, subscription);
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile", userId, email],
-    enabled: !!(userId || email),
-    staleTime: 20_000,
-    retry: 1,
-    queryFn: async () => {
-      try {
-        let rows = [];
-
-        // Prefer user_id linkage when available (stable across provider/platform)
-        if (userId) {
-          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
-          if (Array.isArray(byUserId) && byUserId.length) rows = rows.concat(byUserId);
-        }
-
-        // Fallback to normalized email for legacy records
-        if (email) {
-          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
-          if (Array.isArray(byEmail) && byEmail.length) rows = rows.concat(byEmail);
-        }
-
-        // De-dupe by id
-        const seen = new Set();
-        rows = rows.filter((r) => {
-          if (!r?.id) return false;
-          if (seen.has(r.id)) return false;
-          seen.add(r.id);
-          return true;
-        });
-
-        return pickBestProfile(rows);
-      } catch (err) {
-        console.error("[Profile] load profile error:", err);
-        return null;
-      }
-    },
-  });
-
   // Hydrate form from profile
   useEffect(() => {
     if (!profile) return;
@@ -247,7 +209,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (userLoading || profileLoading) {
+  if (userLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center`}>
         <div className="text-center">
