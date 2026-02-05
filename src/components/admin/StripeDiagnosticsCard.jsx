@@ -16,7 +16,7 @@ export default function StripeDiagnosticsCard() {
 
   const runRuntimeKeyCheck = async () => {
     try {
-      const res = await base44.functions.invoke('admin/stripeRuntimeKey');
+      const res = await base44.functions.invoke('adminStripeRuntimeKey');
       setRuntimeKey(res.data);
       if (res.data?.ok && res.data.prefix === "sk") {
         toast.success('Runtime key check passed');
@@ -34,7 +34,7 @@ export default function StripeDiagnosticsCard() {
   const forceStripeRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await base44.functions.invoke('admin/forceStripeRefresh');
+      const res = await base44.functions.invoke('adminForceStripeRefresh');
       if (res.data?.ok) {
         toast.success('Stripe refreshed and validated');
         // Re-check all diagnostics
@@ -100,7 +100,7 @@ export default function StripeDiagnosticsCard() {
 
   const runForbiddenScan = async () => {
     try {
-      const res = await base44.functions.invoke('admin/stripeForbiddenScan');
+      const res = await base44.functions.invoke('adminStripeForbiddenScan');
       setForbiddenScan(res.data);
       if (res.data?.ok && res.data.violationCount === 0) {
         toast.success('No forbidden Stripe patterns found');
