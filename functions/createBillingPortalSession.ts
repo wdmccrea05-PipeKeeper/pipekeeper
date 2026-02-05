@@ -4,6 +4,7 @@ import Stripe from "npm:stripe@17.5.0";
 
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
+
 // Inlined Stripe utilities
 async function getStripeClient(req: Request): Promise<Stripe> {
   console.log("[stripe] ========== STRIPE CLIENT INIT START ==========");
