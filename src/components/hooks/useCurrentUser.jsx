@@ -30,7 +30,7 @@ function detectPlatform() {
 export function useCurrentUser() {
   const [ensuredUser, setEnsuredUser] = useState(false);
 
-  // Fetch auth user + entity User in parallel
+  // Fetch auth user
   const { data: rawUser, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
@@ -43,15 +43,7 @@ export function useCurrentUser() {
           try {
             if (!email) return null;
             const rows = await base44.entities.User.filter({ email });
-            const entity = rows?.[0] || null;
-            
-            // Platform tracking for future use
-            if (entity) {
-              const currentPlatform = detectPlatform();
-              // Platform mismatch detection removed - reconciliation function unavailable
-            }
-            
-            return entity;
+            return rows?.[0] || null;
           } catch (e) {
             console.warn("[useCurrentUser] Could not load entities.User:", e);
             return null;
@@ -140,33 +132,7 @@ export function useCurrentUser() {
     retry: 1,
   });
 
-  // Ensure User entity exists and has platform set
-  useEffect(() => {
-    if (userLoading || !rawUser?.email || ensuredUser) return;
-    
-    const entityUser = rawUser;
-    const needsEnsure = !entityUser?.id || !entityUser?.platform;
-    
-    if (!needsEnsure) {
-      setEnsuredUser(true);
-      return;
-    }
-
-    const platform = detectPlatform();
-    
-    (async () => {
-      try {
-        await base44.functions.invoke('ensureUserRecord', { platform });
-        await refetchUser();
-        setEnsuredUser(true);
-      } catch (e) {
-        console.error('[useCurrentUser] ensureUserRecord failed:', e);
-        setEnsuredUser(true);
-      }
-    })();
-  }, [userLoading, rawUser, ensuredUser, refetchUser]);
-
-  // Load UserProfile (authoritative source for provider via stripe_customer_id/apple_original_transaction_id)
+  // Load UserProfile (authoritative source for provider)
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["user-profile-provider", userId, email],
     queryFn: async () => {
@@ -197,6 +163,30 @@ export function useCurrentUser() {
     retry: 1,
   });
 
+  // Ensure User entity exists and has platform set
+  useEffect(() => {
+    if (userLoading || !rawUser?.email || ensuredUser) return;
+    
+    const needsEnsure = !rawUser?.platform;
+    if (!needsEnsure) {
+      setEnsuredUser(true);
+      return;
+    }
+
+    const platform = detectPlatform();
+    
+    (async () => {
+      try {
+        await base44.functions.invoke('ensureUserRecord', { platform });
+        await refetchUser();
+        setEnsuredUser(true);
+      } catch (e) {
+        console.error('[useCurrentUser] ensureUserRecord failed:', e);
+        setEnsuredUser(true);
+      }
+    })();
+  }, [userLoading, rawUser?.email, ensuredUser, refetchUser]);
+
   // Compute provider from UserProfile (authoritative source)
   const computedProvider = resolveProviderFromProfile(profile);
 
@@ -225,7 +215,7 @@ export function useCurrentUser() {
     }
   }, [isLoading, rawUser, hasPaid]);
 
-  // Dev-only tier/entitlement debug output (using Vite's import.meta.env)
+  // Dev-only tier/entitlement debug output
   useEffect(() => {
     if (typeof window !== 'undefined' && import.meta.env.DEV && !isLoading && rawUser?.email) {
       const debugInfo = {
