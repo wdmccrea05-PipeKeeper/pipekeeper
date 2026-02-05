@@ -1,10 +1,57 @@
 // DEPLOYMENT: 2026-02-02T03:55:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-
-import { getStripeClient } from "./_utils/stripeClient.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
+
+// Inlined Stripe client utilities
+let cachedStripe: Stripe | null = null;
+let cachedKeyFingerprint: string | null = null;
+
+function fingerprint(key: string): string {
+  return `${key.slice(0, 7)}_${key.length}_${key.slice(-4)}`;
+}
+
+function maskKey(key: string): string {
+  if (!key || key.length < 12) return "****";
+  return `${key.slice(0, 8)}...${key.slice(-4)}`;
+}
+
+function getStripeClient(options?: { forceRefresh?: boolean }): {
+  stripe: Stripe;
+  meta: { masked: string; environment: "live" | "test" };
+} {
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
+  }
+
+  if (!key.startsWith("sk_live_") && !key.startsWith("sk_test_")) {
+    throw new Error(`Invalid Stripe key format. Must start with sk_live_ or sk_test_. Got: ${key.slice(0, 3)}`);
+  }
+
+  const environment = key.startsWith("sk_live_") ? "live" : "test";
+  const fp = fingerprint(key);
+
+  if (!options?.forceRefresh && cachedStripe && cachedKeyFingerprint === fp) {
+    return {
+      stripe: cachedStripe,
+      meta: { masked: maskKey(key), environment },
+    };
+  }
+
+  cachedStripe = new Stripe(key, { apiVersion: "2024-06-20" });
+  cachedKeyFingerprint = fp;
+
+  console.log(`[StripeClient] Initialized new client: ${maskKey(key)} (${environment})`);
+
+  return {
+    stripe: cachedStripe,
+    meta: { masked: maskKey(key), environment },
+  };
+}
 
 // ---- Config ----
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";

@@ -1,9 +1,91 @@
 // DEPLOYMENT: 2026-02-02T04:00:00Z - No imports
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_shared/getStripeClient.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
+
+// Inlined Stripe client utilities
+function maskKey(key: string): string {
+  if (!key || key.length < 12) return "****";
+  return `${key.slice(0, 8)}...${key.slice(-4)}`;
+}
+
+function fingerprint(key: string): string {
+  return `${key.slice(0, 7)}_${key.length}_${key.slice(-4)}`;
+}
+
+function isInvalidKey(key: string): boolean {
+  const k = (key || "").trim();
+  if (!k) return true;
+  if (k.startsWith("mk_")) return true;
+  if (!k.startsWith("sk_")) return true;
+  return false;
+}
+
+async function readRemoteConfigKey(base44: any, environment: "live" | "preview"): Promise<string> {
+  try {
+    const recs = await base44.asServiceRole.entities.RemoteConfig.filter({
+      key: "STRIPE_SECRET_KEY",
+      environment,
+    });
+    return recs?.[0]?.value ? String(recs[0].value).trim() : "";
+  } catch (e: any) {
+    console.log(`[getStripeClient] RemoteConfig read failed for ${environment}:`, e?.message);
+    return "";
+  }
+}
+
+async function getRuntimeEnv(req: Request): Promise<"live" | "preview"> {
+  const hinted = (Deno.env.get("BASE44_ENVIRONMENT") || Deno.env.get("ENVIRONMENT") || "").toLowerCase();
+  if (hinted.includes("live")) return "live";
+  if (hinted.includes("preview") || hinted.includes("dev")) return "preview";
+  const host = new URL(req.url).host.toLowerCase();
+  if (host.includes("app.base44.com")) return "preview";
+  return "live";
+}
+
+let cachedStripe: Stripe | null = null;
+let cachedKeyFingerprint: string | null = null;
+
+async function getStripeClient(req: Request, base44: any): Promise<{
+  stripe: Stripe;
+  meta: { source: "env" | "remoteConfig"; masked: string; environment: "live" | "preview" };
+}> {
+  const environment = await getRuntimeEnv(req);
+  const envKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+
+  let key = "";
+  let source: "env" | "remoteConfig" = "env";
+
+  if (!isInvalidKey(envKey)) {
+    key = envKey;
+    source = "env";
+    console.log(`[getStripeClient] Using ENV key: ${maskKey(envKey)}`);
+  } else {
+    const rcKey = await readRemoteConfigKey(base44, environment);
+    if (!isInvalidKey(rcKey)) {
+      key = rcKey;
+      source = "remoteConfig";
+      console.log(`[getStripeClient] Using RemoteConfig key: ${maskKey(rcKey)}`);
+    } else {
+      const envPrefix = envKey ? envKey.slice(0, 3) : "(missing)";
+      const rcPrefix = rcKey ? rcKey.slice(0, 3) : "(missing)";
+      throw new Error(
+        `Stripe key missing/invalid. envPrefix=${envPrefix}, remoteConfigPrefix=${rcPrefix}, environment=${environment}`
+      );
+    }
+  }
+
+  const fp = fingerprint(key);
+  if (!cachedStripe || cachedKeyFingerprint !== fp) {
+    cachedStripe = new Stripe(key, { apiVersion: "2024-06-20" });
+    cachedKeyFingerprint = fp;
+    console.log(`[getStripeClient] Created new Stripe client: ${maskKey(key)}`);
+  }
+
+  return { stripe: cachedStripe, meta: { source, masked: maskKey(key), environment } };
+}
 
 Deno.serve(async (req: Request) => {
   let keyPrefix = "unknown";
@@ -54,7 +136,7 @@ Deno.serve(async (req: Request) => {
     // Stage: stripe_init
     let stripe;
     try {
-      const { stripe: stripeClient, meta } = await getStripeClient(req);
+      const { stripe: stripeClient, meta } = await getStripeClient(req, base44);
       stripe = stripeClient;
       keyPrefix = meta.masked.slice(0, 4);
       console.log(`[backfillStripeCustomers] env=${meta.environment} source=${meta.source} key=${meta.masked}`);
