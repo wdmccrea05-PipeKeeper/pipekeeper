@@ -14,6 +14,7 @@ import { openManageSubscription } from "@/components/utils/subscriptionManagemen
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useQueryClient } from "@tanstack/react-query";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
   return (
