@@ -1,52 +1,73 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+// functions/acceptTermsForMe.ts
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();
-    
+
     if (!me?.id || !me?.email) {
-      return Response.json({ ok: false, error: 'Missing auth identity' }, { status: 401 });
+      return Response.json({ ok: false, error: "Missing auth identity" }, { status: 401 });
     }
 
     const userId = me.id;
-    const email = (me.email || '').trim().toLowerCase();
+    const email = (me.email || "").trim().toLowerCase();
     const srv = base44.asServiceRole;
 
-    // Find canonical profile: prefer user_id, fallback to email
-    let profile = null;
-    if (userId) {
-      const byId = await srv.entities.UserProfile.filter({ user_id: userId });
-      profile = Array.isArray(byId) ? byId[0] : null;
-    }
+    const now = new Date().toISOString();
 
-    if (!profile) {
-      const byEmail = await srv.entities.UserProfile.filter({ user_email: email });
-      profile = Array.isArray(byEmail) ? byEmail[0] : null;
-    }
+    // Load all matching profiles (by user_id and by email)
+    const [byId, byEmail] = await Promise.all([
+      srv.entities.UserProfile.filter({ user_id: userId }).catch(() => []),
+      srv.entities.UserProfile.filter({ user_email: email }).catch(() => []),
+    ]);
 
-    // Create if missing
-    if (!profile) {
-      profile = await srv.entities.UserProfile.create({
+    let profiles = [
+      ...(Array.isArray(byId) ? byId : []),
+      ...(Array.isArray(byEmail) ? byEmail : []),
+    ].filter(Boolean);
+
+    // De-dupe by id
+    const seen = new Set<string>();
+    profiles = profiles.filter((p: any) => {
+      const id = p?.id;
+      if (!id) return true;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
+    // If none exist, create one
+    if (!profiles.length) {
+      const created = await srv.entities.UserProfile.create({
         user_id: userId,
         user_email: email,
-        subscription_tier: 'free',
+        subscription_tier: "free",
         tos_accepted: true,
-        tos_accepted_at: new Date().toISOString(),
+        tos_accepted_at: now,
       });
-    } else {
-      // Update existing: backfill user_id if missing, always set ToS
-      await srv.entities.UserProfile.update(profile.id, {
-        user_id: userId,
-        user_email: email,
-        tos_accepted: true,
-        tos_accepted_at: new Date().toISOString(),
-      });
+      return Response.json({ ok: true, updated: 1, created: created?.id || null });
     }
 
-    return Response.json({ ok: true });
-  } catch (error) {
-    console.error('[acceptTermsForMe]', error);
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    // Update ALL matches so the gate clears regardless of which profile is chosen
+    let updated = 0;
+    for (const p of profiles as any[]) {
+      try {
+        await srv.entities.UserProfile.update(p.id, {
+          user_id: userId,
+          user_email: email,
+          tos_accepted: true,
+          tos_accepted_at: now,
+        });
+        updated += 1;
+      } catch (e) {
+        console.error("[acceptTermsForMe] update failed for profile", p?.id, e);
+      }
+    }
+
+    return Response.json({ ok: true, updated });
+  } catch (error: any) {
+    console.error("[acceptTermsForMe]", error);
+    return Response.json({ ok: false, error: String(error?.message || error) }, { status: 500 });
   }
 });
