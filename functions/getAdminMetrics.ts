@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+
 const PRO_LAUNCH_CUTOFF = "2026-02-01T00:00:00.000Z";
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
