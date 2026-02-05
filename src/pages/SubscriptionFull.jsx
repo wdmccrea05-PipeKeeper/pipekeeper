@@ -342,29 +342,18 @@ export default function SubscriptionFull() {
        </div>
 
        {/* Manage Subscription */}
-       <Button variant="outline" className="w-full" onClick={handleManage}>
-         Manage Subscription
-       </Button>
-
-       {/* Manual Refresh (Option B fallback) */}
-       {message && refreshTimeout && (
-         <Button variant="secondary" className="w-full" onClick={handleManualRefresh}>
-           Refresh Subscription Status
+       <div className="space-y-3">
+         <Button variant="outline" className="w-full" onClick={handleManage}>
+           Manage Subscription
          </Button>
-       )}
+         <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
+           Manual Backup Checkout
+         </Button>
+       </div>
 
        {message && (
-         <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-[#e8d5b7]/70"}`}>
+         <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
            {message}
-           {message.includes("Manual Subscription Assistance") && (
-             <Button
-               variant="link"
-               className="ml-2 text-[#A35C5C] underline"
-               onClick={() => setShowBackupModal(true)}
-             >
-               Manual Subscription Assistance
-             </Button>
-           )}
          </div>
        )}
 
