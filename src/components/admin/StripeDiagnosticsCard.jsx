@@ -54,9 +54,40 @@ export default function StripeDiagnosticsCard() {
 
   const checkDeploymentStatus = async () => {
     try {
-      const res = await base44.functions.invoke('admin/stripeDeploymentStatus');
-      setDeployStatus(res.data);
-      if (res.data?.ok) {
+      const res = await base44.functions.invoke('stripeDiagnostics');
+      const data = res.data;
+      
+      // Transform stripeDiagnostics response to match expected format
+      const transformed = {
+        ok: data.health === "HEALTHY",
+        environment: data.environment,
+        deployment: {
+          healthy: data.health === "HEALTHY",
+          recommendation: data.health === "UNHEALTHY" ? "Fix the failing checks below" : "All systems operational"
+        },
+        checks: {
+          secretPresent: {
+            passed: data.checks?.secret_present || false,
+            keyMasked: data.details?.secret_key || "N/A"
+          },
+          stripeInit: {
+            passed: data.checks?.stripe_init || false,
+            error: data.details?.init_error || null
+          },
+          apiConnect: {
+            passed: data.checks?.api_connect || false,
+            error: data.details?.api_error || null
+          }
+        },
+        instructions: data.health === "UNHEALTHY" ? {
+          step1: "Verify STRIPE_SECRET_KEY is set in Dashboard → Settings → Secrets",
+          step2: "Click 'Force Refresh' button",
+          step3: "If issue persists, manually redeploy functions in Base44 Dashboard"
+        } : null
+      };
+      
+      setDeployStatus(transformed);
+      if (transformed.ok) {
         toast.success('Deployment status: Healthy');
       } else {
         toast.warning('Deployment issues detected');
