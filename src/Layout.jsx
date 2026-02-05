@@ -225,7 +225,11 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription } = useCurrentUser();
+  const { data: user, isLoading: userLoading, error: userError } = useCurrentUser();
+  
+  const hasPaidAccess = user?.hasPaid || user?.isPremium || false;
+  const isAdmin = user?.isAdmin || false;
+  const subscription = user?.subscription || null;
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
