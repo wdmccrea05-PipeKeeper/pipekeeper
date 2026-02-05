@@ -101,9 +101,18 @@ export const translationsComplete = {
       undo: 'Deshacer',
       regenerate: 'Regenerar',
       breakInSchedules: 'Programas de Rodaje',
-      breakInNote: 'La regeneración se maneja por pipa en la página de detalle de pipa (con deshacer/historial).'
-    }
-  },
+      breakInNote: 'La regeneración se maneja por pipa en la página de detalle de pipa (con deshacer/historial).',
+      noRecommendation: 'Sin recomendaciones específicas',
+      versatilePattern: 'Versátil - adecuado para muchos tipos de mezclas',
+      tobaccoBlendClassification: 'Clasificación de Mezcla de Tabaco',
+      tobaccoBlendClassificationDesc: 'Análisis de tipos de mezcla en tu colección',
+      reclassifyBlends: 'Reclasificar Mezclas',
+      hide: 'Ocultar',
+      rotationPlanner: 'Planificador de Rotación',
+      neverSmoked: 'Nunca Fumado',
+      noUsageSessionsRecorded: 'Sin sesiones de fumar registradas'
+      }
+      },
   fr: {
     pipes: { search: 'Rechercher', filter: 'Filtrer', shape: 'Forme', material: 'Matériau', allShapes: 'Toutes les formes', allMaterials: 'Tous les matériaux' },
     tobacco: { allTypes: 'Tous les types', allStrengths: 'Toutes les puissances', search: 'Rechercher' },
@@ -175,9 +184,18 @@ export const translationsComplete = {
       undo: 'Annuler',
       regenerate: 'Régénérer',
       breakInSchedules: 'Calendriers de Rodage',
-      breakInNote: 'La régénération est gérée par pipe sur la page de détail de pipe (avec annulation/historique).'
-    }
-  },
+      breakInNote: 'La régénération est gérée par pipe sur la page de détail de pipe (avec annulation/historique).',
+      noRecommendation: 'Pas de recommandations spécifiques',
+      versatilePattern: 'Polyvalent - adapté à de nombreux types de mélanges',
+      tobaccoBlendClassification: 'Classification des Mélanges de Tabac',
+      tobaccoBlendClassificationDesc: 'Analyse des types de mélange dans votre collection',
+      reclassifyBlends: 'Reclasser les Mélanges',
+      hide: 'Masquer',
+      rotationPlanner: 'Planificateur de Rotation',
+      neverSmoked: 'Jamais Fumé',
+      noUsageSessionsRecorded: 'Aucune session de fumage enregistrée'
+      }
+      },
   de: {
     pipes: { search: 'Suchen', filter: 'Filtern', shape: 'Form', material: 'Material', allShapes: 'Alle Formen', allMaterials: 'Alle Materialien' },
     tobacco: { allTypes: 'Alle Typen', allStrengths: 'Alle Stärken', search: 'Suchen' },
@@ -249,9 +267,18 @@ export const translationsComplete = {
       undo: 'Rückgängig',
       regenerate: 'Neu Generieren',
       breakInSchedules: 'Einrauchpläne',
-      breakInNote: 'Die Neugenerierung wird pro Pfeife auf der Pfeifendetailseite verwaltet (mit Rückgängig/Verlauf).'
-    }
-  },
+      breakInNote: 'Die Neugenerierung wird pro Pfeife auf der Pfeifendetailseite verwaltet (mit Rückgängig/Verlauf).',
+      noRecommendation: 'Keine spezifischen Empfehlungen',
+      versatilePattern: 'Vielseitig - für viele Blendtypen geeignet',
+      tobaccoBlendClassification: 'Tabakblend-Klassifizierung',
+      tobaccoBlendClassificationDesc: 'Analyse der Blendtypen in Ihrer Sammlung',
+      reclassifyBlends: 'Blends Neu Klassifizieren',
+      hide: 'Ausblenden',
+      rotationPlanner: 'Rotationsplaner',
+      neverSmoked: 'Nie Geraucht',
+      noUsageSessionsRecorded: 'Keine Rauchsitzungen aufgezeichnet'
+      }
+      },
   it: {
     pipes: { search: 'Cerca', filter: 'Filtro', shape: 'Forma', material: 'Materiale', allShapes: 'Tutte le forme', allMaterials: 'Tutti i materiali' },
     tobacco: { allTypes: 'Tutti i tipi', allStrengths: 'Tutte le intensità', search: 'Cerca' },
@@ -323,9 +350,18 @@ export const translationsComplete = {
       undo: 'Annulla',
       regenerate: 'Rigenera',
       breakInSchedules: 'Programmi di Rodaggio',
-      breakInNote: 'La rigenerazione è gestita per pipe nella pagina dei dettagli della pipe (con annulla/cronologia).'
-    }
-  },
+      breakInNote: 'La rigenerazione è gestita per pipe nella pagina dei dettagli della pipe (con annulla/cronologia).',
+      noRecommendation: 'Nessuna raccomandazione specifica',
+      versatilePattern: 'Versatile - adatto a molti tipi di blend',
+      tobaccoBlendClassification: 'Classificazione Blend Tabacco',
+      tobaccoBlendClassificationDesc: 'Analisi dei tipi di blend nella tua collezione',
+      reclassifyBlends: 'Riclassifica Blend',
+      hide: 'Nascondi',
+      rotationPlanner: 'Pianificatore di Rotazione',
+      neverSmoked: 'Mai Fumato',
+      noUsageSessionsRecorded: 'Nessuna sessione di fumo registrata'
+      }
+      },
   'pt-BR': {
     pipes: { search: 'Pesquisar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas as formas', allMaterials: 'Todos os materiais' },
     tobacco: { allTypes: 'Todos os tipos', allStrengths: 'Todas as potências', search: 'Pesquisar' },
@@ -397,9 +433,18 @@ export const translationsComplete = {
       undo: 'Desfazer',
       regenerate: 'Regenerar',
       breakInSchedules: 'Cronogramas de Amaciamento',
-      breakInNote: 'A regeneração é feita por cachimbo na página de detalhes do cachimbo (com desfazer/histórico).'
-    }
-  },
+      breakInNote: 'A regeneração é feita por cachimbo na página de detalhes do cachimbo (com desfazer/histórico).',
+      noRecommendation: 'Nenhuma recomendação específica',
+      versatilePattern: 'Versátil - adequado para muitos tipos de blends',
+      tobaccoBlendClassification: 'Classificação de Blend de Tabaco',
+      tobaccoBlendClassificationDesc: 'Análise de tipos de blend em sua coleção',
+      reclassifyBlends: 'Reclassificar Blends',
+      hide: 'Ocultar',
+      rotationPlanner: 'Planejador de Rotação',
+      neverSmoked: 'Nunca Fumado',
+      noUsageSessionsRecorded: 'Nenhuma sessão de fumo registrada'
+      }
+      },
   nl: {
     pipes: { search: 'Zoeken', filter: 'Filteren', shape: 'Vorm', material: 'Materiaal', allShapes: 'Alle vormen', allMaterials: 'Alle materialen' },
     tobacco: { allTypes: 'Alle typen', allStrengths: 'Alle sterktes', search: 'Zoeken' },
@@ -471,9 +516,18 @@ export const translationsComplete = {
       undo: 'Ongedaan Maken',
       regenerate: 'Opnieuw Genereren',
       breakInSchedules: 'Inrij-schema\'s',
-      breakInNote: 'Regeneratie wordt per pijp op de pijpdetailpagina afgehandeld (met ongedaan maken/geschiedenis).'
-    }
-  },
+      breakInNote: 'Regeneratie wordt per pijp op de pijpdetailpagina afgehandeld (met ongedaan maken/geschiedenis).',
+      noRecommendation: 'Geen specifieke aanbevelingen',
+      versatilePattern: 'Veelzijdig - geschikt voor veel blendtypen',
+      tobaccoBlendClassification: 'Tabaksblend-classificatie',
+      tobaccoBlendClassificationDesc: 'Analyse van blendtypen in uw collectie',
+      reclassifyBlends: 'Blends Opnieuw Classificeren',
+      hide: 'Verbergen',
+      rotationPlanner: 'Rotatieplannen',
+      neverSmoked: 'Nooit Gerookt',
+      noUsageSessionsRecorded: 'Geen rooksessies opgenomen'
+      }
+      },
   pl: {
     pipes: { search: 'Szukaj', filter: 'Filtruj', shape: 'Kształt', material: 'Materiał', allShapes: 'Wszystkie kształty', allMaterials: 'Wszystkie materiały' },
     tobacco: { allTypes: 'Wszystkie typy', allStrengths: 'Wszystkie moce', search: 'Szukaj' },
@@ -560,9 +614,16 @@ export const translationsComplete = {
       strategicSpecializations: 'Strategiczne specjalizacje dla maksymalnych wyników połączeń',
       usagePattern: 'Wzór Użycia',
       currentFocus: 'Obecny Fokus',
-      recommendedFor: 'Rekomendowane dla'
-    }
-  },
+      recommendedFor: 'Rekomendowane dla',
+      tobaccoBlendClassification: 'Klasyfikacja Blendu Tytoniu',
+      tobaccoBlendClassificationDesc: 'Analiza typów blendu w twojej kolekcji',
+      reclassifyBlends: 'Przeklasyfikuj Blendy',
+      hide: 'Ukryj',
+      rotationPlanner: 'Planner Rotacji',
+      neverSmoked: 'Nigdy Palony',
+      noUsageSessionsRecorded: 'Brak zarejestrowanych sesji palenia'
+      }
+      },
   ja: {
     pipes: { search: '検索', filter: 'フィルター', shape: '形状', material: '素材', allShapes: 'すべての形状', allMaterials: 'すべての素材' },
     tobacco: { allTypes: 'すべてのタイプ', allStrengths: 'すべての強度', search: '検索' },
@@ -640,8 +701,15 @@ export const translationsComplete = {
       strategicSpecializations: '最大ペアリングスコアのための戦略的専門化',
       usagePattern: '使用パターン',
       currentFocus: '現在のフォーカス',
-      recommendedFor: '推奨対象'
-    },
+      recommendedFor: '推奨対象',
+      tobaccoBlendClassification: 'タバコブレンド分類',
+      tobaccoBlendClassificationDesc: 'コレクション内のブレンドタイプの分析',
+      reclassifyBlends: 'ブレンドを再分類',
+      hide: '隠す',
+      rotationPlanner: 'ローテーション計画',
+      neverSmoked: '未喫煙',
+      noUsageSessionsRecorded: '喫煙セッションが記録されていません'
+      },
     pipesPage: {
       exportCSV: "CSVエクスポート"
     },
@@ -724,7 +792,16 @@ export const translationsComplete = {
       undo: '撤销',
       regenerate: '重新生成',
       breakInSchedules: '磨合时间表',
-      breakInNote: '重新生成由烟斗详细信息页面上的每根烟斗处理(带撤销/历史记录)。'
-    }
-  }
-};
+      breakInNote: '重新生成由烟斗详细信息页面上的每根烟斗处理(带撤销/历史记录)。',
+      noRecommendation: '无具体建议',
+      versatilePattern: '多功能 - 适合多种混合类型',
+      tobaccoBlendClassification: '烟草混合分类',
+      tobaccoBlendClassificationDesc: '您的收藏中混合类型的分析',
+      reclassifyBlends: '重新分类混合',
+      hide: '隐藏',
+      rotationPlanner: '轮换计划',
+      neverSmoked: '从未吸过',
+      noUsageSessionsRecorded: '没有记录吸烟会话'
+      }
+      }
+      };
