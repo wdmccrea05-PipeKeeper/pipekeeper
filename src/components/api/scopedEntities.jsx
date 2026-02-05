@@ -48,65 +48,40 @@ async function safeList(entity, sort, limit) {
   }
 }
 
-async function resolveOwnerKeys(userEmail) {
-  // Primary: normalized email passed in
-  const email = String(userEmail || "").trim();
-  let userId = null;
-
-  // Only fetch auth if we need to
-  try {
-    const me = await base44.auth.me();
-    userId = me?.id || null;
-  } catch (e) {
-    console.warn("[scopedEntities] auth.me failed:", e);
-  }
-
-  return { email, userId };
-}
-
 async function listForUserRobust(entity, userEmail, sort = "-updated_date", limit = MAX_ITEMS_PER_PAGE) {
   if (assertScoped(entity, "listForUser", !!userEmail)) return [];
 
   const email = String(userEmail || "").trim();
 
-  // Single query: created_by = email (most common)
+  // Single query: created_by = email
   let rows = await tryCreatedBy(entity, email, sort, limit);
   if (rows.length > 0) return rows;
 
-  // Fallback: capped list() if email query returned nothing
+  // Fallback: capped list()
   return await safeList(entity, sort, limit);
 }
 
 async function filterForUserRobust(entity, userEmail, filter = {}, sort, limit) {
   if (assertScoped(entity, "filterForUser", !!userEmail)) return [];
 
-  const { email, userId } = await resolveOwnerKeys(userEmail);
+  const email = String(userEmail || "").trim();
 
-  // Try email-based created_by
+  // Single query: created_by = email
   try {
     const rows = await base44.entities[entity].filter({ ...filter, created_by: email }, sort, limit);
     if (rows?.length) return rows;
   } catch (e) {
-    console.warn(`[scopedEntities] ${entity}.filter(email created_by) failed:`, e);
+    console.warn(`[scopedEntities] ${entity}.filter(created_by=${email}) failed:`, e);
   }
 
-  // Try id-based created_by
-  try {
-    const rows = await base44.entities[entity].filter({ ...filter, created_by: userId }, sort, limit);
-    if (rows?.length) return rows;
-  } catch (e) {
-    console.warn(`[scopedEntities] ${entity}.filter(id created_by) failed:`, e);
-  }
-
-  // Fallback: if filter is narrow (has id or pipe_id or blend_id), allow unscoped filter,
-  // otherwise return capped list.
+  // Fallback: if filter is narrow, try unscoped filter; else capped list
   const narrow = Boolean(filter?.id || filter?.pipe_id || filter?.blend_id || filter?.tobacco_blend_id);
   if (narrow) {
     try {
       const rows = await base44.entities[entity].filter(filter, sort, limit);
       return Array.isArray(rows) ? rows : [];
     } catch (e) {
-      console.warn(`[scopedEntities] ${entity}.filter(narrow fallback) failed:`, e);
+      console.warn(`[scopedEntities] ${entity}.filter(narrow) failed:`, e);
       return [];
     }
   }
