@@ -62,7 +62,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, subscription, isLoading: userLoading } = useCurrentUser();
+  const { user, profile, provider, subscription, isLoading: userLoading } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
@@ -299,11 +299,10 @@ export default function ProfilePage() {
                         <Button
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                           onClick={() => {
-                            const provider = resolveSubscriptionProvider(subscription);
                             if (provider === "stripe") {
                               window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Kravgbm00";
                             } else if (provider === "apple") {
-                              window.location.href = "itms-apps://apps.apple.com/account/subscriptions";
+                              window.location.href = "https://apps.apple.com/account/subscriptions";
                             } else {
                               navigate(createPageUrl("Subscription"));
                             }
@@ -373,10 +372,10 @@ export default function ProfilePage() {
               <Badge className="bg-[#A35C5C] text-white border-0">
                 {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
               </Badge>
-              {resolveSubscriptionProvider(subscription) === "stripe" && (
+              {provider === "stripe" && (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
               )}
-              {resolveSubscriptionProvider(subscription) === "apple" && (
+              {provider === "apple" && (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Apple</Badge>
               )}
               {subscription?.status ? (

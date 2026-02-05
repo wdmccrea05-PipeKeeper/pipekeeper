@@ -8,7 +8,7 @@ import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/componen
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
-import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { resolveSubscriptionProvider, resolveProviderFromProfile } from "@/components/utils/subscriptionProvider";
 import { useEffect, useState } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -167,7 +167,7 @@ export function useCurrentUser() {
   }, [userLoading, rawUser, ensuredUser, refetchUser]);
 
   // Compute derived flags
-  const isLoading = userLoading || subLoading;
+  const isLoading = userLoading || subLoading || profileLoading;
   const hasPremium = hasPremiumAccess(rawUser, subscription);
   const hasPaid = hasPaidAccess(rawUser, subscription);
 
@@ -176,8 +176,39 @@ export function useCurrentUser() {
   const userTier = (rawUser?.subscription_tier || rawUser?.tier || "").toLowerCase();
   const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
 
-  // Compute provider at runtime (canonical source)
-  const computedProvider = resolveSubscriptionProvider(subscription);
+  // Load UserProfile (authoritative source for provider via stripe_customer_id/apple_original_transaction_id)
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["user-profile-provider", userId, email],
+    queryFn: async () => {
+      try {
+        if (!userId && !email) return null;
+        let rows = [];
+        
+        // Prefer user_id lookup
+        if (userId) {
+          const byUserId = await base44.entities.UserProfile.filter({ user_id: userId });
+          if (Array.isArray(byUserId) && byUserId.length) rows = rows.concat(byUserId);
+        }
+        
+        // Fallback to email
+        if (email && rows.length === 0) {
+          const byEmail = await base44.entities.UserProfile.filter({ user_email: email });
+          if (Array.isArray(byEmail) && byEmail.length) rows = rows.concat(byEmail);
+        }
+        
+        return rows?.[0] || null;
+      } catch (e) {
+        console.warn("[useCurrentUser] Could not load UserProfile for provider:", e);
+        return null;
+      }
+    },
+    enabled: !!(userId || email),
+    staleTime: 15_000,
+    retry: 1,
+  });
+
+  // Compute provider from UserProfile (authoritative source)
+  const computedProvider = resolveProviderFromProfile(profile);
 
   const hasTrial = hasTrialAccess(rawUser);
   const isInTrial = isTrialWindow(rawUser);
@@ -218,8 +249,10 @@ export function useCurrentUser() {
 
   return {
     user: rawUser,
+    profile,
     subscription,
     subscriptionProvider: computedProvider,
+    provider: computedProvider,
     isLoading,
     error: userError,
     hasPremium,

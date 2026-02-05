@@ -1,37 +1,36 @@
 /**
- * Canonical subscription provider resolution
- * SINGLE SOURCE OF TRUTH for determining provider (Stripe vs Apple)
+ * Canonical provider resolution from UserProfile
+ * AUTHORITATIVE SOURCE: UserProfile stripe_customer_id and apple_original_transaction_id
  * 
  * Rules:
- * - Provider is derived from subscription data, NOT platform/UI state
- * - NO DEFAULTS - return null if uncertain
- * - Stripe ALWAYS wins if present
- * - Apple ONLY if explicit provider field or originalTransactionId present
- * - Platform MUST NEVER imply provider
+ * - stripe_customer_id ALWAYS means "stripe"
+ * - apple_original_transaction_id ALWAYS means "apple"
+ * - If neither exists → provider is null (NEVER default to Apple)
+ * - NO inference from platform, subscription status, or tier
  */
 
-export function resolveSubscriptionProvider(subscription) {
-  if (!subscription) return null;
+export function resolveProviderFromProfile(profile) {
+  if (!profile) return null;
 
-  // PRIORITY 1: Stripe always wins if present
-  if (subscription.stripeCustomerId || subscription.stripe_customer_id) {
+  // STRIPE ALWAYS WINS if customer exists
+  if (profile.stripe_customer_id || profile.stripeCustomerId) {
     return "stripe";
   }
 
-  // PRIORITY 2: Explicit provider field (if apple)
-  if (subscription.provider === "apple") {
+  // Apple ONLY if original transaction exists
+  if (profile.apple_original_transaction_id || profile.appleOriginalTransactionId) {
     return "apple";
   }
 
-  // PRIORITY 3: Apple originalTransactionId (legacy)
-  if (subscription.appleOriginalTransactionId || subscription.provider_subscription_id) {
-    // Only return apple if provider wasn't already stripe
-    if (subscription.provider === "apple") {
-      return "apple";
-    }
-  }
+  // NO DEFAULTS - return null
+  return null;
+}
 
-  // NO DEFAULTS - return null if uncertain
+// Legacy alias for backwards compatibility
+export function resolveSubscriptionProvider(subscription) {
+  if (!subscription) return null;
+  if (subscription.stripe_customer_id || subscription.stripeCustomerId) return "stripe";
+  if (subscription.provider === "apple" && (subscription.appleOriginalTransactionId || subscription.provider_subscription_id)) return "apple";
   return null;
 }
 
