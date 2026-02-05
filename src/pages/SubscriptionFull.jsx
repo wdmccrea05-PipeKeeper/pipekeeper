@@ -341,10 +341,37 @@ export default function SubscriptionFull() {
          Manage Subscription
        </Button>
 
-       {/* Direct Stripe checkout modal - PRIMARY METHOD */}
+       {/* Manual Refresh (Option B fallback) */}
+       {message && refreshTimeout && (
+         <Button variant="secondary" className="w-full" onClick={handleManualRefresh}>
+           Refresh Subscription Status
+         </Button>
+       )}
+
+       {message && (
+         <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-[#e8d5b7]/70"}`}>
+           {message}
+           {message.includes("Manual Subscription Assistance") && (
+             <Button
+               variant="link"
+               className="ml-2 text-[#A35C5C] underline"
+               onClick={() => setShowBackupModal(true)}
+             >
+               Manual Subscription Assistance
+             </Button>
+           )}
+         </div>
+       )}
+
+       {/* Backup Mode Modal */}
        <SubscriptionBackupModeModal
          isOpen={showBackupModal}
-         onClose={() => setShowBackupModal(false)}
+         onClose={() => {
+           setShowBackupModal(false);
+           clearTimeout(refreshTimeout);
+           setRefreshTimeout(null);
+           setMessage("");
+         }}
          user={user}
        />
     </div>
