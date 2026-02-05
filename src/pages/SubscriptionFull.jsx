@@ -53,12 +53,14 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 export default function SubscriptionFull() {
   const { t } = useTranslation();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
-  const { user } = useCurrentUser();
+  const { user, refetch } = useCurrentUser();
+  const queryClient = useQueryClient();
   const [isPro, setIsPro] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedTier, setSelectedTier] = useState("premium");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
-  const [showBackupModal, setShowBackupModal] = useState(true);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [refreshTimeout, setRefreshTimeout] = useState(null);
 
   useEffect(() => {
     if (!isIOSApp) return;
