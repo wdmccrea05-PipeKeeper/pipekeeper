@@ -12,18 +12,14 @@ const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 // Price ID mapping (tier + interval -> Stripe Price ID)
 const PRICE_MAP = {
   premium: {
-    monthly: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim(),
-    annual: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim(),
+    monthly: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || "").trim(),
+    annual: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || Deno.env.get("STRIPE_PRICE_ID_YEARLY") || "").trim(),
   },
   pro: {
     monthly: (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim(),
     annual: (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim(),
   }
 };
-
-// Legacy fallback support (optional, for backward compatibility)
-const LEGACY_PRICE_ID_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || "").trim();
-const LEGACY_PRICE_ID_YEARLY = (Deno.env.get("STRIPE_PRICE_ID_YEARLY") || "").trim();
 
 const ALLOWED_PRICE_IDS = (Deno.env.get("ALLOWED_PRICE_IDS") || "")
   .split(",")
@@ -99,8 +95,6 @@ function isAllowedPriceId(priceId) {
     PRICE_MAP.premium.annual,
     PRICE_MAP.pro.monthly,
     PRICE_MAP.pro.annual,
-    LEGACY_PRICE_ID_MONTHLY,
-    LEGACY_PRICE_ID_YEARLY,
   ].filter(Boolean);
   
   // Add ALLOWED_PRICE_IDS if configured
