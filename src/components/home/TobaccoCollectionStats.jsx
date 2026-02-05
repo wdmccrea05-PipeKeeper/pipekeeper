@@ -26,6 +26,8 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [showTrends, setShowTrends] = useState(false);
+  
+  const isPro = user?.isPro || false;
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
