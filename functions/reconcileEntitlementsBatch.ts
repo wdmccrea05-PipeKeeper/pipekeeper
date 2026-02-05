@@ -6,6 +6,7 @@ if (typeof Deno?.serve !== "function") {
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { reconcileUserEntitlements } from "./_utils/reconcileEntitlements.ts";
+import { getStripeClient } from "./_utils/stripeClient.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 

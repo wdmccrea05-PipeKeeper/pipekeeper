@@ -1,6 +1,6 @@
 // Repair Stripe subscription tiers from live data
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, safeStripeError } from "./_utils/stripeClient.ts";
 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
@@ -183,28 +183,11 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log("[repairStripeTiers] Initializing Stripe client...");
-    console.log("[repairStripeTiers] ENV check:", Deno.env.get("STRIPE_SECRET_KEY") ? "exists" : "missing");
-    
-    // Initialize Stripe using centralized helper
-    const { stripe } = await getStripeClient(req);
-    
+
+    // Initialize Stripe using ENV-only client
+    const { stripe } = getStripeClient();
+
     console.log("[repairStripeTiers] Stripe client initialized successfully");
-    
-    // Sanity check: try a simple API call
-    try {
-      await stripe.balance.retrieve();
-      console.log("[repairStripeTiers] ✅ Stripe authentication verified");
-    } catch (authError: any) {
-      console.error("[repairStripeTiers] ❌ Stripe auth failed:", authError.message);
-      return Response.json({
-        ok: false,
-        error: "STRIPE_AUTH_FAILED",
-        message: "Stripe authentication failed. Cannot proceed with repair. Check STRIPE_SECRET_KEY.",
-        details: authError.message,
-        keyPrefix: "sk",
-        stripeSanityOk: false
-      }, { status: 500 });
-    }
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun !== false; // Default to true
