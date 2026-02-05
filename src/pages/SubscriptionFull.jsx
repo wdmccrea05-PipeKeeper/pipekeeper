@@ -130,7 +130,7 @@ export default function SubscriptionFull() {
     ],
   };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (tier, interval) => {
     // iOS WKWebView -> StoreKit paywall (native)
     if (isIOSApp) {
       openNativePaywall();
@@ -141,8 +141,8 @@ export default function SubscriptionFull() {
     setMessage("");
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
-        tier: selectedTier,
-        interval: selectedInterval,
+        tier: tier || selectedTier,
+        interval: interval || selectedInterval,
       });
       if (response.data?.url) {
         window.location.href = response.data.url;
@@ -289,11 +289,7 @@ export default function SubscriptionFull() {
             ))}
             <Button
               className="w-full mt-4"
-              onClick={() => {
-                setSelectedTier("premium");
-                setSelectedInterval(selectedInterval);
-                handleUpgrade();
-              }}
+              onClick={() => handleUpgrade("premium", selectedInterval)}
             >
               Continue with Premium
             </Button>
@@ -324,11 +320,7 @@ export default function SubscriptionFull() {
             <Button
               variant="outline"
               className="w-full mt-4"
-              onClick={() => {
-                setSelectedTier("pro");
-                setSelectedInterval(selectedInterval);
-                handleUpgrade();
-              }}
+              onClick={() => handleUpgrade("pro", selectedInterval)}
             >
               Upgrade to Pro
             </Button>
