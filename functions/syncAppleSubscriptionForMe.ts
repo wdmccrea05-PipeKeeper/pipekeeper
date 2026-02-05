@@ -100,30 +100,19 @@ Deno.serve(async (req) => {
     // TRUST iOS CLIENT: Mark as paid immediately when active (background verification can revoke later if needed)
     const shouldMarkPaid = active;
     
-    const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
-    if (!users || users.length === 0) {
-      await base44.asServiceRole.entities.User.create({
-        email: emailLower,
-        full_name: `User ${emailLower}`,
-        role: 'user',
-        subscription_level: shouldMarkPaid ? 'paid' : 'free',
-        subscription_status: status,
+    // Create or update UserProfile (NOT entities.User)
+    const profiles = await base44.asServiceRole.entities.UserProfile.filter({ user_email: emailLower });
+    if (!profiles || profiles.length === 0) {
+      await base44.asServiceRole.entities.UserProfile.create({
+        user_email: emailLower,
         subscription_tier: tier,
-        platform: 'ios'
       });
-      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
+      console.log(`[syncAppleSubscriptionForMe] Created profile ${emailLower} tier=${tier}`);
     } else {
-      const updates = {
-        subscription_level: shouldMarkPaid ? 'paid' : 'free',
-        subscription_status: status,
-        subscription_tier: tier
-      };
-      // Only set platform if not already set
-      if (!users[0].platform) {
-        updates.platform = 'ios';
-      }
-      await base44.asServiceRole.entities.User.update(users[0].id, updates);
-      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
+      await base44.asServiceRole.entities.UserProfile.update(profiles[0].id, {
+        subscription_tier: tier,
+      });
+      console.log(`[syncAppleSubscriptionForMe] Updated profile ${emailLower} tier=${tier}`);
     }
     
     // Log successful sync for monitoring
