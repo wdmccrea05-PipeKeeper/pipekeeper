@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { scopedEntities } from "@/components/api/scopedEntities";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -16,7 +17,7 @@ export default function CellarAgingDashboard({ user }) {
   
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ["tobacco-blends", user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
     enabled: !!user?.email,
   });
 

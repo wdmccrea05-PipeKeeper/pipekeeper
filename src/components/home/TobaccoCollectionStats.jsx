@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { scopedEntities } from "@/components/api/scopedEntities";
 import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
@@ -30,7 +31,7 @@ export default function TobaccoCollectionStats() {
 
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    queryFn: () => scopedEntities.TobaccoBlend.listForUser(user?.email),
     enabled: !!user?.email,
     initialData: [],
   });
@@ -44,14 +45,14 @@ export default function TobaccoCollectionStats() {
 
   const { data: smokingLogs = [] } = useQuery({
     queryKey: ['smoking-logs-all', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 500),
+    queryFn: () => scopedEntities.SmokingLog.listForUser(user?.email, '-date', 500),
     enabled: !!user?.email,
     initialData: [],
   });
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes-all', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
+    queryFn: () => scopedEntities.Pipe.listForUser(user?.email),
     enabled: !!user?.email,
     initialData: [],
   });
