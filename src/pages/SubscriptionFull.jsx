@@ -140,13 +140,14 @@ export default function SubscriptionFull() {
 
     // Non-iOS: Open Stripe checkout
     try {
-      const priceId = selectedTier === "premium" 
-        ? (selectedInterval === "monthly" ? process.env.REACT_APP_STRIPE_PRICE_PREMIUM_MONTHLY : process.env.REACT_APP_STRIPE_PRICE_PREMIUM_ANNUAL)
-        : (selectedInterval === "monthly" ? process.env.REACT_APP_STRIPE_PRICE_PRO_MONTHLY : process.env.REACT_APP_STRIPE_PRICE_PRO_ANNUAL);
-      
-      const response = await base44.functions.invoke('createCheckoutSession', { priceId });
+      const response = await base44.functions.invoke('createCheckoutSession', {
+        tier: selectedTier,
+        interval: selectedInterval,
+      });
       if (response.data?.url) {
         window.location.href = response.data.url;
+      } else {
+        setMessage("Error starting checkout. Please try again.");
       }
     } catch (e) {
       setMessage("Error starting checkout. Please try again.");

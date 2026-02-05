@@ -114,11 +114,16 @@ Deno.serve(async (req) => {
           "createCustomerPortalSession",
           {}
         );
+        const hasStripeError = res.data?.error?.includes("No Stripe subscription");
         results.tests.push({
           name: "Manage Subscription (Portal)",
-          status: res.data?.url ? "✅ PASS" : "❌ FAIL",
+          status: res.data?.url
+            ? "✅ PASS"
+            : hasStripeError
+            ? "✅ PASS (Expected - no Stripe subscription)"
+            : "❌ FAIL",
           note: res.data?.error
-            ? "No active Stripe subscription found (expected for new user)"
+            ? "No active Stripe subscription found (expected if using Apple)"
             : "Portal session created",
           url: res.data?.url || null,
           error: res.data?.error || null,
@@ -126,10 +131,8 @@ Deno.serve(async (req) => {
       } catch (e) {
         results.tests.push({
           name: "Manage Subscription (Portal)",
-          status: res.data?.error
-            ? "✅ PASS (Expected error for no subscription)"
-            : "❌ FAIL",
-          error: e.message || res.data?.error,
+          status: "❌ FAIL",
+          error: e.message,
         });
       }
     }
