@@ -7,13 +7,14 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.6.0";
 
 function getRuntimeEnv(req: Request): "live" | "preview" {
-  const hinted = (Deno.env.get("BASE44_ENVIRONMENT") || Deno.env.get("ENVIRONMENT") || "").toLowerCase();
-  if (hinted.includes("live")) return "live";
-  if (hinted.includes("preview") || hinted.includes("dev")) return "preview";
-  
-  const host = new URL(req.url).host.toLowerCase();
-  if (host.includes("app.base44.com") || host.includes("preview") || host.includes("sandbox")) return "preview";
-  return "live";
+  try {
+    const host = new URL(req.url).host.toLowerCase();
+    if (host.includes("app.base44.com") || host.includes("preview") || host.includes("sandbox")) return "preview";
+    if (host.includes("pipekeeper.app")) return "live";
+    return "live"; // Default to live
+  } catch {
+    return "live";
+  }
 }
 
 Deno.serve(async (req) => {
