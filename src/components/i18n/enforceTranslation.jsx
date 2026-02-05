@@ -16,6 +16,16 @@ function isProbablyKey(value) {
   return false;
 }
 
+function humanizeKey(keyStr) {
+  const last = keyStr.split(".").pop() || keyStr;
+  return last
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^./, (s) => s.toUpperCase());
+}
+
 export function enforceTranslation(key, resolvedValue, language, componentInfo) {
   // Guard: if someone passed args reversed (resolvedValue, key)
   if (isProbablyKey(resolvedValue) && !isProbablyKey(key)) {
@@ -36,18 +46,12 @@ export function enforceTranslation(key, resolvedValue, language, componentInfo) 
 
   // In debug: show explicit markers so you can hunt them down.
   if (debug && looksMissing) {
-    return `🚫 ${key}`;
+    return `🚫 ${humanizeKey(key)}`;
   }
 
-  // In production: NEVER return empty.  Fall back to key (or English via i18next fallbackLng).
-  // Returning "" is what makes whole sections disappear.
-  if (isProd && looksMissing) {
-    return key; // i18next fallbackLng should resolve if EN exists; otherwise at least visible.
-  }
-
-  // In dev non-debug: avoid key spam if possible, but never blank UI.
-  if (!isProd && looksMissing) {
-    return key;
+  // In production: NEVER return empty or raw key. Show human readable fallback.
+  if (looksMissing) {
+    return humanizeKey(key);
   }
 
   return resolvedValue;
