@@ -74,7 +74,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
 
   // Brand breakdown (safe from null/undefined)
-  const brandBreakdown = (blends || []).reduce((acc, b) => {
+  const brandBreakdown = safeBlends.reduce((acc, b) => {
     if (!b) return acc;
     const brand = b.manufacturer || 'Unknown';
     if (!acc[brand]) acc[brand] = [];
@@ -83,7 +83,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   }, {});
 
   // Blend type breakdown
-  const blendTypes = (blends || []).reduce((acc, b) => {
+  const blendTypes = safeBlends.reduce((acc, b) => {
     if (!b) return acc;
     const type = b.blend_type || 'Unassigned';
     acc[type] = (acc[type] || 0) + 1;
