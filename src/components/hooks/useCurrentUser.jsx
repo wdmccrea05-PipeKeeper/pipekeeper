@@ -8,7 +8,7 @@ import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/componen
 import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
-import { resolveSubscriptionProvider, resolveProviderFromProfile } from "@/components/utils/subscriptionProvider";
+
 import { useEffect, useState } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -239,7 +239,6 @@ export function useCurrentUser() {
 
   return {
     user: rawUser,
-    profile,
     subscription,
     subscriptionProvider: computedProvider,
     provider: computedProvider,
