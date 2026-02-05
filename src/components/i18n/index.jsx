@@ -1,77 +1,25 @@
 // src/components/i18n/index.jsx
-import i18next from "i18next";
+import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
-import { translations } from "./translations";
-import { translationsExtended } from "./translations-extended";
-import { translationsComplete } from "./translations-complete";
-import { translationsSupplement } from "./translations-supplement";
-import { translationsGenerated } from "./translations-generated";
+// Existing sources
+import { translationsGenerated } from "./translations-generated.jsx";
+import { translationsComplete } from "./translations-complete.jsx";
 
-import { homeTranslations } from "./homeContent";
-import { helpContentFull } from "./helpContent-full";
-
-function normalizeLocale(localeObj) {
-  if (!localeObj) return {};
-  // If wrapped in { common: {...} }, unwrap
-  if (localeObj.common && typeof localeObj.common === "object") return localeObj.common;
-  return localeObj;
-}
-
-// Deep merge so we never overwrite whole namespaces accidentally
 function deepMerge(target, source) {
-  if (!source || typeof source !== "object") return target;
-  for (const key of Object.keys(source)) {
-    const sVal = source[key];
-    const tVal = target[key];
-    if (Array.isArray(sVal)) {
-      // Arrays: replace (help sections/items rely on arrays being exact)
-      target[key] = sVal.slice();
-    } else if (sVal && typeof sVal === "object") {
-      target[key] = (tVal && typeof tVal === "object" && !Array.isArray(tVal)) ? tVal : {};
-      deepMerge(target[key], sVal);
+  const output = { ...target };
+  Object.keys(source || {}).forEach((key) => {
+    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      output[key] = deepMerge(output[key] || {}, source[key]);
     } else {
-      target[key] = sVal;
+      output[key] = source[key];
     }
-  }
-  return target;
+  });
+  return output;
 }
-
-function buildLocale(lang) {
-  const base = {};
-
-  // Merge in correct precedence order (later can override *individual keys* safely)
-  deepMerge(base, normalizeLocale(translations?.[lang]));
-  deepMerge(base, normalizeLocale(translationsExtended?.[lang]));
-  deepMerge(base, normalizeLocale(translationsSupplement?.[lang]));
-  deepMerge(base, normalizeLocale(translationsComplete?.[lang]));
-  deepMerge(base, normalizeLocale(homeTranslations?.[lang]));
-
-  // HELP FIX:
-  // helpContent-full.jsx is shaped { faqFull, howTo, troubleshooting } — must be nested under helpContent
-  const help = normalizeLocale(helpContentFull?.[lang]);
-  if (help && typeof help === "object" && !help.helpContent) {
-    deepMerge(base, { helpContent: help });
-  } else {
-    deepMerge(base, help);
-  }
-
-  // GENERATED LAST: wins over all previous sources
-  deepMerge(base, normalizeLocale(translationsGenerated?.[lang]));
-
-  return base;
-}
-
-const supported = ["en", "es", "fr", "de", "it", "pt-BR", "nl", "pl", "ja", "zh-Hans"];
-
-const resources = supported.reduce((acc, lang) => {
-  acc[lang] = { translation: buildLocale(lang) };
-  return acc;
-}, {});
 
 function humanizeKey(key) {
-  const last = key.split(".").pop() || key;
+  const last = String(key || "").split(".").pop() || String(key || "");
   return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
@@ -80,34 +28,79 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-if (!i18next.isInitialized) {
-  i18next
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      resources,
-      lng: "en",
-      fallbackLng: "en",
-      supportedLngs: supported,
-      interpolation: { escapeValue: false },
-      returnEmptyString: false,
-      returnNull: false,
-      detection: {
-        order: ["localStorage", "navigator"],
-        caches: ["localStorage"],
-        lookupLocalStorage: "pipekeeper_language",
-      },
-      react: {
-        useSuspense: false,
-      },
-      missingKeyHandler: (lngs, ns, key) => {
-        if (import.meta?.env?.DEV) {
-          console.warn(`[i18n] Missing translation: ${key} (${lngs.join(", ")})`);
-        }
-        return humanizeKey(key);
-      },
-    });
+// Normalize translations so "bad values" that look like keys don't leak into UI.
+// If a value is a key-ish string (contains dots like a.b.c), replace it with a humanized label.
+function normalizeTranslationTree(node, path = "") {
+  if (!node || typeof node !== "object") return node;
+
+  const out = Array.isArray(node) ? [...node] : { ...node };
+
+  Object.keys(out).forEach((k) => {
+    const v = out[k];
+    const nextPath = path ? `${path}.${k}` : k;
+
+    if (v && typeof v === "object") {
+      out[k] = normalizeTranslationTree(v, nextPath);
+      return;
+    }
+
+    if (typeof v === "string") {
+      // If the stored value looks like an i18n key, it's wrong — humanize instead.
+      // Example bad value: "tobacconist.identify"
+      if (/^[a-z0-9]+(\.[a-z0-9_-]+)+$/i.test(v)) {
+        out[k] = humanizeKey(nextPath);
+      }
+      // Also prevent empty strings
+      if (out[k].trim() === "") {
+        out[k] = humanizeKey(nextPath);
+      }
+    }
+  });
+
+  return out;
 }
 
-export default i18next;
-export { resources, supported };
+// Build resources
+const generatedEn = translationsGenerated?.en || {};
+const completeEn = translationsComplete?.en || {};
+
+const mergedEn = deepMerge(generatedEn, completeEn);
+const normalizedEn = normalizeTranslationTree(mergedEn);
+
+const resources = {
+  en: { translation: normalizedEn },
+};
+
+// i18n init
+i18n.use(initReactI18next).init({
+  resources,
+  lng: "en",
+  fallbackLng: "en",
+
+  // Prevent null/empty/object returns
+  returnNull: false,
+  returnEmptyString: false,
+  returnObjects: false,
+
+  // CRITICAL: This is what actually prevents "key returns key"
+  parseMissingKeyHandler: (key) => humanizeKey(key),
+
+  interpolation: { escapeValue: false },
+
+  // Don't emit missing keys to backend
+  saveMissing: false,
+});
+
+// EXTRA HARD GUARANTEE:
+// Monkey-patch i18n.t so ANY direct `t("a.b")` call can never leak a key.
+// If i18n returns the key, we humanize it.
+const _t = i18n.t.bind(i18n);
+i18n.t = (key, options) => {
+  const value = _t(key, options);
+  if (typeof value === "string" && value === key) return humanizeKey(key);
+  if (typeof value === "string" && /^[a-z0-9]+(\.[a-z0-9_-]+)+$/i.test(value)) return humanizeKey(key);
+  if (typeof value === "string" && value.trim() === "") return humanizeKey(key);
+  return value;
+};
+
+export default i18n;
