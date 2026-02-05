@@ -39,12 +39,11 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
   };
 
   const getStripePaymentLink = (tier, term) => {
-    // Direct Stripe Payment Links (replace with your actual links)
     const links = {
-      premium_monthly: "https://buy.stripe.com/YOUR_PREMIUM_MONTHLY_LINK",
-      premium_annual: "https://buy.stripe.com/YOUR_PREMIUM_ANNUAL_LINK",
-      pro_monthly: "https://buy.stripe.com/YOUR_PRO_MONTHLY_LINK",
-      pro_annual: "https://buy.stripe.com/YOUR_PRO_ANNUAL_LINK",
+      premium_monthly: "https://buy.stripe.com/6oU5kD6txgpV5WD6Zjgbm03",
+      premium_annual: "https://buy.stripe.com/fZudR94lpa1x0Cj4Rbgbm04",
+      pro_monthly: "https://buy.stripe.com/bJefZh4lp1v198P6Zjgbm02",
+      pro_annual: "https://buy.stripe.com/dRm14n2dhgpV5WD97rgbm01",
     };
     return links[`${tier}_${term}`] || "";
   };
