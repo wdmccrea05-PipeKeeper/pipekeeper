@@ -67,6 +67,7 @@ async function fetchCurrentUser() {
     full_name: authUser?.full_name || authUser?.name || null,
     role: authUser?.role || "user",
     created_date: authUser?.created_at || authUser?.created_date || null,
+    tos_accepted_at: authUser?.tos_accepted_at || null,
     isFoundingMember: userProfile?.isFoundingMember || false,
     foundingMemberAcknowledged: userProfile?.foundingMemberAcknowledged || false,
 
