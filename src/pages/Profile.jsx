@@ -482,29 +482,32 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide values</span>
-                <Switch
-                  checked={formData.privacy_hide_values}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
-                  className={formData.privacy_hide_values ? "bg-green-600" : "bg-red-600"}
-                />
+                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_values ? "bg-green-600" : "bg-red-600"}`}>
+                  <Switch
+                    checked={formData.privacy_hide_values}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide inventory</span>
-                <Switch
-                  checked={formData.privacy_hide_inventory}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
-                  className={formData.privacy_hide_inventory ? "bg-green-600" : "bg-red-600"}
-                />
+                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_inventory ? "bg-green-600" : "bg-red-600"}`}>
+                  <Switch
+                    checked={formData.privacy_hide_inventory}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide collection counts</span>
-                <Switch
-                  checked={formData.privacy_hide_collection_counts}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
-                  className={formData.privacy_hide_collection_counts ? "bg-green-600" : "bg-red-600"}
-                />
+                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_collection_counts ? "bg-green-600" : "bg-red-600"}`}>
+                  <Switch
+                    checked={formData.privacy_hide_collection_counts}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                  />
+                </div>
               </div>
             </div>
 
