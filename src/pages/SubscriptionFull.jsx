@@ -138,6 +138,7 @@ export default function SubscriptionFull() {
     }
 
     // Non-iOS: Open Stripe checkout
+    setMessage("");
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
         tier: selectedTier,
@@ -149,6 +150,7 @@ export default function SubscriptionFull() {
         setMessage("Error starting checkout. Please try again.");
       }
     } catch (e) {
+      console.error("[SubscriptionFull] Checkout error:", e);
       setMessage("Error starting checkout. Please try again.");
     }
   };
