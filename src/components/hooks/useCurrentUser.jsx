@@ -21,16 +21,34 @@ function tierRank(tier) {
   return 1;
 }
 
+function hasTosAccepted(profile) {
+  const iso = profile?.tos_accepted_at;
+  if (!iso) return false;
+  const t = Date.parse(iso);
+  return Number.isFinite(t);
+}
+
+function ts(profile) {
+  return new Date(
+    profile?.updated_date || profile?.updated_at || profile?.created_date || 0
+  ).getTime();
+}
+
 function pickBestProfile(profiles = []) {
   if (!profiles.length) return null;
 
   const sorted = [...profiles].sort((a, b) => {
+    // 1) Prefer ToS accepted
+    const aT = hasTosAccepted(a) ? 1 : 0;
+    const bT = hasTosAccepted(b) ? 1 : 0;
+    if (aT !== bT) return bT - aT;
+
+    // 2) Prefer higher tier
     const r = tierRank(b?.subscription_tier) - tierRank(a?.subscription_tier);
     if (r !== 0) return r;
 
-    const ad = new Date(a?.updated_date || a?.updated_at || a?.created_date || 0).getTime();
-    const bd = new Date(b?.updated_date || b?.updated_at || b?.created_date || 0).getTime();
-    return bd - ad;
+    // 3) Prefer newest
+    return ts(b) - ts(a);
   });
 
   return sorted[0] || null;
@@ -69,15 +87,16 @@ async function fetchCurrentUser() {
 
   if (!userId || !email) throw new Error("Auth missing id or email");
 
-  // --- UserProfile: fetch both by user_id and by email; pick best; backfill user_id/email ---
+  // --- UserProfile: load all candidates and pick best ---
   let userProfile = null;
+  let allProfiles = [];
   try {
     const [byId, byEmail] = await Promise.all([
       base44.entities.UserProfile.filter({ user_id: userId }).catch(() => []),
       base44.entities.UserProfile.filter({ user_email: email }).catch(() => []),
     ]);
 
-    let allProfiles = [
+    allProfiles = [
       ...(Array.isArray(byId) ? byId : []),
       ...(Array.isArray(byEmail) ? byEmail : []),
     ].filter(Boolean);
@@ -94,9 +113,8 @@ async function fetchCurrentUser() {
 
     userProfile = pickBestProfile(allProfiles);
 
-    // Only create if truly none exist
+    // Only create if truly none exist (non-fatal if blocked by permissions)
     if (!userProfile) {
-      // If normal users aren't allowed to create, this will throw; we don't want to break the whole app.
       try {
         userProfile = await base44.entities.UserProfile.create({
           user_id: userId,
@@ -105,15 +123,14 @@ async function fetchCurrentUser() {
           subscription_tier: "free",
         });
       } catch (e) {
-        console.warn("[useCurrentUser] UserProfile.create failed (likely permissions):", e);
+        console.warn("[useCurrentUser] UserProfile.create failed:", e);
         userProfile = null;
       }
     } else {
-      // Backfill without overwriting tier
+      // Backfill identity fields on the chosen record (do not overwrite tier)
       const patch = {};
       if (!userProfile.user_id) patch.user_id = userId;
-      if (userProfile.user_email && normEmail(userProfile.user_email) !== email) patch.user_email = email;
-      if (!userProfile.user_email) patch.user_email = email;
+      if (!userProfile.user_email || normEmail(userProfile.user_email) !== email) patch.user_email = email;
 
       if (Object.keys(patch).length) {
         try {
@@ -133,25 +150,25 @@ async function fetchCurrentUser() {
   try {
     const candidates = [];
 
-    // 1) by user_id
+    // by user_id
     try {
       const r = await base44.entities.Subscription.filter({ user_id: userId }, "-updated_date", 5);
       if (Array.isArray(r)) candidates.push(...r);
     } catch {}
 
-    // 2) by user_email
+    // by user_email
     try {
       const r = await base44.entities.Subscription.filter({ user_email: email }, "-updated_date", 5);
       if (Array.isArray(r)) candidates.push(...r);
     } catch {}
 
-    // 3) by created_by email
+    // by created_by email
     try {
       const r = await base44.entities.Subscription.filter({ created_by: email }, "-updated_date", 5);
       if (Array.isArray(r)) candidates.push(...r);
     } catch {}
 
-    // 4) by created_by auth id
+    // by created_by auth id
     try {
       const r = await base44.entities.Subscription.filter({ created_by: userId }, "-updated_date", 5);
       if (Array.isArray(r)) candidates.push(...r);
@@ -172,19 +189,12 @@ async function fetchCurrentUser() {
 
   const tier = subActive && subTierValid ? subTier : profileTier;
 
-  // Optional: if subscription indicates paid and profile is free, attempt to backfill profile tier (non-fatal)
-  if (userProfile?.id && tier !== profileTier && (tier === "premium" || tier === "pro")) {
-    try {
-      await base44.entities.UserProfile.update(userProfile.id, { subscription_tier: tier });
-      userProfile = { ...userProfile, subscription_tier: tier };
-    } catch (e) {
-      // Ignore if user can't update; subscription still drives UI
-      console.warn("[useCurrentUser] UserProfile.update(tier backfill) failed:", e);
-    }
-  }
-
   const isPro = tier === "pro";
   const isPremium = tier === "premium" || tier === "pro";
+
+  // Surface ToS + other common flags at top level for TermsGate and other consumers
+  const tos_accepted_at = userProfile?.tos_accepted_at || null;
+  const tos_accepted = Boolean(userProfile?.tos_accepted) || Boolean(tos_accepted_at);
 
   return {
     // auth
@@ -199,20 +209,16 @@ async function fetchCurrentUser() {
     userProfile,
     subscription,
 
-    // subscription fields
+    // terms (TOP LEVEL)
+    tos_accepted,
+    tos_accepted_at,
+
+    // subscription fields (TOP LEVEL)
     subscription_tier: tier,
     subscriptionTier: tier,
     subscription_status: subscription?.status || "free",
-    subscription_interval:
-      userProfile?.subscription_interval ||
-      subscription?.interval ||
-      subscription?.subscription_interval ||
-      null,
 
-    // terms acceptance
-    tos_accepted_at: userProfile?.tos_accepted_at || null,
-
-    // flags
+    // flags (TOP LEVEL)
     isPro,
     isPremium,
     hasPremium: isPremium,
