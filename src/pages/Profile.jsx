@@ -319,19 +319,10 @@ export default function ProfilePage() {
                     )}
 
                     {!shouldShowPurchaseUI() && (
-                      <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
-                        {getSubscriptionManagementMessage()}
-                      </div>
-                    )}
-
-                    <Button
-                      variant="outline"
-                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                      onClick={() => setShowBackupModal(true)}
-                    >
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      {t("profile.manualSubscribe")}
-                    </Button>
+                       <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
+                         {getSubscriptionManagementMessage()}
+                       </div>
+                     )}
                   </>
                 ) : (
                   <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
