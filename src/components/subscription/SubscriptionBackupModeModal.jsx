@@ -38,25 +38,16 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     }
   };
 
-  const handleOpenCheckoutDirect = async (tier, term) => {
-    try {
-      const response = await base44.functions.invoke("createCheckoutSession", {
-        tier,
-        interval: term,
-      });
-
-      if (response?.data?.url) {
-        window.open(response.data.url, "_blank", "noopener,noreferrer");
-      } else {
-        toast.error("Checkout URL not available. Please contact support.");
-      }
-    } catch (err) {
-      console.error("[SubscriptionBackupModeModal] Checkout failed:", err);
-      toast.error("Failed to create checkout. Please try again.");
-    }
+  const getStripePaymentLink = (tier, term) => {
+    // Direct Stripe Payment Links (replace with your actual links)
+    const links = {
+      premium_monthly: "https://buy.stripe.com/YOUR_PREMIUM_MONTHLY_LINK",
+      premium_annual: "https://buy.stripe.com/YOUR_PREMIUM_ANNUAL_LINK",
+      pro_monthly: "https://buy.stripe.com/YOUR_PRO_MONTHLY_LINK",
+      pro_annual: "https://buy.stripe.com/YOUR_PRO_ANNUAL_LINK",
+    };
+    return links[`${tier}_${term}`] || "";
   };
-
-
 
   const handleRequestUnlock = async () => {
     if (!user?.email) {
@@ -67,7 +58,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
     try {
       setSubmitting(true);
 
-      const checkoutUrl = getCheckoutUrl(selectedTier, selectedTerm);
+      const checkoutUrl = getStripePaymentLink(selectedTier, selectedTerm);
 
       await base44.entities.SubscriptionSupportRequest.create({
         user_email: user.email,
@@ -160,49 +151,73 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               New Subscription? Use Direct Checkout
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button
-                onClick={() => handleOpenCheckoutDirect("premium", "monthly")}
-                variant="outline"
-                className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
+              <a
+                href={getStripePaymentLink("premium", "monthly")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="font-semibold">Premium Monthly</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$1.99/mo</span>
-                </div>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-semibold">Premium Monthly</span>
+                    <span className="text-xs text-[#E0D8C8]/60">$1.99/mo</span>
+                  </div>
+                </Button>
+              </a>
 
-              <Button
-                onClick={() => handleOpenCheckoutDirect("premium", "annual")}
-                variant="outline"
-                className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
+              <a
+                href={getStripePaymentLink("premium", "annual")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="font-semibold">Premium Annual</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$19.99/yr</span>
-                </div>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-semibold">Premium Annual</span>
+                    <span className="text-xs text-[#E0D8C8]/60">$19.99/yr</span>
+                  </div>
+                </Button>
+              </a>
 
-              <Button
-                onClick={() => handleOpenCheckoutDirect("pro", "monthly")}
-                variant="outline"
-                className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
+              <a
+                href={getStripePaymentLink("pro", "monthly")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="font-semibold">Pro Monthly</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$2.99/mo</span>
-                </div>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-semibold">Pro Monthly</span>
+                    <span className="text-xs text-[#E0D8C8]/60">$2.99/mo</span>
+                  </div>
+                </Button>
+              </a>
 
-              <Button
-                onClick={() => handleOpenCheckoutDirect("pro", "annual")}
-                variant="outline"
-                className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center"
+              <a
+                href={getStripePaymentLink("pro", "annual")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="font-semibold">Pro Annual</span>
-                  <span className="text-xs text-[#E0D8C8]/60">$29.99/yr</span>
-                </div>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-semibold">Pro Annual</span>
+                    <span className="text-xs text-[#E0D8C8]/60">$29.99/yr</span>
+                  </div>
+                </Button>
+              </a>
             </div>
           </div>
 
