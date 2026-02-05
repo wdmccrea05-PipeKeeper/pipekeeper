@@ -128,7 +128,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           </TabsList>
 
           <TabsContent value="stats" className="mt-0">
-            {pipes.length === 0 && blends.length === 0 ? (
+            {(Array.isArray(pipes) ? pipes.length : 0) === 0 && (Array.isArray(blends) ? blends.length : 0) === 0 ? (
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                 <p className="text-[#E0D8C8]/60 mb-4">{t("insights.statsEmpty")}</p>
@@ -137,7 +137,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </a>
               </div>
             ) : (
-              <TobaccoCollectionStats />
+              <TobaccoCollectionStats blends={blends} pipes={pipes} user={user} smokingLogs={[]} />
             )}
           </TabsContent>
 
