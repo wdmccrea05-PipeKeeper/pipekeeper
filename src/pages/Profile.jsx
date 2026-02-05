@@ -19,13 +19,9 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
-import { shouldShowManageSubscription, getManageSubscriptionLabel } from "@/components/utils/subscriptionManagement";
-import { isAppleBuild } from "@/components/utils/appVariant";
-import { openAppleSettings } from "@/components/utils/appleIAP";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
-import { handleManageSubscription } from "@/components/utils/manageSubscription";
 
 // Canonical user/sub state (already in your repo)
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -66,7 +62,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, subscription, isLoading: userLoading, subscriptionProvider } = useCurrentUser();
+  const { user, subscription, isLoading: userLoading } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
