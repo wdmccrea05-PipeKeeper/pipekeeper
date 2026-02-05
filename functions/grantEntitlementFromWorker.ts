@@ -2,6 +2,7 @@
 // Auth: Bearer token (PIPEKEEPER_ADMIN_TOKEN)
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
+
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
 Deno.serve(async (req: Request) => {
