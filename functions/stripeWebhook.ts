@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T03:55:00Z - Backup Mode resilient
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_utils/stripeClient.ts";
+import { getStripeClient } from "./stripeClient.js";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

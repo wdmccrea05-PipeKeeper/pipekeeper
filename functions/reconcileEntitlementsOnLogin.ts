@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { reconcileUserEntitlements } from "./_utils/reconcileEntitlements.js";
+import { reconcileUserEntitlements } from "./reconcileEntitlements.js";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
