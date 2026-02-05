@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,7 +92,7 @@ export default function TobaccoPage() {
     queryFn: async () => {
       try {
         const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
-        const result = await scopedEntities.TobaccoBlend.filterForUser(user?.email, {}, actualSort);
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, actualSort);
         let data = Array.isArray(result) ? result : [];
         if (sortBy === 'favorites') {
           data = data.sort((a, b) => {
