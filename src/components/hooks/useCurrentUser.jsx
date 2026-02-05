@@ -209,6 +209,9 @@ async function fetchCurrentUser() {
       subscription?.subscription_interval ||
       null,
 
+    // terms acceptance
+    tos_accepted_at: userProfile?.tos_accepted_at || null,
+
     // flags
     isPro,
     isPremium,
