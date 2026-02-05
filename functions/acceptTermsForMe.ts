@@ -1,4 +1,3 @@
-// functions/acceptTermsForMe.ts
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
 Deno.serve(async (req) => {
@@ -11,33 +10,32 @@ Deno.serve(async (req) => {
     }
 
     const userId = me.id;
-    const email = (me.email || "").trim().toLowerCase();
+    const email = String(me.email).trim().toLowerCase();
     const srv = base44.asServiceRole;
-
     const now = new Date().toISOString();
 
-    // Load all matching profiles (by user_id and by email)
-    const [byId, byEmail] = await Promise.all([
-      srv.entities.UserProfile.filter({ user_id: userId }).catch(() => []),
-      srv.entities.UserProfile.filter({ user_email: email }).catch(() => []),
-    ]);
+    const buckets: any[] = [];
 
-    let profiles = [
-      ...(Array.isArray(byId) ? byId : []),
-      ...(Array.isArray(byEmail) ? byEmail : []),
-    ].filter(Boolean);
+    const add = (arr: any) => {
+      if (Array.isArray(arr)) buckets.push(...arr);
+    };
+
+    // Pull every plausible match (duplicates are common in your current state)
+    add(await srv.entities.UserProfile.filter({ user_id: userId }).catch(() => []));
+    add(await srv.entities.UserProfile.filter({ user_email: email }).catch(() => []));
+    add(await srv.entities.UserProfile.filter({ created_by: userId }).catch(() => []));
+    add(await srv.entities.UserProfile.filter({ created_by: email }).catch(() => []));
 
     // De-dupe by id
     const seen = new Set<string>();
-    profiles = profiles.filter((p: any) => {
+    const profiles = buckets.filter((p: any) => {
       const id = p?.id;
-      if (!id) return true;
+      if (!id) return false;
       if (seen.has(id)) return false;
       seen.add(id);
       return true;
     });
 
-    // If none exist, create one
     if (!profiles.length) {
       const created = await srv.entities.UserProfile.create({
         user_id: userId,
@@ -46,10 +44,15 @@ Deno.serve(async (req) => {
         tos_accepted: true,
         tos_accepted_at: now,
       });
-      return Response.json({ ok: true, updated: 1, created: created?.id || null });
+
+      return Response.json({
+        ok: true,
+        created: created?.id || null,
+        updated: 1,
+        matched: 0,
+      });
     }
 
-    // Update ALL matches so the gate clears regardless of which profile is chosen
     let updated = 0;
     for (const p of profiles as any[]) {
       try {
@@ -61,11 +64,15 @@ Deno.serve(async (req) => {
         });
         updated += 1;
       } catch (e) {
-        console.error("[acceptTermsForMe] update failed for profile", p?.id, e);
+        console.error("[acceptTermsForMe] update failed:", p?.id, e);
       }
     }
 
-    return Response.json({ ok: true, updated });
+    return Response.json({
+      ok: true,
+      matched: profiles.length,
+      updated,
+    });
   } catch (error: any) {
     console.error("[acceptTermsForMe]", error);
     return Response.json({ ok: false, error: String(error?.message || error) }, { status: 500 });
