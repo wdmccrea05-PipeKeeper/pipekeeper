@@ -48,22 +48,22 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   
   // Tin statistics
-  const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
-  const tinWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
-  const tinOpenOz = (blends || []).reduce((sum, b) => {
+  const totalTins = safeBlends.reduce((sum, b) => sum + (Number(b?.tin_total_tins) || 0), 0);
+  const tinWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.tin_total_quantity_oz) || 0), 0);
+  const tinOpenOz = safeBlends.reduce((sum, b) => {
     const open = Number(b?.tin_tins_open) || 0;
     const size = Number(b?.tin_size_oz) || 0;
     return sum + (open * size);
   }, 0);
 
   // Bulk statistics
-  const bulkWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_total_quantity_oz) || 0), 0);
-  const bulkOpenOz = (blends || []).reduce((sum, b) => sum + (Number(b?.bulk_open) || 0), 0);
+  const bulkWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.bulk_total_quantity_oz) || 0), 0);
+  const bulkOpenOz = safeBlends.reduce((sum, b) => sum + (Number(b?.bulk_open) || 0), 0);
 
   // Pouch statistics
-  const totalPouches = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_pouches) || 0), 0);
-  const pouchWeightOz = (blends || []).reduce((sum, b) => sum + (Number(b?.pouch_total_quantity_oz) || 0), 0);
-  const pouchOpenOz = (blends || []).reduce((sum, b) => {
+  const totalPouches = safeBlends.reduce((sum, b) => sum + (Number(b?.pouch_total_pouches) || 0), 0);
+  const pouchWeightOz = safeBlends.reduce((sum, b) => sum + (Number(b?.pouch_total_quantity_oz) || 0), 0);
+  const pouchOpenOz = safeBlends.reduce((sum, b) => {
     const open = Number(b?.pouch_pouches_open) || 0;
     const size = Number(b?.pouch_size_oz) || 0;
     return sum + (open * size);
