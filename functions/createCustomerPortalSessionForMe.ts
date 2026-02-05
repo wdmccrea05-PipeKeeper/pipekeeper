@@ -1,7 +1,7 @@
 // User-facing endpoint: Create Stripe billing portal session for current user
 // Does NOT require admin access - any authenticated user can manage their own subscription
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_shared/stripeClientSingleton.ts";
+import { getStripeClient } from "./_utils/stripeClient.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 

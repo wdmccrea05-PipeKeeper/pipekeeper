@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T03:55:00Z - Backup Mode resilient
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_shared/getStripeClient.ts";
+import { getStripeClient } from "./_utils/stripeClient.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -94,12 +94,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Use shared Stripe client loader
+    // Use ENV-only Stripe client
     let stripe;
     try {
-      const { stripe: stripeClient, meta } = await getStripeClient(req);
+      const { stripe: stripeClient, meta } = getStripeClient();
       stripe = stripeClient;
-      console.log(`[stripeWebhook] env=${meta.environment} source=${meta.source}`);
+      console.log(`[stripeWebhook] env=${meta.environment}`);
     } catch (e) {
       console.error("[stripeWebhook] Failed to get Stripe client:", e?.message || e);
       return json(500, { ok: false, error: "Failed to get Stripe client" });
