@@ -36,7 +36,7 @@ export const translationsComplete = {
       viewAll: 'View All',
       bulkImport: 'Bulk Import',
       importDesc: 'Import pipes or tobacco from CSV or Excel',
-      welcomeToCollection: 'Welcome to your Collection',
+      welcomeToCollection: 'Welcome to PipeKeeper',
       emptyStateDesc: 'Start cataloging your pipes and tobacco blends to track your collection',
       addFirstPipe: 'Add First Pipe',
       addFirstBlend: 'Add First Blend',
