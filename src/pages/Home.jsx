@@ -466,10 +466,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
-              {t("home.pageTitle")}
+              My Collection
             </PkPageTitle>
             <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
-              {t("home.pageSubtitle")}
+              Catalog, track, and analyze your pipe and tobacco collection
             </p>
           </motion.div>
 
