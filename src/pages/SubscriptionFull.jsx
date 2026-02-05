@@ -10,7 +10,6 @@ import {
   requestNativeSubscriptionStatus,
   registerNativeSubscriptionListener,
 } from "@/components/utils/nativeIAPBridge";
-import { openManageSubscription } from "@/components/utils/subscriptionManagement";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
