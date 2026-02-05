@@ -177,22 +177,20 @@ export default function SubscriptionFull() {
 
       {/* Billing Interval Toggle */}
       <div className="flex gap-4 items-center">
-        <span className="text-[#e8d5b7]">Billing:</span>
-        <Button
-          variant={selectedInterval === "monthly" ? "default" : "outline"}
-          onClick={() => setSelectedInterval("monthly")}
-          disabled={isLoading}
-        >
-          Monthly
-        </Button>
-        <Button
-          variant={selectedInterval === "annual" ? "default" : "outline"}
-          onClick={() => setSelectedInterval("annual")}
-          disabled={isLoading}
-        >
-          Annual (Save {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
-        </Button>
-      </div>
+         <span className="text-[#e8d5b7]">Billing:</span>
+         <Button
+           variant={selectedInterval === "monthly" ? "default" : "outline"}
+           onClick={() => setSelectedInterval("monthly")}
+         >
+           Monthly
+         </Button>
+         <Button
+           variant={selectedInterval === "annual" ? "default" : "outline"}
+           onClick={() => setSelectedInterval("annual")}
+         >
+           Annual (Save {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
+         </Button>
+       </div>
 
       {/* Tier Selection */}
       <div className="grid gap-6 md:grid-cols-3">
