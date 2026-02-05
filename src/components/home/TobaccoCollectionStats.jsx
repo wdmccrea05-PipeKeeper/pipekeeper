@@ -104,7 +104,7 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
   };
 
   // Check for low inventory blends
-  const lowInventoryBlends = blends.filter(b => {
+  const lowInventoryBlends = safeBlends.filter(b => {
     const cellared = b.cellared_amount || 0;
     return cellared > 0 && cellared <= lowInventoryThreshold;
   });
