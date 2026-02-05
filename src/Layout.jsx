@@ -231,6 +231,15 @@ export default function Layout({ children, currentPageName }) {
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
 
+  // Anti-regression: Check nav labels for key leaks (dev-only)
+  useEffect(() => {
+    if (import.meta?.env?.DEV && navItems.length > 0) {
+      navItems.forEach(item => {
+        warnIfLooksLikeKey(item.name, `Nav: ${item.page}`);
+      });
+    }
+  }, [navItems]);
+
   const showIAPToast = (msg) => {
     setIapToast(msg);
     clearTimeout(showIAPToast._timer);
