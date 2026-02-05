@@ -5,7 +5,13 @@
 
 export const translationsComplete = {
   en: {
-    helpContent: {
+   tobacconist: {
+     identificationTooltip: 'Upload photos for quick identification',
+     whatIfTooltip: 'Run hypothetical scenarios',
+     updatesTooltip: 'Check automatic suggestions',
+     outOfDateRegenRec: 'Out of date - regeneration recommended'
+   },
+   helpContent: {
       faqFull: {
         pageTitle: "PipeKeeper FAQ",
         pageSubtitle: "Definitions, general information, and disclaimers",
@@ -110,7 +116,11 @@ export const translationsComplete = {
       hide: 'Ocultar',
       rotationPlanner: 'Planificador de Rotación',
       neverSmoked: 'Nunca Fumado',
-      noUsageSessionsRecorded: 'Sin sesiones de fumar registradas'
+      noUsageSessionsRecorded: 'Sin sesiones de fumar registradas',
+      identificationTooltip: 'Sube fotos para identificación rápida',
+      whatIfTooltip: 'Ejecuta escenarios hipotéticos',
+      updatesTooltip: 'Revisa recomendaciones automáticas',
+      outOfDateRegenRec: 'Desactualizado - se recomienda regeneración'
       }
       },
   fr: {
@@ -193,7 +203,11 @@ export const translationsComplete = {
       hide: 'Masquer',
       rotationPlanner: 'Planificateur de Rotation',
       neverSmoked: 'Jamais Fumé',
-      noUsageSessionsRecorded: 'Aucune session de fumage enregistrée'
+      noUsageSessionsRecorded: 'Aucune session de fumage enregistrée',
+      identificationTooltip: 'Téléchargez des photos pour identification rapide',
+      whatIfTooltip: 'Exécutez des scénarios hypothétiques',
+      updatesTooltip: 'Consultez les recommandations automatiques',
+      outOfDateRegenRec: 'Obsolète - régénération recommandée'
       }
       },
   de: {
@@ -276,7 +290,11 @@ export const translationsComplete = {
       hide: 'Ausblenden',
       rotationPlanner: 'Rotationsplaner',
       neverSmoked: 'Nie Geraucht',
-      noUsageSessionsRecorded: 'Keine Rauchsitzungen aufgezeichnet'
+      noUsageSessionsRecorded: 'Keine Rauchsitzungen aufgezeichnet',
+      identificationTooltip: 'Laden Sie Fotos für schnelle Identifizierung hoch',
+      whatIfTooltip: 'Führen Sie hypothetische Szenarien aus',
+      updatesTooltip: 'Überprüfen Sie automatische Empfehlungen',
+      outOfDateRegenRec: 'Veraltet - Neugenerierung empfohlen'
       }
       },
   it: {
@@ -359,7 +377,11 @@ export const translationsComplete = {
       hide: 'Nascondi',
       rotationPlanner: 'Pianificatore di Rotazione',
       neverSmoked: 'Mai Fumato',
-      noUsageSessionsRecorded: 'Nessuna sessione di fumo registrata'
+      noUsageSessionsRecorded: 'Nessuna sessione di fumo registrata',
+      identificationTooltip: 'Carica foto per identificazione rapida',
+      whatIfTooltip: 'Esegui scenari ipotetici',
+      updatesTooltip: 'Controlla i suggerimenti automatici',
+      outOfDateRegenRec: 'Non aggiornato - rigenerazione consigliata'
       }
       },
   'pt-BR': {
@@ -442,7 +464,11 @@ export const translationsComplete = {
       hide: 'Ocultar',
       rotationPlanner: 'Planejador de Rotação',
       neverSmoked: 'Nunca Fumado',
-      noUsageSessionsRecorded: 'Nenhuma sessão de fumo registrada'
+      noUsageSessionsRecorded: 'Nenhuma sessão de fumo registrada',
+      identificationTooltip: 'Carregue fotos para identificação rápida',
+      whatIfTooltip: 'Execute cenários hipotéticos',
+      updatesTooltip: 'Confira recomendações automáticas',
+      outOfDateRegenRec: 'Desatualizado - regeneração recomendada'
       }
       },
   nl: {
@@ -525,7 +551,11 @@ export const translationsComplete = {
       hide: 'Verbergen',
       rotationPlanner: 'Rotatieplannen',
       neverSmoked: 'Nooit Gerookt',
-      noUsageSessionsRecorded: 'Geen rooksessies opgenomen'
+      noUsageSessionsRecorded: 'Geen rooksessies opgenomen',
+      identificationTooltip: 'Upload foto\'s voor snelle identificatie',
+      whatIfTooltip: 'Voer hypothetische scenario\'s uit',
+      updatesTooltip: 'Controleer automatische suggesties',
+      outOfDateRegenRec: 'Verouderd - regeneratie aanbevolen'
       }
       },
   pl: {
@@ -621,7 +651,11 @@ export const translationsComplete = {
       hide: 'Ukryj',
       rotationPlanner: 'Planner Rotacji',
       neverSmoked: 'Nigdy Palony',
-      noUsageSessionsRecorded: 'Brak zarejestrowanych sesji palenia'
+      noUsageSessionsRecorded: 'Brak zarejestrowanych sesji palenia',
+      identificationTooltip: 'Prześlij zdjęcia do szybkiej identyfikacji',
+      whatIfTooltip: 'Uruchom scenariusze hipoteczne',
+      updatesTooltip: 'Sprawdź automatyczne sugestie',
+      outOfDateRegenRec: 'Nieaktualne - zalecana regeneracja'
       }
       },
   ja: {
@@ -708,7 +742,11 @@ export const translationsComplete = {
       hide: '隠す',
       rotationPlanner: 'ローテーション計画',
       neverSmoked: '未喫煙',
-      noUsageSessionsRecorded: '喫煙セッションが記録されていません'
+      noUsageSessionsRecorded: '喫煙セッションが記録されていません',
+      identificationTooltip: '写真をアップロードして迅速に識別',
+      whatIfTooltip: '仮説的シナリオを実行',
+      updatesTooltip: '自動提案を確認',
+      outOfDateRegenRec: '期限切れ - 再生成推奨'
       },
     pipesPage: {
       exportCSV: "CSVエクスポート"
@@ -801,7 +839,11 @@ export const translationsComplete = {
       hide: '隐藏',
       rotationPlanner: '轮换计划',
       neverSmoked: '从未吸过',
-      noUsageSessionsRecorded: '没有记录吸烟会话'
+      noUsageSessionsRecorded: '没有记录吸烟会话',
+      identificationTooltip: '上传照片以快速识别',
+      whatIfTooltip: '运行假设情景',
+      updatesTooltip: '查看自动建议',
+      outOfDateRegenRec: '过期-建议重新生成'
       }
       }
       };
