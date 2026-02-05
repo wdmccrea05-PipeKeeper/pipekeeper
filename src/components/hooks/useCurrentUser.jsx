@@ -13,6 +13,15 @@ import { base44 } from "@/api/base44Client";
  * This hook must never reference entities.User.
  */
 
+function normalizeTier(raw) {
+  const t = String(raw || "").trim().toLowerCase();
+  if (!t) return "free";
+  if (t === "premium" || t === "pro" || t === "free") return t;
+  // handle older uppercase values
+  if (t === "prem") return "premium";
+  return "free";
+}
+
 async function fetchCurrentUser() {
   // 1) Auth identity (this is the only "user" that is guaranteed to exist)
   const authUser = await base44.auth.me();
@@ -40,13 +49,13 @@ async function fetchCurrentUser() {
     console.warn("[useCurrentUser] Subscription lookup failed:", e);
   }
 
-  // 4) Build a single “currentUser” shape used by the UI
-  // NOTE: Keep both subscription_tier + subscriptionTier for backwards compatibility with older components.
-  const tier =
+  // 4) Normalize tier (always lowercase)
+  const tier = normalizeTier(
     userProfile?.subscription_tier ||
     subscription?.tier ||
     subscription?.subscription_tier ||
-    "FREE";
+    "free"
+  );
 
   const interval =
     userProfile?.subscription_interval ||
@@ -79,16 +88,16 @@ async function fetchCurrentUser() {
     subscription_tier: tier,
     subscriptionTier: tier,
     subscription_status: subscription?.status || "free",
-    subscription_level: (tier !== "FREE") ? "paid" : "free",
+    subscription_level: (tier !== "free") ? "paid" : "free",
     subscription_interval: interval,
     subscriptionInterval: interval,
     legacy_premium: legacyPremium,
 
-    // Convenience flags
-    isPremium: tier === "PREMIUM" || tier === "PRO",
-    isPro: tier === "PRO",
-    hasPremium: tier === "PREMIUM" || tier === "PRO",
-    hasPaid: tier === "PREMIUM" || tier === "PRO",
+    // Convenience flags (normalized lowercase)
+    isPremium: tier === "premium" || tier === "pro",
+    isPro: tier === "pro",
+    hasPremium: tier === "premium" || tier === "pro",
+    hasPaid: tier === "premium" || tier === "pro",
     isAdmin: authUser?.role === "admin",
   };
 }
