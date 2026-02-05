@@ -185,7 +185,7 @@ Deno.serve(async (req: Request) => {
     console.log("[repairStripeTiers] ENV check:", Deno.env.get("STRIPE_SECRET_KEY") ? "exists" : "missing");
     
     // Initialize Stripe using centralized helper
-    const stripe = await getStripeClient(req);
+    const { stripe } = await getStripeClient(req);
     
     console.log("[repairStripeTiers] Stripe client initialized successfully");
     

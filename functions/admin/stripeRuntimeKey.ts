@@ -9,19 +9,28 @@ function json(status: number, body: any) {
 
 Deno.serve(async (req: Request) => {
   try {
-    const { meta } = await getStripeClient(req);
+    const { stripe, meta } = await getStripeClient(req);
+    
+    // Extract prefix from masked key
+    const masked = meta.masked || "";
+    const prefix = masked.split("_")[0] || "unknown";
+    
     return json(200, {
       ok: true,
       present: true,
+      prefix,
+      masked: meta.masked,
       environment: meta.environment,
       source: meta.source,
-      maskedKey: meta.masked,
+      length: meta.keyLength || 0,
       timestamp: new Date().toISOString(),
+      looksExpired: masked.toLowerCase().includes("expired") || masked.toLowerCase().includes("revoked"),
     });
   } catch (e) {
     return json(200, {
       ok: false,
       present: false,
+      prefix: "missing",
       error: String(e?.message || e),
       timestamp: new Date().toISOString(),
     });
