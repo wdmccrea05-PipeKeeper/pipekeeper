@@ -1,8 +1,65 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
+}
+
+// Inlined Stripe client utilities
+let cachedStripe: Stripe | null = null;
+let cachedKeyFingerprint: string | null = null;
+
+function fingerprint(key: string): string {
+  return `${key.slice(0, 7)}_${key.length}_${key.slice(-4)}`;
+}
+
+function maskKey(key: string): string {
+  if (!key || key.length < 12) return "****";
+  return `${key.slice(0, 8)}...${key.slice(-4)}`;
+}
+
+function getStripeClient(options?: { forceRefresh?: boolean }): Stripe {
+  const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY environment variable is not set");
+  }
+
+  if (!key.startsWith("sk_live_") && !key.startsWith("sk_test_")) {
+    throw new Error(`Invalid Stripe key format. Must start with sk_live_ or sk_test_. Got: ${key.slice(0, 3)}`);
+  }
+
+  const fp = fingerprint(key);
+
+  if (!options?.forceRefresh && cachedStripe && cachedKeyFingerprint === fp) {
+    return cachedStripe;
+  }
+
+  cachedStripe = new Stripe(key, { apiVersion: "2024-06-20" });
+  cachedKeyFingerprint = fp;
+
+  console.log(`[StripeClient] Initialized new client: ${maskKey(key)}`);
+
+  return cachedStripe;
+}
+
+function safeStripeError(e: any): string {
+  if (!e) return "Unknown Stripe error";
+  if (typeof e === "string") return e;
+  if (e.message) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+function stripeKeyErrorResponse(e: any) {
+  return {
+    ok: false,
+    error: "STRIPE_KEY_ERROR",
+    message: safeStripeError(e)
+  };
 }
 
 Deno.serve(async (req) => {
