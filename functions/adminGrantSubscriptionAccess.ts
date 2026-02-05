@@ -78,4 +78,5 @@ Deno.serve(async (req: Request) => {
     console.error("[adminGrantSubscriptionAccess] Error:", e);
     return json(500, { ok: false, message: String(e?.message || e) });
   }
+  
 });
