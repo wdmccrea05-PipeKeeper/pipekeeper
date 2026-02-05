@@ -67,17 +67,13 @@ async function resolveOwnerKeys(userEmail) {
 async function listForUserRobust(entity, userEmail, sort = "-updated_date", limit = MAX_ITEMS_PER_PAGE) {
   if (assertScoped(entity, "listForUser", !!userEmail)) return [];
 
-  const { email, userId } = await resolveOwnerKeys(userEmail);
+  const email = String(userEmail || "").trim();
 
-  // 1) created_by = email
+  // Single query: created_by = email (most common)
   let rows = await tryCreatedBy(entity, email, sort, limit);
-  if (rows.length) return rows;
+  if (rows.length > 0) return rows;
 
-  // 2) created_by = auth user id
-  rows = await tryCreatedBy(entity, userId, sort, limit);
-  if (rows.length) return rows;
-
-  // 3) fallback: capped list()
+  // Fallback: capped list() if email query returned nothing
   return await safeList(entity, sort, limit);
 }
 
