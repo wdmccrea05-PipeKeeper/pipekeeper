@@ -225,7 +225,10 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription } = useCurrentUser();
+  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
+
+  // Block render until subscription is loaded (prevents Apple fallback race)
+  const subscriptionReady = !userLoading && (subscription || true);
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
@@ -495,6 +498,11 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </div>
     );
+  }
+
+  // Block render until subscription is ready (prevents provider mis-detection)
+  if (!subscriptionReady) {
+    return null;
   }
 
   return (
