@@ -1,6 +1,8 @@
 // src/components/TermsGate.jsx
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
 
@@ -10,6 +12,7 @@ function is429(err) {
 }
 
 export default function TermsGate({ user }) {
+  const qc = useQueryClient();
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
@@ -22,8 +25,18 @@ export default function TermsGate({ user }) {
     return Boolean(iso);
   }, [user]);
 
+  // If no user or already accepted, don’t show the gate
   if (!user) return null;
   if (accepted) return null;
+
+  const homeUrl = useMemo(() => createPageUrl("Home"), []);
+
+  async function continueToApp() {
+    // Refresh user state without full reload
+    await qc.invalidateQueries({ queryKey: ["current-user"] });
+    // Navigate using Base44-safe URL (NOT "/")
+    window.location.assign(homeUrl);
+  }
 
   async function onAccept() {
     if (!checked) {
@@ -35,25 +48,33 @@ export default function TermsGate({ user }) {
     setMsg("");
 
     try {
-      const res = await base44.functions.invoke("acceptTermsForMe", { method: "POST", body: {} });
+      const res = await base44.functions.invoke("acceptTermsForMe", {
+        method: "POST",
+        body: {},
+      });
+
       if (!res?.data?.ok) throw new Error(res?.data?.error || "Failed to accept terms");
 
-      // Don’t hard-reload; just soft refresh the app state
-      // (rate limits + reload loops are killing you)
-      setMsg("Saved.  Continuing…");
+      try {
+        localStorage.removeItem(LOCAL_ACCEPT_KEY);
+      } catch {}
+
+      setMsg("Saved. Continuing…");
       setTimeout(() => {
-        // Let React Query refetch naturally later; we just remove the gate now.
-        try { localStorage.removeItem(LOCAL_ACCEPT_KEY); } catch {}
-        window.location.href = "/"; // simple nav; no repeated reloads
-      }, 300);
+        continueToApp();
+      }, 150);
     } catch (e) {
       console.error("[TermsGate] accept failed:", e);
 
-      // If rate-limited, allow temporary local acceptance so you can proceed without hammering APIs
+      // If rate limited, allow temporary access so you stop hammering APIs
       if (is429(e)) {
-        try { localStorage.setItem(LOCAL_ACCEPT_KEY, "1"); } catch {}
-        setMsg("Base44 is rate-limiting requests.  Continuing temporarily…");
-        setTimeout(() => (window.location.href = "/"), 300);
+        try {
+          localStorage.setItem(LOCAL_ACCEPT_KEY, "1");
+        } catch {}
+        setMsg("Rate-limited right now. Continuing temporarily…");
+        setTimeout(() => {
+          continueToApp();
+        }, 150);
       } else {
         setMsg("Could not save right now. Please try again.");
       }
