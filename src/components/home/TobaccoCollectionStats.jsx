@@ -34,10 +34,15 @@ export default function TobaccoCollectionStats({ blends, pipes, user, smokingLog
     initialData: [],
   });
 
+  // Ensure data is safe
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeLogs = Array.isArray(smokingLogs) ? smokingLogs : [];
+
   // Calculate statistics (safe from null/undefined)
-  const totalBlends = (blends || []).length;
-  const uniqueBrands = [...new Set((blends || []).map(b => b?.manufacturer).filter(Boolean))].length;
-  const favoriteBlends = (blends || []).filter(b => b?.is_favorite);
+  const totalBlends = safeBlends.length;
+  const uniqueBrands = [...new Set(safeBlends.map(b => b?.manufacturer).filter(Boolean))].length;
+  const favoriteBlends = safeBlends.filter(b => b?.is_favorite);
   
   // Use canonical quantity helpers (SOURCE OF TRUTH)
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
