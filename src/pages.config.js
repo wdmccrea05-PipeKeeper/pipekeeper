@@ -85,6 +85,8 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import SubscriptionSupport from './pages/SubscriptionSupport';
+import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import __Layout from './Layout.jsx';
 
 
@@ -127,6 +129,8 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "SubscriptionSupport": SubscriptionSupport,
+    "SubscriptionEventsLog": SubscriptionEventsLog,
 }
 
 export const pagesConfig = {
