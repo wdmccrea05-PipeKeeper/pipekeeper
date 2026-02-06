@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all data in parallel
-    const [allUsers, allSubscriptions, allPipes, allTobaccos, allSmokingLogs, allComments] = await Promise.all([
+    const [allUsers, allSubscriptions, allPipes, allTobaccosResult, allSmokingLogs, allComments] = await Promise.all([
       base44.asServiceRole.entities.User.list(),
       base44.asServiceRole.entities.Subscription.list(),
       base44.asServiceRole.entities.Pipe.list(),
@@ -22,6 +22,9 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.SmokingLog.list(),
       base44.asServiceRole.entities.Comment.list(),
     ]);
+    
+    // Ensure arrays (SDK might return object with results property)
+    const allTobaccos = Array.isArray(allTobaccosResult) ? allTobaccosResult : (allTobaccosResult?.results || []);
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
