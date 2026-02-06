@@ -1,3 +1,4 @@
+
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
@@ -29,7 +30,7 @@ const resources = {
 
 const SUPPORTED = Object.keys(resources);
 
-function normalizeLang(code) {
+function normalizeLang(code: string | null) {
   if (!code) return "en";
   // Normalize common variants
   if (code === "pt" || code === "pt_BR") return "pt-BR";
@@ -37,7 +38,7 @@ function normalizeLang(code) {
   return code;
 }
 
-function humanizeKey(key) {
+function humanizeKey(key: string | number | symbol): string {
   const last = String(key).split(".").pop() || String(key);
   return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -68,5 +69,7 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-export default i18n;
-export { SUPPORTED as SUPPORTED_LANGUAGES, humanizeKey };
+// Re-export the new centralized i18n instance
+export { i18n as default, SUPPORTED as SUPPORTED_LANGUAGES, humanizeKey };
+
+// All initialization moved to i18n.ts
