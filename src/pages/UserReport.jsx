@@ -327,6 +327,42 @@ export default function UserReport() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card className="bg-white/95 border-purple-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-purple-700">iOS</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-600">Paid:</span>
+                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.ios?.paid || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Free:</span>
+                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.ios?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/95 border-amber-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-amber-700">Unknown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-600">Paid:</span>
+                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.unknown?.paid || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Free:</span>
+                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.unknown?.free || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>

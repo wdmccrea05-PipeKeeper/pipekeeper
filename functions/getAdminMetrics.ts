@@ -372,6 +372,8 @@ Deno.serve(async (req) => {
       apple: { paid: 0, unverified: 0, free: 0 },
       android: { paid: 0, free: 0 },
       web: { paid: 0, free: 0 },
+      ios: { paid: 0, free: 0 },
+      unknown: { paid: 0, free: 0 },
     };
 
     allUsers.forEach(u => {
@@ -381,8 +383,26 @@ Deno.serve(async (req) => {
         return st !== 'incomplete_expired';
       });
       
-      const platform = u.platform || 'web';
-      const platformKey = platform === 'ios' ? 'apple' : platform === 'android' ? 'android' : 'web';
+      const rawPlatform = (u.platform || 'unknown').toLowerCase();
+      
+      // Determine paid status first
+      const hasPaidSub = validSubs.some(s => {
+        const st = (s.status || '').toLowerCase();
+        return st === 'active' || st === 'trialing' || st === 'incomplete';
+      }) || u.subscription_level === 'paid';
+      
+      // Map platform
+      let platformKey = rawPlatform;
+      if (rawPlatform === 'ios') {
+        platformKey = 'ios';
+      } else if (!['apple', 'android', 'web', 'ios', 'unknown'].includes(rawPlatform)) {
+        platformKey = 'unknown';
+      }
+      
+      // Initialize platform if not exists
+      if (!platformBreakdown[platformKey]) {
+        platformBreakdown[platformKey] = { paid: 0, free: 0 };
+      }
       
       // For Apple: distinguish verified paid vs unverified
       if (platformKey === 'apple') {
@@ -402,12 +422,7 @@ Deno.serve(async (req) => {
           platformBreakdown.apple.free++;
         }
       } else {
-        // For non-Apple: use existing logic
-        const hasPaidSub = validSubs.some(s => {
-          const st = (s.status || '').toLowerCase();
-          return st === 'active' || st === 'trialing' || st === 'incomplete';
-        }) || u.subscription_level === 'paid';
-
+        // For all other platforms: simple paid/free counting
         if (hasPaidSub) {
           platformBreakdown[platformKey].paid++;
         } else {
