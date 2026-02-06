@@ -1,16 +1,16 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import en from "@/components/i18n/locales/en.json";
-import es from "@/components/i18n/locales/es.json";
-import fr from "@/components/i18n/locales/fr.json";
-import de from "@/components/i18n/locales/de.json";
-import it from "@/components/i18n/locales/it.json";
-import ptBR from "@/components/i18n/locales/pt-BR.json";
-import nl from "@/components/i18n/locales/nl.json";
-import pl from "@/components/i18n/locales/pl.json";
-import ja from "@/components/i18n/locales/ja.json";
-import zhHans from "@/components/i18n/locales/zh-Hans.json";
+import en from "@/components/i18n/locales/en.js";
+import es from "@/components/i18n/locales/es.js";
+import fr from "@/components/i18n/locales/fr.js";
+import de from "@/components/i18n/locales/de.js";
+import it from "@/components/i18n/locales/it.js";
+import ptBR from "@/components/i18n/locales/pt-BR.js";
+import nl from "@/components/i18n/locales/nl.js";
+import pl from "@/components/i18n/locales/pl.js";
+import ja from "@/components/i18n/locales/ja.js";
+import zhHans from "@/components/i18n/locales/zh-Hans.js";
 
 const STORAGE_KEY = "pk_lang";
 
