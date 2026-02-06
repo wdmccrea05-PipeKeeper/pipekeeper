@@ -7,11 +7,12 @@ const LANGS = [
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (BR)" },
+  { code: "pt", label: "Português" },
   { code: "nl", label: "Nederlands" },
   { code: "pl", label: "Polski" },
   { code: "ja", label: "日本語" },
-  { code: "zh-Hans", label: "中文（简体）" },
+  { code: "zh", label: "中文" },
+  { code: "sv", label: "Svenska" },
 ];
 
 export default function LanguageSwitcher({ className = "" }) {
@@ -19,8 +20,9 @@ export default function LanguageSwitcher({ className = "" }) {
 
   const current = useMemo(() => {
     const raw = (i18n.language || "en").replace("_", "-");
-    if (raw.startsWith("pt")) return "pt-BR";
-    if (raw.startsWith("zh")) return "zh-Hans";
+    // Normalize variants to base codes
+    if (raw.startsWith("pt")) return "pt";
+    if (raw.startsWith("zh")) return "zh";
     if (LANGS.some((l) => l.code === raw)) return raw;
     const base = raw.split("-")[0];
     return LANGS.some((l) => l.code === base) ? base : "en";
