@@ -3,17 +3,17 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
 // Use the comprehensive locale files that were created earlier
-import en from "./locales/en";
-import es from "./locales/es";
-import fr from "./locales/fr";
-import de from "./locales/de";
-import it from "./locales/it";
-import pt from "./locales/pt";
-import nl from "./locales/nl";
-import pl from "./locales/pl";
-import ja from "./locales/ja";
-import zh from "./locales/zh";
-import sv from "./locales/sv";
+import en from "./locales/en.json";
+import es from "./locales/es.json";
+import fr from "./locales/fr.json";
+import de from "./locales/de.json";
+import it from "./locales/it.json";
+import pt from "./locales/pt.json";
+import nl from "./locales/nl.json";
+import pl from "./locales/pl.json";
+import ja from "./locales/ja.json";
+import zh from "./locales/zh.json";
+import sv from "./locales/sv.json";
 
 const STORAGE_KEY = "pk_lang";
 
