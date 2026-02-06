@@ -474,7 +474,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={!activePairings?.previous_active_id || anyBusy}
             onClick={() => undoPairings.mutate()}
-            className="border-gray-300 text-[#1a2c42]"
+            className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50"
           >
             <Undo className="w-3 h-3 mr-1" />
             {t("tobacconist.undo")}
@@ -483,7 +483,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={anyBusy}
             onClick={() => regenPairings.mutate()}
-            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] text-white"
           >
             {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
             {t("tobacconist.regenerate")}
@@ -518,7 +518,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={!activeOpt?.previous_active_id || anyBusy}
             onClick={() => undoOpt.mutate()}
-            className="border-gray-300 text-[#1a2c42]"
+            className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50"
           >
             <Undo className="w-3 h-3 mr-1" />
             {t("tobacconist.undo")}
@@ -527,7 +527,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             size="sm"
             disabled={anyBusy}
             onClick={() => regenOpt.mutate()}
-            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e]"
+            className="bg-gradient-to-r from-[#8b3a3a] to-[#6d2e2e] text-white"
           >
             {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
             {t("tobacconist.regenerate")}

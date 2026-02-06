@@ -1023,7 +1023,7 @@ ${userText}
               {conversationMessages.length > 0 ? t("tobacconist.continueConversation") : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
-              placeholder={t("tobacconist.askExpertPlaceholder")}
+              placeholder={t("tobacconist.askExpertPlaceholder", {defaultValue: "Ask about pairings, recommendations, or your collection..."})}
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => (conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value))}
               className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1680,11 +1680,11 @@ ${userText}
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">
                   <p className="text-sm text-stone-900">
-                    {t("tobacconist.askExpertInstructions")}
+                    {t("tobacconist.askExpertInstructions", {defaultValue: "Ask questions about collection strategy, hypothetical purchases, or pairing advice."})}
                   </p>
 
                   <Textarea
-                    placeholder={t("tobacconist.askPlaceholder")}
+                    placeholder={t("tobacconist.askPlaceholder", {defaultValue: "What if I added a larger billiard? Which tobacco should I try next?"})}
                     value={whatIfQuery}
                     onChange={(e) => setWhatIfQuery(e.target.value)}
                     className="min-h-[70px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1715,7 +1715,7 @@ ${userText}
                       {t("tobacconist.analyzeImpact")}
                     </Button>
 
-                    <Button onClick={resetWhatIf} variant="outline" className="flex-1">
+                    <Button onClick={resetWhatIf} variant="outline" className="flex-1 bg-white text-stone-700 hover:bg-stone-50 border-stone-300">
                       {t("tobacconist.reset")}
                     </Button>
                   </div>

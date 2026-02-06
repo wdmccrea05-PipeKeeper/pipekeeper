@@ -175,10 +175,10 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle>{t("pairingGrid.title")}</CardTitle>
-              <InfoTooltip text={t("pairingGrid.tooltipText")} />
+              <CardTitle>{t("pairingGrid.title", {defaultValue: "Pairing Reference Grid"})}</CardTitle>
+              <InfoTooltip text={t("pairingGrid.tooltipText", {defaultValue: "View scored pairings for all pipes and tobaccos in your collection"})} />
             </div>
-            <CardDescription>{t("pairingGrid.subtitle")}</CardDescription>
+            <CardDescription>{t("pairingGrid.subtitle", {defaultValue: "Quick-reference matrix of pipe-tobacco compatibility scores"})}</CardDescription>
             </div>
             <div className="flex gap-2">
             <Button
@@ -342,35 +342,35 @@ function PipeCard({ row, allBlends }) {
 
   return (
     <div className="border rounded-lg p-3 bg-[#1A2B3A]/50">
-      <div className="font-semibold">{row.name}</div>
-      <div className="text-xs text-[#E0D8C8]/60 mt-1">
-        {t("pairingGrid.focus")} {row.focus?.length ? row.focus.join(", ") : "—"}
+      <div className="font-semibold text-white">{row.name}</div>
+      <div className="text-xs text-[#E0D8C8]/80 mt-1">
+        {t("pairingGrid.focus", {defaultValue: "Focus:"})} {row.focus?.length ? row.focus.join(", ") : "—"}
       </div>
-      <div className="text-xs text-[#E0D8C8]/60">
-        {t("pairingGrid.dim")} {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
+      <div className="text-xs text-[#E0D8C8]/80">
+        {t("pairingGrid.dim", {defaultValue: "Dim:"})} {row.bowl_diameter_mm ?? "—"}mm × {row.bowl_depth_mm ?? "—"}mm (vol {row.chamber_volume ?? "—"})
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold">{t("pairingGrid.topMatches")}</div>
+        <div className="text-xs font-semibold text-white">{t("pairingGrid.topMatches", {defaultValue: "Top 3 Matches"})}</div>
         {topMatches.length > 0 ? (
           <div className="text-sm space-y-1">
             {topMatches.map((rec, idx) => (
               <div key={`${row.key}-top-${idx}`} className="flex justify-between gap-2">
-                <span className="truncate">{rec.tobacco_name || rec.name || t("common.tobacco")}</span>
-                 <span className="font-medium">{rec.score ?? "—"}</span>
+                <span className="truncate text-[#E0D8C8]">{rec.tobacco_name || rec.name || t("common.tobacco")}</span>
+                 <span className="font-medium text-white">{rec.score ?? "—"}</span>
               </div>
             ))}
           </div>
         ) : (
-          <span className="text-xs">{t("pairingGrid.noRecommendations")}</span>
+          <span className="text-xs text-[#E0D8C8]/60">{t("pairingGrid.noRecommendations")}</span>
         )}
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="text-xs font-semibold">{t("pairingGrid.checkAnyBlend")}</div>
+        <div className="text-xs font-semibold text-white">{t("pairingGrid.checkAnyBlend", {defaultValue: "Check Any Blend"})}</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
           <SelectTrigger className="text-sm">
-            <SelectValue placeholder={t("pairingGrid.selectABlend")} />
+            <SelectValue placeholder={t("pairingGrid.selectABlend", {defaultValue: "Select a blend..."})} />
           </SelectTrigger>
           <SelectContent>
             {allBlends.map(b => (
@@ -383,9 +383,9 @@ function PipeCard({ row, allBlends }) {
         {selectedBlendId && (
           <div className="space-y-2">
             <div className="flex justify-between gap-2 text-sm">
-              <span className="truncate">{selectedBlendName}</span>
-              <span className="font-medium">
-                {selectedBlendScore !== null ? selectedBlendScore : t("pairingGrid.noScore")}
+              <span className="truncate text-[#E0D8C8]">{selectedBlendName}</span>
+              <span className="font-medium text-white">
+                {selectedBlendScore !== null ? selectedBlendScore : t("pairingGrid.noScore", {defaultValue: "—"})}
               </span>
             </div>
             {selectedBlendScore === null && (
@@ -393,9 +393,9 @@ function PipeCard({ row, allBlends }) {
                 size="sm"
                 variant="outline"
                 onClick={calculateScore}
-                className="w-full"
+                className="w-full text-white border-[#E0D8C8]/30 hover:bg-white/10"
               >
-                {t("pairingGrid.getScore")}
+                {t("pairingGrid.getScore", {defaultValue: "Calculate Score"})}
               </Button>
             )}
           </div>
