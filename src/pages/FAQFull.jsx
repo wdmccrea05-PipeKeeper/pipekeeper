@@ -146,7 +146,7 @@ export default function FAQFull() {
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
                 <li>7-day trial of all premium features</li>
                 <li>Up to 5 pipes</li>
-                <li>Up to 5 tobacco blends</li>
+                <li>Up to 10 tobacco blends</li>
                 <li>Basic collection management</li>
                 <li>Photo uploads</li>
               </ul>
