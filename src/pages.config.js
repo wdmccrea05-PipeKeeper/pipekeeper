@@ -71,9 +71,11 @@ import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
+import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
+import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
 import TermsOfService from './pages/TermsOfService';
@@ -85,8 +87,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import SubscriptionSupport from './pages/SubscriptionSupport';
-import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import __Layout from './Layout.jsx';
 
 
@@ -115,9 +115,11 @@ export const PAGES = {
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
+    "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
+    "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
     "TermsOfService": TermsOfService,
@@ -129,8 +131,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "SubscriptionSupport": SubscriptionSupport,
-    "SubscriptionEventsLog": SubscriptionEventsLog,
 }
 
 export const pagesConfig = {

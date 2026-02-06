@@ -1,180 +1,158 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, Search, RefreshCw, Filter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { base44 } from "@/api/base44Client";
+import { AlertCircle, CheckCircle, XCircle, Search } from "lucide-react";
 
 export default function SubscriptionEventsLog() {
-  const { user, isAdmin } = useCurrentUser();
+  const { isAdmin } = useCurrentUser();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchEmail, setSearchEmail] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [successFilter, setSuccessFilter] = useState("all");
-  const [limit, setLimit] = useState(100);
+  const [filterSource, setFilterSource] = useState("all");
+  const [filterSuccess, setFilterSuccess] = useState("all");
 
-  const { data: events, isLoading, refetch } = useQuery({
-    queryKey: ["subscription-events", searchEmail, sourceFilter, successFilter, limit],
-    queryFn: async () => {
-      let allEvents = await base44.entities.SubscriptionIntegrationEvent.list("-created_date", limit);
-      
-      // Apply filters
-      if (searchEmail) {
-        allEvents = allEvents.filter(e => e.email?.toLowerCase().includes(searchEmail.toLowerCase()));
-      }
-      if (sourceFilter !== "all") {
-        allEvents = allEvents.filter(e => e.event_source === sourceFilter);
-      }
-      if (successFilter !== "all") {
-        const successBool = successFilter === "success";
-        allEvents = allEvents.filter(e => e.success === successBool);
-      }
-      
-      return allEvents;
-    },
-    enabled: isAdmin,
-  });
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const allEvents = await base44.entities.SubscriptionIntegrationEvent.list("-created_date", 100);
+      setEvents(allEvents);
+    } catch (error) {
+      console.error("Failed to load events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-stone-500">Only administrators can access this page.</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Admin access required</AlertDescription>
+        </Alert>
       </div>
     );
   }
 
+  const filteredEvents = events.filter((event) => {
+    const emailMatch = !searchEmail || event.email?.toLowerCase().includes(searchEmail.toLowerCase());
+    const sourceMatch = filterSource === "all" || event.event_source === filterSource;
+    const successMatch = filterSuccess === "all" || 
+      (filterSuccess === "success" && event.success) ||
+      (filterSuccess === "error" && !event.success);
+    return emailMatch && sourceMatch && successMatch;
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">Subscription Events Log</h1>
-          <p className="text-[#E0D8C8]/70">Audit trail of all subscription integration events</p>
-        </div>
-
-        {/* Filters */}
-        <Card className="bg-[#223447] border-[#E0D8C8]/15 mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-[#E0D8C8]" />
-              <CardTitle className="text-[#E0D8C8]">Filters</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/50" />
-                <Input
-                  placeholder="Search by email..."
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Event Source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="stripe">Stripe</SelectItem>
-                  <SelectItem value="cloudflare">Cloudflare</SelectItem>
-                  <SelectItem value="app">App</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={successFilter} onValueChange={setSuccessFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="error">Error</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="50">50 events</SelectItem>
-                    <SelectItem value="100">100 events</SelectItem>
-                    <SelectItem value="500">500 events</SelectItem>
-                    <SelectItem value="1000">1000 events</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" onClick={() => refetch()}>
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Events Table */}
-        <Card className="bg-[#223447] border-[#E0D8C8]/15">
-          <CardContent className="p-6">
-            {isLoading ? (
-              <p className="text-center text-[#E0D8C8]/50 py-8">Loading events...</p>
-            ) : !events || events.length === 0 ? (
-              <p className="text-center text-[#E0D8C8]/50 py-8">No events found</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#E0D8C8]/10">
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Timestamp</th>
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Source</th>
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Event Type</th>
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Email</th>
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 text-[#E0D8C8]/80 font-semibold">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {events.map((event) => (
-                      <tr key={event.id} className="border-b border-[#E0D8C8]/5 hover:bg-[#1A2B3A]/50">
-                        <td className="py-3 px-4 text-[#E0D8C8]/70 text-xs">
-                          {new Date(event.created_date).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" className="text-xs">
-                            {event.event_source}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-[#E0D8C8]/70 text-xs font-mono">
-                          {event.event_type}
-                        </td>
-                        <td className="py-3 px-4 text-[#E0D8C8]/70 text-xs">
-                          {event.email || "-"}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge variant={event.success ? "success" : "destructive"} className="text-xs">
-                            {event.success ? "Success" : "Error"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-[#E0D8C8]/60 text-xs">
-                          {event.error || "-"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-[#E0D8C8]">Subscription Events Log</h1>
+        <Button onClick={loadEvents} disabled={loading}>
+          Refresh
+        </Button>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Search Email</label>
+              <Input
+                placeholder="user@example.com"
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Source</label>
+              <select
+                value={filterSource}
+                onChange={(e) => setFilterSource(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg bg-[#1a2c42] border border-white/10 text-[#E0D8C8]"
+              >
+                <option value="all">All Sources</option>
+                <option value="stripe">Stripe</option>
+                <option value="cloudflare">Cloudflare</option>
+                <option value="app">App</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Status</label>
+              <select
+                value={filterSuccess}
+                onChange={(e) => setFilterSuccess(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg bg-[#1a2c42] border border-white/10 text-[#E0D8C8]"
+              >
+                <option value="all">All</option>
+                <option value="success">Success</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Events List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Events ({filteredEvents.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-[#E0D8C8]/70">Loading events...</p>
+          ) : filteredEvents.length === 0 ? (
+            <p className="text-[#E0D8C8]/70">No events found</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="p-4 bg-[#1a2c42] rounded-lg border border-white/10"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {event.success ? (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                      <span className="font-medium text-[#E0D8C8]">{event.event_type}</span>
+                    </div>
+                    <Badge variant={event.success ? "success" : "destructive"}>
+                      {event.event_source}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-sm space-y-1 text-[#E0D8C8]/70">
+                    {event.email && <p>Email: {event.email}</p>}
+                    {event.user_id && <p>User ID: {event.user_id}</p>}
+                    {event.stripe_customer_id && (
+                      <p>Stripe Customer: {event.stripe_customer_id}</p>
+                    )}
+                    {event.error && (
+                      <p className="text-red-400">Error: {event.error}</p>
+                    )}
+                    <p className="text-xs text-[#E0D8C8]/50">
+                      {new Date(event.created_date).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
