@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation as useReactI18nTranslation } from "react-i18next";
 import i18n, { humanizeKey } from "./index";
 
 // Placeholder values that must NEVER be shown as final UI copy
@@ -26,7 +26,7 @@ function looksLikePlaceholder(value) {
 }
 
 export function useSafeTranslation() {
-  const { t, i18n: hookI18n } = useTranslation();
+  const { t, i18n: hookI18n } = useReactI18nTranslation();
 
   const safeT = (key, options = {}) => {
     const raw = t(key, options);
