@@ -2,40 +2,29 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// Use the comprehensive locale files that were created earlier
+// Locale files
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
 import de from "./locales/de.json";
 import it from "./locales/it.json";
-import ptBR from "./locales/pt-BR";
+import ptBR from "./locales/pt-BR.json";
 import nl from "./locales/nl.json";
 import pl from "./locales/pl.json";
 import ja from "./locales/ja.json";
-import zhHans from "./locales/zh-Hans";
+import zhHans from "./locales/zh-Hans.json";
+import sv from "./locales/sv.json";
 
 const STORAGE_KEY = "pk_lang";
 
-const resources = {
-  en: { translation: en },
-  es: { translation: es },
-  fr: { translation: fr },
-  de: { translation: de },
-  it: { translation: it },
-  "pt-BR": { translation: ptBR },
-  nl: { translation: nl },
-  pl: { translation: pl },
-  ja: { translation: ja },
-  "zh-Hans": { translation: zhHans },
-};
-
-const SUPPORTED_LANGUAGES = Object.keys(resources);
-
-function normalizeLang(code) {
-  if (!code) return "en";
-  if (code === "pt-BR" || code === "pt_BR" || code === "pt") return "pt-BR";
-  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN" || code === "zh") return "zh-Hans";
-  return code;
+// Normalize language codes to canonical forms
+export function normalizeLang(raw) {
+  const v = (raw || "").toString().trim();
+  if (!v) return "en";
+  // Aliases to canonical codes
+  if (v === "pt" || v === "pt_BR") return "pt-BR";
+  if (v === "zh" || v.toLowerCase() === "zh-cn") return "zh-Hans";
+  return v;
 }
 
 function humanizeKey(key) {
@@ -48,14 +37,31 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-const storedLang =
-  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+// Resources: primary codes + aliases for backward compatibility
+const resources = {
+  en: { translation: en },
+  es: { translation: es },
+  fr: { translation: fr },
+  de: { translation: de },
+  it: { translation: it },
+  "pt-BR": { translation: ptBR },
+  nl: { translation: nl },
+  pl: { translation: pl },
+  ja: { translation: ja },
+  "zh-Hans": { translation: zhHans },
+  sv: { translation: sv },
+  // Aliases (old codes map to new canonical ones)
+  pt: { translation: ptBR },
+  zh: { translation: zhHans },
+};
 
-const initialLng = storedLang
-  ? normalizeLang(storedLang)
-  : SUPPORTED_LANGUAGES.includes(navigator.language.split("-")[0])
-  ? navigator.language.split("-")[0]
-  : "en";
+const SUPPORTED_LANGUAGES = Object.keys(resources);
+
+const storedLang = normalizeLang(
+  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : "en"
+);
+
+const initialLng = storedLang || "en";
 
 i18n
   .use(LanguageDetector)
@@ -91,7 +97,12 @@ i18n
 
 i18n.on("languageChanged", (lng) => {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, lng);
+    const normalized = normalizeLang(lng);
+    window.localStorage.setItem(STORAGE_KEY, normalized);
+    // If i18n was set to an alias, switch to normalized canonical
+    if (lng !== normalized) {
+      i18n.changeLanguage(normalized);
+    }
   }
 });
 

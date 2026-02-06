@@ -1,6 +1,5 @@
-import React, { useMemo } from "react";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import i18n from "@/components/i18n";
+import React, { useEffect, useMemo, useState } from "react";
+import i18n, { normalizeLang } from "@/components/i18n";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -8,77 +7,48 @@ const LANGS = [
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "it", label: "Italiano" },
-  { code: "pt", label: "Português" },
+  { code: "pt-BR", label: "Português" },
   { code: "nl", label: "Nederlands" },
   { code: "pl", label: "Polski" },
   { code: "ja", label: "日本語" },
-  { code: "zh", label: "中文" },
+  { code: "zh-Hans", label: "中文" },
   { code: "sv", label: "Svenska" },
 ];
 
-export default function LanguageSwitcher({ className = "" }) {
-  const { t, i18n: hookI18n } = useTranslation();
+export default function LanguageSwitcher() {
+  const [lang, setLang] = useState("en");
 
-  const current = useMemo(() => {
-    const raw = (i18n.language || "en").replace("_", "-");
-    // Normalize variants to base codes
-    if (raw.startsWith("pt")) return "pt";
-    if (raw.startsWith("zh")) return "zh";
-    if (LANGS.some((l) => l.code === raw)) return raw;
-    const base = raw.split("-")[0];
-    return LANGS.some((l) => l.code === base) ? base : "en";
-  }, [i18n.language]);
-
-  const setLang = async (lng) => {
-    try {
-      await i18n.changeLanguage(lng);
-      try {
-        localStorage.setItem("pk_lang", lng);
-        // Force entitlement refresh after language change
-        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
-      } catch {}
-      // Force page reload to apply language change
-      window.location.reload();
-    } catch (error) {
-      console.error('[LanguageSwitcher] Failed to change language:', error);
-      // Fallback to English if language change fails
-      try {
-        await i18n.changeLanguage('en');
-        localStorage.setItem("pk_lang", 'en');
-        window.location.reload();
-      } catch {}
+  useEffect(() => {
+    const stored = normalizeLang(localStorage.getItem("pk_lang"));
+    setLang(stored);
+    // ensure i18n matches stored on load
+    if (i18n.language !== stored) {
+      i18n.changeLanguage(stored);
     }
+  }, []);
+
+  const options = useMemo(() => LANGS, []);
+
+  const onChange = async (e) => {
+    const next = normalizeLang(e.target.value);
+    setLang(next);
+    localStorage.setItem("pk_lang", next);
+    await i18n.changeLanguage(next);
   };
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <select
-        value={current}
-        onChange={(e) => setLang(e.target.value)}
-        aria-label="Language"
-        className="
-          h-9
-          rounded-lg
-          px-3
-          text-sm
-          bg-black/40
-          border border-white/10
-          text-[#e8d5b7]
-          shadow-sm
-          outline-none
-          hover:bg-black/50
-          focus:ring-2 focus:ring-[#e8d5b7]/30
-          focus:border-[#e8d5b7]/30
-          transition
-        "
-      >
-        {LANGS.map((l) => (
-          <option key={l.code} value={l.code} className="bg-[#0b0b0b] text-[#e8d5b7]">
-            {l.label}
-          </option>
-        ))}
-      </select>
-      <div className="text-[10px] text-[#e8d5b7]/50 mt-1">Current: {i18n.language}</div>
-    </div>
+    <select
+      value={lang}
+      onChange={onChange}
+      className="text-sm bg-transparent border border-white/10 rounded-md px-2 py-1 text-[#E0D8C8] hover:border-white/20 transition-colors"
+      aria-label="Language"
+      title="Change language"
+    >
+      {options.map((l) => (
+        <option key={l.code} value={l.code} className="bg-[#1a2c42] text-[#E0D8C8]">
+          {l.label}
+        </option>
+      ))}
+    </select>
   );
 }
