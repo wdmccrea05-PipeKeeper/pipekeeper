@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
 import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
+import { installAuditTool } from "@/components/utils/i18n/hardcodeAudit";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
@@ -170,6 +171,13 @@ export default function Layout({ children, currentPageName }) {
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
   const { t } = useTranslation();
+
+  // Install i18n audit tool (dev-only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      installAuditTool();
+    }
+  }, []);
 
   // Handle Android back button
   useEffect(() => {
