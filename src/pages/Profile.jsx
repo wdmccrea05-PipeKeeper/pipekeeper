@@ -445,12 +445,11 @@ export default function ProfilePage() {
                 <Label className="text-stone-700 font-medium">Location</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-stone-600">Show on profile</span>
-                  <div className={`w-12 h-7 rounded-full transition-colors ${formData.show_location ? "bg-green-600" : "bg-red-600"}`}>
-                    <Switch
-                      checked={formData.show_location}
-                      onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
-                    />
-                  </div>
+                  <Switch
+                    checked={formData.show_location}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
                 </div>
               </div>
 
@@ -484,32 +483,41 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide values</span>
-                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_values ? "bg-green-600" : "bg-red-600"}`}>
-                  <Switch
-                    checked={formData.privacy_hide_values}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
-                  />
-                </div>
+                <Switch
+                  checked={formData.privacy_hide_values}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide inventory</span>
-                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_inventory ? "bg-green-600" : "bg-red-600"}`}>
-                  <Switch
-                    checked={formData.privacy_hide_inventory}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
-                  />
-                </div>
+                <Switch
+                  checked={formData.privacy_hide_inventory}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">Hide collection counts</span>
-                <div className={`w-12 h-7 rounded-full transition-colors ${formData.privacy_hide_collection_counts ? "bg-green-600" : "bg-red-600"}`}>
-                  <Switch
-                    checked={formData.privacy_hide_collection_counts}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
-                  />
+                <Switch
+                  checked={formData.privacy_hide_collection_counts}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-stone-700">{t("profile.enableMessaging")}</div>
+                  <div className="text-xs text-stone-600">{t("profile.enableMessagingDesc")}</div>
                 </div>
+                <Switch
+                  checked={formData.enable_messaging}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, enable_messaging: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
               </div>
             </div>
 
@@ -592,6 +600,7 @@ export default function ProfilePage() {
                       navigate(createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}&preview=true`));
                     } catch {}
                   }}
+                  className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
                 >
                   Preview public profile
                 </Button>
