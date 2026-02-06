@@ -9,8 +9,7 @@ import { Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search, ChevronDow
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
-import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
+
 
 export default function UserReport() {
   const [viewFilter, setViewFilter] = useState('all'); // 'all', 'paid', 'free'
@@ -181,15 +180,7 @@ export default function UserReport() {
       </div>
       <div className="mb-6" />
 
-      {/* Subscription Management */}
-      <div className="mb-6">
-        <SubscriptionProviderCard me={user} />
-      </div>
 
-      {/* Subscription Migration Card */}
-      <div className="mb-6">
-        <SubscriptionMigrationCard />
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
