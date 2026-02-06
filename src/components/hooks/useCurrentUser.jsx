@@ -1,236 +1,218 @@
-// components/hooks/useCurrentUser.jsx
-// CANONICAL USER STATE HOOK - Account-linked subscription system
-// Provider is now AUTHORITATIVE from User.subscription_provider field
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { hasPremiumAccess, hasPaidAccess } from "@/components/utils/premiumAccess";
-import { hasTrialAccess, isTrialWindow, getTrialDaysRemaining } from "@/components/utils/trialAccess";
-import { isIOSCompanion, isCompanionApp } from "@/components/utils/companion";
-import { isAppleBuild } from "@/components/utils/appVariant";
-import { ensureFreeGrandfatherFlag } from "@/components/utils/freeGrandfathering";
-import { useEffect, useState } from "react";
+import { hasPaidAccess, hasProAccess, hasPremiumAccess, isFoundingMember } from "@/components/utils/premiumAccess";
+import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { useEffect, useRef } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-// Detect platform
-function detectPlatform() {
-  if (isIOSCompanion?.()) return "ios";
-  if (typeof window !== 'undefined') {
-    try {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('platform') === 'android') return "android";
-    } catch {
-      // URL parsing failed, fall through to default
-    }
+/**
+ * Infer subscription provider from evidence
+ * Priority: Stripe evidence > iOS/Apple evidence
+ */
+function inferProvider(user, subscription) {
+  // Check for Stripe evidence first
+  const hasStripeCustomer = !!(user?.stripe_customer_id || user?.stripeCustomerId);
+  const hasStripeSubscription = subscription?.provider === "stripe" || subscription?.stripe_subscription_id;
+  const isWebPlatform = user?.platform === "web";
+  const hasActiveStatus = ["active", "trialing"].includes(user?.subscription_status || subscription?.status);
+
+  // Strong Stripe evidence
+  if (hasStripeCustomer || hasStripeSubscription || (isWebPlatform && hasActiveStatus)) {
+    return "stripe";
   }
-  return "web";
+
+  // Check for Apple evidence
+  const hasAppleTransaction = !!(user?.apple_original_transaction_id || user?.appleOriginalTransactionId);
+  const hasAppleSubscription = subscription?.provider === "apple";
+  const isIOSPlatform = user?.platform === "ios";
+
+  // Apple evidence (only if no Stripe evidence)
+  if (hasAppleTransaction || hasAppleSubscription || isIOSPlatform) {
+    return "apple";
+  }
+
+  // Fallback to stored provider if it exists
+  if (user?.subscription_provider === "stripe" || user?.subscription_provider === "apple") {
+    return user.subscription_provider;
+  }
+
+  return null;
 }
 
 export function useCurrentUser() {
-  const [ensuredUser, setEnsuredUser] = useState(false);
+  const backfillAttempted = useRef(false);
 
-  // Fetch auth user
-  const { data: rawUser, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+    refetch: refetchUser,
+  } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
         const authUser = await base44.auth.me();
-        const email = normEmail(authUser?.email || "");
+        if (!authUser?.email) return null;
 
-        // Fetch entity User record
-        const entityUser = await (async () => {
-          try {
-            if (!email) return null;
-            const rows = await base44.entities.User.filter({ email });
-            return rows?.[0] || null;
-          } catch (e) {
-            console.warn("[useCurrentUser] Could not load entities.User:", e);
-            return null;
-          }
-        })();
+        const email = normEmail(authUser.email);
+        const userId = authUser.id || authUser.auth_user_id;
 
-        // Merge auth + entity - PRESERVE AUTH ID as canonical
-        return {
+        // Fetch entity user record (single source of truth for extended fields)
+        let entityUser = null;
+        try {
+          const users = await base44.entities.User.filter({ email });
+          entityUser = users?.[0] || null;
+        } catch (err) {
+          console.warn("[useCurrentUser] Could not fetch User entity:", err);
+        }
+
+        // Merge: auth user is primary, entity user adds extended fields
+        const merged = {
           ...entityUser,
           ...authUser,
-          id: authUser.id,
-          auth_user_id: authUser.id,
-          entity_user_id: entityUser?.id || null,
-          email: authUser?.email || entityUser?.email,
+          id: userId || entityUser?.id,
+          email,
         };
-      } catch (err) {
-        console.error('[useCurrentUser] Critical error:', err);
-        throw err;
+
+        return merged;
+      } catch (error) {
+        console.error("[useCurrentUser] Error:", error);
+        throw error;
       }
     },
-    staleTime: 30_000,
+    staleTime: 5000,
     retry: 2,
-    refetchOnMount: false,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
   });
 
-  const email = normEmail(rawUser?.email || "");
-  const userId = rawUser?.auth_user_id || rawUser?.id;
+  const userId = user?.id || user?.auth_user_id;
+  const email = user?.email ? normEmail(user.email) : null;
 
-  // Fetch subscriptions by user_id (account-linked) with email fallback
-  const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
+  const {
+    data: subscription,
+    isLoading: subLoading,
+    refetch: refetchSubscription,
+  } = useQuery({
     queryKey: ["subscription", userId, email],
     queryFn: async () => {
+      if (!userId && !email) return null;
+
       try {
-        if (!userId && !email) return null;
-        
+        // Prefer user_id lookup (account-linked), fallback to email (legacy Stripe)
         let subs = [];
-        
-        // PRIORITY 1: Query by user_id (account-linked - Apple + modern Stripe)
         if (userId) {
-          const byUserId = await base44.entities.Subscription.filter({ user_id: userId });
-          subs = byUserId || [];
+          subs = await base44.entities.Subscription.filter({ user_id: userId });
         }
-        
-        // PRIORITY 2: Fallback to email for legacy Stripe subscriptions
         if (subs.length === 0 && email) {
-          const byEmail = await base44.entities.Subscription.filter({ 
-            user_email: email,
-            provider: 'stripe'
-          });
-          subs = byEmail || [];
+          subs = await base44.entities.Subscription.filter({ user_email: email });
         }
-        
-        if (!subs.length) return null;
-        
-        // Filter out incomplete_expired
-        const validSubs = subs.filter(s => {
-          const status = (s.status || '').toLowerCase();
-          if (status === 'incomplete_expired') return false;
-          
-          // Allow incomplete if period_end is in future
-          if (status === 'incomplete') {
-            const periodEnd = s.current_period_end;
-            return periodEnd && new Date(periodEnd).getTime() > Date.now();
-          }
-          
-          return true;
+
+        if (!subs || subs.length === 0) return null;
+
+        // Filter to valid active or in-progress plans
+        const valid = subs.filter((s) => {
+          const status = s.status || "";
+          return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
         });
-        
-        if (!validSubs.length) return null;
-        
-        // Prefer active/trialing/incomplete, then most recent by period_end
-        const bestSub = validSubs.find((s) => 
-          s.status === "active" || s.status === "trialing" || s.status === "incomplete"
-        ) || validSubs[0];
-        
-        return bestSub;
-      } catch (err) {
-        console.error('[useCurrentUser] Subscription fetch error:', err);
+
+        if (valid.length === 0) return null;
+
+        // Pick best subscription: active > trialing > most recent
+        valid.sort((a, b) => {
+          const aActive = a.status === "active" ? 1 : 0;
+          const bActive = b.status === "active" ? 1 : 0;
+          if (aActive !== bActive) return bActive - aActive;
+
+          const aTrialing = a.status === "trialing" || a.status === "trial" ? 1 : 0;
+          const bTrialing = b.status === "trialing" || b.status === "trial" ? 1 : 0;
+          if (aTrialing !== bTrialing) return bTrialing - aTrialing;
+
+          const aDate = new Date(a.current_period_start || a.created_date || 0).getTime();
+          const bDate = new Date(b.current_period_start || b.created_date || 0).getTime();
+          return bDate - aDate;
+        });
+
+        return valid[0];
+      } catch (error) {
+        console.error("[useCurrentUser] Subscription query error:", error);
         return null;
       }
     },
     enabled: !!(userId || email),
-    staleTime: 5_000,
-    retry: 1,
+    staleTime: 30_000,
   });
 
-  // Ensure User entity exists and has platform set
+  // Ensure user record exists with platform info
   useEffect(() => {
-    if (userLoading || !rawUser?.email || ensuredUser) return;
-    
-    const needsEnsure = !rawUser?.platform;
-    if (!needsEnsure) {
-      setEnsuredUser(true);
-      return;
-    }
+    if (userLoading || !user?.email) return;
+    if (user?.platform) return; // Already has platform
 
-    const platform = detectPlatform();
-    
+    let cancelled = false;
+
     (async () => {
       try {
-        await base44.functions.invoke('ensureUserRecord', { platform });
-        await refetchUser();
-        setEnsuredUser(true);
-      } catch (e) {
-        console.error('[useCurrentUser] ensureUserRecord failed:', e);
-        setEnsuredUser(true);
+        await base44.functions.invoke("ensureUserRecord", {});
+        if (!cancelled) {
+          await refetchUser();
+        }
+      } catch (err) {
+        console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err);
       }
     })();
-  }, [userLoading, rawUser?.email, ensuredUser, refetchUser]);
 
-  // Provider is authoritative from User.subscription_provider field
-  const computedProvider = rawUser?.subscription_provider || null;
+    return () => {
+      cancelled = true;
+    };
+  }, [userLoading, user?.email, user?.platform, refetchUser]);
 
-  // Compute derived flags
+  // Infer provider from evidence
+  const provider = inferProvider(user, subscription);
+
+  // Backfill user.subscription_provider if it's wrong or missing
+  useEffect(() => {
+    if (userLoading || !user?.email || !provider) return;
+    if (backfillAttempted.current) return;
+    if (user?.subscription_provider === provider) return;
+
+    backfillAttempted.current = true;
+
+    (async () => {
+      try {
+        console.log(`[useCurrentUser] Backfilling subscription_provider: ${provider}`);
+        await base44.auth.updateMe({ subscription_provider: provider });
+        await refetchUser();
+      } catch (err) {
+        console.warn("[useCurrentUser] Failed to backfill subscription_provider:", err);
+      }
+    })();
+  }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
+
+  // Derived access flags
+  const hasPremium = hasPremiumAccess(user, subscription);
+  const hasPaid = hasPaidAccess(user, subscription);
+  const hasPro = hasProAccess(user, subscription);
+  const isTrial = !hasPaid && hasPremium;
+  const isAdmin = user?.role === "admin";
+  const isFounding = isFoundingMember(user);
+
   const isLoading = userLoading || subLoading;
-  const hasPremium = hasPremiumAccess(rawUser, subscription);
-  const hasPaid = hasPaidAccess(rawUser, subscription);
 
-  // Pro check: Must have paid access AND be on pro tier
-  const subTier = (subscription?.tier || "").toLowerCase();
-  const userTier = (rawUser?.subscription_tier || rawUser?.tier || "").toLowerCase();
-  const isPro = hasPaid && (subTier === 'pro' || userTier === 'pro');
-
-  const hasTrial = hasTrialAccess(rawUser);
-  const isInTrial = isTrialWindow(rawUser);
-  const trialDaysRemaining = getTrialDaysRemaining(rawUser);
-  const isIOS = isIOSCompanion();
-  const isCompanion = isCompanionApp();
-  const isApple = isAppleBuild;
-  const isAdmin = (rawUser?.role || "").toLowerCase() === "admin";
-
-  // Auto-grandfather free users who exceed limits
-  useEffect(() => {
-    if (!isLoading && rawUser && !hasPaid) {
-      ensureFreeGrandfatherFlag(rawUser);
-    }
-  }, [isLoading, rawUser, hasPaid]);
-
-  // Dev-only tier/entitlement debug output
-  useEffect(() => {
-    if (typeof window !== 'undefined' && import.meta.env.DEV && !isLoading && rawUser?.email) {
-      const debugInfo = {
-        user_id: userId,
-        email: rawUser.email,
-        emailNormalized: email,
-        tier: subscription?.tier || 'free',
-        provider: computedProvider || 'none',
-        isOnTrial: isInTrial,
-        isLegacyPremium: subscription?.tier === 'premium' && subscription?.subscriptionStartedAt && 
-          new Date(subscription.subscriptionStartedAt) < new Date('2026-02-01T00:00:00.000Z'),
-        isFoundingMember: rawUser.isFoundingMember === true,
-        subscriptionStartedAt: subscription?.subscriptionStartedAt || subscription?.started_at || 'N/A',
-        hasPaid,
-        hasPremium,
-        platform: rawUser.platform || 'unknown',
-      };
-      console.log('[PipeKeeper Dev] Entitlements:', debugInfo);
-    }
-  }, [isLoading, rawUser, subscription, isInTrial, hasPaid, hasPremium, email, userId, computedProvider]);
+  const refetch = async () => {
+    await Promise.all([refetchUser(), refetchSubscription()]);
+  };
 
   return {
-    user: rawUser,
+    user,
     subscription,
-    subscriptionProvider: computedProvider,
-    provider: computedProvider,
+    provider, // Inferred provider (stripe, apple, or null)
     isLoading,
     error: userError,
     hasPremium,
     hasPaid,
-    hasPaidAccess: hasPaid,
-    isPro,
-    hasTrial,
-    isInTrial,
-    trialDaysRemaining,
-    isIOS,
-    isCompanion,
-    isApple,
+    hasPro,
+    isTrial,
     isAdmin,
-    refetch: async () => {
-      try {
-        await refetchUser();
-        await refetchSubscription();
-      } catch (err) {
-        console.error('[useCurrentUser] Refetch failed:', err);
-        throw err;
-      }
-    },
+    isFoundingMember: isFounding,
+    refetch,
   };
 }

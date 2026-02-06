@@ -1,4 +1,19 @@
 // src/components/i18n/enforceTranslation.jsx
+
+const PLACEHOLDER_VALUES = new Set([
+  "Title",
+  "Subtitle", 
+  "Page Title",
+  "Page Subtitle",
+  "Optional",
+  "Info",
+  "Description",
+  "Label",
+  "Premium Active Subtext Paid",
+  "No Pending Requests Desc",
+  "Not Following Yet Desc",
+]);
+
 const isDebug = () => {
   try {
     if (typeof window === "undefined") return false;
@@ -12,11 +27,12 @@ const isDebug = () => {
 function isProbablyKey(value) {
   if (typeof value !== "string") return false;
   if (value.length > 100) return false;
+  // Looks like "section.subSection.label"
   if (value.includes(".") && !value.includes(" ") && value.length < 60) return true;
   return false;
 }
 
-function humanizeKey(keyStr) {
+export function humanizeKey(keyStr) {
   const last = keyStr.split(".").pop() || keyStr;
   return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -35,21 +51,23 @@ export function enforceTranslation(key, resolvedValue, language, componentInfo) 
   }
 
   const debug = isDebug();
-  const isProd = import.meta?.env?.PROD === true;
 
+  // Check if value is missing or invalid
   const looksMissing =
     resolvedValue === undefined ||
     resolvedValue === null ||
     resolvedValue === "" ||
     resolvedValue === key ||
+    isProbablyKey(resolvedValue) ||
+    PLACEHOLDER_VALUES.has(resolvedValue) ||
     (typeof resolvedValue === "string" && resolvedValue.includes("{{"));
 
-  // In debug: show explicit markers so you can hunt them down.
+  // In debug: show explicit markers so you can hunt them down
   if (debug && looksMissing) {
     return `🚫 ${humanizeKey(key)}`;
   }
 
-  // In production: NEVER return empty or raw key. Show human readable fallback.
+  // In production: NEVER return empty or raw key. Show human readable fallback
   if (looksMissing) {
     return humanizeKey(key);
   }

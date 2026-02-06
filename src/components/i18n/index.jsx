@@ -2,22 +2,13 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { translationsComplete } from "./translations-complete";
 import { translations } from "./translations";
+import { enforceTranslation, humanizeKey } from "./enforceTranslation";
 
 /**
  * Humanize a translation key into readable text.
- * Examples:
- *  - "tobacconist.identificationTitle" -> "Identification Title"
- *  - "profile.manageSubscription" -> "Manage Subscription"
+ * Re-exported for convenience.
  */
-export function humanizeKey(key) {
-  const last = String(key || "").split(".").pop() || "";
-  return last
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^./, (s) => s.toUpperCase());
-}
+export { humanizeKey };
 
 function isKeyLikeString(value) {
   if (typeof value !== "string") return false;
@@ -101,5 +92,13 @@ i18n.use(initReactI18next).init({
 
   interpolation: { escapeValue: false },
 });
+
+// GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
+// This ensures NO component can leak keys, even if they bypass safeTranslation wrapper
+const originalT = i18n.t.bind(i18n);
+i18n.t = function(key, options) {
+  const raw = originalT(key, options);
+  return enforceTranslation(key, raw, i18n.language);
+};
 
 export default i18n;
