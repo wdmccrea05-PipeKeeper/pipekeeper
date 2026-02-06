@@ -25,7 +25,7 @@ function looksLikePlaceholder(value) {
   return false;
 }
 
-export function useTranslation() {
+export function useSafeTranslation() {
   const { t, i18n: hookI18n } = useTranslation();
 
   const safeT = (key, options = {}) => {
@@ -49,3 +49,6 @@ export function useTranslation() {
 
   return { t: safeT, i18n: hookI18n };
 }
+
+// Export with both names for compatibility
+export const useTranslation = useSafeTranslation;
