@@ -229,12 +229,12 @@ export default function TobaccoCollectionStats() {
               </div>
               
               <div className="space-y-2 bg-blue-50/50 rounded-lg p-2 border border-blue-200/50">
-                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">{t("stats.bulk")}</p>
-                <button
-                  onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
-                  className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
-                >
-                  <span className="text-xs text-stone-600">Total</span>
+              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">{t("stats.bulk")}</p>
+              <button
+                onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
+                className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
+              >
+                <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{bulkWeightOz.toFixed(1)} oz</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-blue-600" />
