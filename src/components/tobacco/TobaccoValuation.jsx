@@ -212,7 +212,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 {/* Evidence Sources */}
                 {blend.ai_evidence_sources?.length > 0 && hasProAccess && (
                   <div>
-                    <p className="text-xs text-[#e8d5b7]/50 mb-2">{t("tobaccoValuation.evidenceSources", {defaultValue: "Evidence sources"})}</p>
+                    <p className="text-xs text-white mb-2">{t("tobaccoValuation.evidenceSources", {defaultValue: "Evidence sources"})}</p>
                     <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
                       {blend.ai_evidence_sources.map((source, idx) => {
                         // Extract domain from URL if it's a URL, otherwise use source as-is
@@ -223,7 +223,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                           <Badge 
                             key={idx} 
                             variant="outline" 
-                            className="text-xs border-[#e8d5b7]/30 text-[#e8d5b7] bg-[#243548]/30 cursor-help whitespace-nowrap"
+                            className="text-xs border-[#e8d5b7]/40 text-white bg-[#243548]/50 cursor-help whitespace-nowrap"
                             title={source}
                           >
                             {displayText}

@@ -221,7 +221,7 @@ export default function PipesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E0D8C8]/60" />
             <Input
-              placeholder={t("pipesPage.searchPlaceholder")}
+              placeholder={t("pipesPage.searchPlaceholder", {defaultValue: "Search by name or maker..."})}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`pl-10 ${PK_THEME.input}`}

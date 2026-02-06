@@ -113,7 +113,7 @@ Provide a detailed valuation in JSON format with:
             <DollarSign className="w-8 h-8 text-emerald-600" />
           </div>
           <h3 className="text-lg font-semibold text-stone-800 mb-2">{t("matching.marketValueLookup", {defaultValue: "Market Value Lookup"})}</h3>
-          <p className="text-stone-500 mb-6 max-w-md mx-auto">
+          <p className="text-stone-600 mb-6 max-w-md mx-auto">
             {t("matching.searchMarketDesc", {defaultValue: "Search recent market data, auctions, and estate pipe sales to estimate current value"})}
           </p>
           <Button

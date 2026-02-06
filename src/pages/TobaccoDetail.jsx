@@ -367,7 +367,7 @@ export default function TobaccoDetailPage() {
                   onClick={() => updateMutation.mutate({ rating: i })}
                 />
               ))}
-              {blend.rating && <span className="text-white ml-2">{blend.rating}{t("units.outOf5")}</span>}
+              {blend.rating && <span className="text-white ml-2">{blend.rating} {t("units.outOf5", {defaultValue: "Out Of 5"})}</span>}
             </div>
 
             {/* Top Pipe Matches */}
