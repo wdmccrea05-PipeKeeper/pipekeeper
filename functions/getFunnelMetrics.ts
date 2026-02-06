@@ -20,7 +20,10 @@ Deno.serve(async (req) => {
     // Stripe customers created in last 7 days
     let stripeCustomers = 0;
     try {
-      const customers = await stripe.customers.list({ created: { gte: sevenDaysAgo }, limit: 100 });
+      const customers = await stripe.customers.list({ 
+        created: { gte: sevenDaysAgo }, 
+        limit: 100 
+      });
       stripeCustomers = customers.data.length;
     } catch (e) {
       console.warn("[funnel] Could not fetch Stripe customers:", e);
@@ -29,8 +32,14 @@ Deno.serve(async (req) => {
     // Active subscriptions created in last 7 days
     let activeSubscriptions = 0;
     try {
-      const subs = await stripe.subscriptions.list({ created: { gte: sevenDaysAgo }, limit: 100 });
-      activeSubscriptions = subs.data.filter(s => s.status === "active" || s.status === "trialing").length;
+      const subs = await stripe.subscriptions.list({ 
+        created: { gte: sevenDaysAgo }, 
+        limit: 100,
+        status: 'all'
+      });
+      activeSubscriptions = subs.data.filter(s => 
+        s.status === "active" || s.status === "trialing"
+      ).length;
     } catch (e) {
       console.warn("[funnel] Could not fetch Stripe subscriptions:", e);
     }
@@ -40,7 +49,11 @@ Deno.serve(async (req) => {
     const events = await base44.asServiceRole.entities.SubscriptionIntegrationEvent.filter({});
     const recentEvents = events.filter(e => new Date(e.created_date) >= threshold);
     const entitlementsApplied = recentEvents.filter(e => 
-      e.success && (e.event_type.includes("entitlement") || e.event_type.includes("reconciled"))
+      e.success && (
+        e.event_type.includes("entitlement") || 
+        e.event_type.includes("reconciled") ||
+        e.event_type.includes("subscription.updated")
+      )
     ).length;
 
     // Drop-off reasons from failed events
