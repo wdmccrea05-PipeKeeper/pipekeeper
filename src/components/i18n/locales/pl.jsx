@@ -1,17 +1,14 @@
-
 export default {
   "common": {
-    "loading": "Loading...",
-    "refresh": "Refresh",
+    "loading": "Ładowanie...",
+    "refresh": "Odśwież",
     "cancel": "Anuluj",
     "save": "Zapisz",
-    "delete": "Delete",
+    "delete": "Usuń",
     "close": "Zamknij",
-    "unknown": "Unknown",
-    "of": "of",
-    "ago": "ago",
-    "lastUpdated": "Last updated",
-    "search": "Search",
+    "unknown": "Nieznany",
+    "of": "z",
+    "search": "Szukaj",
     "continue": "Kontynuuj",
     "back": "Wstecz"
   },
@@ -22,10 +19,9 @@ export default {
   "nav": {
     "home": "Strona główna",
     "pipes": "Fajki",
-    "cellar": "Cellar",
+    "cellar": "Piwnica",
     "tobacco": "Tytoń",
     "community": "Społeczność",
-    "profile": "Profil",
-    "settings": "Ustawienia"
+    "profile": "Profil"
   }
 };

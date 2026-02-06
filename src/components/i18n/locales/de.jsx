@@ -1,4 +1,3 @@
-
 export default {
   "pipes": {
     "search": "Suchen",
@@ -23,25 +22,9 @@ export default {
     "unknown": "Unbekannt",
     "of": "von"
   },
-  "units": {
-    "tin": "Dose",
-    "tinPlural": "Dosen"
-  },
-  "identificationTooltip": "Laden Sie Fotos für schnelle Identifizierung hoch",
-  "whatIfTooltip": "Führen Sie hypothetische Szenarien aus",
-  "updatesTooltip": "Überprüfen Sie automatische Empfehlungen",
-  "outOfDateRegenRec": "Veraltet - Neugenerierung empfohlen",
   "tobacconist": {
     "noRecommendation": "Keine spezifischen Empfehlungen",
     "versatilePattern": "Vielseitig - für viele Blendtypen geeignet",
-    "tobaccoBlendClassification": "Tabakblend-Klassifizierung",
-    "tobaccoBlendClassificationDesc": "Überprüfen und verfeinern Sie Ihre Blend-Kategorien",
-    "reclassifyBlends": "Blends Neu Klassifizieren",
-    "total": "Gesamt",
-    "pairingMatrix": "Paarungsmatrix",
-    "undo": "Rückgängig",
-    "regenerate": "Neu Generieren",
-    "collectionOptimizationTitle": "Sammlungsoptimierung",
     "upToDate": "Aktuell"
   }
 };

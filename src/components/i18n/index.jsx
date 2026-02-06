@@ -2,17 +2,17 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-import en from "@/components/i18n/locales/en.json";
-import es from "@/components/i18n/locales/es.json";
-import fr from "@/components/i18n/locales/fr.json";
-import de from "@/components/i18n/locales/de.json";
-import it from "@/components/i18n/locales/it.json";
-import pt from "@/components/i18n/locales/pt.json";
-import nl from "@/components/i18n/locales/nl.json";
-import pl from "@/components/i18n/locales/pl.json";
-import ja from "@/components/i18n/locales/ja.json";
-import zh from "@/components/i18n/locales/zh.json";
-import sv from "@/components/i18n/locales/sv.json";
+import en from "@/components/i18n/locales/en.js";
+import es from "@/components/i18n/locales/es.js";
+import fr from "@/components/i18n/locales/fr.js";
+import de from "@/components/i18n/locales/de.js";
+import it from "@/components/i18n/locales/it.js";
+import pt from "@/components/i18n/locales/pt.js";
+import nl from "@/components/i18n/locales/nl.js";
+import pl from "@/components/i18n/locales/pl.js";
+import ja from "@/components/i18n/locales/ja.js";
+import zh from "@/components/i18n/locales/zh.js";
+import sv from "@/components/i18n/locales/sv.js";
 
 const STORAGE_KEY = "pk_lang";
 

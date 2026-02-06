@@ -1,17 +1,14 @@
-
 export default {
   "common": {
-    "loading": "Loading...",
-    "refresh": "Refresh",
+    "loading": "Laden...",
+    "refresh": "Vernieuwen",
     "cancel": "Annuleren",
     "save": "Opslaan",
-    "delete": "Delete",
+    "delete": "Verwijderen",
     "close": "Sluiten",
-    "unknown": "Unknown",
-    "of": "of",
-    "ago": "ago",
-    "lastUpdated": "Last updated",
-    "search": "Search",
+    "unknown": "Onbekend",
+    "of": "van",
+    "search": "Zoeken",
     "continue": "Doorgaan",
     "back": "Terug"
   },
@@ -22,10 +19,9 @@ export default {
   "nav": {
     "home": "Home",
     "pipes": "Pijpen",
-    "cellar": "Cellar",
+    "cellar": "Kelder",
     "tobacco": "Tabak",
-    "community": "Community",
-    "profile": "Profiel",
-    "settings": "Instellingen"
+    "community": "Gemeenschap",
+    "profile": "Profiel"
   }
 };

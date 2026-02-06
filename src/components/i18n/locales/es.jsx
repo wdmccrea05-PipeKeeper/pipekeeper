@@ -1,4 +1,3 @@
-
 export default {
   "pipes": {
     "search": "Buscar",
@@ -23,25 +22,9 @@ export default {
     "unknown": "Desconocido",
     "of": "de"
   },
-  "units": {
-    "tin": "lata",
-    "tinPlural": "latas"
-  },
-  "identificationTooltip": "Sube fotos para identificación rápida",
-  "whatIfTooltip": "Ejecuta escenarios hipotéticos",
-  "updatesTooltip": "Revisa recomendaciones automáticas",
-  "outOfDateRegenRec": "Desactualizado - se recomienda regeneración",
   "tobacconist": {
     "noRecommendation": "Sin recomendaciones específicas",
     "versatilePattern": "Versátil - adecuado para muchos tipos de mezclas",
-    "tobaccoBlendClassification": "Clasificación de Mezcla de Tabaco",
-    "tobaccoBlendClassificationDesc": "Revise y refine las categorías de sus mezclas",
-    "reclassifyBlends": "Reclasificar Mezclas",
-    "total": "Total",
-    "pairingMatrix": "Matriz de Maridaje",
-    "undo": "Deshacer",
-    "regenerate": "Regenerar",
-    "collectionOptimizationTitle": "Optimización de Colección",
     "upToDate": "Actualizado"
   }
 };
