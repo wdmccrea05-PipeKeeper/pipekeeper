@@ -615,7 +615,7 @@ export default function CommunityPage() {
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
                   <p>{t("communityExtended.noPendingRequests", {defaultValue: "No Pending Requests"})}</p>
-                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc", {defaultValue: "Friend requests from other pipe enthusiasts will appear here"})}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc", {defaultValue: "Friend requests from other members will appear here. Search for users in the Discover tab and send friend requests to connect. Friends can message each other when messaging is enabled."})}</p>
                 </CardContent>
               </Card>
             ) : (
