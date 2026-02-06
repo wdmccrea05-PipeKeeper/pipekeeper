@@ -1,27 +1,17 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import en from "./locales/en.json.jsx";
-import es from "./locales/es.json.jsx";
-import fr from "./locales/fr.json.jsx";
-import de from "./locales/de.json.jsx";
-import it from "./locales/it.json.jsx";
-import ptBR from "./locales/pt-BR.json.jsx";
-import nl from "./locales/nl.json.jsx";
-import pl from "./locales/pl.json.jsx";
-import ja from "./locales/ja.json.jsx";
-import zhHans from "./locales/zh-Hans.json.jsx";
-import sv from "./locales/sv.json.jsx";
-
-export function humanizeKey(key) {
-  const last = String(key).split(".").pop() || String(key);
-  return last
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^./, (s) => s.toUpperCase());
-}
+import en from "./locales/en.json";
+import es from "./locales/es.json";
+import fr from "./locales/fr.json";
+import de from "./locales/de.json";
+import it from "./locales/it.json";
+import ptBR from "./locales/pt-BR.json";
+import nl from "./locales/nl.json";
+import pl from "./locales/pl.json";
+import ja from "./locales/ja.json";
+import zhHans from "./locales/zh-Hans.json";
+import sv from "./locales/sv.json";
 
 function normalizeLang(raw) {
   const v = (raw || "").toString().trim();
@@ -43,19 +33,15 @@ function flatten(obj, prefix = "") {
   return out;
 }
 
-// DEV parity check: if any locale is missing keys vs en, log it clearly (no silent failures)
 function parityCheck(resources) {
   const base = flatten(resources.en.translation);
   const baseKeys = new Set(Object.keys(base));
-
   Object.entries(resources).forEach(([lng, pack]) => {
     if (lng === "en") return;
     const flat = flatten(pack.translation);
     const missing = [...baseKeys].filter((k) => !(k in flat));
     if (missing.length) {
-      console.error(`[i18n] Locale "${lng}" is missing ${missing.length} keys vs en.  This will cause fallback-to-English and "no translation" perception.`, {
-        sample: missing.slice(0, 30),
-      });
+      console.error(`[i18n] Locale "${lng}" missing ${missing.length} keys vs en`, missing.slice(0, 50));
     }
   });
 }
@@ -73,7 +59,7 @@ const resources = {
   "zh-Hans": { translation: zhHans },
   sv: { translation: sv },
 
-  // aliases (so older codes still work)
+  // aliases
   pt: { translation: ptBR },
   zh: { translation: zhHans },
 };
@@ -88,13 +74,9 @@ i18n.use(initReactI18next).init({
   resources,
   lng: stored,
   fallbackLng: "en",
-
   returnNull: false,
   returnEmptyString: false,
   returnObjects: false,
-
-  parseMissingKeyHandler: (key) => humanizeKey(key),
-
   interpolation: { escapeValue: false },
   react: { useSuspense: false },
 });
