@@ -69,7 +69,14 @@ i18n
     returnNull: false,
     returnEmptyString: false,
     returnObjects: false,
-    parseMissingKeyHandler: (key) => humanizeKey(key),
+    parseMissingKeyHandler: (key) => {
+      // Track missing keys in dev mode
+      if (import.meta.env.DEV) {
+        if (!window.__i18nMissingKeys) window.__i18nMissingKeys = new Set();
+        window.__i18nMissingKeys.add(key);
+      }
+      return humanizeKey(key);
+    },
 
     interpolation: { escapeValue: false },
 
@@ -87,6 +94,20 @@ i18n.on("languageChanged", (lng) => {
     window.localStorage.setItem(STORAGE_KEY, lng);
   }
 });
+
+// Dev-only: expose missing keys dump function
+if (import.meta.env.DEV && typeof window !== "undefined") {
+  window.__dumpMissingI18nKeys = () => {
+    const missing = window.__i18nMissingKeys;
+    if (!missing || missing.size === 0) {
+      console.log("✅ No missing i18n keys detected");
+      return [];
+    }
+    const keys = Array.from(missing).sort();
+    console.warn(`⚠️ Found ${keys.length} missing i18n keys:`, keys);
+    return keys;
+  };
+}
 
 export default i18n;
 export { SUPPORTED_LANGUAGES, humanizeKey };
