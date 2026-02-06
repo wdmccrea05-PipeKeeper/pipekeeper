@@ -2,18 +2,17 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// Locale files
-import en from "./locales/en.json";
-import es from "./locales/es.json";
-import fr from "./locales/fr.json";
-import de from "./locales/de.json";
-import it from "./locales/it.json";
-import ptBR from "./locales/pt-BR.json";
-import nl from "./locales/nl.json";
-import pl from "./locales/pl.json";
-import ja from "./locales/ja.json";
-import zhHans from "./locales/zh-Hans.json";
-import sv from "./locales/sv";
+// Locale files - all use .json.jsx format exporting default object
+import en from "./locales/en.json.jsx";
+import es from "./locales/es.json.jsx";
+import fr from "./locales/fr.json.jsx";
+import de from "./locales/de.json.jsx";
+import it from "./locales/it.json.jsx";
+import ptBR from "./locales/pt-BR.json.jsx";
+import nl from "./locales/nl.json.jsx";
+import pl from "./locales/pl.json.jsx";
+import ja from "./locales/ja.json.jsx";
+import zhHans from "./locales/zh-Hans.json.jsx";
 
 const STORAGE_KEY = "pk_lang";
 
@@ -37,7 +36,7 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-// Resources: primary codes + aliases for backward compatibility
+// Resources: primary codes only (canonical)
 const resources = {
   en: { translation: en },
   es: { translation: es },
@@ -49,10 +48,6 @@ const resources = {
   pl: { translation: pl },
   ja: { translation: ja },
   "zh-Hans": { translation: zhHans },
-  sv: { translation: sv },
-  // Aliases (old codes map to new canonical ones)
-  pt: { translation: ptBR },
-  zh: { translation: zhHans },
 };
 
 const SUPPORTED_LANGUAGES = Object.keys(resources);
