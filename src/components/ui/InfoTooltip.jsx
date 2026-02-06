@@ -13,7 +13,7 @@ export default function InfoTooltip({ text, className }) {
         onMouseLeave={() => setShow(false)}
         onClick={() => setShow(!show)}
         className={cn(
-          "text-[#E0D8C8]/50 hover:text-[#E0D8C8]/80 transition-colors",
+          "text-[#1a2c42]/60 hover:text-[#1a2c42] transition-colors",
           className
         )}
         aria-label="More info"
