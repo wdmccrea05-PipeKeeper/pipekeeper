@@ -466,7 +466,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
-              {t("home.welcomeToCollection", { defaultValue: "Welcome to PipeKeeper" })}
+              Welcome to PipeKeeper
             </PkPageTitle>
             <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
               {t("home.pageSubtitle", { defaultValue: "Catalog, track, and enjoy your pipe and tobacco collection" })}
