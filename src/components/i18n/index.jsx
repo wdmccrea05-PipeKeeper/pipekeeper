@@ -69,4 +69,4 @@ i18n.use(initReactI18next).init({
 });
 
 export default i18n;
-export { SUPPORTED as SUPPORTED_LANGUAGES };
+export { SUPPORTED as SUPPORTED_LANGUAGES, humanizeKey };
