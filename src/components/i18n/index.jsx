@@ -70,6 +70,6 @@ i18n.use(initReactI18next).init({
 });
 
 // Re-export the new centralized i18n instance
-export { i18n as default, SUPPORTED as SUPPORTED_LANGUAGES, humanizeKey };
+export { default, SUPPORTED_LANGUAGES, humanizeKey } from "./i18n";
 
 // All initialization moved to i18n.ts
