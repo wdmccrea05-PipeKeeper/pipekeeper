@@ -17,7 +17,7 @@ const LANGS = [
 ];
 
 export default function LanguageSwitcher({ className = "" }) {
-  const { i18n } = useTranslation();
+  const { t, i18n: hookI18n } = useTranslation();
 
   const current = useMemo(() => {
     const raw = (i18n.language || "en").replace("_", "-");
@@ -37,12 +37,15 @@ export default function LanguageSwitcher({ className = "" }) {
         // Force entitlement refresh after language change
         localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
       } catch {}
+      // Force page reload to apply language change
+      window.location.reload();
     } catch (error) {
       console.error('[LanguageSwitcher] Failed to change language:', error);
       // Fallback to English if language change fails
       try {
         await i18n.changeLanguage('en');
         localStorage.setItem("pk_lang", 'en');
+        window.location.reload();
       } catch {}
     }
   };
