@@ -13,7 +13,7 @@ import nl from "./locales/nl.json";
 import pl from "./locales/pl.json";
 import ja from "./locales/ja.json";
 import zhHans from "./locales/zh-Hans.json";
-import sv from "./locales/sv.json";
+import sv from "./locales/sv";
 
 const STORAGE_KEY = "pk_lang";
 
