@@ -4,7 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
-import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle } from "lucide-react";
+import { Home, Leaf, Menu, X, User, HelpCircle, Users, Crown, AlertCircle, Settings, Shield, FileText } from "lucide-react";
 import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
@@ -206,10 +206,12 @@ export default function Layout({ children, currentPageName }) {
     { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
   ];
 
-  const adminNavItems = [
-    { name: t("nav.reports"), page: "AdminReports", icon: AlertCircle, isIconComponent: true },
-    { name: t("nav.subscriptionQueue"), page: "AdminSubscriptionRequests", icon: AlertCircle, isIconComponent: true },
-  ];
+  const adminNavItems = isAdmin ? [
+    { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
+    { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+  ] : [];
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -546,14 +548,19 @@ export default function Layout({ children, currentPageName }) {
                        hasPaidAccess={hasPaidAccess}
                      />
                    ))}
-                   {isAdmin && adminNavItems.map((item) => (
-                     <NavLink
-                       key={item.page}
-                       item={item}
-                       currentPage={currentPageName}
-                       hasPaidAccess={hasPaidAccess}
-                     />
-                   ))}
+                   {adminNavItems.length > 0 && (
+                     <>
+                       <div className="h-6 w-px bg-[#E0D8C8]/20 mx-2" />
+                       {adminNavItems.map((item) => (
+                         <NavLink
+                           key={item.page}
+                           item={item}
+                           currentPage={currentPageName}
+                           hasPaidAccess={hasPaidAccess}
+                         />
+                       ))}
+                     </>
+                   )}
                  </div>
 
                 <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
@@ -627,16 +634,24 @@ export default function Layout({ children, currentPageName }) {
                   isMobile={true}
                 />
               ))}
-              {isAdmin && adminNavItems.map((item) => (
-                <NavLink
-                  key={item.page}
-                  item={item}
-                  currentPage={currentPageName}
-                  onClick={() => setMobileOpen(false)}
-                  hasPaidAccess={hasPaidAccess}
-                  isMobile={true}
-                />
-              ))}
+              
+              {adminNavItems.length > 0 && (
+                <>
+                  <div className="h-px bg-gray-200 my-2" />
+                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">Admin</p>
+                  {adminNavItems.map((item) => (
+                    <NavLink
+                      key={item.page}
+                      item={item}
+                      currentPage={currentPageName}
+                      onClick={() => setMobileOpen(false)}
+                      hasPaidAccess={hasPaidAccess}
+                      isMobile={true}
+                    />
+                  ))}
+                </>
+              )}
+              
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <LanguageSwitcher />
               </div>
