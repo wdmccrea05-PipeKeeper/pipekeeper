@@ -199,7 +199,7 @@ For each of the 3 recommendations, provide:
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#D1A75D]" />
-                <span className="text-sm font-medium text-[#E0D8C8]">Recommended Blends to Try</span>
+                <span className="text-sm font-medium text-[#E0D8C8]">Top 3 Matches</span>
               </div>
               <div className="flex gap-2">
                 <Button

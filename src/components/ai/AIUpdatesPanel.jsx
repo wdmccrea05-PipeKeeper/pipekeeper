@@ -461,9 +461,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
-                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec")}</span>
+                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec", {defaultValue: "Out of date - Regeneration recommended"})}</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate")}</span>
+                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate", {defaultValue: "Up to date"})}</span>
               )}
             </p>
           </div>
@@ -505,9 +505,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
-                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec")}</span>
+                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec", {defaultValue: "Out of date - Regeneration recommended"})}</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate")}</span>
+                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate", {defaultValue: "Up to date"})}</span>
               )}
             </p>
           </div>
@@ -598,7 +598,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
               <InfoTooltip text={t("tobacconist.breakInSchedulesTooltip")} />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              {t("tobacconist.breakInSchedulesDesc")}
+              {t("tobacconist.breakInSchedulesDesc", {defaultValue: "Personalized break-in recommendations generated per pipe"})}
             </p>
           </div>
         </div>
