@@ -26,29 +26,30 @@ function looksLikePlaceholder(value) {
 }
 
 export function useSafeTranslation() {
-  const { t, i18n: hookI18n } = useReactI18nTranslation();
+        const { t, i18n: hookI18n } = useReactI18nTranslation();
 
-  const safeT = (key, options = {}) => {
-    const raw = t(key, options);
+        const safeT = (key, options = {}) => {
+          const raw = t(key, options);
 
-    // If missing key => humanize (never leak key)
-    if (raw === key) return humanizeKey(key);
+          // If missing key => humanize (never leak key)
+          if (raw === key) return humanizeKey(key);
 
-    // If locale contains placeholder => fallback to English
-    if (looksLikePlaceholder(raw)) {
-      const enValue = i18n.t(key, { ...options, lng: "en" });
-      if (enValue && enValue !== key && !looksLikePlaceholder(enValue)) return enValue;
-      return humanizeKey(key);
-    }
+          // If locale contains placeholder => fallback to English
+          if (looksLikePlaceholder(raw)) {
+            const enValue = i18n.t(key, { ...options, lng: "en" });
+            if (enValue && enValue !== key && !looksLikePlaceholder(enValue)) return enValue;
+            return humanizeKey(key);
+          }
 
-    return raw;
-  };
+          return raw;
+        };
 
-  // ensure callers can access current language too
-  safeT.language = hookI18n?.language || i18n.language || "en";
+        // ensure callers can access current language too
+        safeT.language = hookI18n?.language || i18n.language || "en";
+        safeT.i18n = hookI18n;
 
-  return { t: safeT, i18n: hookI18n };
-}
+        return { t: safeT, i18n: hookI18n || i18n };
+      }
 
 // Export with both names for compatibility
 export const useTranslation = useSafeTranslation;
