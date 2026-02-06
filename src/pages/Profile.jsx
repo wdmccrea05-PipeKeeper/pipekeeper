@@ -573,12 +573,11 @@ export default function ProfilePage() {
                 <div className="font-medium text-stone-800">Public community profile</div>
                 <div className="text-sm text-stone-600">Allow others to view your profile in the community.</div>
               </div>
-              <div className={`w-12 h-7 rounded-full transition-colors ${formData.is_public ? "bg-green-600" : "bg-red-600"}`}>
-                <Switch
-                  checked={formData.is_public}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
-                />
-              </div>
+              <Switch
+                checked={formData.is_public}
+                onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
+                className="data-[state=checked]:bg-[#A35C5C]"
+              />
             </div>
 
             {/* Save */}

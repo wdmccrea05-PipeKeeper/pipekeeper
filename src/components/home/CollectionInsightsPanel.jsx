@@ -93,12 +93,12 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
             <PKHeader 
-              title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
+              title={isAppleBuild ? t("insights.titleInventory", {defaultValue: "Inventory Tools"}) : t("insights.title", {defaultValue: "Collection Insights"})}
               className="mb-0"
             />
             <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
           </div>
-          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
+          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle", {defaultValue: "Track usage, optimize pairings, and monitor your collection"})}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
@@ -214,10 +214,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports", {defaultValue: "Reports"})}</h3>
                         <InfoTooltip text="Generate exportable summaries of your collection for reference or documentation." />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle")}</p>
+                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle", {defaultValue: "Export your collection and smoking logs"})}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
@@ -240,10 +240,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard", {defaultValue: "Aging Dashboard"})}</h3>
                         <InfoTooltip text="Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics." />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.agingSubtitle")}</p>
+                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.agingSubtitle", {defaultValue: "Track cellared tobacco aging progress"})}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>
