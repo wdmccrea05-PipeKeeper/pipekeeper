@@ -524,14 +524,14 @@ export default function CommunityPage() {
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/70" />
-                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("communityExtended.messagingDisabled")}</h3>
+                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("messaging.messagingDisabled", {defaultValue: "Messaging Disabled"})}</h3>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    {t("communityExtended.messagingDisabledDesc")}
+                    {t("messaging.messagingDisabledDesc", {defaultValue: "Enable messaging in your profile settings to chat with friends"})}
                   </p>
                   <a href={createPageUrl('Profile')}>
                     <Button>
                       <Settings className="w-4 h-4 mr-2" />
-                      {t("communityExtended.goToProfileSettings")}
+                      {t("messaging.goToSettings", {defaultValue: "Go to Profile Settings"})}
                     </Button>
                   </a>
                 </CardContent>
@@ -680,8 +680,14 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("communityExtended.notFollowingYet")}</p>
-                  <p className="text-sm mt-2">{t("communityExtended.notFollowingYetDesc")}</p>
+                  <p>{t("community.notFollowingYet", {defaultValue: "Not Following Anyone"})}</p>
+                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc", {defaultValue: "Discover and follow pipe enthusiasts in the community to see their collections"})}</p>
+                  <a href={createPageUrl('Community')}>
+                    <Button className="mt-4" onClick={() => setActiveTab && setActiveTab('discover')}>
+                      <Search className="w-4 h-4 mr-2" />
+                      {t("community.exploreCommunity", {defaultValue: "Explore Community"})}
+                    </Button>
+                  </a>
                 </CardContent>
               </Card>
             ) : (
