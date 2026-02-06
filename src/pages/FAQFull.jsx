@@ -167,7 +167,7 @@ export default function FAQFull() {
             </div>
 
             <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2">Pro Tier (Coming February 1, 2026)</h4>
+              <h4 className="font-semibold text-purple-900 mb-2">Pro Tier</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
                 <li>Everything in Premium, plus:</li>
                 <li>AI pipe identification from photos</li>
