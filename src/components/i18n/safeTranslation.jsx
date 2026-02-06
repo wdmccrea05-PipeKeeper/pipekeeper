@@ -1,5 +1,6 @@
 import { useTranslation as useReactI18nTranslation } from "react-i18next";
 import i18n, { humanizeKey } from "./index";
+import { useEffect, useState } from "react";
 
 // Placeholder values that must NEVER be shown as final UI copy
 const PLACEHOLDER_EXACT = new Set([
@@ -27,6 +28,19 @@ function looksLikePlaceholder(value) {
 
 export function useSafeTranslation() {
         const { t, i18n: hookI18n } = useReactI18nTranslation();
+        const [, setLanguageChangeKey] = useState(0);
+
+        // Subscribe to language changes
+        useEffect(() => {
+          const handleLanguageChange = () => {
+            setLanguageChangeKey(prev => prev + 1);
+          };
+          
+          hookI18n?.on?.('languageChanged', handleLanguageChange);
+          return () => {
+            hookI18n?.off?.('languageChanged', handleLanguageChange);
+          };
+        }, [hookI18n]);
 
         const safeT = (key, options = {}) => {
           const raw = t(key, options);
