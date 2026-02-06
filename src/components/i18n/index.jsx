@@ -8,12 +8,11 @@ import es from "./locales/es.json";
 import fr from "./locales/fr.json";
 import de from "./locales/de.json";
 import it from "./locales/it.json";
-import pt from "./locales/pt.json";
+import ptBR from "./locales/pt-BR";
 import nl from "./locales/nl.json";
 import pl from "./locales/pl.json";
 import ja from "./locales/ja.json";
-import zh from "./locales/zh.json";
-import sv from "./locales/sv.json";
+import zhHans from "./locales/zh-Hans";
 
 const STORAGE_KEY = "pk_lang";
 
@@ -23,20 +22,19 @@ const resources = {
   fr: { translation: fr },
   de: { translation: de },
   it: { translation: it },
-  pt: { translation: pt },
+  "pt-BR": { translation: ptBR },
   nl: { translation: nl },
   pl: { translation: pl },
   ja: { translation: ja },
-  zh: { translation: zh },
-  sv: { translation: sv },
+  "zh-Hans": { translation: zhHans },
 };
 
 const SUPPORTED_LANGUAGES = Object.keys(resources);
 
 function normalizeLang(code) {
   if (!code) return "en";
-  if (code === "pt-BR" || code === "pt_BR") return "pt";
-  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN") return "zh";
+  if (code === "pt-BR" || code === "pt_BR" || code === "pt") return "pt-BR";
+  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN" || code === "zh") return "zh-Hans";
   return code;
 }
 
