@@ -15,8 +15,14 @@ export default function PremiumActiveIndicator({ user, subscription }) {
   const isTrialUser = user?.subscription_status === 'trialing' || user?.subscription_level === 'trial';
   const isPaidSubscriber = user?.subscription_level === 'paid' && subscription?.status === 'active';
   
+  // Determine tier
+  const tier = (subscription?.tier || '').toLowerCase();
+  const isProTier = tier === 'pro';
+  
   // Hide if user doesn't have premium access
   if (!hasPremium) return null;
+  
+  const tierLabel = isProTier ? 'Pro' : 'Premium';
   
   return (
     <div className="bg-gradient-to-r from-[#8b3a3a]/20 to-[#6d2e2e]/20 border-l-4 border-[#A35C5C] px-4 py-2 mb-4">
@@ -26,7 +32,7 @@ export default function PremiumActiveIndicator({ user, subscription }) {
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-[#E0D8C8]">
-            {t("subscription.premiumActive")}
+            {tierLabel} Active
           </p>
           <p className="text-xs text-[#E0D8C8]/70">
             {isTrialUser 
