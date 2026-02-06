@@ -47,7 +47,7 @@ export default function LanguageSwitcher({ className = "" }) {
   };
 
   return (
-    <div className={`flex items-center ${className}`}>
+    <div className={`flex flex-col items-center ${className}`}>
       <select
         value={current}
         onChange={(e) => setLang(e.target.value)}
@@ -74,6 +74,7 @@ export default function LanguageSwitcher({ className = "" }) {
           </option>
         ))}
       </select>
+      <div className="text-[10px] text-[#e8d5b7]/50 mt-1">Current: {i18n.language}</div>
     </div>
   );
 }
