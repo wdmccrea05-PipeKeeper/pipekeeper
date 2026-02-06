@@ -1,17 +1,17 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import en from "./locales/en.json";
-import es from "./locales/es.json";
-import fr from "./locales/fr.json";
-import de from "./locales/de.json";
-import it from "./locales/it.json";
-import ptBR from "./locales/pt-BR.json";
-import nl from "./locales/nl.json";
-import pl from "./locales/pl.json";
-import ja from "./locales/ja.json";
-import zhHans from "./locales/zh-Hans.json";
-import sv from "./locales/sv.json";
+import en from "./locales/en.json.js";
+import es from "./locales/es.json.js";
+import fr from "./locales/fr.json.js";
+import de from "./locales/de.json.js";
+import it from "./locales/it.json.js";
+import ptBR from "./locales/pt-BR.json.js";
+import nl from "./locales/nl.json.js";
+import pl from "./locales/pl.json.js";
+import ja from "./locales/ja.json.js";
+import zhHans from "./locales/zh-Hans.json.js";
+import sv from "./locales/sv.json.js";
 
 function normalizeLang(raw) {
   const v = (raw || "").toString().trim();
