@@ -1,42 +1,58 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useMemo, useState } from "react";
+import i18n from "@/components/i18n";
 
-const SUPPORTED_LANGUAGES = [
+const LANGS = [
   { code: "en", label: "English" },
   { code: "es", label: "Español" },
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (Brasil)" },
+  { code: "pt-BR", label: "Português" },
   { code: "nl", label: "Nederlands" },
   { code: "pl", label: "Polski" },
   { code: "ja", label: "日本語" },
-  { code: "zh-Hans", label: "简体中文" },
+  { code: "zh-Hans", label: "中文" },
+  { code: "sv", label: "Svenska" },
 ];
 
+function normalizeLang(raw) {
+  const v = (raw || "").toString().trim();
+  if (!v) return "en";
+  if (v === "pt") return "pt-BR";
+  if (v === "zh") return "zh-Hans";
+  if (v.toLowerCase() === "zh-cn") return "zh-Hans";
+  if (v.toLowerCase() === "pt-br") return "pt-BR";
+  return v;
+}
+
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-  const [selectedLang, setSelectedLang] = useState(i18n.language);
+  const [lang, setLang] = useState("en");
+  const options = useMemo(() => LANGS, []);
 
   useEffect(() => {
-    setSelectedLang(i18n.language);
-  }, [i18n.language]);
+    const stored = normalizeLang(localStorage.getItem("pk_lang"));
+    setLang(stored);
+    if (i18n.language !== stored) i18n.changeLanguage(stored);
+  }, []);
 
-  const handleChange = (e) => {
-    const newLang = e.target.value;
-    setSelectedLang(newLang);
-    i18n.changeLanguage(newLang);
+  const onChange = async (e) => {
+    const next = normalizeLang(e.target.value);
+    setLang(next);
+    localStorage.setItem("pk_lang", next);
+    await i18n.changeLanguage(next);
   };
 
   return (
     <select
-      value={selectedLang}
-      onChange={handleChange}
-      className="px-3 py-2 rounded-lg bg-[#243548] text-[#E0D8C8] border border-[#A35C5C]/30 text-sm hover:border-[#A35C5C]/60 transition-all"
+      value={lang}
+      onChange={onChange}
+      className="text-sm bg-transparent border border-white/10 rounded-md px-2 py-1 text-white"
+      aria-label="Language"
+      title="Language"
     >
-      {SUPPORTED_LANGUAGES.map((lang) => (
-        <option key={lang.code} value={lang.code}>
-          {lang.label}
+      {options.map((l) => (
+        <option key={l.code} value={l.code} className="text-black">
+          {l.label}
         </option>
       ))}
     </select>

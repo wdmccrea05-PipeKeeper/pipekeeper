@@ -1,8 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
-// Locale files - all use .json.jsx format exporting default object
 import en from "./locales/en.json.jsx";
 import es from "./locales/es.json.jsx";
 import fr from "./locales/fr.json.jsx";
@@ -13,22 +11,11 @@ import nl from "./locales/nl.json.jsx";
 import pl from "./locales/pl.json.jsx";
 import ja from "./locales/ja.json.jsx";
 import zhHans from "./locales/zh-Hans.json.jsx";
+import sv from "./locales/sv.json.jsx";
 
-const STORAGE_KEY = "pk_lang";
-
-// Normalize language codes to canonical forms
-export function normalizeLang(raw) {
-  const v = (raw || "").toString().trim();
-  if (!v) return "en";
-  // Aliases to canonical codes
-  if (v === "pt" || v === "pt_BR") return "pt-BR";
-  if (v === "zh" || v.toLowerCase() === "zh-cn") return "zh-Hans";
-  return v;
-}
-
-function humanizeKey(key) {
-  const lastSegment = String(key).split(".").pop() || String(key);
-  return lastSegment
+export function humanizeKey(key) {
+  const last = String(key).split(".").pop() || String(key);
+  return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
@@ -36,7 +23,43 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-// Resources: primary codes only (canonical)
+function normalizeLang(raw) {
+  const v = (raw || "").toString().trim();
+  if (!v) return "en";
+  if (v === "pt") return "pt-BR";
+  if (v === "zh") return "zh-Hans";
+  if (v.toLowerCase() === "zh-cn") return "zh-Hans";
+  if (v.toLowerCase() === "pt-br") return "pt-BR";
+  return v;
+}
+
+function flatten(obj, prefix = "") {
+  const out = {};
+  Object.entries(obj || {}).forEach(([k, v]) => {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object" && !Array.isArray(v)) Object.assign(out, flatten(v, key));
+    else out[key] = v;
+  });
+  return out;
+}
+
+// DEV parity check: if any locale is missing keys vs en, log it clearly (no silent failures)
+function parityCheck(resources) {
+  const base = flatten(resources.en.translation);
+  const baseKeys = new Set(Object.keys(base));
+
+  Object.entries(resources).forEach(([lng, pack]) => {
+    if (lng === "en") return;
+    const flat = flatten(pack.translation);
+    const missing = [...baseKeys].filter((k) => !(k in flat));
+    if (missing.length) {
+      console.error(`[i18n] Locale "${lng}" is missing ${missing.length} keys vs en.  This will cause fallback-to-English and "no translation" perception.`, {
+        sample: missing.slice(0, 30),
+      });
+    }
+  });
+}
+
 const resources = {
   en: { translation: en },
   es: { translation: es },
@@ -48,72 +71,40 @@ const resources = {
   pl: { translation: pl },
   ja: { translation: ja },
   "zh-Hans": { translation: zhHans },
+  sv: { translation: sv },
+
+  // aliases (so older codes still work)
+  pt: { translation: ptBR },
+  zh: { translation: zhHans },
 };
 
-const SUPPORTED_LANGUAGES = Object.keys(resources);
-
-const storedLang = normalizeLang(
-  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : "en"
-);
-
-const initialLng = storedLang || "en";
-
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: initialLng,
-    fallbackLng: "en",
-    supportedLngs: SUPPORTED_LANGUAGES,
-
-    returnNull: false,
-    returnEmptyString: false,
-    returnObjects: false,
-    parseMissingKeyHandler: (key) => {
-      // Track missing keys in dev mode
-      if (import.meta.env.DEV) {
-        if (!window.__i18nMissingKeys) window.__i18nMissingKeys = new Set();
-        window.__i18nMissingKeys.add(key);
-      }
-      return humanizeKey(key);
-    },
-
-    interpolation: { escapeValue: false },
-
-    react: { useSuspense: false },
-
-    detection: {
-      order: ["localStorage", "navigator"],
-      caches: ["localStorage"],
-      lookupLocalStorage: STORAGE_KEY,
-    },
-  });
-
-i18n.on("languageChanged", (lng) => {
-  if (typeof window !== "undefined") {
-    const normalized = normalizeLang(lng);
-    window.localStorage.setItem(STORAGE_KEY, normalized);
-    // If i18n was set to an alias, switch to normalized canonical
-    if (lng !== normalized) {
-      i18n.changeLanguage(normalized);
-    }
-  }
-});
-
-// Dev-only: expose missing keys dump function
-if (import.meta.env.DEV && typeof window !== "undefined") {
-  window.__dumpMissingI18nKeys = () => {
-    const missing = window.__i18nMissingKeys;
-    if (!missing || missing.size === 0) {
-      console.log("✅ No missing i18n keys detected");
-      return [];
-    }
-    const keys = Array.from(missing).sort();
-    console.warn(`⚠️ Found ${keys.length} missing i18n keys:`, keys);
-    return keys;
-  };
+if (typeof window !== "undefined" && import.meta?.env?.DEV) {
+  parityCheck(resources);
 }
 
+const stored = normalizeLang(typeof window !== "undefined" ? window.localStorage.getItem("pk_lang") : "en");
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: stored,
+  fallbackLng: "en",
+
+  returnNull: false,
+  returnEmptyString: false,
+  returnObjects: false,
+
+  parseMissingKeyHandler: (key) => humanizeKey(key),
+
+  interpolation: { escapeValue: false },
+  react: { useSuspense: false },
+});
+
+i18n.on("languageChanged", (lng) => {
+  try {
+    const normalized = normalizeLang(lng);
+    window.localStorage.setItem("pk_lang", normalized);
+    if (lng !== normalized) i18n.changeLanguage(normalized);
+  } catch {}
+});
+
 export default i18n;
-export { SUPPORTED_LANGUAGES, humanizeKey };
