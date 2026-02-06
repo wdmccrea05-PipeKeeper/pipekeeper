@@ -8,12 +8,12 @@ import es from "./locales/es.json";
 import fr from "./locales/fr.json";
 import de from "./locales/de.json";
 import it from "./locales/it.json";
-import pt from "./locales/pt.js";
+import pt from "./locales/pt";
 import nl from "./locales/nl.json";
 import pl from "./locales/pl.json";
 import ja from "./locales/ja.json";
-import zh from "./locales/zh.js";
-import sv from "./locales/sv.js";
+import zh from "./locales/zh";
+import sv from "./locales/sv";
 
 const STORAGE_KEY = "pk_lang";
 
