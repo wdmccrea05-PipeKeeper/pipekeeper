@@ -206,13 +206,6 @@ export default function Layout({ children, currentPageName }) {
     { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
   ];
 
-  const adminNavItems = isAdmin ? [
-    { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
-    { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
-  ] : [];
-
   const PUBLIC_PAGES = useMemo(
     () =>
       new Set([
@@ -229,6 +222,13 @@ export default function Layout({ children, currentPageName }) {
   );
 
   const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
+
+  const adminNavItems = isAdmin ? [
+    { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
+    { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+  ] : [];
 
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
