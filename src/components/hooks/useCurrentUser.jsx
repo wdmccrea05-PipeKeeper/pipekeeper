@@ -117,16 +117,24 @@ export function useCurrentUser() {
 
         if (valid.length === 0) return null;
 
-        // Pick best subscription: active > trialing > most recent
+        // Pick best subscription: pro > premium, then active > trialing > most recent
         valid.sort((a, b) => {
+          // Prioritize pro tier
+          const aPro = (a.tier || '').toLowerCase() === 'pro' ? 1 : 0;
+          const bPro = (b.tier || '').toLowerCase() === 'pro' ? 1 : 0;
+          if (aPro !== bPro) return bPro - aPro;
+
+          // Then active status
           const aActive = a.status === "active" ? 1 : 0;
           const bActive = b.status === "active" ? 1 : 0;
           if (aActive !== bActive) return bActive - aActive;
 
+          // Then trialing
           const aTrialing = a.status === "trialing" || a.status === "trial" ? 1 : 0;
           const bTrialing = b.status === "trialing" || b.status === "trial" ? 1 : 0;
           if (aTrialing !== bTrialing) return bTrialing - aTrialing;
 
+          // Finally most recent
           const aDate = new Date(a.current_period_start || a.created_date || 0).getTime();
           const bDate = new Date(b.current_period_start || b.created_date || 0).getTime();
           return bDate - aDate;
