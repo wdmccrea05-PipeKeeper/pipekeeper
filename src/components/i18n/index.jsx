@@ -1,17 +1,18 @@
-
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-import en from "@/components/i18n/locales/en";
-import es from "@/components/i18n/locales/es";
-import fr from "@/components/i18n/locales/fr";
-import de from "@/components/i18n/locales/de";
-import it from "@/components/i18n/locales/it";
-import ptBR from "@/components/i18n/locales/pt-BR";
-import nl from "@/components/i18n/locales/nl";
-import pl from "@/components/i18n/locales/pl";
-import ja from "@/components/i18n/locales/ja";
-import zhHans from "@/components/i18n/locales/zh-Hans";
+import en from "@/components/i18n/locales/en.json";
+import es from "@/components/i18n/locales/es.json";
+import fr from "@/components/i18n/locales/fr.json";
+import de from "@/components/i18n/locales/de.json";
+import it from "@/components/i18n/locales/it.json";
+import pt from "@/components/i18n/locales/pt.json";
+import nl from "@/components/i18n/locales/nl.json";
+import pl from "@/components/i18n/locales/pl.json";
+import ja from "@/components/i18n/locales/ja.json";
+import zh from "@/components/i18n/locales/zh.json";
+import sv from "@/components/i18n/locales/sv.json";
 
 const STORAGE_KEY = "pk_lang";
 
@@ -21,26 +22,26 @@ const resources = {
   fr: { translation: fr },
   de: { translation: de },
   it: { translation: it },
-  "pt-BR": { translation: ptBR },
+  pt: { translation: pt },
   nl: { translation: nl },
   pl: { translation: pl },
   ja: { translation: ja },
-  "zh-Hans": { translation: zhHans },
+  zh: { translation: zh },
+  sv: { translation: sv },
 };
 
-const SUPPORTED = Object.keys(resources);
+const SUPPORTED_LANGUAGES = Object.keys(resources);
 
-function normalizeLang(code: string | null) {
+function normalizeLang(code) {
   if (!code) return "en";
-  // Normalize common variants
-  if (code === "pt" || code === "pt_BR") return "pt-BR";
-  if (code === "zh" || code === "zh_CN") return "zh-Hans";
+  if (code === "pt-BR" || code === "pt_BR") return "pt";
+  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN") return "zh";
   return code;
 }
 
-function humanizeKey(key: string | number | symbol): string {
-  const last = String(key).split(".").pop() || String(key);
-  return last
+function humanizeKey(key) {
+  const lastSegment = String(key).split(".").pop() || String(key);
+  return lastSegment
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
@@ -48,28 +49,49 @@ function humanizeKey(key: string | number | symbol): string {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-const storedRaw =
+const storedLang =
   typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
 
-const initial = normalizeLang(storedRaw);
-const initialLng = SUPPORTED.includes(initial) ? initial : "en";
+const initialLng = storedLang
+  ? normalizeLang(storedLang)
+  : SUPPORTED_LANGUAGES.includes(navigator.language.split("-")[0])
+  ? navigator.language.split("-")[0]
+  : "en";
 
-i18n.use(initReactI18next).init({
-  resources,
-  lng: initialLng,
-  fallbackLng: "en",
-  supportedLngs: SUPPORTED,
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: initialLng,
+    fallbackLng: "en",
+    supportedLngs: SUPPORTED_LANGUAGES,
 
-  // Never leak keys
-  returnNull: false,
-  returnEmptyString: false,
-  returnObjects: false,
-  parseMissingKeyHandler: (key) => humanizeKey(key),
+    returnNull: false,
+    returnEmptyString: false,
+    returnObjects: false,
+    parseMissingKeyHandler: (key) => humanizeKey(key),
 
-  interpolation: { escapeValue: false },
+    interpolation: {
+      escapeValue: false,
+    },
+
+    react: {
+      useSuspense: false,
+    },
+
+    detection: {
+      order: ["localStorage", "navigator"],
+      caches: ["localStorage"],
+      lookupLocalStorage: STORAGE_KEY,
+    },
+  });
+
+i18n.on("languageChanged", (lng) => {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(STORAGE_KEY, lng);
+  }
 });
 
-// Re-export the new centralized i18n instance
-export { default, SUPPORTED_LANGUAGES, humanizeKey } from "./i18n";
-
-// All initialization moved to i18n.ts
+export default i18n;
+export { SUPPORTED_LANGUAGES, humanizeKey };
