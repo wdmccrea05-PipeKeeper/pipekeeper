@@ -2,17 +2,17 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-import en from "./locales/en.js";
-import es from "./locales/es.js";
-import fr from "./locales/fr.js";
-import de from "./locales/de.js";
-import it from "./locales/it.js";
-import pt from "./locales/pt.js";
-import nl from "./locales/nl.js";
-import pl from "./locales/pl.js";
-import ja from "./locales/ja.js";
-import zh from "./locales/zh.js";
-import sv from "./locales/sv.js";
+import en from "./locales/en";
+import es from "./locales/es";
+import fr from "./locales/fr";
+import de from "./locales/de";
+import it from "./locales/it";
+import pt from "./locales/pt";
+import nl from "./locales/nl";
+import pl from "./locales/pl";
+import ja from "./locales/ja";
+import zh from "./locales/zh";
+import sv from "./locales/sv";
 
 const STORAGE_KEY = "pk_lang";
 
