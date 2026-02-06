@@ -2,18 +2,18 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-// IMPORTANT: use the comprehensive bundles (the ones Base44 has been editing)
-import en from "./locales/en.json.jsx";
-import es from "./locales/es.json.jsx";
-import fr from "./locales/fr.json.jsx";
-import de from "./locales/de.json.jsx";
-import it from "./locales/it.json.jsx";
-import pt from "./locales/pt.json.jsx";
-import nl from "./locales/nl.json.jsx";
-import pl from "./locales/pl.json.jsx";
-import ja from "./locales/ja.json.jsx";
-import zh from "./locales/zh.json.jsx";
-import sv from "./locales/sv.json.jsx";
+// Use the comprehensive locale files that were created earlier
+import en from "./locales/en";
+import es from "./locales/es";
+import fr from "./locales/fr";
+import de from "./locales/de";
+import it from "./locales/it";
+import pt from "./locales/pt";
+import nl from "./locales/nl";
+import pl from "./locales/pl";
+import ja from "./locales/ja";
+import zh from "./locales/zh";
+import sv from "./locales/sv";
 
 const STORAGE_KEY = "pk_lang";
 
