@@ -1,17 +1,19 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-import en from "./locales/en";
-import es from "./locales/es";
-import fr from "./locales/fr";
-import de from "./locales/de";
-import it from "./locales/it";
-import pt from "./locales/pt";
-import nl from "./locales/nl";
-import pl from "./locales/pl";
-import ja from "./locales/ja";
-import zh from "./locales/zh";
-import sv from "./locales/sv";
+// IMPORTANT: use the comprehensive bundles (the ones Base44 has been editing)
+import en from "./locales/en.json.jsx";
+import es from "./locales/es.json.jsx";
+import fr from "./locales/fr.json.jsx";
+import de from "./locales/de.json.jsx";
+import it from "./locales/it.json.jsx";
+import pt from "./locales/pt.json.jsx";
+import nl from "./locales/nl.json.jsx";
+import pl from "./locales/pl.json.jsx";
+import ja from "./locales/ja.json.jsx";
+import zh from "./locales/zh.json.jsx";
+import sv from "./locales/sv.json.jsx";
 
 const STORAGE_KEY = "pk_lang";
 
@@ -29,9 +31,18 @@ const resources = {
   sv: { translation: sv },
 };
 
-export function humanizeKey(key) {
-  const last = String(key).split(".").pop() || String(key);
-  return last
+const SUPPORTED_LANGUAGES = Object.keys(resources);
+
+function normalizeLang(code) {
+  if (!code) return "en";
+  if (code === "pt-BR" || code === "pt_BR") return "pt";
+  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN") return "zh";
+  return code;
+}
+
+function humanizeKey(key) {
+  const lastSegment = String(key).split(".").pop() || String(key);
+  return lastSegment
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
@@ -39,32 +50,45 @@ export function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-const initialLng =
-  (typeof window !== "undefined" && window.localStorage?.getItem(STORAGE_KEY)) || "en";
+const storedLang =
+  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
 
-// IMPORTANT: guard so init runs exactly once
-if (!i18n.isInitialized) {
-  i18n.use(initReactI18next).init({
+const initialLng = storedLang
+  ? normalizeLang(storedLang)
+  : SUPPORTED_LANGUAGES.includes(navigator.language.split("-")[0])
+  ? navigator.language.split("-")[0]
+  : "en";
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
     resources,
     lng: initialLng,
     fallbackLng: "en",
+    supportedLngs: SUPPORTED_LANGUAGES,
 
     returnNull: false,
     returnEmptyString: false,
     returnObjects: false,
-
-    // Missing key => readable text (never raw key)
     parseMissingKeyHandler: (key) => humanizeKey(key),
 
     interpolation: { escapeValue: false },
-  });
-}
 
-// keep language persisted
+    react: { useSuspense: false },
+
+    detection: {
+      order: ["localStorage", "navigator"],
+      caches: ["localStorage"],
+      lookupLocalStorage: STORAGE_KEY,
+    },
+  });
+
 i18n.on("languageChanged", (lng) => {
-  try {
-    window.localStorage?.setItem(STORAGE_KEY, lng);
-  } catch {}
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(STORAGE_KEY, lng);
+  }
 });
 
 export default i18n;
+export { SUPPORTED_LANGUAGES, humanizeKey };
