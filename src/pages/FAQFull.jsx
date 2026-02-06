@@ -137,6 +137,53 @@ export default function FAQFull() {
             {item.conclusion && <p className="mt-2">{item.conclusion}</p>}
           </Q>
         ))}
+
+        {/* Subscription Tiers Comparison */}
+        <Q id="subscription-tiers" q="What are the subscription tiers and what's included?">
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-semibold text-gray-900 mb-2">Free Tier</h4>
+              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+                <li>7-day trial of all premium features</li>
+                <li>Up to 5 pipes</li>
+                <li>Up to 5 tobacco blends</li>
+                <li>Basic collection management</li>
+                <li>Photo uploads</li>
+              </ul>
+            </div>
+
+            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <h4 className="font-semibold text-amber-900 mb-2">Premium Tier</h4>
+              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+                <li>Unlimited pipes and tobacco blends</li>
+                <li>AI tobacco matching recommendations</li>
+                <li>Pairing matrix and optimization</li>
+                <li>Smoking log and rotation planner</li>
+                <li>Collection insights and statistics</li>
+                <li>Export reports (PDF, CSV, Excel)</li>
+                <li>Public profile and community features</li>
+                <li>Break-in schedules</li>
+              </ul>
+            </div>
+
+            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <h4 className="font-semibold text-purple-900 mb-2">Pro Tier (Coming February 1, 2026)</h4>
+              <ul className="list-disc ml-4 space-y-1 text-gray-700">
+                <li>Everything in Premium, plus:</li>
+                <li>AI pipe identification from photos</li>
+                <li>Market value lookup for pipes and tobacco</li>
+                <li>Geometry analysis from photos</li>
+                <li>Tobacco aging projections and cellar trends</li>
+                <li>Advanced valuation tracking</li>
+                <li>Priority support</li>
+              </ul>
+            </div>
+
+            <p className="text-sm text-gray-600 mt-4">
+              <strong>Note:</strong> All subscribers who joined before February 1, 2026 receive Pro tier features at their original Premium pricing as founding members.
+            </p>
+          </div>
+        </Q>
       </Section>
 
       <Section title={sections.accountsAndData?.title || "Accounts & Data"}>

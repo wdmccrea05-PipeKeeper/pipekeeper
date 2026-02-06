@@ -185,12 +185,12 @@ For each of the 3 recommendations, provide:
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Finding Recommendations...
+                Finding Matches...
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Get Blend Recommendations
+                Get Top 3 Matches
               </>
             )}
           </Button>
