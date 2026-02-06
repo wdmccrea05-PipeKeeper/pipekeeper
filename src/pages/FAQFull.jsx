@@ -180,7 +180,10 @@ export default function FAQFull() {
             </div>
 
             <p className="text-sm text-gray-600 mt-4">
-              <strong>Note:</strong> All subscribers who joined before February 1, 2026 receive Pro tier features at their original Premium pricing as founding members.
+              For a full feature description visit:{" "}
+              <a href="https://www.pipekeeperapp.com/features" target="_blank" rel="noopener noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
+                https://www.pipekeeperapp.com/features
+              </a>
             </p>
           </div>
         </Q>
