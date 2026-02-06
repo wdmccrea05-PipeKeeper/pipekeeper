@@ -52,15 +52,15 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
           </div>
           {pipe.estimated_value && (
             <div className="absolute bottom-3 left-3">
-              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm">
+              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm text-sm">
                 {formatCurrency(+pipe.estimated_value)}
               </Badge>
             </div>
           )}
         </div>
         <div className="p-4">
-         <h3 className="font-semibold text-[#E0D8C8] truncate">{pipe.name}</h3>
-         <p className="text-sm text-[#E0D8C8]/60 truncate">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
+         <h3 className="font-semibold text-[#E0D8C8] truncate text-base">{pipe.name}</h3>
+         <p className="text-sm text-[#E0D8C8]/70 truncate">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             {pipe.shape && (
               <Badge variant="secondary" className="bg-amber-700/40 text-amber-100 border-amber-600/50 text-xs">
