@@ -1,6 +1,19 @@
 import { useTranslation as useReactI18nTranslation } from "react-i18next";
-import i18n, { humanizeKey } from "./index";
+import i18n from "./index";
 import { useEffect, useState } from "react";
+
+// Convert camelCase/dot-notation keys to human-readable text
+function humanizeKey(key) {
+  if (!key) return "Unknown";
+  const parts = key.split(".");
+  const lastPart = parts[parts.length - 1];
+  return lastPart
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
 
 // Placeholder values that must NEVER be shown as final UI copy
 const PLACEHOLDER_EXACT = new Set([
