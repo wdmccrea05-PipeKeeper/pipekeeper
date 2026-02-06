@@ -53,7 +53,7 @@ import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 /**
  * Drop-in replacement notes:
@@ -116,9 +116,9 @@ class PKErrorBoundary extends React.Component {
       return (
         <div className="p-4">
           <div className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-            <div className="font-semibold text-rose-900">{t("errors.somethingWrong")}</div>
+            <div className="font-semibold text-rose-900">Something went wrong</div>
             <div className="mt-2 text-sm text-rose-800">
-              {String(this.state.error?.message || this.state.error || t("errors.unknownError"))}
+              {String(this.state.error?.message || this.state.error || "Unknown error")}
             </div>
           </div>
         </div>
