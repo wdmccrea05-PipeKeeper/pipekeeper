@@ -1,66 +1,51 @@
-import { useTranslation as useTranslationI18n } from "react-i18next";
-import { humanizeKey } from "./index";
+import { useTranslation } from "react-i18next";
+import i18n, { humanizeKey } from "./index";
 
-/**
- * Values that should NEVER be shown to users.
- * These have been showing up due to "placeholder translations"
- * being written into translation files during Base44 iterations.
- */
-const PLACEHOLDER_VALUES = new Set([
+// Placeholder values that must NEVER be shown as final UI copy
+const PLACEHOLDER_EXACT = new Set([
   "Title",
   "Subtitle",
+  "Optional",
+  "Description",
+  "Desc",
+  "Placeholder",
+  "Label",
   "Page Title",
   "Page Subtitle",
-  "Optional",
 ]);
 
-function looksLikeKey(value) {
-  if (typeof value !== "string") return false;
-  // e.g. tobacconist.noRecommendation, profile.manageSubscription, nav.home
-  return /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(value.trim());
-}
-
-function isPlaceholder(value) {
+function looksLikePlaceholder(value) {
   if (typeof value !== "string") return false;
   const v = value.trim();
   if (!v) return true;
-  if (PLACEHOLDER_VALUES.has(v)) return true;
-  // Also treat generic placeholders like "Title (Optional)" etc as invalid user-facing copy
-  if (/^title\b/i.test(v)) return true;
-  if (/^subtitle\b/i.test(v)) return true;
+  if (PLACEHOLDER_EXACT.has(v)) return true;
+  // common placeholder patterns seen in the UI
+  if (/^(.*\s)?(Title|Subtitle|Desc|Description|Placeholder)$/i.test(v)) return true;
+  if (/^([A-Z][a-z]+)\s(Title|Subtitle)$/i.test(v)) return true;
   return false;
 }
 
-/**
- * Safe translation hook:
- * - If t(key) returns the key => use defaultValue (if provided) else humanizeKey(key)
- * - If t(key) returns placeholder text => same fallback behavior
- */
 export function useTranslation() {
-  const { t: rawT, i18n } = useTranslationI18n();
+  const { t, i18n: hookI18n } = useTranslation();
 
-  const t = (key, options = {}) => {
-    const value = rawT(key, {
-      ...options,
-      defaultValue: options?.defaultValue ?? key, // keep deterministic behavior
-    });
+  const safeT = (key, options = {}) => {
+    const raw = t(key, options);
 
-    // Key leak (missing translation OR i18n not loaded somewhere)
-    if (value === key || looksLikeKey(value) || isPlaceholder(value)) {
-      const fallback =
-        (typeof options?.defaultValue === "string" && options.defaultValue.trim())
-          ? options.defaultValue.trim()
-          : humanizeKey(key);
+    // If missing key => humanize (never leak key)
+    if (raw === key) return humanizeKey(key);
 
-      if (import.meta?.env?.DEV) {
-        // Helpful but not spammy
-        console.warn("[i18n] fallback used:", { key, value, fallback });
-      }
-      return fallback;
+    // If locale contains placeholder => fallback to English
+    if (looksLikePlaceholder(raw)) {
+      const enValue = i18n.t(key, { ...options, lng: "en" });
+      if (enValue && enValue !== key && !looksLikePlaceholder(enValue)) return enValue;
+      return humanizeKey(key);
     }
 
-    return value;
+    return raw;
   };
 
-  return { t, i18n };
+  // ensure callers can access current language too
+  safeT.language = hookI18n?.language || i18n.language || "en";
+
+  return { t: safeT, i18n: hookI18n };
 }

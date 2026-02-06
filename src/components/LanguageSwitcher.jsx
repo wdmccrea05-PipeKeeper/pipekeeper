@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import i18n from "@/components/i18n";
 
 const LANGS = [
   { code: "en", label: "English" },

@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
 import en from "./locales/en";
 import es from "./locales/es";
@@ -30,18 +29,9 @@ const resources = {
   sv: { translation: sv },
 };
 
-const SUPPORTED_LANGUAGES = Object.keys(resources);
-
-function normalizeLang(code) {
-  if (!code) return "en";
-  if (code === "pt-BR" || code === "pt_BR") return "pt";
-  if (code === "zh-Hans" || code === "zh_CN" || code === "zh-Hans-CN") return "zh";
-  return code;
-}
-
-function humanizeKey(key) {
-  const lastSegment = String(key).split(".").pop() || String(key);
-  return lastSegment
+export function humanizeKey(key) {
+  const last = String(key).split(".").pop() || String(key);
+  return last
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
@@ -49,49 +39,32 @@ function humanizeKey(key) {
     .replace(/^./, (s) => s.toUpperCase());
 }
 
-const storedLang =
-  typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+const initialLng =
+  (typeof window !== "undefined" && window.localStorage?.getItem(STORAGE_KEY)) || "en";
 
-const initialLng = storedLang
-  ? normalizeLang(storedLang)
-  : SUPPORTED_LANGUAGES.includes(navigator.language.split("-")[0])
-  ? navigator.language.split("-")[0]
-  : "en";
-
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
+// IMPORTANT: guard so init runs exactly once
+if (!i18n.isInitialized) {
+  i18n.use(initReactI18next).init({
     resources,
     lng: initialLng,
     fallbackLng: "en",
-    supportedLngs: SUPPORTED_LANGUAGES,
 
     returnNull: false,
     returnEmptyString: false,
     returnObjects: false,
+
+    // Missing key => readable text (never raw key)
     parseMissingKeyHandler: (key) => humanizeKey(key),
 
-    interpolation: {
-      escapeValue: false,
-    },
-
-    react: {
-      useSuspense: false,
-    },
-
-    detection: {
-      order: ["localStorage", "navigator"],
-      caches: ["localStorage"],
-      lookupLocalStorage: STORAGE_KEY,
-    },
+    interpolation: { escapeValue: false },
   });
+}
 
+// keep language persisted
 i18n.on("languageChanged", (lng) => {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, lng);
-  }
+  try {
+    window.localStorage?.setItem(STORAGE_KEY, lng);
+  } catch {}
 });
 
 export default i18n;
-export { SUPPORTED_LANGUAGES, humanizeKey };
