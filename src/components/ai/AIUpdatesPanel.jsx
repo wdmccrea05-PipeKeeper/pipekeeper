@@ -456,14 +456,14 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.pairingMatrix", {defaultValue: "Pairing Matrix"})}</h3>
-              <InfoTooltip text={t("tobacconist.pairingMatrixTooltip", {defaultValue: "Scored compatibility between each pipe and tobacco blend in your collection"})} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
+              <InfoTooltip text="Scored compatibility between each pipe and tobacco blend in your collection" className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
-                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec", {defaultValue: "Out of date - Regeneration recommended"})}</span>
+                <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate", {defaultValue: "Up to date"})}</span>
+                <span className="text-emerald-700 font-semibold">Up to date</span>
               )}
             </p>
           </div>
@@ -500,14 +500,14 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.collectionOptimizationTitle", {defaultValue: "Collection Optimization"})}</h3>
-              <InfoTooltip text={t("tobacconist.collectionOptimizationTooltip", {defaultValue: "Recommendations for which pipes to focus on specific tobaccos"})} className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
+              <InfoTooltip text="Recommendations for which pipes to focus on specific tobaccos" className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
-                <span className="text-amber-700 font-semibold">{t("tobacconist.outOfDateRegenRec", {defaultValue: "Out of date - Regeneration recommended"})}</span>
+                <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate", {defaultValue: "Up to date"})}</span>
+                <span className="text-emerald-700 font-semibold">Up to date</span>
               )}
             </p>
           </div>

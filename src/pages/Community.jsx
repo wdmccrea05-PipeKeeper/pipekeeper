@@ -614,8 +614,8 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("communityExtended.noPendingRequests", {defaultValue: "No Pending Requests"})}</p>
-                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc", {defaultValue: "Friend requests from other members will appear here. Search for users in the Discover tab and send friend requests to connect. Friends can message each other when messaging is enabled."})}</p>
+                  <p>No Pending Requests</p>
+                  <p className="text-sm mt-2">Friend requests from other members will appear here. Search for users in the Discover tab and send friend requests to connect. Friends can message each other when messaging is enabled.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -680,12 +680,12 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("community.notFollowingYet", {defaultValue: "Not Following Anyone"})}</p>
-                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc", {defaultValue: "Discover and follow pipe enthusiasts in the community to see their collections"})}</p>
+                  <p>Not Following Anyone</p>
+                  <p className="text-sm mt-2">Discover and follow pipe enthusiasts in the community to see their collections</p>
                   <a href={createPageUrl('Community')}>
                     <Button className="mt-4" onClick={() => setActiveTab && setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
-                      {t("community.exploreCommunity", {defaultValue: "Explore Community"})}
+                      Explore Community
                     </Button>
                   </a>
                 </CardContent>
