@@ -211,10 +211,14 @@ Deno.serve(async (req) => {
       return subs.length === 0;
     }).length;
 
-    // New signups in last 7 days
+    // New signups in last 7 days (inclusive of today)
+    const sevenDaysAgoStartOfDay = new Date(now);
+    sevenDaysAgoStartOfDay.setDate(sevenDaysAgoStartOfDay.getDate() - 7);
+    sevenDaysAgoStartOfDay.setHours(0, 0, 0, 0);
+    
     const newSignupsLast7d = allUsers.filter(u => {
       const created = new Date(u.created_date);
-      return created >= sevenDaysAgo && created <= now;
+      return created >= sevenDaysAgoStartOfDay;
     }).length;
 
     const trialMetrics = {
