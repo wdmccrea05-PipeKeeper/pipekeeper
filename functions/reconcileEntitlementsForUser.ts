@@ -119,6 +119,7 @@ async function reconcileFromApple(
 
 Deno.serve(async (req) => {
   try {
+    console.log(`[DEPLOY_MARKER_001] Function started`);
     const base44 = createClientFromRequest(req);
     const caller = await base44.auth.me();
 
