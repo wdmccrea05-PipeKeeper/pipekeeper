@@ -81,7 +81,7 @@ export function useCurrentUser() {
         throw error;
       }
     },
-    staleTime: 5000,
+    staleTime: 0,
     retry: 2,
   });
 
