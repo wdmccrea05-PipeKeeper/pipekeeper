@@ -62,10 +62,9 @@ export default function PipesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Check limits before creating
-      const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
-      if (!limitCheck.canCreate) {
-        throw new Error(limitCheck.reason || 'Cannot create pipe');
+      // Pro users have unlimited access
+      if (hasPro) {
+        return base44.entities.Pipe.create(data);
       }
       return base44.entities.Pipe.create(data);
     },
