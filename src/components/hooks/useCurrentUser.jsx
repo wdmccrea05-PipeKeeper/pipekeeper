@@ -36,24 +36,44 @@ export function useCurrentUser() {
   } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
-      const me = await base44.auth.me();
-      if (!me?.id) return null;
+      try {
+        const me = await base44.auth.me();
 
-      const email = normEmail(me?.email);
-      const entitlement_tier = await fetchEntitlementTier(email);
+        // Not logged in yet => return null (NOT an error)
+        if (!me?.id || !me?.email) return null;
 
-      // Build a single user object that includes entitlement_tier
-      return {
-        ...me,
-        entitlement_tier,
-      };
+        const email = normEmail(me.email);
+        const entitlement_tier = await fetchEntitlementTier(email);
+
+        return {
+          ...me,
+          entitlement_tier,
+        };
+      } catch (err) {
+        // Any "not authenticated" / "session missing" case must NOT throw,
+        // otherwise login UI misreports as invalid credentials.
+        const msg = String(err?.message || err || "").toLowerCase();
+        if (
+          msg.includes("not authenticated") ||
+          msg.includes("unauthorized") ||
+          msg.includes("401") ||
+          msg.includes("no session") ||
+          msg.includes("missing session")
+        ) {
+          return null;
+        }
+
+        // Real errors should still surface
+        console.error("[useCurrentUser] Error:", err);
+        throw err;
+      }
     },
+    retry: false,
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    retry: 1,
   });
 
   const user = data;
