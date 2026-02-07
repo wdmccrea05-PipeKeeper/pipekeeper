@@ -15,7 +15,7 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "react-i18next";
 import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
@@ -40,16 +40,7 @@ export default function CommunityPage() {
   const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
-
-  const effective = getEffectiveEntitlement(user);
-  const hasPaidAccess = effective === "pro" || effective === "premium";
+  const { user, isLoading: userLoading, hasPaidAccess } = useCurrentUser();
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],

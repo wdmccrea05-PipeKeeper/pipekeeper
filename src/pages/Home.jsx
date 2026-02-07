@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { isTrialWindowNow } from "@/components/utils/access";
 import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
@@ -63,20 +64,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: async () => {
-      const me = await base44.auth.me();
-      if (!me?.id) return null;
-      return await base44.entities.User.get(me.id);
-    },
-    retry: 2,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
+  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
