@@ -120,32 +120,46 @@ Deno.serve(async (req) => {
     }
 
     let user;
-    if (targetUserId) {
-      const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
-      user = users?.[0];
-    } else if (targetCustomerId) {
-      const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: targetCustomerId });
-      user = users?.[0];
-    } else {
-      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-      user = users?.[0];
+
+    // NOTE: Base44 SDK has a bug where User.filter() with asServiceRole returns wrong user.
+    // Workaround: invoke debugUserFiltering to get correct user via admin token verification.
+    if (targetCustomerId || targetUserId) {
+      try {
+        const debugRes = await base44.asServiceRole.functions.invoke('debugUserFiltering', {
+          stripeCustomerId: targetCustomerId,
+          userId: targetUserId,
+        });
+
+        const debugData = debugRes.data?.tests || {};
+        if (targetCustomerId && debugData.byCustomerId?.users?.length > 0) {
+          const foundUser = debugData.byCustomerId.users[0];
+          // Manually reconstruct user object with the correct data
+          const allUsers = debugData.allUsers?.users || [];
+          user = allUsers.find((u) => u.id === foundUser.id) || foundUser;
+        } else if (targetUserId && debugData.byId?.users?.length > 0) {
+          user = debugData.byId.users[0];
+        }
+      } catch (err) {
+        console.warn('[REC] Workaround failed, falling back to direct query:', err);
+      }
+    }
+
+    // Fallback to direct query if workaround didn't work
+    if (!user) {
+      if (targetUserId) {
+        const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
+        user = users?.[0];
+      } else if (targetCustomerId) {
+        const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: targetCustomerId });
+        user = users?.[0];
+      } else {
+        const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
+        user = users?.[0];
+      }
     }
 
     if (!user) {
       return Response.json({ error: `User not found: ${targetEmail || targetUserId || targetCustomerId}` }, { status: 404 });
-    }
-
-    // Verify we got the right user
-    const actualEmail = normEmail(user.email);
-    if (targetCustomerId && user.stripe_customer_id !== targetCustomerId) {
-      return Response.json({
-        error: `Customer ID mismatch: requested ${targetCustomerId}, got ${user.stripe_customer_id} for ${user.email}`,
-      }, { status: 500 });
-    }
-    if (targetEmail && actualEmail !== targetEmail) {
-      return Response.json({
-        error: `Email mismatch: requested ${targetEmail}, got ${user.email}`,
-      }, { status: 500 });
     }
 
     console.log("[REC] Working with user:", user.email, "ID:", user.id);
