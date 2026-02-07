@@ -3,7 +3,7 @@
  * English is source of truth - NO PLACEHOLDERS allowed in en
  */
 
-export const translationsComplete = {
+export const translations = {
   en: {
     common: {
       loading: 'Loading...',

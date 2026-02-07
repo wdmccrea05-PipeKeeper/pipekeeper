@@ -45,7 +45,6 @@ export default function LanguageSwitcher() {
     const next = normalizeLang(e.target.value);
     setLang(next);
     localStorage.setItem("pk_lang", next);
-    localStorage.setItem("pipekeeper_language", next);
     await i18n.changeLanguage(next);
   };
 
