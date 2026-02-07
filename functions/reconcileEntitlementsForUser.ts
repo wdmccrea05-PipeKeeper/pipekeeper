@@ -132,7 +132,20 @@ Deno.serve(async (req) => {
     }
 
     if (!user) {
-      return Response.json({ error: `User not found: ${targetEmail || targetUserId}` }, { status: 404 });
+      return Response.json({ error: `User not found: ${targetEmail || targetUserId || targetCustomerId}` }, { status: 404 });
+    }
+
+    // Verify we got the right user
+    const actualEmail = normEmail(user.email);
+    if (targetCustomerId && user.stripe_customer_id !== targetCustomerId) {
+      return Response.json({
+        error: `Customer ID mismatch: requested ${targetCustomerId}, got ${user.stripe_customer_id} for ${user.email}`,
+      }, { status: 500 });
+    }
+    if (targetEmail && actualEmail !== targetEmail) {
+      return Response.json({
+        error: `Email mismatch: requested ${targetEmail}, got ${user.email}`,
+      }, { status: 500 });
     }
 
     console.log("[REC] Working with user:", user.email, "ID:", user.id);
