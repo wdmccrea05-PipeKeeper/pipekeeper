@@ -12,7 +12,7 @@ const LANGS = [
   { code: "pl", label: "Polski" },
   { code: "ja", label: "日本語" },
   { code: "zh-Hans", label: "中文" },
-  { code: "sv", label: "Svenska" }
+  { code: "sv", label: "Svenska" },
 ];
 
 function normalizeLang(raw) {
@@ -25,28 +25,12 @@ function normalizeLang(raw) {
   return v;
 }
 
-function readStoredLang() {
-  return normalizeLang(
-    localStorage.getItem("pk_lang") ||
-      localStorage.getItem("pipekeeper_language") ||
-      i18n.language ||
-      "en"
-  );
-}
-
-function writeStoredLang(lng) {
-  try {
-    localStorage.setItem("pk_lang", lng);
-    localStorage.setItem("pipekeeper_language", lng);
-  } catch {}
-}
-
 export default function LanguageSwitcher() {
-  const options = useMemo(() => LANGS, []);
   const [lang, setLang] = useState("en");
+  const options = useMemo(() => LANGS, []);
 
   useEffect(() => {
-    const stored = readStoredLang();
+    const stored = normalizeLang(localStorage.getItem("pk_lang") || localStorage.getItem("pipekeeper_language"));
     setLang(stored);
     if (i18n.language !== stored) i18n.changeLanguage(stored);
 
@@ -58,7 +42,8 @@ export default function LanguageSwitcher() {
   const onChange = async (e) => {
     const next = normalizeLang(e.target.value);
     setLang(next);
-    writeStoredLang(next);
+    localStorage.setItem("pk_lang", next);
+    localStorage.setItem("pipekeeper_language", next);
     await i18n.changeLanguage(next);
   };
 

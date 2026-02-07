@@ -32,7 +32,7 @@ export default function PremiumActiveIndicator({ user, subscription }) {
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-[#E0D8C8]">
-            {tierLabel} Active
+            {t("subscription.premiumActive")}
           </p>
           <p className="text-xs text-[#E0D8C8]/70">
             {isTrialUser 
