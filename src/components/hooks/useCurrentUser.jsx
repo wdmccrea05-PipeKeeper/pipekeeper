@@ -53,30 +53,9 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
-        const authUser = await base44.auth.me();
-        if (!authUser?.email) return null;
-
-        const email = normEmail(authUser.email);
-        const userId = authUser.id || authUser.auth_user_id;
-
-        // Fetch entity user record (single source of truth for extended fields)
-        let entityUser = null;
-        try {
-          const users = await base44.entities.User.filter({ email });
-          entityUser = users?.[0] || null;
-        } catch (err) {
-          console.warn("[useCurrentUser] Could not fetch User entity:", err);
-        }
-
-        // Merge: auth user is primary, entity user adds extended fields
-        const merged = {
-          ...entityUser,
-          ...authUser,
-          id: userId || entityUser?.id,
-          email,
-        };
-
-        return merged;
+        // Call backend function to get extended user data
+        const res = await base44.functions.invoke("getCurrentUserExtended", {});
+        return res.data || null;
       } catch (error) {
         console.error("[useCurrentUser] Error:", error);
         throw error;
