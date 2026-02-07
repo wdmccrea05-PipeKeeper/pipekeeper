@@ -127,11 +127,12 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    console.log(`[reconcile] Request body:`, body);
-    console.log(`[reconcile] body.email:`, body.email, `body.userEmail:`, body.userEmail);
+    console.log(`[CRITICAL] body.email="${body.email}"`);
+    console.log(`[CRITICAL] body.userEmail="${body.userEmail}"`);
+    console.log(`[CRITICAL] caller.email="${caller.email}"`);
     const targetEmail = normEmail(body.email || body.userEmail || caller.email);
     const targetUserId = body.userId || null;
-    console.log(`[reconcile] Resolved targetEmail:`, targetEmail);
+    console.log(`[CRITICAL] normEmail result="${targetEmail}"`);
 
     // Only admins can reconcile other users
     const isAdmin = caller.role === "admin";
