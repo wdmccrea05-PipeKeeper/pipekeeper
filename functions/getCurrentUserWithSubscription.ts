@@ -12,17 +12,18 @@ Deno.serve(async (req) => {
     const email = (authUser.email || "").trim().toLowerCase();
     const userId = authUser.id || authUser.auth_user_id;
 
-    // Get all users and find the current user by email
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const entityUser = allUsers.find(
-      (u) => (u.email || "").trim().toLowerCase() === email
-    );
-
-    if (!entityUser) {
-      return Response.json({ error: "User record not found" }, { status: 404 });
+    // Try to get entity user record (may not exist yet for new users)
+    let entityUser = null;
+    try {
+      const allUsers = await base44.asServiceRole.entities.User.list();
+      entityUser = allUsers.find(
+        (u) => (u.email || "").trim().toLowerCase() === email
+      );
+    } catch (err) {
+      console.warn("[getCurrentUserWithSubscription] Could not fetch User entity:", err);
     }
 
-    // Merge auth user with entity user
+    // Merge auth user with entity user (entity user is optional)
     const user = {
       ...entityUser,
       ...authUser,
