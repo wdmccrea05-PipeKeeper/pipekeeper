@@ -518,6 +518,23 @@ export const translations = {
       avatarUploadedSuccessfully: 'Avatar uploaded successfully',
       failedToUploadImage: 'Failed to upload image',
     },
+    quickStart: {
+      title: 'Quick Start',
+      progress: '{{completed}} of {{total}} complete',
+      addPipe: 'Add your first pipe',
+      addBlend: 'Add a tobacco blend',
+      addCellarItem: 'Add a cellar item',
+      addNote: 'Add notes or track usage',
+      viewInsights: 'View collection insights',
+    },
+    empty: {
+      usageLogNoPipes: 'No pipes or tobacco yet',
+      usageLogAction: 'Add pipes and tobacco to start logging smoking sessions',
+      rotationNoPipes: 'No pipes to rotate',
+      rotationAction: 'Add pipes to plan rotation schedules',
+      agingNoBlends: 'No tobacco blends yet',
+      agingAction: 'Add blends to track aging progress',
+    },
     notifications: {
       saved: 'Saved successfully',
     },

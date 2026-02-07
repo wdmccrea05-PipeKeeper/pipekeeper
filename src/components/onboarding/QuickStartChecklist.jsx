@@ -5,7 +5,7 @@ import { CheckCircle2, Circle, X } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { cn } from '@/lib/utils';
 import { isAppleBuild } from '@/components/utils/appVariant';
-import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useTranslation } from 'react-i18next';
 
 const CHECKLIST_KEY = 'pk_quickstart_dismissed';
 
