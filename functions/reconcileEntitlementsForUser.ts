@@ -140,16 +140,14 @@ Deno.serve(async (req) => {
 
     // Find user
     let user;
-    console.log(`[CRITICAL] targetUserId=${targetUserId}, targetEmail=${targetEmail}`);
     if (targetUserId) {
       const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
       user = users?.[0];
-      console.log(`[CRITICAL] Found user by ID ${targetUserId}: ${user?.email || 'NOT FOUND'}`);
+      console.log(`[CRITICAL_LOOKUP] By ID ${targetUserId}: ${user?.email || 'NOT FOUND'}`);
     } else {
-      console.log(`[CRITICAL] Filtering by email: ${targetEmail}`);
       const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
       user = users?.[0];
-      console.log(`[CRITICAL] Filter returned ${users?.length || 0} users. First email: ${user?.email || 'NOT FOUND'}`);
+      console.log(`[CRITICAL_LOOKUP] By email "${targetEmail}": ${user?.email || 'NOT FOUND'}, array length=${users?.length || 0}`);
     }
 
     if (!user) {
