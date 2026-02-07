@@ -189,16 +189,6 @@ export default function PipesPage() {
             </Button>
             <Button 
               onClick={async () => {
-                const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
-                if (!limitCheck.canCreate) {
-                  toast.error(limitCheck.reason, {
-                    action: {
-                      label: t("subscription.upgrade"),
-                      onClick: () => window.location.href = createPageUrl('Subscription')
-                    }
-                  });
-                  return;
-                }
                 setEditingPipe(null);
                 setShowForm(true);
               }}
