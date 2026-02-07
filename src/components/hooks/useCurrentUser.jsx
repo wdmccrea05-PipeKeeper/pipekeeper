@@ -147,7 +147,7 @@ export function useCurrentUser() {
       }
     },
     enabled: !!(userId || email),
-    staleTime: 30_000,
+    staleTime: 0,
   });
 
   // Ensure user record exists with platform info
