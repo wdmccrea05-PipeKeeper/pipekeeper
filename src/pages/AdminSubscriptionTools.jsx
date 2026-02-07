@@ -136,7 +136,17 @@ export default function AdminSubscriptionTools() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">Subscription Admin Tools</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-[#E0D8C8]">Subscription Admin Tools</h1>
+          <Button
+            onClick={handleExportEntitlements}
+            disabled={exporting}
+            className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            {exporting ? "Exporting..." : "Export Entitlements CSV"}
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
