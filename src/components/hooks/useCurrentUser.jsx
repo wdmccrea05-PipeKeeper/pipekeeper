@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 
+console.log("[BUILD_MARKER] entitlement-hook-v2");
 console.log("[ENTITLEMENT_HOOK_V2_LOADED]");
 
 const ENTITLEMENT_URL = import.meta.env.VITE_ENTITLEMENT_URL;
