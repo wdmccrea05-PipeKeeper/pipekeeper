@@ -109,8 +109,11 @@ export function useCurrentUser() {
 
         if (!subs || subs.length === 0) return null;
 
+        // Unwrap entity data wrapper if needed
+        const unwrapped = subs.map(s => s.data || s);
+
         // Filter to valid active or in-progress plans
-        const valid = subs.filter((s) => {
+        const valid = unwrapped.filter((s) => {
           const status = s.status || "";
           return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
         });
