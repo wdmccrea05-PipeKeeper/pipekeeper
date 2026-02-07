@@ -13,8 +13,16 @@ export function useCurrentUser() {
     queryFn: async () => {
       try {
         const me = await base44.auth.me();
-        if (!me?.id) return null;
-        return await base44.entities.User.get(me.id);
+        if (!me) return null;
+
+        // Extract ID with fallbacks: me.id, me.user_id, me.userId, me.user?.id
+        const userId = me.id || me.user_id || me.userId || me.user?.id;
+        if (!userId) {
+          console.error("[useCurrentUser] No user ID found in auth response:", me);
+          return null;
+        }
+
+        return await base44.entities.User.get(userId);
       } catch (error) {
         console.error("[useCurrentUser] Error:", error);
         throw error;
