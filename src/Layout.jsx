@@ -1,4 +1,4 @@
-import "@/components/i18n"; // CRITICAL: initialize i18n BEFORE App renders
+import "@/components/i18n/index"; // CRITICAL: initialize i18n BEFORE App renders
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
