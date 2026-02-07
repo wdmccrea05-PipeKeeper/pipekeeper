@@ -1,9 +1,6 @@
-// Single source of truth: Reconcile user entitlements from all sources (Stripe, Apple)
-// Fixes cross-platform issues where web Stripe purchase → iOS login loses paid status
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient } from "./_shared/stripeClientSingleton.ts";
 
-// Flash deployment trigger
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
 interface ReconcileResult {
