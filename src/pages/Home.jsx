@@ -15,7 +15,7 @@ import {
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle, RotateCcw
 } from "lucide-react";
 import { isTrialWindowNow } from "@/components/utils/access";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
@@ -203,7 +203,8 @@ export default function HomePage() {
   });
 
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-  const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
+  const effective = getEffectiveEntitlement(user);
+  const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),

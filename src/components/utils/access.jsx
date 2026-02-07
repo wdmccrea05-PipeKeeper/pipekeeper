@@ -2,7 +2,7 @@
 // LEGACY: Re-exports canonical premium access from premiumAccess.jsx
 // This file is deprecated—import directly from premiumAccess.jsx instead
 
-export { hasPremiumAccess, hasPaidAccess, getPlanLabel } from "./premiumAccess";
+export { getPlanLabel } from "./premiumAccess";
 
 export function isTrialWindow(createdDate) {
   if (!createdDate) return false;

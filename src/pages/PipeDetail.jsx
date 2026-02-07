@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
 import { useMeasurement } from "@/components/utils/measurementConversion";
 import { getUsageCharacteristics } from "@/components/utils/schemaCompatibility";
 import {
@@ -170,8 +170,9 @@ export default function PipeDetailPage() {
     enabled: !!user?.email,
   });
 
-  // Canonical premium access check (post-trial: paid only)
-  const isPaidUser = hasPremiumAccess(user);
+  // Canonical premium access check
+  const effective = getEffectiveEntitlement(user);
+  const isPaidUser = effective === "pro" || effective === "premium";
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),

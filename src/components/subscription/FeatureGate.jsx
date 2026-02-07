@@ -1,5 +1,6 @@
 import React from "react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
 import UpgradePrompt from "./UpgradePrompt";
 
 /**
@@ -17,10 +18,11 @@ export default function FeatureGate({
   description,
   requiredTier = "pro"
 }) {
-  const { hasPro } = useCurrentUser();
+  const { user } = useCurrentUser();
+  const isPro = getEffectiveEntitlement(user) === "pro";
 
   // Pro features require Pro tier
-  if (requiredTier === "pro" && !hasPro) {
+  if (requiredTier === "pro" && !isPro) {
     return (
       <UpgradePrompt 
         featureName={featureName || "Pro Feature"}

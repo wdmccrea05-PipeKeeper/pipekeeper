@@ -15,7 +15,7 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
 import { useTranslation } from "react-i18next";
 import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
@@ -48,7 +48,8 @@ export default function CommunityPage() {
     refetchOnMount: 'always',
   });
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  const effective = getEffectiveEntitlement(user);
+  const hasPaidAccess = effective === "pro" || effective === "premium";
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],

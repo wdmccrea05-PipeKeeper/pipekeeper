@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { hasProAccess as canonicalHasProAccess, hasPremiumAccess as canonicalHasPremiumAccess } from "@/components/utils/entitlementCanonical";
+import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
 import { isFoundingMember } from "@/components/utils/premiumAccess";
 import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect, useRef } from "react";
@@ -115,16 +115,17 @@ export function useCurrentUser() {
   }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
 
   // Derived access flags (CANONICAL: read from entitlement_tier only)
-  const hasPro = canonicalHasProAccess(user);
-  const hasPremium = canonicalHasPremiumAccess(user);
+  const effective = getEffectiveEntitlement(user);
+  const hasPro = effective === "pro";
+  const hasPaidAccess = effective === "pro" || effective === "premium";
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
-  // Logging for verification (Part H)
+  // Logging for verification
   if (user) {
     console.log("[ENTITLEMENT_CHECK]", {
       entitlement_tier: user?.entitlement_tier,
-      effective: canonicalHasProAccess(user) ? "pro" : "free",
+      effective,
       hasPro,
     });
   }
@@ -141,8 +142,7 @@ export function useCurrentUser() {
     provider, // Inferred provider (stripe, apple, or null)
     isLoading,
     error: userError,
-    hasPremium,
-    hasPaidAccess: hasPremium, // Kept for compatibility
+    hasPaidAccess,
     hasPro,
     isTrial: false, // Deprecated: trial logic removed
     isAdmin,
