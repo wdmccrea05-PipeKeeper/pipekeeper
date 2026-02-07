@@ -3,10 +3,17 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const authUser = await base44.auth.me();
+    
+    let authUser = null;
+    try {
+      authUser = await base44.auth.me();
+    } catch (err) {
+      console.warn("[getCurrentUserWithSubscription] auth.me() failed:", err);
+      return Response.json({ user: null, subscription: null });
+    }
 
     if (!authUser?.email) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return Response.json({ user: null, subscription: null });
     }
 
     const email = (authUser.email || "").trim().toLowerCase();
