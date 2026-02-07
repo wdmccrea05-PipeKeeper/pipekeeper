@@ -62,10 +62,8 @@ export default function PipesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Pro users have unlimited access
-      if (hasPro) {
-        return base44.entities.Pipe.create(data);
-      }
+      // All pipe creation goes through the same path
+      // hasPaidAccess is enforced via limit checks before form submission
       return base44.entities.Pipe.create(data);
     },
     onSuccess: () => {
