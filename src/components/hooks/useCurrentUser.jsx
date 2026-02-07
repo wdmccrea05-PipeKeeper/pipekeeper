@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { hasPaidAccess, hasProAccess, hasPremiumAccess, isFoundingMember } from "@/components/utils/premiumAccess";
+import { hasProAccess as canonicalHasProAccess, hasPremiumAccess as canonicalHasPremiumAccess } from "@/components/utils/entitlementCanonical";
+import { isFoundingMember } from "@/components/utils/premiumAccess";
 import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect, useRef } from "react";
 
