@@ -137,8 +137,10 @@ Deno.serve(async (req) => {
 
     // Only admins can reconcile other users
     const isAdmin = caller.role === "admin";
+    console.log(`[CRITICAL] isAdmin=${isAdmin}, targetEmail=${targetEmail}, callerEmail=${normEmail(caller.email)}`);
     if (!isAdmin && targetEmail !== normEmail(caller.email)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+     console.log(`[CRITICAL] BLOCKED: Non-admin trying to reconcile different user`);
+     return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Find user
