@@ -458,10 +458,7 @@ export const translations = {
       trialEndedBody: 'Upgrade to Premium or Pro to continue enjoying all features.',
       continueFree: 'Continue Free',
       subscribe: 'Subscribe',
-    },
-    units: {
-      tin: 'tin',
-      tinPlural: 'tins',
+      upgrade: 'Upgrade',
     },
     identificationTooltip: 'Upload photos for quick identification',
     whatIfTooltip: 'Run hypothetical scenarios',
