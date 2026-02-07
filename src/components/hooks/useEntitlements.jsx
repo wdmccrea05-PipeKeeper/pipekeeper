@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useCurrentUser } from "./useCurrentUser";
 import { buildEntitlements } from "@/components/utils/entitlements";
-import { hasProAccess } from "@/components/utils/premiumAccess";
+import { hasProAccess } from "@/components/utils/entitlementCanonical";
 
 export function useEntitlements() {
-  const { user, subscription, hasPaid, isLoading, isInTrial } = useCurrentUser();
+  const { user, hasPro, isLoading } = useCurrentUser();
 
   return useMemo(() => {
     if (isLoading || !user) {
@@ -16,19 +16,12 @@ export function useEntitlements() {
       });
     }
 
-    const isProSubscriber = hasProAccess(user, subscription);
-
     return buildEntitlements({
-      isPaidSubscriber: hasPaid,
-      isProSubscriber,
-      subscriptionStartedAt:
-        subscription?.subscriptionStartedAt ||
-        subscription?.started_at ||
-        subscription?.current_period_start ||
-        user?.created_date ||
-        null,
-      isFreeGrandfathered: user?.isFreeGrandfathered || false,
-      isOnTrial: isInTrial,
+      isPaidSubscriber: hasPro,
+      isProSubscriber: hasPro,
+      subscriptionStartedAt: user?.created_date || null,
+      isFreeGrandfathered: false,
+      isOnTrial: false,
     });
-  }, [user, subscription, hasPaid, isLoading, isInTrial]);
+  }, [user, hasPro, isLoading]);
 }
