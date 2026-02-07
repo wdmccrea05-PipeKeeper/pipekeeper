@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { BUILD_VERSION } from "@/src/buildVersion";
+import { BUILD_VERSION } from "@/components/buildVersion";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
