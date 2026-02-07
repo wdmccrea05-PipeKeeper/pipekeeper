@@ -17,6 +17,7 @@ export default function AdminSubscriptionTools() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [updatedUser, setUpdatedUser] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   // Check admin access
   if (!isLoading && user?.role !== "admin") {
