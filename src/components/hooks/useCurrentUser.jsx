@@ -199,11 +199,9 @@ export function useCurrentUser() {
     })();
   }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
 
-  // Derived access flags
-  const hasPremium = hasPremiumAccess(user, subscription);
-  const hasPaid = hasPaidAccess(user, subscription);
-  const hasPro = hasProAccess(user, subscription);
-  const isTrial = !hasPaid && hasPremium;
+  // Derived access flags (CANONICAL: read from entitlement_tier only)
+  const hasPro = canonicalHasProAccess(user);
+  const hasPremium = canonicalHasPremiumAccess(user);
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
