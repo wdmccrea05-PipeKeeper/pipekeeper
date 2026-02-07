@@ -1,66 +1,43 @@
-import React, { useEffect, useMemo, useState } from "react";
-import i18n from "@/components/i18n";
-
-const LANGS = [
-  { code: "en", label: "English" },
-  { code: "nl", label: "Nederlands" },
-  { code: "sv", label: "Svenska" },
-  { code: "ja", label: "日本語" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "es", label: "Español" },
-  { code: "pt-BR", label: "Português" },
-  { code: "pl", label: "Polski" },
-  { code: "zh-Hans", label: "中文" },
-];
-
-function normalizeLang(raw) {
-  const v = (raw || "").toString().trim();
-  if (!v) return "en";
-  if (v === "pt") return "pt-BR";
-  if (v === "zh") return "zh-Hans";
-  if (v.toLowerCase() === "zh-cn") return "zh-Hans";
-  if (v.toLowerCase() === "pt-br") return "pt-BR";
-  return v;
-}
+import React, { useState, useEffect } from 'react';
+import { translateDOM, getStoredLanguage, SUPPORTED_LANGUAGES } from "@/components/utils/runtimeTranslate";
 
 export default function LanguageSwitcher() {
-  const [lang, setLang] = useState("en");
-  const options = useMemo(() => LANGS, []);
+  const [currentLang, setCurrentLang] = useState(() => getStoredLanguage());
+  const [translating, setTranslating] = useState(false);
 
-  useEffect(() => {
-    const stored = normalizeLang(
-      localStorage.getItem("pk_lang") || localStorage.getItem("pipekeeper_language")
-    );
-    setLang(stored);
-    if (i18n.language !== stored) i18n.changeLanguage(stored);
-
-    const handler = (lng) => setLang(normalizeLang(lng));
-    i18n.on("languageChanged", handler);
-    return () => i18n.off("languageChanged", handler);
-  }, []);
-
-  const onChange = async (e) => {
-    const next = normalizeLang(e.target.value);
-    setLang(next);
-    localStorage.setItem("pk_lang", next);
-    await i18n.changeLanguage(next);
+  const handleChange = async (e) => {
+    const newLang = e.target.value;
+    setCurrentLang(newLang);
+    setTranslating(true);
+    
+    try {
+      await translateDOM(newLang);
+    } catch (error) {
+      console.error('Translation error:', error);
+    } finally {
+      setTranslating(false);
+    }
   };
 
   return (
-    <select
-      value={lang}
-      onChange={onChange}
-      className="text-sm bg-transparent border border-white/10 rounded-md px-2 py-1 text-white"
-      aria-label="Language"
-      title="Language"
-    >
-      {options.map((l) => (
-        <option key={l.code} value={l.code} className="text-black">
-          {l.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative">
+      <select
+        value={currentLang}
+        onChange={handleChange}
+        disabled={translating}
+        className="bg-white/10 text-[#E0D8C8] text-sm rounded-lg px-3 py-1.5 border border-white/20 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 disabled:opacity-50"
+      >
+        {SUPPORTED_LANGUAGES.map(lang => (
+          <option key={lang.code} value={lang.code} className="bg-[#1A2B3A] text-[#E0D8C8]">
+            {lang.label}
+          </option>
+        ))}
+      </select>
+      {translating && (
+        <div className="absolute top-full mt-1 left-0 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+          Translating...
+        </div>
+      )}
+    </div>
   );
 }
