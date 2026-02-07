@@ -127,8 +127,11 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    console.log(`[reconcile] Request body:`, body);
+    console.log(`[reconcile] body.email:`, body.email, `body.userEmail:`, body.userEmail);
     const targetEmail = normEmail(body.email || body.userEmail || caller.email);
     const targetUserId = body.userId || null;
+    console.log(`[reconcile] Resolved targetEmail:`, targetEmail);
 
     // Only admins can reconcile other users
     const isAdmin = caller.role === "admin";
