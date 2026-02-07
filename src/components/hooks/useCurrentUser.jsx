@@ -218,9 +218,9 @@ export function useCurrentUser() {
     isLoading,
     error: userError,
     hasPremium,
-    hasPaid,
+    hasPaidAccess: hasPremium, // Kept for compatibility
     hasPro,
-    isTrial,
+    isTrial: false, // Deprecated: trial logic removed
     isAdmin,
     isFoundingMember: isFounding,
     refetch,
