@@ -106,20 +106,13 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    console.log("[REC] body:", JSON.stringify(body));
-    console.log("[REC] caller.email:", caller.email);
-    
-    const rawEmail = body.email || body.userEmail || caller.email;
-    console.log("[REC] rawEmail:", rawEmail);
-    
-    const targetEmail = normEmail(rawEmail);
     const targetUserId = body.userId || null;
-    
-    console.log("[REC] targetEmail:", targetEmail);
-    console.log("[REC] targetUserId:", targetUserId);
+    const targetCustomerId = body.stripeCustomerId || body.stripe_customer_id || null;
+    const rawEmail = body.email || body.userEmail || caller.email;
+    const targetEmail = normEmail(rawEmail);
 
     const isAdmin = caller.role === "admin";
-    if (!isAdmin && targetEmail !== normEmail(caller.email)) {
+    if (!isAdmin && targetEmail !== normEmail(caller.email) && !targetUserId && !targetCustomerId) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -127,14 +120,11 @@ Deno.serve(async (req) => {
     if (targetUserId) {
       const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
       user = users?.[0];
-      console.log("[REC] Found user by ID:", user?.email || "NOT FOUND");
+    } else if (targetCustomerId) {
+      const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: targetCustomerId });
+      user = users?.[0];
     } else {
-      console.log("[REC] Querying users with email:", targetEmail);
       const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-      console.log("[REC] Query returned", users?.length || 0, "users");
-      if (users && users.length > 0) {
-        console.log("[REC] First user email:", users[0].email);
-      }
       user = users?.[0];
     }
 
