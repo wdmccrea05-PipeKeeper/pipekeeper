@@ -45,7 +45,7 @@ export function useCurrentUser() {
   const backfillAttempted = useRef(false);
 
   const {
-    data: user,
+    data: response,
     isLoading: userLoading,
     error: userError,
     refetch: refetchUser,
@@ -53,9 +53,9 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
-        // Call backend function to get extended user data
-        const res = await base44.functions.invoke("getCurrentUserExtended", {});
-        return res.data || null;
+        // Call backend function to get user + subscription in one go
+        const res = await base44.functions.invoke("getCurrentUserWithSubscription", {});
+        return res.data || { user: null, subscription: null };
       } catch (error) {
         console.error("[useCurrentUser] Error:", error);
         throw error;
@@ -65,73 +65,9 @@ export function useCurrentUser() {
     retry: 2,
   });
 
-  const userId = user?.id || user?.auth_user_id;
-  const email = user?.email ? normEmail(user.email) : null;
-
-  const {
-    data: subscription,
-    isLoading: subLoading,
-    refetch: refetchSubscription,
-  } = useQuery({
-    queryKey: ["subscription", userId, email],
-    queryFn: async () => {
-      if (!userId && !email) return null;
-
-      try {
-        // Prefer user_id lookup (account-linked), fallback to email (legacy Stripe)
-        let subs = [];
-        if (userId) {
-          subs = await base44.entities.Subscription.filter({ user_id: userId });
-        }
-        if (subs.length === 0 && email) {
-          subs = await base44.entities.Subscription.filter({ user_email: email });
-        }
-
-        if (!subs || subs.length === 0) return null;
-
-        // Unwrap entity data wrapper if needed
-        const unwrapped = subs.map(s => s.data || s);
-
-        // Filter to valid active or in-progress plans
-        const valid = unwrapped.filter((s) => {
-          const status = s.status || "";
-          return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
-        });
-
-        if (valid.length === 0) return null;
-
-        // Pick best subscription: pro > premium, then active > trialing > most recent
-        valid.sort((a, b) => {
-          // Prioritize pro tier
-          const aPro = (a.tier || '').toLowerCase() === 'pro' ? 1 : 0;
-          const bPro = (b.tier || '').toLowerCase() === 'pro' ? 1 : 0;
-          if (aPro !== bPro) return bPro - aPro;
-
-          // Then active status
-          const aActive = a.status === "active" ? 1 : 0;
-          const bActive = b.status === "active" ? 1 : 0;
-          if (aActive !== bActive) return bActive - aActive;
-
-          // Then trialing
-          const aTrialing = a.status === "trialing" || a.status === "trial" ? 1 : 0;
-          const bTrialing = b.status === "trialing" || b.status === "trial" ? 1 : 0;
-          if (aTrialing !== bTrialing) return bTrialing - aTrialing;
-
-          // Finally most recent
-          const aDate = new Date(a.current_period_start || a.created_date || 0).getTime();
-          const bDate = new Date(b.current_period_start || b.created_date || 0).getTime();
-          return bDate - aDate;
-        });
-
-        return valid[0];
-      } catch (error) {
-        console.error("[useCurrentUser] Subscription query error:", error);
-        return null;
-      }
-    },
-    enabled: !!(userId || email),
-    staleTime: 0,
-  });
+  const user = response?.user || null;
+  const subscription = response?.subscription || null;
+  const subLoading = userLoading;
 
   // Ensure user record exists with platform info
   useEffect(() => {
