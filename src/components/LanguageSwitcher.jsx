@@ -3,16 +3,16 @@ import i18n from "@/components/i18n";
 
 const LANGS = [
   { code: "en", label: "English" },
-  { code: "es", label: "Español" },
+  { code: "nl", label: "Nederlands" },
+  { code: "sv", label: "Svenska" },
+  { code: "ja", label: "日本語" },
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "it", label: "Italiano" },
+  { code: "es", label: "Español" },
   { code: "pt-BR", label: "Português" },
-  { code: "nl", label: "Nederlands" },
   { code: "pl", label: "Polski" },
-  { code: "ja", label: "日本語" },
   { code: "zh-Hans", label: "中文" },
-  { code: "sv", label: "Svenska" },
 ];
 
 function normalizeLang(raw) {
@@ -30,7 +30,9 @@ export default function LanguageSwitcher() {
   const options = useMemo(() => LANGS, []);
 
   useEffect(() => {
-    const stored = normalizeLang(localStorage.getItem("pk_lang") || localStorage.getItem("pipekeeper_language"));
+    const stored = normalizeLang(
+      localStorage.getItem("pk_lang") || localStorage.getItem("pipekeeper_language")
+    );
     setLang(stored);
     if (i18n.language !== stored) i18n.changeLanguage(stored);
 

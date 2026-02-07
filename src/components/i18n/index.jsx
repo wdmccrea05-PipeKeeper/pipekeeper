@@ -1,6 +1,17 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { translationsExtended } from "./translations-extended";
+
+import en from "./locales/en";
+import es from "./locales/es";
+import fr from "./locales/fr";
+import de from "./locales/de";
+import it from "./locales/it";
+import ptBR from "./locales/ptBR";
+import nl from "./locales/nl";
+import pl from "./locales/pl";
+import ja from "./locales/ja";
+import zhHans from "./locales/zhHans";
+import sv from "./locales/sv";
 
 function normalizeLang(raw) {
   const v = (raw || "").toString().trim();
@@ -12,32 +23,50 @@ function normalizeLang(raw) {
   return v;
 }
 
-const resources = Object.entries(translationsExtended).reduce((acc, [lng, pack]) => {
-  acc[lng] = { translation: pack };
-  return acc;
-}, {});
-
-// Add aliases (optional)
-if (resources["pt-BR"]) resources["pt"] = resources["pt-BR"];
-if (resources["zh-Hans"]) {
-  resources["zh"] = resources["zh-Hans"];
-  resources["zh-CN"] = resources["zh-Hans"];
+function humanizeKey(key) {
+  const last = (key || "").split(".").pop() || "";
+  const withSpaces = last.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
 }
 
-const stored =
-  typeof window !== "undefined"
-    ? normalizeLang(window.localStorage.getItem("pk_lang") || window.localStorage.getItem("pipekeeper_language"))
-    : "en";
+const resources = {
+  en: { translation: en },
+  es: { translation: es },
+  fr: { translation: fr },
+  de: { translation: de },
+  it: { translation: it },
+  "pt-BR": { translation: ptBR },
+  nl: { translation: nl },
+  pl: { translation: pl },
+  ja: { translation: ja },
+  "zh-Hans": { translation: zhHans },
+  sv: { translation: sv },
 
-i18n.use(initReactI18next).init({
-  resources,
-  lng: stored,
-  fallbackLng: "en",
-  returnNull: false,
-  returnEmptyString: false,
-  interpolation: { escapeValue: false },
-  react: { useSuspense: false },
-});
+  // aliases
+  pt: { translation: ptBR },
+  zh: { translation: zhHans },
+};
+
+const stored = normalizeLang(
+  typeof window !== "undefined" 
+    ? (window.localStorage.getItem("pk_lang") || window.localStorage.getItem("pipekeeper_language"))
+    : "en"
+);
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: stored,
+    fallbackLng: "en",
+    returnNull: false,
+    returnEmptyString: false,
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },
+
+    // CRITICAL: prevents raw keys ever showing in UI
+    parseMissingKeyHandler: (key) => humanizeKey(key),
+  });
 
 i18n.on("languageChanged", (lng) => {
   try {
