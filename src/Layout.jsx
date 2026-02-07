@@ -31,7 +31,7 @@ import {
 } from "@/components/utils/nativeIAPBridge";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
-import { translateDOM, getStoredLanguage } from "@/components/utils/runtimeTranslate";
+import { getText } from "@/components/text";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -167,16 +167,17 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-
-  // Initialize runtime translation on mount
-  useEffect(() => {
-    const storedLang = getStoredLanguage();
-    if (storedLang && storedLang !== 'en') {
-      translateDOM(storedLang).catch(err => {
-        console.warn('Initial translation failed:', err);
-      });
-    }
-  }, []);
+  
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem('pk_language') || 'en';
+  });
+  
+  const TEXT = useMemo(() => getText(currentLang), [currentLang]);
+  
+  const handleLanguageChange = (lang) => {
+    setCurrentLang(lang);
+    localStorage.setItem('pk_language', lang);
+  };
 
   // Handle Android back button
   useEffect(() => {
@@ -198,21 +199,21 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [mobileOpen, navigate]);
 
-  const navItems = [
-    { name: "Home", page: "Home", icon: Home, isIconComponent: true },
-    { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
+  const navItems = useMemo(() => [
+    { name: TEXT.nav.home, page: "Home", icon: Home, isIconComponent: true },
+    { name: TEXT.nav.pipes, page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
     {
-      name: isAppleBuild ? "Cellar" : "Tobacco",
+      name: isAppleBuild ? TEXT.nav.cellar : TEXT.nav.tobacco,
       page: "Tobacco",
       icon: Leaf,
       isIconComponent: true,
     },
     ...(FEATURES.community
-      ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
+      ? [{ name: TEXT.nav.community, page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
-    { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
-    { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
-  ];
+    { name: TEXT.nav.profile, page: "Profile", icon: User, isIconComponent: true },
+    { name: TEXT.nav.help, page: "FAQ", icon: HelpCircle, isIconComponent: true },
+  ], [TEXT]);
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -231,12 +232,12 @@ export default function Layout({ children, currentPageName }) {
 
   const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
-  const adminNavItems = isAdmin ? [
-    { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
-    { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
-  ] : [];
+  const adminNavItems = useMemo(() => isAdmin ? [
+    { name: TEXT.admin.subscriptionSupport, page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: TEXT.admin.userReport, page: "UserReport", icon: Users, isIconComponent: true },
+    { name: TEXT.admin.contentModeration, page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: TEXT.admin.eventsLog, page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+  ] : [], [isAdmin, TEXT]);
 
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
@@ -489,7 +490,7 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">Loading...</p>
+          <p className="text-[#e8d5b7]">{TEXT.common.loading}</p>
         </div>
       </div>
     );
@@ -504,8 +505,8 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
-          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">Please sign in to continue</p>
-          <Button onClick={() => base44.auth.redirectToLogin()}>Sign In</Button>
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{TEXT.auth.loginPrompt}</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>{TEXT.auth.login}</Button>
         </div>
       </div>
     );
@@ -559,16 +560,16 @@ export default function Layout({ children, currentPageName }) {
                  </div>
 
                 <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
-                  <LanguageSwitcher />
+                  <LanguageSwitcher currentLang={currentLang} onLanguageChange={handleLanguageChange} />
                   <GlobalSearchTrigger />
                   <button
                     onClick={() => setShowQuickAccess(true)}
                     className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-xs lg:text-sm font-medium px-1.5 lg:px-3 py-1.5 rounded-lg hover:bg-white/5 overflow-hidden text-ellipsis whitespace-nowrap hidden lg:block"
                   >
-                    Quick Access
+                    {TEXT.nav.quickAccess}
                   </button>
                   {syncing ? (
-                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">Syncing...</span>
+                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">{TEXT.nav.syncing}</span>
                   ) : null}
                 </div>
               </div>
@@ -668,16 +669,16 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    FAQ
+                    {TEXT.nav.faq}
                   </a>
                   <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    Support
+                    {TEXT.nav.support}
                   </a>
                   <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    Terms
+                    {TEXT.nav.terms}
                   </a>
                   <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    Privacy
+                    {TEXT.nav.privacy}
                   </a>
                 </div>
               </div>
@@ -702,13 +703,13 @@ export default function Layout({ children, currentPageName }) {
           {showSubscribePrompt && (
             <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
               <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your trial has ended</h3>
+                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{TEXT.subscription.trialEndedTitle}</h3>
                 <p className="text-[#E0D8C8]/80 mb-5">
-                  Upgrade to Premium to continue enjoying unlimited access to all features.
+                  {TEXT.subscription.trialEndedBody}
                 </p>
                 <div className="flex gap-3 justify-end">
                   <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                    Continue Free
+                    {TEXT.subscription.continueFree}
                   </Button>
                   <Button
                     onClick={() => {
@@ -716,7 +717,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl("Subscription"));
                     }}
                   >
-                    Subscribe
+                    {TEXT.subscription.subscribe}
                   </Button>
                 </div>
               </div>
