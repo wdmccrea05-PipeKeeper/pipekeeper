@@ -14,7 +14,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function SpecializationRecommender({ pipe, onApplyRecommendation }) {
   const { t } = useTranslation();

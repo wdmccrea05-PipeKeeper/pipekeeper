@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
 const BLEND_COLORS = {

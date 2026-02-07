@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {

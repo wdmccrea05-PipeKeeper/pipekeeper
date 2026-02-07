@@ -15,7 +15,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function TobaccoCollectionStats() {
   const { t } = useTranslation();

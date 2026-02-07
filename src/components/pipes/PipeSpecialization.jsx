@@ -11,7 +11,7 @@ import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SpecializationRecommender from "./SpecializationRecommender";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const { t } = useTranslation();

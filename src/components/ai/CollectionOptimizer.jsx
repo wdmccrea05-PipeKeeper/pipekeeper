@@ -53,7 +53,7 @@ import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 
 /**
  * Drop-in replacement notes:
