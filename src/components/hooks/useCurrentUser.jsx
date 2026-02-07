@@ -45,7 +45,7 @@ export function useCurrentUser() {
   const backfillAttempted = useRef(false);
 
   const {
-    data: response,
+    data: user,
     isLoading: userLoading,
     error: userError,
     refetch: refetchUser,
@@ -53,20 +53,24 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
-        // Call backend function to get user + subscription in one go
-        const res = await base44.functions.invoke("getCurrentUserWithSubscription", {});
-        return res.data || { user: null, subscription: null };
+        // Get authenticated user
+        const me = await base44.auth.me();
+        if (!me?.id) return null;
+
+        // GET User entity record by id (NOT list, NOT backend function)
+        return await base44.entities.User.get(me.id);
       } catch (error) {
         console.error("[useCurrentUser] Error:", error);
         throw error;
       }
     },
     staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 2,
   });
-
-  const user = response?.user || null;
-  const subscription = response?.subscription || null;
   const subLoading = userLoading;
 
   // Ensure user record exists with platform info
