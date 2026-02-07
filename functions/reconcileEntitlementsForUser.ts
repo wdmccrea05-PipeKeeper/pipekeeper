@@ -17,6 +17,9 @@ async function reconcileFromStripe(base44, user, stripe) {
     try {
       const customers = await stripe.customers.list({ email, limit: 1 });
       customerId = customers.data?.[0]?.id || null;
+      if (customerId) {
+        user.stripe_customer_id = customerId;
+      }
     } catch (err) {
       console.error(`[reconcile] Stripe customer lookup failed:`, err);
       return null;
