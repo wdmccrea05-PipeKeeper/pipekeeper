@@ -140,13 +140,15 @@ Deno.serve(async (req) => {
     if (targetUserId) {
       const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
       user = users?.[0];
+      console.log(`[reconcile] Found user by ID ${targetUserId}: ${user?.email || 'NOT FOUND'}`);
     } else {
       const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
       user = users?.[0];
+      console.log(`[reconcile] Looking for user by email ${targetEmail}: ${user?.email || 'NOT FOUND'}`);
     }
 
     if (!user) {
-      return Response.json({ error: "User not found" }, { status: 404 });
+      return Response.json({ error: `User not found: ${targetEmail || targetUserId}` }, { status: 404 });
     }
 
     // CRITICAL: Check Apple first if platform=ios, then fallback to Stripe
