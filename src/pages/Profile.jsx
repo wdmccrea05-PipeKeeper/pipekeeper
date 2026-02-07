@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { User, Crown, ArrowRight, LogOut, Upload, AlertCircle } from "lucide-react";
 
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "react-i18next";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
