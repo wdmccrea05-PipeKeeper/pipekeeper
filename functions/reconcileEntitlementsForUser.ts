@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const targetEmail = normEmail(body.email || caller.email);
+    const targetEmail = normEmail(body.email || body.userEmail || caller.email);
     const targetUserId = body.userId || null;
 
     // Only admins can reconcile other users
