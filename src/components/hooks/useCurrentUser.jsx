@@ -123,7 +123,7 @@ export function useCurrentUser() {
   const isLoading = userLoading || subLoading;
 
   const refetch = async () => {
-    await Promise.all([refetchUser(), refetchSubscription()]);
+    await refetchUser();
   };
 
   return {
