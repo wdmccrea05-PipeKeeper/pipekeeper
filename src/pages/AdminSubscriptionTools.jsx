@@ -108,6 +108,31 @@ export default function AdminSubscriptionTools() {
     }
   };
 
+  const handleExportEntitlements = async () => {
+    try {
+      setExporting(true);
+      const response = await base44.functions.invoke("exportEntitlementsCsv");
+      const csv = response?.data?.csv;
+      if (!csv) {
+        alert("Failed to export CSV");
+        return;
+      }
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `entitlements_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      alert(`Export failed: ${err?.message || err}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-4xl mx-auto px-4">
