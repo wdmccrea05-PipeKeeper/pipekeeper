@@ -1,4 +1,3 @@
-import "@/components/i18n/index"; // CRITICAL: initialize i18n BEFORE App renders
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -16,8 +15,6 @@ import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
-import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
-import { installAuditTool } from "@/components/utils/i18n/hardcodeAudit";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
@@ -32,10 +29,9 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
-import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
-import LanguageProof from "@/components/LanguageProof";
+import { translateDOM, getStoredLanguage } from "@/components/utils/runtimeTranslate";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -171,12 +167,14 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-  const { t } = useTranslation();
 
-  // Install i18n audit tool (dev-only)
+  // Initialize runtime translation on mount
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      installAuditTool();
+    const storedLang = getStoredLanguage();
+    if (storedLang && storedLang !== 'en') {
+      translateDOM(storedLang).catch(err => {
+        console.warn('Initial translation failed:', err);
+      });
     }
   }, []);
 
@@ -201,19 +199,19 @@ export default function Layout({ children, currentPageName }) {
   }, [mobileOpen, navigate]);
 
   const navItems = [
-    { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
-    { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
+    { name: "Home", page: "Home", icon: Home, isIconComponent: true },
+    { name: "Pipes", page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
     {
-      name: isAppleBuild ? t("nav.cellar") : t("nav.tobacco"),
+      name: isAppleBuild ? "Cellar" : "Tobacco",
       page: "Tobacco",
       icon: Leaf,
       isIconComponent: true,
     },
     ...(FEATURES.community
-      ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
+      ? [{ name: "Community", page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
-    { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
-    { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
+    { name: "Profile", page: "Profile", icon: User, isIconComponent: true },
+    { name: "Help", page: "FAQ", icon: HelpCircle, isIconComponent: true },
   ];
 
   const PUBLIC_PAGES = useMemo(
@@ -242,19 +240,6 @@ export default function Layout({ children, currentPageName }) {
 
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
-
-  // Anti-regression: Check nav labels for key leaks & prevent placeholders (dev-only)
-  useEffect(() => {
-    if (import.meta?.env?.DEV && navItems.length > 0) {
-      const PLACEHOLDER_PATTERNS = /^(Title|Subtitle|Page Title|Page Subtitle|Optional|Info|Description|Label)$/i;
-      navItems.forEach(item => {
-        if (PLACEHOLDER_PATTERNS.test(item.name)) {
-          console.error('[i18n] Placeholder text rendered —', item.name, '— fix required');
-        }
-        warnIfLooksLikeKey(item.name, `Nav: ${item.page}`);
-      });
-    }
-  }, [navItems]);
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
@@ -504,7 +489,7 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
-          <p className="text-[#e8d5b7]">{t("common.loading")}</p>
+          <p className="text-[#e8d5b7]">Loading...</p>
         </div>
       </div>
     );
@@ -519,8 +504,8 @@ export default function Layout({ children, currentPageName }) {
             alt="PipeKeeper"
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
-          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{t("auth.loginPrompt")}</p>
-          <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">Please sign in to continue</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>Sign In</Button>
         </div>
       </div>
     );
@@ -581,10 +566,10 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setShowQuickAccess(true)}
                     className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-xs lg:text-sm font-medium px-1.5 lg:px-3 py-1.5 rounded-lg hover:bg-white/5 overflow-hidden text-ellipsis whitespace-nowrap hidden lg:block"
                   >
-                    {t("nav.quickAccess")}
+                    Quick Access
                   </button>
                   {syncing ? (
-                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">{t("nav.syncing")}</span>
+                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">Syncing...</span>
                   ) : null}
                 </div>
               </div>
@@ -684,16 +669,16 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.faq")}
+                    FAQ
                   </a>
                   <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.support")}
+                    Support
                   </a>
                   <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.terms")}
+                    Terms
                   </a>
                   <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {t("nav.privacy")}
+                    Privacy
                   </a>
                 </div>
               </div>
@@ -718,13 +703,13 @@ export default function Layout({ children, currentPageName }) {
           {showSubscribePrompt && (
             <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
               <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
+                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">Your trial has ended</h3>
                 <p className="text-[#E0D8C8]/80 mb-5">
-                  {t("subscription.trialEndedBody")}
+                  Upgrade to Premium to continue enjoying unlimited access to all features.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                    {t("subscription.continueFree")}
+                    Continue Free
                   </Button>
                   <Button
                     onClick={() => {
@@ -732,7 +717,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl("Subscription"));
                     }}
                   >
-                    {t("subscription.subscribe")}
+                    Subscribe
                   </Button>
                 </div>
               </div>
