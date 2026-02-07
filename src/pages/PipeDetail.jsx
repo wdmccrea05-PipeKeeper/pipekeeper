@@ -19,6 +19,7 @@ import {
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
 import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useMeasurement } from "@/components/utils/measurementConversion";
 import { getUsageCharacteristics } from "@/components/utils/schemaCompatibility";
 import {
@@ -60,14 +61,7 @@ export default function PipeDetailPage() {
 
   const queryClient = useQueryClient();
   const { useImperial, setUseImperial } = useMeasurement();
-
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
 
   const { data: pipe, isLoading: pipeLoading, error: pipeError } = useQuery({
     queryKey: ['pipe', pipeId, user?.email],

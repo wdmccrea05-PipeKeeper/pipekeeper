@@ -66,54 +66,15 @@ export default function HomePage() {
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: async () => {
-      const authUser = await base44.auth.me();
-      let entityUser = null;
-      try {
-        if (authUser?.email) {
-          const rows = await base44.entities.User.filter({ email: authUser.email });
-          entityUser = rows?.[0] || null;
-        }
-      } catch (e) {
-        console.warn("[Home] Could not load entities.User for subscription fields:", e);
-      }
-
-      let subscriptions = [];
-      try {
-        if (authUser?.email) {
-          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
-          subscriptions = Array.isArray(subs) ? subs : [];
-        }
-      } catch (e) {
-        console.warn("[Home] Could not load Subscription entity:", e);
-      }
-
-      const bestSub = subscriptions.find((s) => s?.status === "active") || subscriptions.find((s) => s?.status === "trialing") || subscriptions[0] || null;
-      let subscriptionLevel = entityUser?.subscription_level;
-      let subscriptionStatus = entityUser?.subscription_status;
-
-      if (bestSub) {
-        const now = new Date();
-        const periodEnd = bestSub.current_period_end ? new Date(bestSub.current_period_end) : null;
-        const isPaid = (bestSub.status === "active" || bestSub.status === "trialing") && (!periodEnd || periodEnd > now);
-        if (isPaid) {
-          subscriptionLevel = "paid";
-          subscriptionStatus = bestSub.status;
-        }
-      }
-
-      return {
-        ...authUser,
-        ...(entityUser || {}),
-        subscription_level: subscriptionLevel,
-        subscription_status: subscriptionStatus,
-        email: authUser?.email || entityUser?.email,
-        subscription: bestSub,
-      };
+      const me = await base44.auth.me();
+      if (!me?.id) return null;
+      return await base44.entities.User.get(me.id);
     },
     retry: 2,
-    staleTime: 10000,
+    staleTime: 0,
+    gcTime: 0,
     refetchOnMount: "always",
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
