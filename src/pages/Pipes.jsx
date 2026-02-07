@@ -42,7 +42,7 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
-  const { user, hasPro } = useCurrentUser();
+  const { user, hasPaidAccess, isLoading: userLoading } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
