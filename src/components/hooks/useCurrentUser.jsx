@@ -71,6 +71,9 @@ export function useCurrentUser() {
     refetchOnReconnect: true,
     retry: 2,
   });
+
+  // Subscription not used for gating; kept for provider inference only
+  const subscription = null;
   const subLoading = userLoading;
 
   // Ensure user record exists with platform info
