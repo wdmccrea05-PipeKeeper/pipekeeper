@@ -120,6 +120,15 @@ export function useCurrentUser() {
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
+  // Logging for verification (Part H)
+  if (user) {
+    console.log("[ENTITLEMENT_CHECK]", {
+      entitlement_tier: user?.entitlement_tier,
+      effective: canonicalHasProAccess(user) ? "pro" : "free",
+      hasPro,
+    });
+  }
+
   const isLoading = userLoading || subLoading;
 
   const refetch = async () => {
