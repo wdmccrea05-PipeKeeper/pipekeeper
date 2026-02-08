@@ -25,10 +25,10 @@ export function useCurrentUser() {
     let alive = true;
 
     async function run() {
-      console.log("[ENTITLEMENT_HOOK] mounted");
+      console.log("[ENTITLEMENT_HOOK] mounted - always running auth");
       setLoading(true);
 
-      // 1) Get user from Supabase session (no providers)
+      // Always try to get session
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
 
@@ -42,18 +42,17 @@ export function useCurrentUser() {
       const userEmail = (sessionUser?.email || "").trim().toLowerCase();
       setEmail(userEmail);
 
-      // 2) If no email, entitlement is free
       if (!userEmail) {
         setEntitlementTier("free");
         setLoading(false);
         return;
       }
 
-      // 3) Fetch entitlement from Cloudflare
+      // Fetch entitlement
       try {
         const url = new URL(ENTITLEMENT_URL);
         url.searchParams.set("email", userEmail);
-        url.searchParams.set("ts", String(Date.now())); // bust caches
+        url.searchParams.set("ts", String(Date.now()));
 
         const apiKey = import.meta.env.VITE_ENTITLEMENT_API_KEY || "";
         const r = await fetch(url.toString(), {
@@ -84,7 +83,7 @@ export function useCurrentUser() {
 
     run();
 
-    // Keep user updated if session changes
+    // Listen to auth changes
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       run();
     });

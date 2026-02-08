@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "@/components/utils/supabaseClient";
+import { supabase, SUPABASE_READY } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [testResult, setTestResult] = useState("");
   const navigate = useNavigate();
 
   const handleAuth = async (e) => {
@@ -41,6 +42,31 @@ export default function AuthPage() {
     }
   };
 
+  const handleTokenTest = async () => {
+    setTestResult("Testing...");
+    try {
+      const url = "https://qtrypzzcjebvfcihiynt.supabase.co/auth/v1/token?grant_type=password";
+      const key = supabase.supabaseKey || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cnlwenpjamVidmZjaWhpeW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjMxNjEsImV4cCI6MjA1MjA5OTE2MX0.gE-8W18qPFyqCLsVE7O8SfuVCzT-_yZmLR_kRUa8x9M";
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": `Bearer ${key}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const text = await response.text();
+      console.log("[TOKEN_TEST_RESULT]", { status: response.status, body: text.slice(0, 200) });
+      setTestResult(`Status: ${response.status}, Body: ${text.slice(0, 200)}`);
+    } catch (err) {
+      console.log("[TOKEN_TEST_ERROR]", err);
+      setTestResult(`Error: ${err.message}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -49,6 +75,12 @@ export default function AuthPage() {
           <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">PipeKeeper</h1>
           <p className="text-[#E0D8C8]/70">{isSignUp ? "Create your account" : "Welcome back"}</p>
         </div>
+
+        {!SUPABASE_READY && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+            <p className="text-sm text-yellow-400">Warning: Supabase not fully configured (using fallback)</p>
+          </div>
+        )}
 
         <div className="bg-[#1A2B3A]/95 rounded-2xl shadow-xl p-8 border border-[#A35C5C]/30">
           <form onSubmit={handleAuth} className="space-y-4">
@@ -93,6 +125,22 @@ export default function AuthPage() {
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>
+
+          <div className="mt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleTokenTest} 
+              className="w-full text-xs"
+            >
+              Run Token Test
+            </Button>
+            {testResult && (
+              <div className="mt-2 p-2 rounded bg-gray-800 text-xs text-gray-300 break-all">
+                {testResult}
+              </div>
+            )}
+          </div>
 
           <div className="mt-6 text-center">
             <button
