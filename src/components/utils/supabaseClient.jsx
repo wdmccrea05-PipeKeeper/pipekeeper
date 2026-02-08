@@ -1,31 +1,30 @@
-const __g = globalThis;
+import { createClient } from "@supabase/supabase-js";
 
+// PRODUCTION SUPABASE CONFIG - SINGLE SOURCE OF TRUTH
+// DO NOT CREATE SUPABASE CLIENTS ANYWHERE ELSE
+const SUPABASE_URL = "https://uulcpkiwqeoiwbjgidwp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bGNwa2l3cWVvaXdiamdpZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0ODU5OTMsImV4cCI6MjA4NjA2MTk5M30.jKzTYXA3IuJn39nlP4kBI6o9hg43Ebm8wnwWeGHXtSQ";
+
+// Singleton guard to prevent duplicate initialization
+const __g = globalThis;
 if (__g.__PK_SUPABASE_INIT__) {
   console.error("[FATAL] Multiple Supabase clients detected", {
     first: __g.__PK_SUPABASE_INIT__,
     second: SUPABASE_URL,
   });
-  throw new Error("Multiple Supabase clients detected. Stop and remove duplicate init.");
+  throw new Error("FATAL: Multiple Supabase clients detected. Check imports.");
 }
-
 __g.__PK_SUPABASE_INIT__ = SUPABASE_URL;
-import { createClient } from "@supabase/supabase-js";
 
-// Hardcoded Supabase config - single source of truth
-const SUPABASE_URL = "https://uulcpkiwqeoiwbjgidwp.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bGNwa2l3cWVvaXdiamdpZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0ODU5OTMsImV4cCI6MjA4NjA2MTk5M30.jKzTYXA3IuJn39nlP4kBI6o9hg43Ebm8wnwWeGHXtSQ";
-
-// Extract URL ref (subdomain before .supabase.co)
+// Validate configuration
 const urlRefMatch = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/);
 const urlRef = urlRefMatch ? urlRefMatch[1] : null;
 
-// Decode JWT to get ref from payload
 let keyRef = null;
-let jwtPayload = null;
 try {
   const parts = SUPABASE_ANON_KEY.split(".");
   if (parts.length === 3) {
-    jwtPayload = JSON.parse(atob(parts[1]));
+    const jwtPayload = JSON.parse(atob(parts[1]));
     keyRef = jwtPayload.ref;
   }
 } catch (e) {
@@ -34,14 +33,30 @@ try {
   throw new Error(msg);
 }
 
-// Validate ref match
 if (!urlRef || !keyRef || urlRef !== keyRef) {
   const msg = `FATAL: Supabase URL ref (${urlRef}) does not match anon key ref (${keyRef})`;
   console.error(msg, { urlRef, keyRef, url: SUPABASE_URL });
   throw new Error(msg);
 }
 
-console.log("[SUPABASE_VALIDATED]", { urlRef, keyRef, match: urlRef === keyRef, from: "utils/supabaseClient.js" });
+console.log("[SUPABASE_VALIDATED]", { 
+  urlRef, 
+  keyRef, 
+  match: true, 
+  from: "components/utils/supabaseClient",
+  timestamp: new Date().toISOString()
+});
+
+// Export config metadata for debug pages
+export const SUPABASE_CONFIG = {
+  source: "hardcoded",
+  url: SUPABASE_URL,
+  host: SUPABASE_URL.replace(/^https?:\/\//, "").split("/")[0],
+  ref: urlRef,
+  keyPrefix: SUPABASE_ANON_KEY.slice(0, 8),
+  keyLength: SUPABASE_ANON_KEY.length,
+  validated: true
+};
 
 export const SUPABASE_READY = true;
 export const SUPABASE_KEY_LEN = SUPABASE_ANON_KEY.length;
