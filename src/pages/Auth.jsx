@@ -177,7 +177,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
 
-        <div>
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
           <CardContent className="space-y-4">
             {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
