@@ -99,10 +99,12 @@ export async function getSupabaseAsync() {
   // If currently loading, wait for that promise
   if (_loadingPromise) return _loadingPromise;
 
-  // If config is ready, initialize immediately
-  const url = getSUPABASE_URL();
-  const key = getSUPABASE_ANON_KEY();
-  if (SUPABASE_CONFIG_OK && url && key) {
+  // Try to get current config
+  let url = getSUPABASE_URL();
+  let key = getSUPABASE_ANON_KEY();
+
+  // If config is ready NOW, initialize immediately
+  if (url && key && !isBadValue(url) && !isBadValue(key)) {
     _supabase = createClient(url, key, {
       auth: {
         persistSession: true,
@@ -114,17 +116,18 @@ export async function getSupabaseAsync() {
         headers: { "X-Client-Info": "pipekeeper-web" },
       },
     });
-    console.log("[SUPABASE_READY] true");
+    SUPABASE_CONFIG_OK = true;
+    console.log("[SUPABASE_READY] true (immediate)");
     return _supabase;
   }
 
-  // Otherwise wait for async loading
+  // Otherwise wait for async loading from backend
   _loadingPromise = (async () => {
-    // Give it a moment to load from backend
-    for (let i = 0; i < 10; i++) {
+    // Wait up to 5 seconds for config to load from backend
+    for (let i = 0; i < 25; i++) {
       const currentUrl = getSUPABASE_URL();
       const currentKey = getSUPABASE_ANON_KEY();
-      if (SUPABASE_CONFIG_OK && currentUrl && currentKey) {
+      if (currentUrl && currentKey && !isBadValue(currentUrl) && !isBadValue(currentKey)) {
         break;
       }
       await new Promise(r => setTimeout(r, 200));
@@ -132,9 +135,10 @@ export async function getSupabaseAsync() {
 
     const finalUrl = getSUPABASE_URL();
     const finalKey = getSUPABASE_ANON_KEY();
-    if (!SUPABASE_CONFIG_OK || !finalUrl || !finalKey) {
-      console.error("[SUPABASE] Failed to load config after retries");
-      throw new Error("Supabase configuration not available");
+    
+    if (!finalUrl || !finalKey || isBadValue(finalUrl) || isBadValue(finalKey)) {
+      console.error("[SUPABASE] Failed to load config - using fallback");
+      throw new Error("Supabase configuration not available (missing URL or key)");
     }
 
     _supabase = createClient(finalUrl, finalKey, {
@@ -149,7 +153,8 @@ export async function getSupabaseAsync() {
       },
     });
 
-    console.log("[SUPABASE_READY] true");
+    SUPABASE_CONFIG_OK = true;
+    console.log("[SUPABASE_READY] true (async)");
     return _supabase;
   })();
 
