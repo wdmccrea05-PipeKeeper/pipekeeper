@@ -5,8 +5,11 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Verify admin access
-    if (user?.role !== 'admin') {
+    // Verify admin access (check role OR hardcoded admin emails)
+    const isAdmin = user?.role === 'admin' || 
+      (user?.email && ['wmccrea@indario.com', 'warren@pipekeeper.app'].includes((user?.email || '').trim().toLowerCase()));
+    
+    if (!isAdmin) {
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
