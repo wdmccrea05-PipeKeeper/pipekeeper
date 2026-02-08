@@ -225,21 +225,8 @@ export default function HomePage() {
     }
   };
 
-  // Early returns AFTER all hooks
-  if (userLoading) {
-    return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <div className="text-center">
-          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
-            <div className="text-5xl animate-pulse">🔄</div>
-          </div>
-          <p className={PK_THEME.textBody}>{t("common.loading")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (userError || !user?.email) {
+  // Early returns AFTER all hooks - only block on auth failures
+  if (userError) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
