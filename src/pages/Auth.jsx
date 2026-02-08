@@ -12,6 +12,7 @@ export default function Auth() {
 
   useEffect(() => {
     // Check if already logged in
+    if (!supabase) return;
     supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user && event === "SIGNED_IN") {
         navigate(createPageUrl("Home"));

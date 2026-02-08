@@ -70,6 +70,8 @@ import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
+import Reset from './pages/Reset';
+import ResetPassword from './pages/ResetPassword';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
@@ -89,8 +91,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import ResetPassword from './pages/ResetPassword';
-import Reset from './pages/Reset';
 import __Layout from './Layout.jsx';
 
 
@@ -118,6 +118,8 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
     "PublicProfile": PublicProfile,
+    "Reset": Reset,
+    "ResetPassword": ResetPassword,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
@@ -137,8 +139,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "ResetPassword": ResetPassword,
-    "Reset": Reset,
 }
 
 export const pagesConfig = {
