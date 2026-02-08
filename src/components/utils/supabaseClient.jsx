@@ -13,8 +13,10 @@ const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || "").trim();
 const supabaseUrl = envUrl && envKey ? envUrl : DEFAULT_URL;
 const supabaseAnonKey = envUrl && envKey ? envKey : DEFAULT_ANON_KEY;
 
-if (!envUrl || !envKey) {
-  console.warn("[SUPABASE_CONFIG] Using defaults (missing env)", { hasUrl: !!envUrl, hasKey: !!envKey });
+if (!(envUrl && envKey)) {
+  console.warn("[SUPABASE_CONFIG] Using DEFAULT Supabase project because env is missing", {
+    hasUrl: !!envUrl, hasKey: !!envKey, host: supabaseUrl.replace(/^https?:\/\//,"").split("/")[0]
+  });
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
