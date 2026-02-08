@@ -214,7 +214,10 @@ export default function Auth() {
 
           <CardFooter className="flex flex-col gap-4">
             <Button
-              onClick={handleSubmit}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
               disabled={busy}
               className="w-full bg-amber-700 hover:bg-amber-800"
             >
