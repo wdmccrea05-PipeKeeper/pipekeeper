@@ -68,17 +68,22 @@ export let SUPABASE_CONFIG_OK = hasStaticConfig;
 
 // If static vars not available, try to fetch from backend
 if (!hasStaticConfig && typeof window !== 'undefined') {
+  console.log('[SUPABASE] Static config not available, attempting backend fetch...');
   (async () => {
     try {
       const { base44 } = await import('@/api/base44Client');
+      console.log('[SUPABASE] Invoking getSupabaseConfig...');
       const res = await base44.functions.invoke('getSupabaseConfig');
-      if (res.data?.url && res.data?.anonKey) {
+      console.log('[SUPABASE] getSupabaseConfig response:', res?.data ? 'success' : 'empty');
+      if (res?.data?.url && res?.data?.anonKey) {
         dynamicURL = res.data.url;
         dynamicKey = res.data.anonKey;
         SUPABASE_URL = dynamicURL;
         SUPABASE_ANON_KEY = dynamicKey;
         SUPABASE_CONFIG_OK = true;
-        console.log('[SUPABASE] Loaded from backend');
+        console.log('[SUPABASE] ✓ Loaded from backend successfully');
+      } else {
+        console.warn('[SUPABASE] Backend response missing url/anonKey');
       }
     } catch (e) {
       console.warn('[SUPABASE] Backend fetch failed:', e?.message);
@@ -86,7 +91,7 @@ if (!hasStaticConfig && typeof window !== 'undefined') {
   })();
 } else if (hasStaticConfig) {
   SUPABASE_CONFIG_OK = true;
-  console.log('[SUPABASE] Using static config');
+  console.log('[SUPABASE] ✓ Using static config');
 }
 
 let _supabase = null;
