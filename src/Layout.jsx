@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { BUILD_VERSION } from "./components/buildVersion";
 import { cn } from "@/lib/utils";
@@ -232,7 +232,30 @@ export default function Layout({ children, currentPageName }) {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const location = useLocation();
   const ios = useMemo(() => isIOSWebView(), []);
+
+  // Derive page name from URL if not passed explicitly
+  const resolvedPageName = useMemo(() => {
+    if (currentPageName) return currentPageName;
+
+    const path = (location?.pathname || "/").toLowerCase();
+
+    if (path === "/" || path.includes("/home")) return "Home";
+    if (path.includes("/pipes")) return "Pipes";
+    if (path.includes("/tobacco") || path.includes("/cellar")) return "Tobacco";
+    if (path.includes("/community")) return "Community";
+    if (path.includes("/profile")) return "Profile";
+    if (path.includes("/faq")) return "FAQ";
+    if (path.includes("/support")) return "Support";
+    if (path.includes("/subscription")) return "Subscription";
+    if (path.includes("/terms")) return "TermsOfService";
+    if (path.includes("/privacy")) return "PrivacyPolicy";
+    if (path.includes("/invite")) return "Invite";
+    if (path.includes("/auth") || path.includes("/resetpassword")) return "Auth";
+
+    return "Home";
+  }, [currentPageName, location?.pathname]);
 
   // Handle Android back button
   useEffect(() => {
@@ -433,7 +456,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (!ios) return undefined;
     // Skip global click interception on auth pages
-    if (PUBLIC_PAGES.has(currentPageName)) return undefined;
+    if (PUBLIC_PAGES.has(resolvedPageName)) return undefined;
 
     const getClickableText = (evtTarget) => {
       try {
@@ -519,7 +542,7 @@ export default function Layout({ children, currentPageName }) {
       document.removeEventListener("touchend", onTouchEnd, true);
       document.removeEventListener("click", onClick, true);
     };
-  }, [ios, currentPageName, PUBLIC_PAGES]);
+  }, [ios, resolvedPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -574,7 +597,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+  if ((userError || !user?.email) && !PUBLIC_PAGES.has(resolvedPageName)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -582,7 +605,14 @@ export default function Layout({ children, currentPageName }) {
             <div className="text-5xl">🔒</div>
           </div>
           <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{ui("auth.loginPrompt")}</p>
-          <Button onClick={() => navigate(createPageUrl("Auth"))}>{ui("auth.login")}</Button>
+          <Button
+            onClick={() => {
+              const authPath = createPageUrl("Auth");
+              navigate(authPath || "/auth");
+            }}
+          >
+            {ui("auth.login")}
+          </Button>
         </div>
       </div>
     );
@@ -599,7 +629,7 @@ export default function Layout({ children, currentPageName }) {
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <BackButton currentPageName={currentPageName} />
+                  <BackButton currentPageName={resolvedPageName} />
                   <Link to={createPageUrl("Home")} className="flex items-center gap-2 flex-shrink-0">
                     <img 
                       src={PIPEKEEPER_LOGO} 
@@ -616,7 +646,7 @@ export default function Layout({ children, currentPageName }) {
                      <NavLink
                        key={item.page}
                        item={item}
-                       currentPage={currentPageName}
+                       currentPage={resolvedPageName}
                        hasPaidAccess={hasPaidAccess}
                      />
                    ))}
@@ -627,7 +657,7 @@ export default function Layout({ children, currentPageName }) {
                          <NavLink
                            key={item.page}
                            item={item}
-                           currentPage={currentPageName}
+                           currentPage={resolvedPageName}
                            hasPaidAccess={hasPaidAccess}
                          />
                        ))}
@@ -655,7 +685,7 @@ export default function Layout({ children, currentPageName }) {
           <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
-                <BackButton currentPageName={currentPageName} />
+                <BackButton currentPageName={resolvedPageName} />
                 <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <img 
                     src={PIPEKEEPER_LOGO} 
@@ -705,7 +735,7 @@ export default function Layout({ children, currentPageName }) {
                 <NavLink
                   key={item.page}
                   item={item}
-                  currentPage={currentPageName}
+                  currentPage={resolvedPageName}
                   onClick={() => setMobileOpen(false)}
                   hasPaidAccess={hasPaidAccess}
                   isMobile={true}
@@ -720,7 +750,7 @@ export default function Layout({ children, currentPageName }) {
                     <NavLink
                       key={item.page}
                       item={item}
-                      currentPage={currentPageName}
+                      currentPage={resolvedPageName}
                       onClick={() => setMobileOpen(false)}
                       hasPaidAccess={hasPaidAccess}
                       isMobile={true}
