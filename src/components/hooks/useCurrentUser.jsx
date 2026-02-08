@@ -64,14 +64,18 @@ export function useCurrentUser() {
           },
         });
 
-        const text = await r.text();
-        const parsed = safeJsonParse(text) || {};
-        const tier = (parsed.entitlement_tier || "free").toLowerCase();
-
-        setEntitlementTier(tier);
-        console.log("[ENTITLEMENT] tier", tier, "x-pk-worker:", r.headers.get("x-pk-worker"));
+        if (!r.ok) {
+          console.warn("[ENTITLEMENT] API returned", r.status);
+          setEntitlementTier("free");
+        } else {
+          const text = await r.text();
+          const parsed = safeJsonParse(text) || {};
+          const tier = (parsed.entitlement_tier || "free").toLowerCase();
+          setEntitlementTier(tier);
+          console.log("[ENTITLEMENT] tier", tier);
+        }
       } catch (e) {
-        console.warn("[ENTITLEMENT] fetch failed", e);
+        console.warn("[ENTITLEMENT] fetch failed (non-fatal)", e);
         setEntitlementTier("free");
       }
 
