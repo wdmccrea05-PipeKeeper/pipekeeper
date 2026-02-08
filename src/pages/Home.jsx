@@ -121,6 +121,7 @@ export default function HomePage() {
     staleTime: 30000,
     gcTime: 60000,
     retry: 1,
+    enabled: true,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
