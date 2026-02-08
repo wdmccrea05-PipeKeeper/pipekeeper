@@ -232,10 +232,9 @@ export default function Auth() {
             >
               {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
-            </CardFooter>
-              </CardContent>
-            </form>
-            </Card>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   );
 }
