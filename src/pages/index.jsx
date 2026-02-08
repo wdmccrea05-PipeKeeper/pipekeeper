@@ -116,7 +116,9 @@ export default function Pages() {
 
   const path = useMemo(() => {
     if (startupLegal) return "/Home";
-    return canonicalizePath(rawPath);
+    const canonical = canonicalizePath(rawPath);
+    // Bypass Layout for Auth page to show full-screen auth form
+    return canonical;
   }, [rawPath, startupLegal]);
 
   // Update URL without reload (prevents iOS/webcontainer race conditions)
