@@ -51,6 +51,14 @@ export const SUPABASE_CONFIG = {
 
 export const SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
 
+// Debug logging (remove after testing)
+if (typeof window !== 'undefined') {
+  console.log('[SUPABASE_DEBUG] import.meta.env keys:', Object.keys(import.meta.env).filter(k => k.includes('SUPABASE')));
+  console.log('[SUPABASE_DEBUG] import.meta.env.VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? '✓ present' : '✗ missing');
+  console.log('[SUPABASE_DEBUG] import.meta.env.VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✓ present' : '✗ missing');
+  console.log('[SUPABASE_DEBUG] window.__ENV__:', typeof window.__ENV__ !== 'undefined' ? Object.keys(window.__ENV__).filter(k => k.includes('SUPABASE')) : 'not available');
+}
+
 let _supabase = null;
 
 export function getSupabase() {
