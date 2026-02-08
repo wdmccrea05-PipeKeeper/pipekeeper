@@ -82,7 +82,7 @@ export function useCurrentUser() {
     });
 
     return () => {
-      alive = true;
+      alive = false;
       sub?.subscription?.unsubscribe?.();
     };
   }, []);
