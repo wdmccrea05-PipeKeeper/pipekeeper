@@ -1,96 +1,71 @@
 import { useState } from "react";
 import { supabase } from "@/components/utils/supabaseClient";
-import { createPageUrl } from "@/utils";
-import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-  const handleLogin = async (e) => {
+  async function handleLogin(e) {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
+    setStatus("Checking account…");
 
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: normalizedEmail,
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
       password,
     });
 
-    if (error) {
-      // 🔒 MIGRATED USER PATH — force password reset
-      if (
-        error.message.includes("Invalid login credentials") ||
-        error.message.includes("Invalid email or password")
-      ) {
-        await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-          redirectTo: `${window.location.origin}/Auth`,
-        });
+    if (!error) return;
 
-        setMessage(
-          "Your account was migrated. Check your email to set a new password."
-        );
-        setLoading(false);
-        return;
-      }
+    // 🚨 MIGRATED USERS → FORCE RESET
+    if (
+      error.message.includes("Invalid login credentials") ||
+      error.message.includes("Invalid email or password")
+    ) {
+      await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: "https://pipekeeper.app/reset" }
+      );
 
-      setMessage(error.message);
-      setLoading(false);
+      setStatus(
+        "Your account was migrated. A password reset email has been sent."
+      );
       return;
     }
 
-    if (data?.session) {
-      navigate(createPageUrl("Home"), { replace: true });
-    }
-
-    setLoading(false);
-  };
+    setStatus(error.message);
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#1a2c42]">
       <form
         onSubmit={handleLogin}
-        className="bg-black/40 backdrop-blur p-6 rounded-xl w-full max-w-sm text-white"
+        className="bg-[#243548] p-6 rounded-xl w-full max-w-sm"
       >
-        <h1 className="text-2xl font-bold mb-4 text-center">PipeKeeper Login</h1>
+        <h1 className="text-white text-xl mb-4">PipeKeeper Login</h1>
 
         <input
-          type="email"
+          className="w-full mb-3 p-2 rounded"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-3 px-3 py-2 rounded bg-white/10"
-          required
         />
 
         <input
-          type="password"
+          className="w-full mb-3 p-2 rounded"
           placeholder="Password"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-3 px-3 py-2 rounded bg-white/10"
-          required
         />
 
-        {message && (
-          <p className="text-sm text-yellow-300 mb-3 text-center">
-            {message}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-amber-600 hover:bg-amber-700 py-2 rounded font-semibold"
-        >
-          {loading ? "Signing in…" : "Sign In"}
+        <button className="w-full bg-blue-600 text-white p-2 rounded">
+          Sign In
         </button>
+
+        {status && (
+          <p className="text-sm text-yellow-300 mt-3">{status}</p>
+        )}
       </form>
     </div>
   );
