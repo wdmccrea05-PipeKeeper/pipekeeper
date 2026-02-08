@@ -36,6 +36,9 @@ export const STRINGS = {
       trialEndedBody: "Upgrade to Premium to continue enjoying unlimited access to all features.",
       continueFree: "Continue Free",
       subscribe: "Subscribe",
+      premiumActive: "Premium Active",
+      trialActive: "Trial Active",
+      daysRemaining: "days remaining",
     },
     admin: {
       subscriptionSupport: "Subscription Support",
@@ -82,6 +85,9 @@ export const STRINGS = {
       trialEndedBody: "プレミアムにアップグレードして、すべての機能への無制限アクセスをお楽しみください。",
       continueFree: "無料で続ける",
       subscribe: "サブスクライブ",
+      premiumActive: "プレミアム有効",
+      trialActive: "トライアル有効",
+      daysRemaining: "日間残り",
     },
     admin: {
       subscriptionSupport: "サブスクリプションサポート",
@@ -128,6 +134,9 @@ export const STRINGS = {
       trialEndedBody: "Uppgradera till Premium för att fortsätta njuta av obegränsad åtkomst till alla funktioner.",
       continueFree: "Fortsätt gratis",
       subscribe: "Prenumerera",
+      premiumActive: "Premium Aktiv",
+      trialActive: "Provperiod Aktiv",
+      daysRemaining: "dagar kvar",
     },
     admin: {
       subscriptionSupport: "Prenumerationssupport",
@@ -174,6 +183,9 @@ export const STRINGS = {
       trialEndedBody: "Upgrade naar Premium om te blijven genieten van onbeperkte toegang tot alle functies.",
       continueFree: "Ga gratis verder",
       subscribe: "Abonneren",
+      premiumActive: "Premium Actief",
+      trialActive: "Proefperiode Actief",
+      daysRemaining: "dagen over",
     },
     admin: {
       subscriptionSupport: "Abonnementsondersteuning",
