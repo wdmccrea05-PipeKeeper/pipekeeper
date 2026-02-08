@@ -91,6 +91,16 @@ export default function Auth() {
     }
   };
 
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
+        <div className="text-center">
+          <div className="text-[#E0D8C8] text-lg font-semibold">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
       <Card className="w-full max-w-sm bg-[#243548] border-[#E0D8C8]/20">
@@ -107,14 +117,6 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {!SUPABASE_CONFIG_OK && (
-              <Alert className="bg-yellow-500/10 border-yellow-500/30">
-                <AlertDescription className="text-yellow-200 text-sm">
-                  Loading authentication service...
-                </AlertDescription>
-              </Alert>
-            )}
-
             {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
                 <AlertDescription className="text-red-200 text-sm">
