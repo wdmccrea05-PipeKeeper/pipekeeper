@@ -33,7 +33,7 @@ export default function AuthPage() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         console.log("[AUTH_RESULT]", { error, hasSession: !!data?.session });
         if (error) {
-          console.error("[AUTH_FULL_ERROR]", { message: error.message, status: error.status, name: error.name });
+          console.error("[AUTH_ERROR]", { message: error.message, status: error.status });
           throw error;
         }
         navigate("/Home");
@@ -51,27 +51,31 @@ export default function AuthPage() {
     const authSettingsResult = await pingAuthSettings();
     const restResult = await pingRest();
     
-    let tokenResult = { status: 0, body: "Not tested" };
+    let tokenResult = { status: 0, body: "Enter email/password and try again" };
     if (email && password) {
       try {
-        const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
-        const headers = buildSupabaseHeaders();
+        console.log("[TOKEN_TEST] calling signInWithPassword");
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         
-        console.log("[OUTGOING_HEADERS_KEYS]", Array.from(headers.keys()));
-        console.log("[OUTGOING_APIKEY_LEN]", headers.get("apikey")?.length || 0);
-        
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ email, password })
-        });
-        
-        const text = await response.text();
-        console.log("[TOKEN_TEST_RESULT]", { status: response.status, body: text.slice(0, 400) });
-        tokenResult = { status: response.status, body: text.slice(0, 400) };
+        if (error) {
+          tokenResult = { 
+            status: error.status || 400, 
+            body: `Error: ${error.message}` 
+          };
+        } else if (data?.session) {
+          tokenResult = { 
+            status: 200, 
+            body: "Success - session created" 
+          };
+        } else {
+          tokenResult = { 
+            status: 200, 
+            body: "Success but no session returned" 
+          };
+        }
       } catch (e) {
         console.error("[TOKEN_TEST_ERROR]", e);
-        tokenResult = { status: 0, body: `Error: ${e.message}` };
+        tokenResult = { status: 0, body: `Exception: ${e.message}` };
       }
     }
     
@@ -91,12 +95,6 @@ export default function AuthPage() {
           <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">PipeKeeper</h1>
           <p className="text-[#E0D8C8]/70">{isSignUp ? "Create your account" : "Welcome back"}</p>
         </div>
-
-        {!SUPABASE_READY && (
-          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-            <p className="text-sm text-yellow-400">Warning: Supabase validation failed</p>
-          </div>
-        )}
 
         <div className="bg-[#1A2B3A]/95 rounded-2xl shadow-xl p-8 border border-[#A35C5C]/30">
           <form onSubmit={handleAuth} className="space-y-4">
@@ -176,14 +174,11 @@ export default function AuthPage() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-[#E0D8C8] mb-1">Token Test:</div>
+                  <div className="font-semibold text-[#E0D8C8] mb-1">Sign In Test:</div>
                   <div className="text-gray-300">
                     Status: <span className={healthCheck.token.status === 200 ? "text-green-400" : healthCheck.token.status === 400 ? "text-yellow-400" : "text-red-400"}>
                       {healthCheck.token.status}
                     </span>
-                    {healthCheck.token.status === 401 && (
-                      <span className="text-red-400 ml-2">← Headers missing/stripped</span>
-                    )}
                   </div>
                   <div className="text-gray-400 break-all mt-1">{healthCheck.token.body}</div>
                 </div>

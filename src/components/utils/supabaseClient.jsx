@@ -1,10 +1,52 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://uulcpkiwqeoiwbjgidwp.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bGNwa2l3cWVvaXdiamdpZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0ODU5OTMsImV4cCI6MjA4NjA2MTk5M30.jKzTYXA3IuJn39nlP4kBI6o9hg43Ebm8wnwWeGHXtSQ";
+// Read from environment variables ONLY - no fallbacks
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-console.log("[SUPABASE_FORCED]", {
-  url: SUPABASE_URL,
+// Fatal error if missing
+if (!SUPABASE_URL) {
+  const msg = "FATAL: VITE_SUPABASE_URL is missing. Set it in Base44 secrets.";
+  console.error(msg);
+  throw new Error(msg);
+}
+
+if (!SUPABASE_ANON_KEY) {
+  const msg = "FATAL: VITE_SUPABASE_ANON_KEY is missing. Set it in Base44 secrets.";
+  console.error(msg);
+  throw new Error(msg);
+}
+
+// Extract URL ref (subdomain before .supabase.co)
+const urlRefMatch = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/);
+const urlRef = urlRefMatch ? urlRefMatch[1] : null;
+
+// Decode JWT to get ref from payload
+let keyRef = null;
+let jwtPayload = null;
+try {
+  const parts = SUPABASE_ANON_KEY.split(".");
+  if (parts.length === 3) {
+    jwtPayload = JSON.parse(atob(parts[1]));
+    keyRef = jwtPayload.ref;
+  }
+} catch (e) {
+  const msg = `FATAL: Cannot decode VITE_SUPABASE_ANON_KEY JWT: ${e.message}`;
+  console.error(msg);
+  throw new Error(msg);
+}
+
+// Validate ref match
+if (!urlRef || !keyRef || urlRef !== keyRef) {
+  const msg = `FATAL: Supabase URL ref (${urlRef}) does not match anon key ref (${keyRef})`;
+  console.error(msg, { urlRef, keyRef, url: SUPABASE_URL });
+  throw new Error(msg);
+}
+
+console.log("[SUPABASE_VALIDATED]", {
+  urlRef,
+  keyRef,
+  match: urlRef === keyRef,
   keyLength: SUPABASE_ANON_KEY.length,
 });
 
@@ -24,7 +66,7 @@ export async function pingAuthSettings() {
   try {
     const url = `${SUPABASE_URL}/auth/v1/settings`;
     const headers = buildSupabaseHeaders();
-    console.log("[PING_AUTH_SETTINGS] requesting:", url);
+    console.log("[PING_AUTH_SETTINGS]", url);
     const response = await fetch(url, { method: "GET", headers });
     const text = await response.text();
     console.log("[AUTH_SETTINGS_STATUS]", response.status);
@@ -40,7 +82,7 @@ export async function pingRest() {
   try {
     const url = `${SUPABASE_URL}/rest/v1/`;
     const headers = buildSupabaseHeaders();
-    console.log("[PING_REST] requesting:", url);
+    console.log("[PING_REST]", url);
     const response = await fetch(url, { method: "GET", headers });
     const text = await response.text();
     console.log("[REST_PING_STATUS]", response.status);
