@@ -1,47 +1,41 @@
+
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://qtrypzzcjebvfcihiynt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cnlwenpjamVidmZjaWhpeW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjMxNjEsImV4cCI6MjA1MjA5OTE2MX0.gE-8W18qPFyqCLsVE7O8SfuVCzT-_yZmLR_kRUa8x9M";
+const DEFAULT_URL = "https://qtrypzzcjebvfcihiynt.supabase.co";
 
-// Runtime validation
-if (!SUPABASE_ANON_KEY.startsWith("eyJ")) {
-  throw new Error("[SUPABASE_CLIENT] Invalid key format: must start with eyJ");
-}
-if (SUPABASE_ANON_KEY.length <= 100) {
-  throw new Error("[SUPABASE_CLIENT] Invalid key length: too short");
-}
-const dotCount = (SUPABASE_ANON_KEY.match(/\./g) || []).length;
-if (dotCount < 2) {
-  throw new Error("[SUPABASE_CLIENT] Invalid key format: insufficient segments");
-}
+// IMPORTANT: Use the NEW Publishable key (sb_publishable_...), NOT legacy eyJ..., NOT sb_secret_...
+const DEFAULT_PUBLISHABLE_KEY = "sb_publishable_8uG7VI6Yp1KJWJ9R_DJA9w_euvvq2I_";
 
-// Log safe fingerprint
-console.log("[SUPABASE_KEY_FINGERPRINT]", {
-  startsWith: SUPABASE_ANON_KEY.slice(0, 12),
-  endsWith: SUPABASE_ANON_KEY.slice(-12),
-  len: SUPABASE_ANON_KEY.length,
-  dots: dotCount,
-  host: new URL(SUPABASE_URL).host
+const envUrl = (import.meta.env.VITE_SUPABASE_URL || "").trim();
+const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || "").trim();
+
+// If env vars are missing (Base44 env injection issues), use hard fallback.
+const supabaseUrl = envUrl || DEFAULT_URL;
+const supabaseKey = envKey || DEFAULT_PUBLISHABLE_KEY;
+
+// Basic sanity checks to prevent bad deploys
+const keyPrefix = (supabaseKey || "").slice(0, 15);
+const isPublishable = supabaseKey.startsWith("sb_publishable_");
+
+console.log("[SUPABASE_INIT]", {
+  supabaseHost: supabaseUrl.replace("https://", ""),
+  usingEnvUrl: !!envUrl,
+  usingEnvKey: !!envKey,
+  keyPrefix,
+  keyLen: supabaseKey.length,
+  isPublishable,
 });
 
-// Debug fetch wrapper
-const debugFetch = async (input, init) => {
-  const url = typeof input === "string" ? input : input?.url;
-  if (url && url.includes("/auth/v1/token")) {
-    console.log("[SUPABASE_TOKEN_URL]", url);
-  }
-  return fetch(input, init);
-};
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Supabase missing URL or API key.");
+}
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  global: { headers: { apikey: SUPABASE_ANON_KEY } },
-  auth: { 
-    persistSession: true, 
-    autoRefreshToken: true, 
-    detectSessionInUrl: true,
-    storageKey: "pipekeeper-auth",
-  },
-  fetch: debugFetch
+if (!isPublishable) {
+  console.error(
+    "[SUPABASE_INIT] Wrong key type. Must use sb_publishable_ key in browser builds."
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
-
-console.log("[SUPABASE_FORCE_INIT]", SUPABASE_URL);
