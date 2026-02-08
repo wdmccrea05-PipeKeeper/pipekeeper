@@ -169,16 +169,20 @@ export async function getSupabaseAsync() {
 export function getSupabase() {
   if (_supabase) return _supabase;
 
-  if (!SUPABASE_CONFIG_OK) {
+  const url = getSUPABASE_URL();
+  const key = getSUPABASE_ANON_KEY();
+
+  if (!url || !key || isBadValue(url) || isBadValue(key)) {
     console.warn(
       "[SUPABASE] Configuration incomplete:",
-      `URL: ${SUPABASE_URL ? "✓ present" : "✗ missing VITE_SUPABASE_URL"}`,
-      `KEY: ${SUPABASE_ANON_KEY ? "✓ present" : "✗ missing VITE_SUPABASE_ANON_KEY"}`
+      `URL: ${url && !isBadValue(url) ? "✓ present" : "✗ missing"}`,
+      `KEY: ${key && !isBadValue(key) ? "✓ present" : "✗ missing"}`,
+      {url: url?.substring(0, 30), SUPABASE_CONFIG_OK}
     );
     return null;
   }
 
-  _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  _supabase = createClient(url, key, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
