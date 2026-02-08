@@ -108,7 +108,6 @@ export default function TobaccoPage() {
         return [];
       }
     },
-    enabled: !!user?.email,
     retry: 2,
     staleTime: 10000,
   });
