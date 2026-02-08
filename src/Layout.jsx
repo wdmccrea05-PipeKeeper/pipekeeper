@@ -157,6 +157,7 @@ async function tryStripeSync() {
   return { ok: false };
 }
 
+// Force deployment: entitlement check v2
 export default function Layout({ children, currentPageName }) {
   // CRITICAL: Mount entitlement check immediately - runs on every render
   const { user, hasPaidAccess, isAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
