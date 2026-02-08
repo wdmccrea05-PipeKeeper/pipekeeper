@@ -38,6 +38,7 @@ const ROUTES = {
   "/PublicProfile": PublicProfile,
   "/Import": Import,
   "/Invite": Invite,
+  "/Auth": Auth,
   "/Subscription": Subscription,
   "/Support": Support,
   "/FAQ": FAQ,
