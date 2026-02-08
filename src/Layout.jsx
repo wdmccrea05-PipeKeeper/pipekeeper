@@ -309,7 +309,17 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    
+    if (!supabase) return () => window.removeEventListener("storage", handleStorageChange);
+    
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      // sync with other tabs
+    });
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      sub?.subscription?.unsubscribe?.();
+    };
   }, [queryClient]);
 
   useEffect(() => {
