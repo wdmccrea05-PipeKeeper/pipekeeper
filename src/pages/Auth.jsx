@@ -33,6 +33,7 @@ export default function AuthPage() {
         navigate("/Home");
       }
     } catch (err) {
+      console.log("[AUTH_DEBUG] host:", supabase?.supabaseUrl ? new URL(supabase.supabaseUrl).host : "no-supabase");
       setError(err.message);
     } finally {
       setLoading(false);
