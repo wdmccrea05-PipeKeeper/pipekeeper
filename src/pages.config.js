@@ -91,6 +91,7 @@ import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
 import Auth from './pages/Auth';
+import NotFound from './pages/NotFound';
 import __Layout from './Layout.jsx';
 
 
@@ -139,6 +140,7 @@ export const PAGES = {
     "VerificationHelp": VerificationHelp,
     "index": index,
     "Auth": Auth,
+    "NotFound": NotFound,
 }
 
 export const pagesConfig = {
