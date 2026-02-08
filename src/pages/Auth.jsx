@@ -49,42 +49,77 @@ export default function Auth() {
     setBusy(true);
 
     try {
-      const supabase = await getSupabaseAsync();
-
       if (!email || !password) {
         setError("Please enter email and password.");
         setBusy(false);
         return;
       }
 
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setBusy(false);
+        return;
+      }
+
+      const supabase = await getSupabaseAsync();
+      if (!supabase) {
+        throw new Error("Supabase not initialized");
+      }
+
+      const emailTrimmed = email.trim().toLowerCase();
+
       if (mode === "login") {
-        console.log("[Auth] Attempting login for:", email);
-        const { error: err } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
+        console.log("[Auth] Attempting login for:", emailTrimmed);
+        const { data, error: err } = await supabase.auth.signInWithPassword({
+          email: emailTrimmed,
           password,
         });
         if (err) {
           console.error("[Auth] Login error:", err);
-          setError(err.message);
+          setError(err.message || "Login failed. Check your email and password.");
           setBusy(false);
           return;
         }
-        console.log("[Auth] Login successful");
+        if (!data.session) {
+          setError("Login succeeded but no session created. Please try again.");
+          setBusy(false);
+          return;
+        }
+        console.log("[Auth] Login successful, navigating...");
+        // Small delay to ensure session is persisted
+        await new Promise(r => setTimeout(r, 300));
         navigate("/", { replace: true });
       } else {
-        console.log("[Auth] Attempting signup for:", email);
-        const { error: err } = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(),
+        console.log("[Auth] Attempting signup for:", emailTrimmed);
+        const { data, error: err } = await supabase.auth.signUp({
+          email: emailTrimmed,
           password,
         });
         if (err) {
           console.error("[Auth] Signup error:", err);
-          setError(err.message);
+          setError(err.message || "Signup failed. Please try again.");
+          setBusy(false);
+          return;
+        }
+        if (!data.user) {
+          setError("Signup succeeded but user not created. Please try again.");
           setBusy(false);
           return;
         }
         console.log("[Auth] Signup successful");
-        navigate("/", { replace: true });
+        setError(""); // Clear any errors
+        setMode("login");
+        setPassword("");
+        setEmail(emailTrimmed);
+        // Show message about email confirmation if needed
+        if (!data.session) {
+          setError(""); // Actually an info message
+          // For most Supabase configs, signup auto-confirms now
+          setTimeout(() => {
+            setError("Account created! Please log in.");
+          }, 500);
+        }
+        setBusy(false);
       }
     } catch (err) {
       console.error("[Auth] Exception:", err);
