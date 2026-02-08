@@ -92,10 +92,13 @@ export default function HomePage() {
       try {
         console.log('[Home] Loading pipes for:', user?.email);
         const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 10000);
-        console.log('[Home] Pipes loaded:', result?.length);
+        console.log('[Home] Pipes loaded:', result?.length, 'result type:', typeof result, 'is array:', Array.isArray(result));
+        if (!Array.isArray(result)) {
+          console.error('[Home] Pipe result is not an array!', result);
+        }
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Pipes load error:', err);
+        console.error('[Home] Pipes load error:', err?.message, err);
         throw err;
       }
     },
