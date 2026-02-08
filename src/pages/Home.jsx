@@ -65,6 +65,7 @@ export default function HomePage() {
   }, []);
 
   const { user, isLoading: userLoading, error: userError } = useCurrentUser();
+  const queryClient = useQueryClient();
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -101,8 +102,6 @@ export default function HomePage() {
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
-
-  const queryClient = useQueryClient();
 
   // STANDARDIZED KEY: ["tobacco-blends", user?.email]
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
