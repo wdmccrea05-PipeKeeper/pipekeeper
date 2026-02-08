@@ -218,7 +218,11 @@ export default function Auth() {
 
           <CardFooter className="flex flex-col gap-4">
             <button
-              type="submit"
+              type="button"
+              onClick={(e) => {
+                console.log("[Auth] Button onClick fired!");
+                handleSubmit(e);
+              }}
               disabled={busy}
               className="w-full h-10 px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
