@@ -33,28 +33,40 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       setAuthError(null);
-      const supabase = getSupabase();
+      let supabase = getSupabase();
+      
+      // Retry getting supabase a few times with delay
+      let retries = 0;
+      while (!supabase && retries < 5) {
+        await new Promise(r => setTimeout(r, 500));
+        supabase = getSupabase();
+        retries++;
+      }
       
       if (!supabase) {
-        return { ok: false, message: 'Backend not ready' };
+        console.error('Login: Supabase client not available after retries');
+        return { ok: false, message: 'Backend configuration not ready. Please refresh and try again.' };
       }
 
+      console.log('Login: Supabase ready, attempting signin for', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
 
       if (error) {
+        console.error('Login error:', error);
         setAuthError(error);
         return { ok: false, message: error.message };
       }
 
+      console.log('Login: Success, setting authenticated');
       setIsAuthenticated(true);
       return { ok: true };
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Login exception:', err);
       setAuthError(err);
-      return { ok: false, message: err.message };
+      return { ok: false, message: err?.message || 'Authentication failed' };
     }
   };
 
