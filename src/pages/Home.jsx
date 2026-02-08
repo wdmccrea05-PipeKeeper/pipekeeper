@@ -34,7 +34,7 @@ import { SafeText, SafeHeading, SafeLabel } from "@/components/ui/SafeText";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
-const PIPE_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60 80 Q60 40 100 40 Q140 40 140 80 L140 100 Q140 120 120 120 L80 120 Q60 120 60 100 Z' fill='%23A35C5C'/%3E%3Crect x='50' y='110' width='100' height='30' rx='15' fill='%238B6F47'/%3E%3C/svg%3E";
+const PIPE_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 60 Q50 30 100 30 Q150 30 150 60 L150 90 Q150 110 130 110 L70 110 Q50 110 50 90 Z' fill='%23A35C5C' stroke='%238B4A4A' stroke-width='2'/%3E%3Crect x='40' y='100' width='120' height='40' rx='20' fill='%238B6F47' stroke='%236B5437' stroke-width='2'/%3E%3C/svg%3E";
 
 export default function HomePage() {
   const { t } = useTranslation();
