@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
 const SESSION_DISMISSED_KEY = "pk_tos_session_dismissed";
+const ACCEPT_TIMESTAMP_KEY = "pk_tos_timestamp";
 
 function is429(err) {
   const msg = String(err?.message || err || "");
@@ -12,8 +13,12 @@ function is429(err) {
 }
 
 function hasAccepted(user) {
+  // Check user object first
   const iso = user?.tos_accepted_at;
   if (iso) return true;
+  
+  // Check localStorage
+  if (typeof window === "undefined") return false;
   try {
     return localStorage.getItem(LOCAL_ACCEPT_KEY) === "1";
   } catch {
@@ -21,7 +26,26 @@ function hasAccepted(user) {
   }
 }
 
+function markLocalAccepted() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LOCAL_ACCEPT_KEY, "1");
+    localStorage.setItem(ACCEPT_TIMESTAMP_KEY, new Date().toISOString());
+  } catch (e) {
+    console.warn("[TermsGate] Failed to mark local acceptance:", e);
+  }
+}
+
+function clearLocalAccepted() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(LOCAL_ACCEPT_KEY);
+    localStorage.removeItem(ACCEPT_TIMESTAMP_KEY);
+  } catch {}
+}
+
 function isSessionDismissed() {
+  if (typeof window === "undefined") return false;
   try {
     return sessionStorage.getItem(SESSION_DISMISSED_KEY) === "1";
   } catch {
@@ -30,6 +54,7 @@ function isSessionDismissed() {
 }
 
 function markSessionDismissed() {
+  if (typeof window === "undefined") return;
   try {
     sessionStorage.setItem(SESSION_DISMISSED_KEY, "1");
   } catch {}
@@ -55,18 +80,6 @@ export default function TermsGate({ user }) {
   if (hasAccepted(user)) return null;
   if (dismissed) return null;
 
-  async function markLocalAccepted() {
-    try {
-      localStorage.setItem(LOCAL_ACCEPT_KEY, "1");
-    } catch {}
-  }
-
-  async function clearLocalAccepted() {
-    try {
-      localStorage.removeItem(LOCAL_ACCEPT_KEY);
-    } catch {}
-  }
-
   async function onAccept() {
     if (!checked || submitting) return;
     setSubmitting(true);
@@ -75,26 +88,24 @@ export default function TermsGate({ user }) {
     try {
       const ISO = new Date().toISOString();
       await base44.auth.updateMe({ tos_accepted_at: ISO });
-      await clearLocalAccepted();
+      clearLocalAccepted();
 
       markSessionDismissed();
       setDismissed(true);
       
       await qc.invalidateQueries({ queryKey: ["current-user"] });
-      setMsg("Saved. Continuing…");
     } catch (e) {
-      console.error("[TermsGate] accept failed:", e);
+      console.error("[TermsGate] accept failed (non-fatal):", e);
 
-      if (is429(e)) {
-        await markLocalAccepted();
-        markSessionDismissed();
-        setDismissed(true);
-        await qc.invalidateQueries({ queryKey: ["current-user"] });
-        setMsg("Rate-limited. Continuing temporarily…");
-      } else {
-        setMsg("We couldn't save your acceptance. Please try again.");
-        setSubmitting(false);
-      }
+      // FAIL-OPEN: Always mark as accepted to prevent infinite loops
+      markLocalAccepted();
+      markSessionDismissed();
+      setDismissed(true);
+      
+      // Still invalidate to pick up any successful update
+      await qc.invalidateQueries({ queryKey: ["current-user"] });
+    } finally {
+      setSubmitting(false);
     }
   }
 
