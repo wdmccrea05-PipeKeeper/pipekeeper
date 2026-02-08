@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { requireSupabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
+import { requireSupabase, SUPABASE_CONFIG_OK, getSupabaseAsync } from "@/components/utils/supabaseClient";
 import { getEffectiveTier } from "@/components/utils/effectiveTierCanonical";
 
 const ENTITLEMENT_URL =
