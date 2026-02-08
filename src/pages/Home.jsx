@@ -84,6 +84,7 @@ export default function HomePage() {
     enabled: !!user?.email,
     retry: 1,
     staleTime: 10000,
+    gcTime: 30000,
   });
 
   const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
