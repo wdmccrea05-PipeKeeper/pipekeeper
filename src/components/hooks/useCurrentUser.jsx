@@ -102,6 +102,8 @@ export function useCurrentUser() {
     const isAdmin = roleStr === "admin" || 
       normalizedEmail.endsWith("@pipekeeperapp.com") || 
       user?.user_metadata?.admin === true ||
+      normalizedEmail.endsWith("@pipekeeperapp.com") || 
+      user?.user_metadata?.admin === true ||
       ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(normalizedEmail);
 
     return {
