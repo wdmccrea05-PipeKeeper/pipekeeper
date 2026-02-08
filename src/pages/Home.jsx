@@ -256,7 +256,20 @@ export default function HomePage() {
     );
   }
 
-  // Compute values AFTER early returns
+  if (userLoading) {
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+        <div className="text-center">
+          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+            <div className="text-5xl animate-pulse">🔄</div>
+          </div>
+          <p className={PK_THEME.textBody}>{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Compute values AFTER all early returns
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
