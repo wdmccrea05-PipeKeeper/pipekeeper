@@ -100,6 +100,8 @@ export function useCurrentUser() {
     // Base44 stores role as "Admin" (capital) or "User"
     const roleStr = (user?.user_metadata?.role || user?.role || "").toLowerCase();
     const isAdmin = roleStr === "admin" || 
+      normalizedEmail.endsWith("@pipekeeperapp.com") || 
+      user?.user_metadata?.admin === true ||
       ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(normalizedEmail);
 
     return {
