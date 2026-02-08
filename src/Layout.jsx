@@ -36,6 +36,7 @@ import { ui } from "@/components/i18n/ui";
 
 const PIPEKEEPER_LOGO = "/assets/pipekeeper-logo.png";
 const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
+const TOBACCONIST_ICON = "/assets/expert-tobacconist.png";
 
 // Build version logging for production verification
 if (typeof window !== "undefined") {

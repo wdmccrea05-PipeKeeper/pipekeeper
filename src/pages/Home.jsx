@@ -452,7 +452,7 @@ export default function HomePage() {
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3">
-                          <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+                          <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
                         </div>
                       </div>
                     </div>
@@ -567,13 +567,13 @@ export default function HomePage() {
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
                     {favoritePipes.map(pipe => (
-                      <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                        <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
-                          <img src={PIPE_ICON} alt="" className="w-3.5 h-3.5 object-contain inline-block" style={{ filter: 'brightness(0) invert(1)' }} />
-                          {pipe.name}
-                        </Badge>
-                      </a>
-                    ))}
+                       <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                         <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
+                           <img src={PIPE_ICON} alt="" className="w-3.5 h-3.5 object-contain inline-block" />
+                           {pipe.name}
+                         </Badge>
+                       </a>
+                     ))}
                     {favoriteBlends.map(blend => (
                       <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                         <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
@@ -762,7 +762,6 @@ export default function HomePage() {
                   src={PIPE_ICON}
                   alt="Pipe"
                   className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-                  style={{ filter: 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)' }}
                 />
                 <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
               </div>
