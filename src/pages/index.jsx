@@ -13,6 +13,7 @@ import Profile from "./Profile";
 import PublicProfile from "./PublicProfile";
 import Import from "./Import";
 import Invite from "./Invite";
+import Auth from "./Auth";
 import Subscription from "./Subscription";
 import Support from "./Support";
 import FAQ from "./FAQ";
