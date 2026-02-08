@@ -55,9 +55,13 @@ export function useCurrentUser() {
         url.searchParams.set("email", userEmail);
         url.searchParams.set("ts", String(Date.now())); // bust caches
 
+        const apiKey = import.meta.env.VITE_ENTITLEMENT_API_KEY || "";
         const r = await fetch(url.toString(), {
           method: "GET",
-          headers: { Accept: "application/json" },
+          headers: { 
+            Accept: "application/json",
+            "x-api-key": apiKey,
+          },
         });
 
         const text = await r.text();
