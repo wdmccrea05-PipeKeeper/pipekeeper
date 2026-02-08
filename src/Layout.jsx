@@ -772,7 +772,7 @@ export default function Layout({ children, currentPageName }) {
                           <p className="text-sm text-green-400">You've been logged out successfully.</p>
                         </div>
                       )}
-                      {children}
+                      {children ?? <Outlet />}
                     </div>
                   </main>
 
