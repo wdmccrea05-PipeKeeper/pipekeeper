@@ -1,1 +1,2 @@
-export { AuthProvider, useAuth } from "@/lib/AuthContext";
+
+export { AuthProvider, useAuth } from "./AuthContext";

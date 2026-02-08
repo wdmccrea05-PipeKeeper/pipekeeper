@@ -1,71 +1,55 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/components/auth";
 
-const ENTITLEMENT_URL = import.meta.env.VITE_ENTITLEMENT_URL;
-const ENTITLEMENT_API_KEY = import.meta.env.VITE_ENTITLEMENT_API_KEY;
-
-console.log("[ENTITLEMENT_URL]", ENTITLEMENT_URL);
-
-const normEmail = (email) => String(email || "").trim().toLowerCase();
-
-async function fetchEntitlementTier(email) {
-  if (!ENTITLEMENT_URL) return "free";
-
-  const headers = {};
-  if (ENTITLEMENT_API_KEY) headers["x-entitlement-key"] = ENTITLEMENT_API_KEY;
-
-  const res = await fetch(
-    `${ENTITLEMENT_URL}?email=${encodeURIComponent(email)}`,
-    { headers }
-  );
-
-  if (!res.ok) return "free";
-
-  // Some upstreams may return JSON-as-a-string. Unwrap safely.
-  let data = await res.text();
-  try {
-    while (typeof data === "string") data = JSON.parse(data);
-  } catch {
-    return "free";
-  }
-
-  const tier = String(data?.entitlement_tier || "free").trim().toLowerCase();
-  return tier === "pro" || tier === "premium" ? tier : "free";
-}
+const ENTITLEMENT_URL =
+  import.meta.env.VITE_ENTITLEMENT_URL ||
+  "https://entitlement.pipekeeper.app/api/entitlement";
 
 export function useCurrentUser() {
-  const q = useQuery({
-    queryKey: ["current-user"],
+  const { user } = useAuth();
+
+  const entitlementQuery = useQuery({
+    queryKey: ["entitlement", user?.email],
+    enabled: !!user?.email,
     queryFn: async () => {
-      const me = await base44.auth.me();
-      if (!me?.email) return null;
+      const url =
+        `${ENTITLEMENT_URL}?email=${encodeURIComponent(user.email)}&ts=${Date.now()}`;
 
-      const email = normEmail(me.email);
-      const entitlement_tier = await fetchEntitlementTier(email);
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      });
 
-      return { ...me, entitlement_tier };
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+        while (typeof data === "string") {
+          data = JSON.parse(data);
+        }
+      } catch (err) {
+        console.error("[ENTITLEMENT_PARSE_ERROR]", text);
+        return { entitlement_tier: "free" };
+      }
+
+      console.log("[ENTITLEMENT_CHECK]", {
+        email: user.email,
+        tier: data?.entitlement_tier,
+      });
+
+      return data;
     },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    retry: false,
+    staleTime: 60_000,
   });
-
-  const user = q.data;
-
-  const tier = String(user?.entitlement_tier || "free").trim().toLowerCase();
-  const hasPro = tier === "pro";
-  const hasPaidAccess = tier === "pro" || tier === "premium";
 
   return {
     user,
-    isLoading: q.isLoading,
-    error: q.error,
-    hasPro: !!hasPro,
-    hasPaidAccess: !!hasPaidAccess,
-    isAdmin: user?.role === "admin",
-    refetch: q.refetch,
+    entitlement: entitlementQuery.data || { entitlement_tier: "free" },
+    entitlementTier: entitlementQuery.data?.entitlement_tier || "free",
+    hasPro: entitlementQuery.data?.entitlement_tier === "pro",
+    isLoading: entitlementQuery.isLoading,
   };
 }
