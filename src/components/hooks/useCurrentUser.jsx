@@ -30,15 +30,15 @@ export function useCurrentUser() {
         console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_CONFIG_OK:", SUPABASE_CONFIG_OK);
         setLoading(true);
 
-        if (!SUPABASE_CONFIG_OK) {
-          console.warn("[ENTITLEMENT_HOOK] Supabase not configured - will retry");
-          // Don't bail immediately - keep trying
-          // setLoading(false);
-          // return;
-        }
-
       try {
-        const supabaseClient = requireSupabase();
+        // Wait for async Supabase config to load if not ready yet
+        let supabaseClient;
+        try {
+          supabaseClient = requireSupabase();
+        } catch (e) {
+          console.log("[ENTITLEMENT_HOOK] requireSupabase failed, waiting for async config...");
+          supabaseClient = await getSupabaseAsync();
+        }
         const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
         if (!alive) return;
 
