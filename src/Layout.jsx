@@ -47,6 +47,7 @@ if (typeof window !== "undefined") {
     hasSupabaseAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
     supabaseHost: (import.meta.env.VITE_SUPABASE_URL || "").replace(/^https?:\/\//, "").split("/")[0]
   });
+  console.log("[LAYOUT] version 2026-02-08-login-v2");
 }
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
