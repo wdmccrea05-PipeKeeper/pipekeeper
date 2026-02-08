@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/components/utils/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function Auth() {
     // Check if already logged in
     supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user && event === "SIGNED_IN") {
-        navigate("/Home");
+        navigate(createPageUrl("Home"));
       }
     });
   }, [navigate]);
@@ -41,11 +42,11 @@ export default function Auth() {
       try {
         await supabase.auth.resetPasswordForEmail(
           email.trim().toLowerCase(),
-          { redirectTo: window.location.origin + "/Reset" }
+          { redirectTo: window.location.origin + "/ResetPassword" }
         );
 
         setStatus(
-          "Account migrated. Password reset email sent."
+          "Your account was migrated. We emailed you a password reset link."
         );
       } catch (e) {
         setStatus("Could not send reset email: " + e.message);
@@ -55,6 +56,24 @@ export default function Auth() {
     }
 
     setLoading(false);
+  }
+
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+    if (!email.trim()) {
+      setStatus("Please enter your email address.");
+      return;
+    }
+
+    try {
+      await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: window.location.origin + "/ResetPassword" }
+      );
+      setStatus("Password reset email sent. Check your inbox.");
+    } catch (e) {
+      setStatus("Could not send reset email: " + e.message);
+    }
   }
 
   return (
@@ -89,6 +108,14 @@ export default function Auth() {
           className="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded font-medium disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign In"}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="w-full text-blue-400 hover:text-blue-300 text-sm"
+        >
+          Forgot password?
         </button>
 
         {status && (
