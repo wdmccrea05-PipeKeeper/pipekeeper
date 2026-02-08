@@ -114,6 +114,38 @@ if (!hasStaticConfig && typeof window !== 'undefined') {
 
 let _supabase = null;
 let _loadingPromise = null;
+let _initStarted = false;
+
+// Start async config loading immediately on module load
+function initAsyncConfig() {
+  if (_initStarted) return;
+  _initStarted = true;
+  
+  const loadConfig = async () => {
+    try {
+      const { base44 } = await import('@/api/base44Client');
+      console.log('[SUPABASE] Async config loader: invoking getSupabaseConfig...');
+      const res = await base44.functions.invoke('getSupabaseConfig');
+      if (res?.data?.url && res?.data?.anonKey) {
+        dynamicURL = res.data.url;
+        dynamicKey = res.data.anonKey;
+        SUPABASE_URL = dynamicURL;
+        SUPABASE_ANON_KEY = dynamicKey;
+        SUPABASE_CONFIG_OK = true;
+        console.log('[SUPABASE] Async config loaded successfully');
+      }
+    } catch (e) {
+      console.warn('[SUPABASE] Async config failed:', e?.message);
+    }
+  };
+  
+  loadConfig();
+}
+
+// Call on module load (non-blocking)
+if (typeof window !== 'undefined' && !hasStaticConfig) {
+  initAsyncConfig();
+}
 
 export async function getSupabaseAsync() {
   // If already initialized, return immediately
