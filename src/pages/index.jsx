@@ -142,14 +142,16 @@ export default function Pages() {
   const isAuthPage = currentPageName === "Auth";
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {isAuthPage ? (
-        <Comp />
-      ) : (
-        <Layout currentPageName={currentPageName}>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        {isAuthPage ? (
           <Comp />
-        </Layout>
-      )}
-    </QueryClientProvider>
+        ) : (
+          <Layout currentPageName={currentPageName}>
+            <Comp />
+          </Layout>
+        )}
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
