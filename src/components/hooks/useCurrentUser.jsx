@@ -30,6 +30,12 @@ export function useCurrentUser() {
       console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_READY:", SUPABASE_READY);
       setLoading(true);
 
+      if (!supabase) {
+        console.error("[ENTITLEMENT_HOOK] Supabase client not initialized - missing env vars");
+        setLoading(false);
+        return;
+      }
+
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
 
