@@ -61,29 +61,38 @@ export default function Auth() {
     try {
       if (!email || !password) {
         setLocalError("Please enter your email and password.");
+        setBusy(false);
         return;
       }
 
+      console.log('Auth form submit:', mode, email);
+
       if (mode === "login") {
         const res = await login(email.trim(), password);
+        console.log('Login result:', res);
         if (!res?.ok) {
           setLocalError(res?.message || "Login failed.");
+          setBusy(false);
           return;
         }
       } else {
         const res = await register(email.trim(), password);
+        console.log('Register result:', res);
         if (!res?.ok) {
           setLocalError(res?.message || "Registration failed.");
+          setBusy(false);
           return;
         }
       }
 
       // Session refresh; then redirect
+      console.log('Auth successful, retrying session');
       await retrySession();
+      console.log('Navigating to:', fromPath);
       navigate(fromPath, { replace: true });
     } catch (err) {
+      console.error('Auth submit error:', err);
       setLocalError(err?.message || "Authentication failed.");
-    } finally {
       setBusy(false);
     }
   };
