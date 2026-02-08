@@ -16,6 +16,7 @@ export default function AuthPage() {
   const [message, setMessage] = useState("");
   const [healthCheck, setHealthCheck] = useState(null);
   const navigate = useNavigate();
+  const isDebugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -142,31 +143,33 @@ export default function AuthPage() {
             </Button>
           </form>
 
-          <div className="mt-4 space-y-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={runHealthCheck} 
-              className="w-full text-xs"
-              disabled={healthCheck?.loading}
-            >
-              {healthCheck?.loading ? "Running..." : "RUN SUPABASE HEALTH CHECK"}
-            </Button>
-            
-            {healthCheck && !healthCheck.loading && (
-              <div className="mt-3 p-4 rounded-lg bg-gray-900 border border-gray-700 space-y-3 text-xs">
-                <div>
-                  <div className="font-semibold text-[#E0D8C8] mb-1">Sign In Test:</div>
-                  <div className="text-gray-300">
-                    Status: <span className={healthCheck.token.status === 200 ? "text-green-400" : healthCheck.token.status === 400 ? "text-yellow-400" : "text-red-400"}>
-                      {healthCheck.token.status}
-                    </span>
+          {isDebugMode && (
+            <div className="mt-4 space-y-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={runHealthCheck} 
+                className="w-full text-xs"
+                disabled={healthCheck?.loading}
+              >
+                {healthCheck?.loading ? "Running..." : "RUN SUPABASE HEALTH CHECK"}
+              </Button>
+              
+              {healthCheck && !healthCheck.loading && (
+                <div className="mt-3 p-4 rounded-lg bg-gray-900 border border-gray-700 space-y-3 text-xs">
+                  <div>
+                    <div className="font-semibold text-[#E0D8C8] mb-1">Sign In Test:</div>
+                    <div className="text-gray-300">
+                      Status: <span className={healthCheck.token.status === 200 ? "text-green-400" : healthCheck.token.status === 400 ? "text-yellow-400" : "text-red-400"}>
+                        {healthCheck.token.status}
+                      </span>
+                    </div>
+                    <div className="text-gray-400 break-all mt-1">{healthCheck.token.body}</div>
                   </div>
-                  <div className="text-gray-400 break-all mt-1">{healthCheck.token.body}</div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-6 text-center space-y-2">
             <button
@@ -176,12 +179,14 @@ export default function AuthPage() {
             >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
-            <Link
-              to={createPageUrl("Debug")}
-              className="text-xs text-[#E0D8C8]/50 hover:text-[#E0D8C8]/70 transition-colors block"
-            >
-              🔧 Debug Console
-            </Link>
+            {isDebugMode && (
+              <Link
+                to={createPageUrl("Debug")}
+                className="text-xs text-[#E0D8C8]/50 hover:text-[#E0D8C8]/70 transition-colors block"
+              >
+                🔧 Debug Console
+              </Link>
+            )}
           </div>
           </div>
 
