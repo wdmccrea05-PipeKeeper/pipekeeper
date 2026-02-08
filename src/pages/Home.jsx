@@ -127,12 +127,11 @@ export default function HomePage() {
     return () => unsubscribe?.();
   }, [user?.email, queryClient]);
 
-  // STANDARDIZED KEY: ["cellar-logs-all", user?.email]
   const { data: cellarLogs = [], refetch: refetchCellarLogs } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.CellarLog.filter({ created_by: user?.email }, '-created_date', 100);
+        const result = await base44.entities.CellarLog.list();
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Cellar logs load error:', err);
@@ -140,9 +139,7 @@ export default function HomePage() {
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   const createOnboardingMutation = useMutation({
