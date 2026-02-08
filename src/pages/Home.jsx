@@ -34,7 +34,7 @@ import { SafeText, SafeHeading, SafeLabel } from "@/components/ui/SafeText";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
-const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
+const PIPE_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60 80 Q60 40 100 40 Q140 40 140 80 L140 100 Q140 120 120 120 L80 120 Q60 120 60 100 Z' fill='%23A35C5C'/%3E%3Crect x='50' y='110' width='100' height='30' rx='15' fill='%238B6F47'/%3E%3C/svg%3E";
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -239,11 +239,9 @@ export default function HomePage() {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
-            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-          />
+          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+            <div className="text-5xl animate-pulse">🔄</div>
+          </div>
           <p className={PK_THEME.textBody}>{t("common.loading")}</p>
         </div>
       </div>
@@ -433,10 +431,7 @@ export default function HomePage() {
                 <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/80 via-[#6d2e2e]/70 to-[#5a2525]/80 z-10" />
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
-                    style={{
-                      backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/027742301_image.png)'
-                    }}
+                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity bg-gradient-to-br from-[#8b3a3a] to-[#5a2525]"
                   />
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
@@ -492,10 +487,7 @@ export default function HomePage() {
                 <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/70 via-[#2d4a3d]/60 to-[#1d3a2d]/70 z-10" />
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
-                    style={{
-                      backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/19a8321a9_image.png)'
-                    }}
+                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity bg-gradient-to-br from-[#3d5a4d] to-[#1d3a2d]"
                   />
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">

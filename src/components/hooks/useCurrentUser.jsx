@@ -69,7 +69,7 @@ export function useCurrentUser() {
         } else {
           const text = await r.text();
           const parsed = safeJsonParse(text) || {};
-          const tier = (parsed.entitlement_tier || "free").toLowerCase();
+          const tier = (parsed.entitlement_tier || parsed.tier || "free").toLowerCase();
           setEntitlementTier(tier);
           console.log("[ENTITLEMENT] tier", tier);
         }

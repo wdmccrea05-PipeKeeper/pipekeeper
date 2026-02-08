@@ -35,9 +35,9 @@ import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { ui } from "@/components/i18n/ui";
 
 const PIPEKEEPER_LOGO =
-  "https://uulcpkiwqeoiwbjgidwp.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='95' fill='%23e8d5b7'/%3E%3Ctext x='100' y='120' font-size='80' font-weight='bold' text-anchor='middle' fill='%23A35C5C'%3EP%3C/text%3E%3C/svg%3E";
 const PIPE_ICON =
-  "https://uulcpkiwqeoiwbjgidwp.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60 80 Q60 40 100 40 Q140 40 140 80 L140 100 Q140 120 120 120 L80 120 Q60 120 60 100 Z' fill='%23A35C5C'/%3E%3Crect x='50' y='110' width='100' height='30' rx='15' fill='%238B6F47'/%3E%3C/svg%3E";
 
 // Build version logging for production verification
 if (typeof window !== "undefined") {
@@ -491,11 +491,9 @@ export default function Layout({ children, currentPageName }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
-            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-          />
+          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+            <div className="text-5xl animate-pulse">🔄</div>
+          </div>
           <p className="text-[#e8d5b7]">{ui("common.loading")}</p>
         </div>
       </div>
@@ -506,11 +504,9 @@ export default function Layout({ children, currentPageName }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
-            className="w-32 h-32 mx-auto mb-4 object-contain"
-          />
+          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+            <div className="text-5xl">🔒</div>
+          </div>
           <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{ui("auth.loginPrompt")}</p>
           <Button onClick={() => navigate(createPageUrl("Auth"))}>{ui("auth.login")}</Button>
         </div>
