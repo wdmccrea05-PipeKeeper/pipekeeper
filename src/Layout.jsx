@@ -432,6 +432,8 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     if (!ios) return undefined;
+    // Skip global click interception on auth pages
+    if (PUBLIC_PAGES.has(currentPageName)) return undefined;
 
     const getClickableText = (evtTarget) => {
       try {
@@ -517,7 +519,7 @@ export default function Layout({ children, currentPageName }) {
       document.removeEventListener("touchend", onTouchEnd, true);
       document.removeEventListener("click", onClick, true);
     };
-  }, [ios]);
+  }, [ios, currentPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
