@@ -90,6 +90,7 @@ import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
 import ResetPassword from './pages/ResetPassword';
+import Reset from './pages/Reset';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +138,7 @@ export const PAGES = {
     "VerificationHelp": VerificationHelp,
     "index": index,
     "ResetPassword": ResetPassword,
+    "Reset": Reset,
 }
 
 export const pagesConfig = {

@@ -270,6 +270,7 @@ export default function Layout({ children, currentPageName }) {
         "Index",
         "Subscription",
         "Auth",
+        "ResetPassword",
       ]),
     []
   );
