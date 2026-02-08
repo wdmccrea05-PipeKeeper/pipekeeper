@@ -52,7 +52,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 export default function SubscriptionFull() {
   const { t } = useTranslation();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
-  const { user, refetch } = useCurrentUser();
+  const { user, refetch, provider } = useCurrentUser();
   const queryClient = useQueryClient();
   const [isPro, setIsPro] = useState(false);
   const [message, setMessage] = useState("");
@@ -340,6 +340,11 @@ export default function SubscriptionFull() {
          <Button variant="outline" className="w-full" onClick={handleManage}>
            Manage Subscription
          </Button>
+         {provider === "apple" && (
+           <div className="text-center text-sm text-[#e8d5b7]/60">
+             Managed via Apple
+           </div>
+         )}
          <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
            Manual Backup Checkout
          </Button>
