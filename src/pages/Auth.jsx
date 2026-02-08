@@ -218,7 +218,7 @@ export default function Auth() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-4">
+          <CardFooter className="flex flex-col gap-4" onClick={() => console.log("[Auth] CardFooter clicked")}>
             <button
               type="button"
               onClick={(e) => {
