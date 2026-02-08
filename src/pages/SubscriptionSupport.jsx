@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, RefreshCw, Settings } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, Settings, Download } from "lucide-react";
 
 export default function SubscriptionSupport() {
   const { user, isAdmin } = useCurrentUser();
