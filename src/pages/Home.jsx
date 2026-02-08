@@ -49,6 +49,10 @@ export default function HomePage() {
   const { user, isLoading: userLoading, error: userError } = useCurrentUser();
 
   React.useEffect(() => {
+    console.log('[Home] Current state:', { userLoading, userError, userEmail: user?.email });
+  }, [userLoading, user?.email, userError]);
+
+  React.useEffect(() => {
     const handleError = (error) => {
       console.error('[Home Error]', error);
       setHasError(true);
