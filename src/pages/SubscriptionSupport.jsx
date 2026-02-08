@@ -62,6 +62,24 @@ export default function SubscriptionSupport() {
     }
   };
 
+  const exportUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await base44.functions.invoke('exportAllUsers', {});
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     loadHealth();
     loadFunnel();
