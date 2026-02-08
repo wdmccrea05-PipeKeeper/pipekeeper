@@ -41,12 +41,7 @@ if (!urlRef || !keyRef || urlRef !== keyRef) {
   throw new Error(msg);
 }
 
-console.log("[SUPABASE_VALIDATED]", {
-  urlRef,
-  keyRef,
-  match: urlRef === keyRef,
-  keyLength: SUPABASE_ANON_KEY.length,
-});
+console.log("[SUPABASE_VALIDATED]", { urlRef, keyRef, match: urlRef === keyRef, from: "utils/supabaseClient.js" });
 
 export const SUPABASE_READY = true;
 export const SUPABASE_KEY_LEN = SUPABASE_ANON_KEY.length;
