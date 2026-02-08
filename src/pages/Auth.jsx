@@ -20,6 +20,7 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
+  const [initError, setInitError] = useState("");
 
   useEffect(() => {
     // Check if already authenticated and wait for Supabase to load
@@ -34,7 +35,8 @@ export default function Auth() {
         
         setReady(true);
       } catch (err) {
-        console.log('Auth check:', err?.message);
+        console.error('[Auth] Critical init error:', err?.message);
+        setInitError(err?.message || "Failed to initialize authentication");
         setReady(true); // Mark ready even if error, to allow manual retry
       }
     };
