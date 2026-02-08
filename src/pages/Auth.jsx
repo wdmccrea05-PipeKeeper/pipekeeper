@@ -28,12 +28,12 @@ export default function AuthPage() {
         if (error) throw error;
         setMessage("Check your email for the confirmation link!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        console.log("[AUTH_RESULT]", { data, error });
         if (error) throw error;
         navigate("/Home");
       }
     } catch (err) {
-      console.log("[AUTH_DEBUG] host:", supabase?.supabaseUrl ? new URL(supabase.supabaseUrl).host : "no-supabase");
       setError(err.message);
     } finally {
       setLoading(false);
