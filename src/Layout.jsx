@@ -311,7 +311,7 @@ export default function Layout({ children, currentPageName }) {
     };
     window.addEventListener("storage", handleStorageChange);
     
-    if (!supabase) return () => window.removeEventListener("storage", handleStorageChange);
+    if (!SUPABASE_CONFIG_OK) return () => window.removeEventListener("storage", handleStorageChange);
     
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       // sync with other tabs
