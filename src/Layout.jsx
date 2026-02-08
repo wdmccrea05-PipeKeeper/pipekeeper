@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { BUILD_VERSION } from "./components/buildVersion";
 import { cn } from "@/lib/utils";
@@ -772,7 +772,7 @@ export default function Layout({ children, currentPageName }) {
                           <p className="text-sm text-green-400">You've been logged out successfully.</p>
                         </div>
                       )}
-                      {children ?? <Outlet />}
+                      {children}
                     </div>
                   </main>
 
