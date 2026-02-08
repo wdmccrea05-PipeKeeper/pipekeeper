@@ -214,13 +214,9 @@ export default function Auth() {
 
           <CardFooter className="flex flex-col gap-4">
             <button
-              onClick={(e) => {
-                console.log("[Auth] Native button onClick fired");
-                handleSubmit(e);
-              }}
+              type="submit"
               disabled={busy}
-              type="button"
-              className="w-full h-10 px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all duration-200 disabled:opacity-50"
+              className="w-full h-10 px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               {busy ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
             </button>
@@ -236,9 +232,10 @@ export default function Auth() {
             >
               {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
-          </CardFooter>
-          </div>
-          </Card>
+            </CardFooter>
+              </CardContent>
+            </form>
+            </Card>
     </div>
   );
 }
