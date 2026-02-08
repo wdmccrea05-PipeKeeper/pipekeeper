@@ -199,7 +199,10 @@ export const supabase = getSupabase();
 
 export function requireSupabase() {
   const client = getSupabase();
-  if (!client) throw new Error("Supabase not configured (missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).");
+  if (!client) {
+    console.error("[SUPABASE] requireSupabase called but client is null", { SUPABASE_CONFIG_OK, hasUrl: !!getSUPABASE_URL(), hasKey: !!getSUPABASE_ANON_KEY() });
+    throw new Error("Supabase not configured (missing URL or key)");
+  }
   return client;
 }
 
