@@ -99,6 +99,12 @@ export function useCurrentUser() {
 
     run();
 
+    if (!SUPABASE_CONFIG_OK) {
+      return () => {
+        alive = false;
+      };
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       run();
     });
