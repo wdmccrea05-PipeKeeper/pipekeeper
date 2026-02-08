@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase, SUPABASE_READY } from "@/components/utils/supabaseClient";
+import { getEffectiveTier } from "@/components/utils/effectiveTierCanonical";
 
 const ENTITLEMENT_URL =
   import.meta.env.VITE_ENTITLEMENT_URL ||
@@ -19,7 +20,8 @@ export function useCurrentUser() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
-  const [entitlementTier, setEntitlementTier] = useState("free");
+  const [entitlementData, setEntitlementData] = useState(null);
+  const [effectiveTier, setEffectiveTier] = useState("free");
 
   useEffect(() => {
     let alive = true;
@@ -42,7 +44,7 @@ export function useCurrentUser() {
       setEmail(userEmail);
 
       if (!userEmail) {
-        setEntitlementTier("free");
+        setEffectiveTier("free");
         setLoading(false);
         return;
       }
@@ -64,18 +66,23 @@ export function useCurrentUser() {
         clearTimeout(timeoutId);
 
         if (!r.ok) {
-          console.warn("[ENTITLEMENT] API returned", r.status, "- defaulting to free");
-          setEntitlementTier("free");
+          console.warn("[ENTITLEMENT] API returned", r.status, "- deriving tier from user data");
+          const tier = getEffectiveTier(sessionUser, null);
+          setEntitlementData(null);
+          setEffectiveTier(tier);
         } else {
           const text = await r.text();
           const parsed = safeJsonParse(text) || {};
-          const tier = (parsed.entitlement_tier || parsed.tier || "free").toLowerCase();
-          setEntitlementTier(tier);
+          setEntitlementData(parsed);
+          const tier = getEffectiveTier(sessionUser, parsed);
+          setEffectiveTier(tier);
           console.log("[ENTITLEMENT] tier", tier);
         }
       } catch (e) {
-        console.warn("[ENTITLEMENT] fetch failed (non-fatal) - defaulting to free:", e.message);
-        setEntitlementTier("free");
+        console.warn("[ENTITLEMENT] fetch failed (non-fatal) - deriving from user:", e.message);
+        const tier = getEffectiveTier(sessionUser, null);
+        setEntitlementData(null);
+        setEffectiveTier(tier);
       }
 
       setLoading(false);
