@@ -1,8 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Try VITE_* first, then fallback to non-VITE variants
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+// Read env vars from all possible locations: import.meta.env and window.__ENV
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.SUPABASE_URL ||
+  (typeof window !== "undefined" && window.__ENV?.VITE_SUPABASE_URL) ||
+  (typeof window !== "undefined" && window.__ENV?.SUPABASE_URL);
+
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.SUPABASE_ANON_KEY ||
+  (typeof window !== "undefined" && window.__ENV?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof window !== "undefined" && window.__ENV?.SUPABASE_ANON_KEY);
 
 // Boolean flags for config validation
 export const SUPABASE_URL_PRESENT = !!SUPABASE_URL;
