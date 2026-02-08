@@ -1,21 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Read from environment variables ONLY - no fallbacks
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Fatal error if missing
-if (!SUPABASE_URL) {
-  const msg = "FATAL: VITE_SUPABASE_URL is missing. Set it in Base44 secrets.";
-  console.error(msg);
-  throw new Error(msg);
-}
-
-if (!SUPABASE_ANON_KEY) {
-  const msg = "FATAL: VITE_SUPABASE_ANON_KEY is missing. Set it in Base44 secrets.";
-  console.error(msg);
-  throw new Error(msg);
-}
+// Hardcoded Supabase config - single source of truth
+const SUPABASE_URL = "https://uulcpkiwqeoiwbjgidwp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bGNwa2l3cWVvaXdiamdpZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0ODU5OTMsImV4cCI6MjA4NjA2MTk5M30.jKzTYXA3IuJn39nlP4kBI6o9hg43Ebm8wnwWeGHXtSQ";
 
 // Extract URL ref (subdomain before .supabase.co)
 const urlRefMatch = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/);
@@ -31,7 +18,7 @@ try {
     keyRef = jwtPayload.ref;
   }
 } catch (e) {
-  const msg = `FATAL: Cannot decode VITE_SUPABASE_ANON_KEY JWT: ${e.message}`;
+  const msg = `FATAL: Cannot decode SUPABASE_ANON_KEY JWT: ${e.message}`;
   console.error(msg);
   throw new Error(msg);
 }
