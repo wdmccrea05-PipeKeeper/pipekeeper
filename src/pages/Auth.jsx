@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { supabase, supabaseConfigError } from "@/components/utils/supabaseClient";
+import { supabase } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -19,8 +18,6 @@ export default function AuthPage() {
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (!supabase) return;
-    
     setLoading(true);
     setError("");
     setMessage("");
@@ -52,16 +49,6 @@ export default function AuthPage() {
         </div>
 
         <div className="bg-[#1A2B3A]/95 rounded-2xl shadow-xl p-8 border border-[#A35C5C]/30">
-          {supabaseConfigError && (
-            <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-red-400">
-                <p className="font-semibold mb-1">Configuration Error</p>
-                <p>{supabaseConfigError}</p>
-              </div>
-            </div>
-          )}
-          
           <form onSubmit={handleAuth} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#E0D8C8] mb-2">Email</label>
@@ -100,7 +87,7 @@ export default function AuthPage() {
               </div>
             )}
 
-            <Button type="submit" disabled={loading || !supabase} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>
