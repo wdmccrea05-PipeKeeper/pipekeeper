@@ -548,12 +548,12 @@ export default function Layout({ children, currentPageName }) {
     if (userLoading) return;
     if (!user?.email) return;
     if (hasPaidAccess) return;
-    if (PUBLIC_PAGES.has(currentPageName)) return;
+    if (PUBLIC_PAGES.has(resolvedPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
+  }, [userLoading, user?.email, hasPaidAccess, resolvedPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
