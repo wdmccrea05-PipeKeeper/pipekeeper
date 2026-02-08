@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
+import { requireSupabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { AlertCircle } from "lucide-react";
@@ -15,7 +15,7 @@ export default function Auth() {
     // Check if already logged in (only if config is OK)
     if (!SUPABASE_CONFIG_OK) return;
     
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: sub } = requireSupabase().auth.onAuthStateChange((event, session) => {
       if (session?.user && event === "SIGNED_IN") {
         navigate(createPageUrl("Home"));
       }
@@ -63,7 +63,7 @@ export default function Auth() {
     setLoading(true);
     setStatus("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await requireSupabase().auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
     });
@@ -79,7 +79,7 @@ export default function Auth() {
       error.message.includes("Invalid email or password")
     ) {
       try {
-        await supabase.auth.resetPasswordForEmail(
+        await requireSupabase().auth.resetPasswordForEmail(
           email.trim().toLowerCase(),
           { redirectTo: window.location.origin + "/ResetPassword" }
         );
@@ -105,7 +105,7 @@ export default function Auth() {
     }
 
     try {
-      await supabase.auth.resetPasswordForEmail(
+      await requireSupabase().auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         { redirectTo: window.location.origin + "/ResetPassword" }
       );
