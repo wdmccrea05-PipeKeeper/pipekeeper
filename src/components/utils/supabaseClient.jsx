@@ -205,7 +205,8 @@ export function buildSupabaseHeaders() {
 export async function pingAuthSettings() {
   try {
     if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Supabase not configured" };
-    const url = `${SUPABASE_URL}/auth/v1/settings`;
+    const baseUrl = getSUPABASE_URL();
+    const url = `${baseUrl}/auth/v1/settings`;
     const response = await fetch(url, { method: "GET", headers: buildSupabaseHeaders() });
     const text = await response.text();
     return { status: response.status, body: text.slice(0, 200) };
@@ -217,7 +218,8 @@ export async function pingAuthSettings() {
 export async function pingRest() {
   try {
     if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Supabase not configured" };
-    const url = `${SUPABASE_URL}/rest/v1/`;
+    const baseUrl = getSUPABASE_URL();
+    const url = `${baseUrl}/rest/v1/`;
     const response = await fetch(url, { method: "GET", headers: buildSupabaseHeaders() });
     const text = await response.text();
     return { status: response.status, body: text.slice(0, 200) };
