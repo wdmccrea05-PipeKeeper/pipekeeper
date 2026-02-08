@@ -100,8 +100,10 @@ export async function getSupabaseAsync() {
   if (_loadingPromise) return _loadingPromise;
 
   // If config is ready, initialize immediately
-  if (SUPABASE_CONFIG_OK && SUPABASE_URL && SUPABASE_ANON_KEY) {
-    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const url = getSUPABASE_URL();
+  const key = getSUPABASE_ANON_KEY();
+  if (SUPABASE_CONFIG_OK && url && key) {
+    _supabase = createClient(url, key, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -120,18 +122,22 @@ export async function getSupabaseAsync() {
   _loadingPromise = (async () => {
     // Give it a moment to load from backend
     for (let i = 0; i < 10; i++) {
-      if (SUPABASE_CONFIG_OK && SUPABASE_URL && SUPABASE_ANON_KEY) {
+      const currentUrl = getSUPABASE_URL();
+      const currentKey = getSUPABASE_ANON_KEY();
+      if (SUPABASE_CONFIG_OK && currentUrl && currentKey) {
         break;
       }
       await new Promise(r => setTimeout(r, 200));
     }
 
-    if (!SUPABASE_CONFIG_OK || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    const finalUrl = getSUPABASE_URL();
+    const finalKey = getSUPABASE_ANON_KEY();
+    if (!SUPABASE_CONFIG_OK || !finalUrl || !finalKey) {
       console.error("[SUPABASE] Failed to load config after retries");
       throw new Error("Supabase configuration not available");
     }
 
-    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    _supabase = createClient(finalUrl, finalKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
