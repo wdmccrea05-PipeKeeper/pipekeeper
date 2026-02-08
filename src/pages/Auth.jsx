@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSupabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
+import { getSupabaseAsync, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,20 +19,23 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Check if already authenticated
+    // Check if already authenticated and wait for Supabase to load
     const checkAuth = async () => {
       try {
-        const supabase = getSupabase();
-        if (!supabase) return;
+        const supabase = await getSupabaseAsync();
         
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           navigate("/", { replace: true });
         }
+        
+        setReady(true);
       } catch (err) {
         console.log('Auth check:', err?.message);
+        setReady(true); // Mark ready even if error, to allow manual retry
       }
     };
     checkAuth();
@@ -44,12 +47,7 @@ export default function Auth() {
     setBusy(true);
 
     try {
-      const supabase = getSupabase();
-      if (!supabase) {
-        setError("Supabase not configured. Please refresh the page.");
-        setBusy(false);
-        return;
-      }
+      const supabase = await getSupabaseAsync();
 
       if (!email || !password) {
         setError("Please enter email and password.");
@@ -88,7 +86,7 @@ export default function Auth() {
       }
     } catch (err) {
       console.error("[Auth] Exception:", err);
-      setError(err?.message || "Authentication failed");
+      setError(err?.message || "Authentication failed. Please refresh and try again.");
       setBusy(false);
     }
   };
