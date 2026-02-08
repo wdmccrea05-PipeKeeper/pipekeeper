@@ -150,10 +150,6 @@ export default function HomePage() {
     refetchOnWindowFocus: false,
   });
 
-  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-  const effective = getEffectiveEntitlement(user);
-  const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
-
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
   });
@@ -304,6 +300,13 @@ export default function HomePage() {
     return () => window.removeEventListener('focus', markInsightsViewed);
   }, []);
 
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
+  // This ensures consistent hook count regardless of early returns
+  const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
+  const effective = getEffectiveEntitlement(user);
+  const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
+
   const getCellarBreakdown = () => {
     const byBlend = {};
     safeCellarLogs.forEach(log => {
@@ -319,7 +322,6 @@ export default function HomePage() {
     return Object.values(byBlend).filter(b => b.totalOz > 0).sort((a, b) => b.totalOz - a.totalOz);
   };
 
-  const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
   const cellarBreakdown = getCellarBreakdown();
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
