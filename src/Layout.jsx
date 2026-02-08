@@ -34,10 +34,8 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { ui } from "@/components/i18n/ui";
 
-const PIPEKEEPER_LOGO =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23e8d5b7'/%3E%3Ctext x='50%25' y='55%25' font-family='Georgia, serif' font-size='100' font-weight='bold' text-anchor='middle' dominant-baseline='central' fill='%23A35C5C'%3EPK%3C/text%3E%3Ctext x='50%25' y='80%25' font-family='Georgia, serif' font-size='20' text-anchor='middle' fill='%238B6F47'%3EPipeKeeper%3C/text%3E%3C/svg%3E";
-const PIPE_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 60 Q50 30 100 30 Q150 30 150 60 L150 90 Q150 110 130 110 L70 110 Q50 110 50 90 Z' fill='%23A35C5C' stroke='%238B4A4A' stroke-width='2'/%3E%3Crect x='40' y='100' width='120' height='40' rx='20' fill='%238B6F47' stroke='%236B5437' stroke-width='2'/%3E%3C/svg%3E";
+const PIPEKEEPER_LOGO = "/assets/pipekeeper-logo.png";
+const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
 
 // Build version logging for production verification
 if (typeof window !== "undefined") {

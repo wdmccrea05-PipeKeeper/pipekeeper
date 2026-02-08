@@ -370,10 +370,10 @@ export default function ProfilePage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Badges (kept visible) */}
+            {/* Badges (kept visible) - use canonical effective tier */}
             <div className="flex gap-2 flex-wrap">
               <Badge className="bg-[#A35C5C] text-white border-0">
-                {hasActiveSubscription ? (user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "PREMIUM") : "FREE"}
+                {hasPremiumAccess(user, subscription) ? "PREMIUM" : "FREE"}
               </Badge>
               {provider === "stripe" && (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
