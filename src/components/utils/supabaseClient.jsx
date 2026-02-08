@@ -16,10 +16,10 @@ const usingDefaults = !(envUrl && envKey);
 
 // Log configuration status (no secrets)
 console.log("[SUPABASE_CONFIG]", {
-  hasEnvUrl: !!envUrl,
-  hasEnvKey: !!envKey,
+  hasSupabaseUrl: !!envUrl,
+  hasSupabaseAnonKey: !!envKey,
   usingDefaults,
-  urlHost: supabaseUrl.replace(/^https?:\/\//, "").split("/")[0]
+  supabaseHost: supabaseUrl.replace(/^https?:\/\//, "").split("/")[0]
 });
 
 // Create singleton client instance
