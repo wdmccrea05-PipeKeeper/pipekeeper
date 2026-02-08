@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { supabase, SUPABASE_READY } from "@/components/utils/supabaseClient";
+import { supabase, SUPABASE_READY, SUPABASE_URL, buildSupabaseHeaders, pingAuthSettings, pingRest } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
-
-const SUPABASE_URL = "https://qtrypzzcjebvfcihiynt.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cnlwenpjamVidmZjaWhpeW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjMxNjEsImV4cCI6MjA1MjA5OTE2MX0.gE-8W18qPFyqCLsVE7O8SfuVCzT-_yZmLR_kRUa8x9M";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -17,7 +14,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [testResult, setTestResult] = useState("");
+  const [healthCheck, setHealthCheck] = useState(null);
   const navigate = useNavigate();
 
   const handleAuth = async (e) => {
@@ -35,56 +32,60 @@ export default function AuthPage() {
         console.log("[AUTH_ATTEMPT]", { email });
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         console.log("[AUTH_RESULT]", { error, hasSession: !!data?.session });
-        if (error) throw error;
+        if (error) {
+          console.error("[AUTH_FULL_ERROR]", { message: error.message, status: error.status, name: error.name });
+          throw error;
+        }
         navigate("/Home");
       }
     } catch (err) {
-      setError(err.message);
+      setError(`${err.message} (status: ${err.status || "unknown"})`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTokenTest = async () => {
-    setTestResult("Testing...");
-    try {
-      const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
-      const key = SUPABASE_KEY.trim();
-      
-      console.log("[TOKEN_TEST_HEADERS]", {
-        hasApiKey: !!key,
-        hasAuth: !!key,
-        keyLen: key.length,
-        urlMatches: url.includes("qtrypzzcjebvfcihiynt")
-      });
-      
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "apikey": key,
-          "Authorization": `Bearer ${key}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const text = await response.text();
-      console.log("[TOKEN_TEST_RESULT]", { status: response.status, body: text.slice(0, 200) });
-      
-      let result = `Status: ${response.status}\nBody: ${text.slice(0, 200)}`;
-      if (response.status === 401) {
-        result += "\n\n401 = invalid API key (key mismatch/truncated/swapped).";
+  const runHealthCheck = async () => {
+    setHealthCheck({ loading: true });
+    
+    const authSettingsResult = await pingAuthSettings();
+    const restResult = await pingRest();
+    
+    let tokenResult = { status: 0, body: "Not tested" };
+    if (email && password) {
+      try {
+        const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+        const headers = buildSupabaseHeaders();
+        
+        console.log("[OUTGOING_HEADERS_KEYS]", Array.from(headers.keys()));
+        console.log("[OUTGOING_APIKEY_LEN]", headers.get("apikey")?.length || 0);
+        
+        const response = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ email, password })
+        });
+        
+        const text = await response.text();
+        console.log("[TOKEN_TEST_RESULT]", { status: response.status, body: text.slice(0, 400) });
+        tokenResult = { status: response.status, body: text.slice(0, 400) };
+      } catch (e) {
+        console.error("[TOKEN_TEST_ERROR]", e);
+        tokenResult = { status: 0, body: `Error: ${e.message}` };
       }
-      setTestResult(result);
-    } catch (err) {
-      console.log("[TOKEN_TEST_ERROR]", err);
-      setTestResult(`Error: ${err.message}`);
     }
+    
+    setHealthCheck({
+      loading: false,
+      authSettings: authSettingsResult,
+      rest: restResult,
+      token: tokenResult
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-20 h-20 mx-auto mb-4 object-contain" />
           <h1 className="text-3xl font-bold text-[#E0D8C8] mb-2">PipeKeeper</h1>
@@ -141,18 +142,51 @@ export default function AuthPage() {
             </Button>
           </form>
 
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
             <Button 
               type="button" 
               variant="outline" 
-              onClick={handleTokenTest} 
+              onClick={runHealthCheck} 
               className="w-full text-xs"
+              disabled={healthCheck?.loading}
             >
-              Run Token Test
+              {healthCheck?.loading ? "Running..." : "RUN SUPABASE HEALTH CHECK"}
             </Button>
-            {testResult && (
-              <div className="mt-2 p-2 rounded bg-gray-800 text-xs text-gray-300 whitespace-pre-wrap break-all">
-                {testResult}
+            
+            {healthCheck && !healthCheck.loading && (
+              <div className="mt-3 p-4 rounded-lg bg-gray-900 border border-gray-700 space-y-3 text-xs">
+                <div>
+                  <div className="font-semibold text-[#E0D8C8] mb-1">Auth Settings:</div>
+                  <div className="text-gray-300">
+                    Status: <span className={healthCheck.authSettings.status === 200 ? "text-green-400" : "text-red-400"}>
+                      {healthCheck.authSettings.status}
+                    </span>
+                  </div>
+                  <div className="text-gray-400 break-all mt-1">{healthCheck.authSettings.body}</div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-[#E0D8C8] mb-1">REST Ping:</div>
+                  <div className="text-gray-300">
+                    Status: <span className={healthCheck.rest.status === 200 ? "text-green-400" : "text-red-400"}>
+                      {healthCheck.rest.status}
+                    </span>
+                  </div>
+                  <div className="text-gray-400 break-all mt-1">{healthCheck.rest.body}</div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-[#E0D8C8] mb-1">Token Test:</div>
+                  <div className="text-gray-300">
+                    Status: <span className={healthCheck.token.status === 200 ? "text-green-400" : healthCheck.token.status === 400 ? "text-yellow-400" : "text-red-400"}>
+                      {healthCheck.token.status}
+                    </span>
+                    {healthCheck.token.status === 401 && (
+                      <span className="text-red-400 ml-2">← Headers missing/stripped</span>
+                    )}
+                  </div>
+                  <div className="text-gray-400 break-all mt-1">{healthCheck.token.body}</div>
+                </div>
               </div>
             )}
           </div>

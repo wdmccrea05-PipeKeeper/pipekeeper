@@ -28,12 +28,6 @@ export function useCurrentUser() {
       console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_READY:", SUPABASE_READY);
       setLoading(true);
 
-      if (!SUPABASE_READY) {
-        console.warn("[ENTITLEMENT_HOOK] SUPABASE_READY is false, skipping auth");
-        setLoading(false);
-        return;
-      }
-
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
 
