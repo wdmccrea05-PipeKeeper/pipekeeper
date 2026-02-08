@@ -28,8 +28,9 @@ export default function AuthPage() {
         if (error) throw error;
         setMessage("Check your email for the confirmation link!");
       } else {
+        console.log("[AUTH_ATTEMPT]", { email });
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        console.log("[AUTH_RESULT]", { data, error });
+        console.log("[AUTH_RESULT]", { error, hasSession: !!data?.session });
         if (error) throw error;
         navigate("/Home");
       }
