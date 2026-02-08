@@ -233,7 +233,7 @@ export default function Auth() {
               {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </CardFooter>
-        </form>
+        </div>
       </Card>
     </div>
   );
