@@ -96,6 +96,10 @@ export function useCurrentUser() {
   const flags = useMemo(() => {
     const tier = (entitlementTier || "free").toLowerCase();
 
+    // Base44 stores role as "Admin" (capital) or "User"
+    const roleStr = (user?.user_metadata?.role || user?.role || "").toLowerCase();
+    const isAdmin = roleStr === "admin";
+
     return {
       tier,
       isPro: tier === "pro",
@@ -104,7 +108,7 @@ export function useCurrentUser() {
       hasPro: tier === "pro",
       hasPremium: tier === "premium",
       hasPaidAccess: tier === "pro" || tier === "premium",
-      isAdmin: user?.user_metadata?.role === "admin" || user?.role === "admin",
+      isAdmin,
     };
   }, [entitlementTier, user]);
 
