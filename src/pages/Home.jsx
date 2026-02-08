@@ -43,6 +43,7 @@ export default function HomePage() {
   const [showCellarDialog, setShowCellarDialog] = useState(false);
   const [hasError, setHasError] = React.useState(false);
 
+  // ALL hooks MUST be called unconditionally at top level before any early returns
   React.useEffect(() => {
     const handleError = (error) => {
       console.error('[Home Error]', error);
@@ -190,6 +191,15 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [showTestingNotice]);
 
+  // Mark insights as viewed - MUST be here before early returns
+  useEffect(() => {
+    const markInsightsViewed = () => {
+      localStorage.setItem('pk_viewed_insights', 'true');
+    };
+    window.addEventListener('focus', markInsightsViewed);
+    return () => window.removeEventListener('focus', markInsightsViewed);
+  }, []);
+
   const handleOnboardingComplete = async () => {
     try {
       if (onboardingStatus) {
@@ -277,31 +287,19 @@ export default function HomePage() {
     );
   }
 
-  const safePipes = Array.isArray(pipes) ? pipes : [];
-  const safeBlends = Array.isArray(blends) ? blends : [];
-  const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
-
   const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
     if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
     if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
     return sum;
   }, 0);
 
-  // Check if user has added notes or viewed insights for checklist
+  // Compute values AFTER hooks, but still before early returns
+  const safePipes = Array.isArray(pipes) ? pipes : [];
+  const safeBlends = Array.isArray(blends) ? blends : [];
+  const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
+  
   const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
   const hasViewedInsights = localStorage.getItem('pk_viewed_insights') === 'true';
-  
-  // Mark insights as viewed when user visits insights tab
-  useEffect(() => {
-    const markInsightsViewed = () => {
-      localStorage.setItem('pk_viewed_insights', 'true');
-    };
-    window.addEventListener('focus', markInsightsViewed);
-    return () => window.removeEventListener('focus', markInsightsViewed);
-  }, []);
-
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
-  // This ensures consistent hook count regardless of early returns
   const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
   const effective = getEffectiveEntitlement(user);
