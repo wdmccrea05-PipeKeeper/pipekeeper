@@ -66,6 +66,12 @@ export const STRINGS = {
       enableMessagingDesc: "Allow friends to message you",
       premiumSubscriptionWebOnly: "Premium subscription management is available on the web.",
     },
+    admin: {
+      subscriptionSupport: "Subscription Support",
+      userReport: "User Report",
+      contentModeration: "Content Moderation",
+      eventsLog: "Events Log",
+    },
     common: {
       back: "Back",
       loading: "Loading...",
