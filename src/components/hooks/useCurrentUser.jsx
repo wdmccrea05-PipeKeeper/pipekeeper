@@ -27,14 +27,14 @@ export function useCurrentUser() {
     let alive = true;
 
     async function run() {
-      console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_READY:", SUPABASE_READY);
-      setLoading(true);
+        console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_CONFIG_OK:", SUPABASE_CONFIG_OK);
+        setLoading(true);
 
-      if (!supabase) {
-        console.error("[ENTITLEMENT_HOOK] Supabase client not initialized - missing env vars");
-        setLoading(false);
-        return;
-      }
+        if (!SUPABASE_CONFIG_OK) {
+          console.warn("[ENTITLEMENT_HOOK] Supabase not configured - missing env vars");
+          setLoading(false);
+          return;
+        }
 
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
