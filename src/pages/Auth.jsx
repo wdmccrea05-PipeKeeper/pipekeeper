@@ -9,11 +9,28 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [configReady, setConfigReady] = useState(SUPABASE_CONFIG_OK);
   const navigate = useNavigate();
 
+  // Wait for config to load from backend
   useEffect(() => {
-    // Check if already logged in (only if config is OK)
-    if (!SUPABASE_CONFIG_OK) return;
+    if (SUPABASE_CONFIG_OK) {
+      setConfigReady(true);
+      return;
+    }
+    // Check periodically if config loaded
+    const timer = setInterval(() => {
+      if (SUPABASE_CONFIG_OK) {
+        setConfigReady(true);
+        clearInterval(timer);
+      }
+    }, 500);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    // Only set up auth listener after config is ready
+    if (!configReady) return;
     
     const { data: sub } = requireSupabase().auth.onAuthStateChange((event, session) => {
       if (session?.user && event === "SIGNED_IN") {
@@ -22,7 +39,7 @@ export default function Auth() {
     });
 
     return () => sub?.subscription?.unsubscribe?.();
-  }, [navigate]);
+  }, [configReady, navigate]);
 
   // Show config error if Supabase not configured
   if (!SUPABASE_CONFIG_OK) {
