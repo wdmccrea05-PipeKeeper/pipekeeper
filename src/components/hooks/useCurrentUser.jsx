@@ -111,7 +111,7 @@ export function useCurrentUser() {
       hasPaidAccess: tier === "pro" || tier === "premium",
       isAdmin,
     };
-  }, [entitlementTier, user]);
+  }, [entitlementTier, user, email]);
 
   return { 
     loading, 
