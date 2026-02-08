@@ -33,6 +33,20 @@ export const SUPABASE_CONFIG = {
   validated: SUPABASE_CONFIG_OK,
 };
 
+// Boot log: which env keys are present (booleans only, no secrets)
+if (typeof window !== "undefined") {
+  console.log("[SUPABASE_ENV_KEYS_PRESENT]", {
+    VITE_SUPABASE_URL: !!import.meta.env.VITE_SUPABASE_URL,
+    SUPABASE_URL: !!import.meta.env.SUPABASE_URL,
+    window_VITE_SUPABASE_URL: !!window.__ENV?.VITE_SUPABASE_URL,
+    window_SUPABASE_URL: !!window.__ENV?.SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+    SUPABASE_ANON_KEY: !!import.meta.env.SUPABASE_ANON_KEY,
+    window_VITE_SUPABASE_ANON_KEY: !!window.__ENV?.VITE_SUPABASE_ANON_KEY,
+    window_SUPABASE_ANON_KEY: !!window.__ENV?.SUPABASE_ANON_KEY,
+  });
+}
+
 if (!SUPABASE_CONFIG_OK) {
   console.warn(
     "[SUPABASE] Configuration incomplete:",
