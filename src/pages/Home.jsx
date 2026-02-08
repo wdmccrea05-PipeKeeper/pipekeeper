@@ -319,18 +319,16 @@ export default function HomePage() {
 
   return (
     <>
-      {isInitialLoading ? (
+      {isInitialLoading && (
         <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
           <div className="text-center">
-            <img 
-              src="/assets/pipekeeper-pipe-icon.png"
-              alt="PipeKeeper"
-              className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-            />
-            <p className={PK_THEME.textBody}>{t("home.loadingCollection")}</p>
+            <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+              <div className="text-5xl animate-pulse">🔄</div>
+            </div>
+            <p className={PK_THEME.textBody}>{t("common.loading")}</p>
           </div>
         </div>
-      ) : null}
+      )}
 
       {showOnboarding && user?.email ? (
         <OnboardingFlow 
