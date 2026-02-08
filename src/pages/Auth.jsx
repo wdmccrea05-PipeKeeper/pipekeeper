@@ -25,6 +25,12 @@ export default function Auth() {
     setLoading(true);
     setStatus("");
 
+    if (!supabase) {
+      setStatus("Authentication service unavailable. Please check environment configuration.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
