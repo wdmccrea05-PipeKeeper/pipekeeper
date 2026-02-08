@@ -560,7 +560,8 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (userLoading) {
+  // Show loading UI during bootstrap - never return null
+  if (userLoading || !subscriptionReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
         <div className="text-center">
@@ -585,11 +586,6 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </div>
     );
-  }
-
-  // Block render until subscription is ready (prevents provider mis-detection)
-  if (!subscriptionReady) {
-    return null;
   }
 
   return (
