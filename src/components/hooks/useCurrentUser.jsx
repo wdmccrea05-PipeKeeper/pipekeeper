@@ -107,15 +107,21 @@ export function useCurrentUser() {
 
     run();
 
-    if (!SUPABASE_CONFIG_OK) {
-      return () => {
-        alive = false;
-      };
+    // Setup auth state listener (only if Supabase is configured)
+    let unsubscribeFn = () => {};
+    if (SUPABASE_CONFIG_OK) {
+      try {
+        const supabaseClient = requireSupabase();
+        const { data: sub } = supabaseClient.auth.onAuthStateChange(() => {
+          run();
+        });
+        unsubscribeFn = () => {
+          sub?.subscription?.unsubscribe?.();
+        };
+      } catch (e) {
+        console.warn("[ENTITLEMENT_HOOK] Failed to setup auth listener:", e?.message);
+      }
     }
-
-    const { data: sub } = requireSupabase().auth.onAuthStateChange(() => {
-      run();
-    });
 
     return () => {
       alive = false;
