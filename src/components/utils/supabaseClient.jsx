@@ -89,3 +89,32 @@ export function requireSupabase() {
   }
   return client;
 }
+
+// Health check helpers
+export async function pingAuthSettings() {
+  if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Config missing" };
+  try {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const text = await response.text();
+    return { status: response.status, body: text.slice(0, 200) };
+  } catch (e) {
+    return { status: 0, body: e.message };
+  }
+}
+
+export async function pingRest() {
+  if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Config missing" };
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const text = await response.text();
+    return { status: response.status, body: text.slice(0, 200) };
+  } catch (e) {
+    return { status: 0, body: e.message };
+  }
+}
