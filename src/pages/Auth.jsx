@@ -163,11 +163,9 @@ export default function Auth() {
     );
   }
 
-  console.log("[Auth] Component rendering, ready:", ready);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4" onClick={() => console.log("[Auth] div clicked")}>
-      <Card className="w-full max-w-sm bg-[#243548] border-[#E0D8C8]/20" onClick={() => console.log("[Auth] Card clicked")}>
+    <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
+      <Card className="w-full max-w-sm bg-[#243548] border-[#E0D8C8]/20">
         <CardHeader>
           <CardTitle className="text-[#E0D8C8]">
             {mode === "login" ? "Sign In" : "Create Account"}
@@ -179,11 +177,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={(e) => { 
-          console.log("[Auth] Form onSubmit fired!");
-          e.preventDefault(); 
-          handleSubmit(e); 
-        }}>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
@@ -218,16 +212,10 @@ export default function Auth() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-4" onClick={() => console.log("[Auth] CardFooter clicked")}>
+          <CardFooter className="flex flex-col gap-4">
             <button
-              type="button"
-              onClick={(e) => {
-                console.log("[Auth] Button onClick fired!", e);
-                e.preventDefault();
-                handleSubmit(e);
-              }}
+              type="submit"
               disabled={busy}
-              style={{ position: 'relative', zIndex: 10 }}
               className="w-full h-10 px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               {busy ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
