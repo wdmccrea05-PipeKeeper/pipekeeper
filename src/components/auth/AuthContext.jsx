@@ -73,29 +73,40 @@ export function AuthProvider({ children }) {
   const register = async (email, password) => {
     try {
       setAuthError(null);
-      const supabase = getSupabase();
+      let supabase = getSupabase();
+      
+      // Retry getting supabase a few times with delay
+      let retries = 0;
+      while (!supabase && retries < 5) {
+        await new Promise(r => setTimeout(r, 500));
+        supabase = getSupabase();
+        retries++;
+      }
       
       if (!supabase) {
-        return { ok: false, message: 'Backend not ready' };
+        console.error('Register: Supabase client not available after retries');
+        return { ok: false, message: 'Backend configuration not ready. Please refresh and try again.' };
       }
 
+      console.log('Register: Supabase ready, attempting signup for', email);
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
       });
 
       if (error) {
+        console.error('Register error:', error);
         setAuthError(error);
         return { ok: false, message: error.message };
       }
 
-      // Auto-login after registration
+      console.log('Register: Success, setting authenticated');
       setIsAuthenticated(true);
       return { ok: true };
     } catch (err) {
-      console.error('Register error:', err);
+      console.error('Register exception:', err);
       setAuthError(err);
-      return { ok: false, message: err.message };
+      return { ok: false, message: err?.message || 'Registration failed' };
     }
   };
 
