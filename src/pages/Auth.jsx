@@ -72,6 +72,11 @@ export default function Auth() {
       return;
     }
 
+    if (!supabase) {
+      setStatus("Authentication service unavailable. Please check environment configuration.");
+      return;
+    }
+
     try {
       await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
