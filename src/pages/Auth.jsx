@@ -173,7 +173,10 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => {
+          console.log("[Auth] Form onSubmit called");
+          handleSubmit(e);
+        }}>
           <CardContent className="space-y-4">
             {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
