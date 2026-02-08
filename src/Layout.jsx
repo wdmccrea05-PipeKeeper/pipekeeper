@@ -10,14 +10,8 @@ import GlobalSearchTrigger from "@/components/search/GlobalSearchTrigger";
 import BackButton from "@/components/navigation/BackButton";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { useCurrentUser as useCurrentUserOriginal } from "@/components/hooks/useCurrentUser";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
-
-// Force entitlement check on mount
-function useCurrentUser() {
-  const result = useCurrentUserOriginal();
-  return result;
-}
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
@@ -164,8 +158,8 @@ async function tryStripeSync() {
 }
 
 export default function Layout({ children, currentPageName }) {
-  // Mount entitlement check immediately
-  const { user, hasPaidAccess, isAdmin } = useCurrentUser();
+  // CRITICAL: Mount entitlement check immediately - runs on every render
+  const { user, hasPaidAccess, isAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
@@ -182,10 +176,6 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-
-  // Remove duplicate useCurrentUser call
-  const userLoading = false;
-  const userError = null;
 
   // Handle Android back button
   useEffect(() => {

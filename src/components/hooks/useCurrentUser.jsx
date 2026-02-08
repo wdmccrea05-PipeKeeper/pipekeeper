@@ -6,6 +6,8 @@ const ENTITLEMENT_URL =
   "https://entitlement.pipekeeper.app/api/entitlement";
 
 export function useCurrentUser() {
+  console.log("[ENTITLEMENT_HOOK] mounted");
+  
   const userQuery = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
