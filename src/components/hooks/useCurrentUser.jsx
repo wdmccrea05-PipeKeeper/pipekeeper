@@ -101,20 +101,18 @@ export function useCurrentUser() {
   }, []);
 
   const flags = useMemo(() => {
-    const tier = (entitlementTier || "free").toLowerCase();
+    const tier = (effectiveTier || "free").toLowerCase();
     const normalizedEmail = (email || "").trim().toLowerCase();
 
-    // Base44 stores role as "Admin" (capital) or "User"
-    const roleStr = (user?.user_metadata?.role || user?.role || "").toLowerCase();
-    const isAdmin = roleStr === "admin" || 
-      normalizedEmail.endsWith("@pipekeeperapp.com") || 
-      user?.user_metadata?.admin === true ||
+    // Admin: email domain OR user_metadata flag
+    const isAdmin = 
       normalizedEmail.endsWith("@pipekeeperapp.com") || 
       user?.user_metadata?.admin === true ||
       ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(normalizedEmail);
 
     return {
-      tier,
+      tier: effectiveTier,
+      effectiveTier,
       isPro: tier === "pro",
       isPremium: tier === "premium",
       isPaid: tier === "pro" || tier === "premium",
@@ -123,17 +121,19 @@ export function useCurrentUser() {
       hasPaidAccess: tier === "pro" || tier === "premium",
       isAdmin,
     };
-  }, [entitlementTier, user, email]);
+  }, [effectiveTier, user, email]);
 
   return { 
     loading, 
     isLoading: loading,
     user, 
     email, 
-    entitlementTier,
+    effectiveTier,
+    entitlementData,
     error: null,
     subscription: null,
     refetch: async () => {},
+    provider: null,
     ...flags 
   };
 }
