@@ -3,22 +3,32 @@
 // Normalized values: "free" | "premium" | "pro"
 
 export function getEffectiveTier(user, entitlementData) {
-  // PRIORITY 1: entitlement API response (most recent + authoritative)
+  // HARD GUARD: Never downgrade paid users
+  // If entitlement API returns "free" but user has paid tier elsewhere, preserve it
+  
+  // PRIORITY 1: Check user metadata first for protection
+  if (user?.user_metadata?.tier) {
+    const metaTier = String(user.user_metadata.tier).trim().toLowerCase();
+    if (metaTier === "pro" || metaTier === "premium") {
+      // User is marked paid in metadata - trust it
+      return metaTier;
+    }
+  }
+  
+  // PRIORITY 2: Check subscription for protection
+  if (user?.subscription) {
+    const subTier = String(user.subscription.tier || "").trim().toLowerCase();
+    if (subTier === "pro" || subTier === "premium") {
+      // User has active subscription - trust it
+      return subTier;
+    }
+  }
+
+  // PRIORITY 3: entitlement API response (only if it says paid)
   if (entitlementData) {
     const tier = String(entitlementData.tier || entitlementData.entitlement_tier || "").trim().toLowerCase();
     if (tier === "pro" || tier === "premium") return tier;
-  }
-
-  // PRIORITY 2: user.user_metadata.tier (persisted from entitlement)
-  if (user?.user_metadata?.tier) {
-    const tier = String(user.user_metadata.tier).trim().toLowerCase();
-    if (tier === "pro" || tier === "premium") return tier;
-  }
-
-  // PRIORITY 3: Subscription entity (from Base44 database)
-  if (user?.subscription) {
-    const tier = String(user.subscription.tier || "").trim().toLowerCase();
-    if (tier === "pro" || tier === "premium") return tier;
+    // If API says "free" but other sources say paid, fall through to those sources
   }
 
   // PRIORITY 4: user.entitlement_tier field
@@ -27,7 +37,7 @@ export function getEffectiveTier(user, entitlementData) {
     if (tier === "pro" || tier === "premium") return tier;
   }
 
-  // DEFAULT: free
+  // DEFAULT: free (only if all sources agree or are missing)
   return "free";
 }
 

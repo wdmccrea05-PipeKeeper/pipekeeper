@@ -222,20 +222,20 @@ export default function ProfilePage() {
   }
 
   async function handleLogout() {
-   try {
-     const { error } = await supabase.auth.signOut();
-     if (error) console.error("SignOut error:", error);
-     
-     // Clear cache
-     queryClient.removeQueries();
-     localStorage.removeItem("pk_stripe_sync_last_" + (user?.email || "unknown"));
-     
-     // Redirect
-     window.location.href = "/Auth?loggedOut=1";
-   } catch (err) {
-     console.error("[Profile] Logout error:", err);
-     window.location.href = "/Auth?loggedOut=1";
-   }
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error("SignOut error:", error);
+
+      // Clear cache
+      queryClient.removeQueries();
+      localStorage.removeItem("pk_stripe_sync_last_" + (user?.email || "unknown"));
+
+      // Redirect to Auth (no full page reload)
+      navigate(createPageUrl("Auth") + "?loggedOut=1");
+    } catch (err) {
+      console.error("[Profile] Logout error:", err);
+      navigate(createPageUrl("Auth") + "?loggedOut=1");
+    }
   }
 
   if (userLoading || profileLoading) {

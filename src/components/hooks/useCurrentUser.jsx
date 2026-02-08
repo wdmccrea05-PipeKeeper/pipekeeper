@@ -50,6 +50,9 @@ export function useCurrentUser() {
       }
 
       try {
+        // CRITICAL: Clear stale entitlement data before new fetch
+        setEntitlementData(null);
+
         const url = new URL(ENTITLEMENT_URL);
         url.searchParams.set("email", userEmail);
         url.searchParams.set("ts", String(Date.now()));

@@ -103,6 +103,10 @@ function syncKey(email) {
   return `pk_stripe_sync_last_${email || "unknown"}`;
 }
 
+function syncRetryKey(email) {
+  return `pk_stripe_sync_retries_${email || "unknown"}`;
+}
+
 function shouldRunStripeSync(email) {
   try {
     if (!email) return false;
@@ -116,10 +120,28 @@ function shouldRunStripeSync(email) {
   }
 }
 
+function getStripeSyncRetries(email) {
+  try {
+    const v = localStorage.getItem(syncRetryKey(email));
+    return v ? parseInt(v, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
+
 function markStripeSyncRan(email) {
   try {
     if (!email) return;
     localStorage.setItem(syncKey(email), new Date().toISOString());
+    localStorage.removeItem(syncRetryKey(email));
+  } catch {}
+}
+
+function incrementStripeSyncRetry(email) {
+  try {
+    if (!email) return;
+    const current = getStripeSyncRetries(email);
+    localStorage.setItem(syncRetryKey(email), String(current + 1));
   } catch {}
 }
 
@@ -141,7 +163,13 @@ function markSubscribePromptShown() {
   } catch {}
 }
 
-async function tryStripeSync() {
+async function tryStripeSync(email) {
+  // Max 3 retries per session
+  if (getStripeSyncRetries(email) >= 3) {
+    console.warn("[Layout] Stripe sync: max retries reached, skipping");
+    return { ok: false, reason: "max_retries" };
+  }
+
   const candidates = [
     "syncFromStripe",
     "syncStripeFromStripe",
@@ -155,23 +183,28 @@ async function tryStripeSync() {
   for (const fn of candidates) {
     try {
       const params = isIOSCompanion?.() ? { platform: "ios" } : {};
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout per attempt
+      
       const res = await base44.functions.invoke(fn, params);
+      clearTimeout(timeoutId);
       return { ok: true, fn, res };
     } catch (e) {
       // keep trying next name
     }
   }
 
+  incrementStripeSyncRetry(email);
   return { ok: false };
 }
 
 // Force deployment: entitlement check v2
 export default function Layout({ children, currentPageName }) {
   // CRITICAL: Mount entitlement check immediately - runs on every render
-        const { user, hasPaidAccess, isAdmin: userIsAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
+  const { user, hasPaidAccess, isAdmin: userIsAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
 
-        // Fallback admin check for known admins
-        const isAdmin = userIsAdmin || (user?.email && ["wmccrea@indario.com", "warren@pipekeeper.app"].includes((user.email || "").trim().toLowerCase()));
+  // Admin access ONLY from useCurrentUser (single source of truth)
+  const isAdmin = userIsAdmin;
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
@@ -290,14 +323,20 @@ export default function Layout({ children, currentPageName }) {
     (async () => {
       try {
         setSyncing(true);
-        const result = await tryStripeSync();
-        markStripeSyncRan(user.email);
+        const result = await tryStripeSync(user.email);
+        
+        if (result.ok) {
+          markStripeSyncRan(user.email);
 
-        if (!cancelled && result.ok) {
-          await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-          await queryClient.refetchQueries({ queryKey: ["current-user"] });
-          await queryClient.refetchQueries({ queryKey: ["subscription"] });
+          if (!cancelled) {
+            await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+            await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+            await queryClient.refetchQueries({ queryKey: ["current-user"] });
+            await queryClient.refetchQueries({ queryKey: ["subscription"] });
+          }
+        } else if (result.reason !== "max_retries") {
+          // Only log if not max retries (which is expected)
+          console.warn("[Layout] Stripe sync did not succeed, will retry next time");
         }
       } catch (e) {
         console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);
