@@ -137,11 +137,18 @@ export default function Pages() {
       "/Home";
   const currentPageName = matchedKey.replace("/", "") || "Home";
 
+  // Auth page renders full-screen without Layout
+  const isAuthPage = currentPageName === "Auth";
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout currentPageName={currentPageName}>
+      {isAuthPage ? (
         <Comp />
-      </Layout>
+      ) : (
+        <Layout currentPageName={currentPageName}>
+          <Comp />
+        </Layout>
+      )}
     </QueryClientProvider>
   );
 }
