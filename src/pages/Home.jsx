@@ -138,6 +138,8 @@ export default function HomePage() {
         return [];
       }
     },
+    staleTime: 30000,
+    gcTime: 60000,
   });
 
   const createOnboardingMutation = useMutation({
