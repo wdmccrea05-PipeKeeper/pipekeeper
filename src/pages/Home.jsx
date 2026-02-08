@@ -274,7 +274,8 @@ export default function HomePage() {
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
   
-  const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
+  // Show loading only if user not loaded yet. Content renders regardless of query states.
+  const isInitialLoading = userLoading;
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
   const effective = getEffectiveEntitlement(user);
   const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
