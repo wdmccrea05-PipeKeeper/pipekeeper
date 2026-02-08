@@ -20,6 +20,7 @@ export function useCurrentUser() {
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [entitlementTier, setEntitlementTier] = useState("free");
+  const [fullEntitlementData, setFullEntitlementData] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -42,7 +43,9 @@ export function useCurrentUser() {
       setEmail(userEmail);
 
       if (!userEmail) {
+        console.log("[ENTITLEMENT] No email found - defaulting to free");
         setEntitlementTier("free");
+        setFullEntitlementData(null);
         setLoading(false);
         return;
       }
@@ -51,6 +54,8 @@ export function useCurrentUser() {
         const url = new URL(ENTITLEMENT_URL);
         url.searchParams.set("email", userEmail);
         url.searchParams.set("ts", String(Date.now()));
+
+        console.log("[ENTITLEMENT] Fetching from:", url.toString());
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -66,16 +71,24 @@ export function useCurrentUser() {
         if (!r.ok) {
           console.warn("[ENTITLEMENT] API returned", r.status, "- defaulting to free");
           setEntitlementTier("free");
+          setFullEntitlementData(null);
         } else {
           const text = await r.text();
           const parsed = safeJsonParse(text) || {};
-          const tier = (parsed.entitlement_tier || "free").toLowerCase();
+          
+          // Support both legacy (entitlement_tier) and new (tier) keys
+          const tier = (parsed.tier || parsed.entitlement_tier || "free").toLowerCase();
+          
+          console.log("[ENTITLEMENT] Full response:", JSON.stringify(parsed));
+          console.log("[ENTITLEMENT] Resolved tier:", tier);
+          
           setEntitlementTier(tier);
-          console.log("[ENTITLEMENT] tier", tier);
+          setFullEntitlementData(parsed);
         }
       } catch (e) {
         console.warn("[ENTITLEMENT] fetch failed (non-fatal) - defaulting to free:", e.message);
         setEntitlementTier("free");
+        setFullEntitlementData(null);
       }
 
       setLoading(false);
@@ -114,6 +127,7 @@ export function useCurrentUser() {
     user, 
     email, 
     entitlementTier,
+    fullEntitlementData,
     error: null,
     subscription: null,
     refetch: async () => {},
