@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { supabase, SUPABASE_READY, SUPABASE_URL, buildSupabaseHeaders, pingAuthSettings, pingRest } from "@/components/utils/supabaseClient";
+import { supabase, SUPABASE_CONFIG, buildSupabaseHeaders, pingAuthSettings, pingRest } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 const PIPEKEEPER_LOGO =
   "https://uulcpkiwqeoiwbjgidwp.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -186,17 +187,31 @@ export default function AuthPage() {
             )}
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors"
+              className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors block w-full"
             >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
+            <Link
+              to={createPageUrl("Debug")}
+              className="text-xs text-[#E0D8C8]/50 hover:text-[#E0D8C8]/70 transition-colors block"
+            >
+              🔧 Debug Console
+            </Link>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          </div>
+
+          {/* Config Info */}
+          <div className="mt-6 p-4 rounded-lg bg-[#0B1320]/50 border border-[#A35C5C]/20">
+          <div className="text-xs space-y-1">
+            <div className="text-[#E0D8C8]/50">Config: <span className="text-[#E0D8C8]/80">{SUPABASE_CONFIG.source}</span></div>
+            <div className="text-[#E0D8C8]/50">Host: <span className="text-[#E0D8C8]/80 font-mono">{SUPABASE_CONFIG.host}</span></div>
+          </div>
+          </div>
+          </div>
+          </div>
+          );
+          }

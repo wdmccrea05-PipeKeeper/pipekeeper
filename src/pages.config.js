@@ -88,6 +88,7 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import Debug from './pages/Debug';
 import __Layout from './Layout.jsx';
 
 
@@ -133,6 +134,7 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "Debug": Debug,
 }
 
 export const pagesConfig = {
