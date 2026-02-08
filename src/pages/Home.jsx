@@ -124,7 +124,7 @@ export default function HomePage() {
   }, [user?.email, queryClient]);
 
   const { data: cellarLogs = [], refetch: refetchCellarLogs } = useQuery({
-    queryKey: ['cellar-logs-all', user?.email],
+    queryKey: ['cellar-logs-all'],
     queryFn: async () => {
       try {
         const result = await base44.entities.CellarLog.list();
@@ -134,8 +134,6 @@ export default function HomePage() {
         return [];
       }
     },
-    enabled: !!user?.email,
-    staleTime: Infinity,
   });
 
   const createOnboardingMutation = useMutation({
