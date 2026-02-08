@@ -97,7 +97,24 @@ export default function Auth() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
         <div className="text-center">
-          <div className="text-[#E0D8C8] text-lg font-semibold">Loading...</div>
+          <div className="text-[#E0D8C8] text-lg font-semibold">Initializing...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (initError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
+        <div className="text-center">
+          <div className="text-[#E0D8C8] text-lg font-semibold mb-4">Authentication Setup Error</div>
+          <div className="text-[#E0D8C8]/70 text-sm mb-6">{initError}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-[#A35C5C] text-[#F3EBDD] rounded-lg hover:bg-[#8F4E4E] transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
