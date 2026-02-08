@@ -311,21 +311,26 @@ export default function ProfilePage() {
                     <>
                       {/* Show Manage Subscription if user has paid tier OR active subscription */}
                       {(hasPremiumAccess(user, subscription) || subscription?.status === "active" || subscription?.status === "trialing") ? (
-                          <Button
-                            className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                            onClick={() => {
-                              if (provider === "stripe") {
-                                window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
-                              } else if (provider === "apple") {
-                                window.location.href = "https://apps.apple.com/account/subscriptions";
-                              } else {
-                                navigate(createPageUrl("Subscription"));
-                              }
-                            }}
-                          >
-                            Manage Subscription
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
+                              onClick={() => {
+                                if (provider === "stripe") {
+                                  window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+                                } else if (provider === "apple") {
+                                  window.location.href = "https://apps.apple.com/account/subscriptions";
+                                } else {
+                                  navigate(createPageUrl("Subscription"));
+                                }
+                              }}
+                            >
+                              Manage Subscription
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                            {provider === "apple" && (
+                              <div className="text-xs text-amber-800/60 text-center">Managed via Apple</div>
+                            )}
+                          </div>
                         ) : null}
 
                       {shouldShowPurchaseUI() && !hasActiveSubscription && (
