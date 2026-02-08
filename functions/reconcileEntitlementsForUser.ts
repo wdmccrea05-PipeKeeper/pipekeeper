@@ -9,29 +9,24 @@ const getStripeClient = () => {
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-async function reconcileFromStripe(base44, user, stripe, debugMode = false) {
+async function reconcileFromStripe(base44, user, stripe) {
   const email = normEmail(user.email);
   let customerId = user.stripe_customer_id || null;
-
-  if (debugMode) console.log(`[REC] [STRIPE] Looking up customer for email=${email}`);
 
   if (!customerId) {
     try {
       const customers = await stripe.customers.list({ email, limit: 1 });
       customerId = customers.data?.[0]?.id || null;
-      if (debugMode) console.log(`[REC] [STRIPE] customer lookup result: ${customerId || "NOT_FOUND"}`);
       if (customerId) {
         user.stripe_customer_id = customerId;
       }
     } catch (err) {
       console.error(`[reconcile] Stripe customer lookup failed:`, err);
-      if (debugMode) console.log(`[REC] [STRIPE] ERROR: ${err.message}`);
       return null;
     }
   }
 
   if (!customerId) {
-    if (debugMode) console.log(`[REC] [STRIPE] No customer found, stopping.`);
     return null;
   }
 
@@ -41,12 +36,9 @@ async function reconcileFromStripe(base44, user, stripe, debugMode = false) {
       customer: customerId,
       status: "all",
       limit: 10,
-      expand: ["data.items.data.price"],
     });
-    if (debugMode) console.log(`[REC] [STRIPE] Found ${subscriptions.data?.length || 0} subscriptions`);
   } catch (err) {
     console.error(`[reconcile] Stripe subscriptions list failed:`, err);
-    if (debugMode) console.log(`[REC] [STRIPE] SUBS LIST ERROR: ${err.message}`);
     return null;
   }
 
@@ -59,7 +51,6 @@ async function reconcileFromStripe(base44, user, stripe, debugMode = false) {
     })[0];
 
   if (!activeSub) {
-    if (debugMode) console.log(`[REC] [STRIPE] No active/trialing subscriptions found`);
     return null;
   }
 
@@ -67,10 +58,6 @@ async function reconcileFromStripe(base44, user, stripe, debugMode = false) {
   const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
   const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
   const tier = (priceId === proMonthly || priceId === proAnnual) ? "pro" : "premium";
-
-  if (debugMode) {
-    console.log(`[REC] [STRIPE] subscription=${activeSub.id} status=${activeSub.status} priceId=${priceId} tier=${tier}`);
-  }
 
   return {
     ok: true,
@@ -85,10 +72,8 @@ async function reconcileFromStripe(base44, user, stripe, debugMode = false) {
   };
 }
 
-async function reconcileFromApple(base44, user, debugMode = false) {
+async function reconcileFromApple(base44, user) {
   const email = normEmail(user.email);
-
-  if (debugMode) console.log(`[REC] [APPLE] Looking up apple subscriptions for user_id=${user.id}`);
 
   const appleSubs = await base44.asServiceRole.entities.Subscription.filter({
     user_id: user.id,
@@ -98,11 +83,8 @@ async function reconcileFromApple(base44, user, debugMode = false) {
 
   const activeSub = appleSubs?.[0];
   if (!activeSub) {
-    if (debugMode) console.log(`[REC] [APPLE] No active apple subscriptions`);
     return null;
   }
-
-  if (debugMode) console.log(`[REC] [APPLE] Found subscription: ${activeSub.provider_subscription_id}`);
 
   return {
     ok: true,
@@ -131,16 +113,10 @@ Deno.serve(async (req) => {
     const targetCustomerId = body.stripeCustomerId || body.stripe_customer_id || null;
     const rawEmail = body.email || body.userEmail || caller.email;
     const targetEmail = normEmail(rawEmail);
-    const debugMode = body.debug === true;
 
     const isAdmin = caller.role === "admin";
     if (!isAdmin && targetEmail !== normEmail(caller.email) && !targetUserId && !targetCustomerId) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    if (debugMode) {
-      console.log(`[REC] DEBUG MODE ON`);
-      console.log(`[REC] lookup: userId=${targetUserId} customerId=${targetCustomerId} email=${targetEmail}`);
     }
 
     let user;
@@ -183,31 +159,20 @@ Deno.serve(async (req) => {
     }
 
     if (!user) {
-      return Response.json({ 
-        error: `User not found: ${targetEmail || targetUserId || targetCustomerId}`,
-        debug: debugMode ? { lookupAttempted: { targetEmail, targetUserId, targetCustomerId } } : undefined
-      }, { status: 404 });
+      return Response.json({ error: `User not found: ${targetEmail || targetUserId || targetCustomerId}` }, { status: 404 });
     }
 
-    if (debugMode) {
-      console.log(`[REC] FOUND user: id=${user.id} email=${user.email}`);
-      console.log(`[REC] current state: level=${user.subscription_level} status=${user.subscription_status} tier=${user.subscription_tier}`);
-    }
+    console.log("[REC] Working with user:", user.email, "ID:", user.id);
 
     let result = null;
 
     if (user.platform === "ios") {
-      result = await reconcileFromApple(base44, user, debugMode);
+      result = await reconcileFromApple(base44, user);
     }
 
     if (!result) {
-      try {
-        const stripe = getStripeClient();
-        result = await reconcileFromStripe(base44, user, stripe, debugMode);
-      } catch (stripeErr) {
-        console.error(`[REC] Stripe init failed:`, stripeErr);
-        if (debugMode) console.log(`[REC] [STRIPE] INIT ERROR: ${stripeErr.message}`);
-      }
+      const stripe = getStripeClient();
+      result = await reconcileFromStripe(base44, user, stripe);
     }
 
     if (!result) {
@@ -222,7 +187,6 @@ Deno.serve(async (req) => {
         updated: false,
         details: "No active subscription found",
       };
-      if (debugMode) console.log(`[REC] No subscriptions found - defaulting to free`);
     }
 
     const needsUpdate =
@@ -238,7 +202,6 @@ Deno.serve(async (req) => {
       });
       result.updated = true;
       console.log(`[REC] Updated ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
-      if (debugMode) console.log(`[REC] UPDATED: saved to database`);
     }
 
     return Response.json(result);
