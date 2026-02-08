@@ -45,10 +45,10 @@ export default function Auth() {
   }, [navigate]);
 
   const handleSubmit = async (e) => {
-    console.log("[Auth] handleSubmit called with event:", !!e, "mode:", mode, "email:", email);
     if (e?.preventDefault) {
       e.preventDefault();
     }
+    console.log("[Auth] handleSubmit FIRED - mode:", mode, "email:", email, "password:", password.length);
     setError("");
     setBusy(true);
     console.log("[Auth] About to validate - email:", email, "password length:", password.length);
