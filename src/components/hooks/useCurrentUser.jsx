@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
+import { requireSupabase, SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
 import { getEffectiveTier } from "@/components/utils/effectiveTierCanonical";
 
 const ENTITLEMENT_URL =
@@ -36,7 +36,7 @@ export function useCurrentUser() {
           return;
         }
 
-      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionErr } = await requireSupabase().auth.getSession();
       if (!alive) return;
 
       if (sessionErr) {
@@ -105,7 +105,7 @@ export function useCurrentUser() {
       };
     }
 
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+    const { data: sub } = requireSupabase().auth.onAuthStateChange(() => {
       run();
     });
 
