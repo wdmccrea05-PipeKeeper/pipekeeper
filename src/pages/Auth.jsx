@@ -163,9 +163,11 @@ export default function Auth() {
     );
   }
 
+  console.log("[Auth] Component rendering, ready:", ready);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
-      <Card className="w-full max-w-sm bg-[#243548] border-[#E0D8C8]/20">
+    <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4" onClick={() => console.log("[Auth] div clicked")}>
+      <Card className="w-full max-w-sm bg-[#243548] border-[#E0D8C8]/20" onClick={() => console.log("[Auth] Card clicked")}>
         <CardHeader>
           <CardTitle className="text-[#E0D8C8]">
             {mode === "login" ? "Sign In" : "Create Account"}
