@@ -7,6 +7,11 @@ function readEnv(key) {
     }
   } catch (_) {}
   try {
+    if (typeof process !== "undefined" && process.env && key in process.env) {
+      return (process.env[key] ?? "").toString();
+    }
+  } catch (_) {}
+  try {
     if (typeof window !== "undefined" && window.__ENV__ && key in window.__ENV__) {
       return (window.__ENV__[key] ?? "").toString();
     }
