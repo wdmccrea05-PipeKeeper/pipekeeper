@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/components/utils/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 
 const ENTITLEMENT_URL =
   import.meta.env.VITE_ENTITLEMENT_URL ||
