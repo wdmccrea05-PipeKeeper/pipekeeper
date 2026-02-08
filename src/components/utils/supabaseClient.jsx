@@ -10,14 +10,14 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const SUPABASE_READY = true;
 
-// Debug config (no secrets leaked)
+// Debug config (no secrets leaked) - safe access
 export const SUPABASE_CONFIG = {
   source: "environment",
-  host: SUPABASE_URL.replace(/^https?:\/\//, "").split("/")[0],
-  ref: SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "unknown",
-  keyPrefix: SUPABASE_ANON_KEY.slice(0, 8),
-  keyLength: SUPABASE_ANON_KEY.length,
-  validated: true
+  host: SUPABASE_URL ? SUPABASE_URL.replace(/^https?:\/\//, "").split("/")[0] : "unknown",
+  ref: SUPABASE_URL ? SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "unknown" : "unknown",
+  keyPrefix: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.slice(0, 8) : "none",
+  keyLength: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.length : 0,
+  validated: !!(SUPABASE_URL && SUPABASE_ANON_KEY)
 };
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
