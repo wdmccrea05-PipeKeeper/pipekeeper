@@ -28,6 +28,13 @@ export function useCurrentUser() {
       console.log("[ENTITLEMENT_HOOK] mounted");
       setLoading(true);
 
+      // Check if supabase is configured
+      if (!supabase) {
+        console.warn("[AUTH] Supabase not configured - skipping auth");
+        setLoading(false);
+        return;
+      }
+
       // 1) Get user from Supabase session (no providers)
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
@@ -85,13 +92,19 @@ export function useCurrentUser() {
     run();
 
     // Keep user updated if session changes
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      run();
-    });
+    if (supabase) {
+      const { data: sub } = supabase.auth.onAuthStateChange(() => {
+        run();
+      });
+
+      return () => {
+        alive = false;
+        sub?.subscription?.unsubscribe?.();
+      };
+    }
 
     return () => {
       alive = false;
-      sub?.subscription?.unsubscribe?.();
     };
   }, []);
 
