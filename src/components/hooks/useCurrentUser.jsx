@@ -31,13 +31,16 @@ export function useCurrentUser() {
         setLoading(true);
 
         if (!SUPABASE_CONFIG_OK) {
-          console.warn("[ENTITLEMENT_HOOK] Supabase not configured - missing env vars");
-          setLoading(false);
-          return;
+          console.warn("[ENTITLEMENT_HOOK] Supabase not configured - will retry");
+          // Don't bail immediately - keep trying
+          // setLoading(false);
+          // return;
         }
 
-      const { data: sessionData, error: sessionErr } = await requireSupabase().auth.getSession();
-      if (!alive) return;
+      try {
+        const supabaseClient = requireSupabase();
+        const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
+        if (!alive) return;
 
       if (sessionErr) {
         console.warn("[AUTH] getSession error", sessionErr);
