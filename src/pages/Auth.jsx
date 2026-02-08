@@ -107,20 +107,20 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {supabaseConfigWarning && (
+            {!SUPABASE_CONFIG_OK && (
               <Alert className="bg-yellow-500/10 border-yellow-500/30">
                 <AlertDescription className="text-yellow-200 text-sm">
-                  {supabaseConfigWarning}
+                  Loading authentication service...
                 </AlertDescription>
               </Alert>
             )}
 
-            {(localError || authError) && (
+            {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
                 <AlertDescription className="text-red-200 text-sm">
-                  {localError || authError?.message}
+                  {error}
                 </AlertDescription>
               </Alert>
             )}
@@ -156,25 +156,19 @@ export default function Auth() {
               disabled={busy}
               className="w-full bg-amber-700 hover:bg-amber-800"
             >
-              {busy
-                ? "Please wait…"
-                : mode === "login"
-                ? "Sign In"
-                : "Create Account"}
+              {busy ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
             </Button>
 
             <button
               type="button"
               onClick={() => {
                 setMode(mode === "login" ? "register" : "login");
-                setLocalError("");
+                setError("");
               }}
               disabled={busy}
               className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors disabled:opacity-50"
             >
-              {mode === "login"
-                ? "Need an account? Sign up"
-                : "Already have an account? Sign in"}
+              {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </CardFooter>
         </form>
