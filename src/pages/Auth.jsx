@@ -177,10 +177,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={(e) => {
-          console.log("[Auth] Form onSubmit called");
-          handleSubmit(e);
-        }}>
+        <div>
           <CardContent className="space-y-4">
             {error && (
               <Alert className="bg-red-500/10 border-red-500/30">
@@ -217,7 +214,7 @@ export default function Auth() {
 
           <CardFooter className="flex flex-col gap-4">
             <Button
-              type="submit"
+              onClick={handleSubmit}
               disabled={busy}
               className="w-full bg-amber-700 hover:bg-amber-800"
             >
