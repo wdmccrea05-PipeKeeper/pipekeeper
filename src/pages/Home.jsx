@@ -99,11 +99,11 @@ export default function HomePage() {
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err?.message, err);
-        throw err;
+        return [];
       }
     },
     enabled: !!user?.email,
-    retry: 2,
+    retry: 1,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
