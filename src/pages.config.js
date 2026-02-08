@@ -53,6 +53,7 @@ import adminreportsTsx from './pages/AdminReports.tsx';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
+import Auth from './pages/Auth';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
 import Debug from './pages/Debug';
@@ -64,6 +65,7 @@ import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
+import NotFound from './pages/NotFound';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -90,8 +92,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Auth from './pages/Auth';
-import NotFound from './pages/NotFound';
 import __Layout from './Layout.jsx';
 
 
@@ -102,6 +102,7 @@ export const PAGES = {
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
+    "Auth": Auth,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
     "Debug": Debug,
@@ -113,6 +114,7 @@ export const PAGES = {
     "Import": Import,
     "Invite": Invite,
     "InviteFull": InviteFull,
+    "NotFound": NotFound,
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
@@ -139,8 +141,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Auth": Auth,
-    "NotFound": NotFound,
 }
 
 export const pagesConfig = {
