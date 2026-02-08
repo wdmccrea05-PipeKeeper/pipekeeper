@@ -97,6 +97,8 @@ export default function HomePage() {
         return [];
       }
     },
+    staleTime: 30000,
+    gcTime: 60000,
   });
 
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
@@ -110,6 +112,8 @@ export default function HomePage() {
         return [];
       }
     },
+    staleTime: 30000,
+    gcTime: 60000,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
