@@ -90,22 +90,15 @@ export default function HomePage() {
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        console.log('[Home] Loading pipes for:', user?.email);
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 10000);
-        console.log('[Home] Pipes loaded:', result?.length, 'result type:', typeof result, 'is array:', Array.isArray(result));
-        if (!Array.isArray(result)) {
-          console.error('[Home] Pipe result is not an array!', result);
-        }
+        const result = await base44.entities.Pipe.list();
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Pipes load error:', err?.message, err);
+        console.error('[Home] Pipes load error:', err);
         return [];
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   // STANDARDIZED KEY: ["tobacco-blends", user?.email]
