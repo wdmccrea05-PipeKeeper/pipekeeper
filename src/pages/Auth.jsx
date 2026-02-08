@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
 
+const SUPABASE_URL = "https://qtrypzzcjebvfcihiynt.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cnlwenpjamVidmZjaWhpeW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjMxNjEsImV4cCI6MjA1MjA5OTE2MX0.gE-8W18qPFyqCLsVE7O8SfuVCzT-_yZmLR_kRUa8x9M";
+
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,8 +48,15 @@ export default function AuthPage() {
   const handleTokenTest = async () => {
     setTestResult("Testing...");
     try {
-      const url = "https://qtrypzzcjebvfcihiynt.supabase.co/auth/v1/token?grant_type=password";
-      const key = supabase.supabaseKey || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0cnlwenpjamVidmZjaWhpeW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjMxNjEsImV4cCI6MjA1MjA5OTE2MX0.gE-8W18qPFyqCLsVE7O8SfuVCzT-_yZmLR_kRUa8x9M";
+      const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+      const key = SUPABASE_KEY.trim();
+      
+      console.log("[TOKEN_TEST_HEADERS]", {
+        hasApiKey: !!key,
+        hasAuth: !!key,
+        keyLen: key.length,
+        urlMatches: url.includes("qtrypzzcjebvfcihiynt")
+      });
       
       const response = await fetch(url, {
         method: "POST",
@@ -60,7 +70,12 @@ export default function AuthPage() {
       
       const text = await response.text();
       console.log("[TOKEN_TEST_RESULT]", { status: response.status, body: text.slice(0, 200) });
-      setTestResult(`Status: ${response.status}, Body: ${text.slice(0, 200)}`);
+      
+      let result = `Status: ${response.status}\nBody: ${text.slice(0, 200)}`;
+      if (response.status === 401) {
+        result += "\n\n401 = invalid API key (key mismatch/truncated/swapped).";
+      }
+      setTestResult(result);
     } catch (err) {
       console.log("[TOKEN_TEST_ERROR]", err);
       setTestResult(`Error: ${err.message}`);
@@ -78,7 +93,7 @@ export default function AuthPage() {
 
         {!SUPABASE_READY && (
           <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-            <p className="text-sm text-yellow-400">Warning: Supabase not fully configured (using fallback)</p>
+            <p className="text-sm text-yellow-400">Warning: Supabase validation failed</p>
           </div>
         )}
 
@@ -136,7 +151,7 @@ export default function AuthPage() {
               Run Token Test
             </Button>
             {testResult && (
-              <div className="mt-2 p-2 rounded bg-gray-800 text-xs text-gray-300 break-all">
+              <div className="mt-2 p-2 rounded bg-gray-800 text-xs text-gray-300 whitespace-pre-wrap break-all">
                 {testResult}
               </div>
             )}

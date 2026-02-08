@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/components/utils/supabaseClient";
+import { supabase, SUPABASE_READY } from "@/components/utils/supabaseClient";
 
 const ENTITLEMENT_URL =
   import.meta.env.VITE_ENTITLEMENT_URL ||
@@ -25,10 +25,15 @@ export function useCurrentUser() {
     let alive = true;
 
     async function run() {
-      console.log("[ENTITLEMENT_HOOK] mounted - always running auth");
+      console.log("[ENTITLEMENT_HOOK] mounted - SUPABASE_READY:", SUPABASE_READY);
       setLoading(true);
 
-      // Always try to get session
+      if (!SUPABASE_READY) {
+        console.warn("[ENTITLEMENT_HOOK] SUPABASE_READY is false, skipping auth");
+        setLoading(false);
+        return;
+      }
+
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
       if (!alive) return;
 
@@ -48,7 +53,6 @@ export function useCurrentUser() {
         return;
       }
 
-      // Fetch entitlement
       try {
         const url = new URL(ENTITLEMENT_URL);
         url.searchParams.set("email", userEmail);
@@ -83,7 +87,6 @@ export function useCurrentUser() {
 
     run();
 
-    // Listen to auth changes
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       run();
     });
