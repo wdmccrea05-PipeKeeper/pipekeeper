@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
-const PIPEKEEPER_LOGO =
-  "https://uulcpkiwqeoiwbjgidwp.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+const PIPEKEEPER_LOGO = "/assets/pipekeeper-logo.png";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -204,13 +203,6 @@ export default function AuthPage() {
           </div>
           </div>
 
-          {/* Config Info */}
-          <div className="mt-6 p-4 rounded-lg bg-[#0B1320]/50 border border-[#A35C5C]/20">
-          <div className="text-xs space-y-1">
-            <div className="text-[#E0D8C8]/50">Config: <span className="text-[#E0D8C8]/80">{SUPABASE_CONFIG.source}</span></div>
-            <div className="text-[#E0D8C8]/50">Host: <span className="text-[#E0D8C8]/80 font-mono">{SUPABASE_CONFIG.host}</span></div>
-          </div>
-          </div>
           </div>
           </div>
           );

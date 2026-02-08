@@ -243,11 +243,12 @@ export default function ProfilePage() {
   }
 
   async function handleLogout() {
-    try {
-      await base44.auth.logout();
-    } finally {
-      window.location.href = "/";
-    }
+   try {
+     await base44.auth.logout("/Auth");
+   } catch (err) {
+     console.error("[Profile] Logout error:", err);
+     window.location.href = "/Auth";
+   }
   }
 
   if (userLoading || profileLoading) {
@@ -275,10 +276,10 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   {hasActiveSubscription ? (
-                    <>
-                      <div className="font-semibold text-amber-900">
-                        {user?.subscription_tier === "pro" ? t("profile.proActive") : t("profile.premiumActive")}
-                      </div>
+                   <>
+                     <div className="font-semibold text-amber-900">
+                       {hasPremiumAccess(user, subscription) ? "Premium Active" : "Free"}
+                     </div>
                       <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
                     </>
                   ) : isWithinTrial ? (
