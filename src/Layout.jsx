@@ -225,7 +225,7 @@ export default function Layout({ children, currentPageName }) {
         "PublicProfile",
         "Index",
         "Subscription",
-        "Login",
+        "Auth",
       ]),
     []
   );
@@ -507,7 +507,7 @@ export default function Layout({ children, currentPageName }) {
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
           <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{ui("auth.loginPrompt")}</p>
-          <Button onClick={() => navigate(createPageUrl("Login"))}>{ui("auth.login")}</Button>
+          <Button onClick={() => navigate(createPageUrl("Auth"))}>{ui("auth.login")}</Button>
         </div>
       </div>
     );
