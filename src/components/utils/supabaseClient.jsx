@@ -70,6 +70,65 @@ if (!SUPABASE_CONFIG_OK && typeof window !== 'undefined') {
 }
 
 let _supabase = null;
+let _loadingPromise = null;
+
+export async function getSupabaseAsync() {
+  // If already initialized, return immediately
+  if (_supabase) return _supabase;
+
+  // If currently loading, wait for that promise
+  if (_loadingPromise) return _loadingPromise;
+
+  // If config is ready, initialize immediately
+  if (SUPABASE_CONFIG_OK && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "pipekeeper-auth",
+      },
+      global: {
+        headers: { "X-Client-Info": "pipekeeper-web" },
+      },
+    });
+    console.log("[SUPABASE_READY] true");
+    return _supabase;
+  }
+
+  // Otherwise wait for async loading
+  _loadingPromise = (async () => {
+    // Give it a moment to load from backend
+    for (let i = 0; i < 10; i++) {
+      if (SUPABASE_CONFIG_OK && SUPABASE_URL && SUPABASE_ANON_KEY) {
+        break;
+      }
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    if (!SUPABASE_CONFIG_OK || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.error("[SUPABASE] Failed to load config after retries");
+      throw new Error("Supabase configuration not available");
+    }
+
+    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "pipekeeper-auth",
+      },
+      global: {
+        headers: { "X-Client-Info": "pipekeeper-web" },
+      },
+    });
+
+    console.log("[SUPABASE_READY] true");
+    return _supabase;
+  })();
+
+  return _loadingPromise;
+}
 
 export function getSupabase() {
   if (_supabase) return _supabase;
