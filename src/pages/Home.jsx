@@ -100,6 +100,7 @@ export default function HomePage() {
     },
     staleTime: 30000,
     gcTime: 60000,
+    retry: 1,
   });
 
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
@@ -115,6 +116,7 @@ export default function HomePage() {
     },
     staleTime: 30000,
     gcTime: 60000,
+    retry: 1,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
@@ -578,7 +580,7 @@ export default function HomePage() {
             </motion.div>
           )}
 
-          {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
+          {safePipes.length > 0 && safeBlends.length > 0 && user ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -591,7 +593,7 @@ export default function HomePage() {
             </motion.div>
           ) : null}
 
-          {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
+          {safePipes.length > 0 && safeBlends.length > 0 && user ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
