@@ -87,7 +87,7 @@ export default function HomePage() {
   });
 
   const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
-    queryKey: ['pipes', user?.email],
+    queryKey: ['pipes'],
     queryFn: async () => {
       try {
         const result = await base44.entities.Pipe.list();
@@ -97,8 +97,6 @@ export default function HomePage() {
         return [];
       }
     },
-    enabled: !!user?.email,
-    staleTime: Infinity,
   });
 
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
