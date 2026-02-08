@@ -298,42 +298,43 @@ export default function ProfilePage() {
 
               <div className="w-full md:w-auto flex flex-col gap-2">
                 {!isIOSCompanion() ? (
-                  <>
-                    {subscription?.status === "active" || subscription?.status === "trialing" ? (
+                    <>
+                      {/* Show Manage Subscription if user has paid tier OR active subscription */}
+                      {(hasPremiumAccess(user, subscription) || subscription?.status === "active" || subscription?.status === "trialing") ? (
+                          <Button
+                            className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                            onClick={() => {
+                              if (provider === "stripe") {
+                                window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+                              } else if (provider === "apple") {
+                                window.location.href = "https://apps.apple.com/account/subscriptions";
+                              } else {
+                                navigate(createPageUrl("Subscription"));
+                              }
+                            }}
+                          >
+                            Manage Subscription
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        ) : null}
+
+                      {shouldShowPurchaseUI() && !hasActiveSubscription && (
                         <Button
+                          onClick={() => navigate(createPageUrl("Subscription"))}
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                          onClick={() => {
-                            if (provider === "stripe") {
-                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
-                            } else if (provider === "apple") {
-                              window.location.href = "https://apps.apple.com/account/subscriptions";
-                            } else {
-                              navigate(createPageUrl("Subscription"));
-                            }
-                          }}
                         >
-                          Manage Subscription
+                          {t("profile.upgrade")}
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
-                      ) : null}
+                      )}
 
-                    {shouldShowPurchaseUI() && !hasActiveSubscription && (
-                      <Button
-                        onClick={() => navigate(createPageUrl("Subscription"))}
-                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                      >
-                        {t("profile.upgrade")}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    )}
-
-                    {!shouldShowPurchaseUI() && (
-                       <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
-                         {getSubscriptionManagementMessage()}
-                       </div>
-                     )}
-                  </>
-                ) : (
+                      {!shouldShowPurchaseUI() && (
+                         <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
+                           {getSubscriptionManagementMessage()}
+                         </div>
+                       )}
+                    </>
+                  ) : (
                   <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
                     {t("profile.premiumSubscriptionWebOnly")}{" "}
                     <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">

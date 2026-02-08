@@ -658,10 +658,16 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <main className="flex-1 pb-20 md:pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
-            <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-              {children}
-            </div>
-          </main>
+                    <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+                      {/* Show logged out message if redirected from logout */}
+                      {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1" && (
+                        <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                          <p className="text-sm text-green-400">You've been logged out successfully.</p>
+                        </div>
+                      )}
+                      {children}
+                    </div>
+                  </main>
 
           <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
             <div className="max-w-7xl mx-auto px-6 py-6">
