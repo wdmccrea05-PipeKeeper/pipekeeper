@@ -335,7 +335,7 @@ export default function Layout({ children, currentPageName }) {
       window.removeEventListener("storage", handleStorageChange);
       sub?.subscription?.unsubscribe?.();
     };
-  }, [queryClient]);
+  }, [queryClient, SUPABASE_CONFIG_OK]);
 
   useEffect(() => {
     if (userLoading) return;
