@@ -45,10 +45,13 @@ export default function Auth() {
   }, [navigate]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    console.log("[Auth] handleSubmit called with event:", !!e);
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
     setError("");
     setBusy(true);
-    console.log("[Auth] handleSubmit called, mode:", mode);
+    console.log("[Auth] handleSubmit mode:", mode);
 
     try {
       if (!email || !password) {
