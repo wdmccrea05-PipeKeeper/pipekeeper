@@ -42,6 +42,11 @@ const PIPE_ICON =
 // Build version logging for production verification
 if (typeof window !== "undefined") {
   console.log("[BUILD_VERSION]", BUILD_VERSION);
+  console.log("[ENV_CHECK]", {
+    hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
+    hasSupabaseAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+    supabaseHost: (import.meta.env.VITE_SUPABASE_URL || "").replace(/^https?:\/\//, "").split("/")[0]
+  });
 }
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
