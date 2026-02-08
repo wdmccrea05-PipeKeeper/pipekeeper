@@ -234,12 +234,6 @@ export default function HomePage() {
     }
   };
 
-  const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
-    if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
-    if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
-    return sum;
-  }, 0);
-
   // Early returns AFTER all hooks
   if (userLoading) {
     return (
@@ -297,6 +291,12 @@ export default function HomePage() {
   const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
   const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
   const hasViewedInsights = typeof window !== 'undefined' && localStorage.getItem('pk_viewed_insights') === 'true';
+  
+  const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
+    if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
+    if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
+    return sum;
+  }, 0);
 
   const getCellarBreakdown = () => {
     const byBlend = {};
