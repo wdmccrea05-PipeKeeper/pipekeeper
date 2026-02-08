@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useQueryClient } from "@tanstack/react-query";
 
 const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
+const SESSION_DISMISSED_KEY = "pk_tos_session_dismissed";
 
 function is429(err) {
   const msg = String(err?.message || err || "");
@@ -20,17 +21,39 @@ function hasAccepted(user) {
   }
 }
 
+function isSessionDismissed() {
+  try {
+    return sessionStorage.getItem(SESSION_DISMISSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSessionDismissed() {
+  try {
+    sessionStorage.setItem(SESSION_DISMISSED_KEY, "1");
+  } catch {}
+}
+
 export default function TermsGate({ user }) {
   const qc = useQueryClient();
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
+  const [dismissed, setDismissed] = useState(false);
 
   const tosUrl = useMemo(() => `${createPageUrl("TermsOfService")}?view=1`, []);
   const privacyUrl = useMemo(() => `${createPageUrl("PrivacyPolicy")}?view=1`, []);
 
+  useEffect(() => {
+    if (isSessionDismissed()) {
+      setDismissed(true);
+    }
+  }, []);
+
   if (!user) return null;
   if (hasAccepted(user)) return null;
+  if (dismissed) return null;
 
   async function markLocalAccepted() {
     try {
@@ -54,22 +77,24 @@ export default function TermsGate({ user }) {
       await base44.auth.updateMe({ tos_accepted_at: ISO });
       await clearLocalAccepted();
 
-      // Refresh app state WITHOUT reload
+      markSessionDismissed();
+      setDismissed(true);
+      
       await qc.invalidateQueries({ queryKey: ["current-user"] });
       setMsg("Saved. Continuing…");
     } catch (e) {
       console.error("[TermsGate] accept failed:", e);
 
       if (is429(e)) {
-        // Don’t trap the user in a loop if Base44 throttles.
         await markLocalAccepted();
+        markSessionDismissed();
+        setDismissed(true);
         await qc.invalidateQueries({ queryKey: ["current-user"] });
-        setMsg("Rate-limited right now. Continuing temporarily…");
+        setMsg("Rate-limited. Continuing temporarily…");
       } else {
-        setMsg("We couldn’t save your acceptance. Please try again.");
+        setMsg("We couldn't save your acceptance. Please try again.");
+        setSubmitting(false);
       }
-    } finally {
-      setSubmitting(false);
     }
   }
 
