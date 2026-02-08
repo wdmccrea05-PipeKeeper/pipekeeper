@@ -85,7 +85,6 @@ export default function HomePage() {
         return null;
       }
     },
-    enabled: !!user?.email,
     retry: 1,
     staleTime: 10000,
     gcTime: 30000,
@@ -231,7 +230,7 @@ export default function HomePage() {
     }
   };
 
-  // Early returns AFTER all hooks - only block on auth failures
+  // Only block on auth error
   if (userError) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
@@ -247,41 +246,10 @@ export default function HomePage() {
     );
   }
 
-  if (hasError) {
-    return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("home.errorTitle")}</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">{t("home.errorRefresh")}</p>
-            <Button onClick={() => window.location.reload()}>{t("common.refresh")}</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (userLoading) {
-    return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <div className="text-center">
-          <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
-            <div className="text-5xl animate-pulse">🔄</div>
-          </div>
-          <p className={PK_THEME.textBody}>{t("common.loading")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Compute values AFTER all early returns
+  // Safe values - always available
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
-  
-  // User is authenticated at this point, always show main content
-  const isInitialLoading = false;
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
   const effective = getEffectiveEntitlement(user);
   const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
@@ -325,17 +293,6 @@ export default function HomePage() {
 
   return (
     <>
-      {isInitialLoading && (
-        <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-          <div className="text-center">
-            <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
-              <div className="text-5xl animate-pulse">🔄</div>
-            </div>
-            <p className={PK_THEME.textBody}>{t("common.loading")}</p>
-          </div>
-        </div>
-      )}
-
       {showOnboarding && user?.email ? (
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
@@ -343,7 +300,7 @@ export default function HomePage() {
         />
       ) : null}
 
-      {showTestingNotice && !showOnboarding && !isInitialLoading ? (
+      {showTestingNotice && !showOnboarding ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -381,8 +338,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      {!isInitialLoading && (
-        <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
+      <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
           <motion.div 
             className="text-center mb-8 sm:mb-12 px-2"
             initial={{ opacity: 0, y: 20 }}
@@ -782,7 +738,6 @@ export default function HomePage() {
             </motion.div>
           )}
         </div>
-      )}
 
       <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
         <DialogContent className="max-w-2xl">
