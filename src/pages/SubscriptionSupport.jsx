@@ -15,17 +15,6 @@ export default function SubscriptionSupport() {
   const [driftData, setDriftData] = useState([]);
   const [timeWindow, setTimeWindow] = useState("24h");
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Admin access required</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   const loadHealth = async () => {
     try {
       setLoading(true);
