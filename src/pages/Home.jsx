@@ -38,12 +38,16 @@ const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/pu
 
 export default function HomePage() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
   const [showCellarDialog, setShowCellarDialog] = useState(false);
-  const [hasError, setHasError] = React.useState(false);
+  const [hasError, setHasError] = useState(false);
 
   // ALL hooks MUST be called unconditionally at top level before any early returns
+  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
+
   React.useEffect(() => {
     const handleError = (error) => {
       console.error('[Home Error]', error);
@@ -64,9 +68,6 @@ export default function HomePage() {
       };
     }
   }, []);
-
-  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
-  const queryClient = useQueryClient();
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -191,15 +192,6 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [showTestingNotice]);
 
-  // Mark insights as viewed - MUST be here before early returns
-  useEffect(() => {
-    const markInsightsViewed = () => {
-      localStorage.setItem('pk_viewed_insights', 'true');
-    };
-    window.addEventListener('focus', markInsightsViewed);
-    return () => window.removeEventListener('focus', markInsightsViewed);
-  }, []);
-
   const handleOnboardingComplete = async () => {
     try {
       if (onboardingStatus) {
@@ -242,6 +234,13 @@ export default function HomePage() {
     }
   };
 
+  const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
+    if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
+    if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
+    return sum;
+  }, 0);
+
+  // Early returns AFTER all hooks
   if (userLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
@@ -257,8 +256,7 @@ export default function HomePage() {
     );
   }
 
-  if (userError) {
-    console.error('[Home] User error:', userError);
+  if (userError || !user?.email) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
@@ -273,37 +271,32 @@ export default function HomePage() {
     );
   }
 
-  if (!user?.email) {
+  if (hasError) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
-            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("home.errorTitle")}</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">{t("home.errorRefresh")}</p>
+            <Button onClick={() => window.location.reload()}>{t("common.refresh")}</Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
-    if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
-    if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
-    return sum;
-  }, 0);
-
-  // Compute values AFTER hooks, but still before early returns
+  // Compute values AFTER early returns
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
   
-  const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
-  const hasViewedInsights = localStorage.getItem('pk_viewed_insights') === 'true';
   const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
   const effective = getEffectiveEntitlement(user);
   const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
+  const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
+  const hasViewedInsights = typeof window !== 'undefined' && localStorage.getItem('pk_viewed_insights') === 'true';
 
   const getCellarBreakdown = () => {
     const byBlend = {};
@@ -328,24 +321,11 @@ export default function HomePage() {
   const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
-    localStorage.setItem('testingNoticeSeen', 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('testingNoticeSeen', 'true');
+    }
     setShowTestingNotice(false);
   };
-
-  if (hasError) {
-    return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("home.errorTitle")}</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">{t("home.errorRefresh")}</p>
-            <Button onClick={() => window.location.reload()}>{t("common.refresh")}</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <>
