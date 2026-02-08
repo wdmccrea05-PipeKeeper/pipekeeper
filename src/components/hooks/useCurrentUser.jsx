@@ -95,11 +95,12 @@ export function useCurrentUser() {
 
   const flags = useMemo(() => {
     const tier = (entitlementTier || "free").toLowerCase();
+    const normalizedEmail = (email || "").trim().toLowerCase();
 
     // Base44 stores role as "Admin" (capital) or "User"
     const roleStr = (user?.user_metadata?.role || user?.role || "").toLowerCase();
     const isAdmin = roleStr === "admin" || 
-      (email && ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(email.toLowerCase()));
+      ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(normalizedEmail);
 
     return {
       tier,
