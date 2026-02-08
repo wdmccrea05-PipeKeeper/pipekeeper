@@ -34,8 +34,8 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { ui } from "@/components/i18n/ui";
 
-const PIPEKEEPER_LOGO = "/assets/pipekeeper-logo.png";
-const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
+const PIPEKEEPER_LOGO = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Ctext x='5' y='28' font-family='Georgia, serif' font-size='24' font-weight='bold' fill='%23E0D8C8'%3EPipeKeeper%3C/text%3E%3C/svg%3E";
+const PIPE_ICON = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 160'%3E%3Cpath d='M50 60 Q50 30 100 30 Q150 30 150 60 L150 90 Q150 110 130 110 L70 110 Q50 110 50 90 Z' fill='none' stroke='%23E0D8C8' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M50 95 Q40 100 30 105 Q20 110 15 120' fill='none' stroke='%23E0D8C8' stroke-width='3' stroke-linecap='round'/%3E%3Cellipse cx='100' cy='80' rx='20' ry='25' fill='none' stroke='%23E0D8C8' stroke-width='2'/%3E%3C/svg%3E";
 
 // Build version logging for production verification
 if (typeof window !== "undefined") {

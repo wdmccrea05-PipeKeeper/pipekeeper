@@ -34,7 +34,7 @@ import { SafeText, SafeHeading, SafeLabel } from "@/components/ui/SafeText";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
-const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
+const PIPE_ICON = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 160'%3E%3Cpath d='M50 60 Q50 30 100 30 Q150 30 150 60 L150 90 Q150 110 130 110 L70 110 Q50 110 50 90 Z' fill='none' stroke='%23e8d5b7' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M50 95 Q40 100 30 105 Q20 110 15 120' fill='none' stroke='%23e8d5b7' stroke-width='3' stroke-linecap='round'/%3E%3Cellipse cx='100' cy='80' rx='20' ry='25' fill='none' stroke='%23e8d5b7' stroke-width='2'/%3E%3C/svg%3E";
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -330,11 +330,9 @@ export default function HomePage() {
       {isInitialLoading ? (
         <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
           <div className="text-center">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-              alt="PipeKeeper"
-              className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
-            />
+            <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+              <div className="text-5xl animate-pulse">⏳</div>
+            </div>
             <p className={PK_THEME.textBody}>{t("home.loadingCollection")}</p>
           </div>
         </div>

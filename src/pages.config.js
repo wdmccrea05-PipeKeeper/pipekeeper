@@ -56,6 +56,7 @@ import AgeGate from './pages/AgeGate';
 import Auth from './pages/Auth';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
+import Debug from './pages/Debug';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -88,7 +89,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Debug from './pages/Debug';
 import __Layout from './Layout.jsx';
 
 
@@ -102,6 +102,7 @@ export const PAGES = {
     "Auth": Auth,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
+    "Debug": Debug,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
@@ -134,7 +135,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Debug": Debug,
 }
 
 export const pagesConfig = {
