@@ -47,6 +47,7 @@ export default function Auth() {
     e.preventDefault();
     setError("");
     setBusy(true);
+    console.log("[Auth] handleSubmit called, mode:", mode);
 
     try {
       if (!email || !password) {
@@ -61,7 +62,10 @@ export default function Auth() {
         return;
       }
 
+      console.log("[Auth] Getting Supabase client...");
       const supabase = await getSupabaseAsync();
+      console.log("[Auth] Supabase client obtained:", !!supabase);
+      
       if (!supabase) {
         throw new Error("Supabase not initialized");
       }
@@ -74,6 +78,8 @@ export default function Auth() {
           email: emailTrimmed,
           password,
         });
+        console.log("[Auth] Login response received, error:", !!err, "data:", !!data);
+        
         if (err) {
           console.error("[Auth] Login error:", err);
           setError(err.message || "Login failed. Check your email and password.");
@@ -86,7 +92,6 @@ export default function Auth() {
           return;
         }
         console.log("[Auth] Login successful, navigating...");
-        // Small delay to ensure session is persisted
         await new Promise(r => setTimeout(r, 300));
         navigate("/", { replace: true });
       } else {
@@ -95,6 +100,8 @@ export default function Auth() {
           email: emailTrimmed,
           password,
         });
+        console.log("[Auth] Signup response received, error:", !!err, "data:", !!data);
+        
         if (err) {
           console.error("[Auth] Signup error:", err);
           setError(err.message || "Signup failed. Please try again.");
@@ -107,14 +114,11 @@ export default function Auth() {
           return;
         }
         console.log("[Auth] Signup successful");
-        setError(""); // Clear any errors
+        setError("");
         setMode("login");
         setPassword("");
         setEmail(emailTrimmed);
-        // Show message about email confirmation if needed
         if (!data.session) {
-          setError(""); // Actually an info message
-          // For most Supabase configs, signup auto-confirms now
           setTimeout(() => {
             setError("Account created! Please log in.");
           }, 500);
@@ -122,7 +126,7 @@ export default function Auth() {
         setBusy(false);
       }
     } catch (err) {
-      console.error("[Auth] Exception:", err);
+      console.error("[Auth] Exception:", err?.message, err);
       setError(err?.message || "Authentication failed. Please refresh and try again.");
       setBusy(false);
     }
