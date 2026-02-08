@@ -38,28 +38,45 @@ function isBadValue(v) {
 let staticURL = normalize(readEnv("VITE_SUPABASE_URL")) || normalize(readEnv("SUPABASE_URL"));
 let staticKey = normalize(readEnv("VITE_SUPABASE_ANON_KEY")) || normalize(readEnv("SUPABASE_ANON_KEY"));
 
-// Fallback: these will be set dynamically if static injection fails
+// Dynamic storage for config loaded from backend
+let dynamicURL = "";
+let dynamicKey = "";
+
+// Check if we have valid static config
+const hasStaticConfig = !isBadValue(staticURL) && !isBadValue(staticKey);
+
+// Getters that return current values (either static or dynamic)
+export function getSUPABASE_URL() {
+  return dynamicURL || staticURL;
+}
+
+export function getSUPABASE_ANON_KEY() {
+  return dynamicKey || staticKey;
+}
+
+// Legacy exports for backward compatibility
 export let SUPABASE_URL = staticURL;
 export let SUPABASE_ANON_KEY = staticKey;
 
 // ✅ This export is REQUIRED because parts of the app import SUPABASE_CONFIG
 export let SUPABASE_CONFIG = {
-  url: SUPABASE_URL,
-  anonKey: SUPABASE_ANON_KEY,
+  get url() { return getSUPABASE_URL(); },
+  get anonKey() { return getSUPABASE_ANON_KEY(); },
 };
 
-export let SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
+export let SUPABASE_CONFIG_OK = hasStaticConfig;
 
 // If static vars not available, try to fetch from backend
-if (!SUPABASE_CONFIG_OK && typeof window !== 'undefined') {
+if (!hasStaticConfig && typeof window !== 'undefined') {
   (async () => {
     try {
       const { base44 } = await import('@/api/base44Client');
       const res = await base44.functions.invoke('getSupabaseConfig');
       if (res.data?.url && res.data?.anonKey) {
-        SUPABASE_URL = res.data.url;
-        SUPABASE_ANON_KEY = res.data.anonKey;
-        SUPABASE_CONFIG = { url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY };
+        dynamicURL = res.data.url;
+        dynamicKey = res.data.anonKey;
+        SUPABASE_URL = dynamicURL;
+        SUPABASE_ANON_KEY = dynamicKey;
         SUPABASE_CONFIG_OK = true;
         console.log('[SUPABASE] Loaded from backend');
       }
@@ -67,6 +84,9 @@ if (!SUPABASE_CONFIG_OK && typeof window !== 'undefined') {
       console.warn('[SUPABASE] Backend fetch failed:', e?.message);
     }
   })();
+} else if (hasStaticConfig) {
+  SUPABASE_CONFIG_OK = true;
+  console.log('[SUPABASE] Using static config');
 }
 
 let _supabase = null;
