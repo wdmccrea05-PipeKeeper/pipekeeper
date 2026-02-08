@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase, SUPABASE_CONFIG, buildSupabaseHeaders, pingAuthSettings, pingRest } from "@/components/utils/supabaseClient";
+import { supabase } from "@/components/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, Link } from "react-router-dom";
@@ -46,10 +46,14 @@ export default function AuthPage() {
   };
 
   const runHealthCheck = async () => {
-    setHealthCheck({ loading: true });
+    // Health check only available in debug mode
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("debug") !== "1") {
+      alert("Debug mode not enabled. Add ?debug=1 to URL to enable.");
+      return;
+    }
     
-    const authSettingsResult = await pingAuthSettings();
-    const restResult = await pingRest();
+    setHealthCheck({ loading: true });
     
     let tokenResult = { status: 0, body: "Enter email/password and try again" };
     if (email && password) {
@@ -81,8 +85,6 @@ export default function AuthPage() {
     
     setHealthCheck({
       loading: false,
-      authSettings: authSettingsResult,
-      rest: restResult,
       token: tokenResult
     });
   };
@@ -153,26 +155,6 @@ export default function AuthPage() {
             
             {healthCheck && !healthCheck.loading && (
               <div className="mt-3 p-4 rounded-lg bg-gray-900 border border-gray-700 space-y-3 text-xs">
-                <div>
-                  <div className="font-semibold text-[#E0D8C8] mb-1">Auth Settings:</div>
-                  <div className="text-gray-300">
-                    Status: <span className={healthCheck.authSettings.status === 200 ? "text-green-400" : "text-red-400"}>
-                      {healthCheck.authSettings.status}
-                    </span>
-                  </div>
-                  <div className="text-gray-400 break-all mt-1">{healthCheck.authSettings.body}</div>
-                </div>
-                
-                <div>
-                  <div className="font-semibold text-[#E0D8C8] mb-1">REST Ping:</div>
-                  <div className="text-gray-300">
-                    Status: <span className={healthCheck.rest.status === 200 ? "text-green-400" : "text-red-400"}>
-                      {healthCheck.rest.status}
-                    </span>
-                  </div>
-                  <div className="text-gray-400 break-all mt-1">{healthCheck.rest.body}</div>
-                </div>
-                
                 <div>
                   <div className="font-semibold text-[#E0D8C8] mb-1">Sign In Test:</div>
                   <div className="text-gray-300">
