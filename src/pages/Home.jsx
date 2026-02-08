@@ -274,8 +274,8 @@ export default function HomePage() {
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
   
-  // Show loading only if user not loaded yet. Content renders regardless of query states.
-  const isInitialLoading = userLoading;
+  // User is authenticated at this point, always show main content
+  const isInitialLoading = false;
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
   const effective = getEffectiveEntitlement(user);
   const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
