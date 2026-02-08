@@ -125,7 +125,7 @@ export function useCurrentUser() {
 
     return () => {
       alive = false;
-      sub?.subscription?.unsubscribe?.();
+      unsubscribeFn();
     };
   }, []);
 
