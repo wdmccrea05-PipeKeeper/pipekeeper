@@ -163,7 +163,10 @@ async function tryStripeSync() {
 // Force deployment: entitlement check v2
 export default function Layout({ children, currentPageName }) {
   // CRITICAL: Mount entitlement check immediately - runs on every render
-  const { user, hasPaidAccess, isAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
+        const { user, hasPaidAccess, isAdmin: userIsAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
+
+        // Fallback admin check for known admins
+        const isAdmin = userIsAdmin || (user?.email && ["wmccrea@indario.com", "warren@pipekeeper.app"].includes((user.email || "").trim().toLowerCase()));
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
