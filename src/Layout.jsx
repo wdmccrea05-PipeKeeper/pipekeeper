@@ -232,7 +232,6 @@ export default function Layout({ children, currentPageName }) {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const location = useLocation();
   const ios = useMemo(() => isIOSWebView(), []);
 
   // Derive page name from URL if not passed explicitly
