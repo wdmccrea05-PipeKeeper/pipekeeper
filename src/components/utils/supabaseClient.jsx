@@ -195,8 +195,9 @@ export function requireSupabase() {
 
 export function buildSupabaseHeaders() {
   const h = new Headers();
-  h.set("apikey", SUPABASE_ANON_KEY);
-  h.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
+  const key = getSUPABASE_ANON_KEY();
+  h.set("apikey", key);
+  h.set("Authorization", `Bearer ${key}`);
   h.set("Content-Type", "application/json");
   return h;
 }
