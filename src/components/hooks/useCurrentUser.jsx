@@ -1,35 +1,42 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 
-console.log("[BUILD_MARKER] entitlement-hook-v2");
-console.log("[ENTITLEMENT_HOOK_V2_LOADED]");
-
 const ENTITLEMENT_URL = import.meta.env.VITE_ENTITLEMENT_URL;
 const ENTITLEMENT_API_KEY = import.meta.env.VITE_ENTITLEMENT_API_KEY;
+
+console.log("[ENTITLEMENT_URL]", ENTITLEMENT_URL);
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 async function fetchEntitlementTier(email) {
-  if (!ENTITLEMENT_URL || !ENTITLEMENT_API_KEY) return "free";
+  if (!ENTITLEMENT_URL) return "free";
+
+  const headers = {};
+  if (ENTITLEMENT_API_KEY) headers["x-entitlement-key"] = ENTITLEMENT_API_KEY;
 
   const res = await fetch(
     `${ENTITLEMENT_URL}?email=${encodeURIComponent(email)}`,
-    { headers: { "x-entitlement-key": ENTITLEMENT_API_KEY } }
+    { headers }
   );
 
   if (!res.ok) return "free";
-  const json = await res.json();
 
-  const tier = String(json?.entitlement_tier || "free").trim().toLowerCase();
-  if (tier === "pro" || tier === "premium") return tier;
-  return "free";
+  // Some upstreams may return JSON-as-a-string. Unwrap safely.
+  let data = await res.text();
+  try {
+    while (typeof data === "string") data = JSON.parse(data);
+  } catch {
+    return "free";
+  }
+
+  const tier = String(data?.entitlement_tier || "free").trim().toLowerCase();
+  return tier === "pro" || tier === "premium" ? tier : "free";
 }
 
 export function useCurrentUser() {
   const q = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
-      // ONLY auth.me(), NO User entity calls of any kind
       const me = await base44.auth.me();
       if (!me?.email) return null;
 
@@ -52,25 +59,12 @@ export function useCurrentUser() {
   const hasPro = tier === "pro";
   const hasPaidAccess = tier === "pro" || tier === "premium";
 
-  // IMPORTANT: always booleans
-  const safeHasPro = !!hasPro;
-  const safeHasPaidAccess = !!hasPaidAccess;
-
-  if (user?.email) {
-    console.log("[ENTITLEMENT_CHECK]", {
-      email: user.email,
-      entitlement_tier: user.entitlement_tier,
-      hasPro: safeHasPro,
-      hasPaidAccess: safeHasPaidAccess,
-    });
-  }
-
   return {
     user,
     isLoading: q.isLoading,
     error: q.error,
-    hasPro: safeHasPro,
-    hasPaidAccess: safeHasPaidAccess,
+    hasPro: !!hasPro,
+    hasPaidAccess: !!hasPaidAccess,
     isAdmin: user?.role === "admin",
     refetch: q.refetch,
   };
