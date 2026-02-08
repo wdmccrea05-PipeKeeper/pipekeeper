@@ -1,82 +1,119 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
-import NavigationTracker from '@/lib/NavigationTracker'
-import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClientInstance } from "@/lib/query-client";
+import NavigationTracker from "@/lib/NavigationTracker";
+import { pagesConfig } from "./pages.config";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import React, { useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import Layout from "@/Layout";
+import NotFound from "@/pages/NotFound";
 
-const { Pages, Layout, mainPage } = pagesConfig;
-const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+function AuthenticatedApp() {
+  const {
+    isLoadingAuth,
+    isLoadingPublicSettings,
+    authError,
+    retrySession,
+    isAuthenticated,
+  } = useAuth();
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  // IMPORTANT: Your Pages config maps Auth -> "/Auth" (capital A)
+  const AUTH_PATH = "/Auth";
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  useEffect(() => {
+    // Only react after initial loads complete
+    if (isLoadingAuth || isLoadingPublicSettings) return;
+
+    if (authError?.type === "auth_required") {
+      // Avoid looping if we're already on the Auth route
+      if (location.pathname !== AUTH_PATH) {
+        navigate(AUTH_PATH, { replace: true, state: { from: location } });
+      }
+    }
+  }, [
+    authError,
+    isLoadingAuth,
+    isLoadingPublicSettings,
+    location,
+    navigate,
+  ]);
+
+  // Initial loading state
+  if (isLoadingAuth || isLoadingPublicSettings) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#1a2c42]">
+        <div className="text-white text-lg">Loading…</div>
       </div>
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+  // If auth required, we let the router render so "/Auth" can display.
+  // For other routes, the effect above will push to "/Auth".
+  if (authError?.type === "user_not_registered") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1a2c42] p-4">
+        <div className="max-w-md w-full bg-white/10 border border-white/20 rounded-lg p-6 text-white">
+          <h1 className="text-xl font-semibold mb-2">Account not registered</h1>
+          <p className="text-white/80 mb-4">
+            Your account is not registered for this app yet.
+          </p>
+          <button
+            className="px-4 py-2 rounded bg-white/20 hover:bg-white/30 transition"
+            onClick={retrySession}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // Render the main app
+  // Normal app routing
   return (
-    <Routes>
-      <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
-      } />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
-      ))}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <>
+      <NavigationTracker />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {Object.entries(pagesConfig).map(([path, config]) => (
+            <Route
+              key={path}
+              path={`/${path}`}
+              element={config.element}
+            />
+          ))}
+          {/* Default route: send to Home if exists */}
+          <Route
+            index
+            element={
+              pagesConfig?.Home?.element ?? (
+                <div className="p-6 text-white">Home not configured.</div>
+              )
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </>
   );
-};
-
-
-function App() {
-
-  return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
-  )
 }
 
-export default App
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClientInstance}>
+      <Router>
+        <AuthenticatedApp />
+      </Router>
+      <Toaster />
+    </QueryClientProvider>
+  );
+}
