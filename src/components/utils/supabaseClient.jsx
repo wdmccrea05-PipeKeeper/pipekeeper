@@ -146,11 +146,18 @@ export async function getSupabaseAsync() {
 
   // Otherwise wait for async loading from backend
   _loadingPromise = (async () => {
-    // Wait up to 5 seconds for config to load from backend
-    for (let i = 0; i < 25; i++) {
+    console.log("[SUPABASE_ASYNC] Starting wait loop for backend config...");
+    // Wait up to 10 seconds for config to load from backend
+    for (let i = 0; i < 50; i++) {
       const currentUrl = getSUPABASE_URL();
       const currentKey = getSUPABASE_ANON_KEY();
+      
+      if (i % 5 === 0) {
+        console.log(`[SUPABASE_ASYNC] Check ${i/5}s: url=${currentUrl ? '✓' : '✗'} key=${currentKey ? '✓' : '✗'}`);
+      }
+      
       if (currentUrl && currentKey && !isBadValue(currentUrl) && !isBadValue(currentKey)) {
+        console.log("[SUPABASE_ASYNC] Config found at iteration", i);
         break;
       }
       await new Promise(r => setTimeout(r, 200));
@@ -159,8 +166,15 @@ export async function getSupabaseAsync() {
     const finalUrl = getSUPABASE_URL();
     const finalKey = getSUPABASE_ANON_KEY();
     
+    console.log("[SUPABASE_ASYNC] Final check:", {
+      hasUrl: !!finalUrl,
+      hasKey: !!finalKey,
+      isBadUrl: isBadValue(finalUrl),
+      isBadKey: isBadValue(finalKey)
+    });
+    
     if (!finalUrl || !finalKey || isBadValue(finalUrl) || isBadValue(finalKey)) {
-      console.error("[SUPABASE] Failed to load config - using fallback");
+      console.error("[SUPABASE] Failed to load config after 10s wait");
       throw new Error("Supabase configuration not available (missing URL or key)");
     }
 
