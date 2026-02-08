@@ -34,29 +34,39 @@ function isBadValue(v) {
   return false;
 }
 
-// Accept both VITE_* and non-VITE names
-export const SUPABASE_URL =
-  normalize(readEnv("VITE_SUPABASE_URL")) ||
-  normalize(readEnv("SUPABASE_URL"));
+// Try static env vars first (from Vite)
+let staticURL = normalize(readEnv("VITE_SUPABASE_URL")) || normalize(readEnv("SUPABASE_URL"));
+let staticKey = normalize(readEnv("VITE_SUPABASE_ANON_KEY")) || normalize(readEnv("SUPABASE_ANON_KEY"));
 
-export const SUPABASE_ANON_KEY =
-  normalize(readEnv("VITE_SUPABASE_ANON_KEY")) ||
-  normalize(readEnv("SUPABASE_ANON_KEY"));
+// Fallback: these will be set dynamically if static injection fails
+export let SUPABASE_URL = staticURL;
+export let SUPABASE_ANON_KEY = staticKey;
 
 // ✅ This export is REQUIRED because parts of the app import SUPABASE_CONFIG
-export const SUPABASE_CONFIG = {
+export let SUPABASE_CONFIG = {
   url: SUPABASE_URL,
   anonKey: SUPABASE_ANON_KEY,
 };
 
-export const SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
+export let SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
 
-// Debug logging (remove after testing)
-if (typeof window !== 'undefined') {
-  console.log('[SUPABASE_DEBUG] import.meta.env keys:', Object.keys(import.meta.env).filter(k => k.includes('SUPABASE')));
-  console.log('[SUPABASE_DEBUG] import.meta.env.VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? '✓ present' : '✗ missing');
-  console.log('[SUPABASE_DEBUG] import.meta.env.VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✓ present' : '✗ missing');
-  console.log('[SUPABASE_DEBUG] window.__ENV__:', typeof window.__ENV__ !== 'undefined' ? Object.keys(window.__ENV__).filter(k => k.includes('SUPABASE')) : 'not available');
+// If static vars not available, try to fetch from backend
+if (!SUPABASE_CONFIG_OK && typeof window !== 'undefined') {
+  (async () => {
+    try {
+      const { base44 } = await import('@/api/base44Client');
+      const res = await base44.functions.invoke('getSupabaseConfig');
+      if (res.data?.url && res.data?.anonKey) {
+        SUPABASE_URL = res.data.url;
+        SUPABASE_ANON_KEY = res.data.anonKey;
+        SUPABASE_CONFIG = { url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY };
+        SUPABASE_CONFIG_OK = true;
+        console.log('[SUPABASE] Loaded from backend');
+      }
+    } catch (e) {
+      console.warn('[SUPABASE] Backend fetch failed:', e?.message);
+    }
+  })();
 }
 
 let _supabase = null;
