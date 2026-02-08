@@ -2,19 +2,15 @@ import { createClient } from "@supabase/supabase-js";
 
 function readEnv(key) {
   try {
-    // Vite/Build-time env
     if (typeof import.meta !== "undefined" && import.meta.env && key in import.meta.env) {
       return (import.meta.env[key] ?? "").toString();
     }
   } catch (_) {}
-
   try {
-    // Some platforms inject at runtime
     if (typeof window !== "undefined" && window.__ENV__ && key in window.__ENV__) {
       return (window.__ENV__[key] ?? "").toString();
     }
   } catch (_) {}
-
   return "";
 }
 
@@ -33,28 +29,22 @@ function isBadValue(v) {
   return false;
 }
 
-// Accept both VITE_* and non-VITE names to match Base44 env behavior
-const SUPABASE_URL =
+// Accept both VITE_* and non-VITE names
+export const SUPABASE_URL =
   normalize(readEnv("VITE_SUPABASE_URL")) ||
   normalize(readEnv("SUPABASE_URL"));
 
-const SUPABASE_ANON_KEY =
+export const SUPABASE_ANON_KEY =
   normalize(readEnv("VITE_SUPABASE_ANON_KEY")) ||
   normalize(readEnv("SUPABASE_ANON_KEY"));
 
-// Strict: never bootstrap with garbage values
-export const SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
-
-// Debug config (no secrets leaked)
+// ✅ This export is REQUIRED because parts of the app import SUPABASE_CONFIG
 export const SUPABASE_CONFIG = {
-  source: "environment",
-  host: SUPABASE_URL ? SUPABASE_URL.replace(/^https?:\/\//, "").split("/")[0] : "missing",
-  ref: SUPABASE_URL ? SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "invalid" : "missing",
-  keyLength: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.length : 0,
-  urlPresent: !!SUPABASE_URL,
-  keyPresent: !!SUPABASE_ANON_KEY,
-  validated: SUPABASE_CONFIG_OK,
+  url: SUPABASE_URL,
+  anonKey: SUPABASE_ANON_KEY,
 };
+
+export const SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
 
 let _supabase = null;
 
@@ -62,11 +52,10 @@ export function getSupabase() {
   if (_supabase) return _supabase;
 
   if (!SUPABASE_CONFIG_OK) {
-    // Log ONLY whether present/missing, never print secrets.
     console.warn(
       "[SUPABASE] Configuration incomplete:",
-      `URL: ${SUPABASE_URL ? "✓ present" : "✗ missing"}`,
-      `KEY: ${SUPABASE_ANON_KEY ? "✓ present" : "✗ missing"}`
+      `URL: ${SUPABASE_URL ? "✓ present" : "✗ missing VITE_SUPABASE_URL"}`,
+      `KEY: ${SUPABASE_ANON_KEY ? "✓ present" : "✗ missing VITE_SUPABASE_ANON_KEY"}`
     );
     return null;
   }
@@ -79,9 +68,7 @@ export function getSupabase() {
       storageKey: "pipekeeper-auth",
     },
     global: {
-      headers: {
-        "X-Client-Info": "pipekeeper-web",
-      },
+      headers: { "X-Client-Info": "pipekeeper-web" },
     },
   });
 
@@ -89,43 +76,43 @@ export function getSupabase() {
   return _supabase;
 }
 
-// Keep backward-compatible named export used across codebase
+// Back-compat named export
 export const supabase = getSupabase();
 
-// Helper: call this before any supabase.auth usage when you want a hard failure message
 export function requireSupabase() {
   const client = getSupabase();
-  if (!client) {
-    throw new Error("Supabase is not configured. Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.");
-  }
+  if (!client) throw new Error("Supabase not configured (missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).");
   return client;
 }
 
-// Health check helpers
+export function buildSupabaseHeaders() {
+  const h = new Headers();
+  h.set("apikey", SUPABASE_ANON_KEY);
+  h.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
+  h.set("Content-Type", "application/json");
+  return h;
+}
+
 export async function pingAuthSettings() {
-  if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Config missing" };
   try {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Supabase not configured" };
+    const url = `${SUPABASE_URL}/auth/v1/settings`;
+    const response = await fetch(url, { method: "GET", headers: buildSupabaseHeaders() });
     const text = await response.text();
     return { status: response.status, body: text.slice(0, 200) };
   } catch (e) {
-    return { status: 0, body: e.message };
+    return { status: 0, body: e?.message || String(e) };
   }
 }
 
 export async function pingRest() {
-  if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Config missing" };
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    if (!SUPABASE_CONFIG_OK) return { status: 0, body: "Supabase not configured" };
+    const url = `${SUPABASE_URL}/rest/v1/`;
+    const response = await fetch(url, { method: "GET", headers: buildSupabaseHeaders() });
     const text = await response.text();
     return { status: response.status, body: text.slice(0, 200) };
   } catch (e) {
-    return { status: 0, body: e.message };
+    return { status: 0, body: e?.message || String(e) };
   }
 }
