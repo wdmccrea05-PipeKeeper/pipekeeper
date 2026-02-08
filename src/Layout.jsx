@@ -48,6 +48,16 @@ if (typeof window !== "undefined") {
     supabaseHost: (import.meta.env.VITE_SUPABASE_URL || "").replace(/^https?:\/\//, "").split("/")[0]
   });
   console.log("[LAYOUT] version 2026-02-08-login-v2");
+  
+  // Debug dynamic config loading
+  setTimeout(() => {
+    console.log("[LAYOUT_DEBUG] Delayed check:", {
+      SUPABASE_CONFIG_OK,
+      hasUrl: !!getSUPABASE_URL(),
+      hasKey: !!getSUPABASE_ANON_KEY(),
+      url: getSUPABASE_URL()?.substring(0, 40)
+    });
+  }, 500);
 }
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
