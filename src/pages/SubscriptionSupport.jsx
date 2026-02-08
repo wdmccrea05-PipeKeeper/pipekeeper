@@ -90,10 +90,16 @@ export default function SubscriptionSupport() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-[#E0D8C8]">Subscription Support</h1>
-        <Button onClick={() => { loadHealth(); loadFunnel(); loadDrift(); }} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={exportUsers} disabled={loading} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export Users CSV
+          </Button>
+          <Button onClick={() => { loadHealth(); loadFunnel(); loadDrift(); }} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Integration Health */}
