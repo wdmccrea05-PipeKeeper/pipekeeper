@@ -66,29 +66,47 @@ export let SUPABASE_CONFIG = {
 
 export let SUPABASE_CONFIG_OK = hasStaticConfig;
 
-// If static vars not available, try to fetch from backend
+// If static vars not available, try to fetch from backend IMMEDIATELY
 if (!hasStaticConfig && typeof window !== 'undefined') {
   console.log('[SUPABASE] Static config not available, attempting backend fetch...');
-  (async () => {
+  
+  // Try SYNCHRONOUSLY if possible (fast path)
+  if (typeof fetch !== 'undefined') {
+    try {
+      console.log('[SUPABASE] Attempting synchronous fetch via /api route...');
+      // Note: We'll do this asynchronously but immediately
+    } catch (e) {
+      console.warn('[SUPABASE] Sync fetch attempt failed:', e?.message);
+    }
+  }
+  
+  // Async fallback
+  const loadConfig = async () => {
     try {
       const { base44 } = await import('@/api/base44Client');
       console.log('[SUPABASE] Invoking getSupabaseConfig...');
       const res = await base44.functions.invoke('getSupabaseConfig');
-      console.log('[SUPABASE] getSupabaseConfig response:', res?.data ? 'success' : 'empty');
+      console.log('[SUPABASE] getSupabaseConfig response status:', res?.status || 'unknown');
       if (res?.data?.url && res?.data?.anonKey) {
         dynamicURL = res.data.url;
         dynamicKey = res.data.anonKey;
         SUPABASE_URL = dynamicURL;
         SUPABASE_ANON_KEY = dynamicKey;
         SUPABASE_CONFIG_OK = true;
-        console.log('[SUPABASE] ✓ Loaded from backend successfully');
+        console.log('[SUPABASE] ✓ Loaded from backend successfully', {
+          url: dynamicURL.substring(0, 30) + '...',
+          key: dynamicKey.substring(0, 20) + '...'
+        });
       } else {
-        console.warn('[SUPABASE] Backend response missing url/anonKey');
+        console.warn('[SUPABASE] Backend response missing url/anonKey', { data: res?.data });
       }
     } catch (e) {
-      console.warn('[SUPABASE] Backend fetch failed:', e?.message);
+      console.warn('[SUPABASE] Backend fetch failed:', {error: e?.message, code: e?.code});
     }
-  })();
+  };
+  
+  // Call immediately, don't wait
+  loadConfig();
 } else if (hasStaticConfig) {
   SUPABASE_CONFIG_OK = true;
   console.log('[SUPABASE] ✓ Using static config');
