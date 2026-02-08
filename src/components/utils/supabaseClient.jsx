@@ -45,6 +45,17 @@ const SUPABASE_ANON_KEY =
 // Strict: never bootstrap with garbage values
 export const SUPABASE_CONFIG_OK = !isBadValue(SUPABASE_URL) && !isBadValue(SUPABASE_ANON_KEY);
 
+// Debug config (no secrets leaked)
+export const SUPABASE_CONFIG = {
+  source: "environment",
+  host: SUPABASE_URL ? SUPABASE_URL.replace(/^https?:\/\//, "").split("/")[0] : "missing",
+  ref: SUPABASE_URL ? SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "invalid" : "missing",
+  keyLength: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.length : 0,
+  urlPresent: !!SUPABASE_URL,
+  keyPresent: !!SUPABASE_ANON_KEY,
+  validated: SUPABASE_CONFIG_OK,
+};
+
 let _supabase = null;
 
 export function getSupabase() {
