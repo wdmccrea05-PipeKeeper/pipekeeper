@@ -97,7 +97,12 @@ export function useCurrentUser() {
         setEffectiveTier(tier);
       }
 
-      setLoading(false);
+        setLoading(false);
+      } catch (e) {
+        console.error("[ENTITLEMENT_HOOK] run() error:", e?.message);
+        // If Supabase fails, still complete loading but show no user
+        setLoading(false);
+      }
     }
 
     run();
