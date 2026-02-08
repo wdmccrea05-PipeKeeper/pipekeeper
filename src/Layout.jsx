@@ -13,7 +13,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
-import { SUPABASE_CONFIG_OK } from "@/components/utils/supabaseClient";
+import { SUPABASE_CONFIG_OK, getSupabase } from "@/components/utils/supabaseClient";
 import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
