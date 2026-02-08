@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Try VITE_* first, then fallback to non-VITE variants
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
 
 // Boolean flags for config validation
 export const SUPABASE_URL_PRESENT = !!SUPABASE_URL;
@@ -31,21 +32,17 @@ if (!SUPABASE_CONFIG_OK) {
   );
 }
 
-// CRITICAL: Always create a client, even with missing env vars
-// If env vars are invalid, createClient will handle gracefully
-// The app will check SUPABASE_CONFIG_OK before calling auth methods
-export const supabase = createClient(
-  SUPABASE_URL || "https://placeholder.supabase.co",
-  SUPABASE_ANON_KEY || "placeholder-key",
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storageKey: "pipekeeper-auth",
-    },
-  }
-);
+// Only create client if config is valid; otherwise null to force Configuration Error screen
+export const supabase = SUPABASE_CONFIG_OK
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "pipekeeper-auth",
+      },
+    })
+  : null;
 
 // Health check helpers
 export async function pingAuthSettings() {
