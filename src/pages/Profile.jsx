@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/components/utils/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { toast } from "sonner";
@@ -244,10 +245,18 @@ export default function ProfilePage() {
 
   async function handleLogout() {
    try {
-     await base44.auth.logout("/Auth");
+     const { error } = await supabase.auth.signOut();
+     if (error) console.error("SignOut error:", error);
+     
+     // Clear cache
+     queryClient.removeQueries();
+     localStorage.removeItem("pk_stripe_sync_last_" + (user?.email || "unknown"));
+     
+     // Redirect
+     window.location.href = "/Auth?loggedOut=1";
    } catch (err) {
      console.error("[Profile] Logout error:", err);
-     window.location.href = "/Auth";
+     window.location.href = "/Auth?loggedOut=1";
    }
   }
 
