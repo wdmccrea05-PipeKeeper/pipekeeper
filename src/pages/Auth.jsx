@@ -1,99 +1,40 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/components/auth/AuthContext";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getSupabase } from "@/components/utils/supabaseClient";
 
 export default function Auth() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, register, isAuthenticated, authError, retrySession } = useAuth();
 
-  const [mode, setMode] = useState("login"); // "login" | "register"
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [busy, setBusy] = useState(false);
-  const [localError, setLocalError] = useState("");
-
-  // Where to go after auth
-  const fromPath = useMemo(() => {
-    const from = location.state?.from;
-    return typeof from?.pathname === "string"
-      ? (from.pathname === "/Auth" ? "/" : from.pathname)
-      : "/";
-  }, [location.state]);
-
-  // If already authenticated, go back where they were headed
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(fromPath, { replace: true });
-    }
-  }, [isAuthenticated, fromPath, navigate]);
-
-  // NOTE: Supabase config being missing in Base44 preview can happen.
-  // Don't block login UI because of it; just show a warning.
-  const supabaseConfigWarning = useMemo(() => {
-    try {
-      // This returns null if not ready; that's fine.
-      const sb = getSupabase();
-      return sb ? "" : "Backend configuration is still loading (Supabase not ready yet).";
-    } catch {
-      return "Backend configuration is still loading (Supabase not ready yet).";
-    }
-  }, []);
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setLocalError("");
-    setBusy(true);
-
-    try {
-      if (!email || !password) {
-        setLocalError("Please enter your email and password.");
-        setBusy(false);
-        return;
-      }
-
-      console.log('Auth form submit:', mode, email);
-
-      if (mode === "login") {
-        const res = await login(email.trim(), password);
-        console.log('Login result:', res);
-        if (!res?.ok) {
-          setLocalError(res?.message || "Login failed.");
-          setBusy(false);
-          return;
+    // Check if already authenticated
+    const checkAuth = async () => {
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) {
+          navigate("/", { replace: true });
         }
-      } else {
-        const res = await register(email.trim(), password);
-        console.log('Register result:', res);
-        if (!res?.ok) {
-          setLocalError(res?.message || "Registration failed.");
-          setBusy(false);
-          return;
-        }
+      } catch (err) {
+        console.log('Auth check:', err?.message);
       }
+    };
+    checkAuth();
+  }, [navigate]);
 
-      // Session refresh; then redirect
-      console.log('Auth successful, retrying session');
-      await retrySession();
-      console.log('Navigating to:', fromPath);
-      navigate(fromPath, { replace: true });
+  const handleLogin = async () => {
+    try {
+      // Redirect to Base44's login page
+      await base44.auth.redirectToLogin(window.location.pathname);
     } catch (err) {
-      console.error('Auth submit error:', err);
-      setLocalError(err?.message || "Authentication failed.");
-      setBusy(false);
+      console.error('Login redirect failed:', err);
     }
   };
 
