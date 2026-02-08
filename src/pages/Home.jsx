@@ -100,7 +100,7 @@ export default function HomePage() {
   });
 
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
-    queryKey: ['tobacco-blends', user?.email],
+    queryKey: ['tobacco-blends'],
     queryFn: async () => {
       try {
         const result = await base44.entities.TobaccoBlend.list();
@@ -110,8 +110,6 @@ export default function HomePage() {
         return [];
       }
     },
-    enabled: !!user?.email,
-    staleTime: Infinity,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
