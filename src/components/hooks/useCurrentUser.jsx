@@ -52,17 +52,19 @@ export function useCurrentUser() {
         url.searchParams.set("email", userEmail);
         url.searchParams.set("ts", String(Date.now()));
 
-        const apiKey = import.meta.env.VITE_ENTITLEMENT_API_KEY || "";
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const r = await fetch(url.toString(), {
           method: "GET",
-          headers: { 
-            Accept: "application/json",
-            "x-api-key": apiKey,
-          },
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
+
         if (!r.ok) {
-          console.warn("[ENTITLEMENT] API returned", r.status);
+          console.warn("[ENTITLEMENT] API returned", r.status, "- defaulting to free");
           setEntitlementTier("free");
         } else {
           const text = await r.text();
@@ -72,7 +74,7 @@ export function useCurrentUser() {
           console.log("[ENTITLEMENT] tier", tier);
         }
       } catch (e) {
-        console.warn("[ENTITLEMENT] fetch failed (non-fatal)", e);
+        console.warn("[ENTITLEMENT] fetch failed (non-fatal) - defaulting to free:", e.message);
         setEntitlementTier("free");
       }
 
