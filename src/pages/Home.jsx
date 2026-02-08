@@ -148,6 +148,7 @@ export default function HomePage() {
     },
     staleTime: 30000,
     gcTime: 60000,
+    enabled: true,
   });
 
   const createOnboardingMutation = useMutation({
