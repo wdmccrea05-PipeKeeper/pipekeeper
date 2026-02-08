@@ -101,26 +101,19 @@ export default function HomePage() {
     staleTime: Infinity,
   });
 
-  // STANDARDIZED KEY: ["tobacco-blends", user?.email]
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 10000);
-        console.log('[Home] Blends loaded:', result?.length, 'result type:', typeof result, 'is array:', Array.isArray(result));
-        if (!Array.isArray(result)) {
-          console.error('[Home] Blend result is not an array!', result);
-        }
+        const result = await base44.entities.TobaccoBlend.list();
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Blends load error:', err?.message, err);
+        console.error('[Home] Blends load error:', err);
         return [];
       }
     },
     enabled: !!user?.email,
-    retry: 1,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
