@@ -231,6 +231,7 @@ export default function Layout({ children, currentPageName }) {
   const [showQuickAccess, setShowQuickAccess] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
 
