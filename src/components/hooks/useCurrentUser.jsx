@@ -1,77 +1,77 @@
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/components/auth";
+import { useEffect, useState } from "react";
 
-console.log("[BUILD_MARKER] entitlement-hook-v2");
-console.log("[ENTITLEMENT_HOOK_V2_LOADED]");
-
+// Point this to your Cloudflare Worker endpoint (recommended):
+// VITE_ENTITLEMENT_URL=https://entitlement.pipekeeper.app/api/entitlement
 const ENTITLEMENT_URL = import.meta.env.VITE_ENTITLEMENT_URL;
-const ENTITLEMENT_API_KEY = import.meta.env.VITE_ENTITLEMENT_API_KEY;
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
-
-async function fetchEntitlementTier(email) {
-  if (!ENTITLEMENT_URL || !ENTITLEMENT_API_KEY) return "free";
-
-  const res = await fetch(
-    `${ENTITLEMENT_URL}?email=${encodeURIComponent(email)}`,
-    { headers: { "x-entitlement-key": ENTITLEMENT_API_KEY } }
-  );
-
-  if (!res.ok) return "free";
-  const json = await res.json();
-
-  const tier = String(json?.entitlement_tier || "free").trim().toLowerCase();
-  if (tier === "pro" || tier === "premium") return tier;
-  return "free";
+function unwrapPossibleDoubleJson(value) {
+  // Sometimes upstream returns JSON-as-a-string.  Keep parsing until we get an object.
+  let data = value;
+  try {
+    while (typeof data === "string") data = JSON.parse(data);
+  } catch {
+    // leave as-is
+  }
+  return data;
 }
 
-export function useCurrentUser() {
-  const q = useQuery({
-    queryKey: ["current-user"],
-    queryFn: async () => {
-      // ONLY auth.me(), NO User entity calls of any kind
-      const me = await base44.auth.me();
-      if (!me?.email) return null;
+export default function useCurrentUser() {
+  const { user, loading: authLoading } = useAuth();
+  const [entitlement, setEntitlement] = useState("free");
+  const [hasPro, setHasPro] = useState(false);
 
-      const email = normEmail(me.email);
-      const entitlement_tier = await fetchEntitlementTier(email);
+  useEffect(() => {
+    let cancelled = false;
 
-      return { ...me, entitlement_tier };
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    retry: false,
-  });
+    async function checkEntitlement() {
+      if (!user?.email || !ENTITLEMENT_URL) return;
 
-  const user = q.data;
+      try {
+        // Cache-bust to avoid any edge/browser caching weirdness.
+        const url = new URL(ENTITLEMENT_URL);
+        url.searchParams.set("email", String(user.email).trim().toLowerCase());
+        url.searchParams.set("_ts", String(Date.now()));
 
-  const tier = String(user?.entitlement_tier || "free").trim().toLowerCase();
-  const hasPro = tier === "pro";
-  const hasPaidAccess = tier === "pro" || tier === "premium";
+        // IMPORTANT: no API key from the browser.
+        // The Cloudflare Worker should add x-entitlement-key server-side.
+        const res = await fetch(url.toString(), {
+          method: "GET",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        });
 
-  // IMPORTANT: always booleans
-  const safeHasPro = !!hasPro;
-  const safeHasPaidAccess = !!hasPaidAccess;
+        const raw = await res.text();
+        const parsed = unwrapPossibleDoubleJson(raw);
 
-  if (user?.email) {
-    console.log("[ENTITLEMENT_CHECK]", {
-      email: user.email,
-      entitlement_tier: user.entitlement_tier,
-      hasPro: safeHasPro,
-      hasPaidAccess: safeHasPaidAccess,
-    });
-  }
+        const tier =
+          (parsed && typeof parsed === "object" && parsed.entitlement_tier) ||
+          "free";
+
+        const isPro = tier === "pro" || tier === "premium";
+
+        if (!cancelled) {
+          setEntitlement(tier);
+          setHasPro(isPro);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setEntitlement("free");
+          setHasPro(false);
+        }
+      }
+    }
+
+    checkEntitlement();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.email]);
 
   return {
     user,
-    isLoading: q.isLoading,
-    error: q.error,
-    hasPro: safeHasPro,
-    hasPaidAccess: safeHasPaidAccess,
-    isAdmin: user?.role === "admin",
-    refetch: q.refetch,
+    entitlement,
+    hasPro,
+    loading: authLoading,
   };
 }
