@@ -114,9 +114,13 @@ export default function HomePage() {
     queryFn: async () => {
       try {
         const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 10000);
+        console.log('[Home] Blends loaded:', result?.length, 'result type:', typeof result, 'is array:', Array.isArray(result));
+        if (!Array.isArray(result)) {
+          console.error('[Home] Blend result is not an array!', result);
+        }
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Blends load error:', err);
+        console.error('[Home] Blends load error:', err?.message, err);
         return [];
       }
     },
