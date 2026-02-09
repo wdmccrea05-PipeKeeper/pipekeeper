@@ -4,11 +4,10 @@
 
 import React from 'react';
 import { Sparkles, Crown } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { ui } from '@/components/i18n/ui';
 import { hasPremiumAccess } from '@/components/utils/premiumAccess';
 
 export default function PremiumActiveIndicator({ user, subscription }) {
-  const { t } = useTranslation();
   
   try {
     // Check if user has premium access (trial or paid)
@@ -33,12 +32,12 @@ export default function PremiumActiveIndicator({ user, subscription }) {
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-[#E0D8C8]">
-              {t("subscription.premiumActive")}
+              {ui("subscription.premiumActive")}
             </p>
             <p className="text-xs text-[#E0D8C8]/70">
               {isTrialUser 
-                ? t("subscription.premiumActiveSubtextTrial")
-                : t("subscription.premiumActiveSubtextPaid")}
+                ? ui("subscription.premiumActiveSubtextTrial")
+                : ui("subscription.premiumActiveSubtextPaid")}
             </p>
           </div>
         </div>

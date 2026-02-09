@@ -341,7 +341,7 @@ export default function HomePage() {
           </motion.div>
 
           {/* Premium Active Indicator */}
-          <PremiumActiveIndicator user={user} subscription={user?.subscription} />
+          <PremiumActiveIndicator user={user} subscription={null} />
 
           {(safePipes.length < 3 || safeBlends.length < 3) && (
             <motion.div
