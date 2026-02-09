@@ -68,40 +68,20 @@ export let SUPABASE_CONFIG_OK = hasStaticConfig;
 
 // If static vars not available, try to fetch from backend IMMEDIATELY
 if (!hasStaticConfig && typeof window !== 'undefined') {
-  console.log('[SUPABASE] Static config not available, attempting backend fetch...');
-  
-  // Try SYNCHRONOUSLY if possible (fast path)
-  if (typeof fetch !== 'undefined') {
-    try {
-      console.log('[SUPABASE] Attempting synchronous fetch via /api route...');
-      // Note: We'll do this asynchronously but immediately
-    } catch (e) {
-      console.warn('[SUPABASE] Sync fetch attempt failed:', e?.message);
-    }
-  }
-  
   // Async fallback
   const loadConfig = async () => {
     try {
       const { base44 } = await import('@/api/base44Client');
-      console.log('[SUPABASE] Invoking getSupabaseConfig...');
       const res = await base44.functions.invoke('getSupabaseConfig');
-      console.log('[SUPABASE] getSupabaseConfig response status:', res?.status || 'unknown');
       if (res?.data?.url && res?.data?.anonKey) {
         dynamicURL = res.data.url;
         dynamicKey = res.data.anonKey;
         SUPABASE_URL = dynamicURL;
         SUPABASE_ANON_KEY = dynamicKey;
         SUPABASE_CONFIG_OK = true;
-        console.log('[SUPABASE] ✓ Loaded from backend successfully', {
-          url: dynamicURL.substring(0, 30) + '...',
-          key: dynamicKey.substring(0, 20) + '...'
-        });
-      } else {
-        console.warn('[SUPABASE] Backend response missing url/anonKey', { data: res?.data });
       }
     } catch (e) {
-      console.warn('[SUPABASE] Backend fetch failed:', {error: e?.message, code: e?.code});
+      // Config load failed (silent)
     }
   };
   
@@ -109,7 +89,6 @@ if (!hasStaticConfig && typeof window !== 'undefined') {
   loadConfig();
 } else if (hasStaticConfig) {
   SUPABASE_CONFIG_OK = true;
-  console.log('[SUPABASE] ✓ Using static config');
 }
 
 let _supabase = null;
@@ -124,7 +103,6 @@ function initAsyncConfig() {
   const loadConfig = async () => {
     try {
       const { base44 } = await import('@/api/base44Client');
-      console.log('[SUPABASE] Async config loader: invoking getSupabaseConfig...');
       const res = await base44.functions.invoke('getSupabaseConfig');
       if (res?.data?.url && res?.data?.anonKey) {
         dynamicURL = res.data.url;
@@ -132,10 +110,9 @@ function initAsyncConfig() {
         SUPABASE_URL = dynamicURL;
         SUPABASE_ANON_KEY = dynamicKey;
         SUPABASE_CONFIG_OK = true;
-        console.log('[SUPABASE] Async config loaded successfully');
       }
     } catch (e) {
-      console.warn('[SUPABASE] Async config failed:', e?.message);
+      // Config load failed (silent)
     }
   };
   
@@ -172,24 +149,17 @@ export async function getSupabaseAsync() {
       },
     });
     SUPABASE_CONFIG_OK = true;
-    console.log("[SUPABASE_READY] true (immediate)");
     return _supabase;
   }
 
   // Otherwise wait for async loading from backend
   _loadingPromise = (async () => {
-    console.log("[SUPABASE_ASYNC] Starting wait loop for backend config...");
     // Wait up to 10 seconds for config to load from backend
     for (let i = 0; i < 50; i++) {
       const currentUrl = getSUPABASE_URL();
       const currentKey = getSUPABASE_ANON_KEY();
       
-      if (i % 5 === 0) {
-        console.log(`[SUPABASE_ASYNC] Check ${i/5}s: url=${currentUrl ? '✓' : '✗'} key=${currentKey ? '✓' : '✗'}`);
-      }
-      
       if (currentUrl && currentKey && !isBadValue(currentUrl) && !isBadValue(currentKey)) {
-        console.log("[SUPABASE_ASYNC] Config found at iteration", i);
         break;
       }
       await new Promise(r => setTimeout(r, 200));
@@ -198,15 +168,7 @@ export async function getSupabaseAsync() {
     const finalUrl = getSUPABASE_URL();
     const finalKey = getSUPABASE_ANON_KEY();
     
-    console.log("[SUPABASE_ASYNC] Final check:", {
-      hasUrl: !!finalUrl,
-      hasKey: !!finalKey,
-      isBadUrl: isBadValue(finalUrl),
-      isBadKey: isBadValue(finalKey)
-    });
-    
     if (!finalUrl || !finalKey || isBadValue(finalUrl) || isBadValue(finalKey)) {
-      console.error("[SUPABASE] Failed to load config after 10s wait");
       throw new Error("Supabase configuration not available (missing URL or key)");
     }
 
@@ -223,7 +185,6 @@ export async function getSupabaseAsync() {
     });
 
     SUPABASE_CONFIG_OK = true;
-    console.log("[SUPABASE_READY] true (async)");
     return _supabase;
   })();
 
@@ -237,12 +198,6 @@ export function getSupabase() {
   const key = getSUPABASE_ANON_KEY();
 
   if (!url || !key || isBadValue(url) || isBadValue(key)) {
-    console.warn(
-      "[SUPABASE] Configuration incomplete:",
-      `URL: ${url && !isBadValue(url) ? "✓ present" : "✗ missing"}`,
-      `KEY: ${key && !isBadValue(key) ? "✓ present" : "✗ missing"}`,
-      {url: url?.substring(0, 30), SUPABASE_CONFIG_OK}
-    );
     return null;
   }
 
@@ -258,7 +213,6 @@ export function getSupabase() {
     },
   });
 
-  console.log("[SUPABASE_READY] true");
   return _supabase;
 }
 
@@ -268,7 +222,6 @@ export const supabase = getSupabase();
 export function requireSupabase() {
   const client = getSupabase();
   if (!client) {
-    console.error("[SUPABASE] requireSupabase called but client is null", { SUPABASE_CONFIG_OK, hasUrl: !!getSUPABASE_URL(), hasKey: !!getSUPABASE_ANON_KEY() });
     throw new Error("Supabase not configured (missing URL or key)");
   }
   return client;
