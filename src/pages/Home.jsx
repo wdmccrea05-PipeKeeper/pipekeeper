@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from "react-i18next";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
@@ -37,7 +36,6 @@ import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndic
 const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
 
 export default function HomePage() {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -244,9 +242,9 @@ export default function HomePage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">{t("auth.loginPrompt")}</p>
-            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Login Required</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">Please sign in to continue</p>
+            <Button onClick={() => base44.auth.redirectToLogin()}>Sign In</Button>
           </CardContent>
         </Card>
       </div>
