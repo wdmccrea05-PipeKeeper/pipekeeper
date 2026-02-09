@@ -254,13 +254,6 @@ export default function HomePage() {
     setShowTestingNotice(false);
   };
 
-  // Redirect to auth if not authenticated
-  useEffect(() => {
-    if (!userLoading && !user) {
-      navigate(createPageUrl("Auth"), { replace: true });
-    }
-  }, [user, userLoading, navigate]);
-
   // Show loading state
   if (userLoading) {
     return (
@@ -273,7 +266,7 @@ export default function HomePage() {
     );
   }
 
-  // Don't render until we have a user
+  // Don't render if no user (Layout will redirect to Auth)
   if (!user) {
     return null;
   }
