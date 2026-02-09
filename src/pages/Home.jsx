@@ -429,7 +429,7 @@ export default function HomePage() {
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title={t("common.refresh")}
+                          title="Refresh"
                         >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
@@ -692,10 +692,10 @@ export default function HomePage() {
                 <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
               </div>
               <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
-                {t("home.welcomeToCollection")}
+                Welcome to Your Collection
               </h2>
               <p className="text-sm sm:text-base text-[#e8d5b7]/70 mb-6 sm:mb-8 max-w-md mx-auto px-2">
-                {t("home.emptyStateDesc")}
+                Start building your pipe and tobacco collection
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
                 <a href={createPageUrl('Pipes')} className="w-full sm:w-auto">
