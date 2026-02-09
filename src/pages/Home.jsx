@@ -252,8 +252,10 @@ export default function HomePage() {
     setShowTestingNotice(false);
   };
 
-  // Show minimal loading for auth check (after all hooks)
-  if (userLoading) {
+  // Moved to end - show minimal loading for auth check (after all hooks and early returns removed)
+  const showLoading = userLoading;
+
+  if (showLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <div className="text-center">
