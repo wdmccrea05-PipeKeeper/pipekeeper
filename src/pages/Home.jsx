@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
@@ -37,6 +38,7 @@ const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
 
 export default function HomePage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
@@ -252,10 +254,15 @@ export default function HomePage() {
     setShowTestingNotice(false);
   };
 
-  // Moved to end - show minimal loading for auth check (after all hooks and early returns removed)
-  const showLoading = userLoading;
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!userLoading && !user) {
+      navigate(createPageUrl("Auth"), { replace: true });
+    }
+  }, [user, userLoading, navigate]);
 
-  if (showLoading) {
+  // Show loading state
+  if (userLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
         <div className="text-center">
@@ -264,6 +271,11 @@ export default function HomePage() {
         </div>
       </div>
     );
+  }
+
+  // Don't render until we have a user
+  if (!user) {
+    return null;
   }
 
   return (
