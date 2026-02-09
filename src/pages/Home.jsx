@@ -741,6 +741,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
+    </div>
 
       <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
         <DialogContent className="max-w-2xl">
