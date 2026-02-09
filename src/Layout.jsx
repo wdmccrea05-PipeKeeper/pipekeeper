@@ -569,7 +569,7 @@ export default function Layout({ children, currentPageName }) {
     if (!user && !userLoading && !PUBLIC_PAGES.has(resolvedPageName)) {
       navigate(createPageUrl("Auth"), { replace: true });
     }
-  }, [user, userLoading, resolvedPageName, PUBLIC_PAGES, navigate]);
+  }, [user, userLoading, resolvedPageName, navigate]);
 
   return (
     <GlobalErrorBoundary>
