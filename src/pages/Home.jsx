@@ -57,7 +57,6 @@ export default function HomePage() {
         const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
         return Array.isArray(results) ? results[0] || null : null;
       } catch (err) {
-        console.error('[Home] Onboarding load error:', err);
         return null;
       }
     },
@@ -75,7 +74,6 @@ export default function HomePage() {
         const result = await base44.entities.Pipe.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Pipes load error:', err);
         return [];
       }
     },
@@ -93,7 +91,6 @@ export default function HomePage() {
         const result = await base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Blends load error:', err);
         return [];
       }
     },
@@ -122,7 +119,6 @@ export default function HomePage() {
         const result = await base44.entities.CellarLog.filter({ created_by: user.email });
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        console.error('[Home] Cellar logs load error:', err);
         return [];
       }
     },
@@ -187,7 +183,6 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (err) {
-      console.error('[Home] Onboarding complete error:', err);
       setShowOnboarding(false);
     }
   };
@@ -208,7 +203,6 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (err) {
-      console.error('[Home] Onboarding skip error:', err);
       setShowOnboarding(false);
     }
   };
