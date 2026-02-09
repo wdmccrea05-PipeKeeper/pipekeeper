@@ -342,23 +342,22 @@ export default function HomePage() {
       ) : null}
 
       <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div 
-            className="text-center mb-8 sm:mb-12 px-2"
+            className="text-center mb-8 sm:mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
               {t("home.pageTitle")}
             </PkPageTitle>
-            <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
+            <p className="max-w-2xl mx-auto text-[#E0D8C8]/70 text-base">
               {t("home.pageSubtitle", { defaultValue: "Catalog, track, and enjoy your pipe and tobacco collection" })}
             </p>
           </motion.div>
 
           {/* Premium Active Indicator */}
-          <div className="max-w-4xl mx-auto px-4">
-            <PremiumActiveIndicator user={user} subscription={user?.subscription} />
-          </div>
+          <PremiumActiveIndicator user={user} subscription={user?.subscription} />
 
           {(safePipes.length < 3 || safeBlends.length < 3) && (
             <motion.div
