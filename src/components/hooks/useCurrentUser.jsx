@@ -91,9 +91,12 @@ export function useCurrentUser() {
 
         setLoading(false);
       } catch (e) {
-        console.error("[ENTITLEMENT_HOOK] run() error:", e?.message);
-        // If Supabase fails, still complete loading but show no user
+        console.error("[ENTITLEMENT_HOOK] Critical error:", e?.message);
+        // Prevent infinite loops - mark as complete even on error
+        if (!alive) return;
         setLoading(false);
+        setUser(null);
+        setEffectiveTier("free");
       }
     }
 

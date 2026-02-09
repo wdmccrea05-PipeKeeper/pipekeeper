@@ -564,11 +564,12 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // Only redirect if definitively unauthenticated
-  if (!user && !userLoading && !PUBLIC_PAGES.has(resolvedPageName)) {
-    navigate(createPageUrl("Auth"), { replace: true });
-    return null;
-  }
+  // Redirect to auth if unauthenticated (useEffect to avoid render phase state updates)
+  useEffect(() => {
+    if (!user && !userLoading && !PUBLIC_PAGES.has(resolvedPageName)) {
+      navigate(createPageUrl("Auth"), { replace: true });
+    }
+  }, [user, userLoading, resolvedPageName, PUBLIC_PAGES, navigate]);
 
   return (
     <GlobalErrorBoundary>

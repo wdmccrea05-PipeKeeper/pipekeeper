@@ -235,18 +235,14 @@ export default function HomePage() {
     }
   };
 
-  // Only block on auth error
-  if (userError) {
+  // Show minimal loading for auth check
+  if (userLoading) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">Login Required</h2>
-            <p className="text-[#e8d5b7]/70 mb-4">Please sign in to continue</p>
-            <Button onClick={() => base44.auth.redirectToLogin()}>Sign In</Button>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#A35C5C] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#E0D8C8]/70">Loading...</p>
+        </div>
       </div>
     );
   }
