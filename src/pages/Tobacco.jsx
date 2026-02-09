@@ -110,6 +110,7 @@ export default function TobaccoPage() {
     },
     retry: 2,
     staleTime: 10000,
+    enabled: true,
   });
 
   const createMutation = useMutation({
