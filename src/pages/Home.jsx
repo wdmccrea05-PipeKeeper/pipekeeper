@@ -740,6 +740,7 @@ export default function HomePage() {
             </motion.div>
           )}
         </div>
+      </div>
 
       <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
         <DialogContent className="max-w-2xl">
