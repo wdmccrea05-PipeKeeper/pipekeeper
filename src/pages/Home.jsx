@@ -91,10 +91,11 @@ export default function HomePage() {
   });
 
   const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
-    queryKey: ['pipes'],
+    queryKey: ['pipes', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
-        const result = await base44.entities.Pipe.list();
+        const result = await base44.entities.Pipe.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Pipes load error:', err);
@@ -104,14 +105,15 @@ export default function HomePage() {
     staleTime: 30000,
     gcTime: 60000,
     retry: 1,
-    enabled: true,
+    enabled: !!user?.email,
   });
 
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
-    queryKey: ['tobacco-blends'],
+    queryKey: ['blends', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
-        const result = await base44.entities.TobaccoBlend.list();
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Blends load error:', err);
@@ -121,7 +123,7 @@ export default function HomePage() {
     staleTime: 30000,
     gcTime: 60000,
     retry: 1,
-    enabled: true,
+    enabled: !!user?.email,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
@@ -136,10 +138,11 @@ export default function HomePage() {
   }, [user?.email, queryClient]);
 
   const { data: cellarLogs = [], refetch: refetchCellarLogs } = useQuery({
-    queryKey: ['cellar-logs-all'],
+    queryKey: ['cellar-logs-all', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
-        const result = await base44.entities.CellarLog.list();
+        const result = await base44.entities.CellarLog.filter({ created_by: user.email });
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('[Home] Cellar logs load error:', err);
@@ -148,7 +151,7 @@ export default function HomePage() {
     },
     staleTime: 30000,
     gcTime: 60000,
-    enabled: true,
+    enabled: !!user?.email,
   });
 
   const createOnboardingMutation = useMutation({
