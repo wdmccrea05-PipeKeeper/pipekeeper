@@ -319,8 +319,8 @@ export default function HomePage() {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">{t("home.testingPeriodTitle")}</h3>
-                    <p className="text-sm text-white/80 mt-1">{t("home.importantInfo")}</p>
+                    <h3 className="text-xl font-bold">Testing Period Active</h3>
+                    <p className="text-sm text-white/80 mt-1">Important Information</p>
                   </div>
                 </div>
                 <button onClick={handleDismissNotice} className="text-white/80 hover:text-white transition-colors">
@@ -330,13 +330,13 @@ export default function HomePage() {
             </div>
             <div className="p-6">
               <p className="text-[#E0D8C8] text-lg leading-relaxed mb-4">
-                {t("home.testingPeriodBody")}
+                Thank you for testing PipeKeeper! Your feedback helps us improve.
               </p>
               <p className="text-[#E0D8C8]/70 text-sm">
-                {t("home.testingThankYou")}
+                Thank you for being an early supporter!
               </p>
               <Button onClick={handleDismissNotice} className="w-full mt-6 bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                {t("home.gotItThanks")}
+                Got it, thanks!
               </Button>
             </div>
           </motion.div>
@@ -351,10 +351,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
-              {t("home.pageTitle")}
+              Your Pipe Collection
             </PkPageTitle>
             <p className="max-w-2xl mx-auto text-[#E0D8C8]/70 text-base">
-              {t("home.pageSubtitle", { defaultValue: "Catalog, track, and enjoy your pipe and tobacco collection" })}
+              Catalog, track, and enjoy your pipe and tobacco collection
             </p>
           </motion.div>
 
@@ -392,8 +392,8 @@ export default function HomePage() {
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.pipeCollection")}</h3>
-                        <p className="text-white/90 text-sm sm:text-base">{t("home.trackAndValue")}</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
+                        <p className="text-white/90 text-sm sm:text-base">Track and value your pipes</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
@@ -403,8 +403,8 @@ export default function HomePage() {
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title={t("common.refresh")}
-                        >
+                          title="Refresh"
+                          >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3">
@@ -416,17 +416,17 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safePipes.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.pipesInCollection")}</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">${totalPipeValue.toLocaleString()}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">{t("home.viewCollection")}</span>
+                      <span className="font-semibold">View Collection</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -448,8 +448,8 @@ export default function HomePage() {
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.tobaccoCellar")}</h3>
-                        <p className="text-white/90 text-sm sm:text-base">{t("home.manageBlends")}</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
+                        <p className="text-white/90 text-sm sm:text-base">Manage your blends</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
@@ -472,7 +472,7 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.tobaccoBlends")}</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 cursor-pointer" onClick={(e) => {
@@ -480,7 +480,7 @@ export default function HomePage() {
                         setShowCellarDialog(true);
                       }}>
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalCellaredOz.toFixed(1)} oz</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.cellared")}</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">Cellared</p>
                       </div>
 
                       {(() => {
@@ -490,14 +490,14 @@ export default function HomePage() {
                         return isPaidUser && totalValue > 0 ? (
                           <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                             <p className="text-3xl sm:text-4xl font-bold text-white mb-1">≈ ${totalValue.toFixed(0)}</p>
-                            <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
+                            <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
                           </div>
                         ) : null;
                       })()}
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">{t("home.viewCellar")}</span>
+                      <span className="font-semibold">View Cellar</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -517,7 +517,7 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
-                    {t("home.favorites")}
+                    Favorites
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -551,7 +551,7 @@ export default function HomePage() {
               transition={{ delay: 0.75 }}
               className="mb-12"
             >
-              <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.insightsError")}</div>}>
+              <ErrorBoundary fallback={<div className="text-center text-red-500">Failed to load insights</div>}>
                 <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
               </ErrorBoundary>
             </motion.div>
@@ -570,7 +570,7 @@ export default function HomePage() {
                   description="This iOS build focuses on cataloging and cellar inventory management: identification assistance, metadata cleanup, verified measurements, export reports, and organization tools."
                 />
               ) : isPaidUser ? (
-                <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.expertTobacconistError")}</div>}>
+                <ErrorBoundary fallback={<div className="text-center text-red-500">Failed to load Expert Tobacconist</div>}>
                   <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} user={user} />
                 </ErrorBoundary>
               ) : (
@@ -592,10 +592,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">{t("home.recentPipes")}</CardTitle>
+                    <CardTitle className="text-lg">Recent Pipes</CardTitle>
                       <a href={createPageUrl('Pipes')}>
                          <Button variant="ghost" size="sm">
-                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
+                           View All <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -613,7 +613,7 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{pipe.name}</SafeText>
-                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={pipe.maker || pipe.shape || t("common.unknown")}>{pipe.maker || pipe.shape || t("common.unknown")}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={pipe.maker || pipe.shape || "Unknown"}>{pipe.maker || pipe.shape || "Unknown"}</SafeText>
                             </div>
                             {pipe.estimated_value && (
                               <Badge variant="success" className="text-xs sm:text-sm flex-shrink-0">
@@ -638,10 +638,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">{t("home.recentTobacco")}</CardTitle>
+                    <CardTitle className="text-lg">Recent Tobacco</CardTitle>
                       <a href={createPageUrl('Tobacco')}>
                          <Button variant="ghost" size="sm">
-                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
+                           View All <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -663,11 +663,11 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{blend.name}</SafeText>
-                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={blend.manufacturer || blend.blend_type || t("common.unknown")}>{blend.manufacturer || blend.blend_type || t("common.unknown")}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={blend.manufacturer || blend.blend_type || "Unknown"}>{blend.manufacturer || blend.blend_type || "Unknown"}</SafeText>
                             </div>
                             {blend.quantity_owned > 0 && (
                               <Badge className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                                {blend.quantity_owned} {blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}
+                                {blend.quantity_owned} {blend.quantity_owned > 1 ? "tins" : "tin"}
                               </Badge>
                             )}
                           </div>
@@ -695,8 +695,8 @@ export default function HomePage() {
                         <Sparkles className="w-5 h-5 text-[#d4a574]" />
                       </div>
                       <div>
-                        <p className="font-semibold text-[#e8d5b7]">{t("home.bulkImport")}</p>
-                        <p className="text-xs text-[#e8d5b7]/70">{t("home.importDesc")}</p>
+                        <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
+                        <p className="text-xs text-[#e8d5b7]/70">Import multiple pipes or blends at once</p>
                       </div>
                     </div>
                     <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
@@ -730,12 +730,12 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
                 <a href={createPageUrl('Pipes')} className="w-full sm:w-auto">
                   <Button className="bg-amber-700 hover:bg-amber-800 w-full">
-                    {t("home.addFirstPipe")}
+                    Add Your First Pipe
                   </Button>
                 </a>
                 <a href={createPageUrl('Tobacco')} className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full">
-                    {t("home.addFirstBlend")}
+                    Add Your First Blend
                   </Button>
                 </a>
               </div>
@@ -749,12 +749,12 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
-              {t("home.cellarBreakdown")} ({totalCellaredOz.toFixed(1)} oz)
+              Cellar Breakdown ({totalCellaredOz.toFixed(1)} oz)
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             {cellarBreakdown.length === 0 ? (
-              <p className="text-center text-[#E0D8C8]/60 py-8">{t("home.noCellaredTobacco")}</p>
+              <p className="text-center text-[#E0D8C8]/60 py-8">No cellared tobacco yet</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {cellarBreakdown.map((item) => (
