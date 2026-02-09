@@ -27,13 +27,11 @@ export function useCurrentUser() {
     let alive = true;
 
     async function run() {
-        console.log("[ENTITLEMENT_HOOK] run() starting");
         setLoading(true);
 
       try {
         // Always wait for async Supabase config to be ready
         const supabaseClient = await getSupabaseAsync();
-        console.log("[ENTITLEMENT_HOOK] Supabase client ready");
         const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
         if (!alive) return;
 
@@ -83,7 +81,6 @@ export function useCurrentUser() {
           setEntitlementData(parsed);
           const tier = getEffectiveTier(sessionUser, parsed);
           setEffectiveTier(tier);
-          console.log("[ENTITLEMENT] tier", tier);
         }
       } catch (e) {
         console.warn("[ENTITLEMENT] fetch failed (non-fatal) - deriving from user:", e.message);
