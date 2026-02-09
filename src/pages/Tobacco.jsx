@@ -91,9 +91,10 @@ export default function TobaccoPage() {
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
     queryFn: async () => {
+      if (!user?.email) return [];
       try {
         const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
-        const result = await scopedEntities.TobaccoBlend.filterForUser(user?.email, {}, actualSort);
+        const result = await scopedEntities.TobaccoBlend.filterForUser(user.email, {}, actualSort);
         let data = Array.isArray(result) ? result : [];
         if (sortBy === 'favorites') {
           data = data.sort((a, b) => {
@@ -110,7 +111,7 @@ export default function TobaccoPage() {
     },
     retry: 2,
     staleTime: 10000,
-    enabled: true,
+    enabled: !!user?.email,
   });
 
   const createMutation = useMutation({
