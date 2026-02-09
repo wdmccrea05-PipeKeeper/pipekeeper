@@ -49,8 +49,8 @@ export default function HomePage() {
   const { user, isLoading: userLoading, error: userError } = useCurrentUser();
 
   React.useEffect(() => {
-    console.log('[Home] Current state:', { userLoading, userError, userEmail: user?.email });
-  }, [userLoading, user?.email, userError]);
+    console.log('[Home] Current state:', { userLoading, userError, userEmail: user?.email, pipesLength: pipes?.length, blendsLength: blends?.length });
+  }, [userLoading, user?.email, userError, pipes?.length, blends?.length]);
 
   React.useEffect(() => {
     const handleError = (error) => {
@@ -88,6 +88,7 @@ export default function HomePage() {
     retry: 1,
     staleTime: 10000,
     gcTime: 30000,
+    enabled: !!user?.email,
   });
 
   const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
