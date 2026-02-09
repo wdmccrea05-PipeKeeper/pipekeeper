@@ -46,31 +46,9 @@ export default function HomePage() {
   // ALL hooks MUST be called unconditionally at top level before any early returns
   const { user, isLoading: userLoading, error: userError } = useCurrentUser();
 
-  React.useEffect(() => {
-    console.log('[Home] Current state:', { userLoading, userError, userEmail: user?.email, pipesLength: pipes?.length, blendsLength: blends?.length });
-  }, [userLoading, user?.email, userError, pipes?.length, blends?.length]);
 
-  React.useEffect(() => {
-    const handleError = (error) => {
-      console.error('[Home Error]', error);
-      setHasError(true);
-    };
-    
-    const handleUnhandledRejection = (event) => {
-      console.error('[Home Unhandled Promise]', event.reason);
-      setHasError(true);
-    };
-    
-    if (typeof window !== 'undefined') {
-      window.addEventListener('error', handleError);
-      window.addEventListener('unhandledrejection', handleUnhandledRejection);
-      return () => {
-        window.removeEventListener('error', handleError);
-        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      };
-    }
-  }, []);
 
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
@@ -235,19 +213,7 @@ export default function HomePage() {
     }
   };
 
-  // Show minimal loading for auth check
-  if (userLoading) {
-    return (
-      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#A35C5C] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#E0D8C8]/70">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Safe values - always available
+  // Safe values - always available (computed after all hooks)
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
@@ -291,6 +257,18 @@ export default function HomePage() {
     }
     setShowTestingNotice(false);
   };
+
+  // Show minimal loading for auth check (after all hooks)
+  if (userLoading) {
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#A35C5C] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#E0D8C8]/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
