@@ -456,7 +456,7 @@ export default function HomePage() {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            queryClient.refetchQueries({ queryKey: ['tobacco-blends', user?.email] });
+                            queryClient.refetchQueries({ queryKey: ['blends', user?.email] });
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
