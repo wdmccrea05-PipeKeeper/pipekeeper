@@ -10,7 +10,10 @@ import AgingReportExporter from "@/components/export/AgingReportExporter";
 import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
+import TrendsReport from "@/components/tobacco/TrendsReport";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import ProFeatureLock from "@/components/subscription/ProFeatureLock";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
+  const { hasPro } = useCurrentUser();
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
 
   // Check for aging alerts
@@ -101,7 +105,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle", {defaultValue: "Track usage, optimize pairings, and monitor your collection"})}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-6"}`}>
+          <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -124,6 +128,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 <TabsTrigger value="stats" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   <span className="hidden sm:inline">{t("insights.stats")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="trends" className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Trends</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex items-center gap-2 relative">
                   <Clock className="w-4 h-4" />

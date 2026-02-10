@@ -19,7 +19,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from "@/components/utils/premiumAccess";
 import { isTrialWindow } from "@/components/utils/access";
 import { PK_THEME } from "@/components/utils/pkTheme";
 
@@ -62,7 +62,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, provider, subscription, isLoading: userLoading } = useCurrentUser();
+  const { user, provider, subscription, isLoading: userLoading, tier, planLabel, hasPaid, hasPro, isTrial } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
@@ -137,9 +137,9 @@ export default function ProfilePage() {
     notes: "",
   });
 
-  // Paid / trial display (your existing logic)
-  const isWithinTrial = isTrialWindow(user?.created_date || user?.createdAt || user?.created_at);
-  const hasActiveSubscription = hasPremiumAccess(user, subscription);
+  // Use canonical access flags
+  const hasActiveSubscription = hasPaid;
+  const isWithinTrial = isTrial;
 
   // Hydrate form from profile
   useEffect(() => {
@@ -274,14 +274,14 @@ export default function ProfilePage() {
                   <Crown className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  {hasActiveSubscription ? (
+                  {hasPaid ? (
                     <>
                       <div className="font-semibold text-amber-900">
-                        {user?.subscription_tier === "pro" ? t("profile.proActive") : t("profile.premiumActive")}
+                        {hasPro ? t("profile.proActive") : t("profile.premiumActive")}
                       </div>
                       <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
                     </>
-                  ) : isWithinTrial ? (
+                  ) : isTrial ? (
                     <>
                       <div className="font-semibold text-amber-900">{t("profile.freeTrialActive")}</div>
                       <div className="text-sm text-amber-700">{t("profile.sevenDaysFree")}</div>
@@ -372,8 +372,8 @@ export default function ProfilePage() {
           <CardContent className="space-y-6">
             {/* Badges (kept visible) */}
             <div className="flex gap-2 flex-wrap">
-              <Badge className="bg-[#A35C5C] text-white border-0">
-                {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
+              <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#A35C5C] text-white border-0"}>
+                {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
