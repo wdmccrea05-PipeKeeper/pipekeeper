@@ -71,8 +71,9 @@ Deno.serve(async (req) => {
       email: userData.email,
       oldTier: userData.data?.entitlement_tier,
       newTier: verifyData.entitlement_tier,
-      subscriptionTier: subs[0]?.tier,
-      status: verifyData.entitlement_tier === 'pro' ? 'SUCCESS' : 'FAILED'
+      subscriptionTiers: subs.map(s => ({ tier: s.tier, started: s.current_period_start })),
+      correctTier: correctTier,
+      status: verifyData.entitlement_tier === correctTier ? 'SUCCESS' : 'FAILED'
     });
   } catch (error) {
     console.error('Error:', error);
