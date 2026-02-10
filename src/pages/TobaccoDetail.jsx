@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { getTobaccoLogo, GENERIC_TOBACCO_ICON } from "@/components/tobacco/TobaccoLogoLibrary";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,14 +61,7 @@ export default function TobaccoDetailPage() {
   const [expandedImage, setExpandedImage] = useState(null);
 
   const queryClient = useQueryClient();
-
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const { user, hasPaid } = useCurrentUser();
 
   const { data: blend, isLoading: blendLoading, error: blendError } = useQuery({
     queryKey: ['blend', blendId, user?.email],
