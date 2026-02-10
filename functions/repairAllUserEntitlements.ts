@@ -26,11 +26,13 @@ Deno.serve(async (req) => {
 
         if (subscriptions.length === 0) continue;
 
-        // Get the most relevant subscription (pro > premium, most recent)
+        // Get the most relevant subscription (prioritize by: 1) pro tier, 2) most recent start date)
         const sortedSubs = subscriptions.sort((a, b) => {
           if (a.tier === 'pro' && b.tier !== 'pro') return -1;
           if (a.tier !== 'pro' && b.tier === 'pro') return 1;
-          return new Date(b.current_period_start) - new Date(a.current_period_start);
+          const aStart = new Date(a.current_period_start || a.started_at || 0).getTime();
+          const bStart = new Date(b.current_period_start || b.started_at || 0).getTime();
+          return bStart - aStart;
         });
 
         const activeSub = sortedSubs[0];
