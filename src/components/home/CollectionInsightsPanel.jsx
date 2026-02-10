@@ -234,6 +234,17 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 )}
               </TabsContent>
 
+              <TabsContent value="trends" className="mt-0">
+                <ProFeatureLock featureName="Trends Report">
+                  <TrendsReport 
+                    logs={[]} 
+                    pipes={pipes} 
+                    blends={blends} 
+                    user={user}
+                  />
+                </ProFeatureLock>
+              </TabsContent>
+
               <TabsContent value="aging" className="mt-0">
                 {blends.length === 0 ? (
                   <div className="text-center py-12">
