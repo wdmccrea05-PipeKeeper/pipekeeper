@@ -192,15 +192,6 @@ export function useCurrentUser() {
     })();
   }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
 
-  // Force fresh subscription check on user entitlement changes (catches normalization updates)
-  useEffect(() => {
-    if (userLoading || !user?.email) return;
-    const tier = getEntitlementTier(user, subscription);
-    if (tier !== 'free' && subscription?.status !== 'active') {
-      refetchSubscription(); // User is marked paid but subscription looks stale—refresh
-    }
-  }, [user?.entitlement_tier, user?.tier, userLoading, user?.email, subscription?.status, refetchSubscription]);
-
   // Use CANONICAL resolver functions (single source of truth)
   const tier = getEntitlementTier(user, subscription);
   const hasPaid = hasPaidAccess(user, subscription);
