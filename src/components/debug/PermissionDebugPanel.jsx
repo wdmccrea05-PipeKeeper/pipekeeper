@@ -46,39 +46,39 @@ export default function PermissionDebugPanel() {
       </Button>
 
       {isOpen && (
-        <Card className="absolute bottom-12 right-0 w-96 max-h-[600px] overflow-y-auto shadow-2xl">
-          <CardHeader className="pb-3 bg-purple-50">
-            <CardTitle className="text-sm flex items-center gap-2">
+        <Card className="absolute bottom-12 right-0 w-96 max-h-[600px] overflow-y-auto shadow-2xl bg-white">
+          <CardHeader className="pb-3 bg-purple-50 border-b">
+            <CardTitle className="text-sm flex items-center gap-2 text-slate-900">
               🔍 Permissions Debug Panel
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 text-xs">
+          <CardContent className="space-y-4 text-xs pt-4">
             {/* User Info */}
             <div>
-              <h4 className="font-semibold mb-2">User Info</h4>
-              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
-                <p>Email: {user?.email || 'N/A'}</p>
-                <p>ID: {user?.id || user?.auth_user_id || 'N/A'}</p>
-                <p>Role: {user?.role || 'user'}</p>
-                <p>Created: {user?.created_date || user?.created_at || 'Unknown'}</p>
+              <h4 className="font-semibold mb-2 text-slate-900">User Info</h4>
+              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
+                <p className="text-slate-900"><strong>Email:</strong> {user?.email || 'N/A'}</p>
+                <p className="text-slate-900"><strong>ID:</strong> {user?.id || user?.auth_user_id || 'N/A'}</p>
+                <p className="text-slate-900"><strong>Role:</strong> {user?.role || 'user'}</p>
+                <p className="text-slate-900"><strong>Created:</strong> {user?.created_date || user?.created_at || 'Unknown'}</p>
               </div>
             </div>
 
             {/* Subscription Info */}
             <div>
-              <h4 className="font-semibold mb-2">Subscription Info</h4>
-              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
-                <p>Provider: {provider || subscription?.provider || 'None'}</p>
-                <p>Status: {subscription?.status || 'None'}</p>
-                <p>Tier: {subscription?.tier || 'None'}</p>
-                <p>Period End: {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'N/A'}</p>
-                <p>Stripe Customer: {subscription?.stripe_customer_id || user?.stripe_customer_id || 'None'}</p>
+              <h4 className="font-semibold mb-2 text-slate-900">Subscription Info</h4>
+              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
+                <p className="text-slate-900"><strong>Provider:</strong> {provider || subscription?.provider || 'None'}</p>
+                <p className="text-slate-900"><strong>Status:</strong> {subscription?.status || 'None'}</p>
+                <p className="text-slate-900"><strong>Tier:</strong> {subscription?.tier || 'None'}</p>
+                <p className="text-slate-900"><strong>Period End:</strong> {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-slate-900"><strong>Stripe Customer:</strong> {subscription?.stripe_customer_id || user?.stripe_customer_id || 'None'}</p>
               </div>
             </div>
 
             {/* Hook Flags */}
             <div>
-              <h4 className="font-semibold mb-2">useCurrentUser Flags</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">useCurrentUser Flags</h4>
               <div className="space-y-2">
                 <StatusBadge label="hasPaid" value={hasPaid} />
                 <StatusBadge label="hasPremium" value={hasPremium} />
@@ -90,7 +90,7 @@ export default function PermissionDebugPanel() {
 
             {/* Utility Function Checks */}
             <div>
-              <h4 className="font-semibold mb-2">Utility Function Checks</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">Utility Function Checks</h4>
               <div className="space-y-2">
                 <StatusBadge label="hasPaidAccess()" value={hasPaidAccess(user, subscription)} />
                 <StatusBadge label="hasProAccess()" value={hasProAccess(user, subscription)} />
@@ -100,19 +100,19 @@ export default function PermissionDebugPanel() {
 
             {/* Entitlements */}
             <div>
-              <h4 className="font-semibold mb-2">Entitlements</h4>
-              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
-                <p>Tier: {entitlements.tier}</p>
-                <p>Legacy: {entitlements.isPremiumLegacy ? 'Yes' : 'No'}</p>
-                <p>Pipes: {entitlements.limits.pipes === Infinity ? '∞' : entitlements.limits.pipes}</p>
-                <p>Tobacco: {entitlements.limits.tobaccos === Infinity ? '∞' : entitlements.limits.tobaccos}</p>
-                <p>Photos: {entitlements.limits.photosPerItem === Infinity ? '∞' : entitlements.limits.photosPerItem}</p>
+              <h4 className="font-semibold mb-2 text-slate-900">Entitlements</h4>
+              <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
+                <p className="text-slate-900"><strong>Tier:</strong> {entitlements.tier}</p>
+                <p className="text-slate-900"><strong>Legacy:</strong> {entitlements.isPremiumLegacy ? 'Yes' : 'No'}</p>
+                <p className="text-slate-900"><strong>Pipes:</strong> {entitlements.limits.pipes === Infinity ? '∞' : entitlements.limits.pipes}</p>
+                <p className="text-slate-900"><strong>Tobacco:</strong> {entitlements.limits.tobaccos === Infinity ? '∞' : entitlements.limits.tobaccos}</p>
+                <p className="text-slate-900"><strong>Photos:</strong> {entitlements.limits.photosPerItem === Infinity ? '∞' : entitlements.limits.photosPerItem}</p>
               </div>
             </div>
 
             {/* Feature Access */}
             <div>
-              <h4 className="font-semibold mb-2">Feature Access</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">Feature Access</h4>
               <div className="space-y-2">
                 <StatusBadge label="UNLIMITED_COLLECTION" value={entitlements.canUse("UNLIMITED_COLLECTION")} />
                 <StatusBadge label="AI_IDENTIFY" value={entitlements.canUse("AI_IDENTIFY")} />
@@ -126,24 +126,24 @@ export default function PermissionDebugPanel() {
             {/* Limit Checks */}
             {pipeLimit && (
               <div>
-                <h4 className="font-semibold mb-2">Pipe Creation Check</h4>
+                <h4 className="font-semibold mb-2 text-slate-900">Pipe Creation Check</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={pipeLimit.canCreate} />
-                  <p>Current: {pipeLimit.currentCount}</p>
-                  <p>Limit: {pipeLimit.limit === null ? '∞' : pipeLimit.limit}</p>
-                  {pipeLimit.reason && <p className="text-red-600 text-xs">{pipeLimit.reason}</p>}
+                  <p className="text-slate-900"><strong>Current:</strong> {pipeLimit.currentCount}</p>
+                  <p className="text-slate-900"><strong>Limit:</strong> {pipeLimit.limit === null ? '∞' : pipeLimit.limit}</p>
+                  {pipeLimit.reason && <p className="text-red-700 text-xs font-semibold">{pipeLimit.reason}</p>}
                 </div>
               </div>
             )}
 
             {tobaccoLimit && (
               <div>
-                <h4 className="font-semibold mb-2">Tobacco Creation Check</h4>
+                <h4 className="font-semibold mb-2 text-slate-900">Tobacco Creation Check</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={tobaccoLimit.canCreate} />
-                  <p>Current: {tobaccoLimit.currentCount}</p>
-                  <p>Limit: {tobaccoLimit.limit === null ? '∞' : tobaccoLimit.limit}</p>
-                  {tobaccoLimit.reason && <p className="text-red-600 text-xs">{tobaccoLimit.reason}</p>}
+                  <p className="text-slate-900"><strong>Current:</strong> {tobaccoLimit.currentCount}</p>
+                  <p className="text-slate-900"><strong>Limit:</strong> {tobaccoLimit.limit === null ? '∞' : tobaccoLimit.limit}</p>
+                  {tobaccoLimit.reason && <p className="text-red-700 text-xs font-semibold">{tobaccoLimit.reason}</p>}
                 </div>
               </div>
             )}
