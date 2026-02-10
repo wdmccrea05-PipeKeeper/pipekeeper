@@ -221,7 +221,7 @@ export default function Layout({ children, currentPageName }) {
     []
   );
 
-  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
+  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
   const adminNavItems = isAdmin ? [
     { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
@@ -301,7 +301,7 @@ export default function Layout({ children, currentPageName }) {
     return () => {
       cancelled = true;
     };
-  }, [userLoading, user?.email, hasPaidAccess, queryClient]);
+  }, [userLoading, user?.email, hasPremium, queryClient]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -321,7 +321,7 @@ export default function Layout({ children, currentPageName }) {
         console.warn("[Layout] Founding member backfill failed (non-fatal):", e?.message || e);
       }
     })();
-  }, [userLoading, user, subscription, hasPaidAccess, queryClient]);
+  }, [userLoading, user, subscription, hasPremium, queryClient]);
 
   useEffect(() => {
     if (!ios) return undefined;
@@ -455,7 +455,7 @@ export default function Layout({ children, currentPageName }) {
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
+  }, [userLoading, user?.email, hasPremium, currentPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -472,7 +472,7 @@ export default function Layout({ children, currentPageName }) {
     if (subscriptionDate < foundingCutoff) {
       setShowFoundingMemberPopup(true);
     }
-  }, [userLoading, user, hasPaidAccess, subscription]);
+  }, [userLoading, user, hasPremium, subscription]);
 
   if (!ageConfirmed) {
     return (
@@ -556,7 +556,7 @@ export default function Layout({ children, currentPageName }) {
                            key={item.page}
                            item={item}
                            currentPage={currentPageName}
-                           hasPaidAccess={hasPaidAccess}
+                           hasPaidAccess={hasPremium}
                          />
                        ))}
                      </>
