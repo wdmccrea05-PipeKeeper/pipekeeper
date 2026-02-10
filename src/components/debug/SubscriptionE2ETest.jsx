@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
-import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2, Users } from "lucide-react";
+import AllUsersPermissionTest from "@/components/debug/AllUsersPermissionTest";
 import { canCreatePipe, canCreateTobacco } from "@/components/utils/limitChecks";
 import { 
   getEntitlementTier, 
@@ -192,13 +193,15 @@ export default function SubscriptionE2ETest() {
   const warningCount = testResults.filter(r => r.status === 'warning').length;
 
   return (
-    <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            🧪 E2E Subscription Test
-            {testing && <Loader2 className="w-4 h-4 animate-spin" />}
-          </CardTitle>
+    <div className="space-y-6">
+      {/* Current User Test */}
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2 text-slate-900">
+              🧪 Current User E2E Test
+              {testing && <Loader2 className="w-4 h-4 animate-spin" />}
+            </CardTitle>
           <div className="flex gap-2">
             <Badge className="bg-green-100 text-green-800">{passCount} Pass</Badge>
             <Badge className="bg-red-100 text-red-800">{failCount} Fail</Badge>
@@ -211,11 +214,11 @@ export default function SubscriptionE2ETest() {
       <CardContent className="space-y-4">
         {/* User Summary */}
         <div className="bg-slate-50 rounded-lg p-3 space-y-1 text-xs font-mono">
-          <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
-          <p><strong>Tier:</strong> {tier}</p>
-          <p><strong>Plan Label:</strong> {planLabel}</p>
-          <p><strong>Provider:</strong> {provider || 'None'}</p>
-          <p><strong>Flags:</strong> hasPaid={String(hasPaid)}, hasPro={String(hasPro)}, isTrial={String(isTrial)}</p>
+          <p className="text-slate-900"><strong>Email:</strong> {user?.email || 'N/A'}</p>
+          <p className="text-slate-900"><strong>Tier:</strong> {tier}</p>
+          <p className="text-slate-900"><strong>Plan Label:</strong> {planLabel}</p>
+          <p className="text-slate-900"><strong>Provider:</strong> {provider || 'None'}</p>
+          <p className="text-slate-900"><strong>Flags:</strong> hasPaid={String(hasPaid)}, hasPro={String(hasPro)}, isTrial={String(isTrial)}</p>
         </div>
 
         <Button 
