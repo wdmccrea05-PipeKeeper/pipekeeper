@@ -42,7 +42,8 @@ export function getEntitlementTier(user, subscription) {
     user?.entitlement_tier ??
     user?.entitlementTier ??
     user?.entitlement ??
-    user?.tier;
+    user?.tier ??
+    user?.data?.entitlement_tier;
 
   const t1 = normalizeTier(fromUserEntitlement);
   if (t1 !== "free") return t1;
