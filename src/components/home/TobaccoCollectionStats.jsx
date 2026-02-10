@@ -132,29 +132,13 @@ export default function TobaccoCollectionStats() {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <CollapsibleTrigger className="flex-1">
-              <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
-                <BarChart3 className="w-6 h-6" />
-                {t("stats.tobaccoCollectionStats")}
-                <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-              </CardTitle>
-            </CollapsibleTrigger>
-            <Button
-              size="sm"
-              onClick={() => {
-                if (!isPro) {
-                  window.location.href = createPageUrl('Subscription');
-                  return;
-                }
-                setShowTrends(true);
-              }}
-              className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t("stats.trends")} {!isPro && '🔒'}
-            </Button>
-          </div>
+          <CollapsibleTrigger className="flex-1">
+            <CardTitle className="text-xl text-emerald-800 flex items-center gap-2 hover:opacity-70 transition-opacity">
+              <BarChart3 className="w-6 h-6" />
+              {t("stats.tobaccoCollectionStats")}
+              <ChevronDown className={`w-5 h-5 ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </CardTitle>
+          </CollapsibleTrigger>
         </CardHeader>
         <CollapsibleContent>
           <CardContent>
