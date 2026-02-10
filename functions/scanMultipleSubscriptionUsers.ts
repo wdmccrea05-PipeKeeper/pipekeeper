@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     const issuesNeedingFix = issues.filter(i => i.needsFix);
 
     return Response.json({
-      totalPaidUsers: paidUsers.length,
+      totalUsersChecked: emailsWithMultiple.length,
       usersWithMultipleSubs: issues.length,
       usersWithMisalignment: issuesNeedingFix.length,
       issues: issuesNeedingFix.length > 0 ? issuesNeedingFix : issues
