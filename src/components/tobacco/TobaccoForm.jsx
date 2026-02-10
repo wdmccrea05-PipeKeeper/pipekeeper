@@ -81,7 +81,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
-  const { user } = useCurrentUser();
+  const { user, hasPaid, hasPremium } = useCurrentUser();
+  const isPaidUser = hasPaid || hasPremium;
 
   // Auto-suggest recent values
   const { data: recentManufacturers = [] } = useRecentValues("TobaccoBlend", "manufacturer");
@@ -272,14 +273,10 @@ Return complete and accurate information based on the blend name or description 
     e.preventDefault();
 
     // Check free tier limits for new blends only
-    if (!blend && entitlements.tier === "free") {
-      const canAdd = await canCreateTobacco(user?.email, entitlements.limits.tobaccos);
-      if (!canAdd) {
-        toast.error(
-          entitlements.isFreeGrandfathered
-            ? t("limits.freeLimitReached")
-            : t("limits.tobaccoLimit", { limit: entitlements.limits.tobaccos })
-        );
+    if (!blend && !isPaidUser) {
+      const result = await canCreateTobacco(user?.email, isPaidUser, false);
+      if (!result.canCreate) {
+        toast.error(result.reason || t("limits.tobaccoLimit", { limit: result.limit }));
         return;
       }
     }
