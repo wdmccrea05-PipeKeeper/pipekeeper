@@ -21,21 +21,33 @@ Deno.serve(async (req) => {
     const userData = users[0];
     console.log('Current user data:', JSON.stringify(userData.data, null, 2));
 
-    // Get their subscription
+    // Get their subscriptions
     const subs = await base44.asServiceRole.entities.Subscription.filter({
       user_email: 'dallas.hinton@gmail.com',
       status: 'active'
     });
 
     console.log('Active subscriptions:', subs.length);
-    if (subs.length > 0) {
-      console.log('Latest subscription tier:', subs[0].tier);
-    }
+    subs.forEach((s, i) => {
+      console.log(`Sub ${i}: tier=${s.tier}, started=${s.current_period_start || s.started_at}`);
+    });
+
+    // Choose the most recent PRO subscription, or most recent if no pro exists
+    const sortedSubs = subs.sort((a, b) => {
+      if (a.tier === 'pro' && b.tier !== 'pro') return -1;
+      if (a.tier !== 'pro' && b.tier === 'pro') return 1;
+      const aStart = new Date(a.current_period_start || a.started_at || 0).getTime();
+      const bStart = new Date(b.current_period_start || b.started_at || 0).getTime();
+      return bStart - aStart;
+    });
+
+    const correctTier = sortedSubs[0]?.tier || 'premium';
+    console.log('Correct tier to set:', correctTier);
 
     // Force update the data object
     const newData = {
       ...userData.data,
-      entitlement_tier: 'pro',
+      entitlement_tier: correctTier,
       updated_at: new Date().toISOString()
     };
 
