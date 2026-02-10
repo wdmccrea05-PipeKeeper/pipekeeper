@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useCurrentUser } from "./useCurrentUser";
 import { buildEntitlements } from "@/components/utils/entitlements";
-import { hasProAccess } from "@/components/utils/premiumAccess";
+import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from "@/components/utils/premiumAccess";
 
 export function useEntitlements() {
-  const { user, subscription, hasPaid, isTrial, isLoading } = useCurrentUser();
+  const { user, subscription, isLoading } = useCurrentUser();
 
   return useMemo(() => {
     if (isLoading || !user) {
@@ -16,10 +16,14 @@ export function useEntitlements() {
       });
     }
 
+    // Use canonical resolver functions
+    const tier = getEntitlementTier(user, subscription);
+    const isPaidSubscriber = hasPaidAccess(user, subscription);
     const isProSubscriber = hasProAccess(user, subscription);
+    const isOnTrial = isTrialingAccess(user, subscription);
 
     return buildEntitlements({
-      isPaidSubscriber: hasPaid,
+      isPaidSubscriber,
       isProSubscriber,
       subscriptionStartedAt:
         subscription?.subscriptionStartedAt ||
@@ -28,7 +32,7 @@ export function useEntitlements() {
         user?.created_date ||
         null,
       isFreeGrandfathered: user?.isFreeGrandfathered || false,
-      isOnTrial: isTrial,
+      isOnTrial,
     });
-  }, [user, subscription, hasPaid, isTrial, isLoading]);
+  }, [user, subscription, isLoading]);
 }

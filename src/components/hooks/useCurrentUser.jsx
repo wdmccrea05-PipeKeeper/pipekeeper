@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { hasPaidAccess, hasProAccess, hasPremiumAccess, isFoundingMember } from "@/components/utils/premiumAccess";
+import { 
+  getEntitlementTier, 
+  hasPaidAccess, 
+  hasProAccess, 
+  hasPremiumAccess, 
+  isTrialingAccess, 
+  getPlanLabel,
+  isFoundingMember 
+} from "@/components/utils/premiumAccess";
 import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect, useRef } from "react";
 
@@ -184,13 +192,33 @@ export function useCurrentUser() {
     })();
   }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
 
-  // Derived access flags
-  const hasPremium = hasPremiumAccess(user, subscription);
+  // Use CANONICAL resolver functions (single source of truth)
+  const tier = getEntitlementTier(user, subscription);
   const hasPaid = hasPaidAccess(user, subscription);
+  const hasPremium = hasPremiumAccess(user, subscription);
   const hasPro = hasProAccess(user, subscription);
-  const isTrial = !hasPaid && hasPremium;
+  const isTrial = isTrialingAccess(user, subscription);
+  const planLabel = getPlanLabel(user, subscription);
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
+
+  // Dev mode: Log canonical entitlements for debugging
+  useEffect(() => {
+    if (import.meta?.env?.DEV && user?.email) {
+      console.log('[useCurrentUser] Canonical Entitlements:', {
+        email: user.email,
+        tier,
+        hasPaid,
+        hasPremium,
+        hasPro,
+        isTrial,
+        planLabel,
+        provider,
+        subscriptionStatus: subscription?.status,
+        subscriptionTier: subscription?.tier,
+      });
+    }
+  }, [user?.email, tier, hasPaid, hasPremium, hasPro, isTrial, planLabel, provider, subscription?.status, subscription?.tier]);
 
   const isLoading = userLoading || subLoading;
 
@@ -202,12 +230,14 @@ export function useCurrentUser() {
     user,
     subscription,
     provider, // Inferred provider (stripe, apple, or null)
+    tier, // Canonical tier from getEntitlementTier
     isLoading,
     error: userError,
     hasPremium,
     hasPaid,
     hasPro,
     isTrial,
+    planLabel, // Canonical plan label
     isAdmin,
     isFoundingMember: isFounding,
     refetch,

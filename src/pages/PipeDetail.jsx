@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useMeasurement } from "@/components/utils/measurementConversion";
 import { getUsageCharacteristics } from "@/components/utils/schemaCompatibility";
 import {
@@ -61,13 +61,7 @@ export default function PipeDetailPage() {
   const queryClient = useQueryClient();
   const { useImperial, setUseImperial } = useMeasurement();
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
+  const { user, hasPaid, isLoading: userLoading, error: userError } = useCurrentUser();
 
   const { data: pipe, isLoading: pipeLoading, error: pipeError } = useQuery({
     queryKey: ['pipe', pipeId, user?.email],
@@ -170,8 +164,8 @@ export default function PipeDetailPage() {
     enabled: !!user?.email,
   });
 
-  // Canonical premium access check (post-trial: paid only)
-  const isPaidUser = hasPremiumAccess(user);
+  // Canonical premium access check
+  const isPaidUser = hasPaid;
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),
