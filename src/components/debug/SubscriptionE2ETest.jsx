@@ -304,5 +304,9 @@ export default function SubscriptionE2ETest() {
         )}
       </CardContent>
     </Card>
+
+    {/* All Users Test */}
+    <AllUsersPermissionTest />
+    </div>
   );
 }
