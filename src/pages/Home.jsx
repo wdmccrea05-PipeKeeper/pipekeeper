@@ -63,7 +63,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid } = useCurrentUser();
+  const { user, subscription, isLoading: userLoading, error: userError, hasPaid, hasPro, tier, planLabel } = useCurrentUser();
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -423,7 +423,7 @@ export default function HomePage() {
 
           {/* Premium Active Indicator */}
           <div className="max-w-4xl mx-auto px-4">
-            <PremiumActiveIndicator user={user} subscription={user?.subscription} />
+            <PremiumActiveIndicator user={user} subscription={subscription} />
           </div>
 
           {(safePipes.length < 3 || safeBlends.length < 3) && (
