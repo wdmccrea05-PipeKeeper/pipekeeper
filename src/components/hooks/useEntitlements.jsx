@@ -4,7 +4,7 @@ import { buildEntitlements } from "@/components/utils/entitlements";
 import { hasProAccess } from "@/components/utils/premiumAccess";
 
 export function useEntitlements() {
-  const { user, subscription, hasPaid, isLoading, isInTrial } = useCurrentUser();
+  const { user, subscription, hasPaid, isTrial, isLoading } = useCurrentUser();
 
   return useMemo(() => {
     if (isLoading || !user) {
@@ -28,7 +28,7 @@ export function useEntitlements() {
         user?.created_date ||
         null,
       isFreeGrandfathered: user?.isFreeGrandfathered || false,
-      isOnTrial: isInTrial,
+      isOnTrial: isTrial,
     });
-  }, [user, subscription, hasPaid, isLoading, isInTrial]);
+  }, [user, subscription, hasPaid, isTrial, isLoading]);
 }
