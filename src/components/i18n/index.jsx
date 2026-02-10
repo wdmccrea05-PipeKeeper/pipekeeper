@@ -1,94 +1,104 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { translations } from "./translations-complete";
+import { translationsComplete } from "./translations-complete";
+import { translations } from "./translations";
+import { enforceTranslation, humanizeKey } from "./enforceTranslation";
 
 /**
- * Normalize language codes coming from UI / storage.
+ * Humanize a translation key into readable text.
+ * Re-exported for convenience.
  */
-function normalizeLang(raw) {
-  const v = (raw || "").toString().trim();
-  if (!v) return "en";
-  if (v === "pt") return "pt-BR";
-  if (v === "zh") return "zh-Hans";
-  if (v.toLowerCase() === "zh-cn") return "zh-Hans";
-  if (v.toLowerCase() === "pt-br") return "pt-BR";
-  return v;
+export { humanizeKey };
+
+function isKeyLikeString(value) {
+  if (typeof value !== "string") return false;
+  // Looks like "section.subSection.label"
+  return /^[a-z0-9]+(\.[a-z0-9]+)+$/i.test(value.trim());
 }
 
-/**
- * Add backward-compatible aliases so old keys still resolve.
- * This avoids chasing every historical key name in the UI.
- */
-function applyAliasesToPack(pack) {
-  if (!pack || typeof pack !== "object") return pack;
+// Deep merge where empty strings / key-like placeholders do NOT overwrite real copy.
+function mergeDeep(base, patch) {
+  const out = Array.isArray(base) ? [...base] : { ...base };
+  if (!patch || typeof patch !== "object") return out;
 
-  // alias: aidentifier.* -> aiIdentifier.*
-  if (!pack.aidentifier && pack.aiIdentifier) {
-    pack.aidentifier = pack.aiIdentifier;
-  }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === null || v === undefined) continue;
 
-  // alias for subscription banner key seen in UI
-  // If UI asks for subscription.premiumActiveSubtextPaid, map it to a sensible existing string.
-  // Prefer profile.fullAccess if present, else fall back to common/premium wording if present.
-  if (pack.subscription) {
-    if (!pack.subscription.premiumActiveSubtextPaid) {
-      const fallback =
-        pack.profile?.fullAccess ||
-        pack.subscription?.premiumActiveSubtext ||
-        pack.common?.premiumActive ||
-        "Premium Active";
-      pack.subscription.premiumActiveSubtextPaid = fallback;
+    if (typeof v === "string") {
+      const trimmed = v.trim();
+      if (!trimmed) continue; // ignore empty
+      if (isKeyLikeString(trimmed)) continue; // ignore placeholders that are literally keys
+      out[k] = v;
+      continue;
     }
+
+    if (Array.isArray(v)) {
+      out[k] = v;
+      continue;
+    }
+
+    if (typeof v === "object") {
+      out[k] = mergeDeep(out[k] && typeof out[k] === "object" ? out[k] : {}, v);
+      continue;
+    }
+
+    out[k] = v;
   }
-
-  return pack;
-}
-
-/**
- * Build i18next resources from ONE source of truth.
- */
-function buildResources(source) {
-  const out = {};
-  Object.entries(source || {}).forEach(([lng, pack]) => {
-    const fixed = applyAliasesToPack(structuredClone(pack));
-    out[lng] = { translation: fixed };
-  });
-
-  // Also register aliases at language level so selection works even if UI stores these
-  if (out["pt-BR"] && !out.pt) out.pt = out["pt-BR"];
-  if (out["zh-Hans"] && !out.zh) out.zh = out["zh-Hans"];
 
   return out;
 }
 
-const resources = buildResources(translations);
+function buildResources() {
+  // Only languages that actually exist in the shipped translation objects.
+  const lngs = ["en", "es", "fr", "de", "it", "pt", "zh", "ja"];
+  const resources = {};
 
-const stored =
-  typeof window !== "undefined"
-    ? normalizeLang(window.localStorage.getItem("pk_lang"))
-    : "en";
+  for (const lng of lngs) {
+    // Complete = base truth, translations = overrides/legacy
+    const merged = mergeDeep(
+      mergeDeep({}, translationsComplete?.[lng] || {}),
+      translations?.[lng] || {}
+    );
+
+    resources[lng] = { translation: merged };
+  }
+
+  return resources;
+}
+
+const resources = buildResources();
+
+// Restore language preference if present
+const savedLng =
+  (typeof window !== "undefined" &&
+    window.localStorage &&
+    window.localStorage.getItem("pk_lang")) ||
+  "en";
+
+const initialLng = resources[savedLng] ? savedLng : "en";
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: stored,
+  lng: initialLng,
   fallbackLng: "en",
+
+  // never leak null/empty/object values into UI
   returnNull: false,
   returnEmptyString: false,
   returnObjects: false,
 
-  // CRITICAL: make missing keys obvious so we can finish coverage fast.
-  parseMissingKeyHandler: (key) => `⟦${key}⟧`,
+  // If missing, show readable fallback (NOT the raw key)
+  parseMissingKeyHandler: (key) => humanizeKey(key),
 
   interpolation: { escapeValue: false },
-  react: { useSuspense: false },
 });
 
-i18n.on("languageChanged", (lng) => {
-  try {
-    const normalized = normalizeLang(lng);
-    window.localStorage.setItem("pk_lang", normalized);
-    if (lng !== normalized) i18n.changeLanguage(normalized);
-  } catch {}
-});
+// GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
+// This ensures NO component can leak keys, even if they bypass safeTranslation wrapper
+const originalT = i18n.t.bind(i18n);
+i18n.t = function(key, options) {
+  const raw = originalT(key, options);
+  return enforceTranslation(key, raw, i18n.language);
+};
 
 export default i18n;

@@ -13,10 +13,10 @@ import InfoTooltip from "@/components/ui/InfoTooltip";
 import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { enforceTranslation } from "@/components/i18n/enforceTranslation";
 
-const TOBACCONIST_ICON = '/assets/expert-tobacconist.png';
+const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png';
 
 export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
   const { t } = useTranslation();

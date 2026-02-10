@@ -3,7 +3,7 @@
  * Client-side scanners that generate the three required reports
  */
 
-// translationsExtended removed - using inline resources instead
+import { translationsExtended } from './translations-extended';
 
 const SUPPORTED_LOCALES = ["en", "es", "fr", "de", "it", "pt-BR", "nl", "pl", "ja", "zh-Hans"];
 
@@ -58,12 +58,30 @@ export function scanHardcodedStrings() {
  * Validates that every key in EN exists in all other languages
  */
 export function validateMissingKeys() {
-  // Validation stub - i18n resources are now inlined
+  const enKeys = getAllKeys(translationsExtended.en.common);
+  const missing = {};
+  
+  SUPPORTED_LOCALES.forEach(locale => {
+    if (locale === 'en') return;
+    
+    const localeKeys = getAllKeys(translationsExtended[locale]?.common || {});
+    const missingKeys = enKeys.filter(key => !localeKeys.includes(key));
+    
+    if (missingKeys.length > 0) {
+      missing[locale] = missingKeys;
+    }
+  });
+  
+  const totalMissing = Object.values(missing).reduce((sum, keys) => sum + keys.length, 0);
+  
   return {
-    missing_keys: {},
+    missing_keys: missing,
     summary: {
-      total_missing: 0,
-      by_locale: {}
+      total_missing: totalMissing,
+      by_locale: Object.keys(missing).reduce((acc, locale) => {
+        acc[locale] = missing[locale].length;
+        return acc;
+      }, {})
     }
   };
 }

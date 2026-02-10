@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { motion } from "framer-motion";
-import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import { useMeasurement } from "@/components/utils/measurementConversion";
 import { getUsageCharacteristics } from "@/components/utils/schemaCompatibility";
 import {
@@ -61,7 +60,14 @@ export default function PipeDetailPage() {
 
   const queryClient = useQueryClient();
   const { useImperial, setUseImperial } = useMeasurement();
-  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
+
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
+  });
 
   const { data: pipe, isLoading: pipeLoading, error: pipeError } = useQuery({
     queryKey: ['pipe', pipeId, user?.email],
@@ -164,9 +170,8 @@ export default function PipeDetailPage() {
     enabled: !!user?.email,
   });
 
-  // Canonical premium access check
-  const effective = getEffectiveEntitlement(user);
-  const isPaidUser = effective === "pro" || effective === "premium";
+  // Canonical premium access check (post-trial: paid only)
+  const isPaidUser = hasPremiumAccess(user);
 
   const updateMutation = useMutation({
     mutationFn: (data) => safeUpdate('Pipe', pipeId, data, user?.email),

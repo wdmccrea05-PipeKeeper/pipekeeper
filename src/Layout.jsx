@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { BUILD_VERSION } from "./components/buildVersion";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
 import GlobalErrorBoundary from "@/components/system/GlobalErrorBoundary";
@@ -13,10 +12,10 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
-import { SUPABASE_CONFIG_OK, getSupabase, getSupabaseAsync, getSUPABASE_URL, getSUPABASE_ANON_KEY } from "@/components/utils/supabaseClient";
 import { Toaster } from "@/components/ui/sonner";
 import { isCompanionApp, isIOSCompanion } from "@/components/utils/companion";
 import { isAppleBuild, FEATURES } from "@/components/utils/appVariant";
+import { warnIfLooksLikeKey } from "@/components/utils/i18nDiagnostics";
 import AgeGate from "@/pages/AgeGate";
 import DocumentTitle from "@/components/DocumentTitle";
 import TermsGate from "@/components/TermsGate";
@@ -31,18 +30,14 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
-import { ui } from "@/components/i18n/ui";
 
-const PIPEKEEPER_LOGO = "/assets/pipekeeper-logo.png";
-const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
-const TOBACCONIST_ICON = "/assets/expert-tobacconist.png";
-
-// Suppress console logs in production
-if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-  console.log("[BUILD_VERSION]", BUILD_VERSION);
-}
+const PIPEKEEPER_LOGO =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+const PIPE_ICON =
+  "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
 function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
   const isActive = currentPage === item.page;
@@ -71,10 +66,6 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
           src={item.icon}
           alt={item.name}
           className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
-          onError={(e) => {
-            e.target.style.display = 'none';
-            e.target.nextSibling?.classList.remove('hidden', 'lg:inline');
-          }}
           style={{
             filter: isMobile
               ? "brightness(0)"
@@ -99,10 +90,6 @@ function syncKey(email) {
   return `pk_stripe_sync_last_${email || "unknown"}`;
 }
 
-function syncRetryKey(email) {
-  return `pk_stripe_sync_retries_${email || "unknown"}`;
-}
-
 function shouldRunStripeSync(email) {
   try {
     if (!email) return false;
@@ -116,28 +103,10 @@ function shouldRunStripeSync(email) {
   }
 }
 
-function getStripeSyncRetries(email) {
-  try {
-    const v = localStorage.getItem(syncRetryKey(email));
-    return v ? parseInt(v, 10) : 0;
-  } catch {
-    return 0;
-  }
-}
-
 function markStripeSyncRan(email) {
   try {
     if (!email) return;
     localStorage.setItem(syncKey(email), new Date().toISOString());
-    localStorage.removeItem(syncRetryKey(email));
-  } catch {}
-}
-
-function incrementStripeSyncRetry(email) {
-  try {
-    if (!email) return;
-    const current = getStripeSyncRetries(email);
-    localStorage.setItem(syncRetryKey(email), String(current + 1));
   } catch {}
 }
 
@@ -159,13 +128,7 @@ function markSubscribePromptShown() {
   } catch {}
 }
 
-async function tryStripeSync(email) {
-  // Max 3 retries per session
-  if (getStripeSyncRetries(email) >= 3) {
-    console.warn("[Layout] Stripe sync: max retries reached, skipping");
-    return { ok: false, reason: "max_retries" };
-  }
-
+async function tryStripeSync() {
   const candidates = [
     "syncFromStripe",
     "syncStripeFromStripe",
@@ -179,29 +142,17 @@ async function tryStripeSync(email) {
   for (const fn of candidates) {
     try {
       const params = isIOSCompanion?.() ? { platform: "ios" } : {};
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout per attempt
-      
       const res = await base44.functions.invoke(fn, params);
-      clearTimeout(timeoutId);
       return { ok: true, fn, res };
     } catch (e) {
       // keep trying next name
     }
   }
 
-  incrementStripeSyncRetry(email);
   return { ok: false };
 }
 
-// Force deployment: entitlement check v2
 export default function Layout({ children, currentPageName }) {
-  // CRITICAL: Mount entitlement check immediately - runs on every render
-  const { user, hasPaidAccess, isAdmin: userIsAdmin, isLoading: userLoading, error: userError } = useCurrentUser();
-
-  // Admin access ONLY from useCurrentUser (single source of truth)
-  const isAdmin = userIsAdmin;
-  
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";
@@ -215,31 +166,9 @@ export default function Layout({ children, currentPageName }) {
   const [showQuickAccess, setShowQuickAccess] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-
-  // Derive page name from URL if not passed explicitly
-  const resolvedPageName = useMemo(() => {
-    if (currentPageName) return currentPageName;
-
-    const path = (location?.pathname || "/").toLowerCase();
-
-    if (path === "/" || path.includes("/home")) return "Home";
-    if (path.includes("/pipes")) return "Pipes";
-    if (path.includes("/tobacco") || path.includes("/cellar")) return "Tobacco";
-    if (path.includes("/community")) return "Community";
-    if (path.includes("/profile")) return "Profile";
-    if (path.includes("/faq")) return "FAQ";
-    if (path.includes("/support")) return "Support";
-    if (path.includes("/subscription")) return "Subscription";
-    if (path.includes("/terms")) return "TermsOfService";
-    if (path.includes("/privacy")) return "PrivacyPolicy";
-    if (path.includes("/invite")) return "Invite";
-    if (path.includes("/auth") || path.includes("/resetpassword")) return "Auth";
-
-    return "Home";
-  }, [currentPageName, location?.pathname]);
+  const { t } = useTranslation();
 
   // Handle Android back button
   useEffect(() => {
@@ -261,21 +190,21 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [mobileOpen, navigate]);
 
-  const navItems = useMemo(() => [
-    { name: ui("nav.home"), page: "Home", icon: Home, isIconComponent: true },
-    { name: ui("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
+  const navItems = [
+    { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
+    { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
     {
-      name: isAppleBuild ? ui("nav.cellar") : ui("nav.tobacco"),
+      name: isAppleBuild ? t("nav.cellar") : t("nav.tobacco"),
       page: "Tobacco",
       icon: Leaf,
       isIconComponent: true,
     },
     ...(FEATURES.community
-      ? [{ name: ui("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
+      ? [{ name: t("nav.community"), page: "Community", icon: Users, isIconComponent: true, isPremium: true }]
       : []),
-    { name: ui("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
-    { name: ui("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
-  ], []);
+    { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
+    { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
+  ];
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -288,21 +217,34 @@ export default function Layout({ children, currentPageName }) {
         "PublicProfile",
         "Index",
         "Subscription",
-        "Auth",
-        "ResetPassword",
       ]),
     []
   );
 
-  const subscription = null;
-  const subLoading = false;
+  const { user, isLoading: userLoading, error: userError, hasPremium: hasPaidAccess, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
-  const adminNavItems = useMemo(() => isAdmin ? [
-    { name: ui("admin.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: ui("admin.userReport"), page: "UserReport", icon: Users, isIconComponent: true },
-    { name: ui("admin.contentModeration"), page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: ui("admin.eventsLog"), page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
-  ] : [], [isAdmin]);
+  const adminNavItems = isAdmin ? [
+    { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
+    { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+  ] : [];
+
+  // Block render until subscription is loaded (prevents Apple fallback race)
+  const subscriptionReady = !userLoading && (subscription || true);
+
+  // Anti-regression: Check nav labels for key leaks & prevent placeholders (dev-only)
+  useEffect(() => {
+    if (import.meta?.env?.DEV && navItems.length > 0) {
+      const PLACEHOLDER_PATTERNS = /^(Title|Subtitle|Page Title|Page Subtitle|Optional|Info|Description|Label)$/i;
+      navItems.forEach(item => {
+        if (PLACEHOLDER_PATTERNS.test(item.name)) {
+          console.error('[i18n] Placeholder text rendered —', item.name, '— fix required');
+        }
+        warnIfLooksLikeKey(item.name, `Nav: ${item.page}`);
+      });
+    }
+  }, [navItems]);
 
   const showIAPToast = (msg) => {
     setIapToast(msg);
@@ -325,21 +267,8 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     window.addEventListener("storage", handleStorageChange);
-    
-    if (!SUPABASE_CONFIG_OK) return () => window.removeEventListener("storage", handleStorageChange);
-    
-    const supabase = getSupabase();
-    if (!supabase) return () => window.removeEventListener("storage", handleStorageChange);
-    
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      // sync with other tabs
-    });
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      sub?.subscription?.unsubscribe?.();
-    };
-  }, [queryClient, SUPABASE_CONFIG_OK]);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [queryClient]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -353,20 +282,14 @@ export default function Layout({ children, currentPageName }) {
     (async () => {
       try {
         setSyncing(true);
-        const result = await tryStripeSync(user.email);
-        
-        if (result.ok) {
-          markStripeSyncRan(user.email);
+        const result = await tryStripeSync();
+        markStripeSyncRan(user.email);
 
-          if (!cancelled) {
-            await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-            await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-            await queryClient.refetchQueries({ queryKey: ["current-user"] });
-            await queryClient.refetchQueries({ queryKey: ["subscription"] });
-          }
-        } else if (result.reason !== "max_retries") {
-          // Only log if not max retries (which is expected)
-          console.warn("[Layout] Stripe sync did not succeed, will retry next time");
+        if (!cancelled && result.ok) {
+          await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+          await queryClient.refetchQueries({ queryKey: ["current-user"] });
+          await queryClient.refetchQueries({ queryKey: ["subscription"] });
         }
       } catch (e) {
         console.warn("[Layout] Auto Stripe sync failed (non-fatal):", e?.message || e);
@@ -436,8 +359,6 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     if (!ios) return undefined;
-    // Skip global click interception on auth pages
-    if (PUBLIC_PAGES.has(resolvedPageName)) return undefined;
 
     const getClickableText = (evtTarget) => {
       try {
@@ -523,18 +444,18 @@ export default function Layout({ children, currentPageName }) {
       document.removeEventListener("touchend", onTouchEnd, true);
       document.removeEventListener("click", onClick, true);
     };
-  }, [ios, resolvedPageName, PUBLIC_PAGES]);
+  }, [ios]);
 
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
     if (hasPaidAccess) return;
-    if (PUBLIC_PAGES.has(resolvedPageName)) return;
+    if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPaidAccess, resolvedPageName, PUBLIC_PAGES]);
+  }, [userLoading, user?.email, hasPaidAccess, currentPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
@@ -564,12 +485,41 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  // Redirect to auth if unauthenticated (useEffect to avoid render phase state updates)
-  useEffect(() => {
-    if (!user && !userLoading && !PUBLIC_PAGES.has(resolvedPageName)) {
-      navigate(createPageUrl("Auth"), { replace: true });
-    }
-  }, [user, userLoading, resolvedPageName, navigate]);
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <p className="text-[#e8d5b7]">{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if ((userError || !user?.email) && !PUBLIC_PAGES.has(currentPageName)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain"
+          />
+          <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{t("auth.loginPrompt")}</p>
+          <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Block render until subscription is ready (prevents provider mis-detection)
+  if (!subscriptionReady) {
+    return null;
+  }
 
   return (
     <GlobalErrorBoundary>
@@ -582,15 +532,10 @@ export default function Layout({ children, currentPageName }) {
             <div className="w-full">
               <div className="flex items-center justify-between h-16 gap-2 px-3 lg:px-6">
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <BackButton currentPageName={resolvedPageName} />
+                  <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("Home")} className="flex items-center gap-2 flex-shrink-0">
-                    <img 
-                      src={PIPEKEEPER_LOGO} 
-                      alt="PipeKeeper" 
-                      className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] whitespace-nowrap">PipeKeeper</span>
+                    <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
+                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">PipeKeeper</span>
                   </Link>
                 </div>
 
@@ -599,7 +544,7 @@ export default function Layout({ children, currentPageName }) {
                      <NavLink
                        key={item.page}
                        item={item}
-                       currentPage={resolvedPageName}
+                       currentPage={currentPageName}
                        hasPaidAccess={hasPaidAccess}
                      />
                    ))}
@@ -610,7 +555,7 @@ export default function Layout({ children, currentPageName }) {
                          <NavLink
                            key={item.page}
                            item={item}
-                           currentPage={resolvedPageName}
+                           currentPage={currentPageName}
                            hasPaidAccess={hasPaidAccess}
                          />
                        ))}
@@ -625,10 +570,10 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setShowQuickAccess(true)}
                     className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors text-xs lg:text-sm font-medium px-1.5 lg:px-3 py-1.5 rounded-lg hover:bg-white/5 overflow-hidden text-ellipsis whitespace-nowrap hidden lg:block"
                   >
-                    {ui("nav.quickAccess")}
+                    {t("nav.quickAccess")}
                   </button>
                   {syncing ? (
-                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">{ui("nav.syncing")}</span>
+                    <span className="text-xs text-[#E0D8C8]/70 whitespace-nowrap hidden lg:inline">{t("nav.syncing")}</span>
                   ) : null}
                 </div>
               </div>
@@ -638,14 +583,9 @@ export default function Layout({ children, currentPageName }) {
           <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#1A2B3A]/95 backdrop-blur-lg border-b border-[#A35C5C]/50 shadow-lg" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center gap-2">
-                <BackButton currentPageName={resolvedPageName} />
+                <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <img 
-                    src={PIPEKEEPER_LOGO} 
-                    alt="PipeKeeper" 
-                    className="w-7 h-7 object-contain"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
+                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
                   <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
                 </Link>
               </div>
@@ -688,7 +628,7 @@ export default function Layout({ children, currentPageName }) {
                 <NavLink
                   key={item.page}
                   item={item}
-                  currentPage={resolvedPageName}
+                  currentPage={currentPageName}
                   onClick={() => setMobileOpen(false)}
                   hasPaidAccess={hasPaidAccess}
                   isMobile={true}
@@ -703,7 +643,7 @@ export default function Layout({ children, currentPageName }) {
                     <NavLink
                       key={item.page}
                       item={item}
-                      currentPage={resolvedPageName}
+                      currentPage={currentPageName}
                       onClick={() => setMobileOpen(false)}
                       hasPaidAccess={hasPaidAccess}
                       isMobile={true}
@@ -719,41 +659,30 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <main className="flex-1 pb-20 md:pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
-                    <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-                      {/* Show logged out message if redirected from logout */}
-                      {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1" && (
-                        <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-                          <p className="text-sm text-green-400">You've been logged out successfully.</p>
-                        </div>
-                      )}
-                      {children}
-                    </div>
-                  </main>
+            <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+              {children}
+            </div>
+          </main>
 
           <footer className="bg-[#1A2B3A]/95 border-t border-[#A35C5C]/50 mt-auto">
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <img 
-                    src={PIPEKEEPER_LOGO} 
-                    alt="PipeKeeper" 
-                    className="w-5 h-5 object-contain" 
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
+                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-5 h-5 object-contain" />
                   <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {ui("nav.faq")}
+                    {t("nav.faq")}
                   </a>
                   <a href={createPageUrl("Support")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {ui("nav.support")}
+                    {t("nav.support")}
                   </a>
                   <a href={createPageUrl("TermsOfService")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {ui("nav.terms")}
+                    {t("nav.terms")}
                   </a>
                   <a href={createPageUrl("PrivacyPolicy")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">
-                    {ui("nav.privacy")}
+                    {t("nav.privacy")}
                   </a>
                 </div>
               </div>
@@ -778,13 +707,13 @@ export default function Layout({ children, currentPageName }) {
           {showSubscribePrompt && (
             <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
               <div className="w-full max-w-lg rounded-2xl bg-[#243548] border border-[#A35C5C]/60 shadow-2xl p-6">
-                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{ui("subscription.trialEndedTitle")}</h3>
+                <h3 className="text-[#E0D8C8] text-xl font-bold mb-2">{t("subscription.trialEndedTitle")}</h3>
                 <p className="text-[#E0D8C8]/80 mb-5">
-                  {ui("subscription.trialEndedBody")}
+                  {t("subscription.trialEndedBody")}
                 </p>
                 <div className="flex gap-3 justify-end">
                   <Button variant="secondary" onClick={() => setShowSubscribePrompt(false)}>
-                    {ui("subscription.continueFree")}
+                    {t("subscription.continueFree")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -792,7 +721,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl("Subscription"));
                     }}
                   >
-                    {ui("subscription.subscribe")}
+                    {t("subscription.subscribe")}
                   </Button>
                 </div>
               </div>

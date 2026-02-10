@@ -26,7 +26,7 @@ import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import CellarDriftAlert from "../components/tobacco/CellarDriftAlert";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 
 const BLEND_TYPES = [
@@ -91,10 +91,9 @@ export default function TobaccoPage() {
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
     queryFn: async () => {
-      if (!user?.email) return [];
       try {
         const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
-        const result = await scopedEntities.TobaccoBlend.filterForUser(user.email, {}, actualSort);
+        const result = await scopedEntities.TobaccoBlend.filterForUser(user?.email, {}, actualSort);
         let data = Array.isArray(result) ? result : [];
         if (sortBy === 'favorites') {
           data = data.sort((a, b) => {
@@ -109,9 +108,9 @@ export default function TobaccoPage() {
         return [];
       }
     },
+    enabled: !!user?.email,
     retry: 2,
     staleTime: 10000,
-    enabled: !!user?.email,
   });
 
   const createMutation = useMutation({

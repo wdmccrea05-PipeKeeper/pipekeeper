@@ -21,7 +21,7 @@ import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreatePipe } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
@@ -42,29 +42,31 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
-  const { user, hasPaidAccess, isLoading: userLoading } = useCurrentUser();
+  const { user, hasPaidAccess, isTrialing } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user.email }, '-created_date');
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Pipes load error:', err);
         return [];
       }
     },
+    enabled: !!user?.email,
     retry: 2,
     staleTime: 10000,
-    enabled: !!user?.email,
   });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // All pipe creation goes through the same path
-      // hasPaidAccess is enforced via limit checks before form submission
+      // Check limits before creating
+      const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+      if (!limitCheck.canCreate) {
+        throw new Error(limitCheck.reason || 'Cannot create pipe');
+      }
       return base44.entities.Pipe.create(data);
     },
     onSuccess: () => {
@@ -188,6 +190,16 @@ export default function PipesPage() {
             </Button>
             <Button 
               onClick={async () => {
+                const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+                if (!limitCheck.canCreate) {
+                  toast.error(limitCheck.reason, {
+                    action: {
+                      label: t("subscription.upgrade"),
+                      onClick: () => window.location.href = createPageUrl('Subscription')
+                    }
+                  });
+                  return;
+                }
                 setEditingPipe(null);
                 setShowForm(true);
               }}

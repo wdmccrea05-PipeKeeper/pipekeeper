@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { supabase } from "@/components/utils/supabaseClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { toast } from "sonner";
@@ -16,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { User, Crown, ArrowRight, LogOut, Upload, AlertCircle } from "lucide-react";
 
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { shouldShowPurchaseUI, getSubscriptionManagementMessage, isIOSCompanion } from "@/components/utils/companion";
@@ -63,7 +62,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, effectiveTier, isLoading: userLoading } = useCurrentUser();
+  const { user, provider, subscription, isLoading: userLoading } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.auth_user_id || user?.id || null;
@@ -86,6 +85,28 @@ export default function ProfilePage() {
     enabled: !!(userId || email),
     staleTime: 30_000,
   });
+
+  // Sanity check: detect provider conflicts (dev/admin only)
+  useEffect(() => {
+    if (!profile || !import.meta.env.DEV) return;
+
+    const hasStripe = !!(profile.stripe_customer_id || profile.stripeCustomerId);
+    const hasApple = !!(profile.apple_original_transaction_id || profile.appleOriginalTransactionId);
+
+    if (hasStripe && hasApple && provider !== "stripe") {
+      console.warn(
+        "[Profile] Provider conflict: Both Stripe and Apple IDs exist but provider resolved to:",
+        provider
+      );
+    }
+
+    if (hasStripe && provider !== "stripe") {
+      console.error(
+        "[Profile] CRITICAL: stripe_customer_id exists but provider is not 'stripe'",
+        { provider, profile_id: profile.id }
+      );
+    }
+  }, [profile, provider]);
 
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -116,9 +137,9 @@ export default function ProfilePage() {
     notes: "",
   });
 
-  // Paid / trial display
+  // Paid / trial display (your existing logic)
   const isWithinTrial = isTrialWindow(user?.created_date || user?.createdAt || user?.created_at);
-  const hasActiveSubscription = effectiveTier !== "free";
+  const hasActiveSubscription = hasPremiumAccess(user, subscription);
 
   // Hydrate form from profile
   useEffect(() => {
@@ -223,18 +244,9 @@ export default function ProfilePage() {
 
   async function handleLogout() {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) console.error("SignOut error:", error);
-
-      // Clear cache
-      queryClient.removeQueries();
-      localStorage.removeItem("pk_stripe_sync_last_" + (user?.email || "unknown"));
-
-      // Redirect to Auth (no full page reload)
-      navigate(createPageUrl("Auth") + "?loggedOut=1");
-    } catch (err) {
-      console.error("[Profile] Logout error:", err);
-      navigate(createPageUrl("Auth") + "?loggedOut=1");
+      await base44.auth.logout();
+    } finally {
+      window.location.href = "/";
     }
   }
 
@@ -263,10 +275,10 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   {hasActiveSubscription ? (
-                   <>
-                     <div className="font-semibold text-amber-900">
-                       {effectiveTier === "pro" ? "Pro Active" : "Premium Active"}
-                     </div>
+                    <>
+                      <div className="font-semibold text-amber-900">
+                        {user?.subscription_tier === "pro" ? t("profile.proActive") : t("profile.premiumActive")}
+                      </div>
                       <div className="text-sm text-amber-700">{t("profile.fullAccess")}</div>
                     </>
                   ) : isWithinTrial ? (
@@ -285,37 +297,42 @@ export default function ProfilePage() {
 
               <div className="w-full md:w-auto flex flex-col gap-2">
                 {!isIOSCompanion() ? (
-                    <>
-                      {/* Show Manage Subscription for paid users */}
-                      {hasActiveSubscription && (
-                        <div className="flex flex-col gap-1">
-                          <Button
-                            className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full"
-                            onClick={() => navigate(createPageUrl("Subscription"))}
-                          >
-                            Manage Subscription
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </div>
-                      )}
-
-                      {shouldShowPurchaseUI() && !hasActiveSubscription && (
+                  <>
+                    {subscription?.status === "active" || subscription?.status === "trialing" ? (
                         <Button
-                          onClick={() => navigate(createPageUrl("Subscription"))}
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                          onClick={() => {
+                            if (provider === "stripe") {
+                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+                            } else if (provider === "apple") {
+                              window.location.href = "https://apps.apple.com/account/subscriptions";
+                            } else {
+                              navigate(createPageUrl("Subscription"));
+                            }
+                          }}
                         >
-                          {t("profile.upgrade")}
+                          Manage Subscription
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
-                      )}
+                      ) : null}
 
-                      {!shouldShowPurchaseUI() && (
-                         <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
-                           {getSubscriptionManagementMessage()}
-                         </div>
-                       )}
-                    </>
-                  ) : (
+                    {shouldShowPurchaseUI() && !hasActiveSubscription && (
+                      <Button
+                        onClick={() => navigate(createPageUrl("Subscription"))}
+                        className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                      >
+                        {t("profile.upgrade")}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
+
+                    {!shouldShowPurchaseUI() && (
+                       <div className="text-xs text-amber-800/80 text-right max-w-[260px]">
+                         {getSubscriptionManagementMessage()}
+                       </div>
+                     )}
+                  </>
+                ) : (
                   <div className="text-sm text-amber-800/80 bg-amber-50 p-3 rounded-lg">
                     {t("profile.premiumSubscriptionWebOnly")}{" "}
                     <a className="underline font-medium" href="https://pipekeeper.app/Subscription" target="_blank" rel="noreferrer">
@@ -353,11 +370,20 @@ export default function ProfilePage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Badges - canonical tier */}
+            {/* Badges (kept visible) */}
             <div className="flex gap-2 flex-wrap">
               <Badge className="bg-[#A35C5C] text-white border-0">
-                {effectiveTier === "pro" ? "PRO" : effectiveTier === "premium" ? "PREMIUM" : "FREE"}
+                {user?.subscription_tier ? String(user.subscription_tier).toUpperCase() : "FREE"}
               </Badge>
+              {provider === "stripe" && (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
+              )}
+              {provider === "apple" && (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Apple</Badge>
+              )}
+              {subscription?.status ? (
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Status: {subscription.status}</Badge>
+              ) : null}
             </div>
 
             {/* Avatar */}

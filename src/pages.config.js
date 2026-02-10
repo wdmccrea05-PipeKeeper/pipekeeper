@@ -53,10 +53,8 @@ import adminreportsTsx from './pages/AdminReports.tsx';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
-import Auth from './pages/Auth';
 import BulkLogoUpload from './pages/BulkLogoUpload';
 import Community from './pages/Community';
-import Debug from './pages/Debug';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -65,14 +63,11 @@ import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
-import NotFound from './pages/NotFound';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
-import Reset from './pages/Reset';
-import ResetPassword from './pages/ResetPassword';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
@@ -102,10 +97,8 @@ export const PAGES = {
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
-    "Auth": Auth,
     "BulkLogoUpload": BulkLogoUpload,
     "Community": Community,
-    "Debug": Debug,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
@@ -114,14 +107,11 @@ export const PAGES = {
     "Import": Import,
     "Invite": Invite,
     "InviteFull": InviteFull,
-    "NotFound": NotFound,
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
     "Profile": Profile,
     "PublicProfile": PublicProfile,
-    "Reset": Reset,
-    "ResetPassword": ResetPassword,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,

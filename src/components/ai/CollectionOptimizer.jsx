@@ -116,9 +116,9 @@ class PKErrorBoundary extends React.Component {
       return (
         <div className="p-4">
           <div className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-            <div className="font-semibold text-rose-900">Something went wrong</div>
+            <div className="font-semibold text-rose-900">{t("errors.somethingWrong")}</div>
             <div className="mt-2 text-sm text-rose-800">
-              {String(this.state.error?.message || this.state.error || "Unknown error")}
+              {String(this.state.error?.message || this.state.error || t("errors.unknownError"))}
             </div>
           </div>
         </div>

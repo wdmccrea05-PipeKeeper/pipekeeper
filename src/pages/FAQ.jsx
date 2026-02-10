@@ -2,7 +2,7 @@ import React from "react";
 import FAQFull from "./FAQFull";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function AppleFAQ() {
   const { t } = useTranslation();

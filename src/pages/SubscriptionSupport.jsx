@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, RefreshCw, Settings, Download } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, Settings } from "lucide-react";
 
 export default function SubscriptionSupport() {
   const { user, isAdmin } = useCurrentUser();
@@ -14,6 +14,17 @@ export default function SubscriptionSupport() {
   const [funnelData, setFunnelData] = useState(null);
   const [driftData, setDriftData] = useState([]);
   const [timeWindow, setTimeWindow] = useState("24h");
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Admin access required</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const loadHealth = async () => {
     try {
@@ -51,55 +62,20 @@ export default function SubscriptionSupport() {
     }
   };
 
-  const exportUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await base44.functions.invoke('exportAllUsers', {});
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Failed to export users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   React.useEffect(() => {
     loadHealth();
     loadFunnel();
     loadDrift();
   }, [timeWindow]);
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Admin access required</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-[#E0D8C8]">Subscription Support</h1>
-        <div className="flex gap-2">
-          <Button onClick={exportUsers} disabled={loading} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export Users CSV
-          </Button>
-          <Button onClick={() => { loadHealth(); loadFunnel(); loadDrift(); }} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+        <Button onClick={() => { loadHealth(); loadFunnel(); loadDrift(); }} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Integration Health */}

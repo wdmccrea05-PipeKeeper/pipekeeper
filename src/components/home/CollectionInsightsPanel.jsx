@@ -18,7 +18,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { Download } from "lucide-react";
 import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
@@ -28,53 +28,49 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { data: agingAlertCount = 0 } = useQuery({
     queryKey: ["aging-alerts", user?.email],
     queryFn: async () => {
-      try {
-        const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
-        
-        const cellarBlends = (tobaccoBlends || []).filter(b => {
-         if (!b) return false;
-         const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
-                             (Number(b.bulk_cellared) || 0) > 0 || 
-                             (Number(b.pouch_pouches_cellared) || 0) > 0;
-         return hasCellared;
-        });
+      const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      
+      const cellarBlends = (tobaccoBlends || []).filter(b => {
+       if (!b) return false;
+       const hasCellared = (Number(b.tin_tins_cellared) || 0) > 0 || 
+                           (Number(b.bulk_cellared) || 0) > 0 || 
+                           (Number(b.pouch_pouches_cellared) || 0) > 0;
+       return hasCellared;
+      });
 
-        let alertCount = 0;
-        cellarBlends.forEach(b => {
-          if (!b) return;
-          const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
-          const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
-            try {
-              const dTime = new Date(d).getTime();
-              const oldTime = new Date(oldest).getTime();
-              if (Number.isNaN(dTime) || Number.isNaN(oldTime)) return oldest;
-              return dTime < oldTime ? d : oldest;
-            } catch {
-              return oldest;
-            }
-          }) : null;
+      let alertCount = 0;
+      cellarBlends.forEach(b => {
+        if (!b) return;
+        const dates = [b.tin_cellared_date, b.bulk_cellared_date, b.pouch_cellared_date].filter(Boolean);
+        const oldestDate = dates.length > 0 ? dates.reduce((oldest, d) => {
+          try {
+            const dTime = new Date(d).getTime();
+            const oldTime = new Date(oldest).getTime();
+            if (Number.isNaN(dTime) || Number.isNaN(oldTime)) return oldest;
+            return dTime < oldTime ? d : oldest;
+          } catch {
+            return oldest;
+          }
+        }) : null;
 
-         if (oldestDate) {
-           try {
-             const parsed = new Date(oldestDate);
-             if (Number.isNaN(parsed.getTime())) return;
-             const months = differenceInMonths(new Date(), parsed);
-             const potential = b.aging_potential;
+       if (oldestDate) {
+         try {
+           const parsed = new Date(oldestDate);
+           if (Number.isNaN(parsed.getTime())) return;
+           const months = differenceInMonths(new Date(), parsed);
+           const potential = b.aging_potential;
 
-             // Alert if tobacco has reached optimal aging
-             if (potential === "Excellent" && months >= 24) alertCount++;
-             else if (potential === "Good" && months >= 12) alertCount++;
-             else if (potential === "Fair" && months >= 3) alertCount++;
-           } catch {
-             // ignore invalid dates
-           }
+           // Alert if tobacco has reached optimal aging
+           if (potential === "Excellent" && months >= 24) alertCount++;
+           else if (potential === "Good" && months >= 12) alertCount++;
+           else if (potential === "Fair" && months >= 3) alertCount++;
+         } catch {
+           // ignore invalid dates
          }
-        });
-        
-        return alertCount;
-      } catch {
-        return 0;
-      }
+       }
+      });
+      
+      return alertCount;
     },
     enabled: !!user?.email,
     staleTime: 60000,
@@ -85,12 +81,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
     queryKey: ["user-profile", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      try {
-        const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-        return profiles?.[0] || null;
-      } catch {
-        return null;
-      }
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles?.[0] || null;
     },
     staleTime: 10_000,
   });

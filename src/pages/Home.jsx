@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/system/ErrorBoundary";
@@ -15,8 +15,7 @@ import {
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle, RotateCcw
 } from "lucide-react";
 import { isTrialWindowNow } from "@/components/utils/access";
-import { getEffectiveEntitlement } from "@/components/utils/getEffectiveEntitlement";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
@@ -34,23 +33,90 @@ import { SafeText, SafeHeading, SafeLabel } from "@/components/ui/SafeText";
 import { calculateCellaredOzFromLogs, getCellarBreakdownFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import PremiumActiveIndicator from "@/components/subscription/PremiumActiveIndicator";
 
-const PIPE_ICON = "/assets/pipekeeper-pipe-icon.png";
+const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png';
 
 export default function HomePage() {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  
+  const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTestingNotice, setShowTestingNotice] = useState(false);
   const [showCellarDialog, setShowCellarDialog] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = React.useState(false);
 
-  // ALL hooks MUST be called unconditionally at top level before any early returns
-  const { user, isLoading: userLoading, error: userError } = useCurrentUser();
+  React.useEffect(() => {
+    const handleError = (error) => {
+      console.error('[Home Error]', error);
+      setHasError(true);
+    };
+    
+    const handleUnhandledRejection = (event) => {
+      console.error('[Home Unhandled Promise]', event.reason);
+      setHasError(true);
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('error', handleError);
+      window.addEventListener('unhandledrejection', handleUnhandledRejection);
+      return () => {
+        window.removeEventListener('error', handleError);
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      };
+    }
+  }, []);
 
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const authUser = await base44.auth.me();
+      let entityUser = null;
+      try {
+        if (authUser?.email) {
+          const rows = await base44.entities.User.filter({ email: authUser.email });
+          entityUser = rows?.[0] || null;
+        }
+      } catch (e) {
+        console.warn("[Home] Could not load entities.User for subscription fields:", e);
+      }
 
+      let subscriptions = [];
+      try {
+        if (authUser?.email) {
+          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
+          subscriptions = Array.isArray(subs) ? subs : [];
+        }
+      } catch (e) {
+        console.warn("[Home] Could not load Subscription entity:", e);
+      }
 
-  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+      const bestSub = subscriptions.find((s) => s?.status === "active") || subscriptions.find((s) => s?.status === "trialing") || subscriptions[0] || null;
+      let subscriptionLevel = entityUser?.subscription_level;
+      let subscriptionStatus = entityUser?.subscription_status;
+
+      if (bestSub) {
+        const now = new Date();
+        const periodEnd = bestSub.current_period_end ? new Date(bestSub.current_period_end) : null;
+        const isPaid = (bestSub.status === "active" || bestSub.status === "trialing") && (!periodEnd || periodEnd > now);
+        if (isPaid) {
+          subscriptionLevel = "paid";
+          subscriptionStatus = bestSub.status;
+        }
+      }
+
+      return {
+        ...authUser,
+        ...(entityUser || {}),
+        subscription_level: subscriptionLevel,
+        subscription_status: subscriptionStatus,
+        email: authUser?.email || entityUser?.email,
+        subscription: bestSub,
+      };
+    },
+    retry: 2,
+    staleTime: 10000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  });
+
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
     queryFn: async () => {
@@ -59,47 +125,52 @@ export default function HomePage() {
         const results = await base44.entities.OnboardingStatus.filter({ user_email: user?.email });
         return Array.isArray(results) ? results[0] || null : null;
       } catch (err) {
+        console.error('[Home] Onboarding load error:', err);
         return null;
       }
     },
+    enabled: !!user?.email,
     retry: 1,
     staleTime: 10000,
-    gcTime: 30000,
-    enabled: !!user?.email,
   });
 
   const { data: pipes = [], isLoading: pipesLoading, error: pipesError, refetch: refetchPipes } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user.email }, '-created_date');
+        console.log('[Home] Loading pipes for:', user?.email);
+        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date', 10000);
+        console.log('[Home] Pipes loaded:', result?.length);
         return Array.isArray(result) ? result : [];
       } catch (err) {
-        return [];
+        console.error('[Home] Pipes load error:', err);
+        throw err;
       }
     },
-    staleTime: 30000,
-    gcTime: 60000,
-    retry: 1,
     enabled: !!user?.email,
+    retry: 2,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
+  const queryClient = useQueryClient();
+
+  // STANDARDIZED KEY: ["tobacco-blends", user?.email]
   const { data: blends = [], isLoading: blendsLoading, refetch: refetchBlends } = useQuery({
-    queryKey: ['blends', user?.email],
+    queryKey: ['tobacco-blends', user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date');
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, '-created_date', 10000);
         return Array.isArray(result) ? result : [];
       } catch (err) {
+        console.error('[Home] Blends load error:', err);
         return [];
       }
     },
-    staleTime: 30000,
-    gcTime: 60000,
-    retry: 1,
     enabled: !!user?.email,
+    retry: 1,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Subscribe to blend updates and invalidate cellar logs
@@ -113,21 +184,26 @@ export default function HomePage() {
     return () => unsubscribe?.();
   }, [user?.email, queryClient]);
 
+  // STANDARDIZED KEY: ["cellar-logs-all", user?.email]
   const { data: cellarLogs = [], refetch: refetchCellarLogs } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
       try {
-        const result = await base44.entities.CellarLog.filter({ created_by: user.email });
+        const result = await base44.entities.CellarLog.filter({ created_by: user?.email }, '-created_date', 100);
         return Array.isArray(result) ? result : [];
       } catch (err) {
+        console.error('[Home] Cellar logs load error:', err);
         return [];
       }
     },
-    staleTime: 30000,
-    gcTime: 60000,
     enabled: !!user?.email,
+    retry: 1,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
+
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
+  const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),
@@ -185,6 +261,7 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (err) {
+      console.error('[Home] Onboarding complete error:', err);
       setShowOnboarding(false);
     }
   };
@@ -205,25 +282,78 @@ export default function HomePage() {
       }
       setShowOnboarding(false);
     } catch (err) {
+      console.error('[Home] Onboarding skip error:', err);
       setShowOnboarding(false);
     }
   };
 
-  // Safe values - always available (computed after all hooks)
+  if (userLoading) {
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+        <div className="text-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+            alt="PipeKeeper"
+            className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <p className={PK_THEME.textBody}>{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userError) {
+    console.error('[Home] User error:', userError);
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">{t("auth.loginPrompt")}</p>
+            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!user?.email) {
+    return (
+      <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("auth.loginRequired")}</h2>
+            <Button onClick={() => base44.auth.redirectToLogin()}>{t("auth.login")}</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const safePipes = Array.isArray(pipes) ? pipes : [];
   const safeBlends = Array.isArray(blends) ? blends : [];
   const safeCellarLogs = Array.isArray(cellarLogs) ? cellarLogs : [];
-  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-  const effective = getEffectiveEntitlement(user);
-  const isPaidUser = isAdmin || effective === "pro" || effective === "premium";
-  const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
-  const hasViewedInsights = typeof window !== 'undefined' && localStorage.getItem('pk_viewed_insights') === 'true';
-  
+
   const totalCellaredOz = safeCellarLogs.reduce((sum, log) => {
     if (log.transaction_type === 'added') return sum + (log.amount_oz || 0);
     if (log.transaction_type === 'removed') return sum - (log.amount_oz || 0);
     return sum;
   }, 0);
+
+  // Check if user has added notes or viewed insights for checklist
+  const hasNotes = safePipes.some(p => p?.notes) || safeBlends.some(b => b?.notes);
+  const hasViewedInsights = localStorage.getItem('pk_viewed_insights') === 'true';
+  
+  // Mark insights as viewed when user visits insights tab
+  useEffect(() => {
+    const markInsightsViewed = () => {
+      localStorage.setItem('pk_viewed_insights', 'true');
+    };
+    window.addEventListener('focus', markInsightsViewed);
+    return () => window.removeEventListener('focus', markInsightsViewed);
+  }, []);
 
   const getCellarBreakdown = () => {
     const byBlend = {};
@@ -240,6 +370,7 @@ export default function HomePage() {
     return Object.values(byBlend).filter(b => b.totalOz > 0).sort((a, b) => b.totalOz - a.totalOz);
   };
 
+  const isInitialLoading = pipesLoading || blendsLoading || onboardingLoading;
   const totalPipeValue = safePipes.reduce((sum, p) => sum + (p?.estimated_value || 0), 0);
   const cellarBreakdown = getCellarBreakdown();
   const favoritePipes = safePipes.filter(p => p?.is_favorite);
@@ -248,31 +379,40 @@ export default function HomePage() {
   const recentBlends = safeBlends.slice(0, 4);
 
   const handleDismissNotice = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('testingNoticeSeen', 'true');
-    }
+    localStorage.setItem('testingNoticeSeen', 'true');
     setShowTestingNotice(false);
   };
 
-  // Show loading state
-  if (userLoading) {
+  if (hasError) {
     return (
       <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#A35C5C] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#E0D8C8]/70">Loading...</p>
-        </div>
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#e8d5b7] mb-2">{t("home.errorTitle")}</h2>
+            <p className="text-[#e8d5b7]/70 mb-4">{t("home.errorRefresh")}</p>
+            <Button onClick={() => window.location.reload()}>{t("common.refresh")}</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  // Don't render if no user (Layout will redirect to Auth)
-  if (!user) {
-    return null;
-  }
-
   return (
     <>
+      {isInitialLoading ? (
+        <div className={`min-h-screen ${PK_THEME.pageBg} flex items-center justify-center p-4`}>
+          <div className="text-center">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
+              alt="PipeKeeper"
+              className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
+            />
+            <p className={PK_THEME.textBody}>{t("home.loadingCollection")}</p>
+          </div>
+        </div>
+      ) : null}
+
       {showOnboarding && user?.email ? (
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
@@ -280,7 +420,7 @@ export default function HomePage() {
         />
       ) : null}
 
-      {showTestingNotice && !showOnboarding ? (
+      {showTestingNotice && !showOnboarding && !isInitialLoading ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -294,8 +434,8 @@ export default function HomePage() {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Testing Period Active</h3>
-                    <p className="text-sm text-white/80 mt-1">Important Information</p>
+                    <h3 className="text-xl font-bold">{t("home.testingPeriodTitle")}</h3>
+                    <p className="text-sm text-white/80 mt-1">{t("home.importantInfo")}</p>
                   </div>
                 </div>
                 <button onClick={handleDismissNotice} className="text-white/80 hover:text-white transition-colors">
@@ -305,36 +445,38 @@ export default function HomePage() {
             </div>
             <div className="p-6">
               <p className="text-[#E0D8C8] text-lg leading-relaxed mb-4">
-                Thank you for testing PipeKeeper! Your feedback helps us improve.
+                {t("home.testingPeriodBody")}
               </p>
               <p className="text-[#E0D8C8]/70 text-sm">
-                Thank you for being an early supporter!
+                {t("home.testingThankYou")}
               </p>
               <Button onClick={handleDismissNotice} className="w-full mt-6 bg-[#8b3a3a] hover:bg-[#6d2e2e]">
-                Got it, thanks!
+                {t("home.gotItThanks")}
               </Button>
             </div>
           </motion.div>
         </div>
       ) : null}
 
-      <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {!isInitialLoading && (
+        <div className={`min-h-screen ${PK_THEME.pageBg} overflow-x-hidden`}>
           <motion.div 
-            className="text-center mb-8 sm:mb-12"
+            className="text-center mb-8 sm:mb-12 px-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <PkPageTitle className="mb-3 sm:mb-4 leading-tight">
-              Your Pipe Collection
+              Welcome to PipeKeeper
             </PkPageTitle>
-            <p className="max-w-2xl mx-auto text-[#E0D8C8]/70 text-base">
-              Catalog, track, and enjoy your pipe and tobacco collection
+            <p className="max-w-2xl mx-auto px-2 text-[#E0D8C8]/70 text-base">
+              {t("home.pageSubtitle", { defaultValue: "Catalog, track, and enjoy your pipe and tobacco collection" })}
             </p>
           </motion.div>
 
           {/* Premium Active Indicator */}
-          <PremiumActiveIndicator user={user} subscription={null} />
+          <div className="max-w-4xl mx-auto px-4">
+            <PremiumActiveIndicator user={user} subscription={user?.subscription} />
+          </div>
 
           {(safePipes.length < 3 || safeBlends.length < 3) && (
             <motion.div
@@ -362,13 +504,16 @@ export default function HomePage() {
                 <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#8b3a3a]/80 via-[#6d2e2e]/70 to-[#5a2525]/80 z-10" />
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity bg-gradient-to-br from-[#8b3a3a] to-[#5a2525]"
+                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
+                    style={{
+                      backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/027742301_image.png)'
+                    }}
                   />
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Pipe Collection</h3>
-                        <p className="text-white/90 text-sm sm:text-base">Track and value your pipes</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.pipeCollection")}</h3>
+                        <p className="text-white/90 text-sm sm:text-base">{t("home.trackAndValue")}</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
@@ -378,12 +523,12 @@ export default function HomePage() {
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title="Refresh"
-                          >
+                          title={t("common.refresh")}
+                        >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3">
-                          <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+                          <img src={PIPE_ICON} alt="Pipes" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
                         </div>
                       </div>
                     </div>
@@ -391,17 +536,17 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safePipes.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Pipes in Collection</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.pipesInCollection")}</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">${totalPipeValue.toLocaleString()}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">View Collection</span>
+                      <span className="font-semibold">{t("home.viewCollection")}</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -418,23 +563,26 @@ export default function HomePage() {
                 <Card className="h-full hover:shadow-xl transition-all border-[#e8d5b7]/20 overflow-hidden cursor-pointer group relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#3d5a4d]/70 via-[#2d4a3d]/60 to-[#1d3a2d]/70 z-10" />
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity bg-gradient-to-br from-[#3d5a4d] to-[#1d3a2d]"
+                    className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity"
+                    style={{
+                      backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/19a8321a9_image.png)'
+                    }}
                   />
                   <div className="relative z-20 p-4 sm:p-8 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Tobacco Cellar</h3>
-                        <p className="text-white/90 text-sm sm:text-base">Manage your blends</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{t("home.tobaccoCellar")}</h3>
+                        <p className="text-white/90 text-sm sm:text-base">{t("home.manageBlends")}</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            queryClient.refetchQueries({ queryKey: ['blends', user?.email] });
+                            queryClient.refetchQueries({ queryKey: ['tobacco-blends', user?.email] });
                             queryClient.refetchQueries({ queryKey: ['cellar-logs-all', user?.email] });
                           }}
                           className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-3 transition-colors"
-                          title="Refresh"
+                          title={t("common.refresh")}
                         >
                           <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </button>
@@ -447,7 +595,7 @@ export default function HomePage() {
                     <div className="flex-1 space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{safeBlends.length}</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Tobacco Blends</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.tobaccoBlends")}</p>
                       </div>
                       
                       <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4 cursor-pointer" onClick={(e) => {
@@ -455,7 +603,7 @@ export default function HomePage() {
                         setShowCellarDialog(true);
                       }}>
                         <p className="text-3xl sm:text-4xl font-bold text-white mb-1">{totalCellaredOz.toFixed(1)} oz</p>
-                        <p className="text-[#e8d5b7] text-sm sm:text-base">Cellared</p>
+                        <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.cellared")}</p>
                       </div>
 
                       {(() => {
@@ -465,14 +613,14 @@ export default function HomePage() {
                         return isPaidUser && totalValue > 0 ? (
                           <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
                             <p className="text-3xl sm:text-4xl font-bold text-white mb-1">≈ ${totalValue.toFixed(0)}</p>
-                            <p className="text-[#e8d5b7] text-sm sm:text-base">Collection Value</p>
+                            <p className="text-[#e8d5b7] text-sm sm:text-base">{t("home.collectionValue")}</p>
                           </div>
                         ) : null;
                       })()}
                     </div>
 
                     <div className="flex items-center justify-between text-white group-hover:translate-x-1 transition-transform text-sm sm:text-base">
-                      <span className="font-semibold">View Cellar</span>
+                      <span className="font-semibold">{t("home.viewCellar")}</span>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
@@ -492,19 +640,19 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
-                    Favorites
+                    {t("home.favorites")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
                     {favoritePipes.map(pipe => (
-                       <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
-                         <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
-                           <img src={PIPE_ICON} alt="" className="w-3.5 h-3.5 object-contain inline-block" />
-                           {pipe.name}
-                         </Badge>
-                       </a>
-                     ))}
+                      <a key={pipe.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
+                        <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
+                          <img src={PIPE_ICON} alt="" className="w-3.5 h-3.5 object-contain inline-block" style={{ filter: 'brightness(0) invert(1)' }} />
+                          {pipe.name}
+                        </Badge>
+                      </a>
+                    ))}
                     {favoriteBlends.map(blend => (
                       <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                         <Badge className="cursor-pointer px-3 py-1.5 flex items-center gap-1.5">
@@ -519,20 +667,20 @@ export default function HomePage() {
             </motion.div>
           )}
 
-          {safePipes.length > 0 && safeBlends.length > 0 && user ? (
+          {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.75 }}
               className="mb-12"
             >
-              <ErrorBoundary fallback={<div className="text-center text-red-500">Failed to load insights</div>}>
+              <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.insightsError")}</div>}>
                 <CollectionInsightsPanel pipes={safePipes} blends={safeBlends} user={user} />
               </ErrorBoundary>
             </motion.div>
           ) : null}
 
-          {safePipes.length > 0 && safeBlends.length > 0 && user ? (
+          {safePipes.length > 0 && safeBlends.length > 0 && user && !pipesLoading && !blendsLoading ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -545,7 +693,7 @@ export default function HomePage() {
                   description="This iOS build focuses on cataloging and cellar inventory management: identification assistance, metadata cleanup, verified measurements, export reports, and organization tools."
                 />
               ) : isPaidUser ? (
-                <ErrorBoundary fallback={<div className="text-center text-red-500">Failed to load Expert Tobacconist</div>}>
+                <ErrorBoundary fallback={<div className="text-center text-red-500">{t("home.expertTobacconistError")}</div>}>
                   <ExpertTobacconist pipes={safePipes} blends={safeBlends} isPaidUser={isPaidUser} user={user} />
                 </ErrorBoundary>
               ) : (
@@ -567,10 +715,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">Recent Pipes</CardTitle>
+                    <CardTitle className="text-lg">{t("home.recentPipes")}</CardTitle>
                       <a href={createPageUrl('Pipes')}>
                          <Button variant="ghost" size="sm">
-                           View All <ArrowRight className="w-4 h-4 ml-1" />
+                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -588,7 +736,7 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{pipe.name}</SafeText>
-                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={pipe.maker || pipe.shape || "Unknown"}>{pipe.maker || pipe.shape || "Unknown"}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={pipe.maker || pipe.shape || t("common.unknown")}>{pipe.maker || pipe.shape || t("common.unknown")}</SafeText>
                             </div>
                             {pipe.estimated_value && (
                               <Badge variant="success" className="text-xs sm:text-sm flex-shrink-0">
@@ -613,10 +761,10 @@ export default function HomePage() {
               >
                 <Card className="w-full">
                   <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
-                    <CardTitle className="text-lg">Recent Tobacco</CardTitle>
+                    <CardTitle className="text-lg">{t("home.recentTobacco")}</CardTitle>
                       <a href={createPageUrl('Tobacco')}>
                          <Button variant="ghost" size="sm">
-                           View All <ArrowRight className="w-4 h-4 ml-1" />
+                           {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </a>
                   </CardHeader>
@@ -638,11 +786,11 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <SafeText as="p" className="font-medium text-sm sm:text-base" truncate>{blend.name}</SafeText>
-                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={blend.manufacturer || blend.blend_type || "Unknown"}>{blend.manufacturer || blend.blend_type || "Unknown"}</SafeText>
+                              <SafeText as="p" className="text-xs sm:text-sm text-[#E0D8C8]/60 mt-0.5" truncate title={blend.manufacturer || blend.blend_type || t("common.unknown")}>{blend.manufacturer || blend.blend_type || t("common.unknown")}</SafeText>
                             </div>
                             {blend.quantity_owned > 0 && (
                               <Badge className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                                {blend.quantity_owned} {blend.quantity_owned > 1 ? "tins" : "tin"}
+                                {blend.quantity_owned} {blend.quantity_owned > 1 ? t("units.tinPlural") : t("units.tin")}
                               </Badge>
                             )}
                           </div>
@@ -670,8 +818,8 @@ export default function HomePage() {
                         <Sparkles className="w-5 h-5 text-[#d4a574]" />
                       </div>
                       <div>
-                        <p className="font-semibold text-[#e8d5b7]">Bulk Import</p>
-                        <p className="text-xs text-[#e8d5b7]/70">Import multiple pipes or blends at once</p>
+                        <p className="font-semibold text-[#e8d5b7]">{t("home.bulkImport")}</p>
+                        <p className="text-xs text-[#e8d5b7]/70">{t("home.importDesc")}</p>
                       </div>
                     </div>
                     <ArrowRight className="w-5 h-5 text-[#e8d5b7]/70" />
@@ -693,43 +841,44 @@ export default function HomePage() {
                   src={PIPE_ICON}
                   alt="Pipe"
                   className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                  style={{ filter: 'brightness(1.1) sepia(0.6) hue-rotate(10deg) saturate(0.5)' }}
                 />
                 <Leaf className="w-12 h-12 sm:w-16 sm:h-16 text-[#e8d5b7]" />
               </div>
               <h2 className="text-xl sm:text-2xl font-semibold text-[#e8d5b7] mb-2">
-                Welcome to Your Collection
+                {t("home.welcomeToCollection")}
               </h2>
               <p className="text-sm sm:text-base text-[#e8d5b7]/70 mb-6 sm:mb-8 max-w-md mx-auto px-2">
-                Start building your pipe and tobacco collection
+                {t("home.emptyStateDesc")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-sm mx-auto">
                 <a href={createPageUrl('Pipes')} className="w-full sm:w-auto">
                   <Button className="bg-amber-700 hover:bg-amber-800 w-full">
-                    Add Your First Pipe
+                    {t("home.addFirstPipe")}
                   </Button>
                 </a>
                 <a href={createPageUrl('Tobacco')} className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full">
-                    Add Your First Blend
+                    {t("home.addFirstBlend")}
                   </Button>
                 </a>
               </div>
             </motion.div>
           )}
         </div>
-      </div>
+      )}
 
       <Dialog open={showCellarDialog} onOpenChange={setShowCellarDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
-              Cellar Breakdown ({totalCellaredOz.toFixed(1)} oz)
+              {t("home.cellarBreakdown")} ({totalCellaredOz.toFixed(1)} oz)
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             {cellarBreakdown.length === 0 ? (
-              <p className="text-center text-[#E0D8C8]/60 py-8">No cellared tobacco yet</p>
+              <p className="text-center text-[#E0D8C8]/60 py-8">{t("home.noCellaredTobacco")}</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {cellarBreakdown.map((item) => (

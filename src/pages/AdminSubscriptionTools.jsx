@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Download } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function AdminSubscriptionTools() {
@@ -17,7 +17,6 @@ export default function AdminSubscriptionTools() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [updatedUser, setUpdatedUser] = useState(null);
-  const [exporting, setExporting] = useState(false);
 
   // Check admin access
   if (!isLoading && user?.role !== "admin") {
@@ -108,45 +107,10 @@ export default function AdminSubscriptionTools() {
     }
   };
 
-  const handleExportEntitlements = async () => {
-    try {
-      setExporting(true);
-      const response = await base44.functions.invoke("exportEntitlementsCsv");
-      const csv = response?.data?.csv;
-      if (!csv) {
-        alert("Failed to export CSV");
-        return;
-      }
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `entitlements_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    } catch (err) {
-      alert(`Export failed: ${err?.message || err}`);
-    } finally {
-      setExporting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-[#E0D8C8]">Subscription Admin Tools</h1>
-          <Button
-            onClick={handleExportEntitlements}
-            disabled={exporting}
-            className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            {exporting ? "Exporting..." : "Export Entitlements CSV"}
-          </Button>
-        </div>
+        <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">Subscription Admin Tools</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">

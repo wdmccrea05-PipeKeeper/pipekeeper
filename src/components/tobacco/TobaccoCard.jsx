@@ -6,7 +6,7 @@ import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { getAgingRecommendation } from "@/components/utils/agingRecommendation";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
 const BLEND_COLORS = {

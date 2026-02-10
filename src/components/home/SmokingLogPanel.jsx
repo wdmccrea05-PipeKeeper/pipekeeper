@@ -23,7 +23,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs } from "@/components/utils/schemaCompatibility";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();

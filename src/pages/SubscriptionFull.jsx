@@ -52,8 +52,9 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
 export default function SubscriptionFull() {
   const { t } = useTranslation();
   const isIOSApp = useMemo(() => isIOSWebView(), []);
-  const { user, refetch, effectiveTier } = useCurrentUser();
+  const { user, refetch } = useCurrentUser();
   const queryClient = useQueryClient();
+  const [isPro, setIsPro] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedTier, setSelectedTier] = useState("premium");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
@@ -66,9 +67,11 @@ export default function SubscriptionFull() {
     // Ask native for current status
     requestNativeSubscriptionStatus();
 
-    // Listen for native updates
+    // Listen for native updates - payload is an object, not boolean
     const cleanup = registerNativeSubscriptionListener((payload) => {
-      if (payload?.active) setMessage("Subscription active ✅");
+      const active = !!payload.active;
+      setIsPro(active);
+      if (active) setMessage("Subscription active ✅");
     });
 
     return cleanup;
@@ -192,11 +195,9 @@ export default function SubscriptionFull() {
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-[#e8d5b7]">PipeKeeper Subscriptions</h1>
-          {effectiveTier !== "free" && (
-            <Button variant="secondary" onClick={handleManage}>
-              Manage
-            </Button>
-          )}
+          <Button variant="secondary" onClick={handleManage}>
+            Manage
+          </Button>
         </div>
 
         <Card className="bg-black/40 border-white/10">
@@ -205,16 +206,11 @@ export default function SubscriptionFull() {
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
             <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
-            {effectiveTier === "free" ? (
-              <Button className="w-full" onClick={handleUpgrade}>
-                Upgrade (App Store)
-              </Button>
-            ) : (
-              <div className="text-emerald-500 text-center">
-                {effectiveTier === "pro" ? "Pro Active ✅" : "Premium Active ✅"}
-              </div>
-            )}
-            {message && <div className="mt-4 text-blue-400">{message}</div>}
+            <Button className="w-full" onClick={handleUpgrade}>
+              Upgrade (App Store)
+            </Button>
+            {isPro && <div className="mt-4 text-emerald-500">Status: Pro Active ✅</div>}
+            {message && <div className="mt-4 text-red-500">{message}</div>}
           </CardContent>
         </Card>
       </div>
@@ -339,17 +335,11 @@ export default function SubscriptionFull() {
          <p>• Your existing data is never affected</p>
        </div>
 
-       {/* Manage Subscription or Upgrade */}
+       {/* Manage Subscription */}
        <div className="space-y-3">
-         {effectiveTier !== "free" ? (
-           <Button variant="outline" className="w-full" onClick={handleManage}>
-             Manage Subscription
-           </Button>
-         ) : (
-           <Button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 w-full" onClick={() => handleUpgrade("premium", selectedInterval)}>
-             Subscribe Now
-           </Button>
-         )}
+         <Button variant="outline" className="w-full" onClick={handleManage}>
+           Manage Subscription
+         </Button>
          <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
            Manual Backup Checkout
          </Button>

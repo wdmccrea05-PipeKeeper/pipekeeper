@@ -1,77 +1,82 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster"
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClientInstance } from '@/lib/query-client'
+import NavigationTracker from '@/lib/NavigationTracker'
+import { pagesConfig } from './pages.config'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import PageNotFound from './lib/PageNotFound';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
-import { Toaster } from "@/components/ui/toaster";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClientInstance } from "@/lib/query-client";
+const { Pages, Layout, mainPage } = pagesConfig;
+const mainPageKey = mainPage ?? Object.keys(Pages)[0];
+const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-import NavigationTracker from "@/lib/NavigationTracker";
-import Layout from "@/Layout";
-import NotFound from "@/pages/NotFound";
+const LayoutWrapper = ({ children, currentPageName }) => Layout ?
+  <Layout currentPageName={currentPageName}>{children}</Layout>
+  : <>{children}</>;
 
-import { pagesConfig } from "./pages.config";
-import { AuthProvider, useAuth } from "@/lib/AuthContext";
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-function AuthenticatedApp() {
-  const {
-    isLoadingAuth,
-    isLoadingPublicSettings,
-    authError,
-  } = useAuth();
-
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Your router path is based on pages.config.js key "Auth" -> "/Auth" (capital A)
-  const AUTH_PATH = "/Auth";
-
-  useEffect(() => {
-    if (isLoadingAuth || isLoadingPublicSettings) return;
-
-    // Only redirect when auth is required, and never if we're already on Auth.
-    if (authError?.type === "auth_required" && location.pathname !== AUTH_PATH) {
-      navigate(AUTH_PATH, { replace: true, state: { from: location } });
-    }
-  }, [authError, isLoadingAuth, isLoadingPublicSettings, location, navigate]);
-
-  if (isLoadingAuth || isLoadingPublicSettings) {
+  // Show loading spinner while checking app public settings or auth
+  if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#1a2c42]">
-        <div className="text-white text-lg">Loading…</div>
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
   }
 
+  // Handle authentication errors
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />;
+    } else if (authError.type === 'auth_required') {
+      // Redirect to login automatically
+      navigateToLogin();
+      return null;
+    }
+  }
+
+  // Render the main app
   return (
-    <>
-      <NavigationTracker />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          {/* Pages */}
-          {Object.entries(pagesConfig).map(([path, config]) => (
-            <Route key={path} path={`/${path}`} element={config.element} />
-          ))}
-
-          {/* Index: prefer Home if it exists */}
-          <Route index element={pagesConfig?.Home?.element ?? <NotFound />} />
-
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      } />
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route
+          key={path}
+          path={`/${path}`}
+          element={
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          }
+        />
+      ))}
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   );
-}
+};
 
-export default function App() {
+
+function App() {
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <NavigationTracker />
           <AuthenticatedApp />
         </Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  );
+  )
 }
+
+export default App

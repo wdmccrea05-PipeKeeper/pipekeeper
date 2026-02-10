@@ -1,26 +1,77 @@
-import React from 'react';
-import { SUPPORTED_LANGUAGES } from "@/components/i18n/ui";
+import React, { useMemo } from "react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function LanguageSwitcher() {
-  const currentLang = typeof window !== "undefined" ? localStorage.getItem("pk_lang") || "en" : "en";
+const LANGS = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "it", label: "Italiano" },
+  { code: "pt-BR", label: "Português (BR)" },
+  { code: "nl", label: "Nederlands" },
+  { code: "pl", label: "Polski" },
+  { code: "ja", label: "日本語" },
+  { code: "zh-Hans", label: "中文（简体）" },
+];
 
-  const handleChange = (e) => {
-    const lang = e.target.value;
-    localStorage.setItem("pk_lang", lang);
-    window.location.reload();
+export default function LanguageSwitcher({ className = "" }) {
+  const { i18n } = useTranslation();
+
+  const current = useMemo(() => {
+    const raw = (i18n.language || "en").replace("_", "-");
+    if (raw.startsWith("pt")) return "pt-BR";
+    if (raw.startsWith("zh")) return "zh-Hans";
+    if (LANGS.some((l) => l.code === raw)) return raw;
+    const base = raw.split("-")[0];
+    return LANGS.some((l) => l.code === base) ? base : "en";
+  }, [i18n.language]);
+
+  const setLang = async (lng) => {
+    try {
+      await i18n.changeLanguage(lng);
+      try {
+        localStorage.setItem("pk_lang", lng);
+        // Force entitlement refresh after language change
+        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
+      } catch {}
+    } catch (error) {
+      console.error('[LanguageSwitcher] Failed to change language:', error);
+      // Fallback to English if language change fails
+      try {
+        await i18n.changeLanguage('en');
+        localStorage.setItem("pk_lang", 'en');
+      } catch {}
+    }
   };
 
   return (
-    <select
-      value={currentLang}
-      onChange={handleChange}
-      className="bg-white/10 text-[#E0D8C8] text-sm rounded-lg px-3 py-1.5 border border-white/20 hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50"
-    >
-      {SUPPORTED_LANGUAGES.map(lang => (
-        <option key={lang.code} value={lang.code} className="bg-[#1A2B3A] text-[#E0D8C8]">
-          {lang.label}
-        </option>
-      ))}
-    </select>
+    <div className={`flex items-center ${className}`}>
+      <select
+        value={current}
+        onChange={(e) => setLang(e.target.value)}
+        aria-label="Language"
+        className="
+          h-9
+          rounded-lg
+          px-3
+          text-sm
+          bg-black/40
+          border border-white/10
+          text-[#e8d5b7]
+          shadow-sm
+          outline-none
+          hover:bg-black/50
+          focus:ring-2 focus:ring-[#e8d5b7]/30
+          focus:border-[#e8d5b7]/30
+          transition
+        "
+      >
+        {LANGS.map((l) => (
+          <option key={l.code} value={l.code} className="bg-[#0b0b0b] text-[#e8d5b7]">
+            {l.label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

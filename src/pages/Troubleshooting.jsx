@@ -4,7 +4,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ChevronDown, ArrowLeft, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function Troubleshooting() {
   const { t } = useTranslation();

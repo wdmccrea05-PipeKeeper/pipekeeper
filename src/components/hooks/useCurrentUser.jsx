@@ -1,163 +1,226 @@
-import { useEffect, useMemo, useState } from "react";
-import { requireSupabase, SUPABASE_CONFIG_OK, getSupabaseAsync } from "@/components/utils/supabaseClient";
-import { getEffectiveTier } from "@/components/utils/effectiveTierCanonical";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { hasPaidAccess, hasProAccess, hasPremiumAccess, isFoundingMember } from "@/components/utils/premiumAccess";
+import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { useEffect, useRef } from "react";
 
-const ENTITLEMENT_URL =
-  import.meta.env.VITE_ENTITLEMENT_URL ||
-  "https://entitlement.pipekeeper.app/api/entitlement";
+const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-function safeJsonParse(maybeString) {
-  try {
-    let v = maybeString;
-    while (typeof v === "string") v = JSON.parse(v);
-    return v;
-  } catch {
-    return null;
+/**
+ * Infer subscription provider from evidence
+ * Priority: Stripe evidence > iOS/Apple evidence
+ */
+function inferProvider(user, subscription) {
+  // Check for Stripe evidence first
+  const hasStripeCustomer = !!(user?.stripe_customer_id || user?.stripeCustomerId);
+  const hasStripeSubscription = subscription?.provider === "stripe" || subscription?.stripe_subscription_id;
+  const isWebPlatform = user?.platform === "web";
+  const hasActiveStatus = ["active", "trialing"].includes(user?.subscription_status || subscription?.status);
+
+  // Strong Stripe evidence
+  if (hasStripeCustomer || hasStripeSubscription || (isWebPlatform && hasActiveStatus)) {
+    return "stripe";
   }
+
+  // Check for Apple evidence
+  const hasAppleTransaction = !!(user?.apple_original_transaction_id || user?.appleOriginalTransactionId);
+  const hasAppleSubscription = subscription?.provider === "apple";
+  const isIOSPlatform = user?.platform === "ios";
+
+  // Apple evidence (only if no Stripe evidence)
+  if (hasAppleTransaction || hasAppleSubscription || isIOSPlatform) {
+    return "apple";
+  }
+
+  // Fallback to stored provider if it exists
+  if (user?.subscription_provider === "stripe" || user?.subscription_provider === "apple") {
+    return user.subscription_provider;
+  }
+
+  return null;
 }
 
 export function useCurrentUser() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [email, setEmail] = useState("");
-  const [entitlementData, setEntitlementData] = useState(null);
-  const [effectiveTier, setEffectiveTier] = useState("free");
+  const backfillAttempted = useRef(false);
 
-  useEffect(() => {
-    let alive = true;
-
-    async function run() {
-        setLoading(true);
-
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+    refetch: refetchUser,
+  } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
       try {
-        // Always wait for async Supabase config to be ready
-        const supabaseClient = await getSupabaseAsync();
-        const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
-        if (!alive) return;
+        const authUser = await base44.auth.me();
+        if (!authUser?.email) return null;
 
-      if (sessionErr) {
-        console.warn("[AUTH] getSession error", sessionErr);
-      }
+        const email = normEmail(authUser.email);
+        const userId = authUser.id || authUser.auth_user_id;
 
-      const sessionUser = sessionData?.session?.user || null;
-      setUser(sessionUser);
-
-      const userEmail = (sessionUser?.email || "").trim().toLowerCase();
-      setEmail(userEmail);
-
-      if (!userEmail) {
-        setEffectiveTier("free");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // CRITICAL: Clear stale entitlement data before new fetch
-        setEntitlementData(null);
-
-        const url = new URL(ENTITLEMENT_URL);
-        url.searchParams.set("email", userEmail);
-        url.searchParams.set("ts", String(Date.now()));
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const r = await fetch(url.toString(), {
-          method: "GET",
-          headers: { Accept: "application/json" },
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!r.ok) {
-          console.warn("[ENTITLEMENT] API returned", r.status, "- deriving tier from user data");
-          const tier = getEffectiveTier(sessionUser, null);
-          setEntitlementData(null);
-          setEffectiveTier(tier);
-        } else {
-          const text = await r.text();
-          const parsed = safeJsonParse(text) || {};
-          setEntitlementData(parsed);
-          const tier = getEffectiveTier(sessionUser, parsed);
-          setEffectiveTier(tier);
+        // Fetch entity user record (single source of truth for extended fields)
+        let entityUser = null;
+        try {
+          const users = await base44.entities.User.filter({ email });
+          entityUser = users?.[0] || null;
+        } catch (err) {
+          console.warn("[useCurrentUser] Could not fetch User entity:", err);
         }
-      } catch (e) {
-        console.warn("[ENTITLEMENT] fetch failed (non-fatal) - deriving from user:", e.message);
-        const tier = getEffectiveTier(sessionUser, null);
-        setEntitlementData(null);
-        setEffectiveTier(tier);
-      }
 
-        setLoading(false);
-      } catch (e) {
-        console.error("[ENTITLEMENT_HOOK] Critical error:", e?.message);
-        // Prevent infinite loops - mark as complete even on error
-        if (!alive) return;
-        setLoading(false);
-        setUser(null);
-        setEffectiveTier("free");
-      }
-    }
-
-    run();
-
-    // Setup auth state listener (only if Supabase is configured)
-    let unsubscribeFn = () => {};
-    if (SUPABASE_CONFIG_OK) {
-      try {
-        const supabaseClient = requireSupabase();
-        const { data: sub } = supabaseClient.auth.onAuthStateChange(() => {
-          run();
-        });
-        unsubscribeFn = () => {
-          sub?.subscription?.unsubscribe?.();
+        // Merge: auth user is primary, entity user adds extended fields
+        const merged = {
+          ...entityUser,
+          ...authUser,
+          id: userId || entityUser?.id,
+          email,
         };
-      } catch (e) {
-        console.warn("[ENTITLEMENT_HOOK] Failed to setup auth listener:", e?.message);
+
+        return merged;
+      } catch (error) {
+        console.error("[useCurrentUser] Error:", error);
+        throw error;
       }
-    }
+    },
+    staleTime: 5000,
+    retry: 2,
+  });
+
+  const userId = user?.id || user?.auth_user_id;
+  const email = user?.email ? normEmail(user.email) : null;
+
+  const {
+    data: subscription,
+    isLoading: subLoading,
+    refetch: refetchSubscription,
+  } = useQuery({
+    queryKey: ["subscription", userId, email],
+    queryFn: async () => {
+      if (!userId && !email) return null;
+
+      try {
+        // Prefer user_id lookup (account-linked), fallback to email (legacy Stripe)
+        let subs = [];
+        if (userId) {
+          subs = await base44.entities.Subscription.filter({ user_id: userId });
+        }
+        if (subs.length === 0 && email) {
+          subs = await base44.entities.Subscription.filter({ user_email: email });
+        }
+
+        if (!subs || subs.length === 0) return null;
+
+        // Filter to valid active or in-progress plans
+        const valid = subs.filter((s) => {
+          const status = s.status || "";
+          return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
+        });
+
+        if (valid.length === 0) return null;
+
+        // Pick best subscription: pro > premium, then active > trialing > most recent
+        valid.sort((a, b) => {
+          // Prioritize pro tier
+          const aPro = (a.tier || '').toLowerCase() === 'pro' ? 1 : 0;
+          const bPro = (b.tier || '').toLowerCase() === 'pro' ? 1 : 0;
+          if (aPro !== bPro) return bPro - aPro;
+
+          // Then active status
+          const aActive = a.status === "active" ? 1 : 0;
+          const bActive = b.status === "active" ? 1 : 0;
+          if (aActive !== bActive) return bActive - aActive;
+
+          // Then trialing
+          const aTrialing = a.status === "trialing" || a.status === "trial" ? 1 : 0;
+          const bTrialing = b.status === "trialing" || b.status === "trial" ? 1 : 0;
+          if (aTrialing !== bTrialing) return bTrialing - aTrialing;
+
+          // Finally most recent
+          const aDate = new Date(a.current_period_start || a.created_date || 0).getTime();
+          const bDate = new Date(b.current_period_start || b.created_date || 0).getTime();
+          return bDate - aDate;
+        });
+
+        return valid[0];
+      } catch (error) {
+        console.error("[useCurrentUser] Subscription query error:", error);
+        return null;
+      }
+    },
+    enabled: !!(userId || email),
+    staleTime: 30_000,
+  });
+
+  // Ensure user record exists with platform info
+  useEffect(() => {
+    if (userLoading || !user?.email) return;
+    if (user?.platform) return; // Already has platform
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await base44.functions.invoke("ensureUserRecord", {});
+        if (!cancelled) {
+          await refetchUser();
+        }
+      } catch (err) {
+        console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err);
+      }
+    })();
 
     return () => {
-      alive = false;
-      unsubscribeFn();
+      cancelled = true;
     };
-  }, []);
+  }, [userLoading, user?.email, user?.platform, refetchUser]);
 
-  const flags = useMemo(() => {
-    const tier = (effectiveTier || "free").toLowerCase();
-    const normalizedEmail = (email || "").trim().toLowerCase();
+  // Infer provider from evidence
+  const provider = inferProvider(user, subscription);
 
-    // Admin: email domain OR user_metadata flag
-    const isAdmin = 
-      normalizedEmail.endsWith("@pipekeeperapp.com") || 
-      user?.user_metadata?.admin === true ||
-      ["wmccrea@indario.com", "warren@pipekeeper.app"].includes(normalizedEmail);
+  // Backfill user.subscription_provider if it's wrong or missing
+  useEffect(() => {
+    if (userLoading || !user?.email || !provider) return;
+    if (backfillAttempted.current) return;
+    if (user?.subscription_provider === provider) return;
 
-    return {
-      tier: effectiveTier,
-      effectiveTier,
-      isPro: tier === "pro",
-      isPremium: tier === "premium",
-      isPaid: tier === "pro" || tier === "premium",
-      hasPro: tier === "pro",
-      hasPremium: tier === "premium",
-      hasPaidAccess: tier === "pro" || tier === "premium",
-      isAdmin,
-    };
-  }, [effectiveTier, user, email]);
+    backfillAttempted.current = true;
 
-  return { 
-    loading, 
-    isLoading: loading,
-    user, 
-    email, 
-    effectiveTier,
-    entitlementData,
-    error: null,
-    subscription: null,
-    refetch: async () => {},
-    provider: null,
-    ...flags 
+    (async () => {
+      try {
+        console.log(`[useCurrentUser] Backfilling subscription_provider: ${provider}`);
+        await base44.auth.updateMe({ subscription_provider: provider });
+        await refetchUser();
+      } catch (err) {
+        console.warn("[useCurrentUser] Failed to backfill subscription_provider:", err);
+      }
+    })();
+  }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
+
+  // Derived access flags
+  const hasPremium = hasPremiumAccess(user, subscription);
+  const hasPaid = hasPaidAccess(user, subscription);
+  const hasPro = hasProAccess(user, subscription);
+  const isTrial = !hasPaid && hasPremium;
+  const isAdmin = user?.role === "admin";
+  const isFounding = isFoundingMember(user);
+
+  const isLoading = userLoading || subLoading;
+
+  const refetch = async () => {
+    await Promise.all([refetchUser(), refetchSubscription()]);
+  };
+
+  return {
+    user,
+    subscription,
+    provider, // Inferred provider (stripe, apple, or null)
+    isLoading,
+    error: userError,
+    hasPremium,
+    hasPaid,
+    hasPro,
+    isTrial,
+    isAdmin,
+    isFoundingMember: isFounding,
+    refetch,
   };
 }

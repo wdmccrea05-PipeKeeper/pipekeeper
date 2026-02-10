@@ -15,8 +15,8 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { useTranslation } from "react-i18next";
+import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
 export default function CommunityPage() {
@@ -40,7 +40,15 @@ export default function CommunityPage() {
   const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
 
-  const { user, isLoading: userLoading, hasPaidAccess } = useCurrentUser();
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 10000,
+    retry: 2,
+    refetchOnMount: 'always',
+  });
+
+  const hasPaidAccess = hasPremiumAccess(user);
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
@@ -606,8 +614,8 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("communityExtended.noPendingRequests")}</p>
-                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc")}</p>
+                  <p>No Pending Requests</p>
+                  <p className="text-sm mt-2">Friend requests from other members will appear here. Search for users in the Discover tab and send friend requests to connect. Friends can message each other when messaging is enabled.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -672,12 +680,12 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("communityExtended.notFollowingAnyone")}</p>
-                  <p className="text-sm mt-2">{t("communityExtended.notFollowingAnyoneDesc")}</p>
+                  <p>Not Following Anyone</p>
+                  <p className="text-sm mt-2">Discover and follow pipe enthusiasts in the community to see their collections</p>
                   <a href={createPageUrl('Community')}>
                     <Button className="mt-4" onClick={() => setActiveTab && setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
-                      {t("communityExtended.exploreCommunity")}
+                      Explore Community
                     </Button>
                   </a>
                 </CardContent>

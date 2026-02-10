@@ -2,7 +2,6 @@ import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/components/i18n";
 
-import { AuthProvider } from "@/components/auth/AuthContext";
 import Layout from "../Layout";
 import Home from "./Home";
 import Pipes from "./Pipes";
@@ -14,7 +13,6 @@ import Profile from "./Profile";
 import PublicProfile from "./PublicProfile";
 import Import from "./Import";
 import Invite from "./Invite";
-import Auth from "./Auth";
 import Subscription from "./Subscription";
 import Support from "./Support";
 import FAQ from "./FAQ";
@@ -39,7 +37,6 @@ const ROUTES = {
   "/PublicProfile": PublicProfile,
   "/Import": Import,
   "/Invite": Invite,
-  "/Auth": Auth,
   "/Subscription": Subscription,
   "/Support": Support,
   "/FAQ": FAQ,
@@ -117,9 +114,7 @@ export default function Pages() {
 
   const path = useMemo(() => {
     if (startupLegal) return "/Home";
-    const canonical = canonicalizePath(rawPath);
-    // Bypass Layout for Auth page to show full-screen auth form
-    return canonical;
+    return canonicalizePath(rawPath);
   }, [rawPath, startupLegal]);
 
   // Update URL without reload (prevents iOS/webcontainer race conditions)
@@ -138,20 +133,11 @@ export default function Pages() {
       "/Home";
   const currentPageName = matchedKey.replace("/", "") || "Home";
 
-  // Auth page renders full-screen without Layout
-  const isAuthPage = currentPageName === "Auth";
-
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        {isAuthPage ? (
-          <Comp />
-        ) : (
-          <Layout currentPageName={currentPageName}>
-            <Comp />
-          </Layout>
-        )}
-      </QueryClientProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <Layout currentPageName={currentPageName}>
+        <Comp />
+      </Layout>
+    </QueryClientProvider>
   );
 }

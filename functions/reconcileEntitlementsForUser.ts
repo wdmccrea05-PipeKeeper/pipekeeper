@@ -1,25 +1,35 @@
+// Single source of truth: Reconcile user entitlements from all sources (Stripe, Apple)
+// Fixes cross-platform issues where web Stripe purchase → iOS login loses paid status
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { getStripeClient } from "./_shared/stripeClientSingleton.ts";
 
-const getStripeClient = () => {
-  const key = Deno.env.get("STRIPE_SECRET_KEY");
-  if (!key) throw new Error("STRIPE_SECRET_KEY not set");
-  const Stripe = (await import("npm:stripe@18.0.0")).default;
-  return new Stripe(key);
-};
+const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+interface ReconcileResult {
+  ok: boolean;
+  userId: string;
+  email: string;
+  source: "apple" | "stripe" | "none";
+  subscription_level: "free" | "paid";
+  subscription_status: string;
+  subscription_tier: "premium" | "pro" | null;
+  updated: boolean;
+  details?: string;
+}
 
-async function reconcileFromStripe(base44, user, stripe) {
+async function reconcileFromStripe(
+  base44: any,
+  user: any,
+  stripe: any
+): Promise<ReconcileResult | null> {
   const email = normEmail(user.email);
   let customerId = user.stripe_customer_id || null;
 
+  // Find Stripe customer
   if (!customerId) {
     try {
       const customers = await stripe.customers.list({ email, limit: 1 });
       customerId = customers.data?.[0]?.id || null;
-      if (customerId) {
-        user.stripe_customer_id = customerId;
-      }
     } catch (err) {
       console.error(`[reconcile] Stripe customer lookup failed:`, err);
       return null;
@@ -27,9 +37,10 @@ async function reconcileFromStripe(base44, user, stripe) {
   }
 
   if (!customerId) {
-    return null;
+    return null; // No Stripe customer found
   }
 
+  // Get active subscriptions
   let subscriptions;
   try {
     subscriptions = await stripe.subscriptions.list({
@@ -42,18 +53,20 @@ async function reconcileFromStripe(base44, user, stripe) {
     return null;
   }
 
+  // Find best active subscription
   const activeSub = subscriptions.data
-    .filter((s) => s.status === "active" || s.status === "trialing")
-    .sort((a, b) => {
+    .filter((s: any) => s.status === "active" || s.status === "trialing")
+    .sort((a: any, b: any) => {
       const rankA = a.status === "active" ? 2 : 1;
       const rankB = b.status === "active" ? 2 : 1;
       return rankB - rankA;
     })[0];
 
   if (!activeSub) {
-    return null;
+    return null; // No active subscription
   }
 
+  // Determine tier from price IDs
   const priceId = activeSub.items?.data?.[0]?.price?.id;
   const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
   const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
@@ -72,9 +85,13 @@ async function reconcileFromStripe(base44, user, stripe) {
   };
 }
 
-async function reconcileFromApple(base44, user) {
+async function reconcileFromApple(
+  base44: any,
+  user: any
+): Promise<ReconcileResult | null> {
   const email = normEmail(user.email);
 
+  // Find active Apple subscription
   const appleSubs = await base44.asServiceRole.entities.Subscription.filter({
     user_id: user.id,
     provider: "apple",
@@ -109,72 +126,45 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    const targetEmail = normEmail(body.email || caller.email);
     const targetUserId = body.userId || null;
-    const targetCustomerId = body.stripeCustomerId || body.stripe_customer_id || null;
-    const rawEmail = body.email || body.userEmail || caller.email;
-    const targetEmail = normEmail(rawEmail);
 
+    // Only admins can reconcile other users
     const isAdmin = caller.role === "admin";
-    if (!isAdmin && targetEmail !== normEmail(caller.email) && !targetUserId && !targetCustomerId) {
+    if (!isAdmin && targetEmail !== normEmail(caller.email)) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    // Find user
     let user;
-
-    // NOTE: Base44 SDK has a bug where User.filter() with asServiceRole returns wrong user.
-    // Workaround: invoke debugUserFiltering to get correct user via admin token verification.
-    if (targetCustomerId || targetUserId) {
-      try {
-        const debugRes = await base44.asServiceRole.functions.invoke('debugUserFiltering', {
-          stripeCustomerId: targetCustomerId,
-          userId: targetUserId,
-        });
-
-        const debugData = debugRes.data?.tests || {};
-        if (targetCustomerId && debugData.byCustomerId?.users?.length > 0) {
-          const foundUser = debugData.byCustomerId.users[0];
-          // Manually reconstruct user object with the correct data
-          const allUsers = debugData.allUsers?.users || [];
-          user = allUsers.find((u) => u.id === foundUser.id) || foundUser;
-        } else if (targetUserId && debugData.byId?.users?.length > 0) {
-          user = debugData.byId.users[0];
-        }
-      } catch (err) {
-        console.warn('[REC] Workaround failed, falling back to direct query:', err);
-      }
-    }
-
-    // Fallback to direct query if workaround didn't work
-    if (!user) {
-      if (targetUserId) {
-        const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
-        user = users?.[0];
-      } else if (targetCustomerId) {
-        const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: targetCustomerId });
-        user = users?.[0];
-      } else {
-        const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-        user = users?.[0];
-      }
+    if (targetUserId) {
+      const users = await base44.asServiceRole.entities.User.filter({ id: targetUserId });
+      user = users?.[0];
+    } else {
+      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
+      user = users?.[0];
     }
 
     if (!user) {
-      return Response.json({ error: `User not found: ${targetEmail || targetUserId || targetCustomerId}` }, { status: 404 });
+      return Response.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log("[REC] Working with user:", user.email, "ID:", user.id);
+    // CRITICAL: Check Apple first if platform=ios, then fallback to Stripe
+    // Platform is informational ONLY - never let it override actual entitlement
+    let result: ReconcileResult | null = null;
 
-    let result = null;
-
+    // Check Apple IAP first if iOS platform
     if (user.platform === "ios") {
       result = await reconcileFromApple(base44, user);
     }
 
+    // Fallback to Stripe if no Apple subscription
     if (!result) {
       const stripe = getStripeClient();
       result = await reconcileFromStripe(base44, user, stripe);
     }
 
+    // Default to free if no subscription found
     if (!result) {
       result = {
         ok: true,
@@ -189,6 +179,7 @@ Deno.serve(async (req) => {
       };
     }
 
+    // Update user if entitlements changed
     const needsUpdate =
       user.subscription_level !== result.subscription_level ||
       user.subscription_status !== result.subscription_status ||
@@ -201,12 +192,12 @@ Deno.serve(async (req) => {
         subscription_tier: result.subscription_tier,
       });
       result.updated = true;
-      console.log(`[REC] Updated ${result.email}: ${result.source} → tier=${result.subscription_tier}`);
+      console.log(`[reconcile] Updated ${result.email}: ${result.source} → level=${result.subscription_level} tier=${result.subscription_tier}`);
     }
 
     return Response.json(result);
   } catch (error) {
-    console.error("[REC] Error:", error);
+    console.error("[reconcileEntitlementsForUser] Error:", error);
     return Response.json({
       ok: false,
       error: error instanceof Error ? error.message : String(error),

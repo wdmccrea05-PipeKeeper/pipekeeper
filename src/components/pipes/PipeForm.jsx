@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
 import { preparePipeData } from "@/components/utils/schemaCompatibility";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
 const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
@@ -83,9 +83,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [cropperType, setCropperType] = useState(null);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
 
-  const { user, hasPaidAccess } = useCurrentUser();
+  const { user } = useCurrentUser();
   const entitlements = useEntitlements();
-  const isPaidUser = hasPaidAccess;
+  const isPaidUser = user?.subscription_level === 'paid';
   
   const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
 
@@ -241,10 +241,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     e.preventDefault();
 
     // Check free tier limits for new pipes only
-    if (!pipe) {
-      const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, false);
-      if (!limitCheck.canCreate) {
-        toast.error(limitCheck.reason || t("limits.pipesLimit", { limit: limitCheck.limit }));
+    if (!pipe && entitlements.tier === "free") {
+      const canAdd = await canCreatePipe(user?.email, entitlements.limits.pipes);
+      if (!canAdd) {
+        toast.error(
+          entitlements.isFreeGrandfathered
+            ? t("limits.freeLimitReached")
+            : t("limits.pipesLimit", { limit: entitlements.limits.pipes })
+        );
         return;
       }
     }

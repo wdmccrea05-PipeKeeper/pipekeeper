@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
 import ProUpgradeModal from "./ProUpgradeModal";
 
 /**
@@ -18,11 +18,13 @@ export default function ProFeatureLock({
   showLockIcon = true,
   className = ""
 }) {
-  const { effectiveTier } = useCurrentUser();
+  const entitlements = useEntitlements();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
+  const isProUser = entitlements.tier === "pro";
+  
   // If user has Pro, render children normally
-  if (effectiveTier === "pro") {
+  if (isProUser) {
     return <>{children}</>;
   }
   
