@@ -274,7 +274,7 @@ export default function Layout({ children, currentPageName }) {
     if (userLoading) return;
     if (!user?.email) return;
     if (isAppleBuild) return;
-    if (hasPremium) return;
+    if (hasPaid) return;
     if (!shouldRunStripeSync(user.email)) return;
 
     let cancelled = false;
@@ -301,13 +301,13 @@ export default function Layout({ children, currentPageName }) {
     return () => {
       cancelled = true;
     };
-  }, [userLoading, user?.email, hasPremium, queryClient]);
+  }, [userLoading, user?.email, hasPaid, queryClient]);
 
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
     if (user?.isFoundingMember) return;
-    if (!hasPremium) return;
+    if (!hasPaid) return;
     if (!subscription) return;
 
     (async () => {
@@ -321,7 +321,7 @@ export default function Layout({ children, currentPageName }) {
         console.warn("[Layout] Founding member backfill failed (non-fatal):", e?.message || e);
       }
     })();
-  }, [userLoading, user, subscription, hasPremium, queryClient]);
+  }, [userLoading, user, subscription, hasPaid, queryClient]);
 
   useEffect(() => {
     if (!ios) return undefined;
@@ -449,18 +449,18 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-    if (hasPremium) return;
+    if (hasPaid) return;
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
     setShowSubscribePrompt(true);
     markSubscribePromptShown();
-  }, [userLoading, user?.email, hasPremium, currentPageName, PUBLIC_PAGES]);
+  }, [userLoading, user?.email, hasPaid, currentPageName, PUBLIC_PAGES]);
 
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-    if (!hasPremium) return;
+    if (!hasPaid) return;
     if (user?.foundingMemberAcknowledged) return;
 
     const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
@@ -472,7 +472,7 @@ export default function Layout({ children, currentPageName }) {
     if (subscriptionDate < foundingCutoff) {
       setShowFoundingMemberPopup(true);
     }
-  }, [userLoading, user, hasPremium, subscription]);
+  }, [userLoading, user, hasPaid, subscription]);
 
   if (!ageConfirmed) {
     return (
