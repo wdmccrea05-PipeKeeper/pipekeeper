@@ -9,19 +9,39 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Get all users with paid subscriptions
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const paidUsers = allUsers.filter(u => u.entitlement_tier === 'pro' || u.entitlement_tier === 'premium');
+    // Get all active subscriptions and group by user
+    const allSubs = await base44.asServiceRole.entities.Subscription.filter({
+      status: 'active'
+    }, 1000);
 
-    console.log(`Scanning ${paidUsers.length} paid users for multiple subscriptions...`);
+    console.log(`Found ${allSubs.length} active subscriptions`);
+
+    // Group subscriptions by user email
+    const subsByEmail = {};
+    for (const sub of allSubs) {
+      if (!subsByEmail[sub.user_email]) {
+        subsByEmail[sub.user_email] = [];
+      }
+      subsByEmail[sub.user_email].push(sub);
+    }
+
+    // Find users with multiple subscriptions
+    const emailsWithMultiple = Object.entries(subsByEmail)
+      .filter(([_, subs]) => subs.length > 1)
+      .map(([email]) => email);
+
+    console.log(`Found ${emailsWithMultiple.length} users with multiple active subscriptions`);
 
     const issues = [];
 
-    for (const paidUser of paidUsers) {
-      const subs = await base44.asServiceRole.entities.Subscription.filter({
-        user_email: paidUser.email,
-        status: 'active'
-      });
+    // Fetch user records for affected users only
+    const allUsers = await base44.asServiceRole.entities.User.list(200);
+
+    for (const email of emailsWithMultiple) {
+      const paidUser = allUsers.find(u => u.email === email);
+      if (!paidUser) continue;
+
+      const subs = subsByEmail[email];
 
       if (subs.length > 1) {
         // Sort to find correct tier
