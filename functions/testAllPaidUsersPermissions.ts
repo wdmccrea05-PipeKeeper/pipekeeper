@@ -1,6 +1,43 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
+ * Canonical resolver functions (inlined)
+ */
+function normalizeTier(tier) {
+  if (!tier) return "free";
+  const lower = String(tier).toLowerCase().trim();
+  if (lower === "pro") return "pro";
+  if (lower === "premium") return "premium";
+  return "free";
+}
+
+function getEntitlementTier(user, subscription) {
+  if (user?.role === "admin") return "pro";
+  if (user?.tier) return normalizeTier(user.tier);
+  if (user?.entitlementTier) return normalizeTier(user.entitlementTier);
+  if (user?.subscriptionTier) return normalizeTier(user.subscriptionTier);
+  if (subscription?.tier) return normalizeTier(subscription.tier);
+  return "free";
+}
+
+function hasPaidAccess(user, subscription) {
+  const tier = getEntitlementTier(user, subscription);
+  return tier === "premium" || tier === "pro";
+}
+
+function hasProAccess(user, subscription) {
+  const tier = getEntitlementTier(user, subscription);
+  return tier === "pro";
+}
+
+function getPlanLabel(user, subscription) {
+  const tier = getEntitlementTier(user, subscription);
+  if (tier === "pro") return "Pro";
+  if (tier === "premium") return "Premium";
+  return "Free";
+}
+
+/**
  * Tests all active paid subscriptions to verify canonical resolver grants correct access
  * Admin-only function
  */
@@ -39,14 +76,6 @@ Deno.serve(async (req) => {
       } catch (err) {
         console.warn(`Failed to fetch user for ${userEmail}:`, err);
       }
-
-      // Import canonical resolver functions
-      const { 
-        getEntitlementTier, 
-        hasPaidAccess, 
-        hasProAccess,
-        getPlanLabel 
-      } = await import('./premiumAccessResolver');
 
       // Test canonical resolver
       const tier = getEntitlementTier(userRecord, sub);
