@@ -241,14 +241,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     e.preventDefault();
 
     // Check free tier limits for new pipes only
-    if (!pipe && entitlements.tier === "free") {
-      const canAdd = await canCreatePipe(user?.email, entitlements.limits.pipes);
-      if (!canAdd) {
-        toast.error(
-          entitlements.isFreeGrandfathered
-            ? t("limits.freeLimitReached")
-            : t("limits.pipesLimit", { limit: entitlements.limits.pipes })
-        );
+    if (!pipe && !isPaidUser) {
+      const result = await canCreatePipe(user?.email, isPaidUser, false);
+      if (!result.canCreate) {
+        toast.error(result.reason || t("limits.pipesLimit", { limit: result.limit }));
         return;
       }
     }
