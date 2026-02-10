@@ -23,6 +23,11 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
 import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
+
+// Dev mode verification console output
+if (import.meta?.env?.DEV) {
+  console.log('[PipeKeeper] Canonical entitlement system active');
+}
 import {
   isIOSWebView,
   openAppleSubscriptions,
