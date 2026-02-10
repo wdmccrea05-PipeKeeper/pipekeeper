@@ -83,9 +83,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [cropperType, setCropperType] = useState(null);
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
 
-  const { user } = useCurrentUser();
+  const { user, hasPaid } = useCurrentUser();
   const entitlements = useEntitlements();
-  const isPaidUser = user?.subscription_level === 'paid';
+  const isPaidUser = hasPaid;
   
   const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
 
