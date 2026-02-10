@@ -4,12 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2, User } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { 
-  getEntitlementTier, 
-  hasPaidAccess, 
-  hasProAccess,
-  getPlanLabel 
-} from "@/components/utils/premiumAccess";
+
 
 /**
  * Tests all active paid users to verify they receive correct permissions
@@ -21,99 +16,26 @@ export default function AllUsersPermissionTest() {
 
   const runTest = async () => {
     setTesting(true);
-    const testResults = [];
 
     try {
-      // Fetch all active subscriptions
-      const subscriptions = await base44.asServiceRole.entities.Subscription.filter({ 
-        status: "active" 
-      });
+      // Call backend function to test all users
+      const response = await base44.functions.invoke('testAllPaidUsersPermissions', {});
+      
+      const { results: testResults, summary } = response.data;
 
-      console.log(`[AllUsersPermissionTest] Testing ${subscriptions.length} active subscriptions`);
+      setSummary(summary || { pass: 0, fail: 0, warning: 0 });
+      setResults(testResults || []);
 
-      for (const sub of subscriptions) {
-        const userEmail = sub.user_email;
-        const userId = sub.user_id;
-
-        // Fetch user entity
-        let user = null;
-        try {
-          if (userId) {
-            const users = await base44.asServiceRole.entities.User.filter({ id: userId });
-            user = users[0];
-          }
-          if (!user && userEmail) {
-            const users = await base44.asServiceRole.entities.User.filter({ email: userEmail });
-            user = users[0];
-          }
-        } catch (err) {
-          console.warn(`Failed to fetch user for ${userEmail}:`, err);
-        }
-
-        // Test canonical resolver
-        const tier = getEntitlementTier(user, sub);
-        const hasPaid = hasPaidAccess(user, sub);
-        const hasPro = hasProAccess(user, sub);
-        const label = getPlanLabel(user, sub);
-
-        // Expected values based on subscription
-        const expectedTier = (sub.tier || '').toLowerCase();
-        const expectedPaid = true; // All active subs should have paid access
-        const expectedPro = expectedTier === 'pro';
-
-        // Determine test status
-        const tierMatch = tier === expectedTier;
-        const paidMatch = hasPaid === expectedPaid;
-        const proMatch = hasPro === expectedPro;
-
-        const allPass = tierMatch && paidMatch && proMatch;
-
-        testResults.push({
-          email: userEmail,
-          userId: userId || 'N/A',
-          provider: sub.provider,
-          subTier: sub.tier,
-          subStatus: sub.status,
-          // Results
-          tier,
-          hasPaid,
-          hasPro,
-          label,
-          // Expected
-          expectedTier,
-          expectedPaid,
-          expectedPro,
-          // Pass/Fail
-          tierMatch,
-          paidMatch,
-          proMatch,
-          status: allPass ? 'pass' : (hasPaid ? 'warning' : 'fail'),
-          issues: [
-            !tierMatch && `Tier mismatch: got ${tier}, expected ${expectedTier}`,
-            !paidMatch && `Paid access: got ${hasPaid}, expected ${expectedPaid}`,
-            !proMatch && `Pro access: got ${hasPro}, expected ${expectedPro}`,
-          ].filter(Boolean)
-        });
-      }
-
-      // Calculate summary
-      const pass = testResults.filter(r => r.status === 'pass').length;
-      const fail = testResults.filter(r => r.status === 'fail').length;
-      const warning = testResults.filter(r => r.status === 'warning').length;
-
-      setSummary({ pass, fail, warning });
-      setResults(testResults);
-
-      console.log('[AllUsersPermissionTest] Complete:', { pass, fail, warning });
+      console.log('[AllUsersPermissionTest] Complete:', summary);
 
     } catch (error) {
       console.error('[AllUsersPermissionTest] Error:', error);
-      testResults.push({
+      setResults([{
         email: 'ERROR',
         status: 'fail',
         issues: [`Test failed: ${error.message}`]
-      });
-      setResults(testResults);
+      }]);
+      setSummary({ pass: 0, fail: 1, warning: 0 });
     } finally {
       setTesting(false);
     }
