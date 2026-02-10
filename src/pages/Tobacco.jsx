@@ -86,7 +86,7 @@ export default function TobaccoPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  const { user, hasPaidAccess, isTrialing } = useCurrentUser();
+  const { user, hasPaid, isTrial } = useCurrentUser();
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
@@ -116,7 +116,7 @@ export default function TobaccoPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Check limits before creating
-      const limitCheck = await canCreateTobacco(user?.email, hasPaidAccess, isTrialing);
+      const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
         throw new Error(limitCheck.reason || 'Cannot create tobacco blend');
       }
@@ -288,7 +288,7 @@ export default function TobaccoPage() {
             </Button>
             <Button 
               onClick={async () => {
-                const limitCheck = await canCreateTobacco(user?.email, hasPaidAccess, isTrialing);
+                const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
                 if (!limitCheck.canCreate) {
                   toast.error(limitCheck.reason, {
                     action: {
