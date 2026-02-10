@@ -545,7 +545,7 @@ export default function Layout({ children, currentPageName }) {
                        key={item.page}
                        item={item}
                        currentPage={currentPageName}
-                       hasPaidAccess={hasPaidAccess}
+                       hasPaidAccess={hasPaid}
                      />
                    ))}
                    {adminNavItems.length > 0 && (
@@ -556,7 +556,7 @@ export default function Layout({ children, currentPageName }) {
                            key={item.page}
                            item={item}
                            currentPage={currentPageName}
-                           hasPaidAccess={hasPremium}
+                           hasPaidAccess={hasPaid}
                          />
                        ))}
                      </>
@@ -630,7 +630,7 @@ export default function Layout({ children, currentPageName }) {
                   item={item}
                   currentPage={currentPageName}
                   onClick={() => setMobileOpen(false)}
-                  hasPaidAccess={hasPaidAccess}
+                  hasPaidAccess={hasPaid}
                   isMobile={true}
                 />
               ))}
@@ -645,7 +645,7 @@ export default function Layout({ children, currentPageName }) {
                       item={item}
                       currentPage={currentPageName}
                       onClick={() => setMobileOpen(false)}
-                      hasPaidAccess={hasPaidAccess}
+                      hasPaidAccess={hasPaid}
                       isMobile={true}
                     />
                   ))}
