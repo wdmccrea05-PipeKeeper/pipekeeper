@@ -310,3 +310,22 @@ export default function SubscriptionE2ETest() {
     </div>
   );
 }
+
+function StatusBadge({ label, value }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-slate-700">{label}:</span>
+      {value ? (
+        <Badge className="bg-green-100 text-green-800 border-green-300 gap-1">
+          <CheckCircle2 className="w-3 h-3" />
+          Pass
+        </Badge>
+      ) : (
+        <Badge className="bg-red-100 text-red-800 border-red-300 gap-1">
+          <XCircle className="w-3 h-3" />
+          Fail
+        </Badge>
+      )}
+    </div>
+  );
+}
