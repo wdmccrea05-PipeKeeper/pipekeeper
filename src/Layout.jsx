@@ -22,6 +22,7 @@ import TermsGate from "@/components/TermsGate";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import FoundingMemberPopup from "@/components/subscription/FoundingMemberPopup";
 import EntitlementDebug from "@/components/debug/EntitlementDebug";
+import PermissionDebugPanel from "@/components/debug/PermissionDebugPanel";
 import {
   isIOSWebView,
   openAppleSubscriptions,
@@ -729,6 +730,7 @@ export default function Layout({ children, currentPageName }) {
           )}
 
           <EntitlementDebug />
+          <PermissionDebugPanel />
 
           <FeatureQuickAccess isOpen={showQuickAccess} onClose={() => setShowQuickAccess(false)} />
 

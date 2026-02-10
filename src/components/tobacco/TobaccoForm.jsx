@@ -81,8 +81,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
-  const { user, hasPaid, hasPremium } = useCurrentUser();
-  const isPaidUser = hasPaid || hasPremium;
+  const { user, hasPaid, isTrial } = useCurrentUser();
+  const isPaidUser = hasPaid;
 
   // Auto-suggest recent values
   const { data: recentManufacturers = [] } = useRecentValues("TobaccoBlend", "manufacturer");
