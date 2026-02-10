@@ -91,6 +91,13 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
     staleTime: 10_000,
   });
 
+  // Fetch smoking logs for Trends tab
+  const { data: logs = [] } = useQuery({
+    queryKey: ['smoking-logs', user?.email],
+    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
+    enabled: !!user?.email && hasPro,
+  });
+
   return (
     <PKCard>
       <div className="p-6">
@@ -235,14 +242,23 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="trends" className="mt-0">
-                <ProFeatureLock featureName="Trends Report">
+                {hasPro ? (
                   <TrendsReport 
-                    logs={[]} 
+                    logs={logs} 
                     pipes={pipes} 
                     blends={blends} 
                     user={user}
                   />
-                </ProFeatureLock>
+                ) : (
+                  <ProFeatureLock featureName="Trends Report">
+                    <TrendsReport 
+                      logs={[]} 
+                      pipes={pipes} 
+                      blends={blends} 
+                      user={user}
+                    />
+                  </ProFeatureLock>
+                )}
               </TabsContent>
 
               <TabsContent value="aging" className="mt-0">

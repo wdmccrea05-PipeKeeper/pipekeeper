@@ -18,7 +18,7 @@ import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
@@ -29,10 +29,10 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
   if (isAppleBuild) return null;
 
-  const hasPaidAccess = hasPremiumAccess(user);
+  const { hasPaid } = useCurrentUser();
   const entitlements = useEntitlements();
 
-  if (!hasPaidAccess) {
+  if (!hasPaid) {
     return (
       <UpgradePrompt 
         featureName={t("smokingLog.usageLog")}
