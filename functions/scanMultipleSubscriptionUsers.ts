@@ -9,16 +9,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Get all active subscriptions and group by user
-    const allSubs = await base44.asServiceRole.entities.Subscription.filter({
-      status: 'active'
-    }, 1000);
+    // Query subscriptions in smaller batches to avoid timeout
+    const allSubs = [];
+    let skip = 0;
+    const batchSize = 50;
+    let batch;
 
-    console.log(`Found ${allSubs.length} active subscriptions`);
+    do {
+      batch = await base44.asServiceRole.entities.Subscription.list(1, batchSize, { skip });
+      if (batch.length === 0) break;
+      allSubs.push(...batch);
+      skip += batchSize;
+    } while (batch.length === batchSize);
 
-    // Group subscriptions by user email
+    console.log(`Found ${allSubs.length} subscriptions`);
+
+    // Filter to active only and group by user
     const subsByEmail = {};
     for (const sub of allSubs) {
+      if (sub.status !== 'active') continue;
       if (!subsByEmail[sub.user_email]) {
         subsByEmail[sub.user_email] = [];
       }
@@ -34,51 +43,52 @@ Deno.serve(async (req) => {
 
     const issues = [];
 
-    // Fetch user records for affected users only
-    const allUsers = await base44.asServiceRole.entities.User.list(200);
-
+    // Check each user with multiple subscriptions
     for (const email of emailsWithMultiple) {
-      const paidUser = allUsers.find(u => u.email === email);
-      if (!paidUser) continue;
-
       const subs = subsByEmail[email];
 
-      if (subs.length > 1) {
-        // Sort to find correct tier
-        const sortedSubs = subs.sort((a, b) => {
-          if (a.tier === 'pro' && b.tier !== 'pro') return -1;
-          if (a.tier !== 'pro' && b.tier === 'pro') return 1;
-          const aStart = new Date(a.current_period_start || a.started_at || 0).getTime();
-          const bStart = new Date(b.current_period_start || b.started_at || 0).getTime();
-          return bStart - aStart;
-        });
+      // Get user record
+      const users = await base44.asServiceRole.entities.User.filter({ email });
+      if (users.length === 0) continue;
 
-        const correctTier = sortedSubs[0]?.tier || 'premium';
-        const hasIssue = paidUser.entitlement_tier !== correctTier;
+      const paidUser = users[0];
 
-        issues.push({
-          email: paidUser.email,
-          userId: paidUser.id,
-          currentEntitlementTier: paidUser.entitlement_tier,
-          correctTier: correctTier,
-          subscriptionCount: subs.length,
-          subscriptions: subs.map(s => ({
-            tier: s.tier,
-            status: s.status,
-            started: s.current_period_start || s.started_at
-          })),
-          needsFix: hasIssue
-        });
-      }
+      // Sort to find correct tier
+      const sortedSubs = subs.sort((a, b) => {
+        if (a.tier === 'pro' && b.tier !== 'pro') return -1;
+        if (a.tier !== 'pro' && b.tier === 'pro') return 1;
+        const aStart = new Date(a.current_period_start || a.started_at || 0).getTime();
+        const bStart = new Date(b.current_period_start || b.started_at || 0).getTime();
+        return bStart - aStart;
+      });
+
+      const correctTier = sortedSubs[0]?.tier || 'premium';
+      const hasIssue = paidUser.entitlement_tier !== correctTier;
+
+      issues.push({
+        email: paidUser.email,
+        userId: paidUser.id,
+        currentEntitlementTier: paidUser.entitlement_tier,
+        correctTier: correctTier,
+        subscriptionCount: subs.length,
+        subscriptions: subs.map(s => ({
+          id: s.id,
+          tier: s.tier,
+          started: s.current_period_start || s.started_at
+        })),
+        needsFix: hasIssue
+      });
     }
 
     const issuesNeedingFix = issues.filter(i => i.needsFix);
 
     return Response.json({
-      totalUsersChecked: emailsWithMultiple.length,
-      usersWithMultipleSubs: issues.length,
-      usersWithMisalignment: issuesNeedingFix.length,
-      issues: issuesNeedingFix.length > 0 ? issuesNeedingFix : issues
+      totalUsersWithMultipleSubs: emailsWithMultiple.length,
+      detailedIssues: issues,
+      summary: {
+        usersNeedingFix: issuesNeedingFix.length,
+        issuesDetails: issuesNeedingFix
+      }
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
