@@ -4,17 +4,14 @@ import { FileText, FileSpreadsheet, Shield, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "react-i18next";
 
 export default function PipeExporter() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { user, hasPaid } = useCurrentUser();
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -22,7 +19,7 @@ export default function PipeExporter() {
     enabled: !!user?.email,
   });
 
-  const isPremiumUser = hasPremiumAccess(user);
+  const isPremiumUser = hasPaid;
 
   const exportToCSV = () => {
     const headers = [
