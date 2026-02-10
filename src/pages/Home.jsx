@@ -15,7 +15,7 @@ import {
   Leaf, Package, Star, Sparkles, Search, Camera, X, AlertCircle, RotateCcw
 } from "lucide-react";
 import { isTrialWindowNow } from "@/components/utils/access";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import PairingGrid from "@/components/home/PairingGrid";
@@ -63,59 +63,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: async () => {
-      const authUser = await base44.auth.me();
-      let entityUser = null;
-      try {
-        if (authUser?.email) {
-          const rows = await base44.entities.User.filter({ email: authUser.email });
-          entityUser = rows?.[0] || null;
-        }
-      } catch (e) {
-        console.warn("[Home] Could not load entities.User for subscription fields:", e);
-      }
-
-      let subscriptions = [];
-      try {
-        if (authUser?.email) {
-          const subs = await base44.entities.Subscription.filter({ user_email: authUser.email });
-          subscriptions = Array.isArray(subs) ? subs : [];
-        }
-      } catch (e) {
-        console.warn("[Home] Could not load Subscription entity:", e);
-      }
-
-      const bestSub = subscriptions.find((s) => s?.status === "active") || subscriptions.find((s) => s?.status === "trialing") || subscriptions[0] || null;
-      let subscriptionLevel = entityUser?.subscription_level;
-      let subscriptionStatus = entityUser?.subscription_status;
-
-      if (bestSub) {
-        const now = new Date();
-        const periodEnd = bestSub.current_period_end ? new Date(bestSub.current_period_end) : null;
-        const isPaid = (bestSub.status === "active" || bestSub.status === "trialing") && (!periodEnd || periodEnd > now);
-        if (isPaid) {
-          subscriptionLevel = "paid";
-          subscriptionStatus = bestSub.status;
-        }
-      }
-
-      return {
-        ...authUser,
-        ...(entityUser || {}),
-        subscription_level: subscriptionLevel,
-        subscription_status: subscriptionStatus,
-        email: authUser?.email || entityUser?.email,
-        subscription: bestSub,
-      };
-    },
-    retry: 2,
-    staleTime: 10000,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
-  });
+  const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid } = useCurrentUser();
 
   const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery({
     queryKey: ['onboarding-status', user?.email],
@@ -203,7 +151,7 @@ export default function HomePage() {
   });
 
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.is_admin === true;
-  const isPaidUser = isAdmin || hasPremiumAccess(user, user?.subscription);
+  const isPaidUser = isAdmin || hasPaid;
 
   const createOnboardingMutation = useMutation({
     mutationFn: (data) => base44.entities.OnboardingStatus.create(data),

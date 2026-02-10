@@ -42,7 +42,7 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
-  const { user, hasPaidAccess, isTrialing } = useCurrentUser();
+  const { user, hasPaid, isTrial } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -63,7 +63,7 @@ export default function PipesPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Check limits before creating
-      const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+      const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
         throw new Error(limitCheck.reason || 'Cannot create pipe');
       }
@@ -190,7 +190,7 @@ export default function PipesPage() {
             </Button>
             <Button 
               onClick={async () => {
-                const limitCheck = await canCreatePipe(user?.email, hasPaidAccess, isTrialing);
+                const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
                 if (!limitCheck.canCreate) {
                   toast.error(limitCheck.reason, {
                     action: {
