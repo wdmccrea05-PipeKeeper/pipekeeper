@@ -274,7 +274,7 @@ export default function Layout({ children, currentPageName }) {
     if (userLoading) return;
     if (!user?.email) return;
     if (isAppleBuild) return;
-    if (hasPaidAccess) return;
+    if (hasPremium) return;
     if (!shouldRunStripeSync(user.email)) return;
 
     let cancelled = false;
@@ -307,7 +307,7 @@ export default function Layout({ children, currentPageName }) {
     if (userLoading) return;
     if (!user?.email) return;
     if (user?.isFoundingMember) return;
-    if (!hasPaidAccess) return;
+    if (!hasPremium) return;
     if (!subscription) return;
 
     (async () => {
@@ -449,7 +449,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-    if (hasPaidAccess) return;
+    if (hasPremium) return;
     if (PUBLIC_PAGES.has(currentPageName)) return;
     if (!shouldShowSubscribePrompt()) return;
 
@@ -460,7 +460,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (userLoading) return;
     if (!user?.email) return;
-    if (!hasPaidAccess) return;
+    if (!hasPremium) return;
     if (user?.foundingMemberAcknowledged) return;
 
     const foundingCutoff = new Date("2026-02-01T00:00:00.000Z");
