@@ -10,12 +10,12 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
 
 export default function TobaccoValueEstimator({ blends, user, onComplete }) {
-  const { subscription, isPro } = useCurrentUser();
+  const { subscription, hasPro } = useCurrentUser();
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
-  const hasProAccess = isPro || isLegacyPremium(subscription);
+  const hasProAccess = hasPro || isLegacyPremium(subscription);
 
   // Filter blends that need valuation
   const blendsNeedingValuation = blends.filter(b => !b.ai_estimated_value);
