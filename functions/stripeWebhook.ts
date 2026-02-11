@@ -1,7 +1,7 @@
 // DEPLOYMENT: 2026-02-02T03:55:00Z - Backup Mode resilient
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient } from "./_utils/stripeClient.ts";
+import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -94,16 +94,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Use ENV-only Stripe client
-    let stripe;
-    try {
-      const result = getStripeClient();
-      stripe = result.stripe;
-      console.log(`[stripeWebhook] Using Stripe client: ${result.meta.masked} (${result.meta.environment})`);
-    } catch (e) {
-      console.error("[stripeWebhook] Failed to get Stripe client:", e?.message || e);
-      return json(500, { ok: false, error: "Failed to get Stripe client" });
+    // Initialize Stripe client from ENV
+    const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
+    if (!stripeKey || !stripeKey.startsWith("sk_")) {
+      console.error("[stripeWebhook] STRIPE_SECRET_KEY missing or invalid");
+      return json(500, { ok: false, error: "Stripe key not configured" });
     }
+    
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+    const environment = stripeKey.startsWith("sk_live_") ? "live" : "test";
+    console.log(`[stripeWebhook] Using Stripe key: ${stripeKey.slice(0, 8)}...${stripeKey.slice(-4)} (${environment})`);
     
     // Get webhook secret - try ENV first, then RemoteConfig fallback
     let webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
