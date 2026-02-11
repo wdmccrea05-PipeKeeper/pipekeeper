@@ -20,11 +20,21 @@ Deno.serve(async (req) => {
 
     const platform = body.platform || "web";
 
-    // Auth
+    // Auth - this function should be callable by any authenticated user
     const base44 = createClientFromRequest(req);
-    const authUser = await base44.auth.me();
+    let authUser;
+    try {
+      authUser = await base44.auth.me();
+    } catch (error) {
+      console.error('[reconcileEntitlementsOnLogin] Auth failed:', error);
+      return Response.json({ 
+        ok: false, 
+        error: "UNAUTHENTICATED" 
+      }, { status: 401 });
+    }
 
     if (!authUser?.id || !authUser?.email) {
+      console.error('[reconcileEntitlementsOnLogin] Missing user ID or email');
       return Response.json({ 
         ok: false, 
         error: "UNAUTHENTICATED" 

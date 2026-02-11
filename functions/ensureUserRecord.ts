@@ -10,10 +10,19 @@ const normEmail = (email) => String(email || "").trim().toLowerCase();
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const authUser = await base44.auth.me();
+    
+    // This function should be callable by any authenticated user (including new users)
+    // Don't require email check here - auth.me() will throw if not authenticated
+    let authUser;
+    try {
+      authUser = await base44.auth.me();
+    } catch (error) {
+      console.error('[ensureUserRecord] Auth failed:', error);
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     if (!authUser?.email) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return Response.json({ error: 'No email found in auth user' }, { status: 401 });
     }
 
     const emailLower = normEmail(authUser.email);
