@@ -339,6 +339,8 @@ Deno.serve(async (req) => {
           existing = byLegacy?.[0];
         }
 
+        const isPaid = sub.status === "active" || sub.status === "trialing";
+
         const payload = {
           user_id: user_id || existing?.user_id || null,
           user_email,
@@ -377,8 +379,6 @@ Deno.serve(async (req) => {
         }
 
         await upsertSubscription(payload);
-
-        const isPaid = sub.status === "active" || sub.status === "trialing";
         
         let userRow = await findUserByEmail(user_email);
         if (!userRow) {
