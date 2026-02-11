@@ -150,7 +150,10 @@ export function useCurrentUser() {
   // Ensure user record exists with platform info
   useEffect(() => {
     if (userLoading || !user?.email) return;
-    if (user?.platform) return; // Already has platform
+    
+    // Only try once per session
+    const sessionKey = `pk_user_ensured_${user.email}`;
+    if (sessionStorage.getItem(sessionKey)) return;
 
     let cancelled = false;
 
@@ -158,17 +161,23 @@ export function useCurrentUser() {
       try {
         await base44.functions.invoke("ensureUserRecord", {});
         if (!cancelled) {
+          sessionStorage.setItem(sessionKey, 'true');
           await refetchUser();
         }
       } catch (err) {
-        console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err);
+        // If function call fails with 403, user record likely already exists
+        // Mark as ensured to prevent retry loops
+        if (err?.response?.status === 403) {
+          sessionStorage.setItem(sessionKey, 'true');
+        }
+        console.warn("[useCurrentUser] ensureUserRecord call failed (non-fatal):", err?.message);
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [userLoading, user?.email, user?.platform, refetchUser]);
+  }, [userLoading, user?.email, refetchUser]);
 
   // Infer provider from evidence
   const provider = inferProvider(user, subscription);
