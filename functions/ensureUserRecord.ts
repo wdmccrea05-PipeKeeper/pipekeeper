@@ -4,6 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { reconcileUserEntitlements } from './_utils/reconcileEntitlements.js';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -35,46 +36,78 @@ Deno.serve(async (req) => {
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     
     if (existingUsers && existingUsers.length > 0) {
-      // User exists - run entitlement reconciliation on every login
+      const existing = existingUsers[0];
+      
+      // Run entitlement reconciliation on every login
       try {
-        await base44.functions.invoke('reconcileEntitlementsOnLogin', { 
-          platform: platformFromBody 
-        });
+        const reconciled = await reconcileUserEntitlements(base44, existing, platformFromBody);
+        
+        if (reconciled.changed) {
+          // Update user with reconciled entitlements
+          await base44.asServiceRole.entities.User.update(existing.id, {
+            entitlement_tier: reconciled.tier,
+            subscription_tier: reconciled.level,
+            subscription_status: reconciled.status,
+            stripe_customer_id: reconciled.stripeCustomerId || existing.stripe_customer_id,
+            platform: platformFromBody,
+            last_login: new Date().toISOString()
+          });
+        } else {
+          // Just update last login
+          await base44.asServiceRole.entities.User.update(existing.id, {
+            last_login: new Date().toISOString()
+          });
+        }
       } catch (e) {
-        console.warn('[ensureUserRecord] Reconciliation failed for existing user (non-fatal):', e);
+        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
       }
       
       // Re-fetch user to get updated entitlements
       const updatedUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
-      const existing = updatedUsers?.[0] || existingUsers[0];
       
       return Response.json({ 
         ok: true, 
-        user: existing,
+        user: updatedUsers?.[0] || existing,
         user_id: userId, 
         reconciled: true 
       });
     }
 
     // User doesn't exist - create with service role
-    // IMPORTANT: Don't set subscription fields to defaults - let reconciliation handle it
     const newUser = await base44.asServiceRole.entities.User.create({
       email: emailLower,
       full_name: authUser.full_name || authUser.name || null,
       platform: platformFromBody || 'web',
-      role: authUser.role || 'user'
+      role: authUser.role || 'user',
+      entitlement_tier: 'free',
+      subscription_tier: 'free',
+      subscription_status: 'free',
+      last_login: new Date().toISOString()
     });
 
     // Run entitlement reconciliation immediately after creation
     try {
-      const reconReq = new Request(req.url, {
-        method: 'POST',
-        headers: req.headers,
-        body: JSON.stringify({ platform: platformFromBody })
-      });
-      await base44.functions.invoke('reconcileEntitlementsOnLogin', { 
-        platform: platformFromBody 
-      });
+      const reconciled = await reconcileUserEntitlements(base44, newUser, platformFromBody);
+      
+      if (reconciled.changed) {
+        // Update user with reconciled entitlements
+        await base44.asServiceRole.entities.User.update(newUser.id, {
+          entitlement_tier: reconciled.tier,
+          subscription_tier: reconciled.level,
+          subscription_status: reconciled.status,
+          stripe_customer_id: reconciled.stripeCustomerId || null
+        });
+        
+        // Fetch updated user
+        const updated = await base44.asServiceRole.entities.User.filter({ email: emailLower });
+        return Response.json({ 
+          ok: true, 
+          user: updated?.[0] || newUser,
+          user_id: userId, 
+          created: true,
+          reconciled: true
+        });
+      }
     } catch (e) {
       console.warn('[ensureUserRecord] Reconciliation failed for new user (non-fatal):', e);
     }
