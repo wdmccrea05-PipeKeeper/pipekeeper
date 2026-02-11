@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
           platform: platformFromBody 
         });
       } catch (e) {
-        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
+        console.warn('[ensureUserRecord] Reconciliation failed for existing user (non-fatal):', e);
       }
       
       // Re-fetch user to get updated entitlements
@@ -58,11 +58,16 @@ Deno.serve(async (req) => {
 
     // Run entitlement reconciliation immediately after creation
     try {
+      const reconReq = new Request(req.url, {
+        method: 'POST',
+        headers: req.headers,
+        body: JSON.stringify({ platform: platformFromBody })
+      });
       await base44.functions.invoke('reconcileEntitlementsOnLogin', { 
         platform: platformFromBody 
       });
     } catch (e) {
-      console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
+      console.warn('[ensureUserRecord] Reconciliation failed for new user (non-fatal):', e);
     }
 
     return Response.json({ 
