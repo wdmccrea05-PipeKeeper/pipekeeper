@@ -165,12 +165,12 @@ export function useCurrentUser() {
           await refetchUser();
         }
       } catch (err) {
-        // If function call fails with 403, user record likely already exists
-        // Mark as ensured to prevent retry loops
-        if (err?.response?.status === 403) {
+        // Always mark as ensured to prevent blocking page load
+        // User entity will be created automatically by Base44 if needed
+        if (!cancelled) {
           sessionStorage.setItem(sessionKey, 'true');
         }
-        console.warn("[useCurrentUser] ensureUserRecord call failed (non-fatal):", err?.message);
+        console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err?.message || err);
       }
     })();
 
