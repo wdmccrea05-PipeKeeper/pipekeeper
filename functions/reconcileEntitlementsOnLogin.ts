@@ -20,24 +20,18 @@ Deno.serve(async (req) => {
 
     const platform = body.platform || "web";
 
-    // Auth - this function should be callable by any authenticated user
+    // Auth - callable by any authenticated user (including new signups)
     const base44 = createClientFromRequest(req);
-    let authUser;
-    try {
-      authUser = await base44.auth.me();
-    } catch (error) {
-      console.error('[reconcileEntitlementsOnLogin] Auth failed:', error);
-      return Response.json({ 
-        ok: false, 
-        error: "UNAUTHENTICATED" 
-      }, { status: 401 });
-    }
+    const authUser = await base44.auth.me().catch((err) => {
+      console.error('[reconcileEntitlementsOnLogin] Auth check failed:', err.message);
+      return null;
+    });
 
     if (!authUser?.id || !authUser?.email) {
-      console.error('[reconcileEntitlementsOnLogin] Missing user ID or email');
       return Response.json({ 
         ok: false, 
-        error: "UNAUTHENTICATED" 
+        error: "UNAUTHENTICATED",
+        details: "Valid authentication required"
       }, { status: 401 });
     }
 
