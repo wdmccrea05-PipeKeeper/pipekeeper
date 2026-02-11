@@ -33,33 +33,63 @@ Deno.serve(async (req) => {
     const platformFromBody = body.platform || 'web';
 
     // Check if User entity exists by email
+    // The built-in User entity may exist from auth, but we need to ensure entitlement fields
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
+    
+    console.log('[ensureUserRecord] Found existing users:', existingUsers?.length || 0);
     
     if (existingUsers && existingUsers.length > 0) {
       const existing = existingUsers[0];
+      console.log('[ensureUserRecord] User exists, reconciling entitlements...');
+      
+      // Ensure entitlement fields exist in user.data
+      const hasEntitlementFields = existing.data?.entitlement_tier || 
+                                     existing.data?.subscription_tier || 
+                                     existing.data?.subscription_status;
+      
+      if (!hasEntitlementFields) {
+        console.log('[ensureUserRecord] Adding missing entitlement fields to existing user');
+        await base44.asServiceRole.entities.User.update(existing.id, {
+          data: {
+            ...existing.data,
+            entitlement_tier: 'free',
+            subscription_tier: 'free',
+            subscription_status: 'free',
+            platform: platformFromBody,
+            last_login: new Date().toISOString()
+          }
+        });
+      }
       
       // Run entitlement reconciliation on every login
       try {
         const reconciled = await reconcileUserEntitlements(base44, existing, platformFromBody);
         
         if (reconciled.changed) {
+          console.log('[ensureUserRecord] Entitlements changed, updating user');
           // Update user with reconciled entitlements
           await base44.asServiceRole.entities.User.update(existing.id, {
-            entitlement_tier: reconciled.tier,
-            subscription_tier: reconciled.level,
-            subscription_status: reconciled.status,
-            stripe_customer_id: reconciled.stripeCustomerId || existing.stripe_customer_id,
-            platform: platformFromBody,
-            last_login: new Date().toISOString()
+            data: {
+              ...existing.data,
+              entitlement_tier: reconciled.tier,
+              subscription_tier: reconciled.level,
+              subscription_status: reconciled.status,
+              stripe_customer_id: reconciled.stripeCustomerId || existing.data?.stripe_customer_id,
+              platform: platformFromBody,
+              last_login: new Date().toISOString()
+            }
           });
         } else {
           // Just update last login
           await base44.asServiceRole.entities.User.update(existing.id, {
-            last_login: new Date().toISOString()
+            data: {
+              ...existing.data,
+              last_login: new Date().toISOString()
+            }
           });
         }
       } catch (e) {
-        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e);
+        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e.message);
       }
       
       // Re-fetch user to get updated entitlements
@@ -73,16 +103,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // User doesn't exist - create with service role
+    // User doesn't exist in User entity - create with service role
+    console.log('[ensureUserRecord] Creating new User entity for:', emailLower);
     const newUser = await base44.asServiceRole.entities.User.create({
       email: emailLower,
       full_name: authUser.full_name || authUser.name || null,
-      platform: platformFromBody || 'web',
-      role: authUser.role || 'user',
-      entitlement_tier: 'free',
-      subscription_tier: 'free',
-      subscription_status: 'free',
-      last_login: new Date().toISOString()
+      data: {
+        entitlement_tier: 'free',
+        subscription_tier: 'free',
+        subscription_status: 'free',
+        platform: platformFromBody || 'web',
+        last_login: new Date().toISOString()
+      },
+      role: authUser.role || 'user'
     });
 
     // Run entitlement reconciliation immediately after creation
@@ -90,12 +123,16 @@ Deno.serve(async (req) => {
       const reconciled = await reconcileUserEntitlements(base44, newUser, platformFromBody);
       
       if (reconciled.changed) {
+        console.log('[ensureUserRecord] Updating new user with reconciled entitlements');
         // Update user with reconciled entitlements
         await base44.asServiceRole.entities.User.update(newUser.id, {
-          entitlement_tier: reconciled.tier,
-          subscription_tier: reconciled.level,
-          subscription_status: reconciled.status,
-          stripe_customer_id: reconciled.stripeCustomerId || null
+          data: {
+            ...newUser.data,
+            entitlement_tier: reconciled.tier,
+            subscription_tier: reconciled.level,
+            subscription_status: reconciled.status,
+            stripe_customer_id: reconciled.stripeCustomerId || null
+          }
         });
         
         // Fetch updated user
@@ -109,9 +146,10 @@ Deno.serve(async (req) => {
         });
       }
     } catch (e) {
-      console.warn('[ensureUserRecord] Reconciliation failed for new user (non-fatal):', e);
+      console.warn('[ensureUserRecord] Reconciliation failed for new user (non-fatal):', e.message);
     }
 
+    console.log('[ensureUserRecord] New user created successfully');
     return Response.json({ 
       ok: true, 
       user: newUser,
