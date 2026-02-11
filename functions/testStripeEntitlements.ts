@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
         amount: 4.99,
       });
 
-      // Set entitlement
-      await base44.asServiceRole.auth.updateUser(user.id, {
+      // Set entitlement using entities API
+      await base44.asServiceRole.entities.User.update(user.id, {
         entitlement_tier: "premium",
         subscription_status: "active",
       });
@@ -83,8 +83,8 @@ Deno.serve(async (req) => {
         amount: 9.99,
       });
 
-      // Set entitlement
-      await base44.asServiceRole.auth.updateUser(user.id, {
+      // Set entitlement using entities API
+      await base44.asServiceRole.entities.User.update(user.id, {
         entitlement_tier: "pro",
         subscription_status: "active",
       });
