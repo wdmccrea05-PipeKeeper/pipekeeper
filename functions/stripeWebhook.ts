@@ -97,9 +97,9 @@ Deno.serve(async (req) => {
     // Use ENV-only Stripe client
     let stripe;
     try {
-      const { stripe: stripeClient, meta } = getStripeClient();
-      stripe = stripeClient;
-      console.log(`[stripeWebhook] env=${meta.environment}`);
+      const result = getStripeClient();
+      stripe = result.stripe;
+      console.log(`[stripeWebhook] Using Stripe client: ${result.meta.masked} (${result.meta.environment})`);
     } catch (e) {
       console.error("[stripeWebhook] Failed to get Stripe client:", e?.message || e);
       return json(500, { ok: false, error: "Failed to get Stripe client" });
