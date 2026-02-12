@@ -63,27 +63,36 @@ Deno.serve(async (req) => {
       
       // Run entitlement reconciliation on every login
       try {
-        const reconciled = await reconcileUserEntitlements(base44, existing, platformFromBody);
+        const reconciled = await reconcileUserEntitlements(base44, existing, { req });
         
         if (reconciled.changed) {
           console.log('[ensureUserRecord] Entitlements changed, updating user');
+          // Clean existing.data to prevent nested structures
+          const cleanData = { ...(existing.data || {}) };
+          delete cleanData.data; // Remove any nested data object
+          
           // Update user with reconciled entitlements
           await base44.asServiceRole.entities.User.update(existing.id, {
             data: {
-              ...existing.data,
-              entitlement_tier: reconciled.tier,
-              subscription_tier: reconciled.level,
-              subscription_status: reconciled.status,
-              stripe_customer_id: reconciled.stripeCustomerId || existing.data?.stripe_customer_id,
+              ...cleanData,
+              entitlement_tier: reconciled.finalTier,
+              subscription_tier: reconciled.finalTier,
+              subscription_level: reconciled.finalLevel,
+              subscription_status: reconciled.finalStatus,
+              stripe_customer_id: reconciled.stripeCustomerId || cleanData.stripe_customer_id,
+              subscription_provider: reconciled.providerUsed === 'stripe' || reconciled.providerUsed === 'apple' ? reconciled.providerUsed : cleanData.subscription_provider,
               platform: platformFromBody,
               last_login: new Date().toISOString()
             }
           });
         } else {
           // Just update last login
+          const cleanData = { ...(existing.data || {}) };
+          delete cleanData.data;
+          
           await base44.asServiceRole.entities.User.update(existing.id, {
             data: {
-              ...existing.data,
+              ...cleanData,
               last_login: new Date().toISOString()
             }
           });
@@ -120,7 +129,7 @@ Deno.serve(async (req) => {
 
     // Run entitlement reconciliation immediately after creation
     try {
-      const reconciled = await reconcileUserEntitlements(base44, newUser, platformFromBody);
+      const reconciled = await reconcileUserEntitlements(base44, newUser, { req });
       
       if (reconciled.changed) {
         console.log('[ensureUserRecord] Updating new user with reconciled entitlements');
@@ -128,9 +137,11 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.User.update(newUser.id, {
           data: {
             ...newUser.data,
-            entitlement_tier: reconciled.tier,
-            subscription_tier: reconciled.level,
-            subscription_status: reconciled.status,
+            entitlement_tier: reconciled.finalTier,
+            subscription_tier: reconciled.finalTier,
+            subscription_level: reconciled.finalLevel,
+            subscription_status: reconciled.finalStatus,
+            subscription_provider: reconciled.providerUsed === 'stripe' || reconciled.providerUsed === 'apple' ? reconciled.providerUsed : null,
             stripe_customer_id: reconciled.stripeCustomerId || null
           }
         });
