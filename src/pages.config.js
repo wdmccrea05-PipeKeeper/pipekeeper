@@ -71,6 +71,7 @@ import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
+import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
@@ -87,7 +88,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import __Layout from './Layout.jsx';
 
 
@@ -116,6 +116,7 @@ export const PAGES = {
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
+    "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,
@@ -132,7 +133,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "SubscriptionE2ETest": SubscriptionE2ETest,
 }
 
 export const pagesConfig = {

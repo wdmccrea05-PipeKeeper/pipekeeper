@@ -3,9 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, RefreshCw, Settings } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, Settings, Users, User } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SubscriptionSupport() {
   const { user, isAdmin } = useCurrentUser();
@@ -14,6 +18,11 @@ export default function SubscriptionSupport() {
   const [funnelData, setFunnelData] = useState(null);
   const [driftData, setDriftData] = useState([]);
   const [timeWindow, setTimeWindow] = useState("24h");
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [userTier, setUserTier] = useState("premium");
+  const [userLoading, setUserLoading] = useState(false);
 
   if (!isAdmin) {
     return (
@@ -59,6 +68,42 @@ export default function SubscriptionSupport() {
       console.error("Failed to load drift:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const bulkUpdateEntitlements = async () => {
+    try {
+      setBulkLoading(true);
+      const { data } = await base44.functions.invoke("bulkUpdateActiveEntitlements", {});
+      setBulkResult(data);
+      toast.success(`Updated ${data.summary.updated} users successfully`);
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+      toast.error("Bulk update failed: " + error.message);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const updateUserEntitlement = async () => {
+    if (!userEmail.trim()) {
+      toast.error("Please enter a user email");
+      return;
+    }
+
+    try {
+      setUserLoading(true);
+      const { data } = await base44.functions.invoke("updateUserEntitlement", {
+        email: userEmail,
+        tier: userTier
+      });
+      toast.success(data.message);
+      setUserEmail("");
+    } catch (error) {
+      console.error("User update failed:", error);
+      toast.error("Update failed: " + error.message);
+    } finally {
+      setUserLoading(false);
     }
   };
 
@@ -199,10 +244,90 @@ export default function SubscriptionSupport() {
         </CardContent>
       </Card>
 
+      {/* Bulk Update Tool */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Bulk Update Active Entitlements
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-[#E0D8C8]/70">
+            Updates all users with active subscriptions to match their subscription tier. Fixes nested data and missing entitlement fields.
+          </p>
+          <Button onClick={bulkUpdateEntitlements} disabled={bulkLoading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${bulkLoading ? "animate-spin" : ""}`} />
+            {bulkLoading ? "Updating..." : "Run Bulk Update"}
+          </Button>
+          {bulkResult && (
+            <div className="p-4 bg-[#1a2c42] rounded-lg space-y-2">
+              <p className="text-[#E0D8C8] font-medium">Results:</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-[#E0D8C8]/70">Total Active: </span>
+                  <span className="text-[#E0D8C8]">{bulkResult.summary.totalActiveSubs}</span>
+                </div>
+                <div>
+                  <span className="text-[#E0D8C8]/70">Updated: </span>
+                  <span className="text-green-500">{bulkResult.summary.updated}</span>
+                </div>
+                <div>
+                  <span className="text-[#E0D8C8]/70">Errors: </span>
+                  <span className="text-red-500">{bulkResult.summary.errors}</span>
+                </div>
+                <div>
+                  <span className="text-[#E0D8C8]/70">Skipped: </span>
+                  <span className="text-[#E0D8C8]/70">{bulkResult.summary.skipped}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Individual User Update Tool */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Update Individual User Entitlement
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="userEmail">User Email</Label>
+            <Input
+              id="userEmail"
+              type="email"
+              placeholder="user@example.com"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="userTier">Subscription Tier</Label>
+            <Select value={userTier} onValueChange={setUserTier}>
+              <SelectTrigger id="userTier">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+                <SelectItem value="pro">Pro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={updateUserEntitlement} disabled={userLoading}>
+            {userLoading ? "Updating..." : "Update User"}
+          </Button>
+        </CardContent>
+      </Card>
+
       <Alert>
         <Settings className="h-4 w-4" />
         <AlertDescription>
-          Additional tools and diagnostics will be added here. For now, use the User Report page for detailed subscription management.
+          Users must log out and back in after entitlement updates to see changes.
         </AlertDescription>
       </Alert>
     </div>
