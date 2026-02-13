@@ -8,8 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, CheckCircle, RefreshCw, Settings, Users, User } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw, Settings, Users, User, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function SubscriptionSupport() {
   const { user, isAdmin } = useCurrentUser();
@@ -23,6 +33,9 @@ export default function SubscriptionSupport() {
   const [userEmail, setUserEmail] = useState("");
   const [userTier, setUserTier] = useState("premium");
   const [userLoading, setUserLoading] = useState(false);
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [showUserConfirm, setShowUserConfirm] = useState(false);
+  const [forceOverride, setForceOverride] = useState(false);
 
   if (!isAdmin) {
     return (
@@ -74,12 +87,24 @@ export default function SubscriptionSupport() {
   const bulkUpdateEntitlements = async () => {
     try {
       setBulkLoading(true);
+      setShowBulkConfirm(false);
       const { data } = await base44.functions.invoke("bulkUpdateActiveEntitlements", {});
       setBulkResult(data);
-      toast.success(`Updated ${data.summary.updated} users successfully`);
+      
+      if (data.summary.errors > 0) {
+        toast.warning(`Updated ${data.summary.updated} users with ${data.summary.errors} errors`);
+      } else {
+        toast.success(`Successfully updated ${data.summary.updated} users`);
+      }
     } catch (error) {
       console.error("Bulk update failed:", error);
-      toast.error("Bulk update failed: " + error.message);
+      const errorMsg = error?.response?.data?.error || error.message || "Unknown error";
+      toast.error(`Bulk update failed: ${errorMsg}`);
+      setBulkResult({ 
+        ok: false, 
+        error: errorMsg,
+        summary: { updated: 0, errors: 1, skipped: 0, totalActiveSubs: 0 }
+      });
     } finally {
       setBulkLoading(false);
     }
@@ -93,15 +118,29 @@ export default function SubscriptionSupport() {
 
     try {
       setUserLoading(true);
+      setShowUserConfirm(false);
       const { data } = await base44.functions.invoke("updateUserEntitlement", {
         email: userEmail,
-        tier: userTier
+        tier: userTier,
+        forceOverride
       });
-      toast.success(data.message);
-      setUserEmail("");
+      
+      if (data.ok) {
+        toast.success(`${data.email} updated from ${data.before} to ${data.after}`);
+        setUserEmail("");
+        setForceOverride(false);
+      } else {
+        toast.error(data.error || "Update failed");
+      }
     } catch (error) {
       console.error("User update failed:", error);
-      toast.error("Update failed: " + error.message);
+      const errorMsg = error?.response?.data?.error || error.message || "Unknown error";
+      
+      if (forceOverride) {
+        toast.error(`Force update failed: ${errorMsg}`);
+      } else {
+        toast.error(`Update failed: ${errorMsg}. Try enabling "Force Override" if needed.`);
+      }
     } finally {
       setUserLoading(false);
     }
@@ -253,10 +292,13 @@ export default function SubscriptionSupport() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-[#E0D8C8]/70">
-            Updates all users with active subscriptions to match their subscription tier. Fixes nested data and missing entitlement fields.
-          </p>
-          <Button onClick={bulkUpdateEntitlements} disabled={bulkLoading}>
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Updates all users with active subscriptions to match their subscription tier. Fixes nested data and missing entitlement fields.
+            </AlertDescription>
+          </Alert>
+          <Button onClick={() => setShowBulkConfirm(true)} disabled={bulkLoading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${bulkLoading ? "animate-spin" : ""}`} />
             {bulkLoading ? "Updating..." : "Run Bulk Update"}
           </Button>
@@ -318,7 +360,19 @@ export default function SubscriptionSupport() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={updateUserEntitlement} disabled={userLoading}>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="forceOverride"
+              checked={forceOverride}
+              onChange={(e) => setForceOverride(e.target.checked)}
+              className="rounded"
+            />
+            <Label htmlFor="forceOverride" className="text-sm text-[#E0D8C8]/70">
+              Force Override (ignore validation errors)
+            </Label>
+          </div>
+          <Button onClick={() => setShowUserConfirm(true)} disabled={userLoading}>
             {userLoading ? "Updating..." : "Update User"}
           </Button>
         </CardContent>
@@ -330,6 +384,48 @@ export default function SubscriptionSupport() {
           Users must log out and back in after entitlement updates to see changes.
         </AlertDescription>
       </Alert>
+
+      {/* Bulk Update Confirmation Dialog */}
+      <AlertDialog open={showBulkConfirm} onOpenChange={setShowBulkConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Bulk Update</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will update all users with active subscriptions to match their subscription tier.
+              This operation may take a few moments. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={bulkUpdateEntitlements}>
+              Confirm Update
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Individual User Update Confirmation Dialog */}
+      <AlertDialog open={showUserConfirm} onOpenChange={setShowUserConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm User Update</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update entitlement for <strong>{userEmail}</strong> to <strong>{userTier}</strong>?
+              {forceOverride && (
+                <div className="mt-2 text-yellow-500">
+                  ⚠️ Force Override is enabled - validation errors will be ignored
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={updateUserEntitlement}>
+              Confirm Update
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

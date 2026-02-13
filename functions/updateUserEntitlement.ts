@@ -53,11 +53,6 @@ Deno.serve(async (req) => {
       data: cleanData
     });
 
-    // Force browser cache refresh
-    try {
-      localStorage?.setItem('pk_force_entitlement_refresh', Date.now().toString());
-    } catch {}
-
     console.log(`[updateEntitlement] Updated ${normalizedEmail}: ${beforeTier} → ${normalizedTier}`);
 
     return Response.json({
