@@ -4,7 +4,6 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { reconcileUserEntitlements } from './_utils/reconcileEntitlements.js';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -61,45 +60,16 @@ Deno.serve(async (req) => {
         });
       }
       
-      // Run entitlement reconciliation on every login
-      try {
-        const reconciled = await reconcileUserEntitlements(base44, existing, { req });
-        
-        if (reconciled.changed) {
-          console.log('[ensureUserRecord] Entitlements changed, updating user');
-          // Clean existing.data to prevent nested structures
-          const cleanData = { ...(existing.data || {}) };
-          delete cleanData.data; // Remove any nested data object
-          
-          // Update user with reconciled entitlements
-          await base44.asServiceRole.entities.User.update(existing.id, {
-            data: {
-              ...cleanData,
-              entitlement_tier: reconciled.finalTier,
-              subscription_tier: reconciled.finalTier,
-              subscription_level: reconciled.finalLevel,
-              subscription_status: reconciled.finalStatus,
-              stripe_customer_id: reconciled.stripeCustomerId || cleanData.stripe_customer_id,
-              subscription_provider: reconciled.providerUsed === 'stripe' || reconciled.providerUsed === 'apple' ? reconciled.providerUsed : cleanData.subscription_provider,
-              platform: platformFromBody,
-              last_login: new Date().toISOString()
-            }
-          });
-        } else {
-          // Just update last login
-          const cleanData = { ...(existing.data || {}) };
-          delete cleanData.data;
-          
-          await base44.asServiceRole.entities.User.update(existing.id, {
-            data: {
-              ...cleanData,
-              last_login: new Date().toISOString()
-            }
-          });
+      // Just update last login - simplified to avoid 502 errors
+      const cleanData = { ...(existing.data || {}) };
+      delete cleanData.data;
+      
+      await base44.asServiceRole.entities.User.update(existing.id, {
+        data: {
+          ...cleanData,
+          last_login: new Date().toISOString()
         }
-      } catch (e) {
-        console.warn('[ensureUserRecord] Reconciliation failed (non-fatal):', e.message);
-      }
+      });
       
       // Re-fetch user to get updated entitlements
       const updatedUsers = await base44.asServiceRole.entities.User.filter({ email: emailLower });
@@ -127,38 +97,7 @@ Deno.serve(async (req) => {
       role: authUser.role || 'user'
     });
 
-    // Run entitlement reconciliation immediately after creation
-    try {
-      const reconciled = await reconcileUserEntitlements(base44, newUser, { req });
-      
-      if (reconciled.changed) {
-        console.log('[ensureUserRecord] Updating new user with reconciled entitlements');
-        // Update user with reconciled entitlements
-        await base44.asServiceRole.entities.User.update(newUser.id, {
-          data: {
-            ...newUser.data,
-            entitlement_tier: reconciled.finalTier,
-            subscription_tier: reconciled.finalTier,
-            subscription_level: reconciled.finalLevel,
-            subscription_status: reconciled.finalStatus,
-            subscription_provider: reconciled.providerUsed === 'stripe' || reconciled.providerUsed === 'apple' ? reconciled.providerUsed : null,
-            stripe_customer_id: reconciled.stripeCustomerId || null
-          }
-        });
-        
-        // Fetch updated user
-        const updated = await base44.asServiceRole.entities.User.filter({ email: emailLower });
-        return Response.json({ 
-          ok: true, 
-          user: updated?.[0] || newUser,
-          user_id: userId, 
-          created: true,
-          reconciled: true
-        });
-      }
-    } catch (e) {
-      console.warn('[ensureUserRecord] Reconciliation failed for new user (non-fatal):', e.message);
-    }
+    // New user created successfully - reconciliation will happen via other functions
 
     console.log('[ensureUserRecord] New user created successfully');
     return Response.json({ 
