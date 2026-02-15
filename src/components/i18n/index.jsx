@@ -67,6 +67,16 @@ function buildResources() {
 }
 
 const resources = buildResources();
+const supportedLngs = Object.keys(resources);
+const normalizeLanguage = (rawLng) => {
+  const lng = String(rawLng || "").trim();
+  if (!lng) return "en";
+  if (lng.startsWith("pt")) return "pt";
+  if (lng.startsWith("zh")) return "zh";
+  if (supportedLngs.includes(lng)) return lng;
+  const base = lng.split("-")[0];
+  return supportedLngs.includes(base) ? base : "en";
+};
 
 // Restore language preference if present
 const savedLng =
@@ -75,12 +85,14 @@ const savedLng =
     window.localStorage.getItem("pk_lang")) ||
   "en";
 
-const initialLng = resources[savedLng] ? savedLng : "en";
+const initialLng = normalizeLanguage(savedLng);
 
 i18n.use(initReactI18next).init({
   resources,
   lng: initialLng,
   fallbackLng: "en",
+  supportedLngs,
+  nonExplicitSupportedLngs: true,
 
   // never leak null/empty/object values into UI
   returnNull: false,
