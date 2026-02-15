@@ -15,14 +15,6 @@ export const AuthProvider = ({ children }) => {
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
   const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    isMountedRef.current = true;
-    checkAppState();
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, [checkAppState]);
-
   const setIfMounted = useCallback((setter, value) => {
     if (isMountedRef.current) {
       setter(value);
@@ -119,6 +111,14 @@ export const AuthProvider = ({ children }) => {
       setIfMounted(setIsLoadingPublicSettings, false);
     }
   }, [checkUserAuth, setIfMounted]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    checkAppState();
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [checkAppState]);
 
   const logout = useCallback((shouldRedirect = true) => {
     setIfMounted(setUser, null);
