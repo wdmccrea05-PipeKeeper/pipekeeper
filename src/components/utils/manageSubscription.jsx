@@ -5,46 +5,12 @@
 
 import { isIOSWebView, openAppleSubscriptions } from "@/components/utils/nativeIAPBridge";
 import { base44 } from "@/api/base44Client";
+import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 
 const STRIPE_PORTAL_FALLBACK = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
 
-/**
- * Infer subscription provider from evidence
- * Same logic as useCurrentUser for consistency
- */
-function inferProvider(user, subscription) {
-  // Check for Stripe evidence first
-  const hasStripeCustomer = !!(user?.stripe_customer_id || user?.stripeCustomerId);
-  const hasStripeSubscription = subscription?.provider === "stripe" || subscription?.stripe_subscription_id;
-  const isWebPlatform = user?.platform === "web";
-  const hasActiveStatus = ["active", "trialing"].includes(user?.subscription_status || subscription?.status);
-
-  // Strong Stripe evidence
-  if (hasStripeCustomer || hasStripeSubscription || (isWebPlatform && hasActiveStatus)) {
-    return "stripe";
-  }
-
-  // Check for Apple evidence
-  const hasAppleTransaction = !!(user?.apple_original_transaction_id || user?.appleOriginalTransactionId);
-  const hasAppleSubscription = subscription?.provider === "apple";
-  const isIOSPlatform = user?.platform === "ios";
-
-  // Apple evidence (only if no Stripe evidence)
-  if (hasAppleTransaction || hasAppleSubscription || isIOSPlatform) {
-    return "apple";
-  }
-
-  // Fallback to stored provider if it exists
-  if (user?.subscription_provider === "stripe" || user?.subscription_provider === "apple") {
-    return user.subscription_provider;
-  }
-
-  return null;
-}
-
 export async function handleManageSubscription(user, subscription, navigate, createPageUrl) {
-  // Infer provider from evidence (not just user.subscription_provider)
-  const provider = inferProvider(user, subscription);
+  const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
 
   // Stripe subscription: create portal session
   if (provider === "stripe") {
@@ -56,7 +22,9 @@ export async function handleManageSubscription(user, subscription, navigate, cre
         portalUrl = result.data.url;
       }
     } catch (e) {
-      console.error("[manageSubscription] Failed to create portal session:", e);
+      if (import.meta?.env?.DEV) {
+        console.warn("[manageSubscription] Failed to create portal session:", e);
+      }
     }
 
     // Use fallback if portal session failed
@@ -71,7 +39,9 @@ export async function handleManageSubscription(user, subscription, navigate, cre
         throw new Error("Popup blocked");
       }
     } catch (e) {
-      console.warn("[manageSubscription] Popup blocked, using redirect:", e);
+      if (import.meta?.env?.DEV) {
+        console.warn("[manageSubscription] Popup blocked, using redirect:", e);
+      }
       window.location.href = portalUrl;
     }
     return;
