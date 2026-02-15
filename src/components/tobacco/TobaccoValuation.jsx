@@ -15,12 +15,12 @@ import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
-  const { subscription, hasPaidAccess, hasPremium } = useCurrentUser();
+  const { user, subscription, hasPro, hasPremium } = useCurrentUser();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
 
   // Legacy Premium (before Feb 1, 2026) gets Pro features
-  const hasProAccess = hasPaidAccess || isLegacyPremium(subscription);
+  const hasProAccess = hasPro || isLegacyPremium(subscription);
 
   const handleManualValueChange = (field, value) => {
     if (!hasPremium) {
