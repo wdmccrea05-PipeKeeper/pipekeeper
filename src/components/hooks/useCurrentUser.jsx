@@ -9,48 +9,12 @@ import {
   getPlanLabel,
   isFoundingMember 
 } from "@/components/utils/premiumAccess";
-import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
-import { useEffect, useRef } from "react";
+import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { useEffect } from "react";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-/**
- * Infer subscription provider from evidence
- * Priority: Stripe evidence > iOS/Apple evidence
- */
-function inferProvider(user, subscription) {
-  // Check for Stripe evidence first
-  const hasStripeCustomer = !!(user?.stripe_customer_id || user?.stripeCustomerId);
-  const hasStripeSubscription = subscription?.provider === "stripe" || subscription?.stripe_subscription_id;
-  const isWebPlatform = user?.platform === "web";
-  const hasActiveStatus = ["active", "trialing"].includes(user?.subscription_status || subscription?.status);
-
-  // Strong Stripe evidence
-  if (hasStripeCustomer || hasStripeSubscription || (isWebPlatform && hasActiveStatus)) {
-    return "stripe";
-  }
-
-  // Check for Apple evidence
-  const hasAppleTransaction = !!(user?.apple_original_transaction_id || user?.appleOriginalTransactionId);
-  const hasAppleSubscription = subscription?.provider === "apple";
-  const isIOSPlatform = user?.platform === "ios";
-
-  // Apple evidence (only if no Stripe evidence)
-  if (hasAppleTransaction || hasAppleSubscription || isIOSPlatform) {
-    return "apple";
-  }
-
-  // Fallback to stored provider if it exists
-  if (user?.subscription_provider === "stripe" || user?.subscription_provider === "apple") {
-    return user.subscription_provider;
-  }
-
-  return null;
-}
-
 export function useCurrentUser() {
-  const backfillAttempted = useRef(false);
-
   const {
     data: user,
     isLoading: userLoading,
@@ -74,7 +38,9 @@ export function useCurrentUser() {
           email,
         };
       } catch (error) {
-        console.error("[useCurrentUser] Error:", error);
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] Error:", error);
+        }
         throw error;
       }
     },
@@ -139,7 +105,9 @@ export function useCurrentUser() {
 
         return valid[0];
       } catch (error) {
-        console.error("[useCurrentUser] Subscription query error:", error);
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] Subscription query error:", error);
+        }
         return null;
       }
     },
@@ -170,7 +138,9 @@ export function useCurrentUser() {
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, 'true');
         }
-        console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err?.message || err);
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] ensureUserRecord failed (non-fatal):", err?.message || err);
+        }
       }
     })();
 
@@ -179,27 +149,8 @@ export function useCurrentUser() {
     };
   }, [userLoading, user?.email, refetchUser]);
 
-  // Infer provider from evidence
-  const provider = inferProvider(user, subscription);
-
-  // Backfill user.subscription_provider if it's wrong or missing
-  useEffect(() => {
-    if (userLoading || !user?.email || !provider) return;
-    if (backfillAttempted.current) return;
-    if (user?.subscription_provider === provider) return;
-
-    backfillAttempted.current = true;
-
-    (async () => {
-      try {
-        console.log(`[useCurrentUser] Backfilling subscription_provider: ${provider}`);
-        await base44.auth.updateMe({ subscription_provider: provider });
-        await refetchUser();
-      } catch (err) {
-        console.warn("[useCurrentUser] Failed to backfill subscription_provider:", err);
-      }
-    })();
-  }, [userLoading, user?.email, user?.subscription_provider, provider, refetchUser]);
+  // Authoritative provider: user.subscription_provider, then subscription.provider.
+  const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
 
   // Use CANONICAL resolver functions (single source of truth)
   const tier = getEntitlementTier(user, subscription);
@@ -211,24 +162,6 @@ export function useCurrentUser() {
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
-  // Dev mode: Log canonical entitlements for debugging
-  useEffect(() => {
-    if (import.meta?.env?.DEV && user?.email) {
-      console.log('[useCurrentUser] Canonical Entitlements:', {
-        email: user.email,
-        tier,
-        hasPaid,
-        hasPremium,
-        hasPro,
-        isTrial,
-        planLabel,
-        provider,
-        subscriptionStatus: subscription?.status,
-        subscriptionTier: subscription?.tier,
-      });
-    }
-  }, [user?.email, tier, hasPaid, hasPremium, hasPro, isTrial, planLabel, provider, subscription?.status, subscription?.tier]);
-
   const isLoading = userLoading || subLoading;
 
   const refetch = async () => {
@@ -238,7 +171,7 @@ export function useCurrentUser() {
   return {
     user,
     subscription,
-    provider, // Inferred provider (stripe, apple, or null)
+    provider, // Canonical provider (stripe, apple, or null)
     tier, // Canonical tier from getEntitlementTier
     isLoading,
     error: userError,
