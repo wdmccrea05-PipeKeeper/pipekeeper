@@ -5,7 +5,7 @@ import { AlertCircle } from 'lucide-react';
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, diagnostics: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -40,6 +40,7 @@ class GlobalErrorBoundary extends React.Component {
       timestamp: new Date().toISOString(),
     };
 
+    this.setState({ diagnostics: errorDetails });
     console.error('[GlobalErrorBoundary] Error caught:', errorDetails);
     
     // Check for i18n-related errors
@@ -88,13 +89,13 @@ class GlobalErrorBoundary extends React.Component {
                 <div className="w-full p-3 bg-amber-900/20 border border-amber-600/30 rounded text-left">
                   <p className="text-xs text-amber-400">
                     ⚠️ <strong>Translation error detected</strong><br/>
-                    Language: {this.state.errorInfo?.language || 'unknown'}<br/>
-                    Route: {this.state.errorInfo?.route || 'unknown'}
+                    Language: {this.state.diagnostics?.language || 'unknown'}<br/>
+                    Route: {this.state.diagnostics?.route || 'unknown'}
                   </p>
                 </div>
               )}
               
-              {process.env.NODE_ENV === 'development' && (
+              {import.meta?.env?.DEV && (
                 <details className="w-full mt-4 text-left">
                   <summary className="text-xs text-[#E0D8C8]/50 cursor-pointer hover:text-[#E0D8C8]/70">
                     Error details
@@ -113,7 +114,7 @@ class GlobalErrorBoundary extends React.Component {
                     try {
                       localStorage.setItem('pk_lang', 'en');
                     } catch {}
-                    this.setState({ hasError: false, error: null, errorInfo: null });
+                    this.setState({ hasError: false, error: null, diagnostics: null });
                   }}
                   className="flex-1"
                 >
