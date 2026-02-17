@@ -11,7 +11,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { Loader2, Search, Plus, ChevronRight } from "lucide-react";
+import { Loader2, Search, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -165,49 +165,49 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-3"
               >
-                <p className="text-sm text-stone-600">
+                <p className="text-sm font-medium text-stone-700">
                   {t("quickSearch.foundResults", { count: results.length })}
                 </p>
                 {results.map((pipe, idx) => (
                   <Card
                     key={idx}
-                    className="border-stone-200 hover:border-amber-300 transition-colors"
+                    className="border-stone-300 bg-stone-50/70 hover:border-amber-400 transition-colors"
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
+                        <div className="flex-1 font-sans">
                           <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-stone-800 text-lg">{pipe.name}</h4>
+                            <h4 className="font-semibold text-stone-950 text-[1.05rem] leading-snug tracking-[0.01em]">{pipe.name}</h4>
                           </div>
-                          <p className="text-sm text-stone-600 font-medium">{pipe.maker}</p>
+                          <p className="text-sm text-stone-800 font-semibold">{pipe.maker}</p>
                           {pipe.country_of_origin && (
-                            <p className="text-xs text-stone-500 mt-1">{t("quickSearch.madeIn", { country: pipe.country_of_origin })}</p>
+                            <p className="text-xs font-medium text-stone-600 mt-1">{t("quickSearch.madeIn", { country: pipe.country_of_origin })}</p>
                           )}
                           {pipe.era && (
-                            <p className="text-xs text-stone-500">{t("quickSearch.era")}: {pipe.era}</p>
+                            <p className="text-xs font-medium text-stone-600">{t("quickSearch.era")}: {pipe.era}</p>
                           )}
                           {pipe.description && (
-                            <p className="text-sm text-stone-600 mt-2 leading-relaxed">{pipe.description}</p>
+                            <p className="text-sm font-medium text-stone-700 mt-2 leading-relaxed">{pipe.description}</p>
                           )}
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {pipe.typical_shapes?.slice(0, 3).map((shape, i) => (
-                              <Badge key={i} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+                              <Badge key={i} variant="secondary" className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-medium">
                                 {shape}
                               </Badge>
                             ))}
                             {pipe.typical_materials?.slice(0, 2).map((mat, i) => (
-                              <Badge key={i} variant="secondary" className="bg-stone-100 text-stone-700 border-stone-200 text-xs">
+                              <Badge key={i} variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300 text-xs font-medium">
                                 {mat}
                               </Badge>
                             ))}
                             {pipe.typical_finishes?.slice(0, 2).map((finish, i) => (
-                              <Badge key={i} variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                              <Badge key={i} variant="secondary" className="bg-amber-50 text-amber-800 border-amber-300 text-xs font-medium">
                                 {finish}
                               </Badge>
                             ))}
                           </div>
                           {(pipe.bowl_diameter_mm || pipe.bowl_depth_mm) && (
-                            <p className="text-xs text-stone-500 mt-2">
+                            <p className="text-xs font-medium text-stone-600 mt-2">
                               {t("quickSearch.bowl")}: {pipe.bowl_diameter_mm && `${pipe.bowl_diameter_mm}mm ⌀`}
                               {pipe.bowl_diameter_mm && pipe.bowl_depth_mm && ' × '}
                               {pipe.bowl_depth_mm && `${pipe.bowl_depth_mm}mm ${t("quickSearch.deep")}`}
@@ -217,8 +217,8 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                         <div className="shrink-0 text-right space-y-3">
                           {(pipe.price_range_low || pipe.price_range_high) && (
                             <div>
-                              <p className="text-xs text-stone-500">{t("quickSearch.typicalValue")}</p>
-                              <p className="font-semibold text-emerald-700 text-sm">
+                              <p className="text-xs font-medium text-stone-600">{t("quickSearch.typicalValue")}</p>
+                              <p className="font-semibold text-emerald-800 text-sm">
                                 ${pipe.price_range_low?.toLocaleString()}
                                 {pipe.price_range_high && pipe.price_range_high !== pipe.price_range_low && 
                                   ` - $${pipe.price_range_high?.toLocaleString()}`}
