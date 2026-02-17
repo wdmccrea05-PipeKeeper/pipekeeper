@@ -22,7 +22,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { toast } from "sonner";
-import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs } from "@/components/utils/schemaCompatibility";
+import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
@@ -51,7 +51,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     container_id: '',
     bowls_smoked: 1,
     is_break_in: false,
-    date: new Date().toISOString().split('T')[0],
+    date: toLocalDateYmd(),
     notes: ''
   });
 
@@ -114,7 +114,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
      const pipeLogs = logs.filter(l => l && l.pipe_id === pipeId).sort((a, b) => {
        try {
-         return new Date(b.date).getTime() - new Date(a.date).getTime();
+         return parseLocalCalendarDate(b.date).getTime() - parseLocalCalendarDate(a.date).getTime();
        } catch {
          return 0;
        }
@@ -122,7 +122,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
      if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
 
      try {
-       const lastSmoked = new Date(pipeLogs[0].date);
+       const lastSmoked = parseLocalCalendarDate(pipeLogs[0].date);
        if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: 'No usage logged yet.' };
 
        const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
@@ -391,7 +391,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         container_id: '',
         bowls_smoked: 1,
         is_break_in: false,
-        date: new Date().toISOString().split('T')[0],
+        date: toLocalDateYmd(),
         notes: ''
       });
     },
@@ -433,7 +433,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       pipe_name: pipe.name,
       blend_name: blend.name,
       bowl_name: bowl_name,
-      date: new Date(formData.date).toISOString(),
+      date: toLocalDateYmd(formData.date),
       bowls_used: bowls,
       tobaccoUsed,
       blend_id: formData.blend_id,
@@ -493,7 +493,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/90 font-medium">
                       <Calendar className="w-3 h-3" />
-                      {format(new Date(log.date), 'MMM d, yyyy')}
+                      {format(parseLocalCalendarDate(log.date), 'MMM d, yyyy')}
                       <span>•</span>
                       <span className="text-[#E0D8C8]">{getBowlsUsed(log)} {getBowlsUsed(log) > 1 ? t("units.bowlPlural") : t("units.bowl")}</span>
                     </div>
