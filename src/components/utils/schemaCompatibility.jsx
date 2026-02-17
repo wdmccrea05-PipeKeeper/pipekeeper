@@ -2,6 +2,40 @@
  * Schema compatibility helpers for legacy field migrations
  * Ensures backward compatibility when reading bowls_used, usage_characteristics, etc.
  */
+const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})/;
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function dateToLocalYmd(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+/**
+ * Normalize any date-like input to local YYYY-MM-DD.
+ * Important: avoids UTC shifts from toISOString() for user-facing calendar dates.
+ */
+export function toLocalDateYmd(dateLike = new Date()) {
+  if (typeof dateLike === "string") {
+    const match = dateLike.match(DATE_ONLY_RE);
+    if (match) return match[0];
+  }
+
+  const parsed = dateLike instanceof Date ? dateLike : new Date(dateLike);
+  return dateToLocalYmd(parsed) || dateToLocalYmd(new Date());
+}
+
+/**
+ * Parse a stored date into a local Date object pinned to noon.
+ * Noon avoids DST/midnight boundary edge cases for display/sorting.
+ */
+export function parseLocalCalendarDate(dateLike) {
+  const ymd = toLocalDateYmd(dateLike);
+  const [year, month, day] = ymd.split("-").map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
+}
 
 /**
  * Get bowls used from a SmokingLog entry
