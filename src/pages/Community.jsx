@@ -23,6 +23,7 @@ export default function CommunityPage() {
   if (isAppleBuild) return null;
 
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [locationFilters, setLocationFilters] = useState({
@@ -81,6 +82,20 @@ export default function CommunityPage() {
     queryKey: ['friend-requests', user?.email],
     queryFn: () => base44.entities.Friendship.filter({ recipient_email: user?.email, status: 'pending' }),
     enabled: !!user?.email,
+  });
+
+  const { data: unreadMessages = [] } = useQuery({
+    queryKey: ['community-unread-messages', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return base44.entities.Message.filter({
+        recipient_email: user.email,
+        is_read: false,
+      });
+    },
+    enabled: !!user?.email,
+    refetchInterval: 5000,
+    retry: false,
   });
 
   // Fetch all public profiles first
@@ -205,6 +220,7 @@ export default function CommunityPage() {
   };
 
   const acceptedFriends = friendships.filter(f => f.status === 'accepted');
+  const unreadInboxCount = unreadMessages.length;
 
   if (!hasPaidAccess) {
     return (
@@ -227,7 +243,7 @@ export default function CommunityPage() {
           <p className="text-[#e8d5b7]/70">{t("communityExtended.connectEnthusiasts")}</p>
         </div>
 
-        <Tabs defaultValue="discover" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="bg-[#223447]/60 border border-[#E0D8C8]/15 inline-flex min-w-full sm:w-auto">
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
@@ -247,9 +263,14 @@ export default function CommunityPage() {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+              <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">{t("communityExtended.inbox")}</span>
+                {unreadInboxCount > 0 && (
+                  <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-rose-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
+                    {unreadInboxCount}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger value="following" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
@@ -683,7 +704,7 @@ export default function CommunityPage() {
                   <p>Not Following Anyone</p>
                   <p className="text-sm mt-2">Discover and follow pipe enthusiasts in the community to see their collections</p>
                   <a href={createPageUrl('Community')}>
-                    <Button className="mt-4" onClick={() => setActiveTab && setActiveTab('discover')}>
+                    <Button className="mt-4" onClick={() => setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
                       Explore Community
                     </Button>
