@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function MessagingPanel({ user, friends, publicProfiles }) {
   const { t } = useTranslation();
@@ -22,19 +22,16 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   const [editText, setEditText] = useState('');
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
-
-  // Early return if no user
-  if (!user?.email) {
-    return null;
-  }
+  const userEmail = user?.email || null;
 
   const { data: myProfile } = useQuery({
-    queryKey: ['my-profile', user?.email],
+    queryKey: ['my-profile', userEmail],
     queryFn: async () => {
-      const rows = await base44.entities.UserProfile.filter({ user_email: user.email });
+      if (!userEmail) return null;
+      const rows = await base44.entities.UserProfile.filter({ user_email: userEmail });
       return rows?.[0] || null;
     },
-    enabled: !!user?.email,
+    enabled: !!userEmail,
     retry: 1,
   });
 
@@ -42,33 +39,41 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   // Update last seen every 30 seconds
   useEffect(() => {
-    if (!user?.email) return;
+    if (!userEmail) return;
     
     const updateLastSeen = async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
-      if (profiles[0]) {
-        await safeUpdate('UserProfile', profiles[0].id, {
-          last_seen: new Date().toISOString()
-        }, user.email);
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: userEmail });
+        if (profiles[0]) {
+          await safeUpdate('UserProfile', profiles[0].id, {
+            last_seen: new Date().toISOString()
+          }, userEmail);
+        }
+      } catch {
+        // Non-fatal presence update.
       }
     };
 
     updateLastSeen();
     const interval = setInterval(updateLastSeen, 30000); // 30 seconds
     return () => clearInterval(interval);
-  }, [user?.email]);
+  }, [userEmail]);
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['messages', user?.email],
+    queryKey: ['messages', userEmail],
     queryFn: async () => {
-      if (!user?.email) return [];
-      const sent = await base44.entities.Message.filter({ sender_email: user?.email });
-      const received = await base44.entities.Message.filter({ recipient_email: user?.email });
-      return [...sent, ...received].sort((a, b) => 
-        new Date(a.created_date) - new Date(b.created_date)
-      );
+      if (!userEmail) return [];
+      try {
+        const sent = await base44.entities.Message.filter({ sender_email: userEmail });
+        const received = await base44.entities.Message.filter({ recipient_email: userEmail });
+        return [...sent, ...received].sort((a, b) => 
+          new Date(a.created_date) - new Date(b.created_date)
+        );
+      } catch {
+        return [];
+      }
     },
-    enabled: !!user?.email,
+    enabled: !!userEmail,
     refetchInterval: 5000, // Poll every 5 seconds
     retry: false, // Don't retry on error to prevent infinite loops
   });
@@ -76,7 +81,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   const sendMessageMutation = useMutation({
     mutationFn: (data) => base44.entities.Message.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       setMessageText('');
       toast.success(t("messaging.messageSent"));
     },
@@ -84,22 +89,19 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   const markAsReadMutation = useMutation({
     mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
-    },
   });
 
   const toggleSaveMutation = useMutation({
     mutationFn: ({ messageId, saved }) => safeUpdate('Message', messageId, { is_saved: saved }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
     },
   });
 
   const deleteMessageMutation = useMutation({
     mutationFn: (messageId) => base44.entities.Message.delete(messageId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       toast.success(t("messaging.messageDeleted"));
     },
   });
@@ -109,9 +111,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       content, 
       is_edited: true,
       edited_date: new Date().toISOString()
-    }, user?.email),
+    }, userEmail),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       setEditingMessageId(null);
       setEditText('');
       toast.success(t("messaging.messageEdited"));
@@ -119,10 +121,10 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const handleSendMessage = () => {
-    if (!messageText.trim() || !selectedFriend) return;
+    if (!messageText.trim() || !selectedFriend || !userEmail) return;
     
     sendMessageMutation.mutate({
-      sender_email: user.email,
+      sender_email: userEmail,
       recipient_email: selectedFriend,
       content: messageText.trim()
     });
@@ -130,16 +132,32 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   // Mark messages as read when viewing conversation
   useEffect(() => {
-    if (!selectedFriend || !user?.email) return;
+    if (!selectedFriend || !userEmail) return;
     
     const unreadMessages = messages.filter(m => 
       m.sender_email === selectedFriend && 
-      m.recipient_email === user.email && 
+      m.recipient_email === userEmail && 
       !m.is_read
     );
-    
-    unreadMessages.forEach(m => markAsReadMutation.mutate(m.id));
-  }, [selectedFriend, messages, user?.email]);
+
+    if (unreadMessages.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        await Promise.all(unreadMessages.map((m) => markAsReadMutation.mutateAsync(m.id)));
+        if (!cancelled) {
+          queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
+        }
+      } catch {
+        // Non-fatal; keep chat available.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedFriend, messages, userEmail, markAsReadMutation, queryClient]);
 
   // Auto scroll to bottom of chat
   useEffect(() => {
@@ -162,37 +180,37 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   const getConversation = (friendEmail) => {
     return filteredMessages.filter(m => 
-      (m.sender_email === user.email && m.recipient_email === friendEmail) ||
-      (m.sender_email === friendEmail && m.recipient_email === user.email)
+      (m.sender_email === userEmail && m.recipient_email === friendEmail) ||
+      (m.sender_email === friendEmail && m.recipient_email === userEmail)
     );
   };
 
   const getUnreadCount = (friendEmail) => {
     return filteredMessages.filter(m => 
       m.sender_email === friendEmail && 
-      m.recipient_email === user.email && 
+      m.recipient_email === userEmail && 
       !m.is_read
     ).length;
   };
 
   const inboxMessages = filteredMessages.filter(m => 
-    m.recipient_email === user.email && !m.is_read
+    m.recipient_email === userEmail && !m.is_read
   );
 
   const savedMessages = filteredMessages.filter(m => 
-    m.recipient_email === user.email && m.is_saved
+    m.recipient_email === userEmail && m.is_saved
   );
 
   const isBlocked = (friendEmail) => blocked.includes(friendEmail);
 
   const friendsWithMessaging = friends.filter(f => {
-    const friendEmail = f.requester_email === user?.email ? f.recipient_email : f.requester_email;
+    const friendEmail = f.requester_email === userEmail ? f.recipient_email : f.requester_email;
     if (blocked.includes(friendEmail)) return false;
     const profile = publicProfiles.find(p => p.user_email === friendEmail);
     return profile?.enable_messaging;
   });
 
-  if (friendsWithMessaging.length === 0) {
+  if (!userEmail || friendsWithMessaging.length === 0) {
     return null;
   }
 
@@ -224,7 +242,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <ScrollArea className="h-96">
             <div className="space-y-2">
               {friendsWithMessaging.map((friendship) => {
-                const friendEmail = friendship.requester_email === user?.email 
+                const friendEmail = friendship.requester_email === userEmail 
                   ? friendship.recipient_email 
                   : friendship.requester_email;
                 const profile = publicProfiles.find(p => p.user_email === friendEmail);
@@ -307,7 +325,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <ScrollArea className="flex-1 px-4 py-4" ref={scrollRef}>
             <div className="space-y-3">
               {getConversation(selectedFriend).map((message) => {
-                const isSent = message.sender_email === user.email;
+                const isSent = message.sender_email === userEmail;
                 const isEditing = editingMessageId === message.id;
                 
                 return (
