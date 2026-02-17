@@ -10,14 +10,56 @@ import { isLegacyPremium } from "@/components/utils/premiumAccess";
 import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
+
+const INTERNAL_SOURCE_RE = /^turn\d+(search|fetch|open|view|click)\d+$/i;
+const URL_RE = /(https?:\/\/[^\s)]+)/i;
+const DOMAIN_RE = /(?:^|\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i;
+
+function normalizeEvidenceSources(rawSources) {
+  if (!Array.isArray(rawSources)) return [];
+
+  const seen = new Set();
+  const normalized = [];
+
+  rawSources.forEach((source) => {
+    const text = String(source || "").trim();
+    if (!text || INTERNAL_SOURCE_RE.test(text)) return;
+
+    const urlMatch = text.match(URL_RE);
+    if (urlMatch?.[1]) {
+      const href = urlMatch[1].replace(/[),.;]+$/, '');
+      if (!seen.has(href)) {
+        seen.add(href);
+        normalized.push({
+          href,
+          label: href.match(DOMAIN_RE)?.[1] || href,
+        });
+      }
+      return;
+    }
+
+    const domainMatch = text.match(DOMAIN_RE);
+    if (domainMatch?.[1]) {
+      const domain = domainMatch[1].toLowerCase();
+      const href = `https://${domain}`;
+      if (!seen.has(href)) {
+        seen.add(href);
+        normalized.push({ href, label: domain });
+      }
+    }
+  });
+
+  return normalized.slice(0, 6);
+}
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
   const { user, subscription, hasPro, hasPremium } = useCurrentUser();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
+  const normalizedSources = normalizeEvidenceSources(blend?.ai_evidence_sources);
 
   // Legacy Premium (before Feb 1, 2026) gets Pro features
   const hasProAccess = hasPro || isLegacyPremium(subscription);
@@ -210,26 +252,27 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 )}
 
                 {/* Evidence Sources */}
-                {blend.ai_evidence_sources?.length > 0 && hasProAccess && (
+                {normalizedSources.length > 0 && hasProAccess && (
                   <div>
                     <p className="text-xs text-white mb-2">{t("tobaccoValuation.evidenceSources", {defaultValue: "Evidence sources"})}</p>
                     <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
-                      {blend.ai_evidence_sources.map((source, idx) => {
-                        // Extract domain from URL if it's a URL, otherwise use source as-is
-                        const displayText = source.includes("http") 
-                          ? source.match(/(?:https?:\/\/)?(?:www\.)?([^\/]+)/)?.[1] || source 
-                          : source;
-                        return (
-                          <Badge 
-                            key={idx} 
-                            variant="outline" 
-                            className="text-xs border-[#e8d5b7]/40 text-white bg-[#243548]/50 cursor-help whitespace-nowrap"
-                            title={source}
+                      {normalizedSources.map((source, idx) => (
+                        <a
+                          key={`${source.href}-${idx}`}
+                          href={source.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex"
+                          title={source.href}
+                        >
+                          <Badge
+                            variant="outline"
+                            className="text-xs border-[#e8d5b7]/40 text-white bg-[#243548]/50 cursor-pointer whitespace-nowrap hover:bg-[#2d4258]"
                           >
-                            {displayText}
+                            {source.label}
                           </Badge>
-                        );
-                      })}
+                        </a>
+                      ))}
                     </div>
                   </div>
                 )}
