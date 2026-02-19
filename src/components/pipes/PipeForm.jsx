@@ -19,7 +19,7 @@ import PhotoUploader from "@/components/PhotoUploader";
 import { useMeasurement, imperialToMetric } from "@/components/utils/measurementConversion";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { canCreatePipe } from "@/components/utils/limitChecks";
+import { canCreatePipe, FREE_TIER_LIMITS } from "@/components/utils/limitChecks";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
@@ -86,6 +86,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { user, hasPaid, isTrial } = useCurrentUser();
   const entitlements = useEntitlements();
   const isPaidUser = hasPaid;
+  const photoLimit = Number.isFinite(entitlements?.limits?.photosPerItem)
+    ? entitlements.limits.photosPerItem
+    : FREE_TIER_LIMITS.PHOTOS_PER_ITEM;
   
   const { useImperial, setUseImperial, convertLength, convertWeight, getLengthUnit, getWeightUnit } = useMeasurement();
 
@@ -251,8 +254,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
     // Check photo limits
     const totalPhotos = (formData.photos?.length || 0) + (formData.stamping_photos?.length || 0);
-    if (totalPhotos > entitlements.limits.photosPerItem) {
-      toast.error(t("limits.photosLimit", { limit: entitlements.limits.photosPerItem }));
+    if (totalPhotos > photoLimit) {
+      toast.error(t("limits.photosLimit", { limit: photoLimit }));
       return;
     }
 
@@ -347,19 +350,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
               <PhotoUploader 
                 onPhotosSelected={(files) => {
-                  const uploadPromises = Array.from(files).map(async (file) => {
-                    try {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        setCropperImage(event.target.result);
-                        setCropperType('photo');
-                      };
-                      reader.readAsDataURL(file);
-                    } catch (err) {
-                      console.error('Error reading file:', err);
-                    }
-                  });
-                  Promise.all(uploadPromises);
+                  const file = files?.[0];
+                  if (!file) return;
+                  try {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setCropperImage(event.target.result);
+                      setCropperType('photo');
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (err) {
+                    console.error('Error reading file:', err);
+                  }
                 }}
                 existingPhotos={[]}
                 hideExisting
@@ -401,19 +403,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
               <PhotoUploader 
                 onPhotosSelected={(files) => {
-                  const uploadPromises = Array.from(files).map(async (file) => {
-                    try {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        setCropperImage(event.target.result);
-                        setCropperType('stamping');
-                      };
-                      reader.readAsDataURL(file);
-                    } catch (err) {
-                      console.error('Error reading file:', err);
-                    }
-                  });
-                  Promise.all(uploadPromises);
+                  const file = files?.[0];
+                  if (!file) return;
+                  try {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setCropperImage(event.target.result);
+                      setCropperType('stamping');
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (err) {
+                    console.error('Error reading file:', err);
+                  }
                 }}
                 existingPhotos={[]}
                 hideExisting
