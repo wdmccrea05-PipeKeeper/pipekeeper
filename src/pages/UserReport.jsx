@@ -20,10 +20,12 @@ export default function UserReport() {
   const [sortDirection, setSortDirection] = useState('desc');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
+    retry: false,
   });
+  const isAdmin = user?.role === 'admin';
 
   const { data: report, isLoading, error, refetch } = useQuery({
     queryKey: ['user-report'],
@@ -31,7 +33,7 @@ export default function UserReport() {
       const response = await base44.functions.invoke('getUserReport', {});
       return response.data;
     },
-    enabled: user?.role === 'admin',
+    enabled: isAdmin,
     retry: false,
   });
 
@@ -41,9 +43,26 @@ export default function UserReport() {
       const response = await base44.functions.invoke('getAdminMetrics', {});
       return response.data;
     },
-    enabled: user?.role === 'admin',
+    enabled: isAdmin,
     retry: false,
   });
+
+  const summary = report?.summary || {
+    total_users: 0,
+    paid_users: 0,
+    free_users: 0,
+    paid_percentage: 0,
+  };
+
+  const trialMetrics = adminMetrics?.trialMetrics || {};
+  const platformBreakdown = adminMetrics?.platformBreakdown || {};
+  const growthLastEightWeeks = adminMetrics?.growthMetrics?.lastEightWeeks || [];
+  const churnMetrics = adminMetrics?.churnMetrics || {};
+  const userCounts = adminMetrics?.userCounts || {};
+  const subscriptionBreakdown = adminMetrics?.subscriptionBreakdown || {};
+  const usageMetrics = adminMetrics?.usageMetrics || {};
+  const usageAvgPipes = usageMetrics?.avgPipesPerUser || {};
+  const usageAvgTobaccos = usageMetrics?.avgTobaccosPerUser || {};
 
   // Filter and search logic - moved before early returns to avoid hook rule violation
   const filteredData = useMemo(() => {
@@ -55,14 +74,16 @@ export default function UserReport() {
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      paid = paid.filter(u => 
-        u.email.toLowerCase().includes(query) || 
-        u.full_name?.toLowerCase().includes(query)
-      );
-      free = free.filter(u => 
-        u.email.toLowerCase().includes(query) || 
-        u.full_name?.toLowerCase().includes(query)
-      );
+      paid = paid.filter((u) => {
+        const email = String(u.email || '').toLowerCase();
+        const name = String(u.full_name || '').toLowerCase();
+        return email.includes(query) || name.includes(query);
+      });
+      free = free.filter((u) => {
+        const email = String(u.email || '').toLowerCase();
+        const name = String(u.full_name || '').toLowerCase();
+        return email.includes(query) || name.includes(query);
+      });
     }
 
     // Apply sorting
@@ -86,7 +107,29 @@ export default function UserReport() {
     return { paid, free };
   }, [report, searchQuery, sortColumn, sortDirection]);
 
-  if (!user || user?.role !== 'admin') {
+  if (isLoadingUser) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#8b3a3a]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (userError) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="p-6">
+            <p className="text-rose-800">Error loading user: {userError.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <div className="max-w-7xl mx-auto p-6">
         <Card className="bg-white/95 border-rose-200">
@@ -134,12 +177,12 @@ export default function UserReport() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#e8d5b7]">User Subscription Report</h1>
           <p className="text-xs text-[#e8d5b7]/60 mt-1">Last updated: {lastUpdated}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Button
             onClick={async () => {
               try {
@@ -158,7 +201,7 @@ export default function UserReport() {
               }
             }}
             variant="default"
-            className="gap-2"
+            className="w-full gap-2 sm:w-auto"
             disabled={isSyncing}
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -171,7 +214,7 @@ export default function UserReport() {
               toast.success('Report refreshed');
             }}
             variant="outline"
-            className="gap-2"
+            className="w-full gap-2 sm:w-auto"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -201,7 +244,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-stone-800">{report?.summary?.total_users || 0}</p>
+            <p className="text-3xl font-bold text-stone-800">{summary.total_users}</p>
           </CardContent>
         </Card>
 
@@ -222,7 +265,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-emerald-700">{report?.summary?.paid_users || 0}</p>
+            <p className="text-3xl font-bold text-emerald-700">{summary.paid_users}</p>
           </CardContent>
         </Card>
 
@@ -243,7 +286,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-stone-700">{report?.summary?.free_users || 0}</p>
+            <p className="text-3xl font-bold text-stone-700">{summary.free_users}</p>
           </CardContent>
         </Card>
 
@@ -255,7 +298,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-blue-700">{report?.summary?.paid_percentage || 0}%</p>
+            <p className="text-3xl font-bold text-blue-700">{summary.paid_percentage}%</p>
           </CardContent>
         </Card>
 
@@ -267,7 +310,7 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : adminMetrics?.trialMetrics?.newSignupsLast7d || 0}</p>
+            <p className="text-3xl font-bold text-purple-700">{metricsLoading ? '...' : trialMetrics.newSignupsLast7d || 0}</p>
           </CardContent>
         </Card>
 
@@ -282,11 +325,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-emerald-600">Paid:</span>
-                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.apple?.paid || 0}</span>
+                    <span className="font-bold text-emerald-700">{platformBreakdown.apple?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Free:</span>
-                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.apple?.free || 0}</span>
+                    <span className="font-bold text-gray-700">{platformBreakdown.apple?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
@@ -300,11 +343,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-emerald-600">Paid:</span>
-                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.android?.paid || 0}</span>
+                    <span className="font-bold text-emerald-700">{platformBreakdown.android?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Free:</span>
-                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.android?.free || 0}</span>
+                    <span className="font-bold text-gray-700">{platformBreakdown.android?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
@@ -318,11 +361,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-emerald-600">Paid:</span>
-                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.web?.paid || 0}</span>
+                    <span className="font-bold text-emerald-700">{platformBreakdown.web?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Free:</span>
-                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.web?.free || 0}</span>
+                    <span className="font-bold text-gray-700">{platformBreakdown.web?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
@@ -336,11 +379,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-emerald-600">Paid:</span>
-                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.ios?.paid || 0}</span>
+                    <span className="font-bold text-emerald-700">{platformBreakdown.ios?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Free:</span>
-                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.ios?.free || 0}</span>
+                    <span className="font-bold text-gray-700">{platformBreakdown.ios?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
@@ -354,11 +397,11 @@ export default function UserReport() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-emerald-600">Paid:</span>
-                    <span className="font-bold text-emerald-700">{adminMetrics.platformBreakdown.unknown?.paid || 0}</span>
+                    <span className="font-bold text-emerald-700">{platformBreakdown.unknown?.paid || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Free:</span>
-                    <span className="font-bold text-gray-700">{adminMetrics.platformBreakdown.unknown?.free || 0}</span>
+                    <span className="font-bold text-gray-700">{platformBreakdown.unknown?.free || 0}</span>
                   </div>
                 </div>
               </CardContent>
@@ -380,27 +423,27 @@ export default function UserReport() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
                 <p className="text-xs text-orange-600 font-medium">Currently on Trial</p>
-                <p className="text-2xl font-bold text-orange-800">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
+                <p className="text-2xl font-bold text-orange-800">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                 <p className="text-xs text-red-600 font-medium">Ending in 3 Days</p>
-                <p className="text-2xl font-bold text-red-800">{adminMetrics.trialMetrics.endingIn3Days}</p>
+                <p className="text-2xl font-bold text-red-800">{trialMetrics.endingIn3Days || 0}</p>
               </div>
               <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
                 <p className="text-xs text-yellow-600 font-medium">Ending in 7 Days</p>
-                <p className="text-2xl font-bold text-yellow-800">{adminMetrics.trialMetrics.endingIn7Days}</p>
+                <p className="text-2xl font-bold text-yellow-800">{trialMetrics.endingIn7Days || 0}</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-xs text-blue-600 font-medium">Avg Days Remaining</p>
-                <p className="text-2xl font-bold text-blue-800">{adminMetrics.trialMetrics.avgDaysRemaining}</p>
+                <p className="text-2xl font-bold text-blue-800">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg border border-green-100">
                 <p className="text-xs text-green-600 font-medium">Converted (30d)</p>
-                <p className="text-2xl font-bold text-green-800">{adminMetrics.trialMetrics.convertedLast30d}</p>
+                <p className="text-2xl font-bold text-green-800">{trialMetrics.convertedLast30d || 0}</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
                 <p className="text-xs text-rose-600 font-medium">Drop-offs (30d)</p>
-                <p className="text-2xl font-bold text-rose-800">{adminMetrics.trialMetrics.dropoffLast30d}</p>
+                <p className="text-2xl font-bold text-rose-800">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -408,7 +451,7 @@ export default function UserReport() {
       )}
 
       {/* Growth Chart */}
-      {adminMetrics?.growthMetrics?.lastEightWeeks && !metricsLoading && (
+      {growthLastEightWeeks.length > 0 && !metricsLoading && (
         <Card className="bg-white/95 border-[#e8d5b7]/30 mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-stone-800 flex items-center gap-2">
@@ -418,7 +461,7 @@ export default function UserReport() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={adminMetrics.growthMetrics.lastEightWeeks}>
+              <BarChart data={growthLastEightWeeks}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e8d5b7/20" />
                 <XAxis dataKey="week" tick={{ fill: '#5a5a5a', fontSize: 12 }} />
                 <YAxis tick={{ fill: '#5a5a5a', fontSize: 12 }} />
@@ -446,19 +489,19 @@ export default function UserReport() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                 <p className="text-xs text-red-600 font-medium">Premium Churn Rate</p>
-                <p className="text-2xl font-bold text-red-800">{adminMetrics.churnMetrics.premiumChurn30d}%</p>
+                <p className="text-2xl font-bold text-red-800">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
                 <p className="text-xs text-rose-600 font-medium">Pro Churn Rate</p>
-                <p className="text-2xl font-bold text-rose-800">{adminMetrics.churnMetrics.proChurn30d}%</p>
+                <p className="text-2xl font-bold text-rose-800">{churnMetrics.proChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                 <p className="text-xs text-purple-600 font-medium">Pro → Premium</p>
-                <p className="text-2xl font-bold text-purple-800">{adminMetrics.churnMetrics.proToPremiumDowngrade}</p>
+                <p className="text-2xl font-bold text-purple-800">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
               <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
                 <p className="text-xs text-pink-600 font-medium">Premium → Free</p>
-                <p className="text-2xl font-bold text-pink-800">{adminMetrics.churnMetrics.premiumToFreeDowngrade}</p>
+                <p className="text-2xl font-bold text-pink-800">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -474,7 +517,7 @@ export default function UserReport() {
               <p className="text-xs text-stone-500 mt-1">Post Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-indigo-700">{adminMetrics.userCounts.premium}</p>
+              <p className="text-3xl font-bold text-indigo-700">{userCounts.premium || 0}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
@@ -482,7 +525,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-amber-600">Pro Users</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-amber-700">{adminMetrics.userCounts.pro}</p>
+              <p className="text-3xl font-bold text-amber-700">{userCounts.pro || 0}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
@@ -490,7 +533,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-rose-600">On Trial</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-rose-700">{adminMetrics.trialMetrics.currentlyOnTrial}</p>
+              <p className="text-3xl font-bold text-rose-700">{trialMetrics.currentlyOnTrial || 0}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
@@ -498,7 +541,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-cyan-600">Active/Trial Premium</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.subscriptionBreakdown.activeOrTrialPremium}</p>
+              <p className="text-3xl font-bold text-cyan-700">{subscriptionBreakdown.activeOrTrialPremium || 0}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
@@ -506,7 +549,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-orange-600">Active/Trial Pro</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-orange-700">{adminMetrics.subscriptionBreakdown.activeOrTrialPro}</p>
+              <p className="text-3xl font-bold text-orange-700">{subscriptionBreakdown.activeOrTrialPro || 0}</p>
             </CardContent>
           </Card>
           <Card className="bg-white/95 border-[#e8d5b7]/30">
@@ -515,7 +558,7 @@ export default function UserReport() {
               <p className="text-xs text-stone-500 mt-1">Subscribed before Feb 1, 2026</p>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-fuchsia-700">{adminMetrics.userCounts.legacyPremium}</p>
+              <p className="text-3xl font-bold text-fuchsia-700">{userCounts.legacyPremium || 0}</p>
             </CardContent>
           </Card>
         </div>
@@ -532,15 +575,15 @@ export default function UserReport() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Free</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.free}</span>
+                  <span className="font-bold text-stone-800">{usageAvgPipes.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Premium</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.premium}</span>
+                  <span className="font-bold text-stone-800">{usageAvgPipes.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Pro</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgPipesPerUser.pro}</span>
+                  <span className="font-bold text-stone-800">{usageAvgPipes.pro || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -553,15 +596,15 @@ export default function UserReport() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Free</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.free}</span>
+                  <span className="font-bold text-stone-800">{usageAvgTobaccos.free || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Premium</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.premium}</span>
+                  <span className="font-bold text-stone-800">{usageAvgTobaccos.premium || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-stone-600">Pro</span>
-                  <span className="font-bold text-stone-800">{adminMetrics.usageMetrics.avgTobaccosPerUser.pro}</span>
+                  <span className="font-bold text-stone-800">{usageAvgTobaccos.pro || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -571,7 +614,7 @@ export default function UserReport() {
               <CardTitle className="text-sm font-medium text-cyan-600">Community Engagement</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-cyan-700">{adminMetrics.usageMetrics.communityEngagement}%</p>
+              <p className="text-3xl font-bold text-cyan-700">{usageMetrics.communityEngagement || 0}%</p>
               <p className="text-xs text-stone-500 mt-1">Users with comments</p>
             </CardContent>
           </Card>
