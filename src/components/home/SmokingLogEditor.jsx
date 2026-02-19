@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -9,8 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Loader2, Save, Trash } from "lucide-react";
 
-import { prepareLogData, getBowlsUsed } from "@/components/utils/schemaCompatibility";
-import { useTranslation } from "react-i18next";
+import { prepareLogData, getBowlsUsed, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete, onCancel, isLoading }) {
   const { t } = useTranslation();
@@ -22,19 +22,19 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
      blend_id: log?.blend_id || '',
      bowls_smoked: getBowlsUsed(log) || 1,
      is_break_in: log?.is_break_in || false,
-     date: log?.date ? (() => {
-       try {
-         const d = new Date(log.date);
-         return Number.isNaN(d.getTime()) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
-       } catch {
-         return new Date().toISOString().split('T')[0];
-       }
-     })() : new Date().toISOString().split('T')[0],
+     date: log?.date ? toLocalDateYmd(log.date) : toLocalDateYmd(),
      notes: log?.notes || ''
    });
 
   const selectedPipe = pipes.find(p => p.id === formData.pipe_id);
   const hasMultipleBowls = selectedPipe?.interchangeable_bowls?.length > 0;
+  const sortedBlends = useMemo(() => {
+    return [...(blends || [])].sort((a, b) => {
+      const aName = String(a?.name || '');
+      const bName = String(b?.name || '');
+      return aName.localeCompare(bName, undefined, { sensitivity: 'base', numeric: true });
+    });
+  }, [blends]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -56,7 +56,7 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
       pipe_name: pipe.name,
       blend_name: blend.name,
       bowl_name: bowl_name,
-      date: new Date(formData.date).toISOString(),
+      date: toLocalDateYmd(formData.date),
       bowls_used: parseInt(formData.bowls_smoked) || 1
     });
     onSave(logData);
@@ -106,10 +106,10 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
          <Label className="text-[#E0D8C8]">{t("smokingLog.tobaccoBlend")}</Label>
          <Select value={formData.blend_id} onValueChange={(v) => setFormData({ ...formData, blend_id: v })}>
            <SelectTrigger>
-             <SelectValue placeholder={t("smokingLog.selectBlend")} />
+           <SelectValue placeholder={t("smokingLog.selectBlend")} />
            </SelectTrigger>
            <SelectContent>
-             {blends.map(b => (
+             {sortedBlends.map(b => (
                <SelectItem key={b.id} value={b.id}>
                  {b.name}
                </SelectItem>
