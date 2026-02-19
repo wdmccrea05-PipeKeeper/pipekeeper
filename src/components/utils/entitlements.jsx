@@ -19,7 +19,7 @@ export function buildEntitlements(input) {
 
   const limits =
     tier === "free"
-      ? { pipes: 5, tobaccos: 10, photosPerItem: 1, smokingLogs: 10 }
+      ? { pipes: 5, tobaccos: 10, photosPerItem: 3, smokingLogs: 50 }
       : { pipes: Infinity, tobaccos: Infinity, photosPerItem: Infinity, smokingLogs: Infinity };
 
   // Helper to check if feature is available for current tier + legacy status
