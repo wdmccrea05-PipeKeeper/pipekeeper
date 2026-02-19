@@ -4,7 +4,9 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from "sonner";
+import { openAppleSubscriptions, openNativePaywall } from "@/components/utils/nativeIAPBridge";
 
 function FeatureList({ items }) {
   return (
@@ -57,10 +59,27 @@ function AppleSubscription() {
   ];
 
   const openSubscription = () => {
-    if (isAppleBuild && window?.webkit?.messageHandlers?.pipekeeper) {
-      window.webkit.messageHandlers.pipekeeper.postMessage({ action: "openSubscriptionSheet" });
-      return;
-    }
+    if (!isAppleBuild) return;
+
+    const openedPaywall = openNativePaywall();
+    if (openedPaywall) return;
+
+    const openedManage = openAppleSubscriptions();
+    if (openedManage) return;
+
+    // Fallback so user never gets a dead click
+    window.open("https://apps.apple.com/account/subscriptions", "_blank");
+    toast.info("Opened Apple subscriptions in browser.");
+  };
+
+  const openManage = () => {
+    if (!isAppleBuild) return;
+
+    const openedManage = openAppleSubscriptions();
+    if (openedManage) return;
+
+    window.open("https://apps.apple.com/account/subscriptions", "_blank");
+    toast.info("Opened Apple subscription management in browser.");
   };
 
   return (
@@ -68,7 +87,7 @@ function AppleSubscription() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
 
-        <Button variant="secondary" onClick={openSubscription}>
+        <Button variant="secondary" onClick={openManage}>
           {t("subscription.manage")}
         </Button>
       </div>
