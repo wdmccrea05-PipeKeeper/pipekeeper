@@ -149,6 +149,35 @@ export function useCurrentUser() {
     };
   }, [userLoading, user?.email, refetchUser]);
 
+  // One-time entitlement sync per session: fixes delayed webhook timing on re-login.
+  useEffect(() => {
+    if (userLoading || !user?.email) return;
+
+    const sessionKey = `pk_subscription_sync_${user.email}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await base44.functions.invoke("syncSubscriptionForMe", {});
+      } catch (err) {
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] syncSubscriptionForMe failed (non-fatal):", err?.message || err);
+        }
+      } finally {
+        if (!cancelled) {
+          sessionStorage.setItem(sessionKey, "true");
+          await Promise.all([refetchUser(), refetchSubscription()]);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userLoading, user?.email, refetchUser, refetchSubscription]);
+
   // Authoritative provider: user.subscription_provider, then subscription.provider.
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
 
