@@ -11,9 +11,10 @@ import {
   registerNativeSubscriptionListener,
 } from "@/components/utils/nativeIAPBridge";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { createPageUrl } from "@/components/utils/createPageUrl";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
   return (
@@ -76,6 +77,29 @@ export default function SubscriptionFull() {
 
     return cleanup;
   }, [isIOSApp]);
+
+  // Backward compatibility: older checkout links return to /Subscription?success=1.
+  useEffect(() => {
+    if (isIOSApp) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") !== "1") return;
+
+    (async () => {
+      try {
+        await base44.functions.invoke("syncSubscriptionForMe", {});
+        await refetch();
+        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      } catch (e) {
+        if (import.meta?.env?.DEV) {
+          console.warn("[SubscriptionFull] success sync failed:", e);
+        }
+      } finally {
+        window.history.replaceState({}, document.title, createPageUrl("SubscriptionSuccess"));
+        window.location.href = createPageUrl("SubscriptionSuccess");
+      }
+    })();
+  }, [isIOSApp, refetch, queryClient]);
 
   // Auto-sync on window refocus (Option A)
   useEffect(() => {
@@ -180,8 +204,10 @@ export default function SubscriptionFull() {
   const handleManualRefresh = async () => {
     setMessage("");
     try {
+      await base44.functions.invoke("syncSubscriptionForMe", {}).catch(() => null);
       await refetch();
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      await queryClient.invalidateQueries({ queryKey: ["subscription"] });
       setMessage("✅ Subscription updated");
       setTimeout(() => setMessage(""), 3000);
     } catch (e) {
