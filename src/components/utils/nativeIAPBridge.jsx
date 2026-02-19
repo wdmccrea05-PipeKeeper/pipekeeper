@@ -1,7 +1,15 @@
 // src/components/utils/nativeIAPBridge.jsx
 
 export const isIOSWebView = () => {
-  return !!window?.webkit?.messageHandlers?.pipekeeper;
+  const handlers = window?.webkit?.messageHandlers;
+  if (!handlers) return false;
+  return !!(
+    handlers.pipekeeper ||
+    handlers.pipeKeeper ||
+    handlers.PipeKeeper ||
+    handlers.ios ||
+    handlers.nativeApp
+  );
 };
 
 export const isIOSCompanion = () => {
@@ -10,10 +18,24 @@ export const isIOSCompanion = () => {
 
 const safePost = (payload) => {
   try {
-    const handler = window?.webkit?.messageHandlers?.pipekeeper;
-    if (!handler || typeof handler.postMessage !== "function") return false;
-    handler.postMessage(payload);
-    return true;
+    const handlers = window?.webkit?.messageHandlers;
+    if (!handlers) return false;
+
+    const candidates = [
+      handlers.pipekeeper,
+      handlers.pipeKeeper,
+      handlers.PipeKeeper,
+      handlers.ios,
+      handlers.nativeApp,
+    ];
+
+    for (const handler of candidates) {
+      if (handler && typeof handler.postMessage === "function") {
+        handler.postMessage(payload);
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }
