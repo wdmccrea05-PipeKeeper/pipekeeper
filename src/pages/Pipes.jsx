@@ -26,6 +26,8 @@ import { formatCurrency } from "@/components/utils/localeFormatters";
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
 const MATERIALS = ["Briar", "Cherry Wood", "Clay", "Corn Cob", "Meerschaum", "Morta", "Olive Wood", "Other"];
+const ALL_SHAPES = "__ALL_SHAPES__";
+const ALL_MATERIALS = "__ALL_MATERIALS__";
 
 export default function PipesPage() {
   const { t } = useTranslation();
@@ -229,21 +231,27 @@ export default function PipesPage() {
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
-            <Select value={shapeFilter} onValueChange={setShapeFilter}>
+            <Select
+              value={shapeFilter || ALL_SHAPES}
+              onValueChange={(v) => setShapeFilter(v === ALL_SHAPES ? '' : v)}
+            >
                <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.shape")}>
                  <SelectValue placeholder={t("pipes.allShapes")} />
                </SelectTrigger>
                <SelectContent>
-                 <SelectItem value={null}>{t("pipes.allShapes")}</SelectItem>
+                 <SelectItem value={ALL_SHAPES}>{t("pipes.allShapes")}</SelectItem>
                  {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
                </SelectContent>
              </Select>
-             <Select value={materialFilter} onValueChange={setMaterialFilter}>
+             <Select
+               value={materialFilter || ALL_MATERIALS}
+               onValueChange={(v) => setMaterialFilter(v === ALL_MATERIALS ? '' : v)}
+             >
                <SelectTrigger className={PK_THEME.input} aria-label={t("pipes.material")}>
                  <SelectValue placeholder={t("pipes.allMaterials")} />
                </SelectTrigger>
                <SelectContent>
-                 <SelectItem value={null}>{t("pipes.allMaterials")}</SelectItem>
+                 <SelectItem value={ALL_MATERIALS}>{t("pipes.allMaterials")}</SelectItem>
                  {MATERIALS.map(material => <SelectItem key={material} value={material}>{material}</SelectItem>)}
                </SelectContent>
              </Select>
