@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -134,12 +133,17 @@ Deno.serve(async (req) => {
       }
     });
 
+    const totalUsers = allUsers.length;
+    const paidCount = paidUsers.length;
+    const freeCount = freeUsers.length;
+    const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
+
     return Response.json({
       summary: {
-        total_users: allUsers.length,
-        paid_users: paidUsers.length,
-        free_users: freeUsers.length,
-        paid_percentage: ((paidUsers.length / allUsers.length) * 100).toFixed(1)
+        total_users: totalUsers,
+        paid_users: paidCount,
+        free_users: freeCount,
+        paid_percentage: paidPercentage
       },
       paid_users: paidUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
       free_users: freeUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
