@@ -11,12 +11,32 @@ export default function PipeSearch({ onSelect }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
+  const extractPipes = (payload) => {
+    if (Array.isArray(payload?.pipes)) return payload.pipes;
+    if (Array.isArray(payload?.data?.pipes)) return payload.data.pipes;
+    if (Array.isArray(payload?.response?.pipes)) return payload.response.pipes;
+    if (Array.isArray(payload?.output?.pipes)) return payload.output.pipes;
+
+    // Some LLM bridges return JSON as text
+    const text = payload?.text || payload?.output_text || payload?.content;
+    if (typeof text === 'string') {
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed?.pipes)) return parsed.pipes;
+      } catch {
+        // ignore parse error
+      }
+    }
+    return [];
+  };
+
+  const handleSearch = async () => {
     if (!query.trim() || loading) return;
 
     setLoading(true);
+    setHasSearched(true);
     setResults([]);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -87,7 +107,7 @@ Return an array of relevant pipe matches with detailed information.`,
         }
       });
 
-      setResults(result.pipes || []);
+      setResults(extractPipes(result));
     } catch (err) {
       console.error('Search error:', err);
     } finally {
@@ -134,15 +154,23 @@ Return an array of relevant pipe matches with detailed information.`,
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <div className="flex gap-2">
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSearch();
+            }
+          }}
           placeholder="Search by maker, model, or brand (e.g., 'Peterson System 314')"
           className="border-stone-200"
         />
         <Button 
-          type="submit" 
+          type="button"
+          onClick={handleSearch}
           disabled={loading || !query.trim()}
           className="bg-amber-700 hover:bg-amber-800 shrink-0"
         >
@@ -155,7 +183,7 @@ Return an array of relevant pipe matches with detailed information.`,
             </>
           )}
         </Button>
-      </form>
+      </div>
 
       <AnimatePresence>
         {results.length > 0 && (
@@ -215,7 +243,7 @@ Return an array of relevant pipe matches with detailed information.`,
         )}
       </AnimatePresence>
 
-      {!loading && results.length === 0 && query && (
+      {!loading && hasSearched && results.length === 0 && query && (
         <p className="text-sm text-stone-500 text-center py-4">
           No results found. Try searching for a maker or model name.
         </p>
