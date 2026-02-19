@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -57,6 +57,13 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const selectedPipe = (pipes || []).find(p => p && p.id === formData.pipe_id);
   const hasMultipleBowls = Array.isArray(selectedPipe?.interchangeable_bowls) && selectedPipe.interchangeable_bowls.length > 0;
+  const sortedBlends = useMemo(() => {
+    return [...(blends || [])].sort((a, b) => {
+      const aName = String(a?.name || '');
+      const bName = String(b?.name || '');
+      return aName.localeCompare(bName, undefined, { sensitivity: 'base', numeric: true });
+    });
+  }, [blends]);
 
   const queryClient = useQueryClient();
 
@@ -594,7 +601,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   <SelectValue placeholder={t("smokingLog.selectBlend")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {blends.map(b => (
+                  {sortedBlends.map(b => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name}
                     </SelectItem>
