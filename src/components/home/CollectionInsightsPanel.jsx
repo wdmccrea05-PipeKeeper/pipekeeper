@@ -191,9 +191,12 @@ export default function CollectionInsightsPanel({
               </TabsContent>
 
               <TabsContent value="rotation" className="pt-4">
-                <div className="text-center py-8 text-[#E0D8C8]/60">
-                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                </div>
+                <RotationSchedulePanel
+                  pipes={pipes}
+                  blends={blends}
+                  cellarLogs={cellarLogs}
+                  user={user}
+                />
               </TabsContent>
             </>
           )}
