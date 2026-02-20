@@ -21,6 +21,9 @@ export function getPkLanguage() {
 
 export function setPkLanguage(lng) {
   const normalized = normalizePkLang(lng);
+  console.log("[LANG_WRITE]", "pk_lang/i18n/html", { value: normalized, file: "components/i18n/ui.js" });
+  console.trace("[LANG_WRITE_TRACE]");
+  
   try {
     localStorage.setItem("pk_lang", normalized);
     // also write i18nextLng so any i18next usage stays aligned
@@ -30,11 +33,17 @@ export function setPkLanguage(lng) {
   try {
     document.documentElement.lang = normalized;
   } catch {}
+  
+  return normalized;
 }
 
 export function setHtmlLang(lng) {
+  const normalized = normalizePkLang(lng);
+  console.log("[LANG_WRITE]", "html", { value: normalized, file: "components/i18n/ui.js setHtmlLang" });
+  console.trace("[LANG_WRITE_TRACE]");
+  
   try { 
-    document.documentElement.lang = normalizePkLang(lng); 
+    document.documentElement.lang = normalized; 
   } catch {}
 }
 

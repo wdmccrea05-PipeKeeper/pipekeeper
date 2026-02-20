@@ -81,9 +81,13 @@ const normalizeLanguage = (rawLng) => {
 
 // Bootstrap: read pk_lang as single source of truth (NEVER overwrite if it exists)
 const bootLang = getPkLanguage();
+console.log("[LANG_BOOT]", { bootLang, file: "components/i18n/index.js" });
 setPkLanguage(bootLang); // sets html lang too
 
 const initialLng = normalizeLanguage(bootLang);
+
+console.log("[LANG_WRITE]", "i18n.init", { value: initialLng, file: "components/i18n/index.js" });
+console.trace("[LANG_WRITE_TRACE]");
 
 i18n.use(initReactI18next).init({
   resources,
@@ -102,11 +106,6 @@ i18n.use(initReactI18next).init({
 
   interpolation: { escapeValue: false },
 });
-
-// Set HTML lang attribute on startup
-if (typeof document !== "undefined") {
-  document.documentElement.lang = initialLng;
-}
 
 // GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
 // This ensures NO component can leak keys, even if they bypass safeTranslation wrapper

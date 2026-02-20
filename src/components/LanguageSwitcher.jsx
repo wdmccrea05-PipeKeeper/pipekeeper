@@ -19,7 +19,9 @@ export default function LanguageSwitcher({ className = "" }) {
 
   const onChange = (e) => {
     const lng = e.target.value;
-    setPkLanguage(lng);
+    const normalized = setPkLanguage(lng);
+    
+    console.log("[LANG_SWITCH]", { selected: lng, normalized });
     // Force full rerender so all pages pick it up immediately
     window.location.reload();
   };
