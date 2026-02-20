@@ -175,15 +175,17 @@ export default function CollectionInsightsPanel({
           {!isAppleBuild && (
             <>
               <TabsContent value="log" className="pt-4">
-                <div className="text-center py-8 text-[#E0D8C8]/60">
-                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                </div>
+                <SmokingLogPanel userEmail={userEmail} />
               </TabsContent>
 
               <TabsContent value="reference" className="pt-4">
-                <div className="text-center py-8 text-[#E0D8C8]/60">
-                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                </div>
+                {pipes.length > 0 && blends.length > 0 ? (
+                  <PairingGrid pipes={pipes} blends={blends} />
+                ) : (
+                  <div className="text-center py-8 text-[#E0D8C8]/60">
+                    {t("insights.noPairingData", { defaultValue: "Add pipes and tobacco to see pairings" })}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="rotation" className="pt-4">
@@ -195,9 +197,13 @@ export default function CollectionInsightsPanel({
           )}
 
           <TabsContent value="stats" className="pt-4">
-            <div className="text-center py-8 text-[#E0D8C8]/60">
-              {t("common.comingSoon", { defaultValue: "Coming soon" })}
-            </div>
+            {smokingLogs.length > 0 ? (
+              <UsageStatsPanel smokingLogs={smokingLogs} />
+            ) : (
+              <div className="text-center py-8 text-[#E0D8C8]/60">
+                {t("insights.noLogsData", { defaultValue: "Log some smoking sessions to see stats" })}
+              </div>
+            )}
           </TabsContent>
 
           {!isAppleBuild && (
@@ -249,9 +255,17 @@ export default function CollectionInsightsPanel({
                   </p>
                 </div>
 
-                <div className="text-center py-8 text-[#E0D8C8]/60">
-                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                </div>
+                {cellarLogs.length > 0 ? (
+                  <CellarAgingDashboard
+                    cellarLogs={cellarLogs}
+                    blends={blends}
+                    onAlertCountChange={setAgingAlertCount}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-[#E0D8C8]/60">
+                    {t("insights.noCellarData", { defaultValue: "Cellar tobacco to see aging information" })}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="reports" className="pt-4">
