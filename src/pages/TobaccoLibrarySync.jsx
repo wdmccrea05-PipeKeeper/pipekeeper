@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoLibrarySyncPage() {
   const [syncing, setSyncing] = useState(false);
