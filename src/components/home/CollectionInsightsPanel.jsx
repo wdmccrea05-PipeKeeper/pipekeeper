@@ -22,6 +22,7 @@ import PairingGrid from "./PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import RotationSchedulePanel from "./RotationSchedulePanel";
 import TrendsPanel from "./TrendsPanel";
+import ReportsPanel from "./ReportsPanel";
 
 export default function CollectionInsightsPanel({
   userEmail,
