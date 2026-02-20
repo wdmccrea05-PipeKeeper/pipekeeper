@@ -15,7 +15,7 @@ import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
   if (isAppleBuild) return null;

@@ -104,12 +104,12 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
             <PKHeader 
-              title={isAppleBuild ? t("insights.titleInventory", {defaultValue: "Inventory Tools"}) : t("insights.title", {defaultValue: "Collection Insights"})}
+              title={isAppleBuild ? t("insights.titleInventory") : t("insights.title")}
               className="mb-0"
             />
-            <InfoTooltip text="This section summarizes patterns and totals across your collection based on the data you've entered." />
+            <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle", {defaultValue: "Track usage, optimize pairings, and monitor your collection"})}</p>
+          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
@@ -138,7 +138,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </TabsTrigger>
                 <TabsTrigger value="trends" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Trends</span>
+                  <span className="hidden sm:inline">{t("insights.trends")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex items-center gap-2 relative">
                   <Clock className="w-4 h-4" />

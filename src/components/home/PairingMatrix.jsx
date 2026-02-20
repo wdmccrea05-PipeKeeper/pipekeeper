@@ -11,10 +11,12 @@ import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairings } from "@/components/utils/pairingRegeneration";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PairingMatrix({ user }) {
   if (isAppleBuild) return null;
 
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState({});
   const [regenerating, setRegenerating] = useState(false);
   const queryClient = useQueryClient();
@@ -116,7 +118,7 @@ export default function PairingMatrix({ user }) {
     return (
       <div className="flex items-center justify-center py-12 text-stone-600">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading pairing matrix...
+        {t("pairingMatrix.loading")}
       </div>
     );
   }
@@ -124,8 +126,8 @@ export default function PairingMatrix({ user }) {
   return (
     <Card className="border-stone-200">
       <CardHeader>
-        <CardTitle>Pairing Matrix</CardTitle>
-        <CardDescription>Interchangeable bowls are shown as distinct pipe variants.</CardDescription>
+        <CardTitle>{t("pairingMatrix.title")}</CardTitle>
+        <CardDescription>{t("pairingMatrix.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
          {pairings.length === 0 ? (
