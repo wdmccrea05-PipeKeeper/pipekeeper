@@ -46,6 +46,46 @@ export default function CollectionInsightsPanel({
   const hasPro =
     String(entitlements?.entitlement_tier || "").toLowerCase() === "pro";
 
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ["smoking-logs", userEmail],
+    queryFn: async () => {
+      if (!userEmail) return [];
+      try {
+        const results = await base44.entities.SmokingLog.filter(
+          { created_by: userEmail },
+          "-date",
+          500
+        );
+        return Array.isArray(results) ? results : [];
+      } catch (err) {
+        console.warn("[CollectionInsightsPanel] Smoking logs error:", err);
+        return [];
+      }
+    },
+    enabled: !!userEmail,
+    staleTime: 30000,
+  });
+
+  const { data: cellarLogs = [] } = useQuery({
+    queryKey: ["cellar-logs", userEmail],
+    queryFn: async () => {
+      if (!userEmail) return [];
+      try {
+        const results = await base44.entities.CellarLog.filter(
+          { created_by: userEmail },
+          "-date",
+          1000
+        );
+        return Array.isArray(results) ? results : [];
+      } catch (err) {
+        console.warn("[CollectionInsightsPanel] Cellar logs error:", err);
+        return [];
+      }
+    },
+    enabled: !!userEmail,
+    staleTime: 30000,
+  });
+
   useEffect(() => {
     // Aging dashboard can update this via callback if you later wire it in.
     // For now keep existing behavior.
