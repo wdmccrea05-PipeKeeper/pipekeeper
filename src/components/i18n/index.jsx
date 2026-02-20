@@ -119,4 +119,19 @@ i18n.t = function (key, options) {
   return enforceTranslation(key, raw, i18n.language);
 };
 
+/**
+ * Export supported languages derived from available resources.
+ * Maps display labels to actual i18n language codes.
+ */
+export const SUPPORTED_LANGS = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "it", label: "Italiano" },
+  { code: "pt", label: "Português (BR)" },
+  { code: "zh", label: "中文 (简体)" },
+  { code: "ja", label: "日本語" },
+].filter((lang) => supportedLngs.includes(lang.code));
+
 export default i18n;
