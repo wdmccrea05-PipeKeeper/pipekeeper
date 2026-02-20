@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { ui, setPkLanguage, getPkLanguage } from "@/components/i18n/ui";
+import i18n from "@/components/i18n";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -15,24 +15,43 @@ const LANGS = [
 ];
 
 export default function LanguageSwitcher({ className = "" }) {
-  const current = useMemo(() => getPkLanguage(), []);
+  const current = useMemo(() => {
+    const saved = localStorage.getItem("pk_lang");
+    return saved || i18n.language || "en";
+  }, []);
 
-  const onChange = (e) => {
-    const lng = e.target.value;
-    const normalized = setPkLanguage(lng);
-    
-    console.log("[LANG_SWITCH]", { selected: lng, normalized });
-    // Force full rerender so all pages pick it up immediately
-    window.location.reload();
+  const setLang = async (lng) => {
+    try {
+      await i18n.changeLanguage(lng);
+
+      try {
+        localStorage.setItem("pk_lang", lng);
+
+        // keep <html lang> in sync (important for UI + accessibility)
+        document.documentElement.lang = lng;
+
+        // optional: helps components that read pk_force_entitlement_refresh
+        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
+      } catch {}
+    } catch (error) {
+      console.error("[LanguageSwitcher] Failed to change language:", error);
+
+      // fallback to English
+      try {
+        await i18n.changeLanguage("en");
+        localStorage.setItem("pk_lang", "en");
+        document.documentElement.lang = "en";
+      } catch {}
+    }
   };
 
   return (
     <div className={className}>
       <select
         value={current}
-        onChange={onChange}
+        onChange={(e) => setLang(e.target.value)}
         className="bg-white/10 text-white text-sm rounded-lg px-3 py-2 border border-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
-        aria-label={ui("common.language") || "Language"}
+        aria-label="Language"
       >
         {LANGS.map((l) => (
           <option key={l.code} value={l.code} className="text-black">

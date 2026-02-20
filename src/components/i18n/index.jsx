@@ -79,15 +79,19 @@ const normalizeLanguage = (rawLng) => {
   return supportedLngs.includes(base) ? base : "en";
 };
 
-// Bootstrap: read pk_lang as single source of truth (NEVER overwrite if it exists)
-const bootLang = getPkLanguage();
-console.log("[LANG_BOOT]", { bootLang, file: "components/i18n/index.js" });
-setPkLanguage(bootLang); // sets html lang too
+// Restore language preference if present
+const savedLng =
+  (typeof window !== "undefined" &&
+    window.localStorage &&
+    window.localStorage.getItem("pk_lang")) ||
+  "en";
 
-const initialLng = normalizeLanguage(bootLang);
+const initialLng = normalizeLanguage(savedLng);
 
-console.log("[LANG_WRITE]", "i18n.init", { value: initialLng, file: "components/i18n/index.js" });
-console.trace("[LANG_WRITE_TRACE]");
+// Sync HTML lang on boot
+try { 
+  document.documentElement.lang = savedLng || "en"; 
+} catch {}
 
 i18n.use(initReactI18next).init({
   resources,
@@ -105,6 +109,12 @@ i18n.use(initReactI18next).init({
   parseMissingKeyHandler: (key) => humanizeKey(key),
 
   interpolation: { escapeValue: false },
+});
+
+// Keep HTML lang and pk_lang in sync when language changes
+i18n.on("languageChanged", (lng) => {
+  try { document.documentElement.lang = lng || "en"; } catch {}
+  try { localStorage.setItem("pk_lang", lng || "en"); } catch {}
 });
 
 // GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
