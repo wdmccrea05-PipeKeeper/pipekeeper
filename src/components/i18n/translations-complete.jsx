@@ -1152,6 +1152,11 @@ export const translationsComplete = {
     insights: {
       title: 'Insights de la colección',
       subtitle: 'Resúmenes y tendencias de tu colección',
+
+      overviewTooltip: 'Esta sección resume patrones y totales de tu colección según los datos que has ingresado.',
+      exportTooltip: 'Genera resúmenes exportables de tu colección para referencia o documentación.',
+      agingTooltip: 'Monitorea el tabaco en bodega y recibe recomendaciones de añejamiento según las características de la mezcla.',
+
       tabs: {
         usageLog: 'Registro de uso',
         pairingGrid: 'Cuadrícula de combinaciones',
@@ -1161,8 +1166,10 @@ export const translationsComplete = {
         aging: 'Envejecimiento',
         reports: 'Informes'
       },
+
       totalBowls: 'Total de cazoletas',
       logSession: 'Registrar sesión',
+
       usageLogTab: 'Registro de uso',
       pairingGridTab: 'Cuadrícula de combinaciones',
       rotationTab: 'Rotación',
@@ -1170,10 +1177,19 @@ export const translationsComplete = {
       trendsTab: 'Tendencias',
       agingTab: 'Añejamiento',
       reportsTab: 'Informes',
+
       titleUsage: 'Registro de uso',
       titleInventory: 'Herramientas de inventario',
       descriptionUsage: 'Visualiza tus sesiones y estadísticas',
-      descriptionInventory: 'Administración de inventario, combinaciones y rotación'
+      descriptionInventory: 'Administración de inventario, combinaciones y rotación',
+
+      reportsTitle: 'Informes',
+      reportsSubtitle: 'Exporta tu colección y registros de uso',
+
+      pro: {
+        trendsTitle: 'Informe de tendencias',
+        trendsDescription: 'Desbloquea el análisis de tendencias en tu colección'
+      }
     },
     tobacconist: {
       consultationTitle: 'Consulta con el maestro mezclador',
