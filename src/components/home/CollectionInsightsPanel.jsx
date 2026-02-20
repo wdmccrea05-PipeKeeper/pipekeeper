@@ -138,7 +138,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </TabsTrigger>
                 <TabsTrigger value="trends" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Trends</span>
+                  <span className="hidden sm:inline">{t("insights.tabs.trends")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex items-center gap-2 relative">
                   <Clock className="w-4 h-4" />
