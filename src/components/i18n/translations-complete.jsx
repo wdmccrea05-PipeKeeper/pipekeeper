@@ -537,7 +537,45 @@ export const translationsComplete = {
   es: {
     pipes: { search: 'Buscar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas las formas', allMaterials: 'Todos los materiales' },
     tobacco: { allTypes: 'Todos los tipos', allStrengths: 'Todas las fuerzas', search: 'Buscar' },
-    common: { loading: 'Cargando...', refresh: 'Actualizar', cancel: 'Cancelar', save: 'Guardar', delete: 'Eliminar', close: 'Cerrar', unknown: 'Desconocido', of: 'de' },
+    common: { 
+      loading: 'Cargando...', 
+      refresh: 'Actualizar', 
+      cancel: 'Cancelar', 
+      save: 'Guardar', 
+      delete: 'Eliminar', 
+      close: 'Cerrar', 
+      unknown: 'Desconocido', 
+      of: 'de',
+      back: 'Atrás'
+    },
+    nav: {
+      home: 'Inicio',
+      pipes: 'Pipas',
+      cellar: 'Bodega',
+      tobacco: 'Tabaco',
+      community: 'Comunidad',
+      profile: 'Perfil',
+      help: 'Ayuda',
+      faq: 'Preguntas frecuentes',
+      support: 'Soporte',
+      terms: 'Términos del servicio',
+      privacy: 'Política de privacidad',
+      reports: 'Informes',
+      subscriptionQueue: 'Solicitudes de suscripción',
+      quickAccess: 'Acceso rápido',
+      syncing: 'Sincronizando…',
+      following: 'Siguiendo'
+    },
+    subscription: {
+      trialEndedTitle: 'Tu prueba ha terminado',
+      trialEndedBody: 'Actualiza a Premium o Pro para seguir disfrutando de todas las funciones.',
+      continueFree: 'Continuar gratis',
+      subscribe: 'Suscribirse'
+    },
+    auth: {
+      loginPrompt: 'Inicia sesión para continuar',
+      login: 'Iniciar sesión'
+    },
     units: { tin: 'lata', tinPlural: 'latas' },
     identificationTooltip: 'Sube fotos para identificación rápida',
     whatIfTooltip: 'Ejecuta escenarios hipotéticos',
