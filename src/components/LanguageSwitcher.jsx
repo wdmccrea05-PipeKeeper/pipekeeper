@@ -1,36 +1,21 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-
-const LANGS = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (BR)" },
-  { code: "nl", label: "Nederlands" },
-  { code: "pl", label: "Polski" },
-  { code: "ja", label: "日本語" },
-  { code: "zh-Hans", label: "中文 (简体)" },
-];
+import { SUPPORTED_LANGS } from "@/components/i18n/index";
 
 export default function LanguageSwitcher({ className = "" }) {
   const { i18n } = useTranslation();
 
   const current = useMemo(() => {
-    const raw = (i18n.language || "en").replace("_", "-");
-    if (raw.startsWith("pt")) return "pt-BR";
-    if (raw.startsWith("zh")) return "zh-Hans";
-    if (LANGS.some((l) => l.code === raw)) return raw;
-    const base = raw.split("-")[0];
-    return LANGS.some((l) => l.code === base) ? base : "en";
+    const raw = (i18n.language || "en").trim();
+    if (SUPPORTED_LANGS.some((l) => l.code === raw)) return raw;
+    return "en";
   }, [i18n.language]);
 
-  const setLang = async (lng) => {
+  const setLang = async (code) => {
     try {
-      await i18n.changeLanguage(lng);
+      await i18n.changeLanguage(code);
       try {
-        localStorage.setItem("pk_lang", lng);
+        localStorage.setItem("pk_lang", code);
       } catch {}
     } catch (error) {
       console.error("[LanguageSwitcher] Failed to change language:", error);
@@ -51,9 +36,9 @@ export default function LanguageSwitcher({ className = "" }) {
       }
       aria-label={i18n.t("common.language") || "Language"}
     >
-      {LANGS.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.label}
+      {SUPPORTED_LANGS.map((lang) => (
+        <option key={lang.code} value={lang.code}>
+          {lang.label}
         </option>
       ))}
     </select>
