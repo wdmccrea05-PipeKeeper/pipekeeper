@@ -79,71 +79,57 @@ export default function TermsOfService() {
       </ul>
 
       <h2 className="mt-10 text-2xl font-semibold text-white">
-        7. User-Generated Content and Community Standards
+        {t("terms.section7Title")}
       </h2>
       <p className="mt-3 leading-relaxed">
-        PipeKeeper allows users to submit and manage content such as notes, comments, images,
-        collection details, and other related data ("User-Generated Content").
+        {t("terms.section7Intro")}
       </p>
       <p className="mt-3 leading-relaxed">
-        PipeKeeper has zero tolerance for objectionable content or abusive behavior,
-        including but not limited to:
+        {t("terms.section7ZeroTolerance")}
       </p>
       <ul className="mt-3 list-disc space-y-2 pl-6">
-        <li>Harassment, threats, or hate speech</li>
-        <li>Obscene, pornographic, or sexually explicit content</li>
-        <li>Content promoting violence, illegal activity, or self-harm</li>
-        <li>Impersonation, spam, or misleading content</li>
+        <li>{t("terms.section7Item1")}</li>
+        <li>{t("terms.section7Item2")}</li>
+        <li>{t("terms.section7Item3")}</li>
+        <li>{t("terms.section7Item4")}</li>
       </ul>
       <p className="mt-3 leading-relaxed">
-        We reserve the right to moderate, remove, restrict, or permanently delete content or
-        accounts that violate these standards, with or without notice. Users may report
-        objectionable content or abusive behavior through in-app reporting tools or by
-        contacting support.
+        {t("terms.section7Enforcement")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">8. Ownership and Data Rights</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section8Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        You retain ownership of your User-Generated Content and personal collection data.
-        You grant PipeKeeper a limited, non-exclusive license to store, process, and display
-        your content solely for the purpose of operating and improving the Service.
+        {t("terms.section8Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">9. Disclaimers</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section9Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        The Service is provided "as is" and "as available." PipeKeeper may include optional
-        AI-assisted features that provide best-effort organizational suggestions and
-        insights. These features may be imperfect and should not be relied upon as
-        professional, financial, or legal advice.
+        {t("terms.section9Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">10. Limitation of Liability</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section10Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        To the fullest extent permitted by law, PipeKeeper and its affiliates shall not be
-        liable for any indirect, incidental, special, consequential, or punitive damages,
-        or for loss of data, profits, or revenue arising from use of the Service.
+        {t("terms.section10Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">11. Changes to These Terms</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section11Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        We may update these Terms periodically. Material changes will be communicated within
-        the Service or via posted updates. Continued use of the Service constitutes
-        acceptance of the updated Terms.
+        {t("terms.section11Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">12. Contact</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section12Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        For questions, concerns, or to report violations, please contact PipeKeeper support.
+        {t("terms.section12Body")}
       </p>
 
       <p className="mt-10 text-sm text-[#cdbfae]">
-        Related policies:{" "}
-        <a className="underline text-[#f3e7d3] hover:text-white" href="/privacy">
-          Privacy Policy
+        {t("terms.relatedPolicies")}{" "}
+        <a className="underline text-[#f3e7d3] hover:text-white" href={createPageUrl("PrivacyPolicy")}>
+          {t("terms.privacyPolicy")}
         </a>{" "}
         ·{" "}
-        <a className="underline text-[#f3e7d3] hover:text-white" href="/faq">
-          FAQ
+        <a className="underline text-[#f3e7d3] hover:text-white" href={createPageUrl("FAQ")}>
+          {t("terms.faq")}
         </a>
       </p>
     </div>
