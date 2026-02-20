@@ -104,12 +104,15 @@ export default function TobaccoLibrarySyncPage() {
                   {syncing ? (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Syncing...
+                      {t("tobaccoLibrarySync.syncing")}
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Sync {blendsNeedingLogos.length} Blend{blendsNeedingLogos.length !== 1 ? 's' : ''}
+                      {t("tobaccoLibrarySync.syncButtonLabel", { 
+                        count: blendsNeedingLogos.length,
+                        suffix: blendsNeedingLogos.length !== 1 ? 's' : ''
+                      })}
                     </>
                   )}
                 </Button>
