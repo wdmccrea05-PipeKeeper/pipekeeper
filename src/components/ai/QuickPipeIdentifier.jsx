@@ -11,7 +11,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const { t } = useTranslation();
