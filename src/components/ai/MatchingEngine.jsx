@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const { t } = useTranslation();

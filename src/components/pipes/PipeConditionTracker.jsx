@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function PipeConditionTracker({ pipe, onUpdate }) {
   const { t } = useTranslation();

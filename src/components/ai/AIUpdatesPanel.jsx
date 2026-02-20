@@ -22,7 +22,7 @@ import { regeneratePairingsConsistent } from "@/components/utils/pairingRegenera
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const { t } = useTranslation();
