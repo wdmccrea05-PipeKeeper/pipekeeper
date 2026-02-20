@@ -555,19 +555,56 @@ export const translationsComplete = {
       title: 'Collection Insights',
       titleInventory: 'Inventory Tools',
       subtitle: 'Track usage, optimize pairings, and monitor your collection',
+
+      // Tooltips / helper copy
+      overviewTooltip: "This section summarizes patterns and totals across your collection based on the data you've entered.",
+      exportTooltip: 'Generate exportable summaries of your collection for reference or documentation.',
+      agingTooltip: 'Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics.',
+
+      // Preferred tab label keys (used by CollectionInsightsPanel)
+      tabs: {
+        usageLog: 'Usage Log',
+        pairingGrid: 'Pairing Grid',
+        rotation: 'Rotation',
+        stats: 'Stats',
+        trends: 'Trends',
+        aging: 'Aging',
+        reports: 'Reports',
+      },
+
+      // Back-compat tab labels (older components)
       log: 'Usage Log',
       pairingGrid: 'Pairing Grid',
       rotation: 'Rotation',
       stats: 'Stats',
       aging: 'Aging',
       reports: 'Reports',
-      statsEmpty: 'Add pipes and tobacco to see collection statistics',
-      addFirstItem: 'Add First Item',
-      agingDashboard: 'Aging Dashboard',
-      agingSubtitle: 'Track cellared tobacco aging progress',
-      reportsEmpty: 'No collection data to export yet',
-      reportsEmptyDesc: 'Add pipes and tobacco to generate reports',
+
+      totalBowls: 'Total Bowls',
+      logSession: 'Log Session',
+
+      usageLogTab: 'Usage Log',
+      pairingGridTab: 'Pairing Grid',
+      rotationTab: 'Rotation',
+      statsTab: 'Stats',
+      trendsTab: 'Trends',
+      agingTab: 'Aging',
+      reportsTab: 'Reports',
+
+      titleUsage: 'Usage Log',
+      descriptionUsage: 'View your sessions and stats',
+      descriptionInventory: 'Inventory management, pairing, and rotation',
+
+      reportsTitle: 'Reports',
       reportsSubtitle: 'Export your collection and smoking logs',
+      reportsEmptyTitle: 'Nothing to export yet',
+      reportsEmptyDesc: 'Add pipes and tobacco to generate reports',
+
+      // Pro gating copy
+      pro: {
+        trendsTitle: 'Trends Report',
+        trendsDescription: 'Unlock trend analysis across your collection',
+      },
     },
     pairingGrid: {
       title: 'Pairing Reference Grid',
