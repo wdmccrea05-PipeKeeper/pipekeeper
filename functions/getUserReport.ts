@@ -99,11 +99,12 @@ Deno.serve(async (req) => {
       // Check by user ID first, then fall back to email
       const subscription = subscriptionMap.get(user.id) || subscriptionMap.get(email);
       
-      // Determine if user has paid access
+      // Determine if user has paid access - check ALL possible sources
       let isPaid = false;
       let effectiveStatus = 'none';
       let effectiveTier = 'none';
       
+      // 1. Check Subscription entity
       if (subscription) {
         const subStatus = (subscription.status || '').toLowerCase();
         const subTier = subscription.tier || 'premium';
@@ -119,23 +120,39 @@ Deno.serve(async (req) => {
           effectiveTier = subTier;
         } else {
           effectiveStatus = subscription.status;
-          effectiveTier = 'none';
         }
       }
       
-      // Fallback to User entity fields (for Apple IAP or users with entitlements but no Subscription entity)
+      // 2. Check User.data fields (canonical source for entitlements)
+      if (!isPaid && user.data) {
+        const entitlementTier = (user.data.entitlement_tier || '').toLowerCase();
+        const subscriptionTier = (user.data.subscription_tier || '').toLowerCase();
+        const subscriptionStatus = (user.data.subscription_status || '').toLowerCase();
+        
+        // Paid if entitlement_tier or subscription_tier is premium/pro
+        if (['premium', 'pro'].includes(entitlementTier) || ['premium', 'pro'].includes(subscriptionTier)) {
+          isPaid = true;
+          effectiveTier = entitlementTier || subscriptionTier;
+          effectiveStatus = subscriptionStatus || 'active';
+        }
+        
+        // Also paid if subscription_status is active/trialing
+        if (!isPaid && ['active', 'trialing', 'trial'].includes(subscriptionStatus)) {
+          isPaid = true;
+          effectiveStatus = subscriptionStatus;
+          effectiveTier = subscriptionTier || entitlementTier || 'premium';
+        }
+      }
+      
+      // 3. Check top-level User fields (legacy compatibility)
       if (!isPaid) {
         const userSubLevel = (user.subscription_level || '').toLowerCase();
-        const userSubStatus = (user.subscription_status || user.data?.subscription_status || '').toLowerCase();
-        const userEntitlementTier = user.data?.entitlement_tier || user.data?.subscription_tier;
+        const userSubStatus = (user.subscription_status || '').toLowerCase();
         
-        // Check if user has paid entitlement through User entity
         if (userSubLevel === 'paid' || ['active', 'trialing', 'trial'].includes(userSubStatus)) {
           isPaid = true;
           effectiveStatus = userSubStatus || 'active';
-          effectiveTier = userEntitlementTier || 'premium';
-        } else {
-          effectiveStatus = userSubStatus || effectiveStatus;
+          effectiveTier = 'premium';
         }
       }
 
