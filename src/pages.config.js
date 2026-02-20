@@ -61,7 +61,6 @@ import Help from './pages/Help';
 import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
-import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
@@ -69,25 +68,26 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
-import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
-import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
-import TermsOfService from './pages/TermsOfService';
 import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
-import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
 import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import SubscriptionFull from './pages/SubscriptionFull';
+import SubscriptionCancelled from './pages/SubscriptionCancelled';
+import Invite from './pages/Invite';
+import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
+import TermsOfService from './pages/TermsOfService';
 import __Layout from './Layout.jsx';
 
 
@@ -106,7 +106,6 @@ export const PAGES = {
     "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
-    "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
@@ -114,25 +113,26 @@ export const PAGES = {
     "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
-    "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
-    "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
-    "TermsOfService": TermsOfService,
     "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
-    "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
     "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "SubscriptionFull": SubscriptionFull,
+    "SubscriptionCancelled": SubscriptionCancelled,
+    "Invite": Invite,
+    "TobaccoLibrarySync": TobaccoLibrarySync,
+    "TermsOfService": TermsOfService,
 }
 
 export const pagesConfig = {
