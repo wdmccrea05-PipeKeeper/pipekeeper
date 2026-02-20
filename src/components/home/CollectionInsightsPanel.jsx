@@ -188,7 +188,7 @@ export default function CollectionInsightsPanel({
 
               <TabsContent value="reference" className="pt-4">
                 {pipes.length > 0 && blends.length > 0 ? (
-                  <PairingGrid pipes={pipes} blends={blends} />
+                  <PairingGrid pipes={pipes} blends={blends} user={user} />
                 ) : (
                   <div className="text-center py-8 text-[#E0D8C8]/60">
                     {t("insights.noPairingData", { defaultValue: "Add pipes and tobacco to see pairings" })}
