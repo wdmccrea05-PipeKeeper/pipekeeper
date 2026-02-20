@@ -58,7 +58,7 @@ export default function TermsGate({ user }) {
 
       // Refresh app state WITHOUT reload
       await qc.invalidateQueries({ queryKey: ["current-user"] });
-      setMsg("Saved. Continuing…");
+      setMsg(t("termsGate.savedContinuing"));
     } catch (e) {
       console.error("[TermsGate] accept failed:", e);
 
@@ -66,7 +66,7 @@ export default function TermsGate({ user }) {
         // Don’t trap the user in a loop if Base44 throttles.
         await markLocalAccepted();
         await qc.invalidateQueries({ queryKey: ["current-user"] });
-        setMsg("Rate-limited right now. Continuing temporarily…");
+        setMsg(t("termsGate.rateLimitedTemporary"));
       } else {
         setMsg("We couldn’t save your acceptance. Please try again.");
       }
