@@ -974,6 +974,27 @@ export const translationsComplete = {
     }
   },
   es: {
+    termsGate: {
+      beforeContinue: 'Antes de continuar',
+      reviewAccept: 'Por favor, revisa y acepta los Términos de Servicio y la Política de Privacidad.',
+      termsOfService: 'Términos de Servicio',
+      privacyPolicy: 'Política de Privacidad',
+      agreeCheckbox: 'He leído y acepto los Términos de Servicio y la Política de Privacidad.',
+      acceptContinue: 'Aceptar y Continuar',
+      saving: 'Guardando…',
+      savedContinuing: 'Guardado. Continuando…',
+      rateLimitedTemporary: 'Limitado por tasa en este momento. Continuando temporalmente…',
+      couldntSave: 'No pudimos guardar tu aceptación. Por favor intenta de nuevo.',
+      rateLimitNote: 'Si las solicitudes están limitadas por tasa, la aplicación puede permitir el acceso temporalmente para evitar bucles.',
+    },
+    userNotRegistered: {
+      title: 'Acceso Restringido',
+      description: 'No estás registrado para usar esta aplicación. Por favor contacta al administrador de la aplicación para solicitar acceso.',
+      ifError: 'Si crees que esto es un error, puedes:',
+      verifyAccount: 'Verificar que has iniciado sesión con la cuenta correcta',
+      contactAdmin: 'Contactar al administrador de la aplicación para acceso',
+      tryRelogin: 'Intentar cerrar sesión y volver a iniciarla',
+    },
     pipes: { 
       search: 'Buscar', 
       filter: 'Filtrar', 
