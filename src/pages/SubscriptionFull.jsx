@@ -123,35 +123,22 @@ export default function SubscriptionFull() {
     pro: { monthly: 2.99, annual: 29.99 },
   };
 
-  const freeFeatures = [
-    "Basic item records",
-    "Notes and photos",
-    "Manual organization",
-  ];
+  const freeFeatures = t("subscription.freeFeatures").split(", ");
 
   const tierDescriptions = {
-    free: "Core cataloging for pipes and cellar items.",
-    premium: "Premium adds expanded insights, reports, and advanced organization tools for collectors who actively manage and grow their collections.",
-    pro: "Pro is designed for collectors who want deep analytics and optional AI-assisted tools for advanced organization and analysis.",
+    free: t("subscription.tierDescFree"),
+    premium: t("subscription.tierDescPremium"),
+    pro: t("subscription.tierDescPro"),
   };
 
   const tierTaglines = {
-    premium: "For active collectors",
-    pro: "For advanced collectors",
+    premium: t("subscription.taglinePremium"),
+    pro: t("subscription.taglinePro"),
   };
 
   const tierFeatures = {
-    premium: [
-      "Collection insights and summaries",
-      "Reports and exports",
-      "Advanced organization tools",
-      "Priority access to new features",
-    ],
-    pro: [
-      "Deep collection analytics",
-      "AI-assisted organization tools",
-      "Power-user features",
-    ],
+    premium: t("subscription.premiumFeatures").split(", "),
+    pro: t("subscription.proFeatures").split(", "),
   };
 
   const handleUpgrade = async (tier, interval) => {
