@@ -131,45 +131,47 @@ export default function CollectionInsightsPanel({
           {!isAppleBuild && (
             <>
               <TabsContent value="log" className="pt-4">
-                <UsageLog userEmail={userEmail} />
+                <div className="text-center py-8 text-[#E0D8C8]/60">
+                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                </div>
               </TabsContent>
 
               <TabsContent value="reference" className="pt-4">
-                <PairingGridPanel userEmail={userEmail} />
+                <div className="text-center py-8 text-[#E0D8C8]/60">
+                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                </div>
               </TabsContent>
 
               <TabsContent value="rotation" className="pt-4">
-                <RotationSchedule userEmail={userEmail} />
+                <div className="text-center py-8 text-[#E0D8C8]/60">
+                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                </div>
               </TabsContent>
             </>
           )}
 
           <TabsContent value="stats" className="pt-4">
-            <UsageStats userEmail={userEmail} />
+            <div className="text-center py-8 text-[#E0D8C8]/60">
+              {t("common.comingSoon", { defaultValue: "Coming soon" })}
+            </div>
           </TabsContent>
 
           {!isAppleBuild && (
             <>
               <TabsContent value="trends" className="pt-4">
                 {hasPro ? (
-                  <TrendsReport
-                    logs={[]}
-                    pipes={pipes}
-                    blends={blends}
-                    user={user}
-                  />
+                  <div className="text-center py-8 text-[#E0D8C8]/60">
+                    {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                  </div>
                 ) : (
                   <ProFeatureLock
                     featureName={t("insights.pro.trendsTitle", {
                       defaultValue: "Trends Report",
                     })}
                   >
-                    <TrendsReport
-                      logs={[]}
-                      pipes={pipes}
-                      blends={blends}
-                      user={user}
-                    />
+                    <div className="text-center py-8 text-[#E0D8C8]/60">
+                      {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                    </div>
                   </ProFeatureLock>
                 )}
               </TabsContent>
@@ -203,7 +205,9 @@ export default function CollectionInsightsPanel({
                   </p>
                 </div>
 
-                <AgingDashboard userEmail={userEmail} />
+                <div className="text-center py-8 text-[#E0D8C8]/60">
+                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
+                </div>
               </TabsContent>
 
               <TabsContent value="reports" className="pt-4">
@@ -226,6 +230,10 @@ export default function CollectionInsightsPanel({
                       defaultValue: "Export your collection and smoking logs",
                     })}
                   </p>
+                </div>
+                
+                <div className="text-center py-8 text-[#E0D8C8]/60">
+                  {t("common.comingSoon", { defaultValue: "Coming soon" })}
                 </div>
               </TabsContent>
             </>
