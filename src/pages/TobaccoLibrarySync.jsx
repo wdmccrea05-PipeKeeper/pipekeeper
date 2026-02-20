@@ -171,7 +171,7 @@ export default function TobaccoLibrarySyncPage() {
                   variant="outline"
                   className="w-full"
                 >
-                  Done
+                  {t("tobaccoLibrarySync.done")}
                 </Button>
               </div>
             )}
