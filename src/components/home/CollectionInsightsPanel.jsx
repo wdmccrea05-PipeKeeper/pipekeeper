@@ -215,18 +215,26 @@ export default function CollectionInsightsPanel({
             <>
               <TabsContent value="trends" className="pt-4">
                 {hasPro ? (
-                  <div className="text-center py-8 text-[#E0D8C8]/60">
-                    {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                  </div>
+                  <TrendsPanel
+                    pipes={pipes}
+                    blends={blends}
+                    cellarLogs={cellarLogs}
+                    user={user}
+                    hasPro={true}
+                  />
                 ) : (
                   <ProFeatureLock
                     featureName={t("insights.pro.trendsTitle", {
                       defaultValue: "Trends Report",
                     })}
                   >
-                    <div className="text-center py-8 text-[#E0D8C8]/60">
-                      {t("common.comingSoon", { defaultValue: "Coming soon" })}
-                    </div>
+                    <TrendsPanel
+                      pipes={pipes}
+                      blends={blends}
+                      cellarLogs={cellarLogs}
+                      user={user}
+                      hasPro={false}
+                    />
                   </ProFeatureLock>
                 )}
               </TabsContent>
