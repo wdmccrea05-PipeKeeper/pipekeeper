@@ -149,6 +149,13 @@ i18n.on("languageChanged", (lng) => {
   try { localStorage.setItem("pk_lang", normalized || "en"); } catch {}
 });
 
+// Track route changes to reset missing key dedup
+if (typeof window !== "undefined") {
+  window.addEventListener("popstate", () => {
+    lastRoute = window.location.pathname;
+  });
+}
+
 // GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
 const originalT = i18n.t.bind(i18n);
 i18n.t = function (key, options) {
