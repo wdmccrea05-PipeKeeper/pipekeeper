@@ -58,24 +58,24 @@ export default function TobaccoLibrarySyncPage() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-stone-800">Tobacco Logo Library Sync</h1>
+          <h1 className="text-3xl font-bold text-stone-800">{t("tobaccoLibrarySync.title")}</h1>
           <p className="text-stone-600 mt-2">
-            Update tobacco records with logos from the library
+            {t("tobaccoLibrarySync.description")}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sync Status</CardTitle>
+            <CardTitle>{t("tobaccoLibrarySync.syncStatus")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-stone-600">Total Tobacco Blends</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.totalBlends")}</p>
                 <p className="text-2xl font-bold text-stone-800">{blends.length}</p>
               </div>
               <div>
-                <p className="text-sm text-stone-600">Missing Logos</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.missingLogos")}</p>
                 <p className="text-2xl font-bold text-amber-600">{blendsNeedingLogos.length}</p>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function TobaccoLibrarySyncPage() {
               <>
                 <div className="border-t pt-4">
                   <p className="text-sm text-stone-600 mb-3">
-                    The following blends will be updated:
+                    {t("tobaccoLibrarySync.willBeUpdated")}
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-1">
                     {blendsNeedingLogos.map(blend => (
