@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // Fallback map for pages without history
 const FALLBACK_MAP = {

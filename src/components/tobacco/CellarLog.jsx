@@ -13,7 +13,7 @@ import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2, Crow
 import { format } from "date-fns";
 import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
 export default function CellarLog({ blend }) {

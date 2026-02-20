@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, AlertCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function OpenInventorySummary({ blend }) {
   const { t } = useTranslation();

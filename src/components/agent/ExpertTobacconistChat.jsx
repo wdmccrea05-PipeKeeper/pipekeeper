@@ -10,7 +10,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import { FormattedTobacconistResponse, formatTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { classifyQuestion } from "@/components/utils/questionClassifier";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const TOBACCONIST_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/bac372e28_image.png";

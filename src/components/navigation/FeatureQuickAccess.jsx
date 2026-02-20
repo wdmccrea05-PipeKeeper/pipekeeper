@@ -10,7 +10,7 @@ import {
   Zap, Package, Leaf, BarChart3, FileText, 
   Sparkles, User, HelpCircle, CreditCard 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function FeatureQuickAccess({ isOpen, onClose }) {
   const { t } = useTranslation();

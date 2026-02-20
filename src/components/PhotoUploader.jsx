@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, Image as ImageIcon, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PhotoUploader({ onPhotosSelected, existingPhotos = [], maxPhotos = 10 }) {
   const { t } = useTranslation();

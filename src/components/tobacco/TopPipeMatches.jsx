@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { scorePipeBlend } from "@/components/utils/pairingScore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TopPipeMatches({ blend, pipes }) {
   const { t } = useTranslation();

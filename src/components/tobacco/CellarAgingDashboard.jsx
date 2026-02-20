@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Wine, Clock, TrendingUp, Package } from "lucide-react";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CellarAgingDashboard({ user }) {
   const { t } = useTranslation();
