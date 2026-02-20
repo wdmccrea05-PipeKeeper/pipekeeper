@@ -14,14 +14,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-import UsageLog from "@/components/usage/UsageLog";
-import PairingGridPanel from "@/components/pairing/PairingGridPanel";
-import RotationSchedule from "@/components/rotation/RotationSchedule";
-import UsageStats from "@/components/usage/UsageStats";
-import AgingDashboard from "@/components/aging/AgingDashboard";
-import TrendsReport from "@/components/reports/TrendsReport";
 import ProFeatureLock from "@/components/subscription/ProFeatureLock";
-import InfoTooltip from "@/components/ui/info-tooltip";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 export default function CollectionInsightsPanel({
   userEmail,
