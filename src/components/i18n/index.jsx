@@ -105,6 +105,11 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+// Set HTML lang attribute on startup
+if (typeof document !== "undefined") {
+  document.documentElement.lang = initialLng;
+}
+
 // GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
 // This ensures NO component can leak keys, even if they bypass safeTranslation wrapper
 const originalT = i18n.t.bind(i18n);
