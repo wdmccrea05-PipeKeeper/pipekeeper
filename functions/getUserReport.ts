@@ -99,29 +99,54 @@ Deno.serve(async (req) => {
       // Check by user ID first, then fall back to email
       const subscription = subscriptionMap.get(user.id) || subscriptionMap.get(email);
       
-      // Check if subscription grants premium access
-      // 1. Check Subscription entity first
-      const subStatus = subscription?.status;
-      const subTier = subscription?.tier;
-      const subPeriodEnd = subscription?.current_period_end;
-      let isPaid = subscription && 
-        (subStatus === 'active' || subStatus === 'trialing' || subStatus === 'incomplete') &&
-        (!subPeriodEnd || new Date(subPeriodEnd) > new Date()) &&
-        (subTier === 'premium' || subTier === 'pro');
+      // Determine if user has paid access
+      let isPaid = false;
+      let effectiveStatus = 'none';
+      let effectiveTier = 'none';
       
-      // 2. Fallback to User entity fields (for Apple IAP or webhook-synced users)
-      if (!isPaid && user.subscription_level === 'paid') {
-        isPaid = true;
+      if (subscription) {
+        const subStatus = (subscription.status || '').toLowerCase();
+        const subTier = subscription.tier || 'premium';
+        const subPeriodEnd = subscription.current_period_end;
+        
+        // Check if subscription is active and not expired
+        const isActiveStatus = ['active', 'trialing', 'trial', 'incomplete'].includes(subStatus);
+        const notExpired = !subPeriodEnd || new Date(subPeriodEnd) > new Date();
+        
+        if (isActiveStatus && notExpired) {
+          isPaid = true;
+          effectiveStatus = subscription.status;
+          effectiveTier = subTier;
+        } else {
+          effectiveStatus = subscription.status;
+          effectiveTier = 'none';
+        }
+      }
+      
+      // Fallback to User entity fields (for Apple IAP or users with entitlements but no Subscription entity)
+      if (!isPaid) {
+        const userSubLevel = (user.subscription_level || '').toLowerCase();
+        const userSubStatus = (user.subscription_status || user.data?.subscription_status || '').toLowerCase();
+        const userEntitlementTier = user.data?.entitlement_tier || user.data?.subscription_tier;
+        
+        // Check if user has paid entitlement through User entity
+        if (userSubLevel === 'paid' || ['active', 'trialing', 'trial'].includes(userSubStatus)) {
+          isPaid = true;
+          effectiveStatus = userSubStatus || 'active';
+          effectiveTier = userEntitlementTier || 'premium';
+        } else {
+          effectiveStatus = userSubStatus || effectiveStatus;
+        }
       }
 
       const userData = {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
-        platform: user.platform || 'unknown',
+        platform: user.data?.platform || user.platform || 'web',
         created_date: user.created_date,
-        subscription_status: subscription?.status || user.subscription_status || 'none',
-        subscription_tier: subscription?.tier || user.subscription_tier || 'none',
+        subscription_status: effectiveStatus,
+        subscription_tier: effectiveTier,
         subscription_end: subscription?.current_period_end || null,
         billing_interval: subscription?.billing_interval || null
       };
