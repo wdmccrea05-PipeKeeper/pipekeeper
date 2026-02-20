@@ -31,16 +31,12 @@ export default function LanguageSwitcher({ className = "" }) {
       await i18n.changeLanguage(lng);
       try {
         localStorage.setItem("pk_lang", lng);
-        document.documentElement.lang = lng;
-        // optional cross-tab trigger used elsewhere
-        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
       } catch {}
     } catch (error) {
       console.error("[LanguageSwitcher] Failed to change language:", error);
       try {
         await i18n.changeLanguage("en");
         localStorage.setItem("pk_lang", "en");
-        document.documentElement.lang = "en";
       } catch {}
     }
   };
