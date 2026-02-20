@@ -189,6 +189,11 @@ export default function Layout({ children, currentPageName }) {
     }
   }, []);
 
+  // Scan for hardcoded text in dev mode
+  useEffect(() => {
+    scanForHardcodedText();
+  }, []);
+
   // Handle Android back button
   useEffect(() => {
     const handlePopState = (e) => {
