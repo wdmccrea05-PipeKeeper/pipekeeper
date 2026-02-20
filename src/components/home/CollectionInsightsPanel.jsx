@@ -209,7 +209,13 @@ export default function CollectionInsightsPanel({
 
           <TabsContent value="stats" className="pt-4">
             {smokingLogs.length > 0 ? (
-              <UsageStatsPanel smokingLogs={smokingLogs} />
+              <UsageStatsPanel
+                pipes={pipes}
+                blends={blends}
+                cellarLogs={cellarLogs}
+                user={user}
+                smokingLogs={smokingLogs}
+              />
             ) : (
               <div className="text-center py-8 text-[#E0D8C8]/60">
                 {t("insights.noLogsData", { defaultValue: "Log some smoking sessions to see stats" })}
