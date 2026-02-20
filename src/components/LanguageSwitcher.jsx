@@ -49,7 +49,7 @@ export default function LanguageSwitcher({ className = "" }) {
         className ||
         "bg-[#1A2B3A]/90 border border-[#A35C5C]/40 text-[#E0D8C8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50"
       }
-      aria-label="Language"
+      aria-label={i18n.t("common.language") || "Language"}
     >
       {LANGS.map((l) => (
         <option key={l.code} value={l.code}>

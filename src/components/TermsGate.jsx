@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const LOCAL_ACCEPT_KEY = "pk_tos_local_accept_v1";
 
@@ -21,6 +22,7 @@ function hasAccepted(user) {
 }
 
 export default function TermsGate({ user }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -76,18 +78,18 @@ export default function TermsGate({ user }) {
   return (
     <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#101b2a] p-5 shadow-2xl text-[#E0D8C8]">
-        <div className="text-xl font-bold text-white">Before you continue</div>
+        <div className="text-xl font-bold text-white">{t("termsGate.beforeContinue")}</div>
         <div className="mt-2 text-sm text-[#E0D8C8]/70">
-          Please review and accept the Terms of Service and Privacy Policy.
+          {t("termsGate.reviewAccept")}
         </div>
 
         <div className="mt-3 flex items-center gap-2 text-sm">
           <a className="underline font-semibold" href={tosUrl} target="_blank" rel="noreferrer">
-            Terms of Service
+            {t("termsGate.termsOfService")}
           </a>
           <span className="text-[#E0D8C8]/50">•</span>
           <a className="underline font-semibold" href={privacyUrl} target="_blank" rel="noreferrer">
-            Privacy Policy
+            {t("termsGate.privacyPolicy")}
           </a>
         </div>
 
@@ -99,7 +101,7 @@ export default function TermsGate({ user }) {
             className="mt-1"
           />
           <span className="text-sm">
-            I have read and agree to the Terms of Service and Privacy Policy.
+            {t("termsGate.agreeCheckbox")}
           </span>
         </label>
 
@@ -110,11 +112,11 @@ export default function TermsGate({ user }) {
           disabled={!checked || submitting}
           className="mt-4 w-full rounded-xl bg-[#7b2d2d] px-4 py-3 font-bold text-white disabled:opacity-70"
         >
-          {submitting ? "Saving…" : "Accept and Continue"}
+          {submitting ? t("termsGate.saving") : t("termsGate.acceptContinue")}
         </button>
 
         <div className="mt-3 text-[11px] text-[#E0D8C8]/55 leading-snug">
-          If requests are rate-limited, the app may temporarily allow access to avoid loops.
+          {t("termsGate.rateLimitNote")}
         </div>
       </div>
     </div>

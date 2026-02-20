@@ -1,11 +1,15 @@
 import { useEffect } from "react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function DocumentTitle({ title = "PipeKeeper" }) {
+export default function DocumentTitle({ title }) {
+  const { t } = useTranslation();
+  const finalTitle = title || t("common.appName");
+  
   useEffect(() => {
-    document.title = title;
-    const t = setTimeout(() => (document.title = title), 50);
-    return () => clearTimeout(t);
-  }, [title]);
+    document.title = finalTitle;
+    const timer = setTimeout(() => (document.title = finalTitle), 50);
+    return () => clearTimeout(timer);
+  }, [finalTitle]);
 
   return null;
 }
