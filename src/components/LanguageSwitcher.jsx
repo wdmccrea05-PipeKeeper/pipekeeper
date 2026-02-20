@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import { setHtmlLang } from "@/components/i18n/ui";
-import i18n from "@/components/i18n";
+import i18n from "@/components/i18n"; // must be the actual i18n instance used by ui()
+import { ui, setHtmlLang } from "@/components/i18n/ui";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -9,73 +8,67 @@ const LANGS = [
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (BR)" },
+  { code: "pt", label: "Português" },
   { code: "nl", label: "Nederlands" },
   { code: "pl", label: "Polski" },
   { code: "ja", label: "日本語" },
-  { code: "zh-Hans", label: "中文（简体）" },
+  { code: "zh", label: "中文（简体）" },
 ];
 
-export default function LanguageSwitcher({ className = "" }) {
-  const { i18n } = useTranslation();
+function normalizeToBase(lng) {
+  if (!lng) return "en";
+  const raw = String(lng).replace("_", "-");
+  const base = raw.split("-")[0].toLowerCase();
+  // Keep this list tight to languages we actually ship
+  if (["en","es","fr","de","it","pt","nl","pl","ja","zh"].includes(base)) return base;
+  return "en";
+}
 
+export default function LanguageSwitcher({ className = "" }) {
   const current = useMemo(() => {
-    const raw = (i18n.language || "en").replace("_", "-");
-    if (raw.startsWith("pt")) return "pt-BR";
-    if (raw.startsWith("zh")) return "zh-Hans";
-    if (LANGS.some((l) => l.code === raw)) return raw;
-    const base = raw.split("-")[0];
-    return LANGS.some((l) => l.code === base) ? base : "en";
-  }, [i18n.language]);
+    const saved = typeof window !== "undefined" ? localStorage.getItem("pk_lang") : null;
+    return normalizeToBase(saved || i18n?.language || "en");
+  }, []);
 
   const setLang = async (lng) => {
-    // normalize to your shipped resource keys
-    const normalized =
-      (lng || "").startsWith("pt") ? "pt" :
-      (lng || "").startsWith("zh") ? "zh" :
-      (lng || "").split("-")[0] || "en";
+    const normalized = normalizeToBase(lng);
 
     try {
-      await i18n.changeLanguage(normalized);
+      // 1) persist language
       localStorage.setItem("pk_lang", normalized);
-      setHtmlLang(normalized);
 
-      // optional: if you want a hard refresh so every page re-renders immediately
-      // window.location.reload();
-    } catch (err) {
-      console.error("[LanguageSwitcher] Failed to change language:", err);
+      // 2) set html lang (important for accessibility + some libs)
+      setHtmlLang(normalized);
+      if (typeof document !== "undefined") document.documentElement.lang = normalized;
+
+      // 3) switch translation engine
+      if (i18n?.changeLanguage) {
+        await i18n.changeLanguage(normalized);
+      }
+    } catch (e) {
+      // fallback to English
       try {
-        await i18n.changeLanguage("en");
         localStorage.setItem("pk_lang", "en");
         setHtmlLang("en");
+        if (typeof document !== "undefined") document.documentElement.lang = "en";
+        if (i18n?.changeLanguage) await i18n.changeLanguage("en");
       } catch {}
     }
+
+    // 4) force full rerender so ALL pages switch text immediately
+    window.location.reload();
   };
 
   return (
-    <div className={`flex items-center ${className}`}>
+    <div className={className}>
       <select
         value={current}
         onChange={(e) => setLang(e.target.value)}
-        aria-label="Language"
-        className="
-          h-9
-          rounded-lg
-          px-3
-          text-sm
-          bg-black/40
-          border border-white/10
-          text-[#e8d5b7]
-          shadow-sm
-          outline-none
-          hover:bg-black/50
-          focus:ring-2 focus:ring-[#e8d5b7]/30
-          focus:border-[#e8d5b7]/30
-          transition
-        "
+        className="bg-white/10 text-white text-sm rounded-lg px-3 py-2 border border-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
+        aria-label={ui?.("common.language") || "Language"}
       >
         {LANGS.map((l) => (
-          <option key={l.code} value={l.code} className="bg-[#0b0b0b] text-[#e8d5b7]">
+          <option key={l.code} value={l.code} className="text-black">
             {l.label}
           </option>
         ))}
