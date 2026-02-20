@@ -1,5 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { setHtmlLang } from "@/components/i18n/ui";
+import i18n from "@/components/i18n";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -27,19 +29,25 @@ export default function LanguageSwitcher({ className = "" }) {
   }, [i18n.language]);
 
   const setLang = async (lng) => {
+    // normalize to your shipped resource keys
+    const normalized =
+      (lng || "").startsWith("pt") ? "pt" :
+      (lng || "").startsWith("zh") ? "zh" :
+      (lng || "").split("-")[0] || "en";
+
     try {
-      await i18n.changeLanguage(lng);
+      await i18n.changeLanguage(normalized);
+      localStorage.setItem("pk_lang", normalized);
+      setHtmlLang(normalized);
+
+      // optional: if you want a hard refresh so every page re-renders immediately
+      // window.location.reload();
+    } catch (err) {
+      console.error("[LanguageSwitcher] Failed to change language:", err);
       try {
-        localStorage.setItem("pk_lang", lng);
-        // Force entitlement refresh after language change
-        localStorage.setItem("pk_force_entitlement_refresh", Date.now().toString());
-      } catch {}
-    } catch (error) {
-      console.error('[LanguageSwitcher] Failed to change language:', error);
-      // Fallback to English if language change fails
-      try {
-        await i18n.changeLanguage('en');
-        localStorage.setItem("pk_lang", 'en');
+        await i18n.changeLanguage("en");
+        localStorage.setItem("pk_lang", "en");
+        setHtmlLang("en");
       } catch {}
     }
   };
