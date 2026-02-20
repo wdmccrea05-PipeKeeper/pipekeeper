@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // Fallback map for pages without history
 const FALLBACK_MAP = {
@@ -49,7 +49,8 @@ const ROOT_PAGES = new Set([
 let navigationDepth = 0;
 
 export default function BackButton({ currentPageName, className = "" }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const navigate = useNavigate();
   const location = useLocation();
   const [canGoBack, setCanGoBack] = useState(false);
