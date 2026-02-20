@@ -153,7 +153,7 @@ export default function TobaccoLibrarySyncPage() {
                 {results.failed.length > 0 && (
                   <div>
                     <Badge className="bg-rose-100 text-rose-800 mb-2">
-                      {results.failed.length} Failed
+                      {results.failed.length} {t("tobaccoLibrarySync.failed")}
                     </Badge>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {results.failed.map((name, idx) => (
