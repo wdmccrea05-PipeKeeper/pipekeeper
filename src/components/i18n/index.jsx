@@ -3,7 +3,6 @@ import { initReactI18next } from "react-i18next";
 import { translationsComplete } from "./translations-complete";
 import { translations } from "./translations";
 import { enforceTranslation, humanizeKey } from "./enforceTranslation";
-import { getPkLanguage, setPkLanguage } from "./ui";
 
 /**
  * Humanize a translation key into readable text.
