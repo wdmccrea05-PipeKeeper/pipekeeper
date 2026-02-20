@@ -16,6 +16,10 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 import ProFeatureLock from "@/components/subscription/ProFeatureLock";
 import InfoTooltip from "@/components/ui/InfoTooltip";
+import SmokingLogPanel from "./SmokingLogPanel";
+import UsageStatsPanel from "./UsageStatsPanel";
+import PairingGrid from "./PairingGrid";
+import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 
 export default function CollectionInsightsPanel({
   userEmail,
