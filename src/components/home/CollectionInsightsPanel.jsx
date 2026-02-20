@@ -178,7 +178,12 @@ export default function CollectionInsightsPanel({
           {!isAppleBuild && (
             <>
               <TabsContent value="log" className="pt-4">
-                <SmokingLogPanel userEmail={userEmail} />
+                <SmokingLogPanel
+                  pipes={pipes}
+                  blends={blends}
+                  cellarLogs={smokingLogs}
+                  user={user}
+                />
               </TabsContent>
 
               <TabsContent value="reference" className="pt-4">
