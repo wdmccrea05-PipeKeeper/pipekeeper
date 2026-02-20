@@ -100,8 +100,8 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
             </div>
             <FeatureGate 
               feature="COLLECTION_OPTIMIZATION"
-              featureName="Collection Optimization"
-              description="Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access."
+              featureName={t("tobacconist.collectionOptimizationName")}
+              description={t("tobacconist.collectionOptimizationDescription")}
             >
               {pipes.length === 0 ? (
                 <div className="text-center py-8">
