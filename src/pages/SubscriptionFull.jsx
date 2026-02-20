@@ -207,22 +207,22 @@ export default function SubscriptionFull() {
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-[#e8d5b7]">PipeKeeper Subscriptions</h1>
+          <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
           <Button variant="secondary" onClick={handleManage}>
-            Manage
+            {t("subscription.manage")}
           </Button>
         </div>
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">iOS App Store</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.iosAppStore")}</CardTitle>
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
-            <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
+            <p className="mb-4">{t("subscription.purchasesHandledApple")}</p>
             <Button className="w-full" onClick={handleUpgrade}>
-              Upgrade (App Store)
+              {t("subscription.upgradeAppStore")}
             </Button>
-            {isPro && <div className="mt-4 text-emerald-500">Status: Pro Active ✅</div>}
+            {isPro && <div className="mt-4 text-emerald-500">{t("subscription.statusProActive")}</div>}
             {message && <div className="mt-4 text-red-500">{message}</div>}
           </CardContent>
         </Card>
