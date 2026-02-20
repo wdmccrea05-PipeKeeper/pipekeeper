@@ -122,8 +122,8 @@ export default function TobaccoLibrarySyncPage() {
             {blendsNeedingLogos.length === 0 && !results && (
               <div className="text-center py-8">
                 <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <p className="font-semibold text-stone-800">All tobacco blends have logos!</p>
-                <p className="text-sm text-stone-600">No sync needed</p>
+                <p className="font-semibold text-stone-800">{t("tobaccoLibrarySync.allHaveLogos")}</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.noSyncNeeded")}</p>
               </div>
             )}
 
