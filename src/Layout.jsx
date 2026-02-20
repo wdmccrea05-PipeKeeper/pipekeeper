@@ -39,7 +39,6 @@ import {
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
-import { scanForHardcodedText } from "@/components/i18n/devHardcodedCheck";
 
 const PIPEKEEPER_LOGO =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
@@ -187,11 +186,6 @@ export default function Layout({ children, currentPageName }) {
         htmlLang: document.documentElement.lang,
       });
     }
-  }, []);
-
-  // Scan for hardcoded text in dev mode
-  useEffect(() => {
-    scanForHardcodedText();
   }, []);
 
   // Handle Android back button

@@ -123,22 +123,35 @@ export default function SubscriptionFull() {
     pro: { monthly: 2.99, annual: 29.99 },
   };
 
-  const freeFeatures = t("subscription.freeFeatures").split(", ");
+  const freeFeatures = [
+    "Basic item records",
+    "Notes and photos",
+    "Manual organization",
+  ];
 
   const tierDescriptions = {
-    free: t("subscription.tierDescFree"),
-    premium: t("subscription.tierDescPremium"),
-    pro: t("subscription.tierDescPro"),
+    free: "Core cataloging for pipes and cellar items.",
+    premium: "Premium adds expanded insights, reports, and advanced organization tools for collectors who actively manage and grow their collections.",
+    pro: "Pro is designed for collectors who want deep analytics and optional AI-assisted tools for advanced organization and analysis.",
   };
 
   const tierTaglines = {
-    premium: t("subscription.taglinePremium"),
-    pro: t("subscription.taglinePro"),
+    premium: "For active collectors",
+    pro: "For advanced collectors",
   };
 
   const tierFeatures = {
-    premium: t("subscription.premiumFeatures").split(", "),
-    pro: t("subscription.proFeatures").split(", "),
+    premium: [
+      "Collection insights and summaries",
+      "Reports and exports",
+      "Advanced organization tools",
+      "Priority access to new features",
+    ],
+    pro: [
+      "Deep collection analytics",
+      "AI-assisted organization tools",
+      "Power-user features",
+    ],
   };
 
   const handleUpgrade = async (tier, interval) => {
@@ -207,22 +220,22 @@ export default function SubscriptionFull() {
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
+          <h1 className="text-2xl font-semibold text-[#e8d5b7]">PipeKeeper Subscriptions</h1>
           <Button variant="secondary" onClick={handleManage}>
-            {t("subscription.manage")}
+            Manage
           </Button>
         </div>
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscription.iosAppStore")}</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">iOS App Store</CardTitle>
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
-            <p className="mb-4">{t("subscription.purchasesHandledApple")}</p>
+            <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
             <Button className="w-full" onClick={handleUpgrade}>
-              {t("subscription.upgradeAppStore")}
+              Upgrade (App Store)
             </Button>
-            {isPro && <div className="mt-4 text-emerald-500">{t("subscription.statusProActive")}</div>}
+            {isPro && <div className="mt-4 text-emerald-500">Status: Pro Active ✅</div>}
             {message && <div className="mt-4 text-red-500">{message}</div>}
           </CardContent>
         </Card>
@@ -234,7 +247,7 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscription.continueUsing")}</h1>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Continue using Premium tools for your collection</h1>
         <p className="text-[#e8d5b7]/70">You've had full access — choose how you'd like to continue.</p>
       </div>
 
