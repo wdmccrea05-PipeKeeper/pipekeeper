@@ -174,8 +174,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language; // used to trigger memo recalculation on language change
+  const { t } = useTranslation();
 
   // Debug logging for language state
   useEffect(() => {
@@ -208,7 +207,7 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [mobileOpen, navigate]);
 
-  const navItems = useMemo(() => [
+  const navItems = [
     { name: t("nav.home"), page: "Home", icon: Home, isIconComponent: true },
     { name: t("nav.pipes"), page: "Pipes", icon: PIPE_ICON, isIconComponent: false },
     {
@@ -222,7 +221,7 @@ export default function Layout({ children, currentPageName }) {
       : []),
     { name: t("nav.profile"), page: "Profile", icon: User, isIconComponent: true },
     { name: t("nav.help"), page: "FAQ", icon: HelpCircle, isIconComponent: true },
-  ], [lang, isAppleBuild]);
+  ];
 
   const PUBLIC_PAGES = useMemo(
     () =>
@@ -241,12 +240,12 @@ export default function Layout({ children, currentPageName }) {
 
   const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
-  const adminNavItems = useMemo(() => isAdmin ? [
+  const adminNavItems = isAdmin ? [
     { name: "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
     { name: "User Report", page: "UserReport", icon: Users, isIconComponent: true },
     { name: "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
     { name: "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
-  ] : [], [isAdmin, lang]);
+  ] : [];
 
   // Block render until subscription is loaded (prevents Apple fallback race)
   const subscriptionReady = !userLoading && (subscription || true);
