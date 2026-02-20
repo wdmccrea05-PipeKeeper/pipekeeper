@@ -1444,6 +1444,62 @@ export const translationsComplete = {
       collectionOptimizationTitle: 'コレクション最適化',
       outOfDateRegenRec: '期限切れ - 再生成推奨',
       upToDate: '最新',
+    },
+    es_insights: {
+      title: 'Información de la Colección',
+      titleInventory: 'Herramientas de Inventario',
+      subtitle: 'Rastrear uso, optimizar pairings y monitorear tu colección',
+      tooltipSummary: 'Esta sección resume patrones y totales en tu colección basados en los datos que has ingresado.',
+      stats: 'Estadísticas',
+      log: 'Registro de Uso',
+      pairingGrid: 'Matriz de Emparejamientos',
+      rotation: 'Rotación',
+      trends: 'Tendencias',
+      aging: 'Envejecimiento',
+      reports: 'Reportes',
+      statsEmpty: 'Comienza a registrar tuberías y mezclas para ver estadísticas de la colección.',
+      addFirstItem: 'Agrega tu primer artículo',
+      reportsEmpty: 'Aún no hay datos para exportar.',
+      reportsEmptyDesc: 'Registra algunas sesiones o agrega artículos a tu colección para generar reportes.',
+      reportsTooltip: 'Genera resúmenes exportables de tu colección para referencia o documentación.',
+      reportsSubtitle: 'Exporta tu colección y registros de fumadas',
+      agingDashboard: 'Panel de Envejecimiento',
+      agingTooltip: 'Monitorea el tabaco envejecido y obtén recomendaciones sobre los tiempos óptimos de envejecimiento basados en las características de la mezcla.',
+      agingSubtitle: 'Rastrear el progreso de envejecimiento del tabaco envejecido',
+      trendsReportFeatureName: 'Reporte de Tendencias'
+    },
+    es_pairingCard: {
+      title: 'Tarjeta de Emparejamiento de PipeKeeper',
+      reason: 'Razón',
+      shareable: 'emparejamiento compartible',
+      scoreLabel: 'Puntuación',
+      copyButton: 'Copiar',
+      downloadButton: 'Descargar PDF',
+      copied: 'Copiado al portapapeles',
+      pdfDownloaded: 'PDF descargado',
+      pdfFailed: 'Error al generar PDF'
+    },
+    es_pairingGrid: {
+      title: 'Matriz de Referencia de Emparejamientos',
+      tooltipText: 'Ver emparejamientos puntuados para todas las tuberías y tabacos en tu colección',
+      subtitle: 'Matriz de referencia rápida de puntuaciones de compatibilidad tubería-tabaco',
+      loading: 'Cargando emparejamientos...',
+      noPipes: 'Agrega tuberías y tabaco para generar emparejamientos.',
+      refresh: 'Actualizar',
+      regenerateSuccess: 'Emparejamientos regenerados con éxito',
+      alreadyUpToDate: 'Los emparejamientos ya están al día'
+    },
+    es_pairingMatrix: {
+      title: 'Matriz de Emparejamientos',
+      description: 'Los tazones intercambiables se muestran como variantes de tubería distintas.',
+      regenerated: 'Emparejamientos regenerados con éxito',
+      regenFailed: 'Error al regenerar emparejamientos',
+      loading: 'Cargando matriz de emparejamientos...',
+      noPairingData: 'Aún no hay datos de emparejamiento',
+      emptyMessage: 'Agrega tuberías y tabaco a tu colección, luego genera recomendaciones de emparejamiento impulsadas por IA.',
+      addFirstPipe: 'Agregar Primera Tubería',
+      addFirstBlend: 'Agregar Primera Mezcla',
+      generate: 'Generar Emparejamientos'
     }
   }
 };
