@@ -1115,6 +1115,17 @@ export const translationsComplete = {
     insights: {
       title: 'Insights de la colección',
       subtitle: 'Resúmenes y tendencias de tu colección',
+      tabs: {
+        usageLog: 'Registro de uso',
+        pairingGrid: 'Cuadrícula de combinaciones',
+        rotation: 'Rotación',
+        stats: 'Estadísticas',
+        trends: 'Tendencias',
+        aging: 'Envejecimiento',
+        reports: 'Informes'
+      },
+      totalBowls: 'Total de cazoletas',
+      logSession: 'Registrar sesión',
       usageLogTab: 'Registro de uso',
       pairingGridTab: 'Cuadrícula de combinaciones',
       rotationTab: 'Rotación',
@@ -1126,6 +1137,18 @@ export const translationsComplete = {
       titleInventory: 'Herramientas de inventario',
       descriptionUsage: 'Visualiza tus sesiones y estadísticas',
       descriptionInventory: 'Administración de inventario, combinaciones y rotación'
+    },
+    tobacconist: {
+      consultationTitle: 'Consulta con el maestro mezclador',
+      personalizedAdvice: 'Asesoramiento personalizado sobre pipas y tabaco',
+      identify: 'Identificar',
+      optimize: 'Optimizar',
+      whatIf: 'Simular',
+      updates: 'Actualizaciones',
+      photoIdentification: 'Identificación por foto',
+      uploadPhotoHelp: 'Sube una foto para identificar pipas y tabaco',
+      aiPipeIdentifier: 'Identificador de pipas con IA',
+      uploadPhotosInstant: 'Sube fotos para identificar y agregar pipas al instante'
     },
     nav: {
       home: 'Inicio',
