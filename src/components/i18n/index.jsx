@@ -123,6 +123,11 @@ i18n.on("languageChanged", (lng) => {
   } catch {}
 });
 
+// Helpful debug hook (console: window.i18n.language)
+try {
+  if (typeof window !== "undefined") window.i18n = i18n;
+} catch {}
+
 // GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
 // This ensures NO component can leak keys, even if they bypass safeTranslation wrapper
 const originalT = i18n.t.bind(i18n);
