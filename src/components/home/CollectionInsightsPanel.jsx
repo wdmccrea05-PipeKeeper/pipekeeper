@@ -20,6 +20,8 @@ import SmokingLogPanel from "./SmokingLogPanel";
 import UsageStatsPanel from "./UsageStatsPanel";
 import PairingGrid from "./PairingGrid";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
+import RotationSchedulePanel from "./RotationSchedulePanel";
+import TrendsPanel from "./TrendsPanel";
 
 export default function CollectionInsightsPanel({
   userEmail,
