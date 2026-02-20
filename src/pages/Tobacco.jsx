@@ -84,7 +84,8 @@ export default function TobaccoPage() {
   const [showQuickEditPanel, setShowQuickEditPanel] = useState(false);
 
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
 
   const { user, hasPaid, isTrial } = useCurrentUser();
 
