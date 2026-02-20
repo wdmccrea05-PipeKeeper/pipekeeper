@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Sparkles, Crown } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from '@/components/utils/premiumAccess';
 
 export default function PremiumActiveIndicator({ user, subscription }) {

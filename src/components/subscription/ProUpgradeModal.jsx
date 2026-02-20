@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Crown, CheckCircle2 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function ProUpgradeModal({ isOpen, onClose, featureName = "This feature" }) {
   const { t } = useTranslation();

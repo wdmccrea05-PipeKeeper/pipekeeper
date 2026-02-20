@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PipeExporter() {
   const { t } = useTranslation();

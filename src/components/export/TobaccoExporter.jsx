@@ -4,7 +4,7 @@ import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoExporter() {
   const { t } = useTranslation();

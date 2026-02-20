@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Crown, Lock } from "lucide-react";
 import { shouldShowPurchaseUI, getPremiumGateMessage } from "@/components/utils/companion";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function UpgradePrompt({ featureName, description }) {
   const { t } = useTranslation();

@@ -8,7 +8,7 @@ import { CheckCircle2, X } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
 import { getTrialDayNumber } from '@/components/utils/paywallTriggers';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { isAppleBuild } from '@/components/utils/appVariant';
 
 export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {

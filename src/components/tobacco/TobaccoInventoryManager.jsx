@@ -7,7 +7,7 @@ import { Package, Box, Briefcase, Plus, Minus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
