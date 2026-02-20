@@ -70,12 +70,12 @@ Deno.serve(async (req) => {
         return st !== 'incomplete_expired';
       });
 
-      // Determine if paid: check subscriptions AND User entity
+      // Determine if paid: check subscriptions AND User entity comprehensively
       let isPaid = false;
       let effectiveTier = 'premium';
       let effectiveStartedAt = null;
       
-      // Check Subscription entity
+      // 1. Check Subscription entity
       if (validSubs.length > 0) {
         // Find best subscription
         const best = [...validSubs].sort((a, b) => {
@@ -101,17 +101,36 @@ Deno.serve(async (req) => {
         }
       }
       
-      // Fallback: Check User entity for Apple IAP or entitlement-synced users
+      // 2. Check User.data fields (canonical entitlement source)
+      if (!isPaid && u.data) {
+        const entitlementTier = (u.data.entitlement_tier || '').toLowerCase();
+        const subscriptionTier = (u.data.subscription_tier || '').toLowerCase();
+        const subscriptionStatus = (u.data.subscription_status || '').toLowerCase();
+        
+        // Paid if entitlement_tier or subscription_tier is premium/pro
+        if (['premium', 'pro'].includes(entitlementTier) || ['premium', 'pro'].includes(subscriptionTier)) {
+          isPaid = true;
+          effectiveTier = entitlementTier || subscriptionTier;
+          effectiveStartedAt = u.data.subscription_started_at || u.created_date;
+        }
+        
+        // Also paid if subscription_status is active/trialing
+        if (!isPaid && ['active', 'trialing', 'trial'].includes(subscriptionStatus)) {
+          isPaid = true;
+          effectiveTier = subscriptionTier || entitlementTier || 'premium';
+          effectiveStartedAt = u.data.subscription_started_at || u.created_date;
+        }
+      }
+      
+      // 3. Check top-level User fields (legacy compatibility)
       if (!isPaid) {
         const userSubLevel = (u.subscription_level || '').toLowerCase();
-        const userSubStatus = (u.data?.subscription_status || '').toLowerCase();
-        const userEntitlementTier = u.data?.entitlement_tier || u.data?.subscription_tier;
+        const userSubStatus = (u.subscription_status || '').toLowerCase();
         
         if (userSubLevel === 'paid' || ['active', 'trialing', 'trial'].includes(userSubStatus)) {
           isPaid = true;
-          effectiveTier = userEntitlementTier || 'premium';
-          // Try to find started_at from user data or use created_date as fallback
-          effectiveStartedAt = u.data?.subscription_started_at || u.created_date;
+          effectiveTier = 'premium';
+          effectiveStartedAt = u.created_date;
         }
       }
       
