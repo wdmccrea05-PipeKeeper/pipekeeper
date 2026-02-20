@@ -77,7 +77,7 @@ export default function PipesPage() {
       toast.success(t("notifications.created"));
     },
     onError: (error) => {
-      toast.error(error.message || t("pipesPage.failedToAddPipe", "Failed to add pipe"));
+      toast.error(error.message || t("pipesPage.failedToAddPipe"));
     }
   });
 

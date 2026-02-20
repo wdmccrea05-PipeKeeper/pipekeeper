@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SubscriptionCancelled() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center p-4">
@@ -13,9 +15,11 @@ export default function SubscriptionCancelled() {
         <div className="flex justify-center mb-6">
           <XCircle className="w-12 h-12 text-amber-500" />
         </div>
-        <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">Checkout Cancelled</h1>
+        <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">
+          {t("subscriptionCancelled.title")}
+        </h1>
         <p className="text-[#E0D8C8]/70 text-center mb-6">
-          No problem! You can try subscribing again any time.
+          {t("subscriptionCancelled.message")}
         </p>
         <div className="flex gap-3">
           <Button
@@ -23,13 +27,13 @@ export default function SubscriptionCancelled() {
             className="flex-1"
             onClick={() => navigate(createPageUrl("Subscription"))}
           >
-            Back to Plans
+            {t("subscriptionCancelled.backToPlans")}
           </Button>
           <Button
             className="flex-1"
             onClick={() => navigate(createPageUrl("Home"))}
           >
-            Home
+            {t("nav.home")}
           </Button>
         </div>
       </div>

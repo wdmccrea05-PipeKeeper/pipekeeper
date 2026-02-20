@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoLibrarySyncPage() {
+  const { t } = useTranslation();
   const [syncing, setSyncing] = useState(false);
   const [results, setResults] = useState(null);
   const queryClient = useQueryClient();
@@ -56,24 +58,24 @@ export default function TobaccoLibrarySyncPage() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-stone-50 to-stone-100 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-stone-800">Tobacco Logo Library Sync</h1>
+          <h1 className="text-3xl font-bold text-stone-800">{t("tobaccoLibrarySync.title")}</h1>
           <p className="text-stone-600 mt-2">
-            Update tobacco records with logos from the library
+            {t("tobaccoLibrarySync.description")}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sync Status</CardTitle>
+            <CardTitle>{t("tobaccoLibrarySync.syncStatus")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-stone-600">Total Tobacco Blends</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.totalBlends")}</p>
                 <p className="text-2xl font-bold text-stone-800">{blends.length}</p>
               </div>
               <div>
-                <p className="text-sm text-stone-600">Missing Logos</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.missingLogos")}</p>
                 <p className="text-2xl font-bold text-amber-600">{blendsNeedingLogos.length}</p>
               </div>
             </div>
@@ -82,7 +84,7 @@ export default function TobaccoLibrarySyncPage() {
               <>
                 <div className="border-t pt-4">
                   <p className="text-sm text-stone-600 mb-3">
-                    The following blends will be updated:
+                    {t("tobaccoLibrarySync.willBeUpdated")}
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-1">
                     {blendsNeedingLogos.map(blend => (
@@ -102,12 +104,14 @@ export default function TobaccoLibrarySyncPage() {
                   {syncing ? (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Syncing...
+                      {t("tobaccoLibrarySync.syncing")}
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Sync {blendsNeedingLogos.length} Blend{blendsNeedingLogos.length !== 1 ? 's' : ''}
+                      {t("tobaccoLibrarySync.syncButton", {
+                        count: blendsNeedingLogos.length,
+                      })}
                     </>
                   )}
                 </Button>
@@ -117,8 +121,8 @@ export default function TobaccoLibrarySyncPage() {
             {blendsNeedingLogos.length === 0 && !results && (
               <div className="text-center py-8">
                 <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <p className="font-semibold text-stone-800">All tobacco blends have logos!</p>
-                <p className="text-sm text-stone-600">No sync needed</p>
+                <p className="font-semibold text-stone-800">{t("tobaccoLibrarySync.allHaveLogos")}</p>
+                <p className="text-sm text-stone-600">{t("tobaccoLibrarySync.noSyncNeeded")}</p>
               </div>
             )}
 
@@ -126,13 +130,13 @@ export default function TobaccoLibrarySyncPage() {
               <div className="space-y-4 border-t pt-4">
                 <div className="text-center">
                   <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                  <p className="font-semibold text-stone-800">Sync Complete!</p>
+                  <p className="font-semibold text-stone-800">{t("tobaccoLibrarySync.complete")}</p>
                 </div>
                 
                 {results.updated.length > 0 && (
                   <div>
                     <Badge className="bg-green-100 text-green-800 mb-2">
-                      {results.updated.length} Updated
+                      {t("tobaccoLibrarySync.updated", { count: results.updated.length })}
                     </Badge>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {results.updated.map((name, idx) => (
@@ -148,7 +152,7 @@ export default function TobaccoLibrarySyncPage() {
                 {results.failed.length > 0 && (
                   <div>
                     <Badge className="bg-rose-100 text-rose-800 mb-2">
-                      {results.failed.length} Failed
+                      {t("tobaccoLibrarySync.failed", { count: results.failed.length })}
                     </Badge>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {results.failed.map((name, idx) => (
@@ -166,7 +170,7 @@ export default function TobaccoLibrarySyncPage() {
                   variant="outline"
                   className="w-full"
                 >
-                  Done
+                  {t("common.done")}
                 </Button>
               </div>
             )}
