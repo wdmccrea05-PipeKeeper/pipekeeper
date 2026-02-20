@@ -727,6 +727,8 @@ export const translationsComplete = {
       undo: 'Undo',
       regenerate: 'Regenerate',
       collectionOptimizationTitle: 'Collection Optimization',
+      collectionOptimizationName: 'Collection Optimization',
+      collectionOptimizationDescription: 'Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access.',
       collectionOptimizationTooltip: 'Recommendations for which pipes to focus on specific tobaccos',
       breakInSchedules: 'Break-In Schedules',
       breakInSchedulesTooltip: 'Progressive tobacco recommendations to break in new pipes properly',
@@ -1098,6 +1100,33 @@ export const translationsComplete = {
       errorRefresh: 'Ocurrió un error. Por favor intenta de nuevo.',
       loadingCollection: 'Cargando tu colección...'
     },
+
+    // Shared UI copy (used across Home + AI panels)
+    ui: {
+      totalBowls: 'Total de cazoletas',
+      logSession: 'Registrar sesión',
+      photoIdentification: 'Identificación por foto',
+      identificationTitle: 'Identificador de pipa con IA',
+      identificationSubtitle: 'Sube una foto para identificar pipas y tabacos',
+      identificationDescription: 'Sube fotos para identificar y agregar pipas al instante'
+    },
+
+    // Home “Collection Insights” section
+    insights: {
+      title: 'Insights de la colección',
+      subtitle: 'Resúmenes y tendencias de tu colección',
+      usageLogTab: 'Registro de uso',
+      pairingGridTab: 'Cuadrícula de combinaciones',
+      rotationTab: 'Rotación',
+      statsTab: 'Estadísticas',
+      trendsTab: 'Tendencias',
+      agingTab: 'Añejamiento',
+      reportsTab: 'Informes',
+      titleUsage: 'Registro de uso',
+      titleInventory: 'Herramientas de inventario',
+      descriptionUsage: 'Visualiza tus sesiones y estadísticas',
+      descriptionInventory: 'Administración de inventario, combinaciones y rotación'
+    },
     nav: {
       home: 'Inicio',
       pipes: 'Pipas',
@@ -1157,6 +1186,8 @@ export const translationsComplete = {
       undo: 'Deshacer',
       regenerate: 'Regenerar',
       collectionOptimizationTitle: 'Optimización de Colección',
+      collectionOptimizationName: 'Optimización de Colección',
+      collectionOptimizationDescription: 'Obtén un análisis con IA de tu colección con recomendaciones de especialización, identificación de vacíos y planificación de escenarios “qué pasaría si” con Pro o acceso Premium heredado.',
       outOfDateRegenRec: 'Desactualizado - se recomienda regeneración',
       upToDate: 'Actualizado',
     }
