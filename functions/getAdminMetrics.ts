@@ -70,36 +70,60 @@ Deno.serve(async (req) => {
         return st !== 'incomplete_expired';
       });
 
-      // Determine if paid: has active subscription OR User.subscription_level is 'paid'
-      const hasActiveSub = validSubs.some(s => {
-        const st = (s.status || '').toLowerCase();
-        return st === 'active' || st === 'trialing' || st === 'incomplete';
-      });
+      // Determine if paid: check subscriptions AND User entity
+      let isPaid = false;
+      let effectiveTier = 'premium';
+      let effectiveStartedAt = null;
       
-      const isPaidByUserEntity = u.subscription_level === 'paid';
+      // Check Subscription entity
+      if (validSubs.length > 0) {
+        // Find best subscription
+        const best = [...validSubs].sort((a, b) => {
+          const rankFn = (s) => {
+            const st = (s.status || '').toLowerCase();
+            if (st === 'active') return 5;
+            if (st === 'trialing' || st === 'trial') return 4;
+            if (st === 'incomplete') return 3;
+            if (st === 'past_due') return 2;
+            return 1;
+          };
+          return rankFn(b) - rankFn(a);
+        })[0];
+        
+        const subStatus = (best.status || '').toLowerCase();
+        const subPeriodEnd = best.current_period_end;
+        const notExpired = !subPeriodEnd || new Date(subPeriodEnd) > new Date();
+        
+        if (['active', 'trialing', 'trial', 'incomplete'].includes(subStatus) && notExpired) {
+          isPaid = true;
+          effectiveTier = best.tier || 'premium';
+          effectiveStartedAt = best.started_at || best.current_period_start;
+        }
+      }
       
-      if (!hasActiveSub && !isPaidByUserEntity) {
+      // Fallback: Check User entity for Apple IAP or entitlement-synced users
+      if (!isPaid) {
+        const userSubLevel = (u.subscription_level || '').toLowerCase();
+        const userSubStatus = (u.data?.subscription_status || '').toLowerCase();
+        const userEntitlementTier = u.data?.entitlement_tier || u.data?.subscription_tier;
+        
+        if (userSubLevel === 'paid' || ['active', 'trialing', 'trial'].includes(userSubStatus)) {
+          isPaid = true;
+          effectiveTier = userEntitlementTier || 'premium';
+          // Try to find started_at from user data or use created_date as fallback
+          effectiveStartedAt = u.data?.subscription_started_at || u.created_date;
+        }
+      }
+      
+      if (!isPaid) {
         usersByTier.free.push(u);
         if (u.isFoundingMember) foundingMemberCount++;
         return;
       }
 
-      // Find best subscription
-      const best = [...validSubs].sort((a, b) => {
-        const rankFn = (s) => {
-          const st = (s.status || '').toLowerCase();
-          if (st === 'active') return 5;
-          if (st === 'trialing') return 4;
-          if (st === 'incomplete') return 3;
-          if (st === 'past_due') return 2;
-          return 1;
-        };
-        return rankFn(b) - rankFn(a);
-      })[0];
-
-      const tier = best?.tier || 'premium';
-      const startedAt = best?.started_at || best?.current_period_start;
-      const isLegacy = startedAt && new Date(startedAt) < proLaunchDate;
+      // Categorize by tier and legacy status
+      const isLegacy = effectiveStartedAt && new Date(effectiveStartedAt) < proLaunchDate;
+      const tier = (effectiveTier || 'premium').toLowerCase();
 
       if (tier === 'pro') {
         usersByTier.pro.push(u);
