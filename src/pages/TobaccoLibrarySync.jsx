@@ -131,13 +131,13 @@ export default function TobaccoLibrarySyncPage() {
               <div className="space-y-4 border-t pt-4">
                 <div className="text-center">
                   <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                  <p className="font-semibold text-stone-800">Sync Complete!</p>
+                  <p className="font-semibold text-stone-800">{t("tobaccoLibrarySync.syncComplete")}</p>
                 </div>
                 
                 {results.updated.length > 0 && (
                   <div>
                     <Badge className="bg-green-100 text-green-800 mb-2">
-                      {results.updated.length} Updated
+                      {results.updated.length} {t("tobaccoLibrarySync.updated")}
                     </Badge>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {results.updated.map((name, idx) => (
