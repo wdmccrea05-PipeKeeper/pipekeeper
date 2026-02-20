@@ -176,6 +176,17 @@ export default function Layout({ children, currentPageName }) {
   const ios = useMemo(() => isIOSWebView(), []);
   const { t } = useTranslation();
 
+  // Debug logging for language state
+  useEffect(() => {
+    if (import.meta?.env?.DEV) {
+      console.log("[LANG_DEBUG]", {
+        pk_lang: localStorage.getItem("pk_lang"),
+        i18nextLng: localStorage.getItem("i18nextLng"),
+        htmlLang: document.documentElement.lang,
+      });
+    }
+  }, []);
+
   // Handle Android back button
   useEffect(() => {
     const handlePopState = (e) => {

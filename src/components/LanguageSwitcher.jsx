@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
-import i18n from "@/components/i18n"; // must be the actual i18n instance used by ui()
-import { ui, setHtmlLang } from "@/components/i18n/ui";
+import { ui, setPkLanguage, getPkLanguage } from "@/components/i18n/ui";
 
 const LANGS = [
   { code: "en", label: "English" },
@@ -15,47 +14,13 @@ const LANGS = [
   { code: "zh", label: "中文（简体）" },
 ];
 
-function normalizeToBase(lng) {
-  if (!lng) return "en";
-  const raw = String(lng).replace("_", "-");
-  const base = raw.split("-")[0].toLowerCase();
-  // Keep this list tight to languages we actually ship
-  if (["en","es","fr","de","it","pt","nl","pl","ja","zh"].includes(base)) return base;
-  return "en";
-}
-
 export default function LanguageSwitcher({ className = "" }) {
-  const current = useMemo(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("pk_lang") : null;
-    return normalizeToBase(saved || i18n?.language || "en");
-  }, []);
+  const current = useMemo(() => getPkLanguage(), []);
 
-  const setLang = async (lng) => {
-    const normalized = normalizeToBase(lng);
-
-    try {
-      // 1) persist language
-      localStorage.setItem("pk_lang", normalized);
-
-      // 2) set html lang (important for accessibility + some libs)
-      setHtmlLang(normalized);
-      if (typeof document !== "undefined") document.documentElement.lang = normalized;
-
-      // 3) switch translation engine
-      if (i18n?.changeLanguage) {
-        await i18n.changeLanguage(normalized);
-      }
-    } catch (e) {
-      // fallback to English
-      try {
-        localStorage.setItem("pk_lang", "en");
-        setHtmlLang("en");
-        if (typeof document !== "undefined") document.documentElement.lang = "en";
-        if (i18n?.changeLanguage) await i18n.changeLanguage("en");
-      } catch {}
-    }
-
-    // 4) force full rerender so ALL pages switch text immediately
+  const onChange = (e) => {
+    const lng = e.target.value;
+    setPkLanguage(lng);
+    // Force full rerender so all pages pick it up immediately
     window.location.reload();
   };
 
@@ -63,9 +28,9 @@ export default function LanguageSwitcher({ className = "" }) {
     <div className={className}>
       <select
         value={current}
-        onChange={(e) => setLang(e.target.value)}
+        onChange={onChange}
         className="bg-white/10 text-white text-sm rounded-lg px-3 py-2 border border-white/10 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
-        aria-label={ui?.("common.language") || "Language"}
+        aria-label={ui("common.language") || "Language"}
       >
         {LANGS.map((l) => (
           <option key={l.code} value={l.code} className="text-black">

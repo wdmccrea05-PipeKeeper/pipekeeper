@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 import { translationsComplete } from "./translations-complete";
 import { translations } from "./translations";
 import { enforceTranslation, humanizeKey } from "./enforceTranslation";
+import { getPkLanguage, setPkLanguage } from "./ui";
 
 /**
  * Humanize a translation key into readable text.
@@ -78,14 +79,11 @@ const normalizeLanguage = (rawLng) => {
   return supportedLngs.includes(base) ? base : "en";
 };
 
-// Restore language preference if present
-const savedLng =
-  (typeof window !== "undefined" &&
-    window.localStorage &&
-    window.localStorage.getItem("pk_lang")) ||
-  "en";
+// Bootstrap: read pk_lang as single source of truth (NEVER overwrite if it exists)
+const bootLang = getPkLanguage();
+setPkLanguage(bootLang); // sets html lang too
 
-const initialLng = normalizeLanguage(savedLng);
+const initialLng = normalizeLanguage(bootLang);
 
 i18n.use(initReactI18next).init({
   resources,
