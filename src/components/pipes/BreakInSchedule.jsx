@@ -14,7 +14,7 @@ import { generateBreakInScheduleAI } from "@/components/utils/aiGenerators";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function BreakInSchedule({ pipe, blends }) {
   if (isAppleBuild) return null;

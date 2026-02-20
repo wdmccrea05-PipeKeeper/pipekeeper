@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarClock, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function RotationPlanner({ user }) {
   const { t } = useTranslation();
