@@ -128,7 +128,7 @@ export default function TobaccoPage() {
       toast.success(t("notifications.created"));
     },
     onError: (error) => {
-      toast.error(error.message || t("tobaccoPage.failedToAddBlend", "Failed to add blend"));
+      toast.error(error.message || t("tobaccoPage.failedToAddBlend"));
     }
   });
 
