@@ -89,10 +89,45 @@ try { localStorage.setItem("pk_lang", initialLng); } catch {}
 // Sync HTML lang on boot
 try { document.documentElement.lang = initialLng; } catch {}
 
+// DEV-only strict mode: track missing keys, disable fallback
+const missingKeysPerRoute = {};
+let lastRoute = typeof window !== "undefined" ? window.location.pathname : "";
+
+const createMissingKeyHandler = () => {
+  if (!import.meta.env.DEV) {
+    return (key) => humanizeKey(key);
+  }
+
+  // DEV: Return explicit missing indicator and log
+  return (key) => {
+    const lang = i18n.language || "en";
+    const route = typeof window !== "undefined" ? window.location.pathname : "unknown";
+    const logKey = `${route}::${lang}::${key}`;
+
+    if (!missingKeysPerRoute[route]) {
+      missingKeysPerRoute[route] = new Set();
+    }
+
+    if (!missingKeysPerRoute[route].has(logKey)) {
+      missingKeysPerRoute[route].add(logKey);
+      console.warn(`[i18n] MISSING KEY [${lang}] @ ${route}:`, key);
+    }
+
+    return `[MISSING] ${key}`;
+  };
+};
+
+// PROD: still log missing keys for cleanup
+const prodMissingKeyHandler = (key) => {
+  const lang = i18n.language || "en";
+  console.warn(`[i18n] Missing key [${lang}]:`, key);
+  return humanizeKey(key);
+};
+
 i18n.use(initReactI18next).init({
   resources,
   lng: initialLng,
-  fallbackLng: "en",
+  fallbackLng: import.meta.env.DEV ? false : "en",
   supportedLngs,
   nonExplicitSupportedLngs: true,
 
@@ -100,7 +135,9 @@ i18n.use(initReactI18next).init({
   returnEmptyString: false,
   returnObjects: false,
 
-  parseMissingKeyHandler: (key) => humanizeKey(key),
+  parseMissingKeyHandler: import.meta.env.DEV
+    ? createMissingKeyHandler()
+    : prodMissingKeyHandler,
 
   interpolation: { escapeValue: false },
 });
