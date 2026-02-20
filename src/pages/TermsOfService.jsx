@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TermsOfService() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // If Terms is being used as the default landing page at "/",
   // immediately redirect to Home. Still allow "/TermsOfService" to show Terms.
@@ -17,67 +19,51 @@ export default function TermsOfService() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-10 text-[#f3e7d3]">
       <h1 className="text-4xl font-semibold tracking-tight text-white">
-        Terms of Service
+        {t("terms.title")}
       </h1>
-      <p className="mt-2 text-sm text-[#cdbfae]">Last updated: January 2026</p>
+      <p className="mt-2 text-sm text-[#cdbfae]">{t("terms.lastUpdated")}</p>
 
       <p className="mt-6 leading-relaxed">
-        These Terms of Service ("Terms") govern your access to and use of PipeKeeper (the
-        "Service"). By using the Service, you agree to these Terms.
+        {t("terms.intro")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">1. The Service</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section1Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        PipeKeeper is an adult-focused collection-management and informational application
-        designed to help users catalog, organize, and document pipes, cellar inventories,
-        accessories, and related collection data. PipeKeeper does not sell tobacco products,
-        does not facilitate tobacco purchases, and does not process tobacco orders.
+        {t("terms.section1Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">2. Eligibility</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section2Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        You must be legally able to form a binding contract in your jurisdiction to use the
-        Service. You are solely responsible for complying with all applicable local, state,
-        and national laws related to the ownership and possession of items documented within
-        the Service.
+        {t("terms.section2Body")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">3. Accounts</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section3Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        You are responsible for maintaining the confidentiality of your account credentials
-        and for all activity that occurs under your account. You agree to provide accurate,
-        current information and to keep your account information updated.
+        {t("terms.section3Body")}
       </p>
 
       <h2 className="mt-10 text-2xl font-semibold text-white">
-        4. Subscriptions, Premium Features, and Trials
+        {t("terms.section4Title")}
       </h2>
       <p className="mt-3 leading-relaxed">
-        PipeKeeper may offer optional Premium features through paid subscriptions. Limited
-        trial access may be offered and will be clearly displayed within the Service when
-        applicable.
+        {t("terms.section4Intro")}
       </p>
-      <p className="mt-3 leading-relaxed">Subscription processing depends on the platform you use:</p>
+      <p className="mt-3 leading-relaxed">{t("terms.section4SubIntro")}</p>
       <ul className="mt-3 list-disc space-y-2 pl-6">
         <li>
-          <strong className="text-white">iOS:</strong> Subscriptions are processed through
-          Apple's App Store In-App Purchase system and managed via your Apple ID.
+          <strong className="text-white">{t("terms.ios")}:</strong> {t("terms.iosDesc")}
         </li>
         <li>
-          <strong className="text-white">Web and Android:</strong> Subscriptions are processed
-          by PipeKeeper through secure third-party payment providers and managed through your
-          account profile.
+          <strong className="text-white">{t("terms.webAndAndroid")}:</strong> {t("terms.webAndAndroidDesc")}
         </li>
       </ul>
       <p className="mt-3 leading-relaxed">
-        Subscription features, pricing, and availability may vary by platform.
+        {t("terms.section4Closing")}
       </p>
 
-      <h2 className="mt-10 text-2xl font-semibold text-white">5. Billing and Refunds</h2>
+      <h2 className="mt-10 text-2xl font-semibold text-white">{t("terms.section5Title")}</h2>
       <p className="mt-3 leading-relaxed">
-        Billing and refund handling depend on the platform used to purchase a subscription.
-        iOS purchases are subject to Apple's billing and refund policies. Web and Android
-        purchases are subject to the terms disclosed at checkout.
+        {t("terms.section5Body")}
       </p>
 
       <h2 className="mt-10 text-2xl font-semibold text-white">6. Acceptable Use</h2>
