@@ -11,6 +11,7 @@ import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoLibrarySyncPage() {
+  const { t } = useTranslation();
   const [syncing, setSyncing] = useState(false);
   const [results, setResults] = useState(null);
   const queryClient = useQueryClient();
