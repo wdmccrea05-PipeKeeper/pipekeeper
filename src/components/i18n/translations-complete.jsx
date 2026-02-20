@@ -714,6 +714,15 @@ export const translationsComplete = {
       trialEndedBody: 'Upgrade to Premium or Pro to continue enjoying all features.',
       continueFree: 'Continue Free',
       subscribe: 'Subscribe',
+      upgrade: 'Upgrade',
+    },
+    subscriptionCancelled: {
+      title: 'Subscription cancelled',
+      message: 'No problem! You can try subscribing again any time.',
+      backToPlans: 'Back to Plans',
+    },
+    common: {
+      done: 'Done',
     },
     invite: {
       title: 'Invite',
