@@ -234,7 +234,7 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Continue using Premium tools for your collection</h1>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscription.continueUsing")}</h1>
         <p className="text-[#e8d5b7]/70">You've had full access — choose how you'd like to continue.</p>
       </div>
 
