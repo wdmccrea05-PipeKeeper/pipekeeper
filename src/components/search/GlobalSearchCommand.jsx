@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { cn } from '@/lib/utils';
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
@@ -15,6 +16,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Load all pipes and blends
   const { data: pipes = [] } = useQuery({
@@ -134,7 +136,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search pipes, tobacco, brands, shapes..."
+            placeholder={t("search.hintSubtitle", "Search pipes, tobacco, makers, shapes, and more")}
             className="border-0 focus-visible:ring-0 text-base"
             autoFocus
           />
@@ -144,15 +146,15 @@ export default function GlobalSearchCommand({ open, onClose }) {
           {results.length === 0 && query.trim() && (
             <div className="p-8 text-center text-stone-500">
               <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>No results found for "{query}"</p>
+              <p>{t("common.noResults", "No results found")} "{query}"</p>
             </div>
           )}
 
           {results.length === 0 && !query.trim() && (
             <div className="p-8 text-center text-stone-500">
               <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="mb-2">Start typing to search</p>
-              <p className="text-sm">Search pipes, tobacco, makers, shapes, and more</p>
+              <p className="mb-2">{t("search.hintTitle", "Start typing to search")}</p>
+              <p className="text-sm">{t("search.hintSubtitle", "Search pipes, tobacco, makers, shapes, and more")}</p>
             </div>
           )}
 
@@ -209,16 +211,16 @@ export default function GlobalSearchCommand({ open, onClose }) {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">↑↓</kbd>
-              Navigate
+              {t("search.kbdNavigate", "Navigate")}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">↵</kbd>
-              Select
+              {t("search.kbdSelect", "Select")}
             </span>
           </div>
           <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-200 rounded">Esc</kbd>
-            Close
+            {t("search.kbdClose", "Close")}
           </span>
         </div>
       </DialogContent>

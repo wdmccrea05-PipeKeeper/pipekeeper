@@ -1889,6 +1889,15 @@ const enTranslations = {
     unknownPipe: 'Unknown',
     noPreviousVersion: 'No previous version to undo to',
   },
+  search: {
+    trigger: "Search...",
+    openAria: "Open search",
+    hintTitle: "Start typing to search",
+    hintSubtitle: "Search pipes, tobacco, makers, shapes, and more",
+    kbdNavigate: "Navigate",
+    kbdSelect: "Select",
+    kbdClose: "Close"
+  },
 };
 
 // Pre-existing non-en translations (partial)
