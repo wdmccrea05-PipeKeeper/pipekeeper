@@ -2,24 +2,36 @@
  * Complete translation map for all locales
  * English is source of truth - NO PLACEHOLDERS allowed in en
  * Auto-normalized: all locales have the same key structure as en
+ * Missing translations are copied from English (UI clean, audit tracks what needs translation)
  */
 
-function deepMergeWithTODO(enObj, targetObj = {}, path = '') {
+// Track missing keys for audit report
+const missingKeysByLocale = {};
+
+function deepMergeNormalized(enObj, targetObj = {}, path = '', locale = '') {
   const result = {};
   
   for (const key in enObj) {
     const enValue = enObj[key];
     const targetValue = targetObj[key];
+    const fullPath = path ? `${path}.${key}` : key;
     
     if (typeof enValue === 'object' && enValue !== null && !Array.isArray(enValue)) {
       // Nested object - recurse
-      result[key] = deepMergeWithTODO(enValue, targetValue || {}, `${path}${key}.`);
+      result[key] = deepMergeNormalized(enValue, targetValue || {}, fullPath, locale);
     } else {
-      // Leaf value - use target if exists, otherwise [TODO] + en value
+      // Leaf value - use target if exists, otherwise copy English
       if (targetValue !== undefined && targetValue !== null) {
         result[key] = targetValue;
       } else {
-        result[key] = `[TODO] ${enValue}`;
+        // Missing translation - copy English and track for audit
+        result[key] = enValue;
+        if (locale && !missingKeysByLocale[locale]) {
+          missingKeysByLocale[locale] = [];
+        }
+        if (locale) {
+          missingKeysByLocale[locale].push(fullPath);
+        }
       }
     }
   }
@@ -1881,11 +1893,6 @@ const enTranslations = {
 
 // Pre-existing non-en translations (partial)
 const esPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   termsGate: {
     beforeContinue: 'Antes de continuar',
     reviewAccept: 'Por favor, revisa y acepta los Términos de Servicio y la Política de Privacidad.',
@@ -2104,11 +2111,6 @@ const esPartial = {
 };
 
 const frPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   pipes: { search: 'Rechercher', filter: 'Filtrer', shape: 'Forme', material: 'Matériau', allShapes: 'Toutes les formes', allMaterials: 'Tous les matériaux' },
   tobacco: { allTypes: 'Tous les types', allStrengths: 'Toutes les puissances', search: 'Rechercher' },
   common: { loading: 'Chargement...', refresh: 'Rafraîchir', cancel: 'Annuler', save: 'Enregistrer', delete: 'Supprimer', close: 'Fermer', unknown: 'Inconnu', of: 'de' },
@@ -2134,11 +2136,6 @@ const frPartial = {
 };
 
 const dePartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   pipes: { search: 'Suchen', filter: 'Filtern', shape: 'Form', material: 'Material', allShapes: 'Alle Formen', allMaterials: 'Alle Materialien' },
   tobacco: { allTypes: 'Alle Typen', allStrengths: 'Alle Stärken', search: 'Suchen' },
   common: { loading: 'Lädt...', refresh: 'Aktualisieren', cancel: 'Abbrechen', save: 'Speichern', delete: 'Löschen', close: 'Schließen', unknown: 'Unbekannt', of: 'von' },
@@ -2164,11 +2161,6 @@ const dePartial = {
 };
 
 const itPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   pipes: { search: 'Cerca', filter: 'Filtro', shape: 'Forma', material: 'Materiale', allShapes: 'Tutte le forme', allMaterials: 'Tutti i materiali' },
   tobacco: { allTypes: 'Tutti i tipi', allStrengths: 'Tutte le intensità', search: 'Cerca' },
   common: { loading: 'Caricamento...', refresh: 'Aggiorna', cancel: 'Annulla', save: 'Salva', delete: 'Elimina', close: 'Chiudi', unknown: 'Sconosciuto', of: 'di' },
@@ -2194,12 +2186,7 @@ const itPartial = {
 };
 
 const ptPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
-  pipes: { search: 'Pesquisar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas as formas', allMateriais: 'Todos os materiais' },
+  pipes: { search: 'Pesquisar', filter: 'Filtrar', shape: 'Forma', material: 'Material', allShapes: 'Todas as formas', allMaterials: 'Todos os materiais' },
   tobacco: { allTypes: 'Todos os tipos', allStrengths: 'Todas as potências', search: 'Pesquisar' },
   common: { loading: 'Carregando...', refresh: 'Atualizar', cancel: 'Cancelar', save: 'Salvar', delete: 'Excluir', close: 'Fechar', unknown: 'Desconhecido', of: 'de' },
   units: { tin: 'lata', tinPlural: 'latas' },
@@ -2224,11 +2211,6 @@ const ptPartial = {
 };
 
 const zhPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   pipes: { search: '搜索', filter: '筛选', shape: '形状', material: '材料', allShapes: '所有形状', allMaterials: '所有材料' },
   tobacco: { allTypes: '所有类型', allStrengths: '所有强度', search: '搜索' },
   common: { loading: '加载中...', refresh: '刷新', cancel: '取消', save: '保存', delete: '删除', close: '关闭', unknown: '未知', of: '的' },
@@ -2254,11 +2236,6 @@ const zhPartial = {
 };
 
 const jaPartial = {
-  troubleshooting: deepMergeWithTODO(enTranslations.troubleshooting, {}),
-  howTo: deepMergeWithTODO(enTranslations.howTo, {}),
-  publicProfile: deepMergeWithTODO(enTranslations.publicProfile, {}),
-  valueMomentPaywall: deepMergeWithTODO(enTranslations.valueMomentPaywall, {}),
-  optimizer: deepMergeWithTODO(enTranslations.optimizer, {}),
   pipes: { search: '検索', filter: 'フィルター', shape: '形状', material: '素材', allShapes: 'すべての形状', allMaterials: 'すべての素材' },
   tobacco: { allTypes: 'すべてのタイプ', allStrengths: 'すべての強度', search: '検索' },
   common: { loading: '読み込み中...', refresh: '更新', cancel: 'キャンセル', save: '保存', delete: '削除', close: '閉じる', unknown: '不明', of: 'の' },
@@ -2286,16 +2263,16 @@ const jaPartial = {
 // Normalize all locales to have the same keys as en
 export const translationsComplete = {
   en: enTranslations,
-  es: deepMergeWithTODO(enTranslations, esPartial),
-  fr: deepMergeWithTODO(enTranslations, frPartial),
-  de: deepMergeWithTODO(enTranslations, dePartial),
-  it: deepMergeWithTODO(enTranslations, itPartial),
-  pt: deepMergeWithTODO(enTranslations, ptPartial),
-  zh: deepMergeWithTODO(enTranslations, zhPartial),
-  ja: deepMergeWithTODO(enTranslations, jaPartial),
+  es: deepMergeNormalized(enTranslations, esPartial, '', 'es'),
+  fr: deepMergeNormalized(enTranslations, frPartial, '', 'fr'),
+  de: deepMergeNormalized(enTranslations, dePartial, '', 'de'),
+  it: deepMergeNormalized(enTranslations, itPartial, '', 'it'),
+  pt: deepMergeNormalized(enTranslations, ptPartial, '', 'pt'),
+  zh: deepMergeNormalized(enTranslations, zhPartial, '', 'zh'),
+  ja: deepMergeNormalized(enTranslations, jaPartial, '', 'ja'),
 };
 
-// Auto-generate audit report
+// Generate audit report
 function countKeys(obj, prefix = '') {
   let count = 0;
   for (const key in obj) {
@@ -2309,26 +2286,27 @@ function countKeys(obj, prefix = '') {
   return count;
 }
 
-function countTODOKeys(obj) {
-  let count = 0;
-  for (const key in obj) {
-    const val = obj[key];
-    if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-      count += countTODOKeys(val);
-    } else if (typeof val === 'string' && val.startsWith('[TODO] ')) {
-      count++;
-    }
-  }
-  return count;
-}
+// Export audit data for external tools
+export const translationAuditReport = {
+  generated: new Date().toISOString(),
+  enKeyCount: countKeys(enTranslations),
+  missingByLocale: missingKeysByLocale,
+};
 
 if (typeof window !== 'undefined' && import.meta?.env?.DEV) {
   console.log('=== Translation Normalization Report ===');
   console.log(`EN keys: ${countKeys(enTranslations)}`);
+  
   Object.keys(translationsComplete).forEach(locale => {
     if (locale === 'en') return;
-    const todoCount = countTODOKeys(translationsComplete[locale]);
+    const missing = missingKeysByLocale[locale] || [];
     const totalKeys = countKeys(translationsComplete[locale]);
-    console.log(`${locale.toUpperCase()}: ${totalKeys} keys total, ${todoCount} added with [TODO]`);
+    console.log(`${locale.toUpperCase()}: ${totalKeys} keys total, ${missing.length} copied from English (need translation)`);
   });
+  
+  // Log detailed audit report as JSON
+  console.log('Full audit report:', translationAuditReport);
+  
+  // Make it available globally for export
+  window.__PIPEKEEPER_I18N_AUDIT__ = translationAuditReport;
 }
