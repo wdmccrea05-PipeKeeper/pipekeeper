@@ -155,8 +155,8 @@ export default function CellarLog({ blend }) {
   if (!isPaidUser) {
     return (
       <UpgradePrompt 
-        featureName="Cellaring Log"
-        description="Track detailed cellaring transactions including add/remove dates, amounts in ounces, container types, and notes. View net cellared amounts and full transaction history for each blend."
+        featureName={t("cellarLog.cellaringLog")}
+        description={t("cellarLog.upgradeDesc")}
       />
     );
   }
@@ -173,7 +173,7 @@ export default function CellarLog({ blend }) {
             <DialogTrigger asChild>
               <Button size="sm" className="bg-[#D1A75D] hover:bg-[#D1A75D]/90 text-[#1a2c42] font-semibold">
                 <Plus className="w-4 h-4 mr-1" />
-                {t("maintenanceLog.addEntry")}
+                {t("cellarLog.addEntry")}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -182,7 +182,7 @@ export default function CellarLog({ blend }) {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label>Transaction Type</Label>
+                  <Label>{t("cellarLog.transactionType")}</Label>
                   <Select
                     value={formData.transaction_type}
                     onValueChange={(value) => setFormData({ ...formData, transaction_type: value })}
@@ -191,14 +191,14 @@ export default function CellarLog({ blend }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="added">Added to Cellar</SelectItem>
-                      <SelectItem value="removed">Removed from Cellar</SelectItem>
+                      <SelectItem value="added">{t("cellarLog.addedToCellarOption")}</SelectItem>
+                      <SelectItem value="removed">{t("cellarLog.removedFromCellarOption")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Date</Label>
+                  <Label>{t("cellarLog.date")}</Label>
                   <Input
                     type="date"
                     value={formData.date}
@@ -208,19 +208,19 @@ export default function CellarLog({ blend }) {
                 </div>
 
                 <div>
-                  <Label>Amount (oz)</Label>
+                  <Label>{t("cellarLog.amountOz")}</Label>
                   <Input
                     type="number"
                     step="0.1"
                     value={formData.amount_oz}
                     onChange={(e) => setFormData({ ...formData, amount_oz: e.target.value })}
-                    placeholder="2.0"
+                    placeholder={t("cellarLog.amountPlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
-                  <Label>Container Type</Label>
+                  <Label>{t("cellarLog.containerType")}</Label>
                   <Select
                     value={formData.container_type}
                     onValueChange={(value) => setFormData({ ...formData, container_type: value })}
@@ -229,18 +229,18 @@ export default function CellarLog({ blend }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="tin">Tin</SelectItem>
-                      <SelectItem value="jar">Jar</SelectItem>
-                      <SelectItem value="pouch">Pouch</SelectItem>
-                      <SelectItem value="bulk">Bulk</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="tin">{t("cellarLog.containerTin")}</SelectItem>
+                      <SelectItem value="jar">{t("cellarLog.containerJar")}</SelectItem>
+                      <SelectItem value="pouch">{t("cellarLog.containerPouch")}</SelectItem>
+                      <SelectItem value="bulk">{t("cellarLog.containerBulk")}</SelectItem>
+                      <SelectItem value="other">{t("common.other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {formData.transaction_type === 'removed' && (
                   <div>
-                    <Label>Destination</Label>
+                    <Label>{t("cellarLog.destination")}</Label>
                     <Select
                       value={formData.removal_destination}
                       onValueChange={(value) => setFormData({ ...formData, removal_destination: value })}
@@ -249,30 +249,30 @@ export default function CellarLog({ blend }) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="open_collection">Moved to Open Collection</SelectItem>
-                        <SelectItem value="exchanged">Exchanged</SelectItem>
-                        <SelectItem value="discarded">Discarded</SelectItem>
+                        <SelectItem value="open_collection">{t("cellarLog.movedToOpenCollection")}</SelectItem>
+                        <SelectItem value="exchanged">{t("cellarLog.exchanged")}</SelectItem>
+                        <SelectItem value="discarded">{t("cellarLog.discarded")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 )}
 
                 <div>
-                  <Label>Notes (optional)</Label>
+                  <Label>{t("cellarLog.notesOptional")}</Label>
                   <Textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Any additional details..."
+                    placeholder={t("cellarLog.notesPlaceholder")}
                     rows={3}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" disabled={createLogMutation.isPending}>
-                    {createLogMutation.isPending ? 'Saving...' : 'Save Entry'}
+                    {createLogMutation.isPending ? t("cellarLog.saving") : t("cellarLog.saveEntry")}
                   </Button>
                 </div>
               </form>
@@ -342,7 +342,7 @@ export default function CellarLog({ blend }) {
                       </p>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
                         <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
-                          {log.amount_oz} oz
+                          {log.amount_oz} {t("cellarLog.ozUnit")}
                         </Badge>
                         <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
                           {log.container_type}
