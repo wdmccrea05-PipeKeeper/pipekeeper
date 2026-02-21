@@ -9,6 +9,7 @@ import {
   openAppleSubscriptions,
   requestNativeSubscriptionStatus,
   registerNativeSubscriptionListener,
+  startApplePurchaseFlow,
 } from "@/components/utils/nativeIAPBridge";
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -55,7 +56,8 @@ export default function SubscriptionFull() {
   const isIOSApp = useMemo(() => isIOSWebView(), []);
   const { user, refetch } = useCurrentUser();
   const queryClient = useQueryClient();
-  const [isPro, setIsPro] = useState(false);
+  const [subActive, setSubActive] = useState(false);
+  const [subTier, setSubTier] = useState("");
   const [message, setMessage] = useState("");
   const [selectedTier, setSelectedTier] = useState("premium");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
@@ -71,7 +73,8 @@ export default function SubscriptionFull() {
     // Listen for native updates - payload is an object, not boolean
     const cleanup = registerNativeSubscriptionListener((payload) => {
       const active = !!payload.active;
-      setIsPro(active);
+      setSubActive(active);
+      setSubTier(payload?.tier || (payload?.productId || ""));
       if (active) setMessage("Subscription active ✅");
     });
 
@@ -157,7 +160,11 @@ export default function SubscriptionFull() {
   const handleUpgrade = async (tier, interval) => {
     // iOS WKWebView -> StoreKit paywall (native)
     if (isIOSApp) {
-      openNativePaywall();
+      // IMPORTANT: pass requested tier so native paywall can present the correct product.
+      // Fallback to the user's current selection.
+      const requestedTier = tier || selectedTier || "premium";
+      const ok = startApplePurchaseFlow(requestedTier);
+      if (!ok) openNativePaywall();
       return;
     }
 
@@ -232,10 +239,19 @@ export default function SubscriptionFull() {
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
             <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
-            <Button className="w-full" onClick={handleUpgrade}>
-              Upgrade (App Store)
-            </Button>
-            {isPro && <div className="mt-4 text-emerald-500">Status: Pro Active ✅</div>}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button className="w-full" onClick={() => handleUpgrade("premium")}>
+                Upgrade to Premium (App Store)
+              </Button>
+              <Button className="w-full" onClick={() => handleUpgrade("pro")}>
+                Upgrade to Pro (App Store)
+              </Button>
+            </div>
+            {subActive && (
+              <div className="mt-4 text-emerald-500">
+                Status: Active ✅{subTier ? ` (${subTier})` : ""}
+              </div>
+            )}
             {message && <div className="mt-4 text-red-500">{message}</div>}
           </CardContent>
         </Card>

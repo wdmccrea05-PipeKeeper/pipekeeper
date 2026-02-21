@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
-import { openAppleSubscriptions, openNativePaywall } from "@/components/utils/nativeIAPBridge";
+import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow } from "@/components/utils/nativeIAPBridge";
 
 function FeatureList({ items }) {
   return (
@@ -58,8 +58,12 @@ function AppleSubscription() {
     "Early access to new advanced features",
   ];
 
-  const openSubscription = () => {
+  const openSubscription = (tier = "premium") => {
     if (!isAppleBuild) return;
+
+    // Prefer tier-aware paywall so Pro upgrades present the correct product.
+    const openedTierPaywall = startApplePurchaseFlow(tier);
+    if (openedTierPaywall) return;
 
     const openedPaywall = openNativePaywall();
     if (openedPaywall) return;
@@ -114,7 +118,7 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={premiumFeatures} />
             <div className="mt-4">
-              <Button className="w-full" onClick={openSubscription}>
+              <Button className="w-full" onClick={() => openSubscription("premium")}>
                 {t("subscription.subscribe")}
               </Button>
             </div>
@@ -128,7 +132,7 @@ function AppleSubscription() {
           <CardContent>
             <FeatureList items={proFeatures} />
             <div className="mt-4">
-              <Button className="w-full" onClick={openSubscription}>
+              <Button className="w-full" onClick={() => openSubscription("pro")}>
                 {t("subscription.subscribe")}
               </Button>
             </div>

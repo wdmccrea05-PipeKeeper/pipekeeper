@@ -347,6 +347,23 @@ export default function Layout({ children, currentPageName }) {
     nativeDebugPing("Layout mounted (bridge ok)");
     requestNativeSubscriptionStatus();
 
+    // After a purchase, many iOS wrappers only emit status when the app becomes active again.
+    // Request status whenever the webview becomes visible/focused to reduce missed syncs.
+    const refreshStatus = () => {
+      try {
+        requestNativeSubscriptionStatus();
+      } catch {
+        // non-fatal
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshStatus();
+    };
+
+    window.addEventListener("focus", refreshStatus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const cleanup = registerNativeSubscriptionListener(async (payload) => {
       console.log("[Layout] Native subscription payload:", payload);
       const active = !!payload.active;
@@ -372,7 +389,11 @@ export default function Layout({ children, currentPageName }) {
       }
     });
 
-    return cleanup;
+    return () => {
+      window.removeEventListener("focus", refreshStatus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      cleanup?.();
+    };
   }, [ios, queryClient, user?.id, user?.email]);
 
   useEffect(() => {
