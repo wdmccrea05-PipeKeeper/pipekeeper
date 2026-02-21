@@ -156,11 +156,31 @@ if (typeof window !== "undefined") {
   });
 }
 
-// GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation
+// Track TODO warnings per key per session (DEV only)
+const todoWarningsShown = new Set();
+
+// GLOBAL ENFORCEMENT: Monkey-patch i18n.t to always run enforceTranslation + placeholder guard
 const originalT = i18n.t.bind(i18n);
 i18n.t = function (key, options) {
   const raw = originalT(key, options);
-  return enforceTranslation(key, raw, i18n.language);
+  const enforced = enforceTranslation(key, raw, i18n.language);
+  
+  // Placeholder detection: if value starts with "[TODO]", fallback to English
+  if (typeof enforced === 'string' && enforced.startsWith('[TODO]')) {
+    const currentLng = i18n.language;
+    
+    // Warn in DEV mode (once per key per session)
+    if (import.meta.env.DEV && !todoWarningsShown.has(`${currentLng}::${key}`)) {
+      todoWarningsShown.add(`${currentLng}::${key}`);
+      console.warn(`[i18n TODO] ${currentLng} ${key}`);
+    }
+    
+    // Fallback to English translation
+    const enValue = originalT(key, { ...options, lng: 'en' });
+    return enforceTranslation(key, enValue, 'en');
+  }
+  
+  return enforced;
 };
 
 /**
