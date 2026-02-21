@@ -273,7 +273,7 @@ function CollectionOptimizerInner({
 
   const undoOptimizationMutation = useMutation({
     mutationFn: async () => {
-      if (!optimization?.previous_active_id) throw new Error("No previous version to undo to");
+      if (!optimization?.previous_active_id) throw new Error(t("optimizer.noPreviousVersion"));
       await safeUpdate("CollectionOptimization", optimization.id, { is_active: false }, user?.email);
       await safeUpdate("CollectionOptimization", optimization.previous_active_id, { is_active: true }, user?.email);
     },
@@ -329,12 +329,12 @@ function CollectionOptimizerInner({
         pipe_specializations:
           result.applyable_changes?.map((change) => {
             const pipe = pipes.find((p) => p.id === change.pipe_id);
-            let pipeName = pipe?.name || "Unknown";
+            let pipeName = pipe?.name || t("optimizer.unknownPipe");
 
             if (change.bowl_variant_id && pipe?.interchangeable_bowls) {
               const bowlIndex = parseInt(String(change.bowl_variant_id).replace("bowl_", ""), 10);
               const bowl = pipe.interchangeable_bowls?.[bowlIndex];
-              if (bowl) pipeName = `${pipeName} - ${bowl.name || `Bowl ${bowlIndex + 1}`}`;
+              if (bowl) pipeName = `${pipeName} - ${bowl.name || `${t("bowls.bowl")} ${bowlIndex + 1}`}`;
             }
 
             return {
@@ -343,9 +343,9 @@ function CollectionOptimizerInner({
               pipe_name: pipeName,
               recommended_blend_types: change.after_focus || [],
               reasoning: change.rationale || "",
-              usage_pattern: `Specialized for: ${(change.after_focus || []).join(", ")}`,
+              usage_pattern: t("optimizer.specialized", { types: (change.after_focus || []).join(", ") }),
               versatility_score: (change.after_focus || []).length === 1 ? 3 : 5,
-              score_improvement: `Expected improvement for ${(change.after_focus || []).join(", ")}`,
+              score_improvement: t("optimizer.expectedImprovement", { blendTypes: (change.after_focus || []).join(", ") }),
               trophy_blends: [],
             };
           }) || [],
@@ -356,23 +356,23 @@ function CollectionOptimizerInner({
         },
         priority_focus_changes: (result.applyable_changes || []).slice(0, 3).map((change, idx) => ({
           pipe_id: change.pipe_id,
-          pipe_name: pipes.find((p) => p.id === change.pipe_id)?.name || "Unknown",
+          pipe_name: pipes.find((p) => p.id === change.pipe_id)?.name || t("optimizer.unknownPipe"),
           current_focus: change.before_focus || [],
           recommended_focus: change.after_focus || [],
-          score_improvement: `Priority #${idx + 1} change`,
+          score_improvement: t("optimizer.priorityChange", { num: idx + 1 }),
           trophy_blends_gained: [],
           reasoning: change.rationale || "",
         })),
         next_pipe_recommendations: (result.next_additions || []).slice(0, 3).map((rec, idx) => ({
           priority_rank: idx + 1,
-          shape: "Recommended",
+          shape: t("tobacconist.recommended"),
           material: "Briar",
           chamber_specs: rec,
           gap_filled: rec,
           budget_range: "Varies",
           reasoning: rec,
           trophy_blends: [],
-          score_improvement: "Expected improvement",
+          score_improvement: t("optimizer.expectedImprovementGeneral"),
         })),
       };
 
@@ -415,7 +415,7 @@ function CollectionOptimizerInner({
     const spec = optimization?.pipe_specializations?.find((s) => getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null) === variantKey);
 
     const feedbackEntry = `
-Pipe: ${pipe?.name || "Unknown"}
+Pipe: ${pipe?.name || t("optimizer.unknownPipe")}
 Recommended Focus: ${(spec?.recommended_blend_types || []).join(", ") || "N/A"}
 User Feedback: ${feedback}
 ---`;
@@ -685,8 +685,8 @@ ${userText}
       } catch (err) {
         console.error(`[${debugContext}] wait failed:`, err);
         agentResponse = err?.message?.includes("Agent error:")
-          ? `The expert agent encountered an error: ${err.message.replace("Agent error: ", "")}`
-          : "I couldn't load a response from the expert agent. Please try again.";
+          ? `${t("optimizer.errorPrefix")} ${err.message.replace("Agent error: ", "")}${t("optimizer.pleaseTryAgain")}`
+          : t("optimizer.couldntLoadResponse");
       }
 
       const lastAssistantMsg = [...conversationMessages].reverse().find((m) => m.role === "assistant");
@@ -694,7 +694,7 @@ ${userText}
         lastAssistantMsg?.content?.response || lastAssistantMsg?.content?.advice || lastAssistantMsg?.content?.detailed_reasoning || "";
 
       let finalResponse = stripRepeatedPrefix(lastAssistantText, agentResponse || "");
-      if (!finalResponse || !finalResponse.trim()) finalResponse = "I couldn't load a response from the expert agent. Please try again.";
+      if (!finalResponse || !finalResponse.trim()) finalResponse = t("optimizer.couldntLoadResponse");
 
       const aiResponse = {
         is_general_advice: true,
@@ -723,7 +723,7 @@ ${userText}
           role: "assistant",
           content: {
             is_general_advice: true,
-            advice: `Error: ${err?.message || "Failed to process question"}. Please try again.`,
+            advice: `${t("optimizer.errorPrefix")} ${err?.message || t("errors.failedToProcess")}${t("optimizer.pleaseTryAgain")}`,
             routed_to: "error",
           },
           timestamp: new Date().toISOString(),
@@ -788,7 +788,7 @@ ${userText}
         recommendation_category: "STRONG ADDITION",
         detailed_reasoning: result.summary || "",
         gaps_filled: result.collection_gaps || [],
-        score_improvements: `Changes may improve collection coverage: ${(result.next_additions || []).join(", ")}`,
+        score_improvements: t("optimizer.changesImproveCollectionCoverage", { additions: (result.next_additions || []).join(", ") }),
         applyable_changes: result.applyable_changes || [],
       });
 
