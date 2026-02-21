@@ -196,7 +196,7 @@ export default function ProfilePage() {
     },
     onError: (err) => {
       console.error("[Profile] save failed:", err);
-      toast.error(t("profileExtended.couldNotSave"));
+      toast.error("Could not save profile. Please try again.");
     },
   });
 
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                             }
                           }}
                         >
-                          {t("profile.manageSubscription")}
+                          Manage Subscription
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       ) : null}
@@ -376,23 +376,23 @@ export default function ProfilePage() {
                 {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerStripe")}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Stripe</Badge>
               )}
               {provider === "apple" && (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple")}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Provider: Apple</Badge>
               )}
               {subscription?.status ? (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.statusLabel")}: {subscription.status}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">Status: {subscription.status}</Badge>
               ) : null}
             </div>
 
             {/* Avatar */}
             <div className="space-y-2">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.profilePicture")}</Label>
+              <Label className="text-stone-700 font-medium">Profile picture</Label>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center">
                   {formData.avatar_url ? (
-                    <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt")} className="w-full h-full object-cover" />
+                    <img src={formData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-10 h-10 text-amber-700" />
                   )}
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                     />
                     <Button type="button" variant="outline" disabled={uploadingAvatar} className="text-stone-700 hover:text-stone-900">
                       <Upload className="w-4 h-4 mr-2" />
-                      {uploadingAvatar ? t("profileExtended.uploading") : t("common.upload")}
+                      {uploadingAvatar ? "Uploading…" : "Upload"}
                     </Button>
                   </label>
                 </div>
@@ -418,20 +418,20 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-stone-700 font-medium">{t("profileExtended.displayName")}</Label>
+                <Label className="text-stone-700 font-medium">Display name</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label className="text-stone-700 font-medium">{t("common.email")}</Label>
+                <Label className="text-stone-700 font-medium">Email</Label>
                 <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
               </div>
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium">{t("profileExtended.bio")}</Label>
+              <Label className="text-stone-700 font-medium">Bio</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
@@ -442,9 +442,9 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-stone-700 font-medium">{t("profileExtended.location")}</Label>
+                <Label className="text-stone-700 font-medium">Location</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile")}</span>
+                  <span className="text-sm text-stone-600">Show on profile</span>
                   <Switch
                     checked={formData.show_location}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
@@ -455,22 +455,22 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder={t("profileExtended.cityPlaceholder")}
+                  placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.stateProvincePlaceholder")}
+                  placeholder="State/Province"
                   value={formData.state_province}
                   onChange={(e) => setFormData((p) => ({ ...p, state_province: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.countryPlaceholder")}
+                  placeholder="Country"
                   value={formData.country}
                   onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                 />
                 <Input
-                  placeholder={t("profileExtended.postalCodePlaceholder")}
+                  placeholder="Postal code"
                   value={formData.postal_code}
                   onChange={(e) => setFormData((p) => ({ ...p, postal_code: e.target.value }))}
                 />
@@ -479,10 +479,10 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.privacy")}</Label>
+              <Label className="text-stone-700 font-medium">Privacy</Label>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideValues")}</span>
+                <span className="text-sm text-stone-700">Hide values</span>
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
@@ -491,7 +491,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideInventory")}</span>
+                <span className="text-sm text-stone-700">Hide inventory</span>
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
@@ -500,7 +500,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-700">{t("profileExtended.hideCollectionCounts")}</span>
+                <span className="text-sm text-stone-700">Hide collection counts</span>
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
@@ -523,7 +523,7 @@ export default function ProfilePage() {
 
             {/* Preferences */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.preferredBlendTypes")}</Label>
+              <Label className="text-stone-700 font-medium">Preferred blend types</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
@@ -541,7 +541,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.preferredPipeShapes")}</Label>
+              <Label className="text-stone-700 font-medium">Preferred pipe shapes</Label>
               <div className="flex flex-wrap gap-2">
                 {PIPE_SHAPES.map((sh) => {
                   const active = formData.preferred_shapes.includes(sh);
@@ -559,7 +559,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium">{t("common.notes")}</Label>
+              <Label className="text-stone-700 font-medium">Notes</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
@@ -570,8 +570,8 @@ export default function ProfilePage() {
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-stone-800">{t("profileExtended.publicCommunityProfile")}</div>
-                <div className="text-sm text-stone-600">{t("profileExtended.allowOthersToView")}</div>
+                <div className="font-medium text-stone-800">Public community profile</div>
+                <div className="text-sm text-stone-600">Allow others to view your profile in the community.</div>
               </div>
               <Switch
                 checked={formData.is_public}
@@ -587,7 +587,7 @@ export default function ProfilePage() {
                 disabled={saveMutation.isPending}
                 className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
               >
-                {saveMutation.isPending ? t("profileExtended.saving") : t("common.save")}
+                {saveMutation.isPending ? "Saving…" : "Save"}
               </Button>
 
               {user?.email ? (
@@ -601,7 +601,7 @@ export default function ProfilePage() {
                   }}
                   className="text-stone-700 border-stone-300 hover:bg-stone-50 hover:text-stone-900"
                 >
-                  {t("profileExtended.previewPublicProfile")}
+                  Preview public profile
                 </Button>
               ) : null}
             </div>
