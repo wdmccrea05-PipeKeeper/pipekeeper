@@ -127,32 +127,28 @@ Deno.serve(async (req) => {
       if (!isPaid && user.data) {
         const entitlementTier = (user.data.entitlement_tier || '').toLowerCase();
         const subscriptionTier = (user.data.subscription_tier || '').toLowerCase();
-        const subscriptionStatus = (user.data.subscription_status || '').toLowerCase();
         
-        // Paid if entitlement_tier or subscription_tier is premium/pro
-        if (['premium', 'pro'].includes(entitlementTier) || ['premium', 'pro'].includes(subscriptionTier)) {
+        // Paid ONLY if tier is premium/pro (not free)
+        if (['premium', 'pro'].includes(entitlementTier)) {
           isPaid = true;
-          effectiveTier = entitlementTier || subscriptionTier;
-          effectiveStatus = subscriptionStatus || 'active';
-        }
-        
-        // Also paid if subscription_status is active/trialing
-        if (!isPaid && ['active', 'trialing', 'trial'].includes(subscriptionStatus)) {
+          effectiveTier = entitlementTier;
+          effectiveStatus = user.data.subscription_status || 'active';
+        } else if (!entitlementTier && ['premium', 'pro'].includes(subscriptionTier)) {
           isPaid = true;
-          effectiveStatus = subscriptionStatus;
-          effectiveTier = subscriptionTier || entitlementTier || 'premium';
+          effectiveTier = subscriptionTier;
+          effectiveStatus = user.data.subscription_status || 'active';
         }
       }
       
       // 3. Check top-level User fields (legacy compatibility)
       if (!isPaid) {
         const userSubLevel = (user.subscription_level || '').toLowerCase();
-        const userSubStatus = (user.subscription_status || '').toLowerCase();
         
-        if (userSubLevel === 'paid' || ['active', 'trialing', 'trial'].includes(userSubStatus)) {
+        // Only mark as paid if subscription_level is 'paid', 'premium', or 'pro'
+        if (['paid', 'premium', 'pro'].includes(userSubLevel)) {
           isPaid = true;
-          effectiveStatus = userSubStatus || 'active';
-          effectiveTier = 'premium';
+          effectiveStatus = user.subscription_status || 'active';
+          effectiveTier = userSubLevel === 'paid' ? 'premium' : userSubLevel;
         }
       }
 
