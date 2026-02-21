@@ -165,19 +165,23 @@ i18n.t = function (key, options) {
   const raw = originalT(key, options);
   const enforced = enforceTranslation(key, raw, i18n.language);
   
-  // Placeholder detection: if value starts with "[TODO]", fallback to English
+  // DEV: Placeholder detection for [TODO] - fallback to English
   if (typeof enforced === 'string' && enforced.startsWith('[TODO]')) {
     const currentLng = i18n.language;
     
-    // Warn in DEV mode (once per key per session)
     if (import.meta.env.DEV && !todoWarningsShown.has(`${currentLng}::${key}`)) {
       todoWarningsShown.add(`${currentLng}::${key}`);
       console.warn(`[i18n TODO] ${currentLng} ${key}`);
     }
     
-    // Fallback to English translation
     const enValue = originalT(key, { ...options, lng: 'en' });
     return enforceTranslation(key, enValue, 'en');
+  }
+  
+  // PROD: Safety guard - ensure [MISSING] never renders in production
+  if (!import.meta.env.DEV && typeof enforced === 'string' && enforced.startsWith('[MISSING]')) {
+    const enValue = originalT(key, { ...options, lng: 'en' });
+    return enforceTranslation(key, enValue, 'en') || humanizeKey(key);
   }
   
   return enforced;
