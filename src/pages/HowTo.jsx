@@ -45,231 +45,179 @@ export default function HowTo() {
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <Link to={createPageUrl('FAQFull')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
           <ArrowLeft className="w-4 h-4" />
-          Back to FAQ
+          {t("howTo.backToFAQ")}
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">How-To Guides</h1>
-          <p className="text-[#E0D8C8]/80">Step-by-step instructions for common PipeKeeper tasks</p>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("howTo.pageTitle")}</h1>
+          <p className="text-[#E0D8C8]/80">{t("howTo.pageSubtitle")}</p>
         </div>
 
-        <Section title="Adding & Managing Pipes">
-          <Q id="add-pipe-basic" q="How do I add a basic pipe entry?">
+        <Section title={t("howTo.addingManagingPipes")}>
+          <Q id="add-pipe-basic" q={t("howTo.addPipeBasicQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Click "Pipes" in the navigation</li>
-              <li>Click "Add Pipe" button</li>
-              <li>Enter required field: pipe name</li>
-              <li>Fill optional details: maker, shape, material, country of origin</li>
-              <li>Click "Save" to create the pipe</li>
+              {t("howTo.addPipeBasicSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="add-pipe-photos" q="How do I add photos to a pipe?">
-            <p>When creating or editing a pipe:</p>
+          <Q id="add-pipe-photos" q={t("howTo.addPipePhotosQ")}>
+            <p>{t("howTo.addPipePhotosIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Scroll to the "Photos" section</li>
-              <li>Click "Upload Photo" or drag images</li>
-              <li>Select photos from your device (JPG, PNG)</li>
-              <li>Photos appear instantly in the gallery</li>
-              <li>Reorder by dragging or remove with the X icon</li>
-              <li>Click "Save" to persist changes</li>
+              {t("howTo.addPipePhotosSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="measure-pipe" q="How do I measure pipe dimensions?">
-            <p>Accurate measurements help with valuation and identification:</p>
+          <Q id="measure-pipe" q={t("howTo.measurePipeQ")}>
+            <p>{t("howTo.measurePipeIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Use a digital caliper or ruler (metric preferred)</li>
-              <li>Length: Overall pipe length in mm</li>
-              <li>Bowl diameter: Inside chamber width in mm</li>
-              <li>Bowl depth: Chamber depth in mm</li>
-              <li>Weight: Dry pipe weight in grams</li>
-              <li>Enter values in the "Measurements" section</li>
+              {t("howTo.measurePipeSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="update-pipe" q="How do I update pipe information?">
+          <Q id="update-pipe" q={t("howTo.updatePipeQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Click on any pipe in your collection</li>
-              <li>Click the "Edit" button</li>
-              <li>Modify any fields</li>
-              <li>Click "Save Changes"</li>
-              <li>Changes appear immediately</li>
+              {t("howTo.updatePipeSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="mark-favorite" q="How do I mark a pipe as favorite?">
+          <Q id="mark-favorite" q={t("howTo.markFavoriteQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open the pipe detail page</li>
-              <li>Click the heart icon (♥)</li>
-              <li>The icon fills with color when marked as favorite</li>
-              <li>Favorites appear on your Home page</li>
+              {t("howTo.markFavoriteSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>
 
-        <Section title="Managing Tobacco">
-          <Q id="add-tobacco" q="How do I add a tobacco blend?">
+        <Section title={t("howTo.managingTobacco")}>
+          <Q id="add-tobacco" q={t("howTo.addTobaccoQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Click "Tobacco" in the navigation</li>
-              <li>Click "Add Blend" button</li>
-              <li>Enter blend name (required)</li>
-              <li>Add manufacturer, blend type, strength</li>
-              <li>Set initial quantity and container type</li>
-              <li>Click "Save" to create</li>
+              {t("howTo.addTobaccoSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="track-inventory" q="How do I track tobacco inventory?">
-            <p>Keep your inventory current:</p>
+          <Q id="track-inventory" q={t("howTo.trackInventoryQ")}>
+            <p>{t("howTo.trackInventoryIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open a tobacco blend</li>
-              <li>Scroll to "Inventory" section</li>
-              <li>Update open quantity when you smoke from a tin/jar</li>
-              <li>Mark tins as "cellared" to track aging</li>
-              <li>Log cellar transactions with dates and amounts</li>
-              <li>Changes update collection statistics immediately</li>
+              {t("howTo.trackInventorySteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="cellar-tobacco" q="How do I cellar tobacco for aging?">
+          <Q id="cellar-tobacco" q={t("howTo.cellarTobaccoQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open the tobacco blend detail page</li>
-              <li>Find the "Cellar" section</li>
-              <li>Click "Add to Cellar"</li>
-              <li>Select container type (tin, jar, pouch, bulk)</li>
-              <li>Enter amount in ounces</li>
-              <li>Set cellaring date</li>
-              <li>Click "Cellar" - it's now tracked separately from open inventory</li>
+              {t("howTo.cellarTobaccoSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="remove-cellar" q="How do I remove tobacco from the cellar?">
+          <Q id="remove-cellar" q={t("howTo.removeCellarQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open the tobacco detail page</li>
-              <li>Find "Cellar Log" section</li>
-              <li>Click "Remove from Cellar"</li>
-              <li>Select where it went: open collection, exchanged, or discarded</li>
-              <li>Enter amount removed</li>
-              <li>Confirm - open inventory updates automatically</li>
+              {t("howTo.removeCellarSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>
 
-        <Section title="Logging Sessions">
-          <Q id="log-smoking" q="How do I log a smoking session?">
+        <Section title={t("howTo.loggingSessions")}>
+          <Q id="log-smoking" q={t("howTo.logSmokingQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Click "Home" or open a pipe detail page</li>
-              <li>Find "Smoking Log" section</li>
-              <li>Click "Log Session"</li>
-              <li>Select date, pipe, and tobacco blend</li>
-              <li>Enter number of bowls smoked</li>
-              <li>Add optional notes about flavor and performance</li>
-              <li>Click "Save" - it updates statistics</li>
+              {t("howTo.logSmokingSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="break-in-tracking" q="How do I track pipe break-in progress?">
-            <p>PipeKeeper generates personalized break-in schedules:</p>
+          <Q id="break-in-tracking" q={t("howTo.breakInTrackingQ")}>
+            <p>{t("howTo.breakInTrackingIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open a new pipe detail page</li>
-              <li>Scroll to "Break-In Schedule"</li>
-              <li>Review recommended tobacco progression</li>
-              <li>Log each break-in session in the smoking log</li>
-              <li>Mark sessions as "break-in" when logging</li>
-              <li>Progress updates automatically as you log sessions</li>
+              {t("howTo.breakInTrackingSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>
 
-        <Section title="Collections & Import">
-          <Q id="bulk-import" q="How do I import a collection from CSV?">
+        <Section title={t("howTo.collectionsImport")}>
+          <Q id="bulk-import" q={t("howTo.bulkImportQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to Home page, scroll to "Bulk Import" card</li>
-              <li>Click "Import from CSV/Excel"</li>
-              <li>Prepare file with columns: name, maker, shape, material, condition</li>
-              <li>Upload CSV or Excel file</li>
-              <li>Review imported entries</li>
-              <li>Click "Confirm Import" to add to collection</li>
-              <li>Edit any entries to complete details</li>
+              {t("howTo.bulkImportSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="export-collection" q="How do I export my collection?">
-            <p>Premium feature - backup and share your data:</p>
+          <Q id="export-collection" q={t("howTo.exportCollectionQ")}>
+            <p>{t("howTo.exportCollectionIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Navigate to Pipes or Tobacco page</li>
-              <li>Look for "Export" button</li>
-              <li>Choose format: CSV or PDF report</li>
-              <li>File downloads to your device</li>
-              <li>CSV can be re-imported or edited in Excel</li>
-              <li>PDF includes photos, values, and statistics</li>
+              {t("howTo.exportCollectionSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>
 
-        <Section title="Using AI Features">
-          <Q id="get-pairing-suggestions" q="How do I get pipe-tobacco pairing suggestions?">
+        <Section title={t("howTo.usingAIFeatures")}>
+          <Q id="get-pairing-suggestions" q={t("howTo.getPairingSuggestionsQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Add at least one pipe and one tobacco to your collection</li>
-              <li>Go to Home > "Expert Tobacconist" section (Premium feature)</li>
-              <li>Click "Pairing Matrix" tab</li>
-              <li>View AI-generated pipe-tobacco combinations scored by compatibility</li>
-              <li>Try recommended pairings and log your experience</li>
-              <li>Matrix updates as you add new items</li>
+              {t("howTo.getPairingSuggestionsSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="ask-tobacconist" q="How do I ask the Expert Tobacconist a question?">
+          <Q id="ask-tobacconist" q={t("howTo.askTobacconistQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to Home > "Expert Tobacconist" (Premium)</li>
-              <li>Click the chat tab</li>
-              <li>Type your question about blends, pipes, pairings, or strategy</li>
-              <li>The AI reads your collection and provides personalized advice</li>
-              <li>Ask follow-ups to refine recommendations</li>
-              <li>Save helpful responses for later</li>
+              {t("howTo.askTobacconistSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="identify-pipe" q="How do I use AI pipe identification?">
+          <Q id="identify-pipe" q={t("howTo.identifyPipeQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to Home > "AI Pipe Identifier" (Premium)</li>
-              <li>Upload clear photos of your pipe (bowl, stem, any markings)</li>
-              <li>AI analyzes shape, size, material, and stampings</li>
-              <li>Get suggestions for maker, model, and era</li>
-              <li>Compare against your collection for matches</li>
-              <li>AI is a helpful guide—verify with forums or experts</li>
+              {t("howTo.identifyPipeSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>
 
-        <Section title="Profile & Settings">
-          <Q id="update-profile" q="How do I update my profile?">
+        <Section title={t("howTo.profileSettings")}>
+          <Q id="update-profile" q={t("howTo.updateProfileQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Click "Profile" in the navigation</li>
-              <li>Click "Edit Profile"</li>
-              <li>Update display name, bio, location (optional)</li>
-              <li>Add smoking preferences (strength, size, etc.)</li>
-              <li>Click "Save Changes"</li>
+              {t("howTo.updateProfileSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="public-profile" q="How do I make my collection public?">
+          <Q id="public-profile" q={t("howTo.publicProfileQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to Profile > Settings</li>
-              <li>Toggle "Make profile public"</li>
-              <li>Choose which details to show (values, counts, specific items)</li>
-              <li>Share your profile link with other collectors</li>
-              <li>You control privacy for each field</li>
+              {t("howTo.publicProfileSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
 
-          <Q id="change-language" q="How do I change the app language?">
+          <Q id="change-language" q={t("howTo.changeLanguageQ")}>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Look for language selector in the top navigation</li>
-              <li>Click to see available languages (EN, ES, FR, DE, etc.)</li>
-              <li>Select your preferred language</li>
-              <li>UI switches immediately and preference is saved</li>
+              {t("howTo.changeLanguageSteps", { returnObjects: true }).map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
             </ol>
           </Q>
         </Section>

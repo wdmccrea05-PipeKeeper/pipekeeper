@@ -56,12 +56,12 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
 
             <CardHeader className="text-center pt-8 pb-6">
               <CardTitle className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">
-                Continue using Premium tools for your collection
+                {t("valueMomentPaywall.title")}
               </CardTitle>
               <p className="text-[#E0D8C8]/70 text-sm sm:text-base">
                 {isDay7 
-                  ? "Your 7 days of full Premium access are complete — choose how you'd like to continue."
-                  : `You have ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} of Premium access remaining — choose how you'd like to continue.`}
+                  ? t("valueMomentPaywall.day7Complete")
+                  : t("valueMomentPaywall.daysRemaining", { count: daysRemaining })}
               </p>
             </CardHeader>
 
@@ -69,59 +69,59 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
               <div className="grid sm:grid-cols-3 gap-4 mb-6">
                 {/* Free Tier */}
                 <div className="border border-[#E0D8C8]/20 rounded-xl p-4 bg-[#112133]/40">
-                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">Free</h3>
+                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">{t("valueMomentPaywall.freeTier")}</h3>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    Core cataloging for pipes and cellar items.
+                    {t("valueMomentPaywall.freeDescription")}
                   </p>
                   <div className="space-y-2 mb-4">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Basic item records</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.freeFeature1")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Notes and photos</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.freeFeature2")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Manual organization</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.freeFeature3")}</span>
                     </div>
                   </div>
                   <Button variant="outline" onClick={handleContinueFree} className="w-full">
-                    Continue with Free
+                    {t("valueMomentPaywall.continueWithFree")}
                   </Button>
                 </div>
 
                 {/* Premium Tier - Emphasized */}
                 <div className="border-2 border-[#A35C5C] rounded-xl p-4 bg-[#1A2B3A]/80 relative">
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    Recommended
+                    {t("valueMomentPaywall.recommended")}
                   </div>
-                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">Premium</h3>
-                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">For active collectors</p>
+                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">{t("valueMomentPaywall.premiumTier")}</h3>
+                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">{t("valueMomentPaywall.premiumSubtitle")}</p>
                   <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                    Expanded insights, reports, and advanced organization tools.
+                    {t("valueMomentPaywall.premiumDescription")}
                   </p>
                   <div className="space-y-2 mb-3">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Collection insights</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.premiumFeature1")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Reports and exports</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.premiumFeature2")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Advanced tools</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.premiumFeature3")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Priority features</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.premiumFeature4")}</span>
                     </div>
                   </div>
-                  <p className="text-lg font-bold text-[#A35C5C] mb-1">$1.99/mo or $19.99/yr</p>
-                  <p className="text-xs text-emerald-500 mb-2">Annual saves vs monthly</p>
+                  <p className="text-lg font-bold text-[#A35C5C] mb-1">{t("valueMomentPaywall.premiumPrice")}</p>
+                  <p className="text-xs text-emerald-500 mb-2">{t("valueMomentPaywall.annualSaves")}</p>
                   <Button onClick={handleContinuePremium} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] mb-2">
                     {t("subscription.continueWithPremium")}
                   </Button>
@@ -134,35 +134,35 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
 
                 {/* Pro Tier */}
                 <div className="border border-[#E0D8C8]/20 rounded-xl p-4 bg-[#112133]/40">
-                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">Pro</h3>
-                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">For advanced collectors</p>
+                  <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">{t("valueMomentPaywall.proTier")}</h3>
+                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">{t("valueMomentPaywall.proSubtitle")}</p>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    Deep analytics and AI-assisted tools.
+                    {t("valueMomentPaywall.proDescription")}
                   </p>
                   <div className="space-y-2 mb-4">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Deep analytics</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.proFeature1")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">AI-assisted tools</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.proFeature2")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-[#E0D8C8]/80">Power features</span>
+                      <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.proFeature3")}</span>
                     </div>
                   </div>
-                  <p className="text-lg font-bold text-[#A35C5C] mb-3">$2.99/mo or $29.99/yr</p>
+                  <p className="text-lg font-bold text-[#A35C5C] mb-3">{t("valueMomentPaywall.proPrice")}</p>
                   <Button variant="outline" onClick={handleUpgradePro} className="w-full">
-                    Upgrade to Pro
+                    {t("valueMomentPaywall.upgradeToPro")}
                   </Button>
                 </div>
               </div>
 
               {/* Reassurance */}
               <div className="text-center space-y-1 text-xs text-[#E0D8C8]/60 pt-4 border-t border-[#E0D8C8]/10">
-                <p>• Cancel anytime</p>
+                <p>• {t("valueMomentPaywall.cancelAnytime")}</p>
                 {isAppleBuild && <p>• {t("subscription.managedThrough")}</p>}
                 <p>• {t("subscription.dataNotAffected")}</p>
               </div>

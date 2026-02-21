@@ -26,10 +26,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
 export default function PublicProfilePage() {
+  const { t } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
@@ -148,9 +150,9 @@ export default function PublicProfilePage() {
     onSuccess: () => {
       setReportOpen(false);
       setReportReason('');
-      toast.success('Report submitted. Thank you for helping keep our community safe.');
+      toast.success(t("publicProfile.reportSubmitted"));
     },
-    onError: () => toast.error('Could not submit report'),
+    onError: () => toast.error(t("publicProfile.couldNotSubmitReport")),
   });
 
   const blockUserMutation = useMutation({
@@ -162,10 +164,10 @@ export default function PublicProfilePage() {
     },
     onSuccess: () => {
       setBlockOpen(false);
-      toast.success('User blocked');
+      toast.success(t("publicProfile.userBlocked"));
       navigate(createPageUrl('Community'));
     },
-    onError: () => toast.error('Could not block user'),
+    onError: () => toast.error(t("publicProfile.couldNotBlockUser")),
   });
 
   const isOwnProfile = currentUser?.email === profileEmail;
@@ -175,12 +177,12 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <Card className="bg-white/95 max-w-md">
           <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">Profile Not Found</h2>
-            <p className="text-stone-600 mb-4">This profile does not exist.</p>
+            <h2 className="text-xl font-semibold text-stone-800 mb-2">{t("publicProfile.profileNotFoundTitle")}</h2>
+            <p className="text-stone-600 mb-4">{t("publicProfile.profileNotFoundDesc")}</p>
             <a href={createPageUrl('Community')}>
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Community
+                {t("publicProfile.backToCommunity")}
               </Button>
             </a>
           </CardContent>
@@ -194,12 +196,12 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
         <Card className="bg-white/95 max-w-md">
           <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">Profile Not Available</h2>
-            <p className="text-stone-600 mb-4">This profile is private or does not exist.</p>
+            <h2 className="text-xl font-semibold text-stone-800 mb-2">{t("publicProfile.profileNotAvailableTitle")}</h2>
+            <p className="text-stone-600 mb-4">{t("publicProfile.profileNotAvailableDesc")}</p>
             <a href={createPageUrl('Community')}>
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Community
+                {t("publicProfile.backToCommunity")}
               </Button>
             </a>
           </CardContent>
@@ -215,14 +217,14 @@ export default function PublicProfilePage() {
           <a href={createPageUrl('Profile')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Profile Settings
+              {t("publicProfile.backToProfileSettings")}
             </Button>
           </a>
         ) : (
           <a href={createPageUrl('Community')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Community
+              {t("publicProfile.backToCommunity")}
             </Button>
           </a>
         )}
@@ -235,23 +237,23 @@ export default function PublicProfilePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Eye className="w-5 h-5 text-amber-700" />
-                    <h3 className="font-semibold text-amber-900">Preview Mode</h3>
+                    <h3 className="font-semibold text-amber-900">{t("publicProfile.previewMode")}</h3>
                   </div>
                   <p className="text-sm text-amber-800 mb-3">
-                    This is how your profile will appear to other users. Review your information before making it public.
+                    {t("publicProfile.previewDescription")}
                   </p>
                   <div className="flex items-start gap-3 p-3 bg-white/50 rounded-lg border border-amber-200">
                     <div className="text-amber-700 mt-0.5">
                       <Globe className="w-4 h-4" />
                     </div>
                     <div className="flex-1 text-sm">
-                      <p className="font-medium text-amber-900 mb-1">What will be shared:</p>
+                      <p className="font-medium text-amber-900 mb-1">{t("publicProfile.whatWillBeShared")}</p>
                       <ul className="text-amber-800 space-y-1">
-                        <li>• Your display name, bio, and profile picture</li>
-                        <li>• Your pipe collection with photos and details</li>
-                        <li>• Your tobacco cellar with blend information</li>
-                        <li>• Your smoking session logs</li>
-                        {profile.allow_comments && <li>• Other users can comment on your items</li>}
+                        <li>• {t("publicProfile.displayNameBioPhoto")}</li>
+                        <li>• {t("publicProfile.pipeCollectionWithPhotos")}</li>
+                        <li>• {t("publicProfile.tobaccoCellarWithBlends")}</li>
+                        <li>• {t("publicProfile.smokingSessionLogs")}</li>
+                        {profile.allow_comments && <li>• {t("publicProfile.othersCanComment")}</li>}
                       </ul>
                     </div>
                   </div>
@@ -264,18 +266,18 @@ export default function PublicProfilePage() {
                       className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 whitespace-nowrap"
                     >
                       {makePublicMutation.isPending ? (
-                        'Making Public...'
+                        t("publicProfile.makingPublic")
                       ) : (
                         <>
                           <Globe className="w-4 h-4 mr-2" />
-                          Make Profile Public
+                          {t("publicProfile.makeProfilePublic")}
                         </>
                       )}
                     </Button>
                     <a href={createPageUrl('Profile')}>
                       <Button variant="outline" size="sm" className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
-                        Edit Settings
+                        {t("publicProfile.editSettings")}
                       </Button>
                     </a>
                   </div>
@@ -301,15 +303,15 @@ export default function PublicProfilePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <h1 className="text-2xl font-bold text-stone-800">
-                    {profile.display_name || 'Anonymous User'}
+                    {profile.display_name || t("publicProfile.anonymousUser")}
                   </h1>
                   {profileOwner?.isFoundingMember && (
                     <Badge 
                       className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 flex items-center gap-1 text-xs"
-                      title="Early supporter of PipeKeeper"
+                      title={t("publicProfile.foundingMemberTitle")}
                     >
                       <Star className="w-3 h-3 fill-current" />
-                      Founding Member
+                      {t("publicProfile.foundingMember")}
                     </Badge>
                   )}
                 </div>
@@ -325,15 +327,15 @@ export default function PublicProfilePage() {
                   <div className="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
                     <div className="flex items-center gap-1">
                       <img src={PIPE_IMAGE} alt="Pipes" className="w-4 h-4 opacity-60" />
-                      <span>{pipes.length} Pipes</span>
+                      <span>{pipes.length} {t("publicProfile.pipes")}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Leaf className="w-4 h-4" />
-                      <span>{blends.length} Blends</span>
+                      <span>{blends.length} {t("publicProfile.blends")}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{logs.length} Smoking Sessions</span>
+                      <span>{logs.length} {t("publicProfile.smokingSessions")}</span>
                     </div>
                   </div>
                 )}
@@ -346,7 +348,7 @@ export default function PublicProfilePage() {
                       onClick={() => setReportOpen(true)}
                     >
                       <Flag className="w-4 h-4 mr-2" />
-                      Report
+                      {t("publicProfile.report")}
                     </Button>
                     <Button
                       variant="outline"
@@ -355,7 +357,7 @@ export default function PublicProfilePage() {
                       onClick={() => setBlockOpen(true)}
                     >
                       <ShieldOff className="w-4 h-4 mr-2" />
-                      Block
+                      {t("publicProfile.block")}
                     </Button>
                   </div>
                 )}
@@ -367,9 +369,9 @@ export default function PublicProfilePage() {
         {/* Collection Tabs */}
         <Tabs defaultValue="pipes" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pipes">Pipes ({pipes.length})</TabsTrigger>
-            <TabsTrigger value="tobacco">Tobacco ({blends.length})</TabsTrigger>
-            <TabsTrigger value="logs">Sessions ({logs.length})</TabsTrigger>
+            <TabsTrigger value="pipes">{t("publicProfile.pipes")} ({pipes.length})</TabsTrigger>
+            <TabsTrigger value="tobacco">{t("nav.tobacco")} ({blends.length})</TabsTrigger>
+            <TabsTrigger value="logs">{t("nav.sessions", {defaultValue: "Sessions"})} ({logs.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pipes" className="space-y-4">
@@ -441,7 +443,7 @@ export default function PublicProfilePage() {
                       <div className="mt-3 pt-3 border-t">
                         <p className="text-xs text-stone-500 italic flex items-center gap-1">
                           <MessageSquare className="w-3 h-3" />
-                          Comments will be enabled when profile is public
+                          {t("publicProfile.commentsEnabledWhenPublic")}
                         </p>
                       </div>
                     )}
@@ -453,7 +455,7 @@ export default function PublicProfilePage() {
               <Card className="bg-white/95">
                 <CardContent className="py-12 text-center text-stone-500">
                   <img src={PIPE_IMAGE} alt="No pipes" className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p>No pipes in collection yet</p>
+                  <p>{t("publicProfile.noPipesInCollection")}</p>
                 </CardContent>
               </Card>
             )}
@@ -501,7 +503,7 @@ export default function PublicProfilePage() {
                               <>
                                 {(blend.tin_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
-                                    {(+blend.tin_total_quantity_oz).toFixed(2)}oz tins
+                                    {(+blend.tin_total_quantity_oz).toFixed(2)}oz {t("units.tinPlural")}
                                   </Badge>
                                 )}
                                 {(blend.bulk_total_quantity_oz || 0) > 0 && (
@@ -544,7 +546,7 @@ export default function PublicProfilePage() {
                       <div className="mt-3 pt-3 border-t">
                         <p className="text-xs text-stone-500 italic flex items-center gap-1">
                           <MessageSquare className="w-3 h-3" />
-                          Comments will be enabled when profile is public
+                          {t("publicProfile.commentsEnabledWhenPublic")}
                         </p>
                       </div>
                     )}
@@ -556,7 +558,7 @@ export default function PublicProfilePage() {
               <Card className="bg-white/95">
                 <CardContent className="py-12 text-center text-stone-500">
                   <Leaf className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p>No tobacco blends in cellar yet</p>
+                  <p>{t("publicProfile.noBlendsInCellar")}</p>
                 </CardContent>
               </Card>
             )}
@@ -577,7 +579,7 @@ export default function PublicProfilePage() {
                       </p>
                       {log.bowls_smoked && (
                         <Badge variant="outline" className="text-xs mt-1 font-semibold text-stone-700">
-                          {log.bowls_smoked} bowl{log.bowls_smoked > 1 ? 's' : ''}
+                          {log.bowls_smoked} {log.bowls_smoked > 1 ? t("publicProfile.bowls") : t("publicProfile.bowl")}
                         </Badge>
                       )}
                     </div>
@@ -598,7 +600,7 @@ export default function PublicProfilePage() {
                     <div className="pt-3 border-t">
                       <p className="text-xs text-stone-500 italic flex items-center gap-1">
                         <MessageSquare className="w-3 h-3" />
-                        Comments will be enabled when profile is public
+                        {t("publicProfile.commentsEnabledWhenPublic")}
                       </p>
                     </div>
                   )}
@@ -609,7 +611,7 @@ export default function PublicProfilePage() {
               <Card className="bg-white/95">
                 <CardContent className="py-12 text-center text-stone-500">
                   <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p>No smoking sessions logged yet</p>
+                  <p>{t("publicProfile.noSessionsLogged")}</p>
                 </CardContent>
               </Card>
             )}
@@ -629,19 +631,19 @@ export default function PublicProfilePage() {
       <AlertDialog open={reportOpen} onOpenChange={setReportOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Report this user</AlertDialogTitle>
+            <AlertDialogTitle>{t("publicProfile.reportUserTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Tell us what happened. Reports are reviewed by administrators.
+              {t("publicProfile.reportUserDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Textarea
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
-            placeholder="Describe the issue (harassment, spam, inappropriate content, etc.)"
+            placeholder={t("publicProfile.reportPlaceholder")}
             className="min-h-[120px]"
           />
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={!reportReason.trim() || reportUserMutation.isPending}
               className="bg-rose-600 hover:bg-rose-700"
@@ -654,7 +656,7 @@ export default function PublicProfilePage() {
                 })
               }
             >
-              Submit Report
+              {t("publicProfile.submitReport")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -664,18 +666,18 @@ export default function PublicProfilePage() {
       <AlertDialog open={blockOpen} onOpenChange={setBlockOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Block this user?</AlertDialogTitle>
+            <AlertDialogTitle>{t("publicProfile.blockUserTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You won't see their profile or messages, and they won't be able to message you.
+              {t("publicProfile.blockUserDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-stone-800 hover:bg-stone-900"
               onClick={() => blockUserMutation.mutate()}
             >
-              Block User
+              {t("publicProfile.blockUser")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
