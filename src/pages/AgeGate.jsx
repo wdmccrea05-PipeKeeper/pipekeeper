@@ -1,8 +1,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AgeGate({ onConfirm }) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center p-6">
       <Card className="max-w-md w-full bg-[#243548]/80 border-[#8b3a3a]/60">
