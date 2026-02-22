@@ -2302,6 +2302,45 @@ const enTranslations = {
     fullFeatureDescription: 'For a full feature description visit',
   },
 
+  // QUICK EDIT PANEL
+  quickEdit: {
+    quickEdit: 'Quick Edit',
+    blend: 'Blend',
+    plural: 's',
+    addToQuantity: 'Add to Quantity',
+    quantityPlaceholder: 'e.g., 3',
+    packagingType: 'Packaging Type',
+    tinStatus: 'Tin Status',
+    markAsFavorite: 'Mark as Favorite',
+    rating: 'Rating (1-5)',
+    dontUpdate: "Don't update",
+    sealedCellared: 'Sealed/Cellared',
+    opened: 'Opened',
+    empty: 'Empty',
+    update: 'Update',
+    pouch: 'Pouch',
+  },
+
+  // BULK TOBACCO UPDATE
+  bulkEdit: {
+    featureName: 'Bulk Tobacco Edit',
+    featureDesc: 'Update multiple tobacco blends at once with bulk editing tools. Available in Pro tier or for grandfathered Premium users.',
+    instructions: 'Select multiple blends below and update their quantities, status, favorites, or ratings all at once. Only fields you fill in will be updated.',
+    selectBlends: 'Select Blends',
+    selected: 'selected',
+    deselectAll: 'Deselect All',
+    selectAll: 'Select All',
+    searchBlends: 'Search blends...',
+    noBlendsFound: 'No blends found',
+    updateSelectedBlends: 'Update Selected Blends',
+    leaveEmpty: 'Leave fields empty to skip updating them',
+    addsToExisting: 'e.g., 3 (adds 3 tins)',
+    addsToExistingNote: 'Adds to existing quantity',
+    yesMarkFavorite: 'Yes, mark as favorite',
+    noRemoveFavorite: 'No, remove favorite',
+    update: 'Update',
+  },
+
 };
 
 // SPANISH OVERRIDES (deep merged)
