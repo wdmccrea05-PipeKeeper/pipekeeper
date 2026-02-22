@@ -150,7 +150,7 @@ export default function ExpertTobacconistChat() {
         return () => unsubscribe?.();
       } catch (err) {
         console.error("[EXPERT_TOBACCONIST] Failed to initialize:", err);
-        toast.error("Failed to initialize expert chat");
+        toast.error(t("errors.failedToInitializeChat","Failed to initialize expert chat"));
         initializedRef.current = false;
       }
     })();
@@ -190,7 +190,7 @@ export default function ExpertTobacconistChat() {
 
     try {
       if (contextLoading) {
-        toast.error("Loading your collection data… try again in a moment.");
+        toast.error(t("errors.collectionLoadingRetry","Loading your collection data… try again in a moment."));
         return;
       }
 
@@ -214,7 +214,7 @@ export default function ExpertTobacconistChat() {
       setMessages(snap?.messages || []);
     } catch (err) {
       console.error("[EXPERT_TOBACCONIST] Send failed:", err);
-      toast.error("Couldn't load a response from the expert agent. Please try again.");
+      toast.error(t("optimizer.couldntLoadResponse","Couldn't load a response from the expert agent. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -230,7 +230,7 @@ export default function ExpertTobacconistChat() {
   return (
     <Card className="p-4 space-y-4 bg-[#223447] border-white/10 text-white">
       <div className="flex items-center gap-3">
-        <img src={TOBACCONIST_ICON} alt="AI Tobacconist" className="w-8 h-8 rounded-full object-cover" />
+        <img src={TOBACCONIST_ICON} alt={t("common.appName","PipeKeeper")} className="w-8 h-8 rounded-full object-cover" />
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-white">{t("tobacconist.askTheExpert")}</h3>
           <p className="text-sm text-white/70">{t("tobacconist.askTheExpertDesc")}</p>
@@ -268,7 +268,7 @@ export default function ExpertTobacconistChat() {
 
                   {!isUser && (
                     <div className="mt-2 pt-2 border-t border-white/10">
-                      <p className="text-xs font-mono text-white/50">Answered by: expert_tobacconist</p>
+                      <p className="text-xs font-mono text-white/50">{t("tobacconist.answeredBy","Answered by")}: expert_tobacconist</p>
                     </div>
                   )}
                 </div>
@@ -293,7 +293,7 @@ export default function ExpertTobacconistChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about pipes, blends, pairing ideas, aging, value, redundancy..."
+          placeholder={t("tobacconist.askExpertPlaceholder","Ask about pipes, blends, pairing ideas, aging, value, redundancy...")}
           className="min-h-[90px] bg-[#1E2F43] border-white/10 text-white placeholder:text-white/50"
           disabled={loading}
         />

@@ -104,12 +104,12 @@ export default function SubscriptionSuccess() {
             <div className="flex justify-center mb-6">
               <Loader2 className="w-12 h-12 text-[#A35C5C] animate-spin" />
             </div>
-            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">Processing Your Subscription</h1>
+            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">{t("subscriptionSuccess.processing","Processing Your Subscription")}</h1>
             <p className="text-[#E0D8C8]/70 text-center mb-6">
-              Thanks! We're confirming your subscription and unlocking your features.
+              {t("subscriptionSuccess.confirming","Thanks! We're confirming your subscription and unlocking your features.")}
             </p>
             <p className="text-sm text-[#E0D8C8]/50 text-center">
-              Auto-refresh: {secondsRemaining}s remaining...
+              {t("subscriptionSuccess.autoRefresh","Auto-refresh")}: {secondsRemaining}s {t("subscriptionSuccess.remaining","remaining")}...
             </p>
           </>
         )}
@@ -119,10 +119,10 @@ export default function SubscriptionSuccess() {
             <div className="flex justify-center mb-6">
               <CheckCircle2 className="w-12 h-12 text-green-500" />
             </div>
-            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">Welcome!</h1>
-            <p className="text-[#E0D8C8]/70 text-center mb-6">Your subscription is active. Premium/Pro features are now available.</p>
+            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">{t("subscriptionSuccess.welcome","Welcome!")}</h1>
+            <p className="text-[#E0D8C8]/70 text-center mb-6">{t("subscriptionSuccess.activeMessage","Your subscription is active. Premium/Pro features are now available.")}</p>
             <Button className="w-full" onClick={() => navigate(createPageUrl("Home"))}>
-              Go to Home
+              {t("nav.goHome","Go to Home")}
             </Button>
           </>
         )}
@@ -132,15 +132,15 @@ export default function SubscriptionSuccess() {
             <div className="flex justify-center mb-6">
               <AlertCircle className="w-12 h-12 text-amber-500" />
             </div>
-            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">Subscription Pending</h1>
+            <h1 className="text-2xl font-bold text-[#E0D8C8] text-center mb-4">{t("subscriptionSuccess.pending","Subscription Pending")}</h1>
             <p className="text-[#E0D8C8]/70 text-center mb-4">
-              Your subscription was received. Features may take a few minutes to unlock.
+              {t("subscriptionSuccess.receivedMessage","Your subscription was received. Features may take a few minutes to unlock.")}
             </p>
             <p className="text-sm text-[#E0D8C8]/50 text-center mb-6">
-              If your features don't unlock within 2 minutes, please contact support.
+              {t("subscriptionSuccess.supportNote","If your features don't unlock within 2 minutes, please contact support.")}
             </p>
             <Button className="w-full" onClick={() => navigate(createPageUrl("Home"))}>
-              Continue
+              {t("common.continue","Continue")}
             </Button>
           </>
         )}
