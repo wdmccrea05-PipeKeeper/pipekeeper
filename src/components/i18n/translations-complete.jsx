@@ -2513,6 +2513,22 @@ const esOverrides = {
     proTier: 'Nivel Pro',
   },
 
+  quickEdit: {
+    quickEdit: 'Edición rápida',
+    blend: 'Mezcla',
+    plural: 's',
+    addToQuantity: 'Agregar a la cantidad',
+    dontUpdate: "No actualizar",
+    update: 'Actualizar',
+  },
+
+  bulkEdit: {
+    featureName: 'Edición masiva de tabaco',
+    selectBlends: 'Seleccionar mezclas',
+    selected: 'seleccionadas',
+    update: 'Actualizar',
+  },
+
 };
 
 // GERMAN OVERRIDES (deep merged)
@@ -2681,6 +2697,22 @@ const deOverrides = {
     proTier: 'Pro-Stufe',
   },
 
+  quickEdit: {
+    quickEdit: 'Schnellbearbeitung',
+    blend: 'Mischung',
+    plural: 'en',
+    addToQuantity: 'Zur Menge hinzufügen',
+    dontUpdate: "Nicht aktualisieren",
+    update: 'Aktualisieren',
+  },
+
+  bulkEdit: {
+    featureName: 'Massen-Tabakbearbeitung',
+    selectBlends: 'Mischungen auswählen',
+    selected: 'ausgewählt',
+    update: 'Aktualisieren',
+  },
+
 };
 
 // JAPANESE OVERRIDES (deep merged)
@@ -2847,6 +2879,22 @@ const jaOverrides = {
     freeTier: '無料プラン',
     premiumTier: 'プレミアムプラン',
     proTier: 'プロプラン',
+  },
+
+  quickEdit: {
+    quickEdit: 'クイック編集',
+    blend: 'ブレンド',
+    plural: '',
+    addToQuantity: '数量を追加',
+    dontUpdate: "更新しない",
+    update: '更新',
+  },
+
+  bulkEdit: {
+    featureName: 'タバコ一括編集',
+    selectBlends: 'ブレンドを選択',
+    selected: '選択済み',
+    update: '更新',
   },
 
 };
