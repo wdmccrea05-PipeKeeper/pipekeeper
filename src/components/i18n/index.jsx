@@ -113,7 +113,7 @@ const createMissingKeyHandler = () => {
       console.warn(`[i18n] MISSING KEY [${lang}] @ ${route}:`, key);
     }
 
-    return `[MISSING] ${key}`;
+    return humanizeKey(key);
   };
 };
 
@@ -127,7 +127,7 @@ const prodMissingKeyHandler = (key) => {
 i18n.use(initReactI18next).init({
   resources,
   lng: initialLng,
-  fallbackLng: import.meta.env.DEV ? false : "en",
+  fallbackLng: "en",
   supportedLngs,
   nonExplicitSupportedLngs: true,
 
