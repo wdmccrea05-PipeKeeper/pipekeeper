@@ -2638,6 +2638,42 @@ const esOverrides = {
     update: 'Actualizar',
   },
 
+  subscriptionFull: {
+    per: 'por',
+    selected: 'Seleccionado',
+    choose: 'Elegir',
+    manage: 'Gestionar',
+    free: 'Gratis',
+    premium: 'Premium',
+    pro: 'Pro',
+    monthly: 'Mensual',
+    billing: 'Facturación',
+    month: 'mes',
+    year: 'año',
+  },
+
+  containerManager: {
+    containerTracking: 'Seguimiento de contenedores',
+    addContainer: 'Agregar contenedor',
+    total: 'Total',
+    open: 'Abierto',
+    cellared: 'En bodega',
+    add: 'Agregar',
+    edit: 'Editar',
+    container: 'Contenedor',
+    status: 'Estado',
+  },
+
+  supportFull: {
+    backToHome: 'Volver al inicio',
+    contactSupport: 'Contactar soporte',
+    yourName: 'Tu nombre',
+    yourEmail: 'Tu correo',
+    message: 'Mensaje',
+    sending: 'Enviando...',
+    sendMessage: 'Enviar mensaje',
+  },
+
 };
 
 // GERMAN OVERRIDES (deep merged)
@@ -2822,6 +2858,42 @@ const deOverrides = {
     update: 'Aktualisieren',
   },
 
+  subscriptionFull: {
+    per: 'pro',
+    selected: 'Ausgewählt',
+    choose: 'Wählen',
+    manage: 'Verwalten',
+    free: 'Kostenlos',
+    premium: 'Premium',
+    pro: 'Pro',
+    monthly: 'Monatlich',
+    billing: 'Abrechnung',
+    month: 'Monat',
+    year: 'Jahr',
+  },
+
+  containerManager: {
+    containerTracking: 'Container-Verfolgung',
+    addContainer: 'Container hinzufügen',
+    total: 'Gesamt',
+    open: 'Offen',
+    cellared: 'Im Keller',
+    add: 'Hinzufügen',
+    edit: 'Bearbeiten',
+    container: 'Container',
+    status: 'Status',
+  },
+
+  supportFull: {
+    backToHome: 'Zurück zur Startseite',
+    contactSupport: 'Support kontaktieren',
+    yourName: 'Ihr Name',
+    yourEmail: 'Ihre E-Mail',
+    message: 'Nachricht',
+    sending: 'Senden...',
+    sendMessage: 'Nachricht senden',
+  },
+
 };
 
 // JAPANESE OVERRIDES (deep merged)
@@ -3004,6 +3076,42 @@ const jaOverrides = {
     selectBlends: 'ブレンドを選択',
     selected: '選択済み',
     update: '更新',
+  },
+
+  subscriptionFull: {
+    per: 'あたり',
+    selected: '選択済み',
+    choose: '選択',
+    manage: '管理',
+    free: '無料',
+    premium: 'プレミアム',
+    pro: 'プロ',
+    monthly: '月額',
+    billing: '請求',
+    month: '月',
+    year: '年',
+  },
+
+  containerManager: {
+    containerTracking: 'コンテナ追跡',
+    addContainer: 'コンテナを追加',
+    total: '合計',
+    open: '開封済み',
+    cellared: '熟成中',
+    add: '追加',
+    edit: '編集',
+    container: 'コンテナ',
+    status: 'ステータス',
+  },
+
+  supportFull: {
+    backToHome: 'ホームに戻る',
+    contactSupport: 'サポートに連絡',
+    yourName: 'お名前',
+    yourEmail: 'メールアドレス',
+    message: 'メッセージ',
+    sending: '送信中...',
+    sendMessage: 'メッセージを送信',
   },
 
 };
