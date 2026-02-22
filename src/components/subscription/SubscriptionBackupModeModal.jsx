@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
+  const { t } = useTranslation();
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState("premium");
@@ -50,7 +52,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
 
   const handleRequestUnlock = async () => {
     if (!user?.email) {
-      toast.error("Unable to identify user email");
+      toast.error(t("subscriptionBackup.unableToIdentify","Unable to identify user email"));
       return;
     }
 
@@ -70,16 +72,15 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
       });
 
       setSubmitted(true);
-      toast.success("Request sent! We'll unlock your account ASAP.");
+      toast.success(t("subscriptionBackup.requestSent","Request sent! We'll unlock your account ASAP."));
 
-      // Auto-close after 2 seconds
       setTimeout(() => {
         setSubmitted(false);
         onClose();
       }, 2000);
     } catch (err) {
       console.error("[SubscriptionBackupModeModal] Request creation failed:", err);
-      toast.error("Failed to send request. Please try again.");
+      toast.error(t("subscriptionBackup.failedToSend","Failed to send request. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -93,7 +94,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
         <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
           <CardContent className="pt-6 flex items-center justify-center gap-3">
             <Loader2 className="w-5 h-5 text-[#A35C5C] animate-spin" />
-            <span className="text-[#E0D8C8]">Loading checkout options...</span>
+            <span className="text-[#E0D8C8]">{t("subscriptionBackup.loadingOptions","Loading checkout options...")}</span>
           </CardContent>
         </Card>
       </div>
@@ -110,9 +111,9 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 <CheckCircle2 className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">Request Sent!</h3>
+                <h3 className="text-lg font-semibold text-[#E0D8C8] mb-2">{t("subscriptionBackup.requestSentTitle","Request Sent!")}</h3>
                 <p className="text-sm text-[#E0D8C8]/70">
-                  We'll review your payment proof and unlock your account ASAP.
+                  {t("subscriptionBackup.reviewPayment","We'll review your payment proof and unlock your account ASAP.")}
                 </p>
               </div>
             </div>
@@ -128,9 +129,9 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
         <CardHeader className="pt-6 sm:pt-8 px-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-xl sm:text-2xl text-[#E0D8C8]">Subscription Backup Mode</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl text-[#E0D8C8]">{t("subscriptionBackup.title","Subscription Backup Mode")}</CardTitle>
               <p className="text-xs sm:text-sm text-[#E0D8C8]/70 mt-2">
-                Subscription management is temporarily unavailable. Use direct checkout links or request manual unlock.
+                {t("subscriptionBackup.description","Subscription management is temporarily unavailable. Use direct checkout links or request manual unlock.")}
               </p>
             </div>
             <button
@@ -147,7 +148,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           <div>
             <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
               <ExternalLink className="w-4 h-4" />
-              New Subscription? Use Direct Checkout
+              {t("subscriptionBackup.newSubscription","New Subscription? Use Direct Checkout")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
@@ -161,8 +162,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">Premium Monthly</span>
-                    <span className="text-xs text-[#E0D8C8]/60">$1.99/mo</span>
+                    <span className="font-semibold">{t("subscriptionBackup.premiumMonthly","Premium Monthly")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumMonthlyPrice","$1.99/mo")}</span>
                   </div>
                 </Button>
               </a>
@@ -178,8 +179,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">Premium Annual</span>
-                    <span className="text-xs text-[#E0D8C8]/60">$19.99/yr</span>
+                    <span className="font-semibold">{t("subscriptionBackup.premiumAnnual","Premium Annual")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.premiumAnnualPrice","$19.99/yr")}</span>
                   </div>
                 </Button>
               </a>
@@ -195,8 +196,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">Pro Monthly</span>
-                    <span className="text-xs text-[#E0D8C8]/60">$2.99/mo</span>
+                    <span className="font-semibold">{t("subscriptionBackup.proMonthly","Pro Monthly")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proMonthlyPrice","$2.99/mo")}</span>
                   </div>
                 </Button>
               </a>
@@ -212,8 +213,8 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 h-auto py-3 text-center w-full"
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className="font-semibold">Pro Annual</span>
-                    <span className="text-xs text-[#E0D8C8]/60">$29.99/yr</span>
+                    <span className="font-semibold">{t("subscriptionBackup.proAnnual","Pro Annual")}</span>
+                    <span className="text-xs text-[#E0D8C8]/60">{t("subscriptionBackup.proAnnualPrice","$29.99/yr")}</span>
                   </div>
                 </Button>
               </a>
@@ -224,61 +225,61 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           <div className="border-t border-[#A35C5C]/20 pt-6">
             <h3 className="font-semibold text-[#E0D8C8] mb-4 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Already Paid? Request Manual Unlock
+              {t("subscriptionBackup.alreadyPaid","Already Paid? Request Manual Unlock")}
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
-                  Subscription Tier
+                  {t("subscriptionSupport.subscriptionTier","Subscription Tier")}
                 </label>
                 <Select value={selectedTier} onValueChange={setSelectedTier}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="premium">{t("subscriptionSupport.premium","Premium")}</SelectItem>
+                    <SelectItem value="pro">{t("subscriptionSupport.pro","Pro")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
-                  Billing Term
+                  {t("subscriptionBackup.billingTerm","Billing Term")}
                 </label>
                 <Select value={selectedTerm} onValueChange={setSelectedTerm}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="monthly">{t("subscriptionBackup.monthly","Monthly")}</SelectItem>
+                    <SelectItem value="annual">{t("subscriptionBackup.annual","Annual")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
-                  Payment Proof (Optional)
+                  {t("subscriptionBackup.paymentProof","Payment Proof (Optional)")}
                 </label>
                 <Input
-                  placeholder="Receipt email, invoice #, Stripe payment ID, or last 4 digits of card"
+                  placeholder={t("subscriptionBackup.paymentProofPlaceholder","Receipt email, invoice #, Stripe payment ID, or last 4 digits of card")}
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
                   className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
                 />
                 <p className="text-xs text-[#E0D8C8]/50 mt-1">
-                  Helps us verify your payment quickly
+                  {t("subscriptionBackup.helpsVerify","Helps us verify your payment quickly")}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">
-                  Message (Optional)
+                  {t("subscriptionBackup.message","Message (Optional)")}
                 </label>
                 <Textarea
-                  placeholder="Tell us about your situation or payment details..."
+                  placeholder={t("subscriptionBackup.messagePlaceholder","Tell us about your situation or payment details...")}
                   value={userMessage}
                   onChange={(e) => setUserMessage(e.target.value)}
                   className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40 min-h-20"
@@ -293,10 +294,10 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Sending...
+                    {t("subscriptionBackup.sending","Sending...")}
                   </>
                 ) : (
-                  "Request Unlock"
+                  t("subscriptionBackup.requestUnlock","Request Unlock")
                 )}
               </Button>
             </div>
@@ -305,7 +306,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           {/* Support Info */}
           <div className="bg-[#243548]/50 border border-[#A35C5C]/20 rounded-lg p-4 text-sm text-[#E0D8C8]/70">
             <p>
-              Need help? Contact{" "}
+              {t("subscriptionBackup.needHelp","Need help? Contact")}{" "}
               <a
                 href={`mailto:${config?.supportEmail || "admin@pipekeeperapp.com"}`}
                 className="text-[#A35C5C] hover:underline font-medium"

@@ -10,6 +10,7 @@ import {
 import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO } from "date-fns";
 import html2canvas from 'html2canvas';
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const TIME_WINDOWS = {
   '7d': { label: 'Last 7 Days', days: 7 },
@@ -21,10 +22,10 @@ const TIME_WINDOWS = {
 };
 
 export default function TrendsReport({ logs, pipes, blends, user }) {
+  const { t } = useTranslation();
   const [timeWindow, setTimeWindow] = useState('30d');
   const [shareImageRef, setShareImageRef] = useState(null);
 
-  // Filter logs by time window
   const filteredLogs = useMemo(() => {
     if (!logs || logs.length === 0) return [];
 
@@ -47,7 +48,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     });
   }, [logs, timeWindow]);
 
-  // Previous period for comparison
   const previousPeriodLogs = useMemo(() => {
     if (!logs || logs.length === 0 || timeWindow === 'all') return [];
 
@@ -70,7 +70,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     return [];
   }, [logs, timeWindow]);
 
-  // A) Top Pipes
   const topPipes = useMemo(() => {
     const pipeUsage = {};
     
@@ -99,7 +98,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .slice(0, 10);
   }, [filteredLogs]);
 
-  // B) Top Blends
   const topBlends = useMemo(() => {
     const blendUsage = {};
     
@@ -128,7 +126,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .slice(0, 10);
   }, [filteredLogs]);
 
-  // C) Frequency & Patterns
   const frequencyStats = useMemo(() => {
     const totalSessions = filteredLogs.length;
     const prevTotalSessions = previousPeriodLogs.length;
@@ -136,7 +133,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       ? ((totalSessions - prevTotalSessions) / prevTotalSessions * 100)
       : 0;
 
-    // Day of week distribution
     const dayOfWeek = {};
     const timeOfDay = { morning: 0, afternoon: 0, evening: 0, night: 0 };
     
@@ -176,7 +172,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     };
   }, [filteredLogs, previousPeriodLogs, timeWindow, logs]);
 
-  // D) Taste Profile
   const tasteProfile = useMemo(() => {
     const blendCategories = {};
     const cutTypes = {};
@@ -210,7 +205,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     };
   }, [filteredLogs, blends]);
 
-  // E) Pipe Geometry Insights
   const geometryInsights = useMemo(() => {
     const usedPipeIds = new Set(filteredLogs.map(l => l.pipe_id));
     const usedPipes = pipes.filter(p => usedPipeIds.has(p.id));
@@ -246,7 +240,6 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     };
   }, [filteredLogs, pipes]);
 
-  // F) Discoveries & Rotations
   const discoveries = useMemo(() => {
     const allLogs = logs || [];
     const windowStart = (() => {
@@ -291,34 +284,32 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     };
   }, [logs, pipes, blends, timeWindow]);
 
-  // Narrative Summary
   const narrative = useMemo(() => {
     const sessions = frequencyStats.totalSessions;
     const topPipe = topPipes[0];
     const topCategory = tasteProfile.categories[0];
     const topShape = geometryInsights.shapes[0];
 
-    if (sessions === 0) return "No sessions logged for this period.";
+    if (sessions === 0) return t("trends.noSessionsLogged","No sessions logged for this period.");
 
     const parts = [];
-    parts.push(`You logged ${sessions} session${sessions > 1 ? 's' : ''} this period.`);
+    parts.push(t("trends.youLogged","You logged {{count}} session{{count, plural, one {} other {s}}} this period.",{count: sessions}));
     
     if (topPipe) {
-      parts.push(`Your #1 pipe was ${topPipe.pipe_name} (${topPipe.count} session${topPipe.count > 1 ? 's' : ''}).`);
+      parts.push(t("trends.topPipe","Your #1 pipe was {{name}} ({{count}} session{{count, plural, one {} other {s}}}).",{name: topPipe.pipe_name, count: topPipe.count}));
     }
     
     if (topCategory) {
-      parts.push(`You leaned heavily ${topCategory[0]}.`);
+      parts.push(t("trends.leanedHeavily","You leaned heavily {{category}}.",{category: topCategory[0]}));
     }
     
     if (topShape) {
-      parts.push(`Your go-to shape was ${topShape[0]}.`);
+      parts.push(t("trends.goToShape","Your go-to shape was {{shape}}.",{shape: topShape[0]}));
     }
 
     return parts.join(' ');
-  }, [frequencyStats, topPipes, tasteProfile, geometryInsights]);
+  }, [frequencyStats, topPipes, tasteProfile, geometryInsights, t]);
 
-  // Share/Export
   const handleShare = async () => {
     if (!shareImageRef) return;
 
@@ -330,14 +321,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       
       canvas.toBlob(blob => {
         if (!blob) {
-          toast.error('Failed to generate image');
+          toast.error(t("trends.failedToGenerateImage","Failed to generate image"));
           return;
         }
 
         if (navigator.share && navigator.canShare({ files: [new File([blob], 'trends.png', { type: 'image/png' })] })) {
           navigator.share({
             files: [new File([blob], 'trends.png', { type: 'image/png' })],
-            title: 'My PipeKeeper Trends',
+            title: t("trends.myPipeKeeperTrends","My PipeKeeper Trends"),
             text: narrative
           }).catch(() => {});
         } else {
@@ -347,12 +338,12 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           a.download = 'pipekeeper-trends.png';
           a.click();
           URL.revokeObjectURL(url);
-          toast.success('Image downloaded');
+          toast.success(t("trends.imageDownloaded","Image downloaded"));
         }
       });
     } catch (err) {
       console.error('Share error:', err);
-      toast.error('Failed to share');
+      toast.error(t("trends.failedToShare","Failed to share"));
     }
   };
 
@@ -362,14 +353,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       const doc = new jsPDF();
 
       doc.setFontSize(20);
-      doc.text('PipeKeeper Trends Report', 20, 20);
+      doc.text(t("trends.pdfTitle","PipeKeeper Trends Report"), 20, 20);
       
       doc.setFontSize(12);
-      doc.text(`Period: ${TIME_WINDOWS[timeWindow].label}`, 20, 30);
-      doc.text(`Generated: ${format(new Date(), 'MMM d, yyyy')}`, 20, 37);
+      doc.text(`${t("trends.period","Period")}: ${TIME_WINDOWS[timeWindow].label}`, 20, 30);
+      doc.text(`${t("reports.generated","Generated")}: ${format(new Date(), 'MMM d, yyyy')}`, 20, 37);
 
       doc.setFontSize(14);
-      doc.text('Summary', 20, 50);
+      doc.text(t("trends.summary","Summary"), 20, 50);
       doc.setFontSize(10);
       const narrativeLines = doc.splitTextToSize(narrative, 170);
       doc.text(narrativeLines, 20, 57);
@@ -378,11 +369,11 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
       if (topPipes.length > 0) {
         doc.setFontSize(14);
-        doc.text('Top Pipes', 20, yPos);
+        doc.text(t("trends.topPipes","Top Pipes"), 20, yPos);
         yPos += 7;
         doc.setFontSize(9);
         topPipes.slice(0, 5).forEach(pipe => {
-          doc.text(`${pipe.pipe_name}: ${pipe.count} sessions (${pipe.percentage.toFixed(1)}%)`, 25, yPos);
+          doc.text(`${pipe.pipe_name}: ${pipe.count} ${t("nav.sessions","sessions")} (${pipe.percentage.toFixed(1)}%)`, 25, yPos);
           yPos += 5;
         });
         yPos += 5;
@@ -390,21 +381,21 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
       if (topBlends.length > 0 && yPos < 270) {
         doc.setFontSize(14);
-        doc.text('Top Blends', 20, yPos);
+        doc.text(t("trends.topBlends","Top Blends"), 20, yPos);
         yPos += 7;
         doc.setFontSize(9);
         topBlends.slice(0, 5).forEach(blend => {
           if (yPos > 270) return;
-          doc.text(`${blend.blend_name}: ${blend.count} sessions (${blend.percentage.toFixed(1)}%)`, 25, yPos);
+          doc.text(`${blend.blend_name}: ${blend.count} ${t("nav.sessions","sessions")} (${blend.percentage.toFixed(1)}%)`, 25, yPos);
           yPos += 5;
         });
       }
 
       doc.save('pipekeeper-trends.pdf');
-      toast.success('PDF downloaded');
+      toast.success(t("trends.pdfDownloaded","PDF downloaded"));
     } catch (err) {
       console.error('PDF error:', err);
-      toast.error('Failed to generate PDF');
+      toast.error(t("trends.failedToGeneratePDF","Failed to generate PDF"));
     }
   };
 
@@ -413,13 +404,13 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       <Card className="border-blue-200">
         <CardContent className="p-12 text-center">
           <Calendar className="w-16 h-16 mx-auto mb-4 text-blue-300" />
-          <h3 className="text-xl font-semibold text-[#E0D8C8] mb-2">No Sessions Logged</h3>
+          <h3 className="text-xl font-semibold text-[#E0D8C8] mb-2">{t("trends.noSessionsLoggedTitle","No Sessions Logged")}</h3>
           <p className="text-[#E0D8C8]/60 mb-6">
-            No smoking sessions found for this time period.
+            {t("trends.noSessionsForPeriod","No smoking sessions found for this time period.")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => setTimeWindow('all')} variant="outline">
-              View All-Time
+              {t("trends.viewAllTime","View All-Time")}
             </Button>
           </div>
         </CardContent>
@@ -433,7 +424,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h2 className="text-2xl font-bold text-[#E0D8C8] flex items-center gap-2">
           <TrendingUp className="w-6 h-6" />
-          Your Trends
+          {t("trends.yourTrends","Your Trends")}
         </h2>
         <div className="flex flex-wrap gap-2">
           {Object.entries(TIME_WINDOWS).map(([key, { label }]) => (
@@ -468,11 +459,11 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           <div className="flex gap-2 pt-4 border-t border-white/10">
             <Button size="sm" variant="outline" onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />
-              Share
+              {t("common.share")}
             </Button>
             <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
               <Download className="w-4 h-4 mr-2" />
-              Download PDF
+              {t("trends.downloadPDF","Download PDF")}
             </Button>
           </div>
         </CardContent>
@@ -481,39 +472,39 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="usage">Usage</TabsTrigger>
-          <TabsTrigger value="taste">Taste</TabsTrigger>
-          <TabsTrigger value="geometry">Geometry</TabsTrigger>
+          <TabsTrigger value="overview">{t("trends.overview","Overview")}</TabsTrigger>
+          <TabsTrigger value="usage">{t("trends.usage","Usage")}</TabsTrigger>
+          <TabsTrigger value="taste">{t("trends.taste","Taste")}</TabsTrigger>
+          <TabsTrigger value="geometry">{t("trends.geometry","Geometry")}</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Frequency & Patterns</CardTitle>
+              <CardTitle>{t("trends.frequencyPatterns","Frequency & Patterns")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-sm text-[#E0D8C8]/60 mb-1">Total Sessions</p>
+                  <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.totalSessions","Total Sessions")}</p>
                   <p className="text-3xl font-bold text-[#E0D8C8]">{frequencyStats.totalSessions}</p>
                   {frequencyStats.trend !== 0 && (
                     <Badge className={`mt-2 ${frequencyStats.trend > 0 ? 'bg-green-600' : 'bg-red-600'}`}>
-                      {frequencyStats.trend > 0 ? '+' : ''}{frequencyStats.trend.toFixed(1)}% vs prev period
+                      {frequencyStats.trend > 0 ? '+' : ''}{frequencyStats.trend.toFixed(1)}% {t("trends.vsPrevPeriod","vs prev period")}
                     </Badge>
                   )}
                 </div>
                 <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-sm text-[#E0D8C8]/60 mb-1">Per Week</p>
+                  <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.perWeek","Per Week")}</p>
                   <p className="text-3xl font-bold text-[#E0D8C8]">{frequencyStats.sessionsPerWeek.toFixed(1)}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-sm text-[#E0D8C8]/60 mb-1">Most Common Day</p>
+                  <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.mostCommonDay","Most Common Day")}</p>
                   <p className="text-xl font-semibold text-[#E0D8C8]">{frequencyStats.mostCommonDay}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-sm text-[#E0D8C8]/60 mb-1">Most Common Time</p>
+                  <p className="text-sm text-[#E0D8C8]/60 mb-1">{t("trends.mostCommonTime","Most Common Time")}</p>
                   <p className="text-xl font-semibold text-[#E0D8C8]">{frequencyStats.mostCommonTime}</p>
                 </div>
               </div>
@@ -525,7 +516,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  New Discoveries
+                  {t("trends.newDiscoveries","New Discoveries")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -551,7 +542,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         <TabsContent value="usage" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Top Pipes</CardTitle>
+              <CardTitle>{t("trends.topPipes","Top Pipes")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -568,8 +559,8 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#E0D8C8]/60">
-                      <span>{pipe.bowls} bowl{pipe.bowls > 1 ? 's' : ''}</span>
-                      <span>Last used: {format(parseISO(pipe.lastUsed), 'MMM d')}</span>
+                      <span>{pipe.bowls} {t("units.bowl","bowl")}{pipe.bowls > 1 ? t("units.bowlPlural","s") : ''}</span>
+                      <span>{t("trends.lastUsed","Last used")}: {format(parseISO(pipe.lastUsed), 'MMM d')}</span>
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2 mt-2">
                       <div
@@ -585,7 +576,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Top Blends</CardTitle>
+              <CardTitle>{t("trends.topBlends","Top Blends")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -602,8 +593,8 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#E0D8C8]/60">
-                      <span>{blend.bowls} bowl{blend.bowls > 1 ? 's' : ''}</span>
-                      <span>Last used: {format(parseISO(blend.lastUsed), 'MMM d')}</span>
+                      <span>{blend.bowls} {t("units.bowl","bowl")}{blend.bowls > 1 ? t("units.bowlPlural","s") : ''}</span>
+                      <span>{t("trends.lastUsed","Last used")}: {format(parseISO(blend.lastUsed), 'MMM d')}</span>
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2 mt-2">
                       <div
@@ -623,14 +614,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {tasteProfile.categories.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Blend Categories</CardTitle>
+                <CardTitle>{t("trends.blendCategories","Blend Categories")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {tasteProfile.categories.map(([category, count]) => (
                     <div key={category} className="flex items-center justify-between">
                       <span className="text-[#E0D8C8]">{category}</span>
-                      <Badge>{count} sessions</Badge>
+                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
                     </div>
                   ))}
                 </div>
@@ -641,14 +632,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {tasteProfile.cuts.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Cut Types</CardTitle>
+                <CardTitle>{t("trends.cutTypes","Cut Types")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {tasteProfile.cuts.map(([cut, count]) => (
                     <div key={cut} className="flex items-center justify-between">
                       <span className="text-[#E0D8C8]">{cut}</span>
-                      <Badge>{count} sessions</Badge>
+                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
                     </div>
                   ))}
                 </div>
@@ -659,14 +650,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {tasteProfile.strengths.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Strength Preference</CardTitle>
+                <CardTitle>{t("trends.strengthPreference","Strength Preference")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {tasteProfile.strengths.map(([strength, count]) => (
                     <div key={strength} className="flex items-center justify-between">
                       <span className="text-[#E0D8C8]">{strength}</span>
-                      <Badge>{count} sessions</Badge>
+                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
                     </div>
                   ))}
                 </div>
@@ -679,7 +670,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         <TabsContent value="geometry" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Your Go-To Geometry</CardTitle>
+              <CardTitle>{t("trends.yourGoToGeometry","Your Go-To Geometry")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-600/30">
@@ -693,7 +684,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {geometryInsights.shapes.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Top Shapes</CardTitle>
+                <CardTitle>{t("trends.topShapes","Top Shapes")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -711,7 +702,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {geometryInsights.bowlStyles.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Top Bowl Styles</CardTitle>
+                <CardTitle>{t("trends.topBowlStyles","Top Bowl Styles")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -729,7 +720,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {geometryInsights.bends.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Bend Distribution</CardTitle>
+                <CardTitle>{t("trends.bendDistribution","Bend Distribution")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
