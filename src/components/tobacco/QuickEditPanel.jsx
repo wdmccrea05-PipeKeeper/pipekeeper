@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLoading, selectedBlends }) {
+  const { t } = useTranslation();
   const [updateFields, setUpdateFields] = useState({
     quantity_owned: '',
     packaging_type: 'none',
@@ -25,7 +27,6 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
       const quantityToAdd = Number(updateFields.quantity_owned);
       
       if (packagingType) {
-        // Update specific packaging type
         if (packagingType === 'tin') {
           updateData.tin_total_tins = quantityToAdd;
         } else if (packagingType === 'bulk') {
@@ -55,7 +56,7 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
         <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-stone-800">
-              Quick Edit {selectedCount} Blend{selectedCount !== 1 ? 's' : ''}
+              {t("quickEdit.quickEdit","Quick Edit")} {selectedCount} {t("quickEdit.blend","Blend")}{selectedCount !== 1 ? t("quickEdit.plural","s") : ''}
             </h3>
             <Button
               type="button"
@@ -69,73 +70,73 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div className="space-y-2">
-              <Label className="text-xs">Add to Quantity</Label>
+              <Label className="text-xs">{t("quickEdit.addToQuantity","Add to Quantity")}</Label>
               <Input
                 type="number"
                 min="0"
                 step="1"
                 value={updateFields.quantity_owned}
                 onChange={(e) => setUpdateFields(prev => ({ ...prev, quantity_owned: e.target.value }))}
-                placeholder="e.g., 3"
+                placeholder={t("quickEdit.quantityPlaceholder","e.g., 3")}
                 className="h-9"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Packaging Type</Label>
+              <Label className="text-xs">{t("quickEdit.packagingType","Packaging Type")}</Label>
               <Select 
                 value={updateFields.packaging_type} 
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, packaging_type: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Don't update" />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Don't update</SelectItem>
-                  <SelectItem value="tin">Tin</SelectItem>
-                  <SelectItem value="bulk">Bulk</SelectItem>
-                  <SelectItem value="pouch">Pouch</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="tin">{t("tobaccoExtended.tin","Tin")}</SelectItem>
+                  <SelectItem value="bulk">{t("tobaccoExtended.bulk","Bulk")}</SelectItem>
+                  <SelectItem value="pouch">{t("tobaccoExtended.pouch","Pouch")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="space-y-2">
-              <Label className="text-xs">Tin Status</Label>
+              <Label className="text-xs">{t("quickEdit.tinStatus","Tin Status")}</Label>
               <Select 
                 value={updateFields.tin_status} 
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, tin_status: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Don't update" />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Don't update</SelectItem>
-                  <SelectItem value="Sealed/Cellared">Sealed/Cellared</SelectItem>
-                  <SelectItem value="Opened">Opened</SelectItem>
-                  <SelectItem value="Empty">Empty</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="Sealed/Cellared">{t("quickEdit.sealedCellared","Sealed/Cellared")}</SelectItem>
+                  <SelectItem value="Opened">{t("quickEdit.opened","Opened")}</SelectItem>
+                  <SelectItem value="Empty">{t("quickEdit.empty","Empty")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Mark as Favorite</Label>
+              <Label className="text-xs">{t("quickEdit.markAsFavorite","Mark as Favorite")}</Label>
               <Select 
                 value={updateFields.is_favorite} 
                 onValueChange={(v) => setUpdateFields(prev => ({ ...prev, is_favorite: v }))}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Don't update" />
+                  <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Don't update</SelectItem>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
+                  <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                  <SelectItem value="true">{t("common.yes","Yes")}</SelectItem>
+                  <SelectItem value="false">{t("common.no","No")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Rating (1-5)</Label>
+              <Label className="text-xs">{t("quickEdit.rating","Rating (1-5)")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -148,7 +149,7 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
                     setUpdateFields(prev => ({ ...prev, rating: val }));
                   }
                 }}
-                placeholder="Optional"
+                placeholder={t("common.optional","Optional")}
                 className="h-9"
               />
             </div>
@@ -156,7 +157,7 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" onClick={onCancel} size="sm">
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -164,7 +165,7 @@ export default function QuickEditPanel({ selectedCount, onUpdate, onCancel, isLo
               className="bg-amber-700 hover:bg-amber-800"
               size="sm"
             >
-              Update {selectedCount} Blend{selectedCount !== 1 ? 's' : ''}
+              {t("quickEdit.update","Update")} {selectedCount} {t("quickEdit.blend","Blend")}{selectedCount !== 1 ? t("quickEdit.plural","s") : ''}
             </Button>
           </div>
         </form>

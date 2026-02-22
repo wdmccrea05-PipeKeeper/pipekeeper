@@ -11,8 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, CheckSquare, Star, Package } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoading }) {
+  const { t } = useTranslation();
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [updateFields, setUpdateFields] = useState({
@@ -56,7 +58,6 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Build update data object with only filled fields
     const updateData = {};
     if (updateFields.quantity_owned !== '') {
       updateData.quantity_owned = Number(updateFields.quantity_owned);
@@ -77,16 +78,15 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
   return (
     <FeatureGate 
       feature="BULK_EDIT"
-      featureName="Bulk Tobacco Edit"
-      description="Update multiple tobacco blends at once with bulk editing tools. Available in Pro tier or for grandfathered Premium users."
+      featureName={t("bulkEdit.featureName","Bulk Tobacco Edit")}
+      description={t("bulkEdit.featureDesc","Update multiple tobacco blends at once with bulk editing tools. Available in Pro tier or for grandfathered Premium users.")}
     >
     <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
       {/* Instructions */}
       <Card className="border-amber-200 bg-amber-50">
         <CardContent className="p-4">
           <p className="text-sm text-amber-900">
-            Select multiple blends below and update their quantities, status, favorites, or ratings all at once. 
-            Only fields you fill in will be updated.
+            {t("bulkEdit.instructions","Select multiple blends below and update their quantities, status, favorites, or ratings all at once. Only fields you fill in will be updated.")}
           </p>
         </CardContent>
       </Card>
@@ -96,7 +96,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
-              Select Blends ({selectedBlends.length} selected)
+              {t("bulkEdit.selectBlends","Select Blends")} ({selectedBlends.length} {t("bulkEdit.selected","selected")})
             </CardTitle>
             <Button
               type="button"
@@ -106,7 +106,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
               className="gap-2"
             >
               <CheckSquare className="w-4 h-4" />
-              {allSelected ? 'Deselect All' : 'Select All'}
+              {allSelected ? t("bulkEdit.deselectAll","Deselect All") : t("bulkEdit.selectAll","Select All")}
             </Button>
           </div>
           <div className="relative mt-2">
@@ -114,7 +114,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search blends..."
+              placeholder={t("bulkEdit.searchBlends","Search blends...")}
               className="pl-10"
             />
           </div>
@@ -153,7 +153,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-stone-800 truncate">{blend.name}</p>
-                    <p className="text-sm text-stone-500 truncate">{blend.manufacturer || 'Unknown maker'}</p>
+                    <p className="text-sm text-stone-500 truncate">{blend.manufacturer || t("tobaccoExtended.unknownMaker","Unknown maker")}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     {blend.is_favorite && (
@@ -171,7 +171,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
               ))}
               {filteredBlends.length === 0 && (
                 <div className="text-center py-8 text-stone-500">
-                  <p>No blends found</p>
+                  <p>{t("bulkEdit.noBlendsFound","No blends found")}</p>
                 </div>
               )}
             </div>
@@ -184,60 +184,60 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
       {/* Update Fields */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Update Selected Blends</CardTitle>
-          <p className="text-sm text-stone-500">Leave fields empty to skip updating them</p>
+          <CardTitle className="text-lg">{t("bulkEdit.updateSelectedBlends","Update Selected Blends")}</CardTitle>
+          <p className="text-sm text-stone-500">{t("bulkEdit.leaveEmpty","Leave fields empty to skip updating them")}</p>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Add to Quantity</Label>
+            <Label>{t("quickEdit.addToQuantity","Add to Quantity")}</Label>
             <Input
               type="number"
               min="0"
               step="1"
               value={updateFields.quantity_owned}
               onChange={(e) => setUpdateFields(prev => ({ ...prev, quantity_owned: e.target.value }))}
-              placeholder="e.g., 3 (adds 3 tins)"
+              placeholder={t("bulkEdit.addsToExisting","e.g., 3 (adds 3 tins)")}
             />
-            <p className="text-xs text-stone-500">Adds to existing quantity</p>
+            <p className="text-xs text-stone-500">{t("bulkEdit.addsToExistingNote","Adds to existing quantity")}</p>
           </div>
           
           <div className="space-y-2">
-            <Label>Tin Status</Label>
+            <Label>{t("quickEdit.tinStatus","Tin Status")}</Label>
             <Select 
               value={updateFields.tin_status} 
               onValueChange={(v) => setUpdateFields(prev => ({ ...prev, tin_status: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Don't update" />
+                <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Don't update</SelectItem>
-                <SelectItem value="Sealed/Cellared">Sealed/Cellared</SelectItem>
-                <SelectItem value="Opened">Opened</SelectItem>
-                <SelectItem value="Empty">Empty</SelectItem>
+                <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                <SelectItem value="Sealed/Cellared">{t("quickEdit.sealedCellared","Sealed/Cellared")}</SelectItem>
+                <SelectItem value="Opened">{t("quickEdit.opened","Opened")}</SelectItem>
+                <SelectItem value="Empty">{t("quickEdit.empty","Empty")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Mark as Favorite</Label>
+            <Label>{t("quickEdit.markAsFavorite","Mark as Favorite")}</Label>
             <Select 
               value={updateFields.is_favorite} 
               onValueChange={(v) => setUpdateFields(prev => ({ ...prev, is_favorite: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Don't update" />
+                <SelectValue placeholder={t("quickEdit.dontUpdate","Don't update")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Don't update</SelectItem>
-                <SelectItem value="true">Yes, mark as favorite</SelectItem>
-                <SelectItem value="false">No, remove favorite</SelectItem>
+                <SelectItem value="none">{t("quickEdit.dontUpdate","Don't update")}</SelectItem>
+                <SelectItem value="true">{t("bulkEdit.yesMarkFavorite","Yes, mark as favorite")}</SelectItem>
+                <SelectItem value="false">{t("bulkEdit.noRemoveFavorite","No, remove favorite")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Rating (1-5)</Label>
+            <Label>{t("quickEdit.rating","Rating (1-5)")}</Label>
             <Input
               type="number"
               min="1"
@@ -250,7 +250,7 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
                   setUpdateFields(prev => ({ ...prev, rating: val }));
                 }
               }}
-              placeholder="Optional"
+              placeholder={t("common.optional","Optional")}
             />
           </div>
         </CardContent>
@@ -259,14 +259,14 @@ export default function BulkTobaccoUpdate({ blends, onUpdate, onCancel, isLoadin
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button 
           type="submit" 
           disabled={selectedBlends.length === 0 || isLoading}
           className="bg-amber-700 hover:bg-amber-800"
         >
-          Update {selectedBlends.length} Blend{selectedBlends.length !== 1 ? 's' : ''}
+          {t("bulkEdit.update","Update")} {selectedBlends.length} {t("quickEdit.blend","Blend")}{selectedBlends.length !== 1 ? t("quickEdit.plural","s") : ''}
         </Button>
       </div>
     </form>
