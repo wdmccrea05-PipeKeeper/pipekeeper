@@ -17,6 +17,7 @@ import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function MessageBubble({ message }) {
+  const { t } = useTranslation();
   const isUser = message.role === 'user';
   
   return (
@@ -25,7 +26,7 @@ function MessageBubble({ message }) {
         <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
-            alt="Tobacconist"
+            alt={t("agent.tobacconist","Tobacconist")}
             className="w-full h-full object-cover scale-110"
           />
         </div>
@@ -149,11 +150,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("matching.regenerateSuccess","Pairings regenerated successfully"));
+      toast.success(t("agent.pairingsRegeneratedSuccess","Pairings regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error(t("errors.regenerateFailed","Failed to regenerate pairings"));
+      toast.error(t("agent.failedToRegeneratePairings","Failed to regenerate pairings"));
     },
   });
 
@@ -166,9 +167,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("matching.pairingsReverted","Pairings reverted to previous version"));
+      toast.success(t("agent.pairingsReverted","Pairings reverted to previous version"));
     },
-    onError: () => toast.error(t("errors.failedToUndoPairings","Failed to undo pairings")),
+    onError: () => toast.error(t("agent.failedToUndoPairings","Failed to undo pairings")),
   });
 
   const regenOpt = useMutation({
@@ -195,11 +196,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("matching.optimizationRegenerated","Optimization regenerated successfully"));
+      toast.success(t("agent.optimizationRegenerated","Optimization regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error(t("errors.failedToRegenerateOptimization","Failed to regenerate optimization"));
+      toast.error(t("agent.failedToRegenerateOptimization","Failed to regenerate optimization"));
     },
   });
 
@@ -212,9 +213,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("matching.optimizationReverted","Optimization reverted to previous version"));
+      toast.success(t("agent.optimizationReverted","Optimization reverted to previous version"));
     },
-    onError: () => toast.error(t("errors.failedToUndoOptimization","Failed to undo optimization")),
+    onError: () => toast.error(t("agent.failedToUndoOptimization","Failed to undo optimization")),
   });
 
   // Auto-scroll
@@ -246,7 +247,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         }
       }).catch(err => {
         console.error('Failed to create conversation:', err);
-        toast.error(t("errors.failedToStartConversation","Failed to start conversation"));
+        toast.error(t("agent.failedToStartConversation","Failed to start conversation"));
       });
     }
   }, [open, user?.email, conversationId, contextPayload, contextSent]);
@@ -278,7 +279,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       });
     } catch (error) {
       console.error('Send error:', error);
-      toast.error(t("errors.failedToSendMessage","Failed to send message"));
+      toast.error(t("agent.failedToSendMessage","Failed to send message"));
       setSending(false);
     }
   };
@@ -299,7 +300,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
             <div className="w-10 h-10 rounded-lg bg-[#8b3a3a] flex items-center justify-center overflow-hidden">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
-                alt={t("common.tobacconist","Tobacconist")}
+                alt={t("agent.tobacconist","Tobacconist")}
                 className="w-full h-full object-cover scale-110"
               />
             </div>
@@ -331,7 +332,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                   <div className="w-16 h-16 rounded-full bg-[#8b3a3a]/10 flex items-center justify-center mx-auto mb-4 overflow-hidden">
                     <img 
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
-                      alt={t("common.tobacconist","Tobacconist")}
+                      alt={t("agent.tobacconist","Tobacconist")}
                       className="w-full h-full object-cover scale-110"
                     />
                   </div>
@@ -369,7 +370,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                   <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center flex-shrink-0 overflow-hidden">
                     <img 
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
-                      alt={t("common.tobacconist","Tobacconist")}
+                      alt={t("agent.tobacconist","Tobacconist")}
                       className="w-full h-full object-cover scale-110"
                     />
                   </div>
