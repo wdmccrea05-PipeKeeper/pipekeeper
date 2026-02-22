@@ -1,3 +1,4 @@
+// src/components/agent/ExpertTobacconistChat.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,10 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
-import { FormattedTobacconistResponse, formatTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
+import {
+  FormattedTobacconistResponse,
+  formatTobacconistResponse,
+} from "@/components/utils/formatTobacconistResponse";
 import { classifyQuestion } from "@/components/utils/questionClassifier";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -17,6 +21,7 @@ const TOBACCONIST_ICON =
 
 /**
  * Expert Tobacconist chat (stability + continuity fixed)
+ * NOTE: All user-facing strings in this file are now i18n-safe with English defaults.
  */
 export default function ExpertTobacconistChat() {
   const { t } = useTranslation();
@@ -36,7 +41,11 @@ export default function ExpertTobacconistChat() {
     queryKey: ["pipes", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.Pipe.filter({ created_by: user.email }, "-created_date", 10000);
+      const result = await base44.entities.Pipe.filter(
+        { created_by: user.email },
+        "-created_date",
+        10000
+      );
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -46,7 +55,11 @@ export default function ExpertTobacconistChat() {
     queryKey: ["tobacco-blends", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.TobaccoBlend.filter({ created_by: user.email }, "-created_date", 10000);
+      const result = await base44.entities.TobaccoBlend.filter(
+        { created_by: user.email },
+        "-created_date",
+        10000
+      );
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -56,7 +69,11 @@ export default function ExpertTobacconistChat() {
     queryKey: ["pairing-matrix", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.PairingMatrix?.filter?.({ created_by: user.email }, "-created_date", 10000);
+      const result = await base44.entities.PairingMatrix?.filter?.(
+        { created_by: user.email },
+        "-created_date",
+        10000
+      );
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email && !!base44.entities.PairingMatrix,
@@ -67,7 +84,11 @@ export default function ExpertTobacconistChat() {
     queryKey: ["smoking-logs", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.SmokingLog?.filter?.({ created_by: user.email }, "-created_date", 2000);
+      const result = await base44.entities.SmokingLog?.filter?.(
+        { created_by: user.email },
+        "-created_date",
+        2000
+      );
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email && !!base44.entities.SmokingLog,
@@ -90,6 +111,7 @@ export default function ExpertTobacconistChat() {
     const pipeNames = pipes.map((p) => p.name || p.brand || p.shape || p.id).slice(0, 200);
     const blendNames = blends.map((b) => b.name || b.blend_name || b.brand || b.id).slice(0, 400);
 
+    // This is INTERNAL agent context; it is intentionally not translated.
     return [
       "USER COLLECTION SNAPSHOT (internal use; do not repeat back):",
       "",
@@ -108,7 +130,7 @@ export default function ExpertTobacconistChat() {
     ].join("\n");
   };
 
-  // ---- Initialize conversation ONCE (key fix) ----
+  // ---- Initialize conversation ONCE ----
   useEffect(() => {
     if (!user?.email) return;
     if (initializedRef.current) return;
@@ -120,6 +142,7 @@ export default function ExpertTobacconistChat() {
         const conversation = await base44.agents.createConversation({
           agent_name: "expert_tobacconist",
           metadata: {
+            // Metadata is not displayed to users; keep as-is.
             name: "Expert Tobacconist Chat",
             description: "Personalized pipe and tobacco advice",
           },
@@ -150,11 +173,13 @@ export default function ExpertTobacconistChat() {
         return () => unsubscribe?.();
       } catch (err) {
         console.error("[EXPERT_TOBACCONIST] Failed to initialize:", err);
-        toast.error(t("agent.failedToInitializeChat","Failed to initialize expert chat"));
+        toast.error(
+          t("agent.failedToInitializeChat", "Failed to initialize expert chat")
+        );
         initializedRef.current = false;
       }
     })();
-  }, [user?.email]);
+  }, [user?.email]); // intentionally minimal deps
 
   const renderMessageText = (msg) => {
     if (!msg) return "";
@@ -190,7 +215,12 @@ export default function ExpertTobacconistChat() {
 
     try {
       if (contextLoading) {
-        toast.error(t("agent.collectionLoadingRetry","Loading your collection data… try again in a moment."));
+        toast.error(
+          t(
+            "agent.collectionLoadingRetry",
+            "Loading your collection data… try again in a moment."
+          )
+        );
         return;
       }
 
@@ -214,7 +244,12 @@ export default function ExpertTobacconistChat() {
       setMessages(snap?.messages || []);
     } catch (err) {
       console.error("[EXPERT_TOBACCONIST] Send failed:", err);
-      toast.error(t("agent.couldntLoadResponse","Couldn't load a response from the expert agent. Please try again."));
+      toast.error(
+        t(
+          "agent.couldntLoadResponse",
+          "Couldn't load a response from the expert agent. Please try again."
+        )
+      );
     } finally {
       setLoading(false);
     }
@@ -227,13 +262,23 @@ export default function ExpertTobacconistChat() {
     }
   };
 
+  const headerTitle = t("tobacconist.askTheExpert", "Expert Tobacconist");
+  const headerSubtitle = t(
+    "tobacconist.askTheExpertDesc",
+    "Personalized pipe and tobacco advice"
+  );
+
   return (
     <Card className="p-4 space-y-4 bg-[#223447] border-white/10 text-white">
       <div className="flex items-center gap-3">
-        <img src={TOBACCONIST_ICON} alt={t("agent.aiTobacconistAlt","AI Tobacconist")} className="w-8 h-8 rounded-full object-cover" />
+        <img
+          src={TOBACCONIST_ICON}
+          alt={t("agent.aiTobacconistAlt", "AI Tobacconist")}
+          className="w-8 h-8 rounded-full object-cover"
+        />
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">{t("tobacconist.askTheExpert")}</h3>
-          <p className="text-sm text-white/70">{t("tobacconist.askTheExpertDesc")}</p>
+          <h3 className="text-lg font-semibold text-white">{headerTitle}</h3>
+          <p className="text-sm text-white/70">{headerSubtitle}</p>
         </div>
         <Sparkles className="w-5 h-5 text-white/70" />
       </div>
@@ -268,7 +313,11 @@ export default function ExpertTobacconistChat() {
 
                   {!isUser && (
                     <div className="mt-2 pt-2 border-t border-white/10">
-                      <p className="text-xs font-mono text-white/50">Answered by: expert_tobacconist</p>
+                      <p className="text-xs font-mono text-white/50">
+                        {t("agent.answeredBy", "Answered by: {{agent}}", {
+                          agent: "expert_tobacconist",
+                        })}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -280,7 +329,7 @@ export default function ExpertTobacconistChat() {
           <div className="text-left">
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
               <Loader2 className="w-4 h-4 animate-spin text-white/70" />
-              <p className="text-sm text-white/70">{t("ai.thinking")}</p>
+              <p className="text-sm text-white/70">{t("ai.thinking", "Thinking…")}</p>
             </div>
           </div>
         )}
@@ -293,14 +342,17 @@ export default function ExpertTobacconistChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={t("agent.askExpertPlaceholder","Ask about pipes, blends, pairing ideas, aging, value, redundancy...")}
+          placeholder={t(
+            "agent.askExpertPlaceholder",
+            "Ask about pipes, blends, pairing ideas, aging, value, redundancy..."
+          )}
           className="min-h-[90px] bg-[#1E2F43] border-white/10 text-white placeholder:text-white/50"
           disabled={loading}
         />
         <div className="flex justify-end">
           <Button onClick={handleSend} disabled={loading || !input.trim()} className="gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            {t("tobacconist.sendMessage")}
+            {t("tobacconist.sendMessage", "Send")}
           </Button>
         </div>
       </div>
