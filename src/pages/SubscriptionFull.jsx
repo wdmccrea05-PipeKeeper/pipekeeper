@@ -17,8 +17,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
-function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
-  const { t } = useTranslation();
+function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
     <Card
       className={`cursor-pointer transition-all ${
