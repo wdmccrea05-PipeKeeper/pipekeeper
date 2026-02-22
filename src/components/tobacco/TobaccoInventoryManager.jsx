@@ -14,7 +14,6 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   const queryClient = useQueryClient();
   const [addingToCellar, setAddingToCellar] = useState(null);
 
-  // Initialize form data from existing blend data, preserving all values
   const [formData, setFormData] = useState({
     tin_size_oz: blend?.tin_size_oz ?? '',
     tin_total_tins: blend?.tin_total_tins ?? '',
@@ -34,7 +33,6 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     pouch_cellared_date: blend?.pouch_cellared_date ?? '',
   });
 
-  // Update form when blend changes to reflect latest saved data
   React.useEffect(() => {
     if (blend) {
       setFormData({
@@ -62,7 +60,6 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
 
-      // Auto-calculate tin total quantity (rounded to 2 decimals)
       if (field === 'tin_size_oz' || field === 'tin_total_tins') {
         if (field === 'tin_size_oz' && value && updated.tin_total_tins) {
           updated.tin_total_quantity_oz = parseFloat((Number(value) * Number(updated.tin_total_tins)).toFixed(2));
@@ -71,7 +68,6 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         }
       }
 
-      // Auto-calculate pouch total quantity (rounded to 2 decimals)
       if (field === 'pouch_size_oz' || field === 'pouch_total_pouches') {
         if (field === 'pouch_size_oz' && value && updated.pouch_total_pouches) {
           updated.pouch_total_quantity_oz = parseFloat((Number(value) * Number(updated.pouch_total_pouches)).toFixed(2));
@@ -113,17 +109,13 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
     try {
       const containerType = type === 'tin' ? 'tin' : type === 'bulk' ? 'bulk' : 'pouch';
       
-      // Calculate actual ounces based on container size
       let totalOunces = parseFloat(amount);
       
       if (type === 'tin' && formData.tin_size_oz) {
-        // For tins: multiply number of tins by tin size
         totalOunces = parseFloat(amount) * parseFloat(formData.tin_size_oz);
       } else if (type === 'pouch' && formData.pouch_size_oz) {
-        // For pouches: multiply number of pouches by pouch size
         totalOunces = parseFloat(amount) * parseFloat(formData.pouch_size_oz);
       }
-      // For bulk, amount is already in ounces
       
       await base44.entities.CellarLog.create({
         blend_id: blend.id,
@@ -132,10 +124,9 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         date,
         amount_oz: totalOunces,
         container_type: containerType,
-        notes: `Added to cellar from inventory`
+        notes: t("inventory.autoAddedNote","Added to cellar from inventory")
       });
 
-      // Clear the cellared field
       const fieldMap = {
         tin: 'tin_tins_cellared',
         bulk: 'bulk_cellared',
@@ -184,18 +175,18 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
           <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
             <Package className="w-4 h-4" />
-            <span className="hidden sm:inline">Tins</span>
-            <span className="sm:hidden">Tins</span>
+            <span className="hidden sm:inline">{t("tobaccoExtended.tins","Tins")}</span>
+            <span className="sm:hidden">{t("tobaccoExtended.tins","Tins")}</span>
           </TabsTrigger>
           <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
             <Box className="w-4 h-4" />
-            <span className="hidden sm:inline">Bulk</span>
-            <span className="sm:hidden">Bulk</span>
+            <span className="hidden sm:inline">{t("tobaccoExtended.bulk","Bulk")}</span>
+            <span className="sm:hidden">{t("tobaccoExtended.bulk","Bulk")}</span>
           </TabsTrigger>
           <TabsTrigger value="pouches" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
             <Briefcase className="w-4 h-4" />
-            <span className="hidden sm:inline">Pouches</span>
-            <span className="sm:hidden">Pouches</span>
+            <span className="hidden sm:inline">{t("tobaccoExtended.pouches","Pouches")}</span>
+            <span className="sm:hidden">{t("tobaccoExtended.pouches","Pouches")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -203,60 +194,60 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsContent value="tins" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Tin Size (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.tinSize","Tin Size (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.tin_size_oz !== '' ? parseFloat(formData.tin_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('tin_size_oz', e.target.value)}
-                placeholder="e.g., 1.75"
+                placeholder={t("inventory.tinSizePlaceholder","e.g., 1.75")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Total Tins</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalTins","Total Tins")}</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.tin_total_tins}
                 onChange={(e) => handleChange('tin_total_tins', e.target.value)}
-                placeholder="e.g., 5"
+                placeholder={t("inventory.totalTinsPlaceholder","e.g., 5")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Total Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalQuantity","Total Quantity (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.tin_total_quantity_oz !== '' ? parseFloat(formData.tin_total_quantity_oz).toFixed(2) : ''}
-                placeholder="Auto-calculated"
+                placeholder={t("tobaccoExtended.autoCalculated","Auto-calculated")}
                 className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
                 readOnly
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Tins Open</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.tinsOpen","Tins Open")}</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.tin_tins_open}
                 onChange={(e) => handleChange('tin_tins_open', e.target.value)}
-                placeholder="e.g., 1"
+                placeholder={t("inventory.tinsOpenPlaceholder","e.g., 1")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Tins to Cellar</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("inventory.tinsToCellar","Tins to Cellar")}</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
                   min="0"
                   value={formData.tin_tins_cellared}
                   onChange={(e) => handleChange('tin_tins_cellared', e.target.value)}
-                  placeholder="e.g., 4"
+                  placeholder={t("inventory.tinsToCellarPlaceholder","e.g., 4")}
                   className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
                 />
                 <Button
@@ -270,7 +261,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.dateCellared","Date Cellared")}</Label>
               <Input
                 type="date"
                 value={formData.tin_cellared_date}
@@ -285,31 +276,31 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsContent value="bulk" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Total Bulk Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.bulkTotalQuantity","Total Bulk Quantity (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.bulk_total_quantity_oz !== '' ? parseFloat(formData.bulk_total_quantity_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_total_quantity_oz', e.target.value)}
-                placeholder="e.g., 16"
+                placeholder={t("inventory.bulkTotalPlaceholder","e.g., 16")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Bulk Open (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.bulkOpen","Bulk Open (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.bulk_open !== '' ? parseFloat(formData.bulk_open).toFixed(2) : ''}
                 onChange={(e) => handleChange('bulk_open', e.target.value)}
-                placeholder="e.g., 2"
+                placeholder={t("inventory.bulkOpenPlaceholder","e.g., 2")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Bulk to Cellar (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("inventory.bulkToCellar","Bulk to Cellar (oz)")}</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
@@ -317,7 +308,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   min="0"
                   value={formData.bulk_cellared !== '' ? parseFloat(formData.bulk_cellared).toFixed(2) : ''}
                   onChange={(e) => handleChange('bulk_cellared', e.target.value)}
-                  placeholder="e.g., 14"
+                  placeholder={t("inventory.bulkToCellarPlaceholder","e.g., 14")}
                   className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
                 />
                 <Button
@@ -331,7 +322,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.dateCellared","Date Cellared")}</Label>
               <Input
                 type="date"
                 value={formData.bulk_cellared_date}
@@ -346,60 +337,60 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsContent value="pouches" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Pouch Size (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.pouchSize","Pouch Size (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.pouch_size_oz !== '' ? parseFloat(formData.pouch_size_oz).toFixed(2) : ''}
                 onChange={(e) => handleChange('pouch_size_oz', e.target.value)}
-                placeholder="e.g., 1.5"
+                placeholder={t("inventory.pouchSizePlaceholder","e.g., 1.5")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Total Pouches</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalPouches","Total Pouches")}</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.pouch_total_pouches}
                 onChange={(e) => handleChange('pouch_total_pouches', e.target.value)}
-                placeholder="e.g., 3"
+                placeholder={t("inventory.totalPouchesPlaceholder","e.g., 3")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Total Quantity (oz)</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.totalQuantity","Total Quantity (oz)")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.pouch_total_quantity_oz !== '' ? parseFloat(formData.pouch_total_quantity_oz).toFixed(2) : ''}
-                placeholder="Auto-calculated"
+                placeholder={t("tobaccoExtended.autoCalculated","Auto-calculated")}
                 className="border-[#E0D8C8]/20 bg-[#223447] text-[#E0D8C8]/70"
                 readOnly
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Pouches Open</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.pouchesOpen","Pouches Open")}</Label>
               <Input
                 type="number"
                 min="0"
                 value={formData.pouch_pouches_open}
                 onChange={(e) => handleChange('pouch_pouches_open', e.target.value)}
-                placeholder="e.g., 1"
+                placeholder={t("inventory.pouchesOpenPlaceholder","e.g., 1")}
                 className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Pouches to Cellar</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("inventory.pouchesToCellar","Pouches to Cellar")}</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
                   min="0"
                   value={formData.pouch_pouches_cellared}
                   onChange={(e) => handleChange('pouch_pouches_cellared', e.target.value)}
-                  placeholder="e.g., 2"
+                  placeholder={t("inventory.pouchesToCellarPlaceholder","e.g., 2")}
                   className="border-[#E0D8C8]/20 text-[#E0D8C8] bg-[#1A2B3A] flex-1"
                 />
                 <Button
@@ -413,7 +404,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[#E0D8C8] font-semibold">Date Cellared</Label>
+              <Label className="text-[#E0D8C8] font-semibold">{t("tobaccoExtended.dateCellared","Date Cellared")}</Label>
               <Input
                 type="date"
                 value={formData.pouch_cellared_date}
