@@ -98,17 +98,14 @@ export default function CommunityPage() {
     retry: false,
   });
 
-  // Fetch all public profiles first
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
     queryFn: () => base44.entities.UserProfile.filter({ is_public: true }),
   });
 
-  // Apply filters to profiles
   const publicProfiles = React.useMemo(() => {
     let filtered = [...allPublicProfiles].filter(p => !blocked.includes(p.user_email));
     
-    // Apply name/email search filter
     if (activeSearchQuery.trim()) {
       filtered = filtered.filter(p => 
         p.display_name?.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
@@ -116,7 +113,6 @@ export default function CommunityPage() {
       );
     }
     
-    // Apply location filters
     if (activeLocationFilters.country || activeLocationFilters.city || activeLocationFilters.state || activeLocationFilters.zipCode) {
       filtered = filtered.filter(p => {
         if (!p.show_location) return false;
@@ -350,26 +346,26 @@ export default function CommunityPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__ALL__">{t("communityExtended.allCountries")}</SelectItem>
-                          <SelectItem value="United States">United States</SelectItem>
-                          <SelectItem value="Canada">Canada</SelectItem>
-                          <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                          <SelectItem value="Ireland">Ireland</SelectItem>
-                          <SelectItem value="Australia">Australia</SelectItem>
-                          <SelectItem value="New Zealand">New Zealand</SelectItem>
-                          <SelectItem value="Germany">Germany</SelectItem>
-                          <SelectItem value="France">France</SelectItem>
-                          <SelectItem value="Italy">Italy</SelectItem>
-                          <SelectItem value="Spain">Spain</SelectItem>
-                          <SelectItem value="Netherlands">Netherlands</SelectItem>
-                          <SelectItem value="Belgium">Belgium</SelectItem>
-                          <SelectItem value="Switzerland">Switzerland</SelectItem>
-                          <SelectItem value="Austria">Austria</SelectItem>
-                          <SelectItem value="Denmark">Denmark</SelectItem>
-                          <SelectItem value="Sweden">Sweden</SelectItem>
-                          <SelectItem value="Norway">Norway</SelectItem>
-                          <SelectItem value="Finland">Finland</SelectItem>
-                          <SelectItem value="Japan">Japan</SelectItem>
-                          <SelectItem value="South Korea">South Korea</SelectItem>
+                          <SelectItem value="United States">{t("countries.unitedStates","United States")}</SelectItem>
+                          <SelectItem value="Canada">{t("countries.canada","Canada")}</SelectItem>
+                          <SelectItem value="United Kingdom">{t("countries.unitedKingdom","United Kingdom")}</SelectItem>
+                          <SelectItem value="Ireland">{t("countries.ireland","Ireland")}</SelectItem>
+                          <SelectItem value="Australia">{t("countries.australia","Australia")}</SelectItem>
+                          <SelectItem value="New Zealand">{t("countries.newZealand","New Zealand")}</SelectItem>
+                          <SelectItem value="Germany">{t("countries.germany","Germany")}</SelectItem>
+                          <SelectItem value="France">{t("countries.france","France")}</SelectItem>
+                          <SelectItem value="Italy">{t("countries.italy","Italy")}</SelectItem>
+                          <SelectItem value="Spain">{t("countries.spain","Spain")}</SelectItem>
+                          <SelectItem value="Netherlands">{t("countries.netherlands","Netherlands")}</SelectItem>
+                          <SelectItem value="Belgium">{t("countries.belgium","Belgium")}</SelectItem>
+                          <SelectItem value="Switzerland">{t("countries.switzerland","Switzerland")}</SelectItem>
+                          <SelectItem value="Austria">{t("countries.austria","Austria")}</SelectItem>
+                          <SelectItem value="Denmark">{t("countries.denmark","Denmark")}</SelectItem>
+                          <SelectItem value="Sweden">{t("countries.sweden","Sweden")}</SelectItem>
+                          <SelectItem value="Norway">{t("countries.norway","Norway")}</SelectItem>
+                          <SelectItem value="Finland">{t("countries.finland","Finland")}</SelectItem>
+                          <SelectItem value="Japan">{t("countries.japan","Japan")}</SelectItem>
+                          <SelectItem value="South Korea">{t("countries.southKorea","South Korea")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Input
@@ -545,14 +541,14 @@ export default function CommunityPage() {
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/70" />
-                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("messaging.messagingDisabled", {defaultValue: "Messaging Disabled"})}</h3>
+                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("messaging.messagingDisabled")}</h3>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    {t("messaging.messagingDisabledDesc", {defaultValue: "Enable messaging in your profile settings to chat with friends"})}
+                    {t("messaging.messagingDisabledDesc")}
                   </p>
                   <a href={createPageUrl('Profile')}>
                     <Button>
                       <Settings className="w-4 h-4 mr-2" />
-                      {t("messaging.goToSettings", {defaultValue: "Go to Profile Settings"})}
+                      {t("messaging.goToSettings")}
                     </Button>
                   </a>
                 </CardContent>
@@ -561,7 +557,6 @@ export default function CommunityPage() {
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">
-            {/* Friends List */}
             {acceptedFriends.length === 0 ? (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
@@ -635,8 +630,8 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>No Pending Requests</p>
-                  <p className="text-sm mt-2">Friend requests from other members will appear here. Search for users in the Discover tab and send friend requests to connect. Friends can message each other when messaging is enabled.</p>
+                  <p>{t("communityExtended.noPendingRequests")}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.noPendingRequestsDesc")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -701,12 +696,12 @@ export default function CommunityPage() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>Not Following Anyone</p>
-                  <p className="text-sm mt-2">Discover and follow pipe enthusiasts in the community to see their collections</p>
+                  <p>{t("community.notFollowingYet","Not Following Anyone")}</p>
+                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc","Discover and follow pipe enthusiasts in the community to see their collections")}</p>
                   <a href={createPageUrl('Community')}>
                     <Button className="mt-4" onClick={() => setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
-                      Explore Community
+                      {t("community.exploreCommunity","Explore Community")}
                     </Button>
                   </a>
                 </CardContent>
