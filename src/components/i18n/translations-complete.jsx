@@ -1959,13 +1959,28 @@ const esOverrides = {
     subtitle: 'Rastrear uso y optimizar emparejamientos',
     stats: 'Estadísticas',
     reports: 'Informes',
-  },
+
+    log: 'Registro de uso',
+    pairingGrid: 'Cuadrícula de emparejamiento',
+    rotation: 'Rotación',
+    trends: 'Tendencias',
+    aging: 'Envejecimiento',
+},
   subscription: {
     premiumActiveSubtextPaid: 'Gracias por apoyar PipeKeeper',
   },
   tobacconist: {
     identificationTitle: 'Identificador de pipas AI',
-  },
+
+    title: 'Tabaquero experto',
+    subtitle: 'Consejos expertos impulsados por IA',
+    optional: 'Opcional',
+    identify: 'Identificar',
+    optimize: 'Optimizar',
+    whatIf: '¿Qué pasaría si?',
+    aiUpdates: 'Actualizaciones de IA',
+    identificationSubtitle: 'Sube fotos para ayuda rápida de identificación',
+},
   materials: {
     "Briar": "Brezo",
     "Meerschaum": "Espuma de mar",
@@ -1997,6 +2012,11 @@ const esOverrides = {
     "Medium": "Mediano",
     "Large": "Grande",
     "Extra Large": "Extra grande",
+  },
+
+  smokingLog: {
+    usageLog: 'Registro de uso',
+    logSession: 'Registrar sesión',
   },
 };
 
@@ -2034,13 +2054,28 @@ const deOverrides = {
     subtitle: 'Nutzung verfolgen und Paarungen optimieren',
     stats: 'Statistiken',
     reports: 'Berichte',
-  },
+
+    log: 'Nutzungsprotokoll',
+    pairingGrid: 'Paarungsraster',
+    rotation: 'Rotation',
+    trends: 'Trends',
+    aging: 'Reifung',
+},
   subscription: {
     premiumActiveSubtextPaid: 'Danke für die Unterstützung von PipeKeeper',
   },
   tobacconist: {
     identificationTitle: 'KI-Pfeifenidentifikator',
-  },
+
+    title: 'Experten-Tabakberater',
+    subtitle: 'Expertenrat mit KI',
+    optional: 'Optional',
+    identify: 'Identifizieren',
+    optimize: 'Optimieren',
+    whatIf: 'Was wäre wenn',
+    aiUpdates: 'KI-Updates',
+    identificationSubtitle: 'Fotos hochladen für schnelle Identifizierung',
+},
   materials: {
     "Briar": "Bruyère",
     "Meerschaum": "Meerschaum",
@@ -2072,6 +2107,11 @@ const deOverrides = {
     "Medium": "Mittel",
     "Large": "Groß",
     "Extra Large": "Extra groß",
+  },
+
+  smokingLog: {
+    usageLog: 'Nutzungsprotokoll',
+    logSession: 'Sitzung protokollieren',
   },
 };
 
@@ -2109,13 +2149,28 @@ const jaOverrides = {
     subtitle: '使用を追跡し、ペアリングを最適化',
     stats: '統計',
     reports: 'レポート',
-  },
+
+    log: '使用ログ',
+    pairingGrid: 'ペアリング',
+    rotation: 'ローテーション',
+    trends: 'トレンド',
+    aging: '熟成',
+},
   subscription: {
     premiumActiveSubtextPaid: 'PipeKeeperをサポートいただきありがとうございます',
   },
   tobacconist: {
     identificationTitle: 'AIパイプ識別子',
-  },
+
+    title: 'AIタバコ相談',
+    subtitle: 'AIでおすすめアドバイス',
+    optional: '任意',
+    identify: '識別',
+    optimize: '最適化',
+    whatIf: 'もし〜なら',
+    aiUpdates: 'AI更新',
+    identificationSubtitle: '写真をアップロードしてすぐ識別',
+},
   materials: {
     "Briar": "ブライヤー",
     "Meerschaum": "メシャム",
@@ -2147,6 +2202,11 @@ const jaOverrides = {
     "Medium": "中",
     "Large": "大",
     "Extra Large": "特大",
+  },
+
+  smokingLog: {
+    usageLog: '使用ログ',
+    logSession: 'セッション記録',
   },
 };
 
