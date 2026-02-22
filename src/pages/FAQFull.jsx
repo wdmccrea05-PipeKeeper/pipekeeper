@@ -65,7 +65,7 @@ export default function FAQFull() {
           </div>
         </div>
 
-      <Section title={sections.general?.title || "General"}>
+      <Section title={sections.general?.title || t("faqFull.general","General")}>
         <Card className="bg-[#A35C5C]/10 border-[#A35C5C]/40 mb-6">
           <button
             onClick={() => toggleItem('verification-help')}
@@ -95,7 +95,7 @@ export default function FAQFull() {
         ))}
       </Section>
 
-      <Section title={sections.gettingStarted?.title || "Getting Started"}>
+      <Section title={sections.gettingStarted?.title || t("faqFull.gettingStarted","Getting Started")}>
         {sections.gettingStarted?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>
             {item.a}
@@ -112,19 +112,19 @@ export default function FAQFull() {
         ))}
       </Section>
 
-      <Section title={sections.fieldDefinitions?.title || "Field Definitions"}>
+      <Section title={sections.fieldDefinitions?.title || t("faqFull.fieldDefinitions","Field Definitions")}>
         {sections.fieldDefinitions?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
         ))}
       </Section>
 
-      <Section title={sections.tobaccoValuation?.title || "Tobacco Valuation"}>
+      <Section title={sections.tobaccoValuation?.title || t("faqFull.tobaccoValuation","Tobacco Valuation")}>
         {sections.tobaccoValuation?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
         ))}
       </Section>
 
-      <Section title={sections.featuresAndTools?.title || "Features & Tools"}>
+      <Section title={sections.featuresAndTools?.title || t("faqFull.featuresAndTools","Features & Tools")}>
         {sections.featuresAndTools?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>
             {item.intro && <p>{item.intro}</p>}
@@ -139,48 +139,48 @@ export default function FAQFull() {
         ))}
 
         {/* Subscription Tiers Comparison */}
-        <Q id="subscription-tiers" q="What are the subscription tiers and what's included?">
+        <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion","What are the subscription tiers and what's included?")}>
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">Free Tier</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t("faqFull.freeTier","Free Tier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>7-day trial of all premium features</li>
-                <li>Up to 5 pipes</li>
-                <li>Up to 10 tobacco blends</li>
-                <li>Basic collection management</li>
-                <li>Photo uploads</li>
+                <li>{t("faqFull.freeTrial7Days","7-day trial of all premium features")}</li>
+                <li>{t("faqFull.upTo5Pipes","Up to 5 pipes")}</li>
+                <li>{t("faqFull.upTo10Tobacco","Up to 10 tobacco blends")}</li>
+                <li>{t("faqFull.basicCollection","Basic collection management")}</li>
+                <li>{t("faqFull.photoUploads","Photo uploads")}</li>
               </ul>
             </div>
 
             <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <h4 className="font-semibold text-amber-900 mb-2">Premium Tier</h4>
+              <h4 className="font-semibold text-amber-900 mb-2">{t("faqFull.premiumTier","Premium Tier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>Unlimited pipes and tobacco blends</li>
-                <li>AI tobacco matching recommendations</li>
-                <li>Pairing matrix and optimization</li>
-                <li>Smoking log and rotation planner</li>
-                <li>Collection insights and statistics</li>
-                <li>Export reports (PDF, CSV, Excel)</li>
-                <li>Public profile and community features</li>
-                <li>Break-in schedules</li>
+                <li>{t("faqFull.unlimitedPipesTobacco","Unlimited pipes and tobacco blends")}</li>
+                <li>{t("faqFull.aiMatching","AI tobacco matching recommendations")}</li>
+                <li>{t("faqFull.pairingMatrix","Pairing matrix and optimization")}</li>
+                <li>{t("faqFull.smokingLog","Smoking log and rotation planner")}</li>
+                <li>{t("faqFull.collectionInsights","Collection insights and statistics")}</li>
+                <li>{t("faqFull.exportReports","Export reports (PDF, CSV, Excel)")}</li>
+                <li>{t("faqFull.publicProfile","Public profile and community features")}</li>
+                <li>{t("faqFull.breakInSchedules","Break-in schedules")}</li>
               </ul>
             </div>
 
             <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-2">Pro Tier</h4>
+              <h4 className="font-semibold text-purple-900 mb-2">{t("faqFull.proTier","Pro Tier")}</h4>
               <ul className="list-disc ml-4 space-y-1 text-gray-700">
-                <li>Everything in Premium, plus:</li>
-                <li>AI pipe identification from photos</li>
-                <li>Market value lookup for pipes and tobacco</li>
-                <li>Geometry analysis from photos</li>
-                <li>Tobacco aging projections and cellar trends</li>
-                <li>Advanced valuation tracking</li>
-                <li>Priority support</li>
+                <li>{t("faqFull.everythingInPremium","Everything in Premium, plus:")}</li>
+                <li>{t("faqFull.aiPipeIdentification","AI pipe identification from photos")}</li>
+                <li>{t("faqFull.marketValueLookup","Market value lookup for pipes and tobacco")}</li>
+                <li>{t("faqFull.geometryAnalysis","Geometry analysis from photos")}</li>
+                <li>{t("faqFull.tobaccoAgingProjections","Tobacco aging projections and cellar trends")}</li>
+                <li>{t("faqFull.advancedValuation","Advanced valuation tracking")}</li>
+                <li>{t("faqFull.prioritySupport","Priority support")}</li>
               </ul>
             </div>
 
             <p className="text-sm text-gray-600 mt-4">
-              For a full feature description visit:{" "}
+              {t("faqFull.fullFeatureDescription","For a full feature description visit")}:{" "}
               <a href="https://www.pipekeeperapp.com/features" target="_blank" rel="noopener noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
                 https://www.pipekeeperapp.com/features
               </a>
@@ -189,20 +189,20 @@ export default function FAQFull() {
         </Q>
       </Section>
 
-      <Section title={sections.accountsAndData?.title || "Accounts & Data"}>
+      <Section title={sections.accountsAndData?.title || t("faqFull.accountsAndData","Accounts & Data")}>
         {sections.accountsAndData?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
         ))}
       </Section>
 
-      <Section title={sections.ai?.title || "AI Features & Accuracy"}>
+      <Section title={sections.ai?.title || t("faqFull.ai","AI Features & Accuracy")}>
         {sections.ai?.items?.map((item) => (
           <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
         ))}
       </Section>
 
-      <Section title={sections.support?.title || "Support"}>
-        <Q id="contact-support" q={sections.support?.contactQ || "How do I contact support?"}>
+      <Section title={sections.support?.title || t("common.support","Support")}>
+        <Q id="contact-support" q={sections.support?.contactQ || t("faqFull.contactSupport","How do I contact support?")}>
           {sections.support?.contactIntro}{" "}
           <a href="https://pipekeeper.app" target="_blank" rel="noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
             pipekeeper.app
