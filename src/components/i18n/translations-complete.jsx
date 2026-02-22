@@ -2410,7 +2410,69 @@ const esOverrides = {
   
     featureName: 'Actualizaciones y regeneración con IA',
     featureDesc: 'Actualiza y regenera matrices de maridaje, optimización de la colección, clasificaciones de mezclas y medidas de pipas con IA. Disponible para usuarios Premium heredados o nivel Pro.',
-},
+  },
+
+  userReport: {
+    title: 'Informe de suscripciones de usuarios',
+    lastUpdated: 'Última actualización',
+    backfillComplete: 'Relleno completo: {{created}} creados, {{updated}} actualizados',
+    syncing: 'Sincronizando…',
+    reportRefreshed: 'Informe actualizado',
+    totalUsers: 'Total de usuarios',
+    paidUsers: 'Usuarios de pago',
+    freeUsers: 'Usuarios gratuitos',
+    paidPercentage: '% de pago',
+    premium: 'Premium',
+    pro: 'Pro',
+    avgPipesPerUser: 'Promedio de pipas por usuario',
+    avgTobaccosPerUser: 'Promedio de tabacos por usuario',
+  },
+
+  subscriptionSupport: {
+    title: 'Soporte de suscripción',
+    integrationHealth: 'Estado de integración',
+    successful: 'Exitoso',
+    failed: 'Fallido',
+    premium: 'Premium',
+    pro: 'Pro',
+    free: 'Gratis',
+  },
+
+  trends: {
+    yourTrends: 'Tus tendencias',
+    topPipes: 'Principales pipas',
+    topBlends: 'Principales mezclas',
+    overview: 'Resumen',
+    usage: 'Uso',
+    taste: 'Sabor',
+    geometry: 'Geometría',
+  },
+
+  subscriptionBackup: {
+    title: 'Modo de respaldo de suscripción',
+    premiumMonthly: 'Premium mensual',
+    premiumAnnual: 'Premium anual',
+    proMonthly: 'Pro mensual',
+    proAnnual: 'Pro anual',
+    monthly: 'Mensual',
+    annual: 'Anual',
+  },
+
+  countries: {
+    unitedStates: 'Estados Unidos',
+    canada: 'Canadá',
+    germany: 'Alemania',
+    france: 'Francia',
+    italy: 'Italia',
+    spain: 'España',
+    japan: 'Japón',
+  },
+
+  faqFull: {
+    freeTier: 'Nivel gratuito',
+    premiumTier: 'Nivel Premium',
+    proTier: 'Nivel Pro',
+  },
 
 };
 
@@ -2520,7 +2582,65 @@ const deOverrides = {
   
     featureName: 'KI-Updates & Regenerierung',
     featureDesc: 'Aktualisiere und regeneriere Pairing-Matrizen, Sammlungsoptimierung, Blend-Klassifizierungen und Pfeifenmaße mit KI. Verfügbar für Legacy-Premium oder Pro.',
-},
+  },
+
+  userReport: {
+    title: 'Benutzer-Abonnementbericht',
+    lastUpdated: 'Zuletzt aktualisiert',
+    syncing: 'Synchronisiere…',
+    reportRefreshed: 'Bericht aktualisiert',
+    totalUsers: 'Benutzer insgesamt',
+    paidUsers: 'Zahlende Benutzer',
+    freeUsers: 'Kostenlose Benutzer',
+    premium: 'Premium',
+    pro: 'Pro',
+  },
+
+  subscriptionSupport: {
+    title: 'Abonnement-Support',
+    integrationHealth: 'Integrationsstatus',
+    successful: 'Erfolgreich',
+    failed: 'Fehlgeschlagen',
+    premium: 'Premium',
+    pro: 'Pro',
+    free: 'Kostenlos',
+  },
+
+  trends: {
+    yourTrends: 'Deine Trends',
+    topPipes: 'Top-Pfeifen',
+    topBlends: 'Top-Mischungen',
+    overview: 'Übersicht',
+    usage: 'Nutzung',
+    taste: 'Geschmack',
+    geometry: 'Geometrie',
+  },
+
+  subscriptionBackup: {
+    title: 'Abonnement-Backup-Modus',
+    premiumMonthly: 'Premium monatlich',
+    premiumAnnual: 'Premium jährlich',
+    proMonthly: 'Pro monatlich',
+    proAnnual: 'Pro jährlich',
+    monthly: 'Monatlich',
+    annual: 'Jährlich',
+  },
+
+  countries: {
+    unitedStates: 'Vereinigte Staaten',
+    canada: 'Kanada',
+    germany: 'Deutschland',
+    france: 'Frankreich',
+    italy: 'Italien',
+    spain: 'Spanien',
+    japan: 'Japan',
+  },
+
+  faqFull: {
+    freeTier: 'Kostenlose Stufe',
+    premiumTier: 'Premium-Stufe',
+    proTier: 'Pro-Stufe',
+  },
 
 };
 
@@ -2630,7 +2750,65 @@ const jaOverrides = {
   
     featureName: 'AI更新＆再生成',
     featureDesc: 'AIでペアリング行列、コレクション最適化、ブレンド分類、パイプ寸法を更新・再生成します。旧PremiumユーザーまたはProで利用できます。',
-},
+  },
+
+  userReport: {
+    title: 'ユーザーサブスクリプションレポート',
+    lastUpdated: '最終更新',
+    syncing: '同期中…',
+    reportRefreshed: 'レポート更新',
+    totalUsers: '総ユーザー数',
+    paidUsers: '有料ユーザー',
+    freeUsers: '無料ユーザー',
+    premium: 'プレミアム',
+    pro: 'プロ',
+  },
+
+  subscriptionSupport: {
+    title: 'サブスクリプションサポート',
+    integrationHealth: '統合ヘルス',
+    successful: '成功',
+    failed: '失敗',
+    premium: 'プレミアム',
+    pro: 'プロ',
+    free: '無料',
+  },
+
+  trends: {
+    yourTrends: 'あなたのトレンド',
+    topPipes: 'トップパイプ',
+    topBlends: 'トップブレンド',
+    overview: '概要',
+    usage: '使用',
+    taste: '味',
+    geometry: '形状',
+  },
+
+  subscriptionBackup: {
+    title: 'サブスクリプションバックアップモード',
+    premiumMonthly: 'プレミアム月額',
+    premiumAnnual: 'プレミアム年額',
+    proMonthly: 'プロ月額',
+    proAnnual: 'プロ年額',
+    monthly: '月額',
+    annual: '年額',
+  },
+
+  countries: {
+    unitedStates: 'アメリカ',
+    canada: 'カナダ',
+    germany: 'ドイツ',
+    france: 'フランス',
+    italy: 'イタリア',
+    spain: 'スペイン',
+    japan: '日本',
+  },
+
+  faqFull: {
+    freeTier: '無料プラン',
+    premiumTier: 'プレミアムプラン',
+    proTier: 'プロプラン',
+  },
 
 };
 
