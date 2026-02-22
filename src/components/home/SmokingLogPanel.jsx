@@ -100,6 +100,25 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const estimateTobaccoUsage = (pipe, bowls) => {
     if (!pipe) return 0;
     
+    const numBowls = Number(bowls || 1);
+    
+    // Try to use actual dimensions if available
+    if (pipe.bowl_diameter_mm > 0 && pipe.bowl_depth_mm > 0) {
+      // Calculate chamber volume using cylinder formula: V = π * r² * h
+      const radiusMm = pipe.bowl_diameter_mm / 2;
+      const depthMm = pipe.bowl_depth_mm;
+      const volumeMm3 = Math.PI * radiusMm * radiusMm * depthMm;
+      const volumeCm3 = volumeMm3 / 1000;
+      
+      // Tobacco density is roughly 0.35 g/cm³ for average pipe tobacco
+      const gramsPerBowl = volumeCm3 * 0.35;
+      const totalGrams = gramsPerBowl * numBowls;
+      const ozPerGram = 0.035274;
+      
+      return totalGrams * ozPerGram;
+    }
+    
+    // Fallback to categorical estimate if dimensions not available
     const chamberVolume = pipe.chamber_volume || 'Medium';
     const volumeMap = {
       'Small': 0.5,
@@ -109,7 +128,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     };
     
     const gramsPerBowl = volumeMap[chamberVolume] || 0.75;
-    const totalGrams = gramsPerBowl * Number(bowls || 1);
+    const totalGrams = gramsPerBowl * numBowls;
     const ozPerGram = 0.035274;
     
     return totalGrams * ozPerGram;
