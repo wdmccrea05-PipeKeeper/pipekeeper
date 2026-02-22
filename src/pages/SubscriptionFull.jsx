@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading }) {
+  const { t } = useTranslation();
   return (
     <Card
       className={`cursor-pointer transition-all ${
@@ -30,7 +31,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
           {tier.charAt(0).toUpperCase() + tier.slice(1)}
         </CardTitle>
         <div className="text-2xl font-bold text-[#A35C5C] mt-2">${price}</div>
-        <div className="text-sm text-[#e8d5b7]/60">per {interval}</div>
+        <div className="text-sm text-[#e8d5b7]/60">{t("subscriptionFull.per","per")} {interval}</div>
       </CardHeader>
       <CardContent className="space-y-3">
         {features.map((f, i) => (
@@ -44,7 +45,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
           variant={isSelected ? "default" : "outline"}
           disabled={isLoading}
         >
-          {isSelected ? "Selected" : "Choose"}
+          {isSelected ? t("subscriptionFull.selected","Selected") : t("subscriptionFull.choose","Choose")}
         </Button>
       </CardContent>
     </Card>
@@ -67,21 +68,18 @@ export default function SubscriptionFull() {
   useEffect(() => {
     if (!isIOSApp) return;
 
-    // Ask native for current status
     requestNativeSubscriptionStatus();
 
-    // Listen for native updates - payload is an object, not boolean
     const cleanup = registerNativeSubscriptionListener((payload) => {
       const active = !!payload.active;
       setSubActive(active);
       setSubTier(payload?.tier || (payload?.productId || ""));
-      if (active) setMessage("Subscription active ✅");
+      if (active) setMessage(t("subscriptionFull.subActiveCheck","Subscription active ✅"));
     });
 
     return cleanup;
-  }, [isIOSApp]);
+  }, [isIOSApp, t]);
 
-  // Backward compatibility: older checkout links return to /Subscription?success=1.
   useEffect(() => {
     if (isIOSApp) return;
     const params = new URLSearchParams(window.location.search);
@@ -104,7 +102,6 @@ export default function SubscriptionFull() {
     })();
   }, [isIOSApp, refetch, queryClient]);
 
-  // Auto-sync on window refocus (Option A)
   useEffect(() => {
     if (isIOSApp) return;
 
@@ -127,48 +124,44 @@ export default function SubscriptionFull() {
   };
 
   const freeFeatures = [
-    "Basic item records",
-    "Notes and photos",
-    "Manual organization",
+    t("subscriptionFull.basicItemRecords","Basic item records"),
+    t("subscriptionFull.notesAndPhotos","Notes and photos"),
+    t("subscriptionFull.manualOrganization","Manual organization"),
   ];
 
   const tierDescriptions = {
-    free: "Core cataloging for pipes and cellar items.",
-    premium: "Premium adds expanded insights, reports, and advanced organization tools for collectors who actively manage and grow their collections.",
-    pro: "Pro is designed for collectors who want deep analytics and optional AI-assisted tools for advanced organization and analysis.",
+    free: t("subscriptionFull.freeTierDesc","Core cataloging for pipes and cellar items."),
+    premium: t("subscriptionFull.premiumTierDesc","Premium adds expanded insights, reports, and advanced organization tools for collectors who actively manage and grow their collections."),
+    pro: t("subscriptionFull.proTierDesc","Pro is designed for collectors who want deep analytics and optional AI-assisted tools for advanced organization and analysis."),
   };
 
   const tierTaglines = {
-    premium: "For active collectors",
-    pro: "For advanced collectors",
+    premium: t("subscriptionFull.premiumTagline","For active collectors"),
+    pro: t("subscriptionFull.proTagline","For advanced collectors"),
   };
 
   const tierFeatures = {
     premium: [
-      "Collection insights and summaries",
-      "Reports and exports",
-      "Advanced organization tools",
-      "Priority access to new features",
+      t("subscriptionFull.collectionInsights","Collection insights and summaries"),
+      t("subscriptionFull.reportsAndExports","Reports and exports"),
+      t("subscriptionFull.advancedOrgTools","Advanced organization tools"),
+      t("subscriptionFull.priorityAccess","Priority access to new features"),
     ],
     pro: [
-      "Deep collection analytics",
-      "AI-assisted organization tools",
-      "Power-user features",
+      t("subscriptionFull.deepAnalytics","Deep collection analytics"),
+      t("subscriptionFull.aiAssistedTools","AI-assisted organization tools"),
+      t("subscriptionFull.powerUserFeatures","Power-user features"),
     ],
   };
 
   const handleUpgrade = async (tier, interval) => {
-    // iOS WKWebView -> StoreKit paywall (native)
     if (isIOSApp) {
-      // IMPORTANT: pass requested tier so native paywall can present the correct product.
-      // Fallback to the user's current selection.
       const requestedTier = tier || selectedTier || "premium";
       const ok = startApplePurchaseFlow(requestedTier);
       if (!ok) openNativePaywall();
       return;
     }
 
-    // Non-iOS: Open Stripe checkout
     setMessage("");
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
@@ -178,33 +171,31 @@ export default function SubscriptionFull() {
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        setMessage("Error starting checkout. Please try again.");
+        setMessage(t("subscriptionFull.checkoutError","Error starting checkout. Please try again."));
       }
     } catch (e) {
       console.error("[SubscriptionFull] Checkout error:", e);
-      setMessage("Error starting checkout. Please try again.");
+      setMessage(t("subscriptionFull.checkoutError","Error starting checkout. Please try again."));
     }
   };
 
   const handleManage = async () => {
     setMessage("");
 
-    // iOS WKWebView -> Apple subscriptions (native)
     if (isIOSApp) {
       openAppleSubscriptions();
       return;
     }
 
-    // Non-iOS: Stripe customer portal
     try {
       const response = await base44.functions.invoke('createCustomerPortalSession', {});
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        setMessage("Error: Could not open subscription management");
+        setMessage(t("subscriptionFull.manageError","Error: Could not open subscription management"));
       }
     } catch (e) {
-      setMessage("Error: Could not open subscription management");
+      setMessage(t("subscriptionFull.manageError","Error: Could not open subscription management"));
     }
   };
 
@@ -215,41 +206,40 @@ export default function SubscriptionFull() {
       await refetch();
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      setMessage("✅ Subscription updated");
+      setMessage(t("subscriptionFull.subUpdated","✅ Subscription updated"));
       setTimeout(() => setMessage(""), 3000);
     } catch (e) {
-      setMessage("Could not refresh. Please try again.");
+      setMessage(t("subscriptionFull.refreshError","Could not refresh. Please try again."));
     }
   };
 
   if (isIOSApp) {
-    // iOS App Store subscriptions
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-[#e8d5b7]">PipeKeeper Subscriptions</h1>
+          <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscriptionFull.pipekeeperSubs","PipeKeeper Subscriptions")}</h1>
           <Button variant="secondary" onClick={handleManage}>
-            Manage
+            {t("subscriptionFull.manage","Manage")}
           </Button>
         </div>
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">iOS App Store</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.iosAppStore","iOS App Store")}</CardTitle>
           </CardHeader>
           <CardContent className="text-[#e8d5b7]/80">
-            <p className="mb-4">Purchases and subscription management are handled through Apple.</p>
+            <p className="mb-4">{t("subscriptionFull.handledThroughApple","Purchases and subscription management are handled through Apple.")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <Button className="w-full" onClick={() => handleUpgrade("premium")}>
-                Upgrade to Premium (App Store)
+                {t("subscriptionFull.upgradePremiumAppStore","Upgrade to Premium (App Store)")}
               </Button>
               <Button className="w-full" onClick={() => handleUpgrade("pro")}>
-                Upgrade to Pro (App Store)
+                {t("subscriptionFull.upgradeProAppStore","Upgrade to Pro (App Store)")}
               </Button>
             </div>
             {subActive && (
               <div className="mt-4 text-emerald-500">
-                Status: Active ✅{subTier ? ` (${subTier})` : ""}
+                {t("subscriptionFull.statusActive","Status: Active ✅")}{subTier ? ` (${subTier})` : ""}
               </div>
             )}
             {message && <div className="mt-4 text-red-500">{message}</div>}
@@ -259,28 +249,27 @@ export default function SubscriptionFull() {
     );
   }
 
-  // Web/Android subscriptions
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Continue using Premium tools for your collection</h1>
-        <p className="text-[#e8d5b7]/70">You've had full access — choose how you'd like to continue.</p>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.continueWithPremium","Continue using Premium tools for your collection")}</h1>
+        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.fullAccessPrompt","You've had full access — choose how you'd like to continue.")}</p>
       </div>
 
       {/* Billing Interval Toggle */}
       <div className="flex gap-4 items-center">
-         <span className="text-[#e8d5b7]">Billing:</span>
+         <span className="text-[#e8d5b7]">{t("subscriptionFull.billing","Billing")}:</span>
          <Button
            variant={selectedInterval === "monthly" ? "default" : "outline"}
            onClick={() => setSelectedInterval("monthly")}
          >
-           Monthly
+           {t("subscriptionFull.monthly","Monthly")}
          </Button>
          <Button
            variant={selectedInterval === "annual" ? "default" : "outline"}
            onClick={() => setSelectedInterval("annual")}
          >
-           Annual (Save {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
+           {t("subscriptionFull.annualSave","Annual")} ({t("subscriptionFull.save","Save")} {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
          </Button>
        </div>
 
@@ -289,7 +278,7 @@ export default function SubscriptionFull() {
         {/* Free Tier */}
         <Card className="border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Free</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.free","Free")}</CardTitle>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.free}</p>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -300,7 +289,7 @@ export default function SubscriptionFull() {
               </div>
             ))}
             <Button variant="outline" className="w-full mt-4" disabled>
-              Continue with Free
+              {t("subscriptionFull.continueWithFree","Continue with Free")}
             </Button>
           </CardContent>
         </Card>
@@ -308,15 +297,15 @@ export default function SubscriptionFull() {
         {/* Premium Tier - Emphasized */}
         <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
-            Recommended
+            {t("subscriptionFull.recommended","Recommended")}
           </div>
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Premium</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.premium","Premium")}</CardTitle>
             <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.premium}</p>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.premium}</p>
             <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.premium[selectedInterval]}</div>
             <div className="text-sm text-[#e8d5b7]/60">
-              per {selectedInterval === "monthly" ? "month" : "year"}
+              {t("subscriptionFull.per","per")} {selectedInterval === "monthly" ? t("subscriptionFull.month","month") : t("subscriptionFull.year","year")}
             </div>
             {selectedInterval === "annual" && (
               <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
@@ -333,7 +322,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => handleUpgrade("premium", selectedInterval)}
             >
-              Continue with Premium
+              {t("subscriptionFull.continueWithPremiumBtn","Continue with Premium")}
             </Button>
           </CardContent>
         </Card>
@@ -341,12 +330,12 @@ export default function SubscriptionFull() {
         {/* Pro Tier */}
         <Card className="border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Pro</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.pro","Pro")}</CardTitle>
             <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.pro}</p>
             <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.pro[selectedInterval]}</div>
             <div className="text-sm text-[#e8d5b7]/60">
-              per {selectedInterval === "monthly" ? "month" : "year"}
+              {t("subscriptionFull.per","per")} {selectedInterval === "monthly" ? t("subscriptionFull.month","month") : t("subscriptionFull.year","year")}
             </div>
             {selectedInterval === "annual" && (
               <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
@@ -364,7 +353,7 @@ export default function SubscriptionFull() {
               className="w-full mt-4"
               onClick={() => handleUpgrade("pro", selectedInterval)}
             >
-              Upgrade to Pro
+              {t("subscriptionFull.upgradeToPro","Upgrade to Pro")}
             </Button>
           </CardContent>
         </Card>
@@ -372,18 +361,18 @@ export default function SubscriptionFull() {
 
       {/* Reassurance Copy */}
       <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
-         <p>• Cancel anytime</p>
-         {!isIOSApp && <p>• Subscription managed through Stripe</p>}
-         <p>• Your existing data is never affected</p>
+         <p>{t("subscriptionFull.cancelAnytime","• Cancel anytime")}</p>
+         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe","• Subscription managed through Stripe")}</p>}
+         <p>{t("subscriptionFull.dataUnaffected","• Your existing data is never affected")}</p>
        </div>
 
        {/* Manage Subscription */}
        <div className="space-y-3">
          <Button variant="outline" className="w-full" onClick={handleManage}>
-           Manage Subscription
+           {t("subscriptionFull.manageSubscription","Manage Subscription")}
          </Button>
          <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
-           Manual Backup Checkout
+           {t("subscriptionFull.manualBackupCheckout","Manual Backup Checkout")}
          </Button>
        </div>
 
