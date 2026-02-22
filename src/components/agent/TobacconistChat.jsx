@@ -149,11 +149,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success({t("agent.pairingsRegenerateSuccess","Pairings regenerated successfully")});
+      toast.success(t("agent.pairingsRegenerateSuccess","Pairings regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error({t("agent.pairingsRegenerateFailed","Failed to regenerate pairings")});
+      toast.error(t("agent.pairingsRegenerateFailed","Failed to regenerate pairings"));
     },
   });
 
@@ -166,9 +166,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success({t("agent.pairingsReverted","Pairings reverted to previous version")});
+      toast.success(t("agent.pairingsReverted","Pairings reverted to previous version"));
     },
-    onError: () => toast.error({t("agent.failedToUndoPairings","Failed to undo pairings")}),
+    onError: () => toast.error(t("agent.failedToUndoPairings","Failed to undo pairings")),
   });
 
   const regenOpt = useMutation({
@@ -195,11 +195,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success({t("agent.optimizationRegenerated","Optimization regenerated successfully")});
+      toast.success(t("agent.optimizationRegenerated","Optimization regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error({t("agent.failedToRegenerateOptimization","Failed to regenerate optimization")});
+      toast.error(t("agent.failedToRegenerateOptimization","Failed to regenerate optimization"));
     },
   });
 
@@ -212,9 +212,9 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success({t("agent.optimizationReverted","Optimization reverted to previous version")});
+      toast.success(t("agent.optimizationReverted","Optimization reverted to previous version"));
     },
-    onError: () => toast.error({t("agent.failedToUndoOptimization","Failed to undo optimization")}),
+    onError: () => toast.error(t("agent.failedToUndoOptimization","Failed to undo optimization")),
   });
 
   // Auto-scroll
@@ -246,7 +246,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         }
       }).catch(err => {
         console.error('Failed to create conversation:', err);
-        toast.error({t("agent.failedToStartConversation","Failed to start conversation")});
+        toast.error(t("agent.failedToStartConversation","Failed to start conversation"));
       });
     }
   }, [open, user?.email, conversationId, contextPayload, contextSent]);
@@ -278,7 +278,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       });
     } catch (error) {
       console.error('Send error:', error);
-      toast.error({t("agent.failedToSendMessage","Failed to send message")});
+      toast.error(t("agent.failedToSendMessage","Failed to send message"));
       setSending(false);
     }
   };

@@ -150,7 +150,7 @@ export default function ExpertTobacconistChat() {
         return () => unsubscribe?.();
       } catch (err) {
         console.error("[EXPERT_TOBACCONIST] Failed to initialize:", err);
-        toast.error({t("agent.failedToInitializeChat","Failed to initialize expert chat")});
+        toast.error(t("agent.failedToInitializeChat","Failed to initialize expert chat"));
         initializedRef.current = false;
       }
     })();
@@ -190,7 +190,7 @@ export default function ExpertTobacconistChat() {
 
     try {
       if (contextLoading) {
-        toast.error({t("agent.collectionLoadingRetry","Loading your collection data… try again in a moment.")});
+        toast.error(t("agent.collectionLoadingRetry","Loading your collection data… try again in a moment."));
         return;
       }
 
@@ -214,7 +214,7 @@ export default function ExpertTobacconistChat() {
       setMessages(snap?.messages || []);
     } catch (err) {
       console.error("[EXPERT_TOBACCONIST] Send failed:", err);
-      toast.error({t("agent.couldntLoadResponse","Couldn't load a response from the expert agent. Please try again.")});
+      toast.error(t("agent.couldntLoadResponse","Couldn't load a response from the expert agent. Please try again."));
     } finally {
       setLoading(false);
     }

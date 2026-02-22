@@ -105,14 +105,14 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
       if (result?.skipped) {
-        toast.success({t("aiUpdates.alreadyUpToDate","Pairings are already up to date")});
+        toast.success(t("aiUpdates.alreadyUpToDate","Pairings are already up to date"));
       } else {
-        toast.success({t("aiUpdates.regenerateSuccess","Pairings regenerated successfully")});
+        toast.success(t("aiUpdates.regenerateSuccess","Pairings regenerated successfully"));
       }
     },
     onError: () => {
       setBusy(false);
-      toast.error({t("aiUpdates.regenerateFailed","Failed to regenerate pairings")});
+      toast.error(t("aiUpdates.regenerateFailed","Failed to regenerate pairings"));
     },
   });
 

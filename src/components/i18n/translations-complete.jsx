@@ -23,6 +23,12 @@ function mergeDeep(target, source) {
 }
 
 const enTranslations = {
+  ageGate: {
+    title: 'Adults Only',
+    intendedForAdults: 'PipeKeeper is intended for adult users only.',
+    disclaimer: 'This app is a collection management tool for pipe smoking enthusiasts. It does not sell or facilitate the purchase of tobacco products.',
+    confirmAge: 'I confirm I am of legal age',
+  },
   common: {
     loading: 'Loading...',
     refresh: 'Refresh',
