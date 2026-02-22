@@ -33,7 +33,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     return (
       <UpgradePrompt 
         featureName="AI Updates & Regeneration"
-        description="Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier."
+        description={t("ai.autoUpdateDesc","Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier.")}
       />
     );
   }
@@ -105,14 +105,14 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
       if (result?.skipped) {
-        toast.success("Pairings are already up to date");
+        toast.success(t("pairingGrid.alreadyUpToDate","Pairings are already up to date"));
       } else {
-        toast.success("Pairings regenerated successfully");
+        toast.success(t("pairingGrid.regenerateSuccess","Pairings regenerated successfully"));
       }
     },
     onError: () => {
       setBusy(false);
-      toast.error("Failed to regenerate pairings");
+      toast.error(t("pairingMatrix.regenFailed","Failed to regenerate pairings"));
     },
   });
 
@@ -125,9 +125,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Pairings reverted to previous version");
+      toast.success(t("matching.pairingsReverted","Pairings reverted to previous version"));
     },
-    onError: () => toast.error("Failed to undo pairings"),
+    onError: () => toast.error(t("errors.failedToUndoPairings","Failed to undo pairings")),
   });
 
   const regenOpt = useMutation({
@@ -203,11 +203,11 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Optimization regenerated successfully");
+      toast.success(t("matching.optimizationRegenerated","Optimization regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error("Failed to regenerate optimization");
+      toast.error(t("errors.failedToRegenerateOptimization","Failed to regenerate optimization"));
     },
   });
 
@@ -220,9 +220,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Optimization reverted to previous version");
+      toast.success(t("matching.optimizationReverted","Optimization reverted to previous version"));
     },
-    onError: () => toast.error("Failed to undo optimization"),
+    onError: () => toast.error(t("errors.failedToUndoOptimization","Failed to undo optimization")),
   });
 
   // ✅ FIX: Add the missing "Reclassify Blends" card + function to the AI Updates panel
@@ -234,7 +234,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
 
       const blendsToUpdate = (blends || []).filter(Boolean);
       if (blendsToUpdate.length === 0) {
-        toast.info("No blends to reclassify");
+        toast.info(t("ai.noBlendsToReclassify","No blends to reclassify"));
         setReclassifyBusy(false);
         return;
       }
@@ -303,7 +303,7 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
 
       const updates = Array.isArray(result?.updates) ? result.updates : [];
       if (updates.length === 0) {
-        toast.info("All blends are already correctly classified");
+        toast.info(t("ai.allBlendsCorrectlyClassified","All blends are already correctly classified"));
         setReclassifyBusy(false);
         return;
       }
@@ -327,14 +327,14 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
       // Refresh blends everywhere
       queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
 
-      if (changed > 0) toast.success(`Reclassified ${changed} blend(s)`);
-      else toast.info("No blend changes were applied");
+      if (changed > 0) toast.success(t("ai.reclassifiedBlends","Reclassified {{count}} blend(s)}",{count: changed}));
+      else toast.info(t("ai.noBlendChanges","No blend changes were applied"));
 
       setReclassifyBusy(false);
     },
     onError: (error) => {
       setReclassifyBusy(false);
-      toast.error("Failed to reclassify blends");
+      toast.error(t("errors.failedToReclassifyBlends","Failed to reclassify blends"));
       console.error(error);
     },
   });
@@ -408,12 +408,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
     },
     onSuccess: (count) => {
       invalidatePipeQueries(queryClient, user?.email);
-      if (count > 0) toast.success(`Updated ${count} pipe(s) with verified measurements`);
-      else toast.info("No verified measurements found for your pipes");
+      if (count > 0) toast.success(t("ai.updatedPipesWithMeasurements","Updated {{count}} pipe(s) with verified measurements",{count}));
+      else toast.info(t("ai.noVerifiedMeasurements","No verified measurements found for your pipes"));
     },
     onError: () => {
       setBusy(false);
-      toast.error("Failed to fill measurements");
+      toast.error(t("errors.failedToFillMeasurements","Failed to fill measurements"));
     },
   });
 
@@ -456,14 +456,14 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
-              <InfoTooltip text="Scored compatibility between each pipe and tobacco blend in your collection" className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.pairingMatrix","Pairing Matrix")}</h3>
+              <InfoTooltip text={t("tobacconist.pairingMatrixTooltip","Scored compatibility between each pipe and tobacco blend in your collection")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">Up to date</span>
+                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate","Up to date")}</span>
               )}
             </p>
           </div>
@@ -500,14 +500,14 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
-              <InfoTooltip text="Recommendations for which pipes to focus on specific tobaccos" className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.collectionOptimizationTitle","Collection Optimization")}</h3>
+              <InfoTooltip text={t("tobacconist.collectionOptimizationTooltip","Recommendations for which pipes to focus on specific tobaccos")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
                 <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">Up to date</span>
+                <span className="text-emerald-700 font-semibold">{t("tobacconist.upToDate","Up to date")}</span>
               )}
             </p>
           </div>

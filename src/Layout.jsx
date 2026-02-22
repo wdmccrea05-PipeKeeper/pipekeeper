@@ -636,7 +636,7 @@ export default function Layout({ children, currentPageName }) {
                 }}
                 className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
                 style={{ WebkitTapHighlightColor: "transparent" }}
-                aria-label="Toggle menu"
+                aria-label={t("layout.toggleMenu","Toggle menu")}
               >
                 {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -677,7 +677,7 @@ export default function Layout({ children, currentPageName }) {
               {adminNavItems.length > 0 && (
                 <>
                   <div className="h-px bg-gray-200 my-2" />
-                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">Admin</p>
+                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">{t("layout.admin","Admin")}</p>
                   {adminNavItems.map((item) => (
                     <NavLink
                       key={item.page}
