@@ -82,7 +82,7 @@ function App() {
     <GlobalErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router>
+          <Router basename="/pipekeeper/">
             <NavigationTracker />
             <AuthenticatedApp />
           </Router>
