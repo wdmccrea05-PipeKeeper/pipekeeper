@@ -1,12 +1,13 @@
-import { useTranslation, translate } from "./safeTranslation";
-import { translations } from "./translations";
-import { translationsComplete } from "./translations-complete";
+
+import { useTranslation, translate } from "./safeTranslation.jsx";
+import { translations } from "./translations.jsx";
+import { translationsComplete } from "./translations-complete.jsx";
 import {
   missingKeyRegistry,
   registerMissingKey,
   clearMissingKeys,
-} from "./missingKeyRegistry";
-import { missingKeyHandler } from "./missingKeyHandler";
+} from "./missingKeyRegistry.jsx";
+import { missingKeyHandler } from "./missingKeyHandler.jsx";
 
 // Named exports (preferred)
 export {

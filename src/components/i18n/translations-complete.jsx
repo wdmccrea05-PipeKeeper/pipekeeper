@@ -1,5 +1,5 @@
 // src/components/i18n/translations-complete.jsx
-import { translations } from "./translations";
+import { translations } from "./translations.jsx";
 
 function mergeDeep(target, source) {
   const t = target && typeof target === "object" ? target : {};
