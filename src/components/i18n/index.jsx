@@ -1,35 +1,13 @@
 
-import * as safe from "./safeTranslation.jsx";
-import { translationsComplete as tc } from "./translations-complete.jsx";
-import { missingKeyHandler as mkh } from "./missingKeyHandler.jsx";
-import { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry.jsx";
+export { useTranslation, translate } from './hooks.jsx';
+export { translations } from './translations.jsx';
+export { getNestedValue, interpolate } from './utils.jsx';
+export { SUPPORTED_LANGS, DEFAULT_LANGUAGE } from './constants.jsx';
 
-export { useTranslation, translate } from "./safeTranslation.jsx";
-export { translationsComplete } from "./translations-complete.jsx";
-export { missingKeyHandler } from "./missingKeyHandler.jsx";
-export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry.jsx";
-
-export const SUPPORTED_LANGS = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "pt-BR", label: "Português (BR)" },
-  { code: "nl", label: "Nederlands" },
-  { code: "pl", label: "Polski" },
-  { code: "ja", label: "日本語" },
-  { code: "zh-Hans", label: "中文 (简体)" },
-];
-
-console.log("✓ i18n index.jsx loaded");
+console.log('✓ i18n index.jsx loaded successfully');
 
 export default {
-  ...safe,
-  translationsComplete: tc,
-  missingKeyRegistry,
-  registerMissingKey,
-  clearMissingKeys,
-  missingKeyHandler: mkh,
-  SUPPORTED_LANGS,
+  useTranslation: (await import('./hooks.jsx')).useTranslation,
+  translate: (await import('./hooks.jsx')).translate,
+  SUPPORTED_LANGS: (await import('./constants.jsx')).SUPPORTED_LANGS,
 };
