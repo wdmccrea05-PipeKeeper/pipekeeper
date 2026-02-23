@@ -1,10 +1,10 @@
 
-console.log("✓ missingKeyHandler imported");
-
 export { useTranslation, translate } from "./safeTranslation";
 export { translationsComplete } from "./translations-complete";
 export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
 export { missingKeyHandler } from "./missingKeyHandler";
+
+console.log("✓ missingKeyHandler imported");
 
 export const SUPPORTED_LANGS = [
   { code: "en", label: "English" },

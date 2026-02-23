@@ -1,8 +1,9 @@
 // src/components/i18n/safeTranslation.js
-console.log("✓ safeTranslation loaded");
 import { useMemo } from "react";
 import { translationsComplete } from "./translations-complete.js";
 import { missingKeyHandler } from "./missingKeyHandler";
+
+console.log("✓ safeTranslation loaded");
 
 /**
  * Interpolation:
