@@ -1,4 +1,23 @@
-import { translations as base } from "./translations";
+// src/components/i18n/translations-complete.jsx
+/**
+ * FULL LOCALE PACKS - DEEP MERGE IMPLEMENTATION
+ *
+ * This file builds the final locale packs by deep-merging:
+ * - translationsExtended (large base set)
+ * - translationsGenerated (generated additions)
+ * - translationsSupplement (extra additions)
+ * - aiGeneratedTranslations (AI-generated additions)
+ * - translations (local/base overrides in repo)
+ *
+ * Then it applies a small set of "must-have" fixes for keys that are currently showing
+ * as [MISSING] or as humanized placeholders (e.g., "Title", "Pipe Collection Title").
+ */
+
+import { translations as baseTranslations } from "./translations";
+import { translationsExtended } from "./translations-extended";
+import { translationsGenerated } from "./translations-generated";
+import { translationsSupplement } from "./translations-supplement";
+import { aiGeneratedTranslations } from "./translations-ai-generated";
 
 // Deep merge utility - recursively merges source into target
 function mergeDeep(target, source) {
@@ -21,13 +40,29 @@ function mergeDeep(target, source) {
   return result;
 }
 
-// --- EN BASE ---
-// Use the existing English pack as the canonical base.
-const enBase = base?.en || {};
+function buildLocale(locale) {
+  // Merge order: big base -> generated -> supplement -> ai-generated -> local/base -> fixes
+  const merged1 = mergeDeep(translationsExtended?.[locale] || {}, translationsGenerated?.[locale] || {});
+  const merged2 = mergeDeep(merged1, translationsSupplement?.[locale] || {});
+  const merged3 = mergeDeep(merged2, aiGeneratedTranslations?.[locale] || {});
+  const merged4 = mergeDeep(merged3, baseTranslations?.[locale] || {});
+  return merged4;
+}
 
-// --- EN OVERRIDES ---
-// Fix placeholder copy that is currently showing on Home.
-const enOverrides = {
+/**
+ * MUST-HAVE ENGLISH KEYS
+ * These are currently showing as [MISSING] or placeholder-humanized strings.
+ */
+const enFixes = {
+  ageGate: {
+    title: "Adults Only",
+    intendedForAdults: "PipeKeeper is intended for adult users only.",
+    disclaimer:
+      "This app is a collection management tool for pipe smoking enthusiasts. It does not sell or facilitate the purchase of tobacco products.",
+    confirmAge: "I confirm I am of legal age",
+  },
+
+  // Home hero + cards (these were showing as “Pipe Collection Title”, etc.)
   home: {
     heroTitle: "Pipe & Tobacco Collection",
     heroSubtitle:
@@ -38,38 +73,59 @@ const enOverrides = {
 
     tobaccoCellarTitle: "Tobacco Cellar",
     tobaccoCellarSubtitle: "Manage your blends",
+  },
 
-    pipesInCollection: "Pipes in Collection",
-    tobaccoBlends: "Tobacco Blends",
-    collectionValue: "Collection Value",
-    cellared: "Cellared",
-    viewCollection: "View Collection",
-    viewCellar: "View Cellar",
+  // Insights header (was showing “Title”)
+  insights: {
+    title: "Collection Insights",
+    subtitle: "Track usage, optimize pairings, and monitor your collection",
+  },
+
+  // Keep this aligned with the UI that uses Log Session on the Insights/Usage card
+  smokingLog: {
+    logSession: "Log Session",
+  },
+
+  // Keep these aligned with the “Tobacconist Consultation” panel area
+  tobacconist: {
+    title: "Tobacconist Consultation",
+    optional: "Optional",
+    subtitle: "Personalized pipe and tobacco advice",
+
+    identify: "Identify",
+    optimize: "Optimize",
+    whatIf: "What If",
+    updatesTitle: "AI Updates",
+
+    identificationTitle: "AI Pipe Identifier",
+    identificationSubtitle: "Upload photos for quick identification help",
   },
 };
 
-// --- ES OVERRIDES ---
-const esOverrides = {
+const esFixes = {
+  ageGate: {
+    title: "Solo adultos",
+    intendedForAdults: "PipeKeeper está destinado únicamente a usuarios adultos.",
+    disclaimer:
+      "Esta app es una herramienta de gestión de colección para aficionados a la pipa. No vende ni facilita la compra de productos de tabaco.",
+    confirmAge: "Confirmo que tengo la edad legal",
+  },
+
   home: {
     heroTitle: "Colección de pipas y tabaco",
     heroSubtitle:
-      "Gestiona tus pipas y mezclas de tabaco con búsqueda con IA, identificación por fotos, sugerencias de emparejamiento y valoraciones de mercado.",
+      "Gestiona tus pipas y mezclas de tabaco con búsqueda por IA, identificación por fotos, sugerencias de emparejamiento y valoraciones de mercado.",
 
     pipeCollectionTitle: "Colección de pipas",
     pipeCollectionSubtitle: "Rastrea y valora tus pipas",
 
     tobaccoCellarTitle: "Bodega de tabaco",
     tobaccoCellarSubtitle: "Gestiona tus mezclas",
-
-    pipesInCollection: "Pipas en colección",
-    tobaccoBlends: "Mezclas de tabaco",
-    collectionValue: "Valor de la colección",
-    cellared: "En bodega",
-    viewCollection: "Ver colección",
-    viewCellar: "Ver bodega",
   },
 
   insights: {
+    title: "Información de colección",
+    subtitle: "Rastrear uso y optimizar emparejamientos",
     log: "Registro de uso",
     pairingGrid: "Cuadrícula de emparejamiento",
     rotation: "Rotación",
@@ -83,41 +139,45 @@ const esOverrides = {
     logSession: "Registrar sesión",
   },
 
-  // NOTE: These keys match what your UI is showing right now in the Tobacconist card.
   tobacconist: {
     title: "Consulta con tabaquero",
     optional: "Opcional",
+    subtitle: "Asesoramiento personalizado sobre pipas y tabaco",
+
     identify: "Identificar",
     optimize: "Optimizar",
     whatIf: "¿Y si...?",
     updatesTitle: "Actualizaciones de IA",
+
     identificationTitle: "Identificador de pipas con IA",
     identificationSubtitle: "Sube fotos para ayuda rápida de identificación",
   },
 };
 
-// --- DE OVERRIDES ---
-const deOverrides = {
+const deFixes = {
+  ageGate: {
+    title: "Nur für Erwachsene",
+    intendedForAdults: "PipeKeeper ist nur für erwachsene Nutzer bestimmt.",
+    disclaimer:
+      "Diese App ist ein Sammlungs-Tool für Pfeifenliebhaber. Sie verkauft keine Tabakprodukte und erleichtert keinen Kauf.",
+    confirmAge: "Ich bestätige, dass ich volljährig bin",
+  },
+
   home: {
     heroTitle: "Pfeifen- & Tabaksammlung",
     heroSubtitle:
-      "Verwalte deine Pfeifen und Tabakmischungen mit KI-Suche, Foto-Identifikation, Pairing-Vorschlägen und Marktwert-Schätzungen.",
+      "Verwalte deine Pfeifen und Tabakmischungen mit KI-Suche, Foto-Identifikation, Pairing-Vorschlägen und Marktwerten.",
 
     pipeCollectionTitle: "Pfeifensammlung",
-    pipeCollectionSubtitle: "Pfeifen erfassen und bewerten",
+    pipeCollectionSubtitle: "Pfeifen verfolgen und bewerten",
 
     tobaccoCellarTitle: "Tabakkeller",
     tobaccoCellarSubtitle: "Mischungen verwalten",
-
-    pipesInCollection: "Pfeifen in der Sammlung",
-    tobaccoBlends: "Tabakmischungen",
-    collectionValue: "Sammlungswert",
-    cellared: "Eingelagert",
-    viewCollection: "Sammlung ansehen",
-    viewCellar: "Keller ansehen",
   },
 
   insights: {
+    title: "Sammlungseinblicke",
+    subtitle: "Nutzung verfolgen und Pairings optimieren",
     log: "Nutzungsprotokoll",
     pairingGrid: "Pairing-Raster",
     rotation: "Rotation",
@@ -134,37 +194,42 @@ const deOverrides = {
   tobacconist: {
     title: "Tabakberater-Beratung",
     optional: "Optional",
+    subtitle: "Personalisierte Beratung zu Pfeife und Tabak",
+
     identify: "Identifizieren",
     optimize: "Optimieren",
-    whatIf: "Was wäre wenn…?",
+    whatIf: "Was wäre wenn",
     updatesTitle: "KI-Updates",
+
     identificationTitle: "KI-Pfeifen-Identifikator",
     identificationSubtitle: "Fotos hochladen für schnelle Identifikationshilfe",
   },
 };
 
-// --- JA OVERRIDES ---
-const jaOverrides = {
+const jaFixes = {
+  ageGate: {
+    title: "成人のみ",
+    intendedForAdults: "PipeKeeper は成人ユーザーのみを対象としています。",
+    disclaimer:
+      "このアプリはパイプ愛好家向けのコレクション管理ツールです。タバコ製品の販売や購入の仲介は行いません。",
+    confirmAge: "法定年齢であることを確認します",
+  },
+
   home: {
     heroTitle: "パイプ＆タバココレクション",
     heroSubtitle:
-      "AI検索、写真識別、ペアリング提案、市場価値の見積もりで、パイプとタバコブレンドを管理します。",
+      "AI検索、写真識別、ペアリング提案、相場評価でパイプとタバコブレンドを管理できます。",
 
     pipeCollectionTitle: "パイプコレクション",
-    pipeCollectionSubtitle: "パイプの記録と評価",
+    pipeCollectionSubtitle: "パイプの追跡と価値管理",
 
     tobaccoCellarTitle: "タバコセラー",
     tobaccoCellarSubtitle: "ブレンドを管理",
-
-    pipesInCollection: "コレクション内のパイプ",
-    tobaccoBlends: "タバコブレンド",
-    collectionValue: "コレクション価値",
-    cellared: "熟成中",
-    viewCollection: "コレクションを見る",
-    viewCellar: "セラーを見る",
   },
 
   insights: {
+    title: "コレクションインサイト",
+    subtitle: "使用状況の追跡とペアリング最適化",
     log: "使用ログ",
     pairingGrid: "ペアリング表",
     rotation: "ローテーション",
@@ -181,24 +246,29 @@ const jaOverrides = {
   tobacconist: {
     title: "タバコ相談",
     optional: "任意",
+    subtitle: "パイプとタバコの個別アドバイス",
+
     identify: "識別",
     optimize: "最適化",
-    whatIf: "もしも…",
+    whatIf: "もしも",
     updatesTitle: "AI更新",
+
     identificationTitle: "AIパイプ識別",
     identificationSubtitle: "写真をアップロードして簡易識別",
   },
 };
 
-// Build full locale packs:
-// - Start with EN base
-// - Apply EN overrides (fix placeholders)
-// - Merge any existing base locale (keeps prior translations)
-// - Apply our overrides last (so they WIN)
-const en = mergeDeep(enBase, enOverrides);
-const es = mergeDeep(mergeDeep(en, base?.es || {}), esOverrides);
-const de = mergeDeep(mergeDeep(en, base?.de || {}), deOverrides);
-const ja = mergeDeep(mergeDeep(en, base?.ja || {}), jaOverrides);
+// Build bases
+const enBase = buildLocale("en");
+const esBase = buildLocale("es");
+const deBase = buildLocale("de");
+const jaBase = buildLocale("ja");
+
+// Apply fixes last so they always win
+const en = mergeDeep(enBase, enFixes);
+const es = mergeDeep(esBase, esFixes);
+const de = mergeDeep(deBase, deFixes);
+const ja = mergeDeep(jaBase, jaFixes);
 
 export const translationsComplete = {
   en,
