@@ -11,12 +11,12 @@ export default function Home() {
       {/* HERO */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">
-          {t("home.heroTitle", "Pipe & Tobacco Collection")}
+          {t("home.title", "Pipe & Tobacco Collection")}
         </h1>
 
         <p className="text-lg opacity-80 max-w-3xl mx-auto">
           {t(
-            "home.heroSubtitle",
+            "home.subtitle",
             "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations."
           )}
         </p>
