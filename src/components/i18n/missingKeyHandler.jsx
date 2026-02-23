@@ -1,5 +1,5 @@
 // src/components/i18n/missingKeyHandler.jsx
-import { recordMissingKey } from "./missingKeyRegistry";
+import { recordMissingKey } from "./missingKeyRegistry.jsx";
 
 /**
  * Central missing-key handler.
