@@ -1,34 +1,36 @@
+/**
+ * TEMPORARY BYPASS: Minimal i18n system to isolate white screen issue.
+ * No dependencies, returns keys as-is.
+ */
 
-import { useTranslation, translate } from "./safeTranslation.jsx";
-import { translations } from "./translations.jsx";
-import { translationsComplete } from "./translations-complete.jsx";
-import {
-  missingKeyRegistry,
-  registerMissingKey,
-  clearMissingKeys,
-} from "./missingKeyRegistry.jsx";
-import { missingKeyHandler } from "./missingKeyHandler.jsx";
+export const SUPPORTED_LANGS = [
+  { code: "en", label: "English" },
+];
 
-// Named exports (preferred)
-export {
-  useTranslation,
-  translate,
-  translations,
-  translationsComplete,
-  missingKeyRegistry,
-  registerMissingKey,
-  clearMissingKeys,
-  missingKeyHandler,
+export const translationsComplete = {
+  en: {},
+  es: {},
+  fr: {},
+  de: {},
+  it: {},
+  'pt-BR': {},
+  nl: {},
+  pl: {},
+  ja: {},
+  'zh-Hans': {}
 };
 
-// Default export (backward compatible with any default-import usage)
+export function useTranslation() {
+  return { t: (key) => key, lang: "en" };
+}
+
+export function translate(key) {
+  return key;
+}
+
 export default {
   useTranslation,
   translate,
-  translations,
   translationsComplete,
-  missingKeyRegistry,
-  registerMissingKey,
-  clearMissingKeys,
-  missingKeyHandler,
+  SUPPORTED_LANGS
 };
