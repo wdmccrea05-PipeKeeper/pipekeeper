@@ -1,7 +1,5 @@
-// src/components/i18n/index.jsx
-// Complete clean system - all-in-one
-
-import { translations } from './translations.jsx';
+import { useMemo } from 'react';
+import { translations } from './translations.js';
 
 function getNestedValue(obj, path) {
   if (!obj || !path) return undefined;
@@ -26,25 +24,35 @@ function interpolate(str, vars) {
 }
 
 export function useTranslation(languageOverride = null) {
-  const lang = languageOverride || (typeof window !== 'undefined' ? window?.localStorage?.getItem('pk_lang') : null) || 'en';
-  
-  const translationPack = translations[lang] || translations.en || {};
-  
-  const t = (key, vars = {}) => {
-    const value = getNestedValue(translationPack, key);
-    if (value === undefined) {
-      const fallback = getNestedValue(translations.en, key);
-      if (fallback) {
-        return interpolate(String(fallback), vars);
+  const lang = useMemo(() => {
+    if (languageOverride) return languageOverride;
+    try {
+      return typeof window !== 'undefined' ? (window?.localStorage?.getItem('pk_lang') || 'en') : 'en';
+    } catch {
+      return 'en';
+    }
+  }, [languageOverride]);
+
+  const translationPack = useMemo(() => {
+    return translations[lang] || translations.en || {};
+  }, [lang]);
+
+  const t = useMemo(() => {
+    return (key, vars = {}) => {
+      const value = getNestedValue(translationPack, key);
+      if (value === undefined) {
+        const fallback = getNestedValue(translations.en, key);
+        if (fallback) {
+          return interpolate(String(fallback), vars);
+        }
+        return key;
       }
-      console.warn(`Missing translation key: ${key}`);
-      return key;
-    }
-    if (typeof value === 'string') {
-      return interpolate(value, vars);
-    }
-    return String(value);
-  };
+      if (typeof value === 'string') {
+        return interpolate(value, vars);
+      }
+      return String(value);
+    };
+  }, [translationPack]);
 
   return { t, lang };
 }
