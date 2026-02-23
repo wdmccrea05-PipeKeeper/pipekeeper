@@ -1,6 +1,6 @@
-// src/components/i18n/translations-complete.js
+// src/components/i18n/translations-complete.jsx
 // Build timestamp: 2026-02-23 - Force Vite cache invalidation
-import { translations } from "./translations.js";
+import { translations } from "./translations.jsx";
 
 // Deep merge utility - recursively merges source into target
 function mergeDeep(target, source) {
