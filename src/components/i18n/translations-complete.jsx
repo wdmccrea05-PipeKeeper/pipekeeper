@@ -1,5 +1,5 @@
 // src/components/i18n/translations-complete.js
-import { translations as base } from "./translations";
+import { translations } from "./translations";
 
 // Deep merge utility - recursively merges source into target
 function mergeDeep(target, source) {
@@ -22,13 +22,13 @@ function mergeDeep(target, source) {
 }
 
 // Use the existing English pack as the canonical base.
-const en = base?.en || {};
+const en = translations?.en || {};
 
 // You can keep overrides here later if you want.
 // For now, rely on translations.js as the canonical packs.
-const es = mergeDeep(en, base?.es || {});
-const de = mergeDeep(en, base?.de || {});
-const ja = mergeDeep(en, base?.ja || {});
+const es = mergeDeep(en, translations?.es || {});
+const de = mergeDeep(en, translations?.de || {});
+const ja = mergeDeep(en, translations?.ja || {});
 
 export const translationsComplete = {
   en,
