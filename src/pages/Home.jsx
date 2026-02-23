@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Card } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
