@@ -39,11 +39,10 @@ export function recordMissingKey(locale, key) {
 }
 
 /**
- * A handler signature some code expects.
- * Keep it thin and stable.
+ * Register a missing key with metadata.
+ * Different from missingKeyHandler in missingKeyHandler.jsx
  */
-export function missingKeyHandler(key, meta = {}) {
-  const locale = meta?.locale || meta?.lang || "unknown";
+export function registerMissingKey(locale, key) {
   recordMissingKey(locale, key);
 }
 
@@ -112,7 +111,7 @@ export function useMissingKeyCapture(locale) {
 export const missingKeyRegistry = {
   STORE_KEY,
   recordMissingKey,
-  missingKeyHandler,
+  registerMissingKey,
   getMissingKeys,
   clearMissingKeys,
   downloadMissingKeysReport,
