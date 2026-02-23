@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AIUpdates from './pages/AIUpdates';
+import AdminReports from './pages/AdminReports';
 import adminreportsTsx from './pages/AdminReports.tsx';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
@@ -68,10 +69,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
+import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
@@ -90,6 +93,7 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "AIUpdates": AIUpdates,
+    "AdminReports": AdminReports,
     "AdminReports.tsx": adminreportsTsx,
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
@@ -110,10 +114,12 @@ export const PAGES = {
     "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
+    "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
+    "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,

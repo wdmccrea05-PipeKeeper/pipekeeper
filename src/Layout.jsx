@@ -36,7 +36,7 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation } from "@/components/i18n/index.jsx";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 
