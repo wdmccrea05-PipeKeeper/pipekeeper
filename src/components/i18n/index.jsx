@@ -1,4 +1,5 @@
 
+// Build timestamp: 2026-02-23 - Force Vite cache invalidation
 // Imports first
 import * as safe from "./safeTranslation.js";
 import { translationsComplete as tc } from "./translations-complete.js";
