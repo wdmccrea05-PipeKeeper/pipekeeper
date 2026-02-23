@@ -1,11 +1,11 @@
 
 // Build timestamp: 2026-02-23 - Canonical .js imports only
 
-// Import from canonical .js files (with .js extensions)
-export { useTranslation, translate } from "./safeTranslation.js";
-export { translationsComplete } from "./translations-complete.js";
-export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry.js";
-export { missingKeyHandler } from "./missingKeyHandler.js";
+// Import from canonical .js files (no extensions for Vite compatibility)
+export { useTranslation, translate } from "./safeTranslation";
+export { translationsComplete } from "./translations-complete";
+export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
+export { missingKeyHandler } from "./missingKeyHandler";
 
 // Supported langs constant - ALL 10 LOCALES
 export const SUPPORTED_LANGS = [
