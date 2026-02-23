@@ -1,7 +1,6 @@
-// src/components/i18n/safeTranslation.js
+// src/components/i18n/safeTranslation.jsx
 import { useMemo } from "react";
-// CRITICAL: Must use .js extension for ES modules
-import { translationsComplete } from "./translations-complete.js";
+import { translationsComplete } from "./translations-complete.jsx";
 import { missingKeyHandler } from "./missingKeyHandler.jsx";
 
 /**

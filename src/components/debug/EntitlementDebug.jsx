@@ -3,7 +3,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isLegacyPremium, isFoundingMember } from '@/components/utils/premiumAccess';
 import { ChevronDown, ChevronUp, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { downloadMissingKeysReport, clearMissingKeys } from '@/components/i18n/missingKeyRegistry';
+import { downloadMissingKeysReport, clearMissingKeys } from '@/components/i18n/missingKeyRegistry.jsx';
 
 // Detect dev mode using Vite's import.meta.env (browser-safe)
 function isDevMode() {
