@@ -1,6 +1,6 @@
 // src/components/i18n/safeTranslation.js
-// Build timestamp: 2026-02-23 - Force rebuild after module resolution fix
 import { useMemo } from "react";
+// CRITICAL: Must use .js extension for ES modules
 import { translationsComplete } from "./translations-complete.js";
 import { missingKeyHandler } from "./missingKeyHandler.jsx";
 
