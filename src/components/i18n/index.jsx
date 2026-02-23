@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// src/components/i18n/index.jsx
+// Complete clean system - all-in-one
+
 import { translations } from './translations.jsx';
 
 function getNestedValue(obj, path) {
@@ -24,9 +26,7 @@ function interpolate(str, vars) {
 }
 
 export function useTranslation(languageOverride = null) {
-  const [lang, setLang] = useState(
-    languageOverride || (typeof window !== 'undefined' ? window?.localStorage?.getItem('pk_lang') : null) || 'en'
-  );
+  const lang = languageOverride || (typeof window !== 'undefined' ? window?.localStorage?.getItem('pk_lang') : null) || 'en';
   
   const translationPack = translations[lang] || translations.en || {};
   
@@ -46,7 +46,7 @@ export function useTranslation(languageOverride = null) {
     return String(value);
   };
 
-  return { t, lang, setLang };
+  return { t, lang };
 }
 
 export function translate(key, vars = {}, language = 'en') {
