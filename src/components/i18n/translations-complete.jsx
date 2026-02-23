@@ -23,32 +23,53 @@ function mergeDeep(target, source) {
 
 // --- EN BASE ---
 // Use the existing English pack as the canonical base.
-const en = base?.en || {};
+const enBase = base?.en || {};
+
+// --- EN OVERRIDES ---
+// Fix placeholder copy that is currently showing on Home.
+const enOverrides = {
+  home: {
+    heroTitle: "Pipe & Tobacco Collection",
+    heroSubtitle:
+      "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.",
+
+    pipeCollectionTitle: "Pipe Collection",
+    pipeCollectionSubtitle: "Track and value your pipes",
+
+    tobaccoCellarTitle: "Tobacco Cellar",
+    tobaccoCellarSubtitle: "Manage your blends",
+
+    pipesInCollection: "Pipes in Collection",
+    tobaccoBlends: "Tobacco Blends",
+    collectionValue: "Collection Value",
+    cellared: "Cellared",
+    viewCollection: "View Collection",
+    viewCellar: "View Cellar",
+  },
+};
 
 // --- ES OVERRIDES ---
-// Fix the exact “still English” items from your screenshots.
 const esOverrides = {
-  // Home hero + cards (top of screenshot)
   home: {
-    pageTitle: "Colección de pipas y tabaco",
-    pageSubtitle:
-      "Administra tus pipas y mezclas de tabaco con búsqueda impulsada por IA, identificación por foto, sugerencias de emparejamiento y valoraciones de mercado.",
-    pipeCollection: "Colección de pipas",
-    trackAndValue: "Rastrea y valora tus pipas",
+    heroTitle: "Colección de pipas y tabaco",
+    heroSubtitle:
+      "Gestiona tus pipas y mezclas de tabaco con búsqueda con IA, identificación por fotos, sugerencias de emparejamiento y valoraciones de mercado.",
+
+    pipeCollectionTitle: "Colección de pipas",
+    pipeCollectionSubtitle: "Rastrea y valora tus pipas",
+
+    tobaccoCellarTitle: "Bodega de tabaco",
+    tobaccoCellarSubtitle: "Gestiona tus mezclas",
+
     pipesInCollection: "Pipas en colección",
-    collectionValue: "Valor de la colección",
-    viewCollection: "Ver colección",
-    tobaccoCellar: "Bodega de tabaco",
-    manageBlends: "Administra tus mezclas",
     tobaccoBlends: "Mezclas de tabaco",
+    collectionValue: "Valor de la colección",
     cellared: "En bodega",
+    viewCollection: "Ver colección",
     viewCellar: "Ver bodega",
   },
 
-  // Insights header + tabs
   insights: {
-    title: "Información de colección",
-    subtitle: "Rastrear uso y optimizar emparejamientos",
     log: "Registro de uso",
     pairingGrid: "Cuadrícula de emparejamiento",
     rotation: "Rotación",
@@ -58,19 +79,11 @@ const esOverrides = {
     reports: "Informes",
   },
 
-  // Usage Log card / CTA
   smokingLog: {
-    usageLog: "Registro de uso",
-    totalBowls: "Total de fumadas",
     logSession: "Registrar sesión",
   },
 
-  // “Pro Active” subtext showing as placeholder
-  subscription: {
-    premiumActiveSubtextPaid: "Gracias por apoyar PipeKeeper",
-  },
-
-  // Tobacconist section / tabs
+  // NOTE: These keys match what your UI is showing right now in the Tobacconist card.
   tobacconist: {
     title: "Consulta con tabaquero",
     optional: "Opcional",
@@ -86,24 +99,25 @@ const esOverrides = {
 // --- DE OVERRIDES ---
 const deOverrides = {
   home: {
-    pageTitle: "Pfeifen- & Tabaksammlung",
-    pageSubtitle:
+    heroTitle: "Pfeifen- & Tabaksammlung",
+    heroSubtitle:
       "Verwalte deine Pfeifen und Tabakmischungen mit KI-Suche, Foto-Identifikation, Pairing-Vorschlägen und Marktwert-Schätzungen.",
-    pipeCollection: "Pfeifensammlung",
-    trackAndValue: "Pfeifen verfolgen und bewerten",
+
+    pipeCollectionTitle: "Pfeifensammlung",
+    pipeCollectionSubtitle: "Pfeifen erfassen und bewerten",
+
+    tobaccoCellarTitle: "Tabakkeller",
+    tobaccoCellarSubtitle: "Mischungen verwalten",
+
     pipesInCollection: "Pfeifen in der Sammlung",
-    collectionValue: "Sammlungswert",
-    viewCollection: "Sammlung ansehen",
-    tobaccoCellar: "Tabakkeller",
-    manageBlends: "Mischungen verwalten",
     tobaccoBlends: "Tabakmischungen",
+    collectionValue: "Sammlungswert",
     cellared: "Eingelagert",
+    viewCollection: "Sammlung ansehen",
     viewCellar: "Keller ansehen",
   },
 
   insights: {
-    title: "Sammlungseinblicke",
-    subtitle: "Nutzung verfolgen und Pairings optimieren",
     log: "Nutzungsprotokoll",
     pairingGrid: "Pairing-Raster",
     rotation: "Rotation",
@@ -114,13 +128,7 @@ const deOverrides = {
   },
 
   smokingLog: {
-    usageLog: "Nutzungsprotokoll",
-    totalBowls: "Gesamtzahl Köpfe",
     logSession: "Sitzung protokollieren",
-  },
-
-  subscription: {
-    premiumActiveSubtextPaid: "Danke, dass du PipeKeeper unterstützt",
   },
 
   tobacconist: {
@@ -128,7 +136,7 @@ const deOverrides = {
     optional: "Optional",
     identify: "Identifizieren",
     optimize: "Optimieren",
-    whatIf: "Was wäre wenn…",
+    whatIf: "Was wäre wenn…?",
     updatesTitle: "KI-Updates",
     identificationTitle: "KI-Pfeifen-Identifikator",
     identificationSubtitle: "Fotos hochladen für schnelle Identifikationshilfe",
@@ -138,24 +146,25 @@ const deOverrides = {
 // --- JA OVERRIDES ---
 const jaOverrides = {
   home: {
-    pageTitle: "パイプ＆タバココレクション",
-    pageSubtitle:
-      "AI検索、写真識別、ペアリング提案、相場の評価などで、パイプとブレンドを管理できます。",
-    pipeCollection: "パイプコレクション",
-    trackAndValue: "パイプを追跡して価値を管理",
+    heroTitle: "パイプ＆タバココレクション",
+    heroSubtitle:
+      "AI検索、写真識別、ペアリング提案、市場価値の見積もりで、パイプとタバコブレンドを管理します。",
+
+    pipeCollectionTitle: "パイプコレクション",
+    pipeCollectionSubtitle: "パイプの記録と評価",
+
+    tobaccoCellarTitle: "タバコセラー",
+    tobaccoCellarSubtitle: "ブレンドを管理",
+
     pipesInCollection: "コレクション内のパイプ",
-    collectionValue: "コレクション価値",
-    viewCollection: "コレクションを見る",
-    tobaccoCellar: "タバコセラー",
-    manageBlends: "ブレンドを管理",
     tobaccoBlends: "タバコブレンド",
+    collectionValue: "コレクション価値",
     cellared: "熟成中",
+    viewCollection: "コレクションを見る",
     viewCellar: "セラーを見る",
   },
 
   insights: {
-    title: "コレクションインサイト",
-    subtitle: "使用を追跡し、ペアリングを最適化",
     log: "使用ログ",
     pairingGrid: "ペアリング表",
     rotation: "ローテーション",
@@ -166,13 +175,7 @@ const jaOverrides = {
   },
 
   smokingLog: {
-    usageLog: "使用ログ",
-    totalBowls: "合計ボウル数",
     logSession: "セッションを記録",
-  },
-
-  subscription: {
-    premiumActiveSubtextPaid: "PipeKeeperのご支援ありがとうございます",
   },
 
   tobacconist: {
@@ -188,9 +191,11 @@ const jaOverrides = {
 };
 
 // Build full locale packs:
-// - Start with EN
-// - Merge any base locale you already have (so you keep your prior work)
+// - Start with EN base
+// - Apply EN overrides (fix placeholders)
+// - Merge any existing base locale (keeps prior translations)
 // - Apply our overrides last (so they WIN)
+const en = mergeDeep(enBase, enOverrides);
 const es = mergeDeep(mergeDeep(en, base?.es || {}), esOverrides);
 const de = mergeDeep(mergeDeep(en, base?.de || {}), deOverrides);
 const ja = mergeDeep(mergeDeep(en, base?.ja || {}), jaOverrides);
