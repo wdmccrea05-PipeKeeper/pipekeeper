@@ -1,5 +1,5 @@
 
-export { useTranslation, t, setLanguage, getLanguage } from "./safeTranslation";
+export { useTranslation, translate } from "./safeTranslation";
 export { translationsComplete } from "./translations-complete";
 export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
 export { missingKeyHandler } from "./missingKeyHandler";
@@ -13,13 +13,13 @@ export const SUPPORTED_LANGS = [
 
 // Default export (prevents accidental default-import crashes)
 import * as safe from "./safeTranslation";
-import { translationsComplete } from "./translations-complete";
+import { translationsComplete as tc } from "./translations-complete";
 import * as registry from "./missingKeyRegistry";
-import { missingKeyHandler } from "./missingKeyHandler";
+import { missingKeyHandler as mkh } from "./missingKeyHandler";
 
 export default {
   ...safe,
-  translationsComplete,
+  translationsComplete: tc,
   ...registry,
-  missingKeyHandler,
+  missingKeyHandler: mkh,
 };
