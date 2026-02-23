@@ -1,6 +1,29 @@
 // src/components/i18n/translations.js
 export const translations = {
   en: {
+    auth: {
+      loginRequired: "Login Required",
+    },
+
+    nav: {
+      following: "Following",
+    },
+
+    community: {
+      commentsEnabled: "Comments Enabled",
+      commentsDisabled: "Comments Disabled",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. All rights reserved.",
+    },
+
+    units: {
+      tin: "tin",
+      tinPlural: "tins",
+      outOf5: "out of 5",
+    },
+
     ageGate: {
       title: "Adults Only",
       intendedForAdults: "PipeKeeper is intended for adult users only.",
@@ -84,6 +107,29 @@ export const translations = {
   },
 
   es: {
+    auth: {
+      loginRequired: "Inicio de sesión requerido",
+    },
+
+    nav: {
+      following: "Siguiendo",
+    },
+
+    community: {
+      commentsEnabled: "Comentarios activados",
+      commentsDisabled: "Comentarios desactivados",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Todos los derechos reservados.",
+    },
+
+    units: {
+      tin: "lata",
+      tinPlural: "latas",
+      outOf5: "de 5",
+    },
+
     ageGate: {
       title: "Solo para adultos",
       intendedForAdults: "PipeKeeper está destinado solo a usuarios adultos.",
@@ -163,6 +209,29 @@ export const translations = {
   },
 
   de: {
+    auth: {
+      loginRequired: "Anmeldung erforderlich",
+    },
+
+    nav: {
+      following: "Folge ich",
+    },
+
+    community: {
+      commentsEnabled: "Kommentare aktiviert",
+      commentsDisabled: "Kommentare deaktiviert",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Alle Rechte vorbehalten.",
+    },
+
+    units: {
+      tin: "Dose",
+      tinPlural: "Dosen",
+      outOf5: "von 5",
+    },
+
     ageGate: {
       title: "Nur für Erwachsene",
       intendedForAdults: "PipeKeeper ist nur für erwachsene Nutzer bestimmt.",
@@ -242,6 +311,29 @@ export const translations = {
   },
 
   ja: {
+    auth: {
+      loginRequired: "ログインが必要です",
+    },
+
+    nav: {
+      following: "フォロー中",
+    },
+
+    community: {
+      commentsEnabled: "コメント有効",
+      commentsDisabled: "コメント無効",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. 全著作権所有。",
+    },
+
+    units: {
+      tin: "缶",
+      tinPlural: "缶",
+      outOf5: "5点満点",
+    },
+
     ageGate: {
       title: "成人のみ",
       intendedForAdults: "PipeKeeperは成人ユーザーのみを対象としています。",
@@ -317,6 +409,156 @@ export const translations = {
       updatesTitle: "AI更新",
       identificationTitle: "AIパイプ識別",
       identificationSubtitle: "写真をアップロードして簡易識別",
+    },
+  },
+
+  fr: {
+    auth: {
+      loginRequired: "Connexion requise",
+    },
+
+    nav: {
+      following: "Abonnements",
+    },
+
+    community: {
+      commentsEnabled: "Commentaires activés",
+      commentsDisabled: "Commentaires désactivés",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Tous droits réservés.",
+    },
+
+    units: {
+      tin: "boîte",
+      tinPlural: "boîtes",
+      outOf5: "sur 5",
+    },
+  },
+
+  it: {
+    auth: {
+      loginRequired: "Accesso richiesto",
+    },
+
+    nav: {
+      following: "Seguiti",
+    },
+
+    community: {
+      commentsEnabled: "Commenti abilitati",
+      commentsDisabled: "Commenti disabilitati",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Tutti i diritti riservati.",
+    },
+
+    units: {
+      tin: "barattolo",
+      tinPlural: "barattoli",
+      outOf5: "su 5",
+    },
+  },
+
+  "pt-BR": {
+    auth: {
+      loginRequired: "Login necessário",
+    },
+
+    nav: {
+      following: "Seguindo",
+    },
+
+    community: {
+      commentsEnabled: "Comentários ativados",
+      commentsDisabled: "Comentários desativados",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Todos os direitos reservados.",
+    },
+
+    units: {
+      tin: "lata",
+      tinPlural: "latas",
+      outOf5: "de 5",
+    },
+  },
+
+  nl: {
+    auth: {
+      loginRequired: "Inloggen vereist",
+    },
+
+    nav: {
+      following: "Volgend",
+    },
+
+    community: {
+      commentsEnabled: "Reacties ingeschakeld",
+      commentsDisabled: "Reacties uitgeschakeld",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Alle rechten voorbehouden.",
+    },
+
+    units: {
+      tin: "blik",
+      tinPlural: "blikken",
+      outOf5: "van de 5",
+    },
+  },
+
+  pl: {
+    auth: {
+      loginRequired: "Wymagane logowanie",
+    },
+
+    nav: {
+      following: "Obserwowani",
+    },
+
+    community: {
+      commentsEnabled: "Komentarze włączone",
+      commentsDisabled: "Komentarze wyłączone",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. Wszelkie prawa zastrzeżone.",
+    },
+
+    units: {
+      tin: "puszka",
+      tinPlural: "puszki",
+      outOf5: "na 5",
+    },
+  },
+
+  "zh-Hans": {
+    auth: {
+      loginRequired: "需要登录",
+    },
+
+    nav: {
+      following: "关注中",
+    },
+
+    community: {
+      commentsEnabled: "评论已启用",
+      commentsDisabled: "评论已禁用",
+    },
+
+    footer: {
+      copyright: "© {year} PipeKeeper. 保留所有权利。",
+    },
+
+    units: {
+      tin: "罐",
+      tinPlural: "罐",
+      outOf5: "满分5分",
     },
   },
 };
