@@ -17,7 +17,7 @@ function isKeyLikeString(value) {
 
 // Deep merge where empty strings / key-like placeholders do NOT overwrite real copy.
 function mergeDeep(base, patch) {
-  const out = Array.isArray(base) ? [...base] : { ...base };
+  const out = Array.isArray(base) ? [...base] : { ...(base || {}) };
   if (!patch || typeof patch !== "object") return out;
 
   for (const [k, v] of Object.entries(patch)) {
@@ -52,10 +52,12 @@ function buildResources() {
   const resources = {};
 
   for (const lng of lngs) {
+    // IMPORTANT: base translations first, then "complete" overrides LAST so they WIN.
     const merged = mergeDeep(
-      mergeDeep({}, translationsComplete?.[lng] || {}),
-      translations?.[lng] || {}
+      mergeDeep({}, translations?.[lng] || {}),
+      translationsComplete?.[lng] || {}
     );
+
     resources[lng] = { translation: merged };
   }
 
@@ -84,10 +86,14 @@ const savedLng =
 const initialLng = normalizeLanguage(savedLng || "en");
 
 // keep pk_lang normalized on boot
-try { localStorage.setItem("pk_lang", initialLng); } catch {}
+try {
+  localStorage.setItem("pk_lang", initialLng);
+} catch {}
 
 // Sync HTML lang on boot
-try { document.documentElement.lang = initialLng; } catch {}
+try {
+  document.documentElement.lang = initialLng;
+} catch {}
 
 // DEV-only strict mode: track missing keys, disable fallback
 const missingKeysPerRoute = {};
@@ -101,7 +107,8 @@ const createMissingKeyHandler = () => {
   // DEV: Return explicit missing indicator and log
   return (key) => {
     const lang = i18n.language || "en";
-    const route = typeof window !== "undefined" ? window.location.pathname : "unknown";
+    const route =
+      typeof window !== "undefined" ? window.location.pathname : "unknown";
     const logKey = `${route}::${lang}::${key}`;
 
     if (!missingKeysPerRoute[route]) {
@@ -113,7 +120,7 @@ const createMissingKeyHandler = () => {
       console.warn(`[i18n] MISSING KEY [${lang}] @ ${route}:`, key);
     }
 
-    return humanizeKey(key);
+    return `[MISSING] ${key}`;
   };
 };
 
@@ -127,7 +134,7 @@ const prodMissingKeyHandler = (key) => {
 i18n.use(initReactI18next).init({
   resources,
   lng: initialLng,
-  fallbackLng: "en",
+  fallbackLng: import.meta.env.DEV ? false : "en",
   supportedLngs,
   nonExplicitSupportedLngs: true,
 
@@ -145,8 +152,12 @@ i18n.use(initReactI18next).init({
 // Keep HTML lang and pk_lang in sync when language changes
 i18n.on("languageChanged", (lng) => {
   const normalized = normalizeLanguage(lng);
-  try { document.documentElement.lang = normalized || "en"; } catch {}
-  try { localStorage.setItem("pk_lang", normalized || "en"); } catch {}
+  try {
+    document.documentElement.lang = normalized || "en";
+  } catch {}
+  try {
+    localStorage.setItem("pk_lang", normalized || "en");
+  } catch {}
 });
 
 // Track route changes to reset missing key dedup
@@ -164,26 +175,30 @@ const originalT = i18n.t.bind(i18n);
 i18n.t = function (key, options) {
   const raw = originalT(key, options);
   const enforced = enforceTranslation(key, raw, i18n.language);
-  
+
   // DEV: Placeholder detection for [TODO] - fallback to English
-  if (typeof enforced === 'string' && enforced.startsWith('[TODO]')) {
+  if (typeof enforced === "string" && enforced.startsWith("[TODO]")) {
     const currentLng = i18n.language;
-    
+
     if (import.meta.env.DEV && !todoWarningsShown.has(`${currentLng}::${key}`)) {
       todoWarningsShown.add(`${currentLng}::${key}`);
       console.warn(`[i18n TODO] ${currentLng} ${key}`);
     }
-    
-    const enValue = originalT(key, { ...options, lng: 'en' });
-    return enforceTranslation(key, enValue, 'en');
+
+    const enValue = originalT(key, { ...options, lng: "en" });
+    return enforceTranslation(key, enValue, "en");
   }
-  
+
   // PROD: Safety guard - ensure [MISSING] never renders in production
-  if (!import.meta.env.DEV && typeof enforced === 'string' && enforced.startsWith('[MISSING]')) {
-    const enValue = originalT(key, { ...options, lng: 'en' });
-    return enforceTranslation(key, enValue, 'en') || humanizeKey(key);
+  if (
+    !import.meta.env.DEV &&
+    typeof enforced === "string" &&
+    enforced.startsWith("[MISSING]")
+  ) {
+    const enValue = originalT(key, { ...options, lng: "en" });
+    return enforceTranslation(key, enValue, "en") || humanizeKey(key);
   }
-  
+
   return enforced;
 };
 
