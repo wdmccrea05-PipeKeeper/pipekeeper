@@ -1,66 +1,100 @@
-import { useTranslation as useTranslationI18n } from "react-i18next";
-import { humanizeKey } from "./index";
+// src/components/i18n/safeTranslation.jsx
+import { useMemo } from "react";
+import { useTranslation as useI18nTranslation } from "react-i18next";
 
-/**
- * Values that should NEVER be shown to users.
- * These have been showing up due to "placeholder translations"
- * being written into translation files during Base44 iterations.
- */
+// Strings that should never appear as “real” translations.
+// If we see them, we fall back to something user-friendly.
 const PLACEHOLDER_VALUES = new Set([
   "Title",
   "Subtitle",
   "Page Title",
   "Page Subtitle",
-  "Optional",
+  "Description",
+  "Label",
+  "Text",
+  "Placeholder",
 ]);
+
+function humanizeKey(key) {
+  if (!key || typeof key !== "string") return "";
+  const last = key.split(".").pop() || key;
+  const spaced = last
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .trim();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 
 function looksLikeKey(value) {
   if (typeof value !== "string") return false;
-  // e.g. tobacconist.noRecommendation, profile.manageSubscription, nav.home
-  return /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(value.trim());
+  // common patterns: "home.pageTitle", "pipesPage.addPipe", etc.
+  return /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(value);
+}
+
+function isMissingMarker(value) {
+  if (typeof value !== "string") return false;
+  return value.startsWith("[MISSING]");
 }
 
 function isPlaceholder(value) {
   if (typeof value !== "string") return false;
   const v = value.trim();
+
   if (!v) return true;
   if (PLACEHOLDER_VALUES.has(v)) return true;
-  // Also treat generic placeholders like "Title (Optional)" etc as invalid user-facing copy
-  if (/^title\b/i.test(v)) return true;
-  if (/^subtitle\b/i.test(v)) return true;
+
+  // Treat the runtime missing marker as "not a real translation"
+  if (isMissingMarker(v)) return true;
+
+  // Sometimes tooling leaves "TODO" or similar
+  if (/^(todo|tbd)$/i.test(v)) return true;
+
   return false;
 }
 
 /**
- * Safe translation hook:
- * - If t(key) returns the key => use defaultValue (if provided) else humanizeKey(key)
- * - If t(key) returns placeholder text => same fallback behavior
+ * Safe wrapper around i18n `t()`:
+ * - Never show raw keys or [MISSING] markers to users
+ * - If missing, prefer `options.defaultValue`, otherwise humanize the key
  */
 export function useTranslation() {
-  const { t: rawT, i18n } = useTranslationI18n();
+  const { t: rawT, i18n } = useI18nTranslation();
 
-  const t = (key, options = {}) => {
-    const value = rawT(key, {
-      ...options,
-      defaultValue: options?.defaultValue ?? key, // keep deterministic behavior
-    });
+  const t = useMemo(() => {
+    return (key, options = {}) => {
+      const opts = options && typeof options === "object" ? options : {};
 
-    // Key leak (missing translation OR i18n not loaded somewhere)
-    if (value === key || looksLikeKey(value) || isPlaceholder(value)) {
-      const fallback =
-        (typeof options?.defaultValue === "string" && options.defaultValue.trim())
-          ? options.defaultValue.trim()
-          : humanizeKey(key);
+      // If caller passed a bogus 2nd arg (string), ignore it safely.
+      // The correct signature is: t(key, { defaultValue: "..." })
+      const defaultValue =
+        typeof opts.defaultValue === "string" && opts.defaultValue.trim()
+          ? opts.defaultValue
+          : undefined;
 
-      if (import.meta?.env?.DEV) {
-        // Helpful but not spammy
-        console.warn("[i18n] fallback used:", { key, value, fallback });
+      let value;
+      try {
+        value = rawT(key, opts);
+      } catch {
+        value = undefined;
       }
-      return fallback;
-    }
 
-    return value;
-  };
+      const fallback = defaultValue || humanizeKey(key);
+
+      if (typeof value !== "string") return fallback;
+
+      const v = value.trim();
+
+      if (isPlaceholder(v)) return fallback;
+
+      // If it returned the key itself (common i18n fallback)
+      if (v === key) return fallback;
+
+      // If it returned something that looks like another key
+      if (looksLikeKey(v)) return fallback;
+
+      return value;
+    };
+  }, [rawT]);
 
   return { t, i18n };
 }
