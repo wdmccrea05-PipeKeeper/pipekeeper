@@ -1,50 +1,120 @@
-// src/components/i18n/missingKeyRegistry.js
-const STORE_KEY = "__PK_MISSING_I18N__";
+// src/components/i18n/missingKeyRegistry.jsx
+// Centralized registry for missing translation keys.
+// IMPORTANT: This file MUST export the bindings that src/components/i18n/index.jsx re-exports.
 
-export function recordMissingKey(lang, key, where) {
-  try {
-    if (typeof window === "undefined") return;
-    const raw = window.localStorage.getItem(STORE_KEY);
-    const data = raw ? JSON.parse(raw) : {};
-    data[lang] = data[lang] || {};
-    data[lang][key] = data[lang][key] || [];
-    if (where && !data[lang][key].includes(where)) {
-      data[lang][key].push(where);
-    }
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  } catch {}
-}
+const STORE_KEY = "pipekeeper_missing_i18n_keys_v1";
 
-export function getMissingKeys() {
+function readStore() {
   try {
-    if (typeof window === "undefined") return {};
-    const raw = window.localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};
   }
 }
 
-export function clearMissingKeys() {
+function writeStore(store) {
   try {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(STORE_KEY);
-  } catch {}
-}
-
-export function downloadMissingKeysReport() {
-  try {
-    const data = getMissingKeys();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `pipekeeper-missing-i18n-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
-  } catch (e) {
-    console.error("Failed to download i18n report:", e);
+    localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  } catch {
+    // ignore storage failures
   }
 }
+
+/**
+ * Record a missing key for a locale.
+ */
+export function recordMissingKey(locale, key) {
+  if (!key) return;
+
+  const loc = locale || "unknown";
+  const store = readStore();
+
+  if (!store[loc]) store[loc] = {};
+  store[loc][key] = (store[loc][key] || 0) + 1;
+
+  writeStore(store);
+}
+
+/**
+ * A handler signature some code expects.
+ * Keep it thin and stable.
+ */
+export function missingKeyHandler(key, meta = {}) {
+  const locale = meta?.locale || meta?.lang || "unknown";
+  recordMissingKey(locale, key);
+}
+
+/**
+ * Get missing keys for one locale, or all locales when locale is falsy.
+ */
+export function getMissingKeys(locale) {
+  const store = readStore();
+  if (!locale) return store;
+  return store[locale] || {};
+}
+
+/**
+ * Clear missing keys for one locale, or all locales when locale is falsy.
+ */
+export function clearMissingKeys(locale) {
+  if (!locale) {
+    writeStore({});
+    return;
+  }
+  const store = readStore();
+  delete store[locale];
+  writeStore(store);
+}
+
+/**
+ * Download a JSON report of missing keys.
+ */
+export function downloadMissingKeysReport(filename = "missing-i18n-keys.json") {
+  try {
+    const store = readStore();
+    const blob = new Blob([JSON.stringify(store, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Hook-like helper some code may call.
+ * We keep it as a function (no React dependency) to avoid crashes in non-React contexts.
+ */
+export function useMissingKeyCapture(locale) {
+  return {
+    locale: locale || "unknown",
+    get: () => getMissingKeys(locale),
+    clear: () => clearMissingKeys(locale),
+    download: (filename) => downloadMissingKeysReport(filename),
+  };
+}
+
+/**
+ * Convenience object export (some codebases like calling missingKeyRegistry.get()).
+ */
+export const missingKeyRegistry = {
+  STORE_KEY,
+  recordMissingKey,
+  missingKeyHandler,
+  getMissingKeys,
+  clearMissingKeys,
+  downloadMissingKeysReport,
+  useMissingKeyCapture,
+};
