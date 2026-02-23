@@ -1,6 +1,5 @@
 
 export { useTranslation, translate } from './hooks.jsx';
-export { translations } from './translations.jsx';
 export { getNestedValue, interpolate } from './utils.jsx';
 export { SUPPORTED_LANGS, DEFAULT_LANGUAGE } from './constants.jsx';
 
