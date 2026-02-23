@@ -1,15 +1,15 @@
 
 // Imports first
-import * as safe from "./safeTranslation";
-import { translationsComplete as tc } from "./translations-complete";
-import * as registry from "./missingKeyRegistry";
-import { missingKeyHandler as mkh } from "./missingKeyHandler";
+import * as safe from "./safeTranslation.js";
+import { translationsComplete as tc } from "./translations-complete.js";
+import * as registry from "./missingKeyRegistry.jsx";
+import { missingKeyHandler as mkh } from "./missingKeyHandler.jsx";
 
 // Named exports second
-export { useTranslation, translate } from "./safeTranslation";
-export { translationsComplete } from "./translations-complete";
-export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
-export { missingKeyHandler } from "./missingKeyHandler";
+export { useTranslation, translate } from "./safeTranslation.js";
+export { translationsComplete } from "./translations-complete.js";
+export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry.jsx";
+export { missingKeyHandler } from "./missingKeyHandler.jsx";
 
 // Supported langs constant
 export const SUPPORTED_LANGS = [

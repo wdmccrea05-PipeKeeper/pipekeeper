@@ -1,5 +1,5 @@
 // src/components/i18n/translations-complete.js
-import { translations } from "./translations";
+import { translations } from "./translations.js";
 
 // Deep merge utility - recursively merges source into target
 function mergeDeep(target, source) {

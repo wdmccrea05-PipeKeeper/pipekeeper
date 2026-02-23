@@ -1,7 +1,7 @@
 // src/components/i18n/safeTranslation.js
 import { useMemo } from "react";
 import { translationsComplete } from "./translations-complete.js";
-import { missingKeyHandler } from "./missingKeyHandler";
+import { missingKeyHandler } from "./missingKeyHandler.jsx";
 
 /**
  * Interpolation:
