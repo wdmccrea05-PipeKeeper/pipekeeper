@@ -1,142 +1,331 @@
+// src/components/i18n/translations.jsx
 /**
- * Translation keys for UX improvements
- * Phase 2-4 microcopy additions
+ * PipeKeeper i18n base translations
+ *
+ * IMPORTANT:
+ * This file must contain the canonical EN strings (and essential ES/DE/JA strings)
+ * so the UI never falls back to placeholder text like “Pipe Collection Title” or
+ * “[MISSING] search.trigger”.
+ *
+ * The app further deep-merges `translations-complete.jsx` on top of this base.
  */
 
 export const translations = {
   en: {
+    ageGate: {
+      title: "Adults Only",
+      intendedForAdults: "PipeKeeper is intended for adult users only.",
+      disclaimer:
+        "This app is a collection management tool for pipe smoking enthusiasts. It does not sell or facilitate the purchase of tobacco products.",
+      confirmAge: "I confirm I am of legal age",
+    },
+
+    termsGate: {
+      beforeContinue: "Before you continue",
+      reviewAccept: "Please review and accept the Terms of Service and Privacy Policy.",
+      termsOfService: "Terms of Service",
+      privacyPolicy: "Privacy Policy",
+      agreeCheckbox: "I have read and agree to the Terms of Service and Privacy Policy.",
+      acceptContinue: "Accept and Continue",
+      saving: "Saving…",
+      savedContinuing: "Saved. Continuing…",
+      rateLimitedTemporary: "Rate-limited right now. Continuing temporarily…",
+      couldntSave: "We couldn't save your acceptance. Please try again.",
+      rateLimitNote:
+        "If requests are rate-limited, the app may temporarily allow access to avoid loops.",
+    },
+
     common: {
-      loading: "Loading...",
-      refresh: "Refresh"
+      loading: "Loading…",
+      refresh: "Refresh",
+      cancel: "Cancel",
+      save: "Save",
+      delete: "Delete",
+      close: "Close",
+      yes: "Yes",
+      no: "No",
+      edit: "Edit",
+      add: "Add",
+      back: "Back",
+      done: "Done",
+      apply: "Apply",
+      clear: "Clear",
+      reset: "Reset",
+      submit: "Submit",
+      update: "Update",
+      create: "Create",
+      remove: "Remove",
+      view: "View",
+      show: "Show",
+      hide: "Hide",
+      search: "Search",
+      searchPlaceholder: "Search…",
+      noResults: "No results found",
+      noData: "No data available",
+      appName: "PipeKeeper",
     },
-    auth: {
-      login: "Log In",
-      loginRequired: "Login Required",
-      loginPrompt: "Please log in to continue"
+
+    nav: {
+      home: "Home",
+      pipes: "Pipes",
+      tobacco: "Tobacco",
+      cellar: "Cellar",
+      community: "Community",
+      profile: "Profile",
+      help: "Help",
+      faq: "FAQ",
+      support: "Support",
+      reports: "Reports",
     },
+
+    layout: {
+      toggleMenu: "Toggle menu",
+      admin: "Admin",
+    },
+
     home: {
-      pageTitle: "Pipe & Tobacco Collection",
-      pageSubtitle: "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.",
-      loadingCollection: "Loading your collection...",
-      testingPeriodTitle: "Testing Period Notice",
-      importantInfo: "Important Information",
-      testingPeriodBody: "During testing, no subscription fees will be charged until after January 15, 2026",
-      testingThankYou: "All premium features are available free of charge during this period. Thank you for helping us test PipeKeeper!",
-      gotItThanks: "Got it, thanks!",
-      pipeCollection: "Pipe Collection",
-      trackAndValue: "Track and value your pipes",
+      heroTitle: "Pipe & Tobacco Collection",
+      heroSubtitle:
+        "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.",
+
+      pipeCollectionTitle: "Pipe Collection",
+      pipeCollectionSubtitle: "Track and value your pipes",
       pipesInCollection: "Pipes in Collection",
       collectionValue: "Collection Value",
       viewCollection: "View Collection",
-      tobaccoCellar: "Tobacco Cellar",
-      manageBlends: "Manage your blends",
+
+      tobaccoCellarTitle: "Tobacco Cellar",
+      tobaccoCellarSubtitle: "Manage your blends",
       tobaccoBlends: "Tobacco Blends",
       cellared: "Cellared",
       viewCellar: "View Cellar",
-      favorites: "Favorites",
-      recentPipes: "Recent Pipes",
-      recentTobacco: "Recent Tobacco",
-      viewAll: "View All",
-      bulkImport: "Bulk Import",
-      importDesc: "Import pipes & tobacco from CSV",
-      welcomeToCollection: "Welcome to Your Collection",
-      emptyStateDesc: "Start by adding your first pipe or tobacco blend. Use AI search or photo identification for instant details.",
-      addFirstPipe: "Add Your First Pipe",
-      addFirstBlend: "Add Your First Blend",
-      noCellaredTobacco: "No tobacco currently cellared",
-      cellarBreakdown: "Cellar Breakdown",
-      errorTitle: "Something went wrong",
-      errorRefresh: "Please refresh to try again",
-      insightsError: "Collection Insights failed to load",
-      expertTobacconistError: "Expert Tobacconist failed to load"
     },
+
     insights: {
-      subtitle: "Summaries and trends across your collection",
-      emptyState: "Insights appear after adding items to your collection",
-      addFirstPipe: "Add First Pipe",
-      addFirstBlend: "Add First Blend"
+      title: "Collection Insights",
+      subtitle: "Track usage, optimize pairings, and monitor your collection",
+      log: "Usage Log",
+      pairingGrid: "Pairing Grid",
+      rotation: "Rotation",
+      stats: "Stats",
+      trends: "Trends",
+      aging: "Aging",
+      reports: "Reports",
     },
-    aiTools: {
-      subtitle: "Optional advanced organization tools",
-      emptyState: "AI tools require pipes and tobacco in your collection"
+
+    smokingLog: {
+      logSession: "Log Session",
     },
-    reports: {
-      subtitle: "Exportable summaries and documentation",
-      emptyState: "Reports appear after adding items"
-    },
-    tooltips: {
-      chamberVolume: "Calculated from bowl dimensions. Small: 15-30min, Medium: 30-60min, Large: 60-90min, XL: 90+ min",
-      whatIfScenario: "Explore hypothetical collection changes before making them",
-      breakInSchedule: "Progressive conditioning stages for new pipes",
-      pairingScore: "0-10 compatibility score based on pipe focus and blend characteristics"
-    },
+
     tobacconist: {
-      title: "Expert Tobacconist",
+      title: "Tobacconist Consultation",
       subtitle: "Personalized pipe and tobacco advice",
       optional: "Optional",
-      tooltipText: "AI-powered guidance for collection decisions",
       identify: "Identify",
       optimize: "Optimize",
-      whatIf: "What-If",
-      aiUpdates: "Updates",
-      identificationTitle: "Photo Identification",
-      identificationSubtitle: "Upload a photo to identify pipes and tobacco",
-      identificationTooltip: "Use AI to identify items from photos",
-      identificationEmpty: "Add pipes or tobacco to get started",
-      optimizationTitle: "Collection Optimization",
-      optimizationSubtitle: "AI analysis of your collection strategy",
-      optimizationTooltip: "Get recommendations for collection balance",
-      optimizationEmpty: "Add pipes to analyze your collection",
-      whatIfTitle: "What-If Analysis",
-      whatIfSubtitle: "Explore hypothetical collection scenarios",
-      whatIfTooltip: "Ask questions about collection strategy",
-      whatIfEmpty: "Add pipes to explore what-if scenarios",
+      whatIf: "What If",
       updatesTitle: "AI Updates",
-      updatesSubtitle: "Track AI-generated collection insights",
-      updatesTool: "AI Updates",
-      updatesSubtitle: "Regenerate pairings and optimizations when your collection changes",
-      updatesTool: "AI Updates",
-      updatesSubtitle: "Keep your AI recommendations current",
-      updatesToolTip: "Manage AI-generated insights",
-      addFirstPipe: "Add First Pipe",
-      addFirstBlend: "Add First Blend",
-      chatTab: "Chat",
-      updatesTab: "Updates",
-      title: "Tobacconist Consultation",
-      askTheExpert: "Ask the Expert",
-      askTheExpertDesc: "Get personalized advice about your collection",
-      sendMessage: "Send",
-      startingConversation: "Starting conversation...",
-      welcomeTitle: "Welcome to Your Personal Tobacconist",
-      welcomeMessage: "Ask me anything about pipes, tobacco, pairings, aging, values, or collection strategy.",
-      generatePairings: "Generate Pairings",
-      generatePairingsPrompt: "Please generate optimal pipe-tobacco pairings for my collection",
-      runOptimization: "Run Optimization",
-      runOptimizationPrompt: "Please analyze my collection and provide optimization recommendations",
-      newConversation: "New Conversation",
-      inputPlaceholder: "Ask about pipes, blends, pairings, aging...",
-      pairingMatrix: "Pairing Matrix",
-      collectionOptimization: "Collection Optimization",
-      breakInSchedules: "Break-In Schedules",
-      outOfDate: "Needs regeneration",
-      upToDate: "Current",
-      undo: "Undo",
-      regenerate: "Regenerate",
-      breakInNote: "Break-in schedules are generated automatically for new pipes"
+      identificationTitle: "AI Pipe Identifier",
+      identificationSubtitle: "Upload photos for quick identification help",
     },
-    ai: {
-      thinking: "Thinking..."
+
+    search: {
+      trigger: "Search…",
+      openAria: "Open search",
+      hintTitle: "Start typing to search",
+      hintSubtitle: "Search pipes, tobacco, makers, shapes, and more",
+      kbdNavigate: "Navigate",
+      kbdSelect: "Select",
+      kbdClose: "Close",
+      commandDialogTitle: "Search",
+      commandInputPlaceholder: "Type to search pipes, tobacco, makers…",
+      noResultsFound: "No results found",
+      noResultsMessage: "Try searching for a pipe name, maker, tobacco blend, or shape",
+      sectionPipes: "Pipes",
+      sectionTobacco: "Tobacco",
+      sectionQuickActions: "Quick Actions",
+      actionAddPipe: "Add New Pipe",
+      actionAddBlend: "Add New Blend",
+      actionViewStats: "View Collection Stats",
+      actionExportData: "Export Collection Data",
     },
-    subscription: {
-      premiumCta: "Continue with Premium",
-      proCta: "Upgrade to Pro",
-      trialSubtext: "Starts after your 7-day Premium access ends. Cancel anytime.",
-      activeSubtext: "Renews automatically. Cancel anytime.",
-      reassurance: {
-        cancel: "Cancel anytime",
-        managed: "Managed through Apple",
-        dataProtected: "Your data is never affected"
-      }
-    }
-  }
+  },
+
+  es: {
+    ageGate: {
+      title: "Solo adultos",
+      intendedForAdults: "PipeKeeper está destinado solo a usuarios adultos.",
+      disclaimer:
+        "Esta app es una herramienta de gestión de colecciones para aficionados a la pipa. No vende ni facilita la compra de productos de tabaco.",
+      confirmAge: "Confirmo que soy mayor de edad",
+    },
+
+    termsGate: {
+      beforeContinue: "Antes de continuar",
+      reviewAccept: "Revisa y acepta los Términos del servicio y la Política de privacidad.",
+      termsOfService: "Términos del servicio",
+      privacyPolicy: "Política de privacidad",
+      agreeCheckbox: "He leído y acepto los Términos del servicio y la Política de privacidad.",
+      acceptContinue: "Aceptar y continuar",
+      saving: "Guardando…",
+      savedContinuing: "Guardado. Continuando…",
+      rateLimitedTemporary: "Límite de solicitudes por ahora. Continuando temporalmente…",
+      couldntSave: "No pudimos guardar tu aceptación. Inténtalo de nuevo.",
+      rateLimitNote:
+        "Si las solicitudes están limitadas, la app puede permitir el acceso temporalmente para evitar bucles.",
+    },
+
+    common: {
+      loading: "Cargando…",
+      refresh: "Actualizar",
+      cancel: "Cancelar",
+      save: "Guardar",
+      delete: "Eliminar",
+      close: "Cerrar",
+      yes: "Sí",
+      no: "No",
+      edit: "Editar",
+      add: "Agregar",
+      back: "Atrás",
+      done: "Listo",
+      apply: "Aplicar",
+      clear: "Limpiar",
+      reset: "Restablecer",
+      submit: "Enviar",
+      update: "Actualizar",
+      create: "Crear",
+      remove: "Quitar",
+      view: "Ver",
+      show: "Mostrar",
+      hide: "Ocultar",
+      search: "Buscar",
+      searchPlaceholder: "Buscar…",
+      noResults: "No se encontraron resultados",
+      noData: "No hay datos disponibles",
+      appName: "PipeKeeper",
+    },
+
+    nav: {
+      home: "Inicio",
+      pipes: "Pipas",
+      tobacco: "Tabaco",
+      cellar: "Bodega",
+      community: "Comunidad",
+      profile: "Perfil",
+      help: "Ayuda",
+      faq: "FAQ",
+      support: "Soporte",
+      reports: "Informes",
+    },
+
+    layout: {
+      toggleMenu: "Alternar menú",
+      admin: "Administración",
+    },
+
+    home: {
+      heroTitle: "Colección de pipas y tabaco",
+      heroSubtitle:
+        "Gestiona tus pipas y mezclas de tabaco con búsqueda con IA, identificación por fotos, sugerencias de emparejamiento y valoraciones de mercado.",
+
+      pipeCollectionTitle: "Colección de pipas",
+      pipeCollectionSubtitle: "Rastrea y valora tus pipas",
+      pipesInCollection: "Pipas en colección",
+      collectionValue: "Valor de la colección",
+      viewCollection: "Ver colección",
+
+      tobaccoCellarTitle: "Bodega de tabaco",
+      tobaccoCellarSubtitle: "Gestiona tus mezclas",
+      tobaccoBlends: "Mezclas de tabaco",
+      cellared: "En bodega",
+      viewCellar: "Ver bodega",
+    },
+
+    insights: {
+      title: "Información de colección",
+      subtitle: "Rastrear uso y optimizar emparejamientos",
+      log: "Registro de uso",
+      pairingGrid: "Cuadrícula de emparejamiento",
+      rotation: "Rotación",
+      stats: "Estadísticas",
+      trends: "Tendencias",
+      aging: "Añejamiento",
+      reports: "Informes",
+    },
+
+    smokingLog: {
+      logSession: "Registrar sesión",
+    },
+
+    tobacconist: {
+      title: "Consulta con tabaquero",
+      subtitle: "Asesoramiento personalizado sobre pipas y tabaco",
+      optional: "Opcional",
+      identify: "Identificar",
+      optimize: "Optimizar",
+      whatIf: "¿Y si…?",
+      updatesTitle: "Actualizaciones de IA",
+      identificationTitle: "Identificador de pipas con IA",
+      identificationSubtitle: "Sube fotos para ayuda rápida de identificación",
+    },
+
+    search: {
+      trigger: "Buscar…",
+      openAria: "Abrir búsqueda",
+      hintTitle: "Empieza a escribir para buscar",
+      hintSubtitle: "Busca pipas, tabaco, marcas, formas y más",
+      kbdNavigate: "Navegar",
+      kbdSelect: "Seleccionar",
+      kbdClose: "Cerrar",
+      commandDialogTitle: "Buscar",
+      commandInputPlaceholder: "Escribe para buscar pipas, tabaco, marcas…",
+      noResultsFound: "No se encontraron resultados",
+      noResultsMessage: "Prueba a buscar una pipa, marca, mezcla de tabaco o forma",
+      sectionPipes: "Pipas",
+      sectionTobacco: "Tabaco",
+      sectionQuickActions: "Acciones rápidas",
+      actionAddPipe: "Agregar nueva pipa",
+      actionAddBlend: "Agregar nueva mezcla",
+      actionViewStats: "Ver estadísticas",
+      actionExportData: "Exportar datos",
+    },
+  },
+
+  de: {
+    ageGate: {
+      title: "Nur für Erwachsene",
+      intendedForAdults: "PipeKeeper ist nur für erwachsene Nutzer bestimmt.",
+      disclaimer:
+        "Diese App ist ein Sammlungs-Tool für Pfeifenliebhaber. Sie verkauft keine Tabakprodukte und erleichtert deren Kauf nicht.",
+      confirmAge: "Ich bestätige, dass ich volljährig bin",
+    },
+    search: {
+      trigger: "Suchen…",
+      openAria: "Suche öffnen",
+      hintTitle: "Zum Suchen tippen",
+      hintSubtitle: "Suche Pfeifen, Tabak, Hersteller, Formen und mehr",
+      kbdNavigate: "Navigieren",
+      kbdSelect: "Auswählen",
+      kbdClose: "Schließen",
+    },
+  },
+
+  ja: {
+    ageGate: {
+      title: "成人のみ",
+      intendedForAdults: "PipeKeeper は成人ユーザー向けです。",
+      disclaimer:
+        "このアプリはパイプ愛好家向けのコレクション管理ツールです。タバコ製品の販売や購入の仲介は行いません。",
+      confirmAge: "法定年齢であることを確認します",
+    },
+    search: {
+      trigger: "検索…",
+      openAria: "検索を開く",
+      hintTitle: "入力して検索",
+      hintSubtitle: "パイプ、タバコ、メーカー、形状などを検索",
+      kbdNavigate: "移動",
+      kbdSelect: "選択",
+      kbdClose: "閉じる",
+    },
+  },
 };
