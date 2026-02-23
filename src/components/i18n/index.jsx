@@ -1,4 +1,6 @@
 
+console.log("✓ missingKeyHandler imported");
+
 export { useTranslation, translate } from "./safeTranslation";
 export { translationsComplete } from "./translations-complete";
 export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
