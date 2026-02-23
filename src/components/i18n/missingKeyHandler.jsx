@@ -1,5 +1,4 @@
 // src/components/i18n/missingKeyHandler.jsx
-import { recordMissingKey } from "./missingKeyRegistry";
 
 /**
  * Central missing-key handler.
@@ -8,14 +7,10 @@ import { recordMissingKey } from "./missingKeyRegistry";
  * Returns a visible placeholder string so missing keys are easy to spot.
  */
 export function missingKeyHandler(key, locale, where) {
-  try {
-    // Store for reporting/debug UI
-    recordMissingKey(locale || "en", key, where);
-  } catch {
-    // ignore
-  }
-
   // Visible placeholder (what you see as [MISSING] ...)
+  if (import.meta?.env?.DEV) {
+    console.warn(`[i18n] Missing key: ${key} (locale: ${locale}, where: ${where})`);
+  }
   return `[MISSING] ${key}`;
 }
 
