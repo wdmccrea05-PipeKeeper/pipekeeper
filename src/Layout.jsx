@@ -159,6 +159,9 @@ async function tryStripeSync() {
 }
 
 export default function Layout({ children, currentPageName }) {
+  console.log("8️⃣ Layout component rendering");
+  
+  try {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";
@@ -175,6 +178,7 @@ export default function Layout({ children, currentPageName }) {
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
   const { t, lang } = useTranslation();
+  console.log("9️⃣ Layout useTranslation hook successful");
 
   // Debug logging for language state
   useEffect(() => {
@@ -559,6 +563,7 @@ export default function Layout({ children, currentPageName }) {
     return null;
   }
 
+  console.log("🔟 Layout JSX about to return");
   return (
     <GlobalErrorBoundary>
       <ErrorBoundary>
@@ -814,4 +819,8 @@ export default function Layout({ children, currentPageName }) {
     </ErrorBoundary>
   </GlobalErrorBoundary>
   );
-}
+  } catch (error) {
+  console.error("❌ LAYOUT ERROR:", error);
+  return <div>Layout Error: {error.message}</div>;
+  }
+  }

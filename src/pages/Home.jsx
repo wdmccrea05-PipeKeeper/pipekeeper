@@ -4,7 +4,11 @@ import { Card } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
 export default function Home() {
-  const { t } = useTranslation();
+  console.log("🏠 Home component rendering");
+  
+  try {
+    const { t } = useTranslation();
+    console.log("🏠 Home useTranslation hook successful");
 
   return (
     <div className="space-y-8">
@@ -96,4 +100,8 @@ export default function Home() {
       </Card>
     </div>
   );
+  } catch (error) {
+    console.error("❌ HOME ERROR:", error);
+    return <div>Home Error: {error.message}</div>;
+  }
 }
