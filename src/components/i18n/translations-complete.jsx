@@ -25,17 +25,28 @@ function mergeDeep(target, source) {
 // Use the existing English pack as the canonical base.
 const en = translations?.en || {};
 
-// You can keep overrides here later if you want.
-// For now, rely on translations.js as the canonical packs.
+// Merge all locale packs with English as base
 const es = mergeDeep(en, translations?.es || {});
+const fr = mergeDeep(en, translations?.fr || {});
 const de = mergeDeep(en, translations?.de || {});
+const it = mergeDeep(en, translations?.it || {});
+const pt_BR = mergeDeep(en, translations?.['pt-BR'] || {});
+const nl = mergeDeep(en, translations?.nl || {});
+const pl = mergeDeep(en, translations?.pl || {});
 const ja = mergeDeep(en, translations?.ja || {});
+const zh_Hans = mergeDeep(en, translations?.['zh-Hans'] || {});
 
 export const translationsComplete = {
   en,
   es,
+  fr,
   de,
+  it,
+  'pt-BR': pt_BR,
+  nl,
+  pl,
   ja,
+  'zh-Hans': zh_Hans,
 };
 
 export default translationsComplete;
