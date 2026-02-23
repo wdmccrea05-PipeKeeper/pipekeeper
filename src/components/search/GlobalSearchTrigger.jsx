@@ -5,7 +5,7 @@ import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, C
 import { Search } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export function GlobalSearchTrigger() {
+export default function GlobalSearchTrigger() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
