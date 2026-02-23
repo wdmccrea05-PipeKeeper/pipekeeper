@@ -174,8 +174,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language; // used to trigger memo recalculation on language change
+  const { t, lang } = useTranslation();
 
   // Debug logging for language state
   useEffect(() => {
