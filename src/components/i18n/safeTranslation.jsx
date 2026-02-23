@@ -1,100 +1,63 @@
 // src/components/i18n/safeTranslation.jsx
-import { useMemo } from "react";
-import { useTranslation as useI18nTranslation } from "react-i18next";
+/**
+ * Safe translation helper
+ *
+ * Why this exists:
+ * - i18next can return keys ("home.heroTitle") or explicit missing markers
+ *   ("[MISSING] home.heroTitle") when a resource is incomplete.
+ * - Some parts of the app pass a defaultValue; we should reliably fall back to it.
+ */
 
-// Strings that should never appear as “real” translations.
-// If we see them, we fall back to something user-friendly.
-const PLACEHOLDER_VALUES = new Set([
-  "Title",
-  "Subtitle",
-  "Page Title",
-  "Page Subtitle",
-  "Description",
-  "Label",
-  "Text",
-  "Placeholder",
-]);
+export function safeT(t, key, fallback = "") {
+  try {
+    const value = t(key, { defaultValue: fallback });
 
-function humanizeKey(key) {
-  if (!key || typeof key !== "string") return "";
-  const last = key.split(".").pop() || key;
-  const spaced = last
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/[_-]+/g, " ")
-    .trim();
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+    // Explicit missing marker from our i18n setup.
+    if (typeof value === "string" && value.startsWith("[MISSING]")) {
+      return fallback || "";
+    }
+
+    // When i18next returns the key itself (or something that still looks like a key).
+    if (looksLikeKeyLeak(value, key)) {
+      return fallback || "";
+    }
+
+    // Prevent “humanized placeholder” leaks for core home cards.
+    // If the translation equals the humanized key (e.g., "Pipe Collection Title"),
+    // prefer the provided fallback.
+    if (fallback && typeof value === "string" && isHumanizedKey(value, key)) {
+      return fallback;
+    }
+
+    return value;
+  } catch {
+    return fallback || "";
+  }
 }
 
-function looksLikeKey(value) {
+function looksLikeKeyLeak(value, key) {
   if (typeof value !== "string") return false;
-  // common patterns: "home.pageTitle", "pipesPage.addPipe", etc.
-  return /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(value);
-}
-
-function isMissingMarker(value) {
-  if (typeof value !== "string") return false;
-  return value.startsWith("[MISSING]");
-}
-
-function isPlaceholder(value) {
-  if (typeof value !== "string") return false;
-  const v = value.trim();
-
-  if (!v) return true;
-  if (PLACEHOLDER_VALUES.has(v)) return true;
-
-  // Treat the runtime missing marker as "not a real translation"
-  if (isMissingMarker(v)) return true;
-
-  // Sometimes tooling leaves "TODO" or similar
-  if (/^(todo|tbd)$/i.test(v)) return true;
-
+  if (!value) return true;
+  if (value === key) return true;
+  // dot-keys, namespaces, or bracket markers
+  if (/^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(value)) return true;
+  if (/^\[missing\]/i.test(value)) return true;
   return false;
 }
 
-/**
- * Safe wrapper around i18n `t()`:
- * - Never show raw keys or [MISSING] markers to users
- * - If missing, prefer `options.defaultValue`, otherwise humanize the key
- */
-export function useTranslation() {
-  const { t: rawT, i18n } = useI18nTranslation();
+function humanizeKey(key) {
+  const last = String(key || "").split(".").pop() || "";
+  // pipeCollectionTitle -> Pipe Collection Title
+  return last
+    .replace(/_/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^./, (c) => c.toUpperCase());
+}
 
-  const t = useMemo(() => {
-    return (key, options = {}) => {
-      const opts = options && typeof options === "object" ? options : {};
-
-      // If caller passed a bogus 2nd arg (string), ignore it safely.
-      // The correct signature is: t(key, { defaultValue: "..." })
-      const defaultValue =
-        typeof opts.defaultValue === "string" && opts.defaultValue.trim()
-          ? opts.defaultValue
-          : undefined;
-
-      let value;
-      try {
-        value = rawT(key, opts);
-      } catch {
-        value = undefined;
-      }
-
-      const fallback = defaultValue || humanizeKey(key);
-
-      if (typeof value !== "string") return fallback;
-
-      const v = value.trim();
-
-      if (isPlaceholder(v)) return fallback;
-
-      // If it returned the key itself (common i18n fallback)
-      if (v === key) return fallback;
-
-      // If it returned something that looks like another key
-      if (looksLikeKey(v)) return fallback;
-
-      return value;
-    };
-  }, [rawT]);
-
-  return { t, i18n };
+function isHumanizedKey(value, key) {
+  if (typeof value !== "string") return false;
+  const h = humanizeKey(key);
+  return value.trim() === h;
 }
