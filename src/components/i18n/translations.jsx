@@ -1,3 +1,4 @@
+
 // src/components/i18n/translations.jsx
 export const translations = {
   en: {

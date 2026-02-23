@@ -1,15 +1,11 @@
-// Build timestamp: 2026-02-23 - Force Vite cache invalidation
-// Imports first
-import * as safe from "./safeTranslation.jsx";
-import { translationsComplete as tc } from "./translations-complete.jsx";
-import * as registry from "./missingKeyRegistry.jsx";
-import { missingKeyHandler as mkh } from "./missingKeyHandler.jsx";
 
-// Named exports second
-export { useTranslation, translate } from "./safeTranslation.jsx";
-export { translationsComplete } from "./translations-complete.jsx";
-export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry.jsx";
-export { missingKeyHandler } from "./missingKeyHandler.jsx";
+// Build timestamp: 2026-02-23 - Canonical .js imports only
+
+// Import from canonical .js files (no extensions)
+export { useTranslation, translate } from "./safeTranslation";
+export { translationsComplete } from "./translations-complete";
+export { missingKeyRegistry, registerMissingKey, clearMissingKeys } from "./missingKeyRegistry";
+export { missingKeyHandler } from "./missingKeyHandler";
 
 // Supported langs constant - ALL 10 LOCALES
 export const SUPPORTED_LANGS = [
@@ -25,15 +21,14 @@ export const SUPPORTED_LANGS = [
   { code: "zh-Hans", label: "中文 (简体)" },
 ];
 
-// Console logs after everything
-console.log("✓ safeTranslation loaded");
-console.log("✓ missingKeyHandler imported");
-console.log("✓ i18n index.jsx loaded");
-
-// Default export last
+// Default export
 export default {
-  ...safe,
-  translationsComplete: tc,
-  ...registry,
-  missingKeyHandler: mkh,
+  useTranslation,
+  translate,
+  translationsComplete,
+  missingKeyRegistry,
+  registerMissingKey,
+  clearMissingKeys,
+  missingKeyHandler,
+  SUPPORTED_LANGS,
 };
