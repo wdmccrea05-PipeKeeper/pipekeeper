@@ -1,0 +1,10 @@
+{
+  "name": "PipeKeeper",
+  "short_name": "PipeKeeper",
+  "start_url": "/pipekeeper/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": []
+}
