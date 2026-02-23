@@ -1,4 +1,4 @@
-// src/components/i18n/translations-complete.js
+// src/components/i18n/translations-complete.jsx
 import { translations } from "./translations";
 
 function mergeDeep(target, source) {

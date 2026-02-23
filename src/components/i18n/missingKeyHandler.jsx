@@ -1,4 +1,4 @@
-// src/components/i18n/missingKeyHandler.js
+// src/components/i18n/missingKeyHandler.jsx
 
 /**
  * Central missing-key handler.
