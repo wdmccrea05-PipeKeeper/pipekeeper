@@ -1,7 +1,3 @@
-
-// Build timestamp: 2026-02-23 - Canonical .js imports only
-
-// Import from canonical .js files (no extensions for Vite compatibility)
 import { useTranslation, translate } from "./safeTranslation";
 import { translations } from "./translations";
 import { translationsComplete } from "./translations-complete";
