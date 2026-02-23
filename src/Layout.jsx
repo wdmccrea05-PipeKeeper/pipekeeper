@@ -159,7 +159,6 @@ async function tryStripeSync() {
 }
 
 export default function Layout({ children, currentPageName }) {
-  console.log("✓ App rendering");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";

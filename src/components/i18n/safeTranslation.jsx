@@ -3,8 +3,6 @@ import { useMemo } from "react";
 import { translationsComplete } from "./translations-complete.js";
 import { missingKeyHandler } from "./missingKeyHandler";
 
-console.log("✓ safeTranslation loaded");
-
 /**
  * Interpolation:
  * Supports both "{{var}}" and "{var}" placeholders.
