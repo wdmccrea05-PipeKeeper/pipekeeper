@@ -1,3 +1,0 @@
-import translations from './translations-complete.jsx';
-
-// ... rest of the file content ...
