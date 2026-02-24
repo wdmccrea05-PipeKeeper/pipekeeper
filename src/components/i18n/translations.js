@@ -4,7 +4,7 @@
 export const translations = {
   en: {
     common: { loading: "Loading...", error: "Error", success: "Success" },
-    nav: { home: "Home", pipes: "Pipes", tobacco: "Tobacco" },
+    nav: { home: "Home", pipes: "Pipes", tobacco: "Tobacco", following: "Following" },
 
     ageGate: {
       title: "Adults Only",
@@ -86,11 +86,30 @@ export const translations = {
       identificationTitle: "AI Pipe Identifier",
       identificationSubtitle: "Upload photos for quick identification help",
     },
+
+    auth: {
+      loginRequired: "Login Required",
+    },
+
+    community: {
+      commentsEnabled: "Comments Enabled",
+      commentsDisabled: "Comments Disabled",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. All rights reserved.",
+    },
+
+    units: {
+      tin: "tin",
+      tinPlural: "tins",
+      outOf5: "out of 5",
+    },
   },
 
   es: {
     common: { loading: "Cargando...", error: "Error", success: "Éxito" },
-    nav: { home: "Inicio", pipes: "Pipas", tobacco: "Tabaco" },
+    nav: { home: "Inicio", pipes: "Pipas", tobacco: "Tabaco", following: "Siguiendo" },
 
     ageGate: {
       title: "Solo para adultos",
@@ -168,11 +187,30 @@ export const translations = {
       identificationTitle: "Identificador de pipas con IA",
       identificationSubtitle: "Sube fotos para ayuda rápida de identificación",
     },
+
+    auth: {
+      loginRequired: "Inicio de sesión requerido",
+    },
+
+    community: {
+      commentsEnabled: "Comentarios habilitados",
+      commentsDisabled: "Comentarios deshabilitados",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Todos los derechos reservados.",
+    },
+
+    units: {
+      tin: "lata",
+      tinPlural: "latas",
+      outOf5: "de 5",
+    },
   },
 
   fr: {
     common: { loading: "Chargement...", error: "Erreur", success: "Succès" },
-    nav: { home: "Accueil", pipes: "Pipes", tobacco: "Tabac" },
+    nav: { home: "Accueil", pipes: "Pipes", tobacco: "Tabac", following: "Abonnements" },
 
     ageGate: {
       title: "Réservé aux adultes",
@@ -250,11 +288,30 @@ export const translations = {
       identificationTitle: "Identificateur de pipe IA",
       identificationSubtitle: "Téléchargez des photos pour une aide rapide à l'identification",
     },
+
+    auth: {
+      loginRequired: "Connexion requise",
+    },
+
+    community: {
+      commentsEnabled: "Commentaires activés",
+      commentsDisabled: "Commentaires désactivés",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Tous droits réservés.",
+    },
+
+    units: {
+      tin: "boîte",
+      tinPlural: "boîtes",
+      outOf5: "sur 5",
+    },
   },
 
   de: {
     common: { loading: "Wird geladen...", error: "Fehler", success: "Erfolg" },
-    nav: { home: "Startseite", pipes: "Pfeifen", tobacco: "Tabak" },
+    nav: { home: "Startseite", pipes: "Pfeifen", tobacco: "Tabak", following: "Folge ich" },
 
     ageGate: {
       title: "Nur für Erwachsene",
@@ -332,11 +389,30 @@ export const translations = {
       identificationTitle: "KI-Pfeifen-Identifikator",
       identificationSubtitle: "Fotos hochladen für schnelle Identifikationshilfe",
     },
+
+    auth: {
+      loginRequired: "Anmeldung erforderlich",
+    },
+
+    community: {
+      commentsEnabled: "Kommentare aktiviert",
+      commentsDisabled: "Kommentare deaktiviert",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Alle Rechte vorbehalten.",
+    },
+
+    units: {
+      tin: "Dose",
+      tinPlural: "Dosen",
+      outOf5: "von 5",
+    },
   },
 
   it: {
     common: { loading: "Caricamento...", error: "Errore", success: "Successo" },
-    nav: { home: "Home", pipes: "Pipe", tobacco: "Tabacco" },
+    nav: { home: "Home", pipes: "Pipe", tobacco: "Tabacco", following: "Seguiti" },
 
     ageGate: {
       title: "Solo per adulti",
@@ -414,11 +490,30 @@ export const translations = {
       identificationTitle: "Identificatore di pipa IA",
       identificationSubtitle: "Carica foto per un rapido aiuto all'identificazione",
     },
+
+    auth: {
+      loginRequired: "Accesso richiesto",
+    },
+
+    community: {
+      commentsEnabled: "Commenti abilitati",
+      commentsDisabled: "Commenti disabilitati",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Tutti i diritti riservati.",
+    },
+
+    units: {
+      tin: "barattolo",
+      tinPlural: "barattoli",
+      outOf5: "su 5",
+    },
   },
 
   'pt-BR': {
     common: { loading: "Carregando...", error: "Erro", success: "Sucesso" },
-    nav: { home: "Início", pipes: "Cachimbos", tobacco: "Tabaco" },
+    nav: { home: "Início", pipes: "Cachimbos", tobacco: "Tabaco", following: "Seguindo" },
 
     ageGate: {
       title: "Somente adultos",
@@ -496,11 +591,30 @@ export const translations = {
       identificationTitle: "Identificador de cachimbo IA",
       identificationSubtitle: "Faça upload de fotos para ajuda rápida de identificação",
     },
+
+    auth: {
+      loginRequired: "Login necessário",
+    },
+
+    community: {
+      commentsEnabled: "Comentários ativados",
+      commentsDisabled: "Comentários desativados",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Todos os direitos reservados.",
+    },
+
+    units: {
+      tin: "lata",
+      tinPlural: "latas",
+      outOf5: "de 5",
+    },
   },
 
   nl: {
     common: { loading: "Laden...", error: "Fout", success: "Succes" },
-    nav: { home: "Startpagina", pipes: "Pijpen", tobacco: "Tabak" },
+    nav: { home: "Startpagina", pipes: "Pijpen", tobacco: "Tabak", following: "Volgend" },
 
     ageGate: {
       title: "Alleen voor volwassenen",
@@ -578,11 +692,30 @@ export const translations = {
       identificationTitle: "AI-pijpidentificator",
       identificationSubtitle: "Upload foto's voor snelle identificatiehulp",
     },
+
+    auth: {
+      loginRequired: "Inloggen vereist",
+    },
+
+    community: {
+      commentsEnabled: "Reacties ingeschakeld",
+      commentsDisabled: "Reacties uitgeschakeld",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Alle rechten voorbehouden.",
+    },
+
+    units: {
+      tin: "blikje",
+      tinPlural: "blikjes",
+      outOf5: "van 5",
+    },
   },
 
   pl: {
     common: { loading: "Ładowanie...", error: "Błąd", success: "Sukces" },
-    nav: { home: "Strona główna", pipes: "Fajki", tobacco: "Tytoń" },
+    nav: { home: "Strona główna", pipes: "Fajki", tobacco: "Tytoń", following: "Obserwowani" },
 
     ageGate: {
       title: "Tylko dla dorosłych",
@@ -660,11 +793,30 @@ export const translations = {
       identificationTitle: "Identyfikator fajek AI",
       identificationSubtitle: "Prześlij zdjęcia, aby uzyskać szybką pomoc w identyfikacji",
     },
+
+    auth: {
+      loginRequired: "Wymagane logowanie",
+    },
+
+    community: {
+      commentsEnabled: "Komentarze włączone",
+      commentsDisabled: "Komentarze wyłączone",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. Wszelkie prawa zastrzeżone.",
+    },
+
+    units: {
+      tin: "puszka",
+      tinPlural: "puszki",
+      outOf5: "na 5",
+    },
   },
 
   ja: {
     common: { loading: "読み込み中...", error: "エラー", success: "成功" },
-    nav: { home: "ホーム", pipes: "パイプ", tobacco: "タバコ" },
+    nav: { home: "ホーム", pipes: "パイプ", tobacco: "タバコ", following: "フォロー中" },
 
     ageGate: {
       title: "成人のみ",
@@ -742,11 +894,30 @@ export const translations = {
       identificationTitle: "AIパイプ識別",
       identificationSubtitle: "写真をアップロードして簡易識別",
     },
+
+    auth: {
+      loginRequired: "ログインが必要です",
+    },
+
+    community: {
+      commentsEnabled: "コメント有効",
+      commentsDisabled: "コメント無効",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. 全著作権所有。",
+    },
+
+    units: {
+      tin: "缶",
+      tinPlural: "缶",
+      outOf5: "5点中",
+    },
   },
 
   'zh-Hans': {
     common: { loading: "加载中...", error: "错误", success: "成功" },
-    nav: { home: "主页", pipes: "烟斗", tobacco: "烟草" },
+    nav: { home: "主页", pipes: "烟斗", tobacco: "烟草", following: "关注中" },
 
     ageGate: {
       title: "仅限成人",
@@ -823,6 +994,25 @@ export const translations = {
       updatesTitle: "AI更新",
       identificationTitle: "AI烟斗识别",
       identificationSubtitle: "上传照片以快速获取识别帮助",
+    },
+
+    auth: {
+      loginRequired: "需要登录",
+    },
+
+    community: {
+      commentsEnabled: "评论已启用",
+      commentsDisabled: "评论已禁用",
+    },
+
+    footer: {
+      copyright: "© 2025 PipeKeeper. 保留所有权利。",
+    },
+
+    units: {
+      tin: "罐",
+      tinPlural: "罐",
+      outOf5: "满5分",
     },
   },
 };
