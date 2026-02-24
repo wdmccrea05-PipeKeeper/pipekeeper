@@ -67,6 +67,7 @@ export default function SubscriptionSuccess() {
 
         await queryClient.invalidateQueries({ queryKey: ["current-user"] });
         await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+        await queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
 
         if (tier !== "free") {
           setStatus("success");
