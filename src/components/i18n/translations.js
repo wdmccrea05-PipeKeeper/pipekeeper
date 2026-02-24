@@ -1,17 +1,82 @@
-module.exports = {
-  namespaces: {
+export default {
+  en: {
     namespace1: {
-      en: { key1: 'Value in English 1', key2: 'Value in English 2', /* ... up to 511 keys ... */ },
-      es: { key1: 'Valor en Español 1', key2: 'Valor en Español 2', /* ... up to 511 keys ... */ },
-      fr: { key1: 'Valeur en Français 1', key2: 'Valeur en Français 2', /* ... up to 511 keys ... */ },
-      de: { key1: 'Wert auf Deutsch 1', key2: 'Wert auf Deutsch 2', /* ... up to 511 keys ... */ },
-      it: { key1: 'Valore in Italiano 1', key2: 'Valore in Italiano 2', /* ... up to 511 keys ... */ },
-      "pt-BR": { key1: 'Valor em Português 1', key2: 'Valor em Português 2', /* ... up to 511 keys ... */ },
-      nl: { key1: 'Waarde in het Nederlands 1', key2: 'Waarde in het Nederlands 2', /* ... up to 511 keys ... */ },
-      pl: { key1: 'Wartość po Polsku 1', key2: 'Wartość po Polsku 2', /* ... up to 511 keys ... */ },
-      ja: { key1: '日本語での値 1', key2: '日本語での値 2', /* ... up to 511 keys ... */ },
-      "zh-Hans": { key1: '中文简体值 1', key2: '中文简体值 2', /* ... up to 511 keys ... */ }
+      key1: 'English translation for key1',
+      key2: 'English translation for key2',
+      // ... more keys
     },
-    /* Repeat for each namespace up to 23 */
+    // ... more namespaces
+  },
+  es: {
+    namespace1: {
+      key1: 'Traducción en español para key1',
+      key2: 'Traducción en español para key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  fr: {
+    namespace1: {
+      key1: 'Traduction française pour key1',
+      key2: 'Traduction française pour key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  de: {
+    namespace1: {
+      key1: 'Deutsche Übersetzung für key1',
+      key2: 'Deutsche Übersetzung für key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  it: {
+    namespace1: {
+      key1: 'Traduzione italiana per key1',
+      key2: 'Traduzione italiana per key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  'pt-BR': {
+    namespace1: {
+      key1: 'Tradução em português brasileiro para key1',
+      key2: 'Tradução em português brasileiro para key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  nl: {
+    namespace1: {
+      key1: 'Nederlandse vertaling voor key1',
+      key2: 'Nederlandse vertaling voor key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  pl: {
+    namespace1: {
+      key1: 'Polski przekład dla key1',
+      key2: 'Polski przekład dla key2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  ja: {
+    namespace1: {
+      key1: '日本語の翻訳キー1',
+      key2: '日本語の翻訳キー2',
+      // ... more keys
+    },
+    // ... more namespaces
+  },
+  'zh-Hans': {
+    namespace1: {
+      key1: '简体中文翻译键1',
+      key2: '简体中文翻译键2',
+      // ... more keys
+    },
+    // ... more namespaces
   }
 };
