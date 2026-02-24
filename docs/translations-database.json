@@ -1,0 +1,1 @@
+{\n  "en": {\n    "namespace_1": {\n      "key_1": "value_1",\n      "key_2": "value_2"\n      ...\n    },\n    ...\n  },\n  "es": {\n    "namespace_1": {\n      "key_1": "valor_1",\n      "key_2": "valor_2"\n      ...\n    },\n    ...\n  },\n  ...\n}
