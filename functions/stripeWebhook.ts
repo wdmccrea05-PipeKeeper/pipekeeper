@@ -76,9 +76,9 @@ async function getTier(sub, stripe) {
     }
   }
 
-  // Priority 5: Return null if tier cannot be determined (do NOT default silently)
-  console.warn(`[getTier] Could not determine tier for subscription ${sub.id}, price ${priceId}`);
-  return null;
+  // Priority 5: Default to "premium" if tier cannot be determined from any source
+  console.warn(`[getTier] Could not determine tier for subscription ${sub.id}, price ${priceId} - defaulting to "premium"`);
+  return "premium";
 }
 
 Deno.serve(async (req) => {
@@ -393,7 +393,7 @@ Deno.serve(async (req) => {
           const result = await setUserEntitlement(user_email, {
             subscription_level: isPaid ? "paid" : "free",
             subscription_status: sub.status,
-            subscription_tier: payload.tier || null,
+            subscription_tier: payload.tier,
             stripe_customer_id: customerId || null,
             subscription_provider: "stripe",
           });
