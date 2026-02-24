@@ -82,7 +82,7 @@ function App() {
     <GlobalErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router basename="/pipekeeper/">
+          <Router basename={process.env.NODE_ENV === 'production' ? '/pipekeeper/' : '/'}>
             <NavigationTracker />
             <AuthenticatedApp />
           </Router>
