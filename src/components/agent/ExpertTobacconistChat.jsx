@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -40,7 +40,7 @@ export default function ExpertTobacconistChat({
 
       // If user data still loading, avoid hard failures
       if (!user?.id) {
-        toast.error(t("agent.collectionLoadingRetry"));
+        toast.error(t("tobacconist.collectionLoadingRetry"));
         return;
       }
 
@@ -51,7 +51,7 @@ export default function ExpertTobacconistChat({
         });
 
         if (!created?.id) {
-          toast.error(t("agent.failedToInitializeChat"));
+          toast.error(t("tobacconist.failedToInitializeExpertChat"));
           return;
         }
 
@@ -59,7 +59,7 @@ export default function ExpertTobacconistChat({
       }
     } catch (e) {
       console.error(e);
-      toast.error(t("agent.failedToInitializeChat"));
+      toast.error(t("tobacconist.failedToInitializeExpertChat"));
     } finally {
       setInitializing(false);
     }
@@ -141,7 +141,7 @@ export default function ExpertTobacconistChat({
       if (answeredBy && onAnsweredBy) onAnsweredBy(answeredBy);
     } catch (e) {
       console.error(e);
-      toast.error(t("agent.couldntLoadResponse"));
+      toast.error(t("tobacconist.couldntLoadResponse"));
     } finally {
       setSending(false);
     }
@@ -159,7 +159,7 @@ export default function ExpertTobacconistChat({
       <div className="flex items-center gap-3 mb-3">
         <img
           src="/icons/ai-tobacconist.png"
-          alt={t("agent.aiTobacconistAlt")}
+          alt={t("tobacconist.aiTobacconistAlt")}
           className="w-10 h-10 rounded-md"
         />
         <div className="flex-1">
@@ -191,7 +191,7 @@ export default function ExpertTobacconistChat({
 
                 {m.role !== "user" && m?.meta?.answered_by ? (
                   <div className="mt-2 text-xs opacity-60">
-                    {t("agent.answeredBy")} {String(m.meta.answered_by)}
+                    {t("tobacconist.answeredBy")} {String(m.meta.answered_by)}
                   </div>
                 ) : null}
               </div>
@@ -205,7 +205,7 @@ export default function ExpertTobacconistChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={t("agent.askExpertPlaceholder")}
+          placeholder={t("tobacconist.askExpertPlaceholder")}
           disabled={sending || initializing}
         />
         <Button onClick={sendMessage} disabled={!canSend}>

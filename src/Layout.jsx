@@ -36,7 +36,7 @@ import {
   registerNativeSubscriptionListener,
   nativeDebugPing,
 } from "@/components/utils/nativeIAPBridge";
-import { useTranslation } from "@/components/i18n/index.jsx";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 
@@ -533,7 +533,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
+            alt={t("layout.appTitle")}
             className="w-32 h-32 mx-auto mb-4 object-contain animate-pulse"
           />
           <p className="text-[#e8d5b7]">{t("common.loading")}</p>
@@ -548,7 +548,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="text-center">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="PipeKeeper"
+            alt={t("layout.appTitle")}
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
           <p className="text-[#e8d5b7] text-lg font-semibold mb-6">{t("auth.loginPrompt")}</p>
@@ -567,7 +567,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <GlobalErrorBoundary>
       <ErrorBoundary>
-        <DocumentTitle title="PipeKeeper" />
+        <DocumentTitle title={t("layout.appTitle")} />
         <Toaster position="top-center" />
         <MeasurementProvider>
         <div className="dark min-h-screen flex flex-col bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320]" style={{ colorScheme: 'dark' }}>
@@ -577,8 +577,8 @@ export default function Layout({ children, currentPageName }) {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <BackButton currentPageName={currentPageName} />
                   <Link to={createPageUrl("Home")} className="flex items-center gap-2 flex-shrink-0">
-                    <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
-                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">PipeKeeper</span>
+                    <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 lg:w-8 lg:h-8 object-contain" />
+                    <span className="font-bold text-lg lg:text-xl text-[#E0D8C8] hidden sm:inline whitespace-nowrap">{t("layout.appTitle")}</span>
                   </Link>
                 </div>
 
@@ -628,8 +628,8 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex items-center gap-2">
                 <BackButton currentPageName={currentPageName} />
                 <Link to={createPageUrl("Home")} className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-7 h-7 object-contain" />
-                  <span className="font-bold text-lg text-[#E0D8C8]">PipeKeeper</span>
+                  <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-7 h-7 object-contain" />
+                  <span className="font-bold text-lg text-[#E0D8C8]">{t("layout.appTitle")}</span>
                 </Link>
               </div>
 
@@ -711,8 +711,8 @@ export default function Layout({ children, currentPageName }) {
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <img src={PIPEKEEPER_LOGO} alt="PipeKeeper" className="w-5 h-5 object-contain" />
-                  <span className="text-sm text-[#E0D8C8]/70">© 2025 PipeKeeper. All rights reserved.</span>
+                  <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-5 h-5 object-contain" />
+                  <span className="text-sm text-[#E0D8C8]/70">{t("layout.copyright")}</span>
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">

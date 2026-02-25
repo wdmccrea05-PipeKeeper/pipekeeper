@@ -12,6 +12,16 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
+const MATERIAL_KEYS = {
+  "Briar": "pipes.materialBriar", "Meerschaum": "pipes.materialMeerschaum",
+  "Corn Cob": "pipes.materialCornCob", "Clay": "pipes.materialClay",
+  "Olive Wood": "pipes.materialOliveWood", "Cherry Wood": "pipes.materialCherryWood",
+  "Morta": "pipes.materialMorta", "Other": "pipes.materialOther",
+};
+const VOLUME_KEYS = {
+  "Small": "pipes.volumeSmall", "Medium": "pipes.volumeMedium",
+  "Large": "pipes.volumeLarge", "Extra Large": "pipes.volumeExtraLarge",
+};
 const SHAPES = [
   "Billiard","Bulldog","Dublin","Apple","Author","Bent","Canadian","Churchwarden","Freehand",
   "Lovat","Poker","Prince","Rhodesian","Zulu","Calabash","Other"
@@ -204,7 +214,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     <Select value={bowlForm.bowl_material} onValueChange={(v) => setBowlForm({ ...bowlForm, bowl_material: v })}>
                       <SelectTrigger><SelectValue placeholder={t("formsExtended.selectMaterial")} /></SelectTrigger>
                       <SelectContent>
-                        {BOWL_MATERIALS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                        {BOWL_MATERIALS.map((m) => <SelectItem key={m} value={m}>{t(MATERIAL_KEYS[m], m)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -214,7 +224,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                     <Select value={bowlForm.chamber_volume} onValueChange={(v) => setBowlForm({ ...bowlForm, chamber_volume: v })}>
                       <SelectTrigger><SelectValue placeholder={t("formsExtended.selectVolume")} /></SelectTrigger>
                       <SelectContent>
-                        {CHAMBER_VOLUMES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                        {CHAMBER_VOLUMES.map((v) => <SelectItem key={v} value={v}>{t(VOLUME_KEYS[v], v)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
