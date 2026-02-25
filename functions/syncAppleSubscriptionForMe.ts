@@ -71,6 +71,11 @@ Deno.serve(async (req) => {
       }, { status: 409 });
     }
     
+    // BACKFILL CHECK: If subscription exists but missing user_email, add it
+    if (existingAppleSub && !existingAppleSub.user_email) {
+      console.log(`[syncAppleSubscriptionForMe] Backfilling user_email for Apple subscription ${providerSubId}`);
+    }
+    
     const subData = {
       user_id: userId,
       user_email: emailLower,
