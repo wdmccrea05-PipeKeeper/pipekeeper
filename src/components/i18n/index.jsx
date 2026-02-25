@@ -38,14 +38,16 @@ export function useTranslation(languageOverride = null) {
   }, [lang]);
 
   const t = useMemo(() => {
-    return (key, vars = {}) => {
+    return (key, varsOrFallback = {}) => {
+      const vars = typeof varsOrFallback === 'object' && varsOrFallback !== null && !Array.isArray(varsOrFallback) ? varsOrFallback : {};
+      const fallbackStr = typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
       const value = getNestedValue(translationPack, key);
       if (value === undefined) {
         const fallback = getNestedValue(translations.en, key);
         if (fallback) {
           return interpolate(String(fallback), vars);
         }
-        return key;
+        return fallbackStr !== undefined ? fallbackStr : key;
       }
       if (typeof value === 'string') {
         return interpolate(value, vars);
