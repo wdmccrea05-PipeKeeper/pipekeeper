@@ -1,9 +1,3 @@
-// Safe translation utility
-export function useTranslation() {
-  return {
-    t: (key) => key,
-    i18n: { language: 'en' }
-  };
-}
+export { useTranslation, translate, SUPPORTED_LANGS, translations } from './index.jsx';
+export { default } from './index.jsx';
 
-export default { useTranslation };
