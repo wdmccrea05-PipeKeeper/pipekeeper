@@ -68,7 +68,7 @@ export default function TermsGate({ user }) {
         await qc.invalidateQueries({ queryKey: ["current-user"] });
         setMsg(t("termsGate.rateLimitedTemporary"));
       } else {
-        setMsg("We couldn’t save your acceptance. Please try again.");
+        setMsg(t("termsGate.saveFailed"));
       }
     } finally {
       setSubmitting(false);

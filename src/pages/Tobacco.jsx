@@ -118,7 +118,7 @@ export default function TobaccoPage() {
       // Check limits before creating
       const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
-        throw new Error(limitCheck.reason || 'Cannot create tobacco blend');
+      throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
       return base44.entities.TobaccoBlend.create(data);
     },
@@ -290,7 +290,7 @@ export default function TobaccoPage() {
               onClick={async () => {
                 const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
                 if (!limitCheck.canCreate) {
-                  toast.error(limitCheck.reason, {
+                  toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                     action: {
                       label: t("subscription.upgrade"),
                       onClick: () => window.location.href = createPageUrl('Subscription')
