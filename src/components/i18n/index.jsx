@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { translations } from '../../../translations.js';
+import translations from './translations.js';
 
 function getNestedValue(obj, path) {
   if (!obj || !path) return undefined;
