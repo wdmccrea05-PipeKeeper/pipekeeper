@@ -140,5 +140,15 @@ export default {
     earlySubscriberNote: "注意：在{{date}}之前加入的早期订阅者将获得终身创始会员权益。",
     howGetSupport: "如何获得支持？",
     howGetSupportAnswer: "访问应用菜单中的支持页面，或直接发送电子邮件给我们以获取任何问题或疑问的帮助。"
+  },
+
+  optimizer: {
+    wellMatchedBlends: "匹配良好的混合烟草",
+    unmatchedBlends: "未匹配的混合烟草",
+    coverageRate: "覆盖率",
+    redundancies: "专业化冗余",
+    purchaseSuggestions: "建议购买",
+    avgScoreImprovement: "平均得分提升",
+    fillsGapFor: "填补缺口",
   }
 };

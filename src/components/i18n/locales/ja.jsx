@@ -140,5 +140,15 @@ export default {
     earlySubscriberNote: "注：{{date}}より前に参加した早期購読者は、生涯創設メンバー特典を受け取ります。",
     howGetSupport: "サポートを受けるには？",
     howGetSupportAnswer: "アプリメニューのサポートページにアクセスするか、質問や問題についてサポートが必要な場合は直接メールでお問い合わせください。"
+  },
+
+  optimizer: {
+    wellMatchedBlends: "よくマッチしたブレンド",
+    unmatchedBlends: "マッチしないブレンド",
+    coverageRate: "カバレッジ率",
+    redundancies: "専門化の重複",
+    purchaseSuggestions: "推奨購入品",
+    avgScoreImprovement: "平均スコア改善",
+    fillsGapFor: "ギャップを補完",
   }
 };

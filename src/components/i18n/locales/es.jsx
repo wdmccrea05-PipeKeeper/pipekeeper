@@ -128,4 +128,14 @@ const translations = {
     howGetSupportAnswer: "Visita la página de Soporte en el menú de la aplicación o envíanos un correo electrónico directamente para obtener ayuda con cualquier pregunta o problema."
   },
 
+  optimizer: {
+    wellMatchedBlends: "Mezclas bien emparejadas",
+    unmatchedBlends: "Mezclas sin coincidencia",
+    coverageRate: "Tasa de cobertura",
+    redundancies: "Redundancias de especialización",
+    purchaseSuggestions: "Adquisiciones sugeridas",
+    avgScoreImprovement: "mejora promedio de puntuación",
+    fillsGapFor: "Cubre la brecha",
+  },
+
 export default translations;

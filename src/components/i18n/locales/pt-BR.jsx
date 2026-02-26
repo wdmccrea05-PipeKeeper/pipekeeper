@@ -108,6 +108,16 @@ const translations = {
     earlySubscriberNote: "Nota: Assinantes antecipados que entrarem antes de {{date}} recebem benefícios vitalícios de membro fundador.",
     howGetSupport: "Como obtenho suporte?",
     howGetSupportAnswer: "Visite a página de Suporte no menu do aplicativo ou envie-nos um e-mail diretamente para obter ajuda com perguntas ou problemas."
+  },
+
+  optimizer: {
+    wellMatchedBlends: "Blends bem combinados",
+    unmatchedBlends: "Blends sem correspondência",
+    coverageRate: "Taxa de cobertura",
+    redundancies: "Redundâncias de especialização",
+    purchaseSuggestions: "Aquisições sugeridas",
+    avgScoreImprovement: "melhoria média na pontuação",
+    fillsGapFor: "Preenche a lacuna",
   }
 };
 

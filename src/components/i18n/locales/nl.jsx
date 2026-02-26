@@ -108,6 +108,16 @@ const translations = {
     earlySubscriberNote: "Opmerking: Vroege abonnees die vóór {{date}} lid worden, ontvangen levenslange voordelen als oprichtend lid.",
     howGetSupport: "Hoe krijg ik ondersteuning?",
     howGetSupportAnswer: "Bezoek de ondersteuningspagina in het app-menu of stuur ons rechtstreeks een e-mail voor hulp bij vragen of problemen."
+  },
+
+  optimizer: {
+    wellMatchedBlends: "Goed gematchte mengsels",
+    unmatchedBlends: "Niet-gematchte mengsels",
+    coverageRate: "Dekkingsgraad",
+    redundancies: "Specialisatieredundanties",
+    purchaseSuggestions: "Aanbevolen aankopen",
+    avgScoreImprovement: "gemiddelde scoreverbete ring",
+    fillsGapFor: "Vult hiaat op",
   }
 };
 

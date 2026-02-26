@@ -108,6 +108,16 @@ const translations = {
     earlySubscriberNote: "Nota: Gli abbonati precoci che si uniscono prima del {{date}} ricevono benefici di membro fondatore a vita.",
     howGetSupport: "Come ottengo supporto?",
     howGetSupportAnswer: "Visita la pagina Supporto nel menu dell'app o inviaci un'email direttamente per assistenza con domande o problemi."
+  },
+
+  optimizer: {
+    wellMatchedBlends: "Miscele ben abbinate",
+    unmatchedBlends: "Miscele senza corrispondenza",
+    coverageRate: "Tasso di copertura",
+    redundancies: "Ridondanze di specializzazione",
+    purchaseSuggestions: "Acquisizioni suggerite",
+    avgScoreImprovement: "miglioramento medio del punteggio",
+    fillsGapFor: "Colma il divario",
   }
 };
 

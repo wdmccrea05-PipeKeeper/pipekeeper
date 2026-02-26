@@ -108,6 +108,16 @@ const translations = {
     earlySubscriberNote: "Hinweis: Frühe Abonnenten, die vor dem {{date}} beitreten, erhalten lebenslange Gründungsmitgliedervorteile.",
     howGetSupport: "Wie erhalte ich Support?",
     howGetSupportAnswer: "Besuchen Sie die Support-Seite im App-Menü oder senden Sie uns eine E-Mail für Hilfe bei Fragen oder Problemen."
+  },
+
+  optimizer: {
+    wellMatchedBlends: "Gut abgestimmte Mischungen",
+    unmatchedBlends: "Nicht zugeordnete Mischungen",
+    coverageRate: "Abdeckungsrate",
+    redundancies: "Spezialisierungsredundanzen",
+    purchaseSuggestions: "Empfohlene Anschaffungen",
+    avgScoreImprovement: "durchschnittliche Bewertungsverbesserung",
+    fillsGapFor: "Schließt Lücke",
   }
 };
 
