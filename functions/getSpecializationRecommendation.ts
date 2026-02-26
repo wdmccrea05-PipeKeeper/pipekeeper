@@ -26,10 +26,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Pipe not found' }, { status: 404 });
     }
 
-    // Fetch user's blends and user profile
-    const [blends, profiles] = await Promise.all([
+    // Fetch user's blends, user profile, and all pipes in collection
+    const [blends, profiles, allPipes] = await Promise.all([
       base44.entities.TobaccoBlend.filter({ created_by: user.email }),
-      base44.entities.UserProfile.filter({ user_email: user.email })
+      base44.entities.UserProfile.filter({ user_email: user.email }),
+      base44.entities.Pipe.filter({ created_by: user.email }),
     ]);
 
     const userProfile = profiles?.[0];
@@ -62,47 +63,117 @@ Deno.serve(async (req) => {
       notes: userProfile?.notes
     };
 
-    const blendContext = blends.map(b => ({
+    // Inline pairing score computation (mirrors pairingScoreCanonical logic)
+    const NON_AROMATIC_TYPES = ["english","balkan","latakia","virginia","burley","oriental","perique"];
+
+    function computePairingScore(pipeObj: any, blend: any): number {
+      const focus: string[] = pipeObj.focus || [];
+      const blendType: string = (blend.blend_type || "").toLowerCase();
+      const isAromatic = blendType.includes("aromatic");
+
+      const pipeIsAromaticOnly = focus.some((f: string) => f.toLowerCase().includes("aromatic")) && !focus.some((f: string) => NON_AROMATIC_TYPES.includes(f.toLowerCase()));
+      const pipeIsNonAromaticOnly = focus.some((f: string) => NON_AROMATIC_TYPES.includes(f.toLowerCase())) && !focus.some((f: string) => f.toLowerCase().includes("aromatic"));
+
+      if (pipeIsAromaticOnly && !isAromatic) return 0;
+      if (pipeIsNonAromaticOnly && isAromatic) return 0;
+
+      let score = 4;
+
+      if (focus.some((f: string) => blend.name?.toLowerCase().includes(f.toLowerCase()))) return 10;
+
+      const matchText = [blend.blend_type, blend.flavor_notes, blend.tobacco_components].filter(Boolean).join(" ").toLowerCase();
+      const matchCount = focus.filter((f: string) => matchText.includes(f.toLowerCase())).length;
+      if (matchCount >= 2) score += 4;
+      else if (matchCount === 1) score += 2;
+
+      if (isAromatic) score += 2;
+
+      if (blend.strength && pipeObj.smoking_characteristics?.toLowerCase().includes(blend.strength.toLowerCase())) score += 0.5;
+
+      return Math.max(0, Math.min(10, score));
+    }
+
+    // Pre-compute blend scores at current focus
+    const blendScoresCurrentFocus = blends.slice(0, 40).map(b => ({
       name: b.name,
       blend_type: b.blend_type,
       strength: b.strength,
-      cut: b.cut
+      current_score: computePairingScore(pipe, b),
     }));
 
-    const prompt = `You are an expert pipe tobacconist helping a user optimize their pipe collection.
+    // Build collection context from other pipes
+    const otherPipes = allPipes
+      .filter((p: any) => p.id !== pipeId)
+      .map((p: any) => ({
+        id: String(p.id),
+        name: p.name,
+        shape: p.shape,
+        bowlStyle: p.bowlStyle,
+        sizeClass: p.sizeClass,
+        chamber_volume: p.chamber_volume,
+        bowl_diameter_mm: p.bowl_diameter_mm,
+        bowl_depth_mm: p.bowl_depth_mm,
+        current_focus: p.focus || [],
+        smoking_characteristics: p.smoking_characteristics,
+      }));
 
-User's Pipe:
+    const prompt = `You are an expert pipe tobacconist performing a COLLECTION-LEVEL specialization analysis.
+
+## Target Pipe
 ${JSON.stringify(pipeContext, null, 2)}
 
-User's Preferences:
+## Current Blend Scores (at current focus)
+${JSON.stringify(blendScoresCurrentFocus)}
+
+## Other Pipes in Collection (${otherPipes.length} pipes)
+${JSON.stringify(otherPipes)}
+
+## User Preferences
 ${JSON.stringify(userContext, null, 2)}
 
-User's Tobacco Collection (${blends.length} blends):
-${JSON.stringify(blendContext.slice(0, 20), null, 2)}
-${blends.length > 20 ? `... and ${blends.length - 20} more blends` : ''}
+## Your Task
 
-Based on:
-1. The pipe's physical characteristics (size, shape, bowl style, shank shape, bend, material, chamber dimensions)
-2. The pipe's geometry details (bowlStyle, shankShape, bend, sizeClass)
-3. The pipe's current smoking characteristics
-4. The user's preferences and collection
-5. Best practices for pipe specialization
+Perform ALL of the following analyses:
 
-Provide a comprehensive specialization recommendation for this specific pipe. Consider:
-- What tobacco types would perform best in this pipe given its chamber size, shape, and geometry
-- How the bend degree and bowl style affect smoking characteristics and tobacco performance
-- Whether the pipe should be dedicated to specific blends to avoid ghosting
-- How the pipe's characteristics align with the user's collection and preferences
-- Specific blend recommendations from the user's collection
+### 1. Recommend the best specialization for THIS pipe
+Based on its physical geometry (bowl size, shape, material, bend) and the blend collection, recommend the optimal focus tags.
 
-Return your analysis as a JSON object with this structure:
+### 2. Score projection: current vs. recommended focus
+For the recommended focus, estimate:
+- How many blends in the collection would score >=7 (high compatibility)
+- How many would score >=5 (moderate compatibility)
+- Compare to how many score >=7 and >=5 at the CURRENT focus
+
+### 3. Collection-level analysis
+Look at ALL other pipes and their current_focus values. Identify:
+- Coverage gaps: blend types in the collection that no pipe (or only one pipe) currently covers well
+- Coverage redundancies: blend types covered by 2+ pipes with very similar focus
+- Reassignment opportunities: if changing THIS pipe's focus would reduce redundancy or fill a gap
+
+### 4. Suggest whether other pipes' assignments should change
+If another pipe would be a better physical match for this pipe's current specialty, note the swap opportunity.
+
+### 5. Blend gap recommendations
+Identify blend types present in the collection but under-served by the current pipe lineup.
+
+Return JSON:
 {
-  "recommended_specializations": ["English", "Latakia Blend"],
-  "reasoning": "Detailed explanation of why these specializations are recommended based on pipe characteristics",
-  "collection_fit": "How this recommendation fits with the user's current collection and preferences",
-  "specific_blends": ["Blend Name 1", "Blend Name 2"],
-  "considerations": "Important factors to consider, such as chamber size, ghosting potential, etc.",
-  "alternative_uses": "Other potential uses for this pipe if user wants flexibility"
+  "recommended_specializations": string[],
+  "reasoning": string,
+  "collection_fit": string,
+  "specific_blends": string[],
+  "considerations": string,
+  "alternative_uses": string,
+  "score_projection": {
+    "current_focus_high_compat_count": number,
+    "current_focus_moderate_compat_count": number,
+    "recommended_focus_high_compat_count": number,
+    "recommended_focus_moderate_compat_count": number
+  },
+  "collection_gaps": string[],
+  "collection_redundancies": [{ "blend_type": string, "pipes": string[] }],
+  "reassignment_opportunity": string | null,
+  "blend_coverage_gaps": string[]
 }`;
 
     const response = await base44.integrations.Core.InvokeLLM({
@@ -121,7 +192,29 @@ Return your analysis as a JSON object with this structure:
             items: { type: "string" }
           },
           considerations: { type: "string" },
-          alternative_uses: { type: "string" }
+          alternative_uses: { type: "string" },
+          score_projection: {
+            type: "object",
+            properties: {
+              current_focus_high_compat_count: { type: "number" },
+              current_focus_moderate_compat_count: { type: "number" },
+              recommended_focus_high_compat_count: { type: "number" },
+              recommended_focus_moderate_compat_count: { type: "number" },
+            }
+          },
+          collection_gaps: { type: "array", items: { type: "string" } },
+          collection_redundancies: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                blend_type: { type: "string" },
+                pipes: { type: "array", items: { type: "string" } }
+              }
+            }
+          },
+          reassignment_opportunity: { type: ["string", "null"] },
+          blend_coverage_gaps: { type: "array", items: { type: "string" } }
         },
         required: ["recommended_specializations", "reasoning", "collection_fit"]
       }

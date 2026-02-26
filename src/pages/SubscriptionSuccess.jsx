@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { getEntitlementTier } from "@/components/utils/premiumAccess";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -37,6 +38,7 @@ function pickBestSubscription(subs = []) {
 export default function SubscriptionSuccess() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [status, setStatus] = useState("loading");
   const [secondsRemaining, setSecondsRemaining] = useState(90);
 
