@@ -523,7 +523,7 @@ export const translations = {
       reports: "Berichte",
       reportsSubtitle: "Exportieren Sie Ihre Sammlung und Rauchprotokolle",
       agingDashboard: "Alterungs-Dashboard",
-      agingSubtitle: "Verfolgen Sie den Alterungsfortschritt von gekeJlertem Tabak",
+      agingSubtitle: "Verfolgen Sie den Alterungsfortschritt von gekellertem Tabak",
     },
     optimizer: {
       wellMatchedBlends: "Gut abgestimmte Gemische",
@@ -927,7 +927,7 @@ export const translations = {
       coverageRate: "Dekkingsgraad",
       redundancies: "Specialisatieredundanties",
       purchaseSuggestions: "Aanbevolen aankopen",
-      avgScoreImprovement: "gemiddelde scoreverbete ring",
+      avgScoreImprovement: "gemiddelde scoreverbetering",
       fillsGapFor: "Vult hiaat op",
     },
     matching: {
