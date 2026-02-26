@@ -11,10 +11,12 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2, Crown } from "lucide-react";
 import { format } from "date-fns";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { calculateCorrectCellaredValues } from "@/components/utils/cellarReconciliation";
+import { detectCellarDrift } from "@/components/utils/tobaccoQuantityHelpers";
 
 export default function CellarLog({ blend }) {
   const { t } = useTranslation();
@@ -30,10 +32,7 @@ export default function CellarLog({ blend }) {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { user, hasPremium: isPaidUser } = useCurrentUser();
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['cellar-logs', blend.id],
@@ -110,38 +109,42 @@ export default function CellarLog({ blend }) {
         blend_id: blend.id, 
         created_by: user?.email 
       });
-      
-      const added = allLogs
-        .filter(l => l.transaction_type === 'added')
-        .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
-      
-      const removed = allLogs
-        .filter(l => l.transaction_type === 'removed')
-        .reduce((sum, l) => sum + (l.amount_oz || 0), 0);
-      
-      const net = Math.max(0, added - removed);
-      
-      const addedLogs = allLogs.filter(l => l.transaction_type === 'added' && l.date);
-      const oldestDate = addedLogs.length > 0 
-        ? addedLogs.sort((a, b) => new Date(a.date) - new Date(b.date))[0].date
-        : null;
-      
+
+      const correctValues = calculateCorrectCellaredValues(blend, allLogs);
+
+      // Calculate oldest date per container type from 'added' entries
+      const datesByContainer = { tin: [], bulk: [], pouch: [] };
+      allLogs.forEach(log => {
+        if (log.transaction_type === 'added' && log.date) {
+          const container = (log.container_type || '').toLowerCase();
+          if (container === 'tin') datesByContainer.tin.push(log.date);
+          else if (container === 'bulk' || container === 'jar') datesByContainer.bulk.push(log.date);
+          else if (container === 'pouch') datesByContainer.pouch.push(log.date);
+        }
+      });
+      const oldestDate = (dates) => dates.length > 0 ? dates.sort()[0] : null;
+
       const updateData = {
-        bulk_cellared: net,
-        bulk_cellared_date: net > 0 ? oldestDate : null,
-        tin_tins_cellared: 0,
-        tin_cellared_date: null,
-        pouch_pouches_cellared: 0,
-        pouch_cellared_date: null,
+        bulk_cellared: correctValues.bulk_cellared,
+        bulk_cellared_date: correctValues.bulk_cellared > 0 ? oldestDate(datesByContainer.bulk) : null,
+        tin_tins_cellared: correctValues.tin_tins_cellared,
+        tin_cellared_date: correctValues.tin_tins_cellared > 0 ? oldestDate(datesByContainer.tin) : null,
+        pouch_pouches_cellared: correctValues.pouch_pouches_cellared,
+        pouch_cellared_date: correctValues.pouch_pouches_cellared > 0 ? oldestDate(datesByContainer.pouch) : null,
       };
-      
+
       await base44.entities.TobaccoBlend.update(blend.id, updateData);
+
+      // Data integrity check: warn if significant drift remains after sync
+      const updatedBlend = { ...blend, ...updateData };
+      const drift = detectCellarDrift(updatedBlend, allLogs);
+      if (drift.hasDrift) {
+        console.warn(`[CellarLog] Cellar quantity mismatch detected for blend ${blend.id}: logs show ${drift.logValue.toFixed(2)} oz but blend fields show ${drift.entityValue.toFixed(2)} oz (${drift.drift.toFixed(2)} oz difference). This may require reconciliation.`);
+      }
     } catch (error) {
       console.error('Failed to sync blend cellar quantities:', error);
     }
   };
-
-  const isPaidUser = hasPremiumAccess(user);
 
   if (!isPaidUser) {
     return (

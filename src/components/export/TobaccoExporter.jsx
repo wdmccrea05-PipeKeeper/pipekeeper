@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { calculateCellaredOzFromLogs } from "@/components/utils/tobaccoQuantityHelpers";
 
 export default function TobaccoExporter() {
   const { t } = useTranslation();
@@ -18,6 +19,12 @@ export default function TobaccoExporter() {
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
     queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    enabled: !!user?.email,
+  });
+
+  const { data: cellarLogs = [] } = useQuery({
+    queryKey: ['cellar-logs-all', user?.email],
+    queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
     enabled: !!user?.email,
   });
 
@@ -38,12 +45,10 @@ export default function TobaccoExporter() {
 
     const rows = blends.map(b => {
       const tinOpenOz = (b.tin_tins_open || 0) * (b.tin_size_oz || 0);
-      const tinCellaredOz = (b.tin_tins_cellared || 0) * (b.tin_size_oz || 0);
       const pouchOpenOz = (b.pouch_pouches_open || 0) * (b.pouch_size_oz || 0);
-      const pouchCellaredOz = (b.pouch_pouches_cellared || 0) * (b.pouch_size_oz || 0);
+      const totalCellared = calculateCellaredOzFromLogs(cellarLogs, b.id);
       const totalWeight = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
       const totalOpen = tinOpenOz + (b.bulk_open || 0) + pouchOpenOz;
-      const totalCellared = tinCellaredOz + (b.bulk_cellared || 0) + pouchCellaredOz;
 
       return [
         b.name || '',
@@ -132,7 +137,7 @@ export default function TobaccoExporter() {
       
       const totalWeight = tinWeightOz + bulkWeightOz + pouchWeightOz;
       const totalOpenOz = tinOpenOz + bulkOpenOz + pouchOpenOz;
-      const totalCellaredOz = tinCellaredOz + bulkCellaredOz + pouchCellaredOz;
+      const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
       
       let y = 40;
       doc.text(`${t('export.pdfTotalBlends')} ${totalBlends}`, 20, y);

@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { calculateCorrectCellaredValues } from "@/components/utils/cellarReconciliation";
 
 export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
@@ -125,6 +126,28 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         amount_oz: totalOunces,
         container_type: containerType,
         notes: t("inventory.autoAddedNote","Added to cellar from inventory")
+      });
+
+      // Sync blend rollup fields from the full updated log list
+      const allLogs = await base44.entities.CellarLog.filter({ blend_id: blend.id });
+      const correctValues = calculateCorrectCellaredValues(blend, allLogs);
+      const datesByContainer = { tin: [], bulk: [], pouch: [] };
+      allLogs.forEach(log => {
+        if (log.transaction_type === 'added' && log.date) {
+          const ct = (log.container_type || '').toLowerCase();
+          if (ct === 'tin') datesByContainer.tin.push(log.date);
+          else if (ct === 'bulk' || ct === 'jar') datesByContainer.bulk.push(log.date);
+          else if (ct === 'pouch') datesByContainer.pouch.push(log.date);
+        }
+      });
+      const oldestDate = (dates) => dates.length > 0 ? dates.sort()[0] : null;
+      await base44.entities.TobaccoBlend.update(blend.id, {
+        bulk_cellared: correctValues.bulk_cellared,
+        bulk_cellared_date: correctValues.bulk_cellared > 0 ? oldestDate(datesByContainer.bulk) : null,
+        tin_tins_cellared: correctValues.tin_tins_cellared,
+        tin_cellared_date: correctValues.tin_tins_cellared > 0 ? oldestDate(datesByContainer.tin) : null,
+        pouch_pouches_cellared: correctValues.pouch_pouches_cellared,
+        pouch_cellared_date: correctValues.pouch_pouches_cellared > 0 ? oldestDate(datesByContainer.pouch) : null,
       });
 
       const fieldMap = {
