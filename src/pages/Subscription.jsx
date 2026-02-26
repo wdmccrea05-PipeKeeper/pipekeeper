@@ -25,37 +25,37 @@ function AppleSubscription() {
   const { t } = useTranslation();
 
   const freeFeatures = [
-    "Add up to 5 pipes",
-    "Add up to 10 tobacco blends",
-    "View, edit, and organize your collection",
-    "Basic notes and ratings",
-    "Search pipes and tobaccos",
-    "Multilingual support (10 languages)",
-    "Cloud sync",
+    t("subscription.appleFeatureFree1"),
+    t("subscription.appleFeatureFree2"),
+    t("subscription.appleFeatureFree3"),
+    t("subscription.appleFeatureFree4"),
+    t("subscription.appleFeatureFree5"),
+    t("subscription.appleFeatureFree6"),
+    t("subscription.appleFeatureFree7"),
   ];
 
   const premiumFeatures = [
-    "Unlimited pipes and tobacco blends",
-    "Unlimited notes and photos",
-    "Cellar tracking and aging logs",
-    "Smoking logs and history",
-    "Pipe maintenance and condition tracking",
-    "Advanced filters and sorting",
-    "Manual pipe ↔ tobacco pairings",
-    "Tobacco library sync",
-    "Multilingual support (10 languages)",
-    "Cloud sync across devices",
+    t("subscription.appleFeaturePremium1"),
+    t("subscription.appleFeaturePremium2"),
+    t("subscription.appleFeaturePremium3"),
+    t("subscription.appleFeaturePremium4"),
+    t("subscription.appleFeaturePremium5"),
+    t("subscription.appleFeaturePremium6"),
+    t("subscription.appleFeaturePremium7"),
+    t("subscription.appleFeaturePremium8"),
+    t("subscription.appleFeaturePremium9"),
+    t("subscription.appleFeaturePremium10"),
   ];
 
   const proFeatures = [
-    "Everything in Premium",
-    "AI Updates (Pro for new users starting Feb 1, 2026)",
-    "AI Identification tools (Pro for new users starting Feb 1, 2026)",
-    "Advanced analytics & insights",
-    "Bulk editing tools",
-    "Export & reports (CSV / PDF)",
-    "Collection optimization tools",
-    "Early access to new advanced features",
+    t("subscription.appleFeaturePro1"),
+    t("subscription.appleFeaturePro2"),
+    t("subscription.appleFeaturePro3"),
+    t("subscription.appleFeaturePro4"),
+    t("subscription.appleFeaturePro5"),
+    t("subscription.appleFeaturePro6"),
+    t("subscription.appleFeaturePro7"),
+    t("subscription.appleFeaturePro8"),
   ];
 
   const openSubscription = (tier = "premium") => {
@@ -99,7 +99,7 @@ function AppleSubscription() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Free</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.free")}</CardTitle>
           </CardHeader>
           <CardContent>
             <FeatureList items={freeFeatures} />
@@ -113,7 +113,7 @@ function AppleSubscription() {
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Premium</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.premium")}</CardTitle>
           </CardHeader>
           <CardContent>
             <FeatureList items={premiumFeatures} />
@@ -127,7 +127,7 @@ function AppleSubscription() {
 
         <Card className="bg-black/40 border-white/10">
           <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">Pro</CardTitle>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.pro")}</CardTitle>
           </CardHeader>
           <CardContent>
             <FeatureList items={proFeatures} />

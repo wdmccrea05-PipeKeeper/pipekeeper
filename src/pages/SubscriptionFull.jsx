@@ -27,7 +27,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
     >
       <CardHeader>
         <CardTitle className="text-[#e8d5b7]">
-          {tier.charAt(0).toUpperCase() + tier.slice(1)}
+          {({ free: t("subscription.free"), premium: t("subscription.premium"), pro: t("subscription.pro") }[tier] ?? (tier.charAt(0).toUpperCase() + tier.slice(1)))}
         </CardTitle>
         <div className="text-2xl font-bold text-[#A35C5C] mt-2">${price}</div>
         <div className="text-sm text-[#e8d5b7]/60">{t("subscriptionFull.per","per")} {interval}</div>
