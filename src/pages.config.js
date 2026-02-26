@@ -48,7 +48,6 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AIUpdates from './pages/AIUpdates';
-import AdminReports from './pages/AdminReports';
 import adminreportsTsx from './pages/AdminReports.tsx';
 import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
@@ -74,7 +73,6 @@ import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
-import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
@@ -92,7 +90,6 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "AIUpdates": AIUpdates,
-    "AdminReports": AdminReports,
     "AdminReports.tsx": adminreportsTsx,
     "AdminSubscriptionRequests": AdminSubscriptionRequests,
     "AdminSubscriptionTools": AdminSubscriptionTools,
@@ -118,7 +115,6 @@ export const PAGES = {
     "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
-    "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
