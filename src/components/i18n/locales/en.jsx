@@ -50,6 +50,85 @@ const translations = {
     howGetSupportAnswer: "Visit the Support page in the app menu, or email us directly for assistance with any questions or issues."
   },
 
+  helpCenter: {
+    faqDesc: "Definitions, general information, and disclaimers",
+    howToDesc: "Quick answers with clear navigation paths",
+    troubleshootingDesc: "Common issues and solutions",
+    topicGeneral: "General",
+    topicGettingStarted: "Getting Started",
+    topicFieldDefinitions: "Field Definitions",
+    topicTobaccoValuation: "Tobacco Valuation",
+    topicFeaturesAndTools: "Features & Tools",
+    topicPlansAndSubscriptions: "Plans & Subscriptions",
+    topicAccountsAndData: "Accounts & Data",
+    topicAI: "AI Features & Accuracy",
+    topicSupport: "Support",
+    topicManagingCollection: "Managing Your Collection",
+    topicAITools: "AI Tools",
+    topicSubscriptions: "Subscriptions",
+    topicTroubleshooting: "Troubleshooting",
+    topicPageRefresh: "Page Refresh & Caching Issues",
+    topicAIFeatures: "AI Features & Generation",
+    topicBlendTypes: "Tobacco Blend Classification",
+    topicSpecialization: "Pipe Focus & Specialization",
+    topicProFeatures: "Pro Features",
+    topicAppFunctions: "General App Functions"
+  },
+
+  aiUpdates: {
+    description: "Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier.",
+    pairingsUpToDate: "Pairings are already up to date",
+    alreadyUpToDate: "Already up to date",
+    regenerateSuccess: "Regenerated successfully",
+    regenerateFailed: "Failed to regenerate"
+  },
+
+  inviteFull: {
+    pageTitle: "Invite Friends to PipeKeeper",
+    pageSubtitle: "Share PipeKeeper with fellow pipe enthusiasts and build your community.",
+    backToHome: "Back to Home",
+    emailLabel: "Friend's Email Addresses",
+    emailPlaceholder: "friend@example.com",
+    addAnother: "Add Another Email",
+    personalMessage: "Personal Message (Optional)",
+    messagePlaceholder: "Add a personal note to your invitation...",
+    sendInvitations: "Send Invitations",
+    sending: "Sending Invitations...",
+    successTitle: "Invitations Sent!",
+    successMessage: "Your friends will receive their invitation emails shortly.",
+    inviteMore: "Invite More Friends"
+  },
+
+  supportFull: {
+    backToHome: "Back to Home",
+    requestSubmitted: "Request Submitted!",
+    thankYou: "Thank you for contacting us. We'll get back to you as soon as possible.",
+    submitAnother: "Submit Another Request",
+    contactSupport: "Contact Support",
+    description: "Have a question or need help? Send us a message and we'll get back to you soon.",
+    emailVerifIssues: "Email Verification Issues?",
+    verificationHelp: "If you're having trouble with email verification or can't log in, please contact us directly at:",
+    adminEmail: "admin@pipekeeperapp.com",
+    whatCanWeHelp: "What can we help you with?",
+    selectTopic: "Select a topic...",
+    yourName: "Your Name",
+    namePlaceholder: "John Doe",
+    yourEmail: "Your Email",
+    emailPlaceholder: "john@example.com",
+    message: "Message",
+    messagePlaceholder: "Please describe your question or issue in detail...",
+    sending: "Sending...",
+    sendMessage: "Send Message",
+    bulkLogoLink: "→ Bulk Logo Upload Tool",
+    topicGeneral: "General Support Request",
+    topicAccount: "Account Issues",
+    topicFeature: "Feature Suggestion",
+    topicError: "Report an Error",
+    topicBilling: "Billing Question",
+    topicTechnical: "Technical Issue",
+    topicOther: "Other"
+  },
+
   // ... all other existing namespaces and keys
 };
 
