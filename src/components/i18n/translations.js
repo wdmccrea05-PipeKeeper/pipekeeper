@@ -1,1 +1,2 @@
-export { translations as default } from '../../../translations.js';
+import { translations } from '../../../translations.js';
+export default translations;
