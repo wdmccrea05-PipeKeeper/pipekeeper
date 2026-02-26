@@ -13,6 +13,7 @@ import {
   Target,
   TrendingUp,
   ShoppingCart,
+  ShoppingBag,
   Sparkles,
   CheckCircle2,
   RefreshCw,
@@ -347,22 +348,31 @@ function CollectionOptimizerInner({
               versatility_score: (change.after_focus || []).length === 1 ? 3 : 5,
               score_improvement: t("optimizer.expectedImprovement", { blendTypes: (change.after_focus || []).join(", ") }),
               trophy_blends: [],
+              score_delta: change.score_delta ?? null,
+              fills_gap_for: change.fills_gap_for ?? null,
             };
           }) || [],
         collection_gaps: {
           missing_coverage: result.collection_gaps || [],
-          redundancies: [],
+          redundancies: result.redundancies || [],
+          purchase_suggestions: result.purchase_suggestions || [],
+          coverage_summary: result.coverage_summary || null,
           overall_assessment: result.summary || "",
         },
-        priority_focus_changes: (result.applyable_changes || []).slice(0, 3).map((change, idx) => ({
-          pipe_id: change.pipe_id,
-          pipe_name: pipes.find((p) => p.id === change.pipe_id)?.name || t("optimizer.unknownPipe"),
-          current_focus: change.before_focus || [],
-          recommended_focus: change.after_focus || [],
-          score_improvement: t("optimizer.priorityChange", { num: idx + 1 }),
-          trophy_blends_gained: [],
-          reasoning: change.rationale || "",
-        })),
+        priority_focus_changes: (result.applyable_changes || [])
+          .filter(c => (c.score_delta ?? 0) >= 1.0 || c.fills_gap_for)
+          .slice(0, 3)
+          .map((change, idx) => ({
+            pipe_id: change.pipe_id,
+            pipe_name: pipes.find((p) => p.id === change.pipe_id)?.name || t("optimizer.unknownPipe"),
+            current_focus: change.before_focus || [],
+            recommended_focus: change.after_focus || [],
+            score_improvement: t("optimizer.priorityChange", { num: idx + 1 }),
+            trophy_blends_gained: [],
+            reasoning: change.rationale || "",
+            score_delta: change.score_delta ?? null,
+            fills_gap_for: change.fills_gap_for ?? null,
+          })),
         next_pipe_recommendations: (result.next_additions || []).slice(0, 3).map((rec, idx) => ({
           priority_rank: idx + 1,
           shape: t("tobacconist.recommended"),
@@ -1309,6 +1319,21 @@ ${userText}
                           </p>
                         </div>
                       )}
+
+                      {(spec?.score_delta != null || spec?.fills_gap_for) && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {spec?.score_delta != null && spec.score_delta > 0 && (
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
+                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement", "avg score improvement")}
+                            </Badge>
+                          )}
+                          {spec?.fills_gap_for && (
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-xs">
+                              {t("optimizer.fillsGapFor", "Fills gap")}: {spec.fills_gap_for}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </label>
                   </div>
                 </div>
@@ -1632,6 +1657,29 @@ ${userText}
 
                 <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-white">
                   <CardContent className="p-4 space-y-3">
+                    {optimization.collection_gaps.coverage_summary && (
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200 text-center">
+                          <div className="text-2xl font-bold text-emerald-700">
+                            {optimization.collection_gaps.coverage_summary.blends_with_good_match}
+                          </div>
+                          <div className="text-xs text-emerald-600">{t("optimizer.wellMatchedBlends", "Well-Matched Blends")}</div>
+                        </div>
+                        <div className="bg-rose-50 rounded-lg p-3 border border-rose-200 text-center">
+                          <div className="text-2xl font-bold text-rose-700">
+                            {optimization.collection_gaps.coverage_summary.blends_with_no_match}
+                          </div>
+                          <div className="text-xs text-rose-600">{t("optimizer.unmatchedBlends", "Unmatched Blends")}</div>
+                        </div>
+                        <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-center">
+                          <div className="text-2xl font-bold text-blue-700">
+                            {optimization.collection_gaps.coverage_summary.coverage_percentage}%
+                          </div>
+                          <div className="text-xs text-blue-600">{t("optimizer.coverageRate", "Coverage Rate")}</div>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <p className="text-sm font-medium text-stone-700 mb-2">{t("tobacconist.overallAssessment")}</p>
                       <p className="text-sm text-stone-700">{asText(optimization.collection_gaps.overall_assessment)}</p>
@@ -1651,13 +1699,36 @@ ${userText}
                     )}
 
                     {optimization.collection_gaps.redundancies?.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium text-amber-700 mb-2">{t("tobacconist.redundancies")}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {optimization.collection_gaps.redundancies.map((red, i) => (
-                            <Badge key={i} className="bg-amber-100 text-amber-800 border-amber-200">
-                              {asText(red)}
-                            </Badge>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-1">
+                          <AlertTriangle className="w-4 h-4" />
+                          {t("optimizer.redundancies", "Specialization Redundancies")}
+                        </h4>
+                        <div className="space-y-2">
+                          {optimization.collection_gaps.redundancies.map((r, idx) => (
+                            <div key={idx} className="text-sm bg-yellow-50 rounded p-2 border border-yellow-200">
+                              <span className="font-medium text-yellow-900">{r.blend_type}: </span>
+                              <span className="text-yellow-700">{r.pipe_names?.join(", ")}</span>
+                              {r.recommendation && <p className="text-xs text-yellow-600 mt-1">{r.recommendation}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {optimization.collection_gaps.purchase_suggestions?.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold text-indigo-800 mb-2 flex items-center gap-1">
+                          <ShoppingBag className="w-4 h-4" />
+                          {t("optimizer.purchaseSuggestions", "Suggested Acquisitions")}
+                        </h4>
+                        <div className="space-y-2">
+                          {optimization.collection_gaps.purchase_suggestions.map((s, idx) => (
+                            <div key={idx} className="text-sm bg-indigo-50 rounded p-3 border border-indigo-200">
+                              <div className="font-medium text-indigo-900 mb-1">{s.gap_blend_type}</div>
+                              <div className="text-indigo-700">{s.suggested_pipe_characteristics}</div>
+                              {s.rationale && <p className="text-xs text-indigo-500 mt-1">{s.rationale}</p>}
+                            </div>
                           ))}
                         </div>
                       </div>
