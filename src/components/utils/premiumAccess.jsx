@@ -72,7 +72,6 @@ export function getEntitlementTier(user, subscription) {
       const fromSub =
         subscription?.tier ??
         subscription?.subscription_tier ??
-        subscription?.subscription_level ??
         subscription?.plan ??
         subscription?.plan_level;
 
