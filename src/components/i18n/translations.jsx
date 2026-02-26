@@ -1,2 +1,2 @@
 
-export { translations } from '../../../translations.js';
+export { default } from '../../../translations.js';
