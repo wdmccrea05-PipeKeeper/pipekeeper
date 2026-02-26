@@ -12,17 +12,19 @@ import { Crown, CheckCircle2 } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function ProUpgradeModal({ isOpen, onClose, featureName = "This feature" }) {
+export default function ProUpgradeModal({ isOpen, onClose, featureName = undefined }) {
   const { t } = useTranslation();
 
   const proBenefits = [
-    "AI Estimated Value",
-    "Value Range & Confidence",
-    "Predictive Projections",
-    "Advanced Analytics",
-    "Bulk Editing Tools",
-    "Export & Reports",
+    t("proUpgrade.benefit.aiEstimatedValue"),
+    t("proUpgrade.benefit.valueRangeConfidence"),
+    t("proUpgrade.benefit.predictiveProjections"),
+    t("proUpgrade.benefit.advancedAnalytics"),
+    t("proUpgrade.benefit.bulkEditingTools"),
+    t("proUpgrade.benefit.exportReports"),
   ];
+
+  const effectiveFeatureName = featureName || t("proUpgrade.thisFeature");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -32,15 +34,15 @@ export default function ProUpgradeModal({ isOpen, onClose, featureName = "This f
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
               <Crown className="w-6 h-6 text-white" />
             </div>
-            <DialogTitle className="text-[#e8d5b7] text-xl">Upgrade to Pro</DialogTitle>
+            <DialogTitle className="text-[#e8d5b7] text-xl">{t("proUpgrade.title")}</DialogTitle>
           </div>
           <DialogDescription className="text-[#e8d5b7]/70">
-            {featureName} and other advanced insights are available with PipeKeeper Pro.
+            {t("proUpgrade.description", { featureName: effectiveFeatureName })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-4">
-          <p className="text-sm font-semibold text-[#e8d5b7]">Pro includes:</p>
+          <p className="text-sm font-semibold text-[#e8d5b7]">{t("proUpgrade.proIncludes")}</p>
           <div className="space-y-2">
             {proBenefits.map((benefit, idx) => (
               <div key={idx} className="flex items-start gap-2">
@@ -53,11 +55,11 @@ export default function ProUpgradeModal({ isOpen, onClose, featureName = "This f
 
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onClose} className="border-[#e8d5b7]/30 text-[#e8d5b7]">
-            Not Now
+            {t("proUpgrade.notNow")}
           </Button>
           <a href={createPageUrl("Subscription")} className="flex-1">
             <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800">
-              Upgrade to Pro
+              {t("proUpgrade.upgradeToPro")}
             </Button>
           </a>
         </DialogFooter>

@@ -6,15 +6,18 @@ import { Download, FileJson, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from "sonner";
 
 export default function AgingReportExporter({ user }) {
   const entitlements = useEntitlements();
+  const { t } = useTranslation();
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
       <UpgradePrompt 
-        featureName="Export Reports"
-        description="Export aging reports as PDF or Excel. Requires Pro tier."
+        featureName={t("agingReport.featureName")}
+        description={t("agingReport.featureDescription")}
       />
     );
   }
@@ -44,7 +47,7 @@ export default function AgingReportExporter({ user }) {
       a.remove();
     } catch (error) {
       console.error('PDF export failed:', error);
-      alert('Failed to generate PDF');
+      toast.error(t("agingReport.failedPdf"));
     } finally {
       setLoading(false);
     }
@@ -68,7 +71,7 @@ export default function AgingReportExporter({ user }) {
       a.remove();
     } catch (error) {
       console.error('Excel export failed:', error);
-      alert('Failed to generate Excel');
+      toast.error(t("agingReport.failedExcel"));
     } finally {
       setLoading(false);
     }
@@ -77,10 +80,10 @@ export default function AgingReportExporter({ user }) {
   return (
     <div className="bg-[#22384B]/50 border border-[#A35C5C]/20 rounded-lg p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-[#E0D8C8] mb-3">Aging Report</h3>
+        <h3 className="font-semibold text-[#E0D8C8] mb-3">{t("agingReport.title")}</h3>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="flex-1">
-            <label className="text-xs text-[#E0D8C8]/70 block mb-1">Cellared Start Date</label>
+            <label className="text-xs text-[#E0D8C8]/70 block mb-1">{t("agingReport.cellairedStartDate")}</label>
             <Input
               type="date"
               value={startDate}
@@ -90,7 +93,7 @@ export default function AgingReportExporter({ user }) {
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-[#E0D8C8]/70 block mb-1">Cellared End Date</label>
+            <label className="text-xs text-[#E0D8C8]/70 block mb-1">{t("agingReport.cellairedEndDate")}</label>
             <Input
               type="date"
               value={endDate}
@@ -113,7 +116,7 @@ export default function AgingReportExporter({ user }) {
             ) : (
               <Download className="w-4 h-4 mr-2" />
             )}
-            Download PDF
+            {t("agingReport.downloadPdf")}
           </Button>
           <Button
             onClick={handleExportExcel}
@@ -127,7 +130,7 @@ export default function AgingReportExporter({ user }) {
             ) : (
               <FileJson className="w-4 h-4 mr-2" />
             )}
-            Download Excel
+            {t("agingReport.downloadExcel")}
           </Button>
         </div>
       </div>

@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const BANNER_DISMISSED_KEY = 'pk_premium_access_banner_dismissed';
 
 export default function PremiumAccessBanner({ daysRemaining }) {
   const [show, setShow] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Only show if not dismissed and user has premium access
@@ -41,16 +43,16 @@ export default function PremiumAccessBanner({ daysRemaining }) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold mb-1">
-                You have full Premium access for 7 days.
+                {t("trial.bannerTitle")}
               </h3>
               <p className="text-white/80 text-sm">
-                All tools available — explore at your own pace.
+                {t("trial.bannerSubtitle")}
               </p>
             </div>
             <button
               onClick={handleDismiss}
               className="text-white/70 hover:text-white transition-colors flex-shrink-0"
-              aria-label="Dismiss"
+              aria-label={t("trial.dismiss")}
             >
               <X className="w-5 h-5" />
             </button>

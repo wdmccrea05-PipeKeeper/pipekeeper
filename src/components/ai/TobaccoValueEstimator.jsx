@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { DollarSign, Loader2, CheckCircle2, XCircle, Info } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoValueEstimator({ blends, user, onComplete }) {
   const { subscription, hasPro } = useCurrentUser();
+  const { t } = useTranslation();
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
@@ -38,7 +40,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
 
   const handleEstimate = async () => {
     if (selectedBlends.length === 0) {
-      toast.error("Please select at least one blend");
+      toast.error(t("tobaccoEstimator.pleaseSelectBlend"));
       return;
     }
 
@@ -53,13 +55,13 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
       const data = response.data;
 
       setResults(data);
-      toast.success(`Estimated ${data.processed} blend(s)`);
+      toast.success(t("tobaccoEstimator.estimated", { count: data.processed }));
       
       if (onComplete) onComplete();
       
     } catch (error) {
       console.error("Estimation error:", error);
-      toast.error("Failed to estimate values");
+      toast.error(t("tobaccoEstimator.failedToEstimate"));
       setResults({
         success: false,
         error: error.message || "Unknown error"
@@ -76,7 +78,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
           <DollarSign className="w-5 h-5 text-emerald-400" />
-          AI Tobacco Valuation
+          {t("tobaccoEstimator.cardTitle")}
           {showLocked && (
             <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-semibold ml-auto">
               Pro
@@ -87,29 +89,29 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
       <CardContent className="space-y-4">
         {showLocked ? (
           <p className="text-sm text-[#e8d5b7]/70">
-            Upgrade to Pro to unlock AI-assisted tobacco valuation with market estimates, value ranges, confidence levels, and predictive projections.
+            {t("tobaccoEstimator.upgradeMessage")}
           </p>
         ) : (
           <>
             <p className="text-sm text-[#e8d5b7]/80">
-              Automatically estimate market values for your tobacco blends using AI analysis of public marketplace listings.
+              {t("tobaccoEstimator.autoEstimateDesc")}
             </p>
 
             {blendsNeedingValuation.length === 0 ? (
               <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4 text-center">
                 <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
                 <p className="text-sm text-[#e8d5b7]/70">
-                  All blends have been valued
+                  {t("tobaccoEstimator.allBlendsValued")}
                 </p>
               </div>
             ) : (
               <>
                 <div className="flex gap-2 mb-3">
                   <Button size="sm" variant="outline" onClick={selectAll}>
-                    Select All ({blendsNeedingValuation.length})
+                    {t("tobaccoEstimator.selectAll", { count: blendsNeedingValuation.length })}
                   </Button>
                   <Button size="sm" variant="outline" onClick={deselectAll}>
-                    Deselect All
+                    {t("tobaccoEstimator.deselectAll")}
                   </Button>
                 </div>
 
@@ -126,7 +128,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-[#e8d5b7] truncate">{blend.name}</p>
                         <p className="text-xs text-[#e8d5b7]/50 truncate">
-                          {blend.manufacturer || 'Unknown'} • {blend.blend_type || 'Unknown'}
+                          {blend.manufacturer || t("tobaccoEstimator.unknownManufacturer")} • {blend.blend_type || t("tobaccoEstimator.unknownBlendType")}
                         </p>
                       </div>
                     </div>
@@ -141,12 +143,12 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                   {processing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Estimating {selectedBlends.length} blend(s)...
+                      {t("tobaccoEstimator.estimating")}
                     </>
                   ) : (
                     <>
                       <DollarSign className="w-4 h-4 mr-2" />
-                      Estimate Values ({selectedBlends.length} selected)
+                      {t("tobaccoEstimator.runAiValuation")}
                     </>
                   )}
                 </Button>

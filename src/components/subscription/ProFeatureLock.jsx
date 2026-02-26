@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Lock } from "lucide-react";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import ProUpgradeModal from "./ProUpgradeModal";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 /**
  * ProFeatureLock - Renders a lock icon for Pro-only features
@@ -14,12 +15,14 @@ import ProUpgradeModal from "./ProUpgradeModal";
  */
 export default function ProFeatureLock({ 
   children, 
-  featureName = "This Pro feature",
+  featureName = undefined,
   showLockIcon = true,
   className = ""
 }) {
   const entitlements = useEntitlements();
+  const { t } = useTranslation();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const effectiveFeatureName = featureName || t("proUpgrade.thisFeature");
   
   const isProUser = entitlements.tier === "pro";
   
@@ -37,8 +40,8 @@ export default function ProFeatureLock({
           <button
             onClick={() => setShowUpgradeModal(true)}
             className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 rounded-full p-2 transition-colors duration-200 z-10"
-            aria-label="Upgrade to Pro"
-            title="Upgrade to Pro for this feature"
+            aria-label={t("proUpgrade.upgradeToPro")}
+            title={t("proUpgrade.upgradeToPro")}
           >
             <Lock className="w-4 h-4 text-amber-500" />
           </button>
@@ -48,7 +51,7 @@ export default function ProFeatureLock({
       <ProUpgradeModal 
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        featureName={featureName}
+        featureName={effectiveFeatureName}
       />
     </>
   );

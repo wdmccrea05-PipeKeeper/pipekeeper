@@ -5,15 +5,18 @@ import { base44 } from "@/api/base44Client";
 import { Download, FileJson, Loader2 } from "lucide-react";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from "sonner";
 
 export default function SmokingLogReportExporter({ user }) {
   const entitlements = useEntitlements();
+  const { t } = useTranslation();
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
       <UpgradePrompt 
-        featureName="Export Reports"
-        description="Export your usage logs and data as PDF or Excel files. Requires Pro tier."
+        featureName={t("usageLogReport.featureName")}
+        description={t("usageLogReport.featureDescription")}
       />
     );
   }
@@ -43,7 +46,7 @@ export default function SmokingLogReportExporter({ user }) {
       a.remove();
     } catch (error) {
       console.error('PDF export failed:', error);
-      alert('Failed to generate PDF');
+      toast.error(t("usageLogReport.failedPdf"));
     } finally {
       setLoading(false);
     }
@@ -67,7 +70,7 @@ export default function SmokingLogReportExporter({ user }) {
       a.remove();
     } catch (error) {
       console.error('Excel export failed:', error);
-      alert('Failed to generate Excel');
+      toast.error(t("usageLogReport.failedExcel"));
     } finally {
       setLoading(false);
     }
@@ -76,10 +79,10 @@ export default function SmokingLogReportExporter({ user }) {
   return (
     <div className="bg-[#22384B]/50 border border-[#A35C5C]/20 rounded-lg p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-[#E0D8C8] mb-3">Usage Log Report</h3>
+        <h3 className="font-semibold text-[#E0D8C8] mb-3">{t("usageLogReport.title")}</h3>
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="flex-1">
-            <label className="text-xs text-[#E0D8C8]/70 block mb-1">Start Date</label>
+            <label className="text-xs text-[#E0D8C8]/70 block mb-1">{t("usageLogReport.startDate")}</label>
             <Input
               type="date"
               value={startDate}
@@ -89,7 +92,7 @@ export default function SmokingLogReportExporter({ user }) {
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-[#E0D8C8]/70 block mb-1">End Date</label>
+            <label className="text-xs text-[#E0D8C8]/70 block mb-1">{t("usageLogReport.endDate")}</label>
             <Input
               type="date"
               value={endDate}
@@ -112,7 +115,7 @@ export default function SmokingLogReportExporter({ user }) {
             ) : (
               <Download className="w-4 h-4 mr-2" />
             )}
-            Download PDF
+            {t("usageLogReport.downloadPdf")}
           </Button>
           <Button
             onClick={handleExportExcel}
@@ -126,7 +129,7 @@ export default function SmokingLogReportExporter({ user }) {
             ) : (
               <FileJson className="w-4 h-4 mr-2" />
             )}
-            Download Excel
+            {t("usageLogReport.downloadExcel")}
           </Button>
         </div>
       </div>
