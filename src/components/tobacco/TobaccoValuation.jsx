@@ -87,7 +87,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
       const data = response.data;
       
       if (data.success && data.results?.length > 0) {
-        toast.success("AI valuation complete");
+        toast.success(t("tobaccoValuation.aiValuationComplete"));
         // Backend already updated the entity, force refresh
         onUpdate({ ai_last_updated: new Date().toISOString() });
       } else {
@@ -95,7 +95,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
       }
     } catch (err) {
       console.error("AI estimation failed:", err);
-      toast.error("Failed to estimate value. Please try again.");
+      toast.error(t("tobaccoValuation.failedToEstimate"));
     } finally {
       setEstimating(false);
     }
@@ -324,7 +324,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 text-center">
                 <Lock className="w-8 h-8 text-amber-400 mx-auto mb-2" />
                 <p className="text-sm text-[#e8d5b7]/70">
-                  Upgrade to Pro to unlock AI-assisted valuation and predictive insights.
+                  {t("tobaccoValuation.upgradeToUnlockValuation")}
                 </p>
               </div>
             )}
@@ -334,7 +334,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-[#e8d5b7]/70">
-                    This blend was valued when you had Pro access. Upgrade to Pro to run new valuations.
+                    {t("tobaccoValuation.valuedWithProAccess")}
                   </p>
                 </div>
               </div>
@@ -346,7 +346,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
       <ProUpgradeModal
         isOpen={showProModal}
         onClose={() => setShowProModal(false)}
-        featureName="AI-assisted valuation"
+        featureName={t("tobaccoValuation.aiValuationFeatureName")}
       />
     </>
   );

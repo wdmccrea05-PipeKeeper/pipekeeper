@@ -6,8 +6,10 @@ import { Loader2, Camera, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PhotoIdentifier({ onIdentify }) {
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState([]);
@@ -116,17 +118,17 @@ Provide detailed identification results including geometry fields that can be us
   return (
     <FeatureGate 
       feature="AI_IDENTIFY"
-      featureName="AI Photo Identification"
-      description="Upload photos of your pipe's stampings to instantly identify the maker, model, and approximate value using advanced AI. Available in Pro tier or for grandfathered Premium users."
+      featureName={t("photoIdentifier.featureName")}
+      description={t("photoIdentifier.featureDescription")}
     >
     <Card className="border-violet-200 bg-gradient-to-br from-violet-50 to-white">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2 text-violet-800">
           <Camera className="w-5 h-5" />
-          Identify from Photos
+          {t("photoIdentifier.cardTitle")}
         </CardTitle>
         <p className="text-sm text-stone-600">
-          Upload photos of your pipe (including stamps) to auto-fill details
+          {t("photoIdentifier.cardSubtitle")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -142,7 +144,7 @@ Provide detailed identification results including geometry fields that can be us
             ) : (
               <>
                 <Camera className="w-6 h-6" />
-                <span className="text-xs">Add</span>
+                <span className="text-xs">{t("photoIdentifier.addPhoto")}</span>
               </>
             )}
             <input
@@ -165,12 +167,12 @@ Provide detailed identification results including geometry fields that can be us
             {analyzing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing Photos...
+                {t("photoIdentifier.analyzingPhotos")}
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Identify & Fill Details
+                {t("photoIdentifier.identifyAndFill")}
               </>
             )}
           </Button>
@@ -178,7 +180,7 @@ Provide detailed identification results including geometry fields that can be us
 
         {uploadedPhotos.length === 0 && (
           <p className="text-xs text-stone-500 text-center">
-            Upload clear photos of the pipe and any visible stamps or markings
+            {t("photoIdentifier.uploadHint")}
           </p>
         )}
       </CardContent>

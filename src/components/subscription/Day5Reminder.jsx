@@ -5,13 +5,17 @@ import { Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function Day5Reminder({ onDismiss, daysRemaining }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleViewOptions = () => {
     navigate(createPageUrl('Subscription'));
   };
+
+  const titleKey = daysRemaining === 1 ? "trial.day5Title" : "trial.day5TitlePlural";
 
   return (
     <motion.div
@@ -27,16 +31,16 @@ export default function Day5Reminder({ onDismiss, daysRemaining }) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-semibold mb-1">
-              Your Premium access continues for {daysRemaining} more day{daysRemaining !== 1 ? 's' : ''}.
+              {t(titleKey, { count: daysRemaining })}
             </h3>
             <p className="text-white/80 text-sm">
-              Keep exploring all features at your own pace.
+              {t("trial.day5Subtitle")}
             </p>
           </div>
           <button
             onClick={onDismiss}
             className="text-white/70 hover:text-white transition-colors flex-shrink-0"
-            aria-label="Dismiss"
+            aria-label={t("trial.dismiss")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -47,13 +51,13 @@ export default function Day5Reminder({ onDismiss, daysRemaining }) {
             onClick={onDismiss}
             className="flex-1 text-white hover:bg-white/10"
           >
-            Got it
+            {t("trial.day5GotIt")}
           </Button>
           <Button
             onClick={handleViewOptions}
             className="flex-1 bg-white/20 hover:bg-white/30 text-white"
           >
-            View options
+            {t("trial.day5ViewOptions")}
           </Button>
         </div>
       </div>

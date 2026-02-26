@@ -178,8 +178,8 @@ export default function BreakInSchedule({ pipe, blends }) {
   return (
     <FeatureGate 
       feature="BREAK_IN_SCHEDULE"
-      featureName="Break-In Schedules"
-      description="Get AI-generated break-in schedules tailored to your pipe's characteristics with Pro or legacy Premium access. Track your progress with recommended tobacco blends and bowl counts for optimal pipe conditioning."
+      featureName={t("breakIn.featureName")}
+      description={t("breakIn.featureDescription")}
     >
        {/* Staleness Dialog */}
        <Dialog open={showRegenDialog} onOpenChange={setShowRegenDialog}>
