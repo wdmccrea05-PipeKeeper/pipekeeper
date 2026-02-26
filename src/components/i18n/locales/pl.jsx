@@ -140,5 +140,15 @@ export default {
     earlySubscriberNote: "Uwaga: Wcześni subskrybenci, którzy dołączą przed {{date}}, otrzymują dożywotnie korzyści członka założyciela.",
     howGetSupport: "Jak uzyskać wsparcie?",
     howGetSupportAnswer: "Odwiedź stronę Wsparcie w menu aplikacji lub wyślij nam e-mail bezpośrednio w celu uzyskania pomocy z jakimikolwiek pytaniami lub problemami."
+  },
+
+  optimizer: {
+    wellMatchedBlends: "Dobrze dopasowane mieszanki",
+    unmatchedBlends: "Niedopasowane mieszanki",
+    coverageRate: "Wskaźnik pokrycia",
+    redundancies: "Redundancje specjalizacji",
+    purchaseSuggestions: "Sugerowane nabycia",
+    avgScoreImprovement: "średnia poprawa wyniku",
+    fillsGapFor: "Wypełnia lukę",
   }
 };
