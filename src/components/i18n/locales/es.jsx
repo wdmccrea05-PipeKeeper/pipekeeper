@@ -17,8 +17,7 @@ const translations = {
     units: {
         tinPlural: 'latas',
         outOf5: 'de 5',
-    }
-};
+    },
 
   subscription: {
     free: "Gratis",
