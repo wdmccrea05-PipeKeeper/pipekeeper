@@ -18,8 +18,8 @@ function getNestedValue(obj, path) {
 function interpolate(str, vars) {
   if (!str || typeof str !== 'string') return str;
   if (!vars) return str;
-  return str.replace(/\{([^}]+)\}/g, (_, key) => {
-    return vars[key] !== undefined ? String(vars[key]) : `{${key}}`;
+  return str.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    return vars[key] !== undefined ? String(vars[key]) : `{{${key}}}`;
   });
 }
 
@@ -41,14 +41,18 @@ export function useTranslation(languageOverride = null) {
     return (key, varsOrFallback = {}) => {
       const vars = typeof varsOrFallback === 'object' && varsOrFallback !== null && !Array.isArray(varsOrFallback) ? varsOrFallback : {};
       const fallbackStr = typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
+      const returnObjects = vars.returnObjects === true;
       const value = getNestedValue(translationPack, key);
       if (value === undefined) {
         const fallback = getNestedValue(translations.en, key);
-        if (fallback) {
-          return interpolate(String(fallback), vars);
+        if (fallback !== undefined) {
+          if (returnObjects) return fallback;
+          if (typeof fallback === 'string') return interpolate(fallback, vars);
+          return String(fallback);
         }
         return fallbackStr !== undefined ? fallbackStr : key;
       }
+      if (returnObjects) return value;
       if (typeof value === 'string') {
         return interpolate(value, vars);
       }
@@ -61,14 +65,18 @@ export function useTranslation(languageOverride = null) {
 
 export function translate(key, vars = {}, language = 'en') {
   const pack = translations[language] || translations.en || {};
+  const returnObjects = vars.returnObjects === true;
   const value = getNestedValue(pack, key);
   if (value === undefined) {
     const fallback = getNestedValue(translations.en, key);
-    if (fallback) {
-      return interpolate(String(fallback), vars);
+    if (fallback !== undefined) {
+      if (returnObjects) return fallback;
+      if (typeof fallback === 'string') return interpolate(fallback, vars);
+      return String(fallback);
     }
     return key;
   }
+  if (returnObjects) return value;
   if (typeof value === 'string') {
     return interpolate(value, vars);
   }
