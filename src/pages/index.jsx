@@ -67,10 +67,7 @@ function getAppleGatedComponent(path, Component) {
   if (FEATURES[requiredFeature] === false) {
     return function AppleBlocked() {
       return (
-        <AppleBlockedFeature
-          title="Not available on iOS"
-          message="This iOS build is a Collection & Cellar Manager. Social/recommendation-style features are not included."
-        />
+        <AppleBlockedFeature />
       );
     };
   }

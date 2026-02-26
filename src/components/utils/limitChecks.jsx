@@ -46,7 +46,7 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
         canCreate,
         currentCount: count,
         limit: FREE_TIER_LIMITS.PIPES,
-        reason: canCreate ? null : `Free trial is limited to ${FREE_TIER_LIMITS.PIPES} pipes. Upgrade to add unlimited pipes.`
+        reason: canCreate ? null : 'limits.trialPipesExceeded'
       };
     }
 
@@ -56,11 +56,11 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
       canCreate,
       currentCount: count,
       limit: FREE_TIER_LIMITS.PIPES,
-      reason: canCreate ? null : `Free accounts are limited to ${FREE_TIER_LIMITS.PIPES} pipes. Upgrade for unlimited access.`
+      reason: canCreate ? null : 'limits.freePipesExceeded'
     };
   } catch (err) {
     console.warn("Failed to check pipe limit:", err);
-    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.PIPES, reason: "Unable to verify limits" };
+    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.PIPES, reason: 'limits.unableToVerify' };
   }
 }
 
@@ -91,7 +91,7 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
         canCreate,
         currentCount: count,
         limit: FREE_TIER_LIMITS.TOBACCO_BLENDS,
-        reason: canCreate ? null : `Free trial is limited to ${FREE_TIER_LIMITS.TOBACCO_BLENDS} blends. Upgrade to add unlimited blends.`
+        reason: canCreate ? null : 'limits.trialBlendExceeded'
       };
     }
 
@@ -101,11 +101,11 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
       canCreate,
       currentCount: count,
       limit: FREE_TIER_LIMITS.TOBACCO_BLENDS,
-      reason: canCreate ? null : `Free accounts are limited to ${FREE_TIER_LIMITS.TOBACCO_BLENDS} blends. Upgrade for unlimited access.`
+      reason: canCreate ? null : 'limits.freeBlendExceeded'
     };
   } catch (err) {
     console.warn("Failed to check tobacco limit:", err);
-    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: "Unable to verify limits" };
+    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: 'limits.unableToVerify' };
   }
 }
 

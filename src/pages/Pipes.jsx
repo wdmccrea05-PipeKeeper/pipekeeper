@@ -67,7 +67,7 @@ export default function PipesPage() {
       // Check limits before creating
       const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
-        throw new Error(limitCheck.reason || 'Cannot create pipe');
+        throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
       return base44.entities.Pipe.create(data);
     },
@@ -194,7 +194,7 @@ export default function PipesPage() {
               onClick={async () => {
                 const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
                 if (!limitCheck.canCreate) {
-                  toast.error(limitCheck.reason, {
+                  toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                     action: {
                       label: t("subscription.upgrade"),
                       onClick: () => window.location.href = createPageUrl('Subscription')
