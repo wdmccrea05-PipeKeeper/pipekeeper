@@ -1,27 +1,31 @@
 
-export default {
-  "common": {},
-  "nav": {},
-  "layout": {},
-  "buttons": {},
-  "labels": {},
-  "placeholders": {},
-  "validation": {},
-  "errors": {},
-  "toasts": {},
-  "messages": {},
-  "empty": {},
-  "help": {},
-  "helpCenter": {},
-  "time": {},
-  "units": {},
-  "ageGate": {},
-  "search": {},
-  "home": {},
-  "insights": {},
-  "smokingLog": {},
-  "tobacconist": {},
-  "auth": {},
-  "community": {},
-  "footer": {}
+const translations = {
+  en: {
+    "common": {},
+    "nav": {},
+    "layout": {},
+    "buttons": {},
+    "labels": {},
+    "placeholders": {},
+    "validation": {},
+    "errors": {},
+    "toasts": {},
+    "messages": {},
+    "empty": {},
+    "help": {},
+    "helpCenter": {},
+    "time": {},
+    "units": {},
+    "ageGate": {},
+    "search": {},
+    "home": {},
+    "insights": {},
+    "smokingLog": {},
+    "tobacconist": {},
+    "auth": {},
+    "community": {},
+    "footer": {}
+  }
 };
+
+export default translations;
