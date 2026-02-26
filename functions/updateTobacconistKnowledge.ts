@@ -3,10 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
     
-    // Admin-only function
-    if (user?.role !== 'admin') {
+    // Check if this is called from automation (no user) or from admin
+    const user = await base44.auth.me().catch(() => null);
+    
+    // If there's a user, they must be admin. If no user, allow (automation context)
+    if (user && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
@@ -25,15 +27,20 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.UserProfile.list()
     ]);
 
+    // Ensure all results are arrays
+    const safePipes = Array.isArray(pipes) ? pipes : [];
+    const safeBlends = Array.isArray(blends) ? blends : [];
+    const safeLogs = Array.isArray(logs) ? logs : [];
+
     // Filter for records created yesterday
     const filterByDate = (items) => items.filter(item => {
       const created = new Date(item.created_date);
       return created >= yesterday && created < today;
     });
 
-    const newPipes = filterByDate(pipes);
-    const newBlends = filterByDate(blends);
-    const newLogs = filterByDate(logs);
+    const newPipes = filterByDate(safePipes);
+    const newBlends = filterByDate(safeBlends);
+    const newLogs = filterByDate(safeLogs);
 
     const insights = [];
 
@@ -90,8 +97,8 @@ Deno.serve(async (req) => {
       const pairings = {};
       
       for (const log of newLogs) {
-        const pipe = pipes.find(p => p.id === log.pipe_id);
-        const blend = blends.find(b => b.id === log.blend_id);
+        const pipe = safePipes.find(p => p.id === log.pipe_id);
+        const blend = safeBlends.find(b => b.id === log.blend_id);
         
         if (pipe?.shape && blend?.blend_type) {
           const key = `${pipe.shape}|${blend.blend_type}`;
@@ -132,7 +139,8 @@ Deno.serve(async (req) => {
     }
 
     // Check for existing knowledge and update or create
-    const existingKnowledge = await base44.asServiceRole.entities.TobacconistKnowledge.list();
+    const existingKnowledgeResult = await base44.asServiceRole.entities.TobacconistKnowledge.list();
+    const existingKnowledge = Array.isArray(existingKnowledgeResult) ? existingKnowledgeResult : [];
     const created = [];
     const updated = [];
 
