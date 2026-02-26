@@ -118,7 +118,30 @@ const translations = {
     purchaseSuggestions: "Aquisições sugeridas",
     avgScoreImprovement: "melhoria média na pontuação",
     fillsGapFor: "Preenche a lacuna",
-  }
+  },
+
+  auth: {
+    loginRequired: "Login necessário",
+  },
+  nav: {
+    following: "Seguindo",
+  },
+  community: {
+    commentsEnabled: "Comentários habilitados",
+    commentsDisabled: "Comentários desabilitados",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Todos os direitos reservados.",
+  },
+  units: {
+    tin: "lata",
+    tinPlural: "latas",
+    outOf5: "de 5",
+  },
+  insights: {
+    reportsTooltip: "Gere resumos exportáveis da sua coleção para referência ou documentação.",
+    agingTooltip: "Monitore o tabaco na adega e receba recomendações sobre os tempos de envelhecimento ideais com base nas características do blend.",
+  },
 };
 
 export default translations;

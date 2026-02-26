@@ -118,7 +118,30 @@ const translations = {
     purchaseSuggestions: "Acquisitions suggérées",
     avgScoreImprovement: "amélioration moyenne du score",
     fillsGapFor: "Comble le manque",
-  }
+  },
+
+  auth: {
+    loginRequired: "Connexion requise",
+  },
+  nav: {
+    following: "Abonnements",
+  },
+  community: {
+    commentsEnabled: "Commentaires activés",
+    commentsDisabled: "Commentaires désactivés",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Tous droits réservés.",
+  },
+  units: {
+    tin: "boîte",
+    tinPlural: "boîtes",
+    outOf5: "sur 5",
+  },
+  insights: {
+    reportsTooltip: "Générez des résumés exportables de votre collection pour référence ou documentation.",
+    agingTooltip: "Surveillez le tabac en cave et obtenez des recommandations sur les durées d'affinage optimales selon les caractéristiques du mélange.",
+  },
 };
 
 export default translations;

@@ -118,7 +118,30 @@ const translations = {
     purchaseSuggestions: "Acquisizioni suggerite",
     avgScoreImprovement: "miglioramento medio del punteggio",
     fillsGapFor: "Colma il divario",
-  }
+  },
+
+  auth: {
+    loginRequired: "Accesso richiesto",
+  },
+  nav: {
+    following: "Seguiti",
+  },
+  community: {
+    commentsEnabled: "Commenti abilitati",
+    commentsDisabled: "Commenti disabilitati",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Tutti i diritti riservati.",
+  },
+  units: {
+    tin: "lattina",
+    tinPlural: "lattine",
+    outOf5: "su 5",
+  },
+  insights: {
+    reportsTooltip: "Genera riepiloghi esportabili della tua collezione per riferimento o documentazione.",
+    agingTooltip: "Monitora il tabacco in cantina e ricevi consigli sui tempi di invecchiamento ottimali in base alle caratteristiche della miscela.",
+  },
 };
 
 export default translations;

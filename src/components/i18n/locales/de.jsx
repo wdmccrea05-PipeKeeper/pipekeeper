@@ -118,7 +118,30 @@ const translations = {
     purchaseSuggestions: "Empfohlene Anschaffungen",
     avgScoreImprovement: "durchschnittliche Bewertungsverbesserung",
     fillsGapFor: "Schließt Lücke",
-  }
+  },
+
+  auth: {
+    loginRequired: "Anmeldung erforderlich",
+  },
+  nav: {
+    following: "Folge ich",
+  },
+  community: {
+    commentsEnabled: "Kommentare aktiviert",
+    commentsDisabled: "Kommentare deaktiviert",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Alle Rechte vorbehalten.",
+  },
+  units: {
+    tin: "Dose",
+    tinPlural: "Dosen",
+    outOf5: "von 5",
+  },
+  insights: {
+    reportsTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zur Referenz oder Dokumentation.",
+    agingTooltip: "Überwachen Sie gekellertes Tabak und erhalten Sie Empfehlungen zu optimalen Reifungszeiten basierend auf Mischeigenschaften.",
+  },
 };
 
 export default translations;
