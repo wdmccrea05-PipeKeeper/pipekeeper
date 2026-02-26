@@ -17,6 +17,7 @@ const translations = {
     copyright: "© 2026 PipeKeeper. All rights reserved."
   },
   units: {
+    tin: "tin",
     tinPlural: "tins",
     outOf5: "out of 5"
   },
@@ -130,6 +131,11 @@ const translations = {
   },
 
   // ... all other existing namespaces and keys
+
+  insights: {
+    reportsTooltip: "Generate exportable summaries of your collection for reference or documentation.",
+    agingTooltip: "Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics.",
+  },
 };
 
 export default translations;

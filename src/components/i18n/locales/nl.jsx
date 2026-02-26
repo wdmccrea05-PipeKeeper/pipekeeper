@@ -118,7 +118,30 @@ const translations = {
     purchaseSuggestions: "Aanbevolen aankopen",
     avgScoreImprovement: "gemiddelde scoreverbete ring",
     fillsGapFor: "Vult hiaat op",
-  }
+  },
+
+  auth: {
+    loginRequired: "Inloggen vereist",
+  },
+  nav: {
+    following: "Volgend",
+  },
+  community: {
+    commentsEnabled: "Reacties ingeschakeld",
+    commentsDisabled: "Reacties uitgeschakeld",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Alle rechten voorbehouden.",
+  },
+  units: {
+    tin: "blik",
+    tinPlural: "blikken",
+    outOf5: "van 5",
+  },
+  insights: {
+    reportsTooltip: "Genereer exporteerbare samenvattingen van uw collectie voor referentie of documentatie.",
+    agingTooltip: "Bewaak gecellerd tabak en ontvang aanbevelingen voor optimale rijpingstijden op basis van mengkenmerken.",
+  },
 };
 
 export default translations;

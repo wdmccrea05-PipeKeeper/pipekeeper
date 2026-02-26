@@ -15,6 +15,7 @@ const translations = {
         copyright: 'Derechos de autor © 2026',
     },
     units: {
+        tin: 'lata',
         tinPlural: 'latas',
         outOf5: 'de 5',
     },
@@ -136,6 +137,11 @@ const translations = {
     purchaseSuggestions: "Adquisiciones sugeridas",
     avgScoreImprovement: "mejora promedio de puntuación",
     fillsGapFor: "Cubre la brecha",
+  },
+
+  insights: {
+    reportsTooltip: "Genera resúmenes exportables de tu colección para referencia o documentación.",
+    agingTooltip: "Monitorea el tabaco en bodega y obtén recomendaciones sobre tiempos de envejecimiento óptimos según las características de la mezcla.",
   },
 
 export default translations;
