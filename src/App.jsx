@@ -82,7 +82,7 @@ function App() {
     <GlobalErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router basename="/"
+          <Router basename="/">
             <NavigationTracker />
             <AuthenticatedApp />
           </Router>
