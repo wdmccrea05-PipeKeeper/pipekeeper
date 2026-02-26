@@ -101,5 +101,4 @@ export default {
   useTranslation,
   translate,
   SUPPORTED_LANGS,
-  translations,
 };
