@@ -67,7 +67,7 @@ export default function PipesPage() {
       // Check limits before creating
       const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
-      throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
+        throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
       return base44.entities.Pipe.create(data);
     },
