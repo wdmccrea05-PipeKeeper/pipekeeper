@@ -161,7 +161,6 @@ async function tryStripeSync() {
 export default function Layout({ children, currentPageName }) {
   console.log("8️⃣ Layout component rendering");
   
-  try {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem(AGE_GATE_KEY) === "true";
@@ -819,8 +818,4 @@ export default function Layout({ children, currentPageName }) {
     </ErrorBoundary>
   </GlobalErrorBoundary>
   );
-  } catch (error) {
-  console.error("❌ LAYOUT ERROR:", error);
-  return <div>Layout Error: {error.message}</div>;
-  }
-  }
+}
