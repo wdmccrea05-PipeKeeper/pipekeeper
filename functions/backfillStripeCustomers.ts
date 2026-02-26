@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
     let base44, user;
     try {
       base44 = createClientFromRequest(req);
-      user = await base44.auth.me();
+      user = await base44.auth.me().catch(() => null);
     } catch (e: any) {
       return Response.json({
         ok: false,
@@ -42,7 +42,8 @@ Deno.serve(async (req: Request) => {
       }, { status: 500 });
     }
 
-    if (user?.role !== "admin") {
+    // If there's a user, they must be admin. If no user, allow (scheduled automation context)
+    if (user && user.role !== "admin") {
       return Response.json({ 
         ok: false, 
         error: "FORBIDDEN",
@@ -51,20 +52,33 @@ Deno.serve(async (req: Request) => {
       }, { status: 403 });
     }
 
-    // Stage: stripe_init
+    // Stage: stripe_init with enhanced error reporting
     let stripe;
     try {
       const { stripe: stripeClient, meta } = await getStripeClient(req);
       stripe = stripeClient;
       keyPrefix = meta.masked.slice(0, 4);
       console.log(`[backfillStripeCustomers] env=${meta.environment} source=${meta.source} key=${meta.masked}`);
+      
+      // Sanity check: verify Stripe client works
+      await stripe.balance.retrieve().catch((balErr: any) => {
+        const msg = String(balErr?.message || balErr || "Unknown");
+        if (msg.toLowerCase().includes("expired")) {
+          throw new Error(`STRIPE_AUTH_FAILED: ${msg}`);
+        }
+        throw balErr;
+      });
     } catch (e: any) {
+      const msg = String(e?.message || e);
+      const isExpired = msg.toLowerCase().includes("expired");
       return Response.json({
         ok: false,
-        error: "BACKFILL_FAILED",
+        error: isExpired ? "STRIPE_AUTH_FAILED" : "BACKFILL_FAILED",
         where: "stripe_init",
-        message: e?.message || String(e),
-        keyPrefix
+        keyPrefix,
+        stripeSanityOk: false,
+        message: isExpired ? "Stripe authentication failed. Check STRIPE_SECRET_KEY." : msg,
+        details: msg
       }, { status: 500 });
     }
 
