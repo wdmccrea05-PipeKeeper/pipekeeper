@@ -213,6 +213,7 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
           maker: p.maker,
           shape: bowl.shape || p.shape,
           bowlStyle: bowl.bowlStyle || p.bowlStyle,
+          shankShape: bowl.shankShape || p.shankShape,
           bend: bowl.bend || p.bend,
           sizeClass: bowl.sizeClass || p.sizeClass,
           bowl_material: bowl.bowl_material ?? p.bowl_material,
@@ -220,6 +221,9 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
           bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm,
           bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm,
           focus: Array.isArray(bowl.focus) ? bowl.focus : [],
+          smoking_characteristics: p.smoking_characteristics,
+          condition: p.condition,
+          usage_bowls_count: p.usage_bowls_count ?? null,
         });
       });
     } else {
@@ -230,6 +234,7 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
         maker: p.maker,
         shape: p.shape,
         bowlStyle: p.bowlStyle,
+        shankShape: p.shankShape,
         bend: p.bend,
         sizeClass: p.sizeClass,
         bowl_material: p.bowl_material,
@@ -237,6 +242,9 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
         bowl_diameter_mm: p.bowl_diameter_mm,
         bowl_depth_mm: p.bowl_depth_mm,
         focus: Array.isArray(p.focus) ? p.focus : [],
+        smoking_characteristics: p.smoking_characteristics,
+        condition: p.condition,
+        usage_bowls_count: p.usage_bowls_count ?? null,
       });
     }
   }
@@ -248,6 +256,10 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     blend_type: b.blend_type,
     strength: b.strength,
     cut: b.cut,
+    flavor_notes: b.flavor_notes || null,
+    tobacco_components: b.tobacco_components || null,
+    manufacturer: b.manufacturer || null,
+    aging_potential: b.aging_potential || null,
   }));
 
   const profileContext = profile
@@ -271,28 +283,88 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
       ? `\n[Note: Showing 60 of ${blends.length} blends.]`
       : "";
 
-  const prompt = `Analyze the user's pipe and tobacco collection considering pipe geometry. Provide optimization recommendations.
+  // Pre-compute pairing score summaries using the canonical scorer
+  const pairingMatrix = buildPairingsForPipes(pipesDataCapped, blendsDataCapped, profileContext);
 
-Rules:
-- Each entry represents a bowl configuration (bowl_variant_id identifies interchangeable bowls)
-- Treat each bowl independently when bowl_variant_id is present
-- Provide applyable_changes only when justified
-- If the request is advice-only, keep applyable_changes empty
+  const pipeScoreSummaries = pipesDataCapped.map(pipe => {
+    const variantKey = pipe.bowl_variant_id
+      ? `${pipe.pipe_id}__${pipe.bowl_variant_id}`
+      : pipe.pipe_id;
+
+    const scores = pairingMatrix
+      .filter(p => {
+        const pk = p.bowl_variant_id ? `${p.pipe_id}__${p.bowl_variant_id}` : p.pipe_id;
+        return pk === variantKey;
+      })
+      .map(p => p.score);
+
+    const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    const highCount = scores.filter(s => s >= 7).length;
+    const modCount = scores.filter(s => s >= 5).length;
+    const topScore = scores.length ? Math.max(...scores) : 0;
+
+    return {
+      pipe_id: pipe.pipe_id,
+      bowl_variant_id: pipe.bowl_variant_id || null,
+      pipe_name: pipe.pipe_name,
+      current_focus: pipe.focus,
+      average_pairing_score: Math.round(avg * 10) / 10,
+      top_pairing_score: topScore,
+      high_compat_blend_count: highCount,
+      moderate_compat_blend_count: modCount,
+      blend_count_evaluated: scores.length,
+    };
+  });
+
+  const prompt = `You are an expert pipe collection optimizer. Your goal is to produce the BEST POSSIBLE match between pipes and tobacco blends through specialization assignments.
+
+## Optimization Goals (in priority order)
+1. Maximize the number of blends in the collection that have at least one well-matched pipe (coverage)
+2. Maximize per-pipe pairing scores by assigning the best-fit specialization
+3. Eliminate redundant specialization overlap where two pipes serve the same blend types identically
+4. Identify blend types with no good pipe match (coverage gaps) and recommend how to fill them
+5. Suggest new pipe purchases only when reassignment cannot close a coverage gap
+
+## Rules
+- Each pipe entry represents a bowl configuration (bowl_variant_id = interchangeable bowl)
+- Treat each bowl variant independently
+- Only include a pipe in applyable_changes if its focus SHOULD change
+- Score delta = estimated new average pairing score minus current average_pairing_score
+- A change is worth recommending only if score_delta >= 1.0 OR it resolves a coverage gap
 - Return JSON only
 
-WHAT_IF CONTEXT:
-${whatIfText ? String(whatIfText).substring(0, 2500) : ""}
+${whatIfText ? `## WHAT-IF / USER QUESTION CONTEXT\n${String(whatIfText).substring(0, 2500)}` : ""}
 
-PIPES DATA (${pipesDataCapped.length} shown):
+## PIPES WITH CURRENT PAIRING SCORES
+${JSON.stringify(pipeScoreSummaries)}
+
+## FULL PIPES DATA
 ${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
 
-BLENDS DATA (${blendsDataCapped.length} shown):
+## BLENDS DATA
 ${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
 
-USER PREFERENCES:
+## USER PREFERENCES
 ${JSON.stringify(profileContext)}
 
-RESPONSE JSON SCHEMA: { applyable_changes: [], summary: string, collection_gaps?: [], next_additions?: [] }`;
+## Required analysis steps
+
+### Step 1 — Current state assessment
+For each pipe, note its current focus, its average_pairing_score, and how many blends score >=7 with it.
+
+### Step 2 — Identify redundancies
+List pairs of pipes whose current focus arrays are nearly identical and serve the same blend types. Flag these as redundant.
+
+### Step 3 — Identify coverage gaps
+List blend types present in the collection that are NOT well-covered by any pipe (no pipe scores >=7 with 2+ blends of that type).
+
+### Step 4 — Evaluate focus reassignments
+For each redundant pipe pair and each coverage gap, evaluate whether reassigning a specific pipe's focus would raise its average pairing score (score_delta >= 1.0) or fill a coverage gap. If yes, include it in applyable_changes with estimated score_delta.
+
+### Step 5 — Purchase suggestions
+For coverage gaps that CANNOT be filled by reassignment, provide a specific recommendation for what type of pipe to acquire.
+
+Respond with JSON matching this exact schema:`;
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt,
@@ -312,11 +384,44 @@ RESPONSE JSON SCHEMA: { applyable_changes: [], summary: string, collection_gaps?
               before_focus: { type: "array", items: { type: "string" } },
               after_focus: { type: "array", items: { type: "string" } },
               rationale: { type: "string" },
+              score_delta: { type: "number" },
+              fills_gap_for: { type: ["string", "null"] },
             },
           },
         },
         collection_gaps: { type: "array", items: { type: "string" } },
         next_additions: { type: "array", items: { type: "string" } },
+        redundancies: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              blend_type: { type: "string" },
+              pipe_names: { type: "array", items: { type: "string" } },
+              recommendation: { type: "string" },
+            }
+          }
+        },
+        purchase_suggestions: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              gap_blend_type: { type: "string" },
+              suggested_pipe_characteristics: { type: "string" },
+              rationale: { type: "string" },
+            }
+          }
+        },
+        coverage_summary: {
+          type: "object",
+          properties: {
+            total_blends: { type: "number" },
+            blends_with_good_match: { type: "number" },
+            blends_with_no_match: { type: "number" },
+            coverage_percentage: { type: "number" },
+          }
+        }
       },
     },
   });
@@ -327,6 +432,9 @@ RESPONSE JSON SCHEMA: { applyable_changes: [], summary: string, collection_gaps?
     applyable_changes: Array.isArray(result?.applyable_changes) ? result.applyable_changes : [],
     collection_gaps: Array.isArray(result?.collection_gaps) ? result.collection_gaps : [],
     next_additions: Array.isArray(result?.next_additions) ? result.next_additions : [],
+    redundancies: Array.isArray(result?.redundancies) ? result.redundancies : [],
+    purchase_suggestions: Array.isArray(result?.purchase_suggestions) ? result.purchase_suggestions : [],
+    coverage_summary: result?.coverage_summary || null,
   };
 }
 
