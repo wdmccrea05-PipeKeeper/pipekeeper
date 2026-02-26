@@ -75,7 +75,6 @@ import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
-import subscriptionsuccessTsx from './pages/SubscriptionSuccess.tsx';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
@@ -120,7 +119,6 @@ export const PAGES = {
     "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,
-    "SubscriptionSuccess.tsx": subscriptionsuccessTsx,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,

@@ -28,7 +28,14 @@ export function getEntitlementTier(user, subscription) {
   if (user?.subscriptionTier) return normalizeTier(user.subscriptionTier);
 
   // Fallback to subscription entity
-  if (subscription?.tier) return normalizeTier(subscription.tier);
+  if (subscription) {
+    const periodEnd = subscription.current_period_end;
+    const isNotExpired = !periodEnd || new Date(periodEnd).getTime() > Date.now();
+
+    if (isNotExpired && subscription.tier) {
+      return normalizeTier(subscription.tier);
+    }
+  }
 
   return "free";
 }
@@ -60,7 +67,12 @@ export function hasProAccess(user, subscription) {
  * Checks if user/subscription is currently in trial period
  */
 export function isTrialingAccess(user, subscription) {
-  // Check subscription status first
+  // Check user fields first (mirrors frontend logic)
+  if (user?.trial_active || user?.is_trialing || user?.trialing || user?.trial) {
+    return true;
+  }
+
+  // Check subscription status
   if (subscription?.status === "trial" || subscription?.status === "trialing") {
     return true;
   }

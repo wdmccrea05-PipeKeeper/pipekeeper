@@ -7,10 +7,9 @@ function isBeforeProCutoff(iso) {
 }
 
 export function buildEntitlements(input) {
-  // Trial users get Premium tier access
   const tier = input.isProSubscriber
     ? "pro"
-    : input.isPaidSubscriber || input.isOnTrial
+    : input.isPaidSubscriber
       ? "premium"
       : "free";
 
@@ -32,7 +31,7 @@ export function buildEntitlements(input) {
       return true;
     }
     
-    // Premium tier (including trial) gets core Premium features
+    // Premium tier gets core Premium features
     // Pro-only features: BULK_EDIT, AI_IDENTIFY, AI_VALUE_LOOKUP, EXPORT_REPORTS, etc.
     if (tier === "premium") {
       return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "MATCHING_ENGINE", "MESSAGING"].includes(featureKey);
