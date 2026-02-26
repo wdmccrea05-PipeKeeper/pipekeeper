@@ -118,7 +118,7 @@ export default function TobaccoPage() {
       // Check limits before creating
       const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
       if (!limitCheck.canCreate) {
-      throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
+        throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
       return base44.entities.TobaccoBlend.create(data);
     },

@@ -39,19 +39,23 @@ export function useTranslation(languageOverride = null) {
 
   const t = useMemo(() => {
     return (key, varsOrFallback = {}) => {
-      const vars = typeof varsOrFallback === 'object' && varsOrFallback !== null && !Array.isArray(varsOrFallback) ? varsOrFallback : {};
+      const isOptions = typeof varsOrFallback === 'object' && varsOrFallback !== null && !Array.isArray(varsOrFallback);
+      const vars = isOptions ? varsOrFallback : {};
       const fallbackStr = typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
+      const returnObjects = isOptions && varsOrFallback.returnObjects === true;
+
       const value = getNestedValue(translationPack, key);
       if (value === undefined) {
         const fallback = getNestedValue(translations.en, key);
-        if (fallback) {
-          return interpolate(String(fallback), vars);
+        if (fallback !== undefined) {
+          if (returnObjects) return fallback;
+          if (typeof fallback === 'string') return interpolate(fallback, vars);
+          return String(fallback);
         }
         return fallbackStr !== undefined ? fallbackStr : key;
       }
-      if (typeof value === 'string') {
-        return interpolate(value, vars);
-      }
+      if (returnObjects) return value;
+      if (typeof value === 'string') return interpolate(value, vars);
       return String(value);
     };
   }, [translationPack]);
@@ -60,15 +64,20 @@ export function useTranslation(languageOverride = null) {
 }
 
 export function translate(key, vars = {}, language = 'en') {
+  const isOptions = typeof vars === 'object' && vars !== null && !Array.isArray(vars);
+  const returnObjects = isOptions && vars.returnObjects === true;
   const pack = translations[language] || translations.en || {};
   const value = getNestedValue(pack, key);
   if (value === undefined) {
     const fallback = getNestedValue(translations.en, key);
-    if (fallback) {
-      return interpolate(String(fallback), vars);
+    if (fallback !== undefined) {
+      if (returnObjects) return fallback;
+      if (typeof fallback === 'string') return interpolate(fallback, vars);
+      return String(fallback);
     }
     return key;
   }
+  if (returnObjects) return value;
   if (typeof value === 'string') {
     return interpolate(value, vars);
   }
