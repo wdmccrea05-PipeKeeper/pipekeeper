@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, UserPlus, CheckCircle, X } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function InviteFull() {
+  const { t } = useTranslation();
   const [emailFields, setEmailFields] = useState(['']);
   const [personalMessage, setPersonalMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,19 +89,19 @@ The PipeKeeper Team
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("inviteFull.backToHome")}
             </Button>
           </a>
 
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
             <CardContent className="p-12 text-center">
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-green-900 mb-2">Invitations Sent!</h2>
+              <h2 className="text-2xl font-bold text-green-900 mb-2">{t("inviteFull.successTitle")}</h2>
               <p className="text-green-700 mb-6">
-                Your friends will receive their invitation emails shortly.
+                {t("inviteFull.successMessage")}
               </p>
               <Button onClick={() => setSubmitted(false)} variant="outline">
-                Invite More Friends
+                {t("inviteFull.inviteMore")}
               </Button>
             </CardContent>
           </Card>
@@ -114,7 +116,7 @@ The PipeKeeper Team
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("inviteFull.backToHome")}
           </Button>
         </a>
 
@@ -122,17 +124,17 @@ The PipeKeeper Team
           <CardHeader>
             <CardTitle className="text-3xl text-stone-900 flex items-center gap-3">
               <UserPlus className="w-8 h-8 text-[#8b3a3a]" />
-              Invite Friends to PipeKeeper
+              {t("inviteFull.pageTitle")}
             </CardTitle>
             <CardDescription className="text-stone-600">
-              Share PipeKeeper with fellow pipe enthusiasts and build your community.
+              {t("inviteFull.pageSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label className="text-stone-700 font-medium mb-2 block">
-                  Friend's Email Addresses *
+                  {t("inviteFull.emailLabel")} *
                 </Label>
                 <div className="space-y-3">
                   {emailFields.map((email, index) => (
@@ -141,7 +143,7 @@ The PipeKeeper Team
                         type="email"
                         value={email}
                         onChange={(e) => updateEmailField(index, e.target.value)}
-                        placeholder="friend@example.com"
+                        placeholder={t("inviteFull.emailPlaceholder")}
                         required
                       />
                       {emailFields.length > 1 && (
@@ -165,19 +167,19 @@ The PipeKeeper Team
                   className="mt-3"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Add Another Email
+                  {t("inviteFull.addAnother")}
                 </Button>
               </div>
 
               <div>
                 <Label htmlFor="message" className="text-stone-700 font-medium">
-                  Personal Message (Optional)
+                  {t("inviteFull.personalMessage")}
                 </Label>
                 <Textarea
                   id="message"
                   value={personalMessage}
                   onChange={(e) => setPersonalMessage(e.target.value)}
-                  placeholder="Add a personal note to your invitation..."
+                  placeholder={t("inviteFull.messagePlaceholder")}
                   className="mt-2 min-h-[100px]"
                 />
               </div>
@@ -188,7 +190,7 @@ The PipeKeeper Team
                 className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                {isSubmitting ? 'Sending Invitations...' : 'Send Invitations'}
+                {isSubmitting ? t("inviteFull.sending") : t("inviteFull.sendInvitations")}
               </Button>
             </form>
           </CardContent>

@@ -461,9 +461,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
-                <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
+                <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDate", "Out of date - Regeneration recommended")}</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">Up to date</span>
+                <span className="text-emerald-700 font-semibold">{t("aiUpdates.pairingsUpToDate", "Up to date")}</span>
               )}
             </p>
           </div>

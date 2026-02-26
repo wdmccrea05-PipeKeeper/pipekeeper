@@ -680,7 +680,7 @@ export default function Layout({ children, currentPageName }) {
               {adminNavItems.length > 0 && (
                 <>
                   <div className="h-px bg-gray-200 my-2" />
-                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">{t("layout.admin","Admin")}</p>
+                  <p className="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wider">{t("layout.admin")}</p>
                   {adminNavItems.map((item) => (
                     <NavLink
                       key={item.page}
@@ -711,7 +711,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <img src={PIPEKEEPER_LOGO} alt={t("layout.appTitle")} className="w-5 h-5 object-contain" />
-                  <span className="text-sm text-[#E0D8C8]/70">{t("layout.copyright")}</span>
+                  <span className="text-sm text-[#E0D8C8]/70">{t("footer.copyright")}</span>
                 </div>
                 <div className="flex gap-6">
                   <a href={createPageUrl("FAQ")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-all duration-200 hover:underline whitespace-nowrap overflow-hidden text-ellipsis">

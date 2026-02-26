@@ -11,18 +11,18 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-const SUPPORT_TOPICS = [
-  "General Support Request",
-  "Account Issues",
-  "Feature Suggestion",
-  "Report an Error",
-  "Billing Question",
-  "Technical Issue",
-  "Other"
-];
-
 export default function SupportFull() {
   const { t } = useTranslation();
+  
+  const SUPPORT_TOPICS = [
+    t("supportFull.topicGeneral"),
+    t("supportFull.topicAccount"),
+    t("supportFull.topicFeature"),
+    t("supportFull.topicError"),
+    t("supportFull.topicBilling"),
+    t("supportFull.topicTechnical"),
+    t("supportFull.topicOther")
+  ];
   const [formData, setFormData] = useState({
     topic: "",
     name: "",
