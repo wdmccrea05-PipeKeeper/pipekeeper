@@ -22,7 +22,7 @@ function MessageBubble({ message, t }) {
         <div className="h-8 w-8 rounded-lg bg-[#8b3a3a] flex items-center justify-center mt-0.5 flex-shrink-0 overflow-hidden">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/74ff3c767_4f105d90-fb0f-4713-b2cc-e24f7e1c06a3_44927272.png"
-            alt={t("agent.tobacconist", "Tobacconist")}
+            alt={t("tobacconist.tobacconist")}
             className="w-full h-full object-cover scale-110"
           />
         </div>
@@ -86,7 +86,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         setConversationId(res?.conversation_id || null);
       } catch (e) {
         console.error("[TOBACCONIST] init failed:", e);
-        toast.error(t("agent.failedToStartConversation", "Failed to start conversation"));
+        toast.error(t("tobacconist.failedToStartConversation"));
       } finally {
         if (mounted) setBusy(false);
       }
@@ -102,39 +102,39 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
   const regeneratePairings = useMutation({
     mutationFn: async () => base44.invoke("regeneratePairings"),
     onSuccess: () => {
-      toast.success(t("agent.pairingsRegenerated", "Pairings regenerated successfully"));
+      toast.success(t("tobacconist.pairingsRegenerated"));
       queryClient.invalidateQueries();
     },
-    onError: () => toast.error(t("agent.failedToRegeneratePairings", "Failed to regenerate pairings")),
+    onError: () => toast.error(t("tobacconist.failedToRegeneratePairings")),
   });
 
   const undoPairings = useMutation({
     mutationFn: async () => base44.invoke("undoPairings"),
     onSuccess: () => {
-      toast.success(t("agent.pairingsReverted", "Pairings reverted to previous version"));
+      toast.success(t("tobacconist.pairingsReverted"));
       queryClient.invalidateQueries();
     },
-    onError: () => toast.error(t("agent.failedToUndoPairings", "Failed to undo pairings")),
+    onError: () => toast.error(t("tobacconist.failedToUndoPairings")),
   });
 
   const regenerateOptimization = useMutation({
     mutationFn: async () => base44.invoke("regenerateOptimization"),
     onSuccess: () => {
-      toast.success(t("agent.optimizationRegenerated", "Optimization regenerated successfully"));
+      toast.success(t("tobacconist.optimizationRegenerated"));
       queryClient.invalidateQueries();
     },
     onError: () =>
-      toast.error(t("agent.failedToRegenerateOptimization", "Failed to regenerate optimization")),
+      toast.error(t("tobacconist.failedToRegenerateOptimization")),
   });
 
   const undoOptimization = useMutation({
     mutationFn: async () => base44.invoke("undoOptimization"),
     onSuccess: () => {
-      toast.success(t("agent.optimizationReverted", "Optimization reverted to previous version"));
+      toast.success(t("tobacconist.optimizationReverted"));
       queryClient.invalidateQueries();
     },
     onError: () =>
-      toast.error(t("agent.failedToUndoOptimization", "Failed to undo optimization")),
+      toast.error(t("tobacconist.failedToUndoOptimization")),
   });
 
   const sendMessage = async () => {
@@ -178,11 +178,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
       if (content) {
         setMessages((prev) => [...prev, { role: "assistant", content }]);
       } else {
-        toast.error(t("agent.failedToSendMessage", "Failed to send message"));
+        toast.error(t("tobacconist.failedToSendMessage"));
       }
     } catch (e) {
       console.error("[TOBACCONIST] send failed:", e);
-      toast.error(t("agent.failedToSendMessage", "Failed to send message"));
+      toast.error(t("tobacconist.failedToSendMessage"));
     } finally {
       setSending(false);
     }
@@ -194,14 +194,14 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
         <SheetHeader>
           <SheetTitle className="text-white flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-white/70" />
-            {t("agent.title", "Tobacconist")}
+            {t("tobacconist.title")}
           </SheetTitle>
         </SheetHeader>
 
         <Tabs defaultValue="chat" className="mt-4">
           <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="chat">{t("agent.tabChat", "Chat")}</TabsTrigger>
-            <TabsTrigger value="actions">{t("agent.tabActions", "Actions")}</TabsTrigger>
+            <TabsTrigger value="chat">{t("tobacconist.tabChat")}</TabsTrigger>
+            <TabsTrigger value="actions">{t("tobacconist.tabActions")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat" className="mt-4">
@@ -213,7 +213,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
               {(busy || sending) && (
                 <div className="flex items-center gap-2 text-white/70">
                   <Loader2 className="w-4 h-4 animate-spin text-white/70" />
-                  <span className="text-sm">{t("agent.sending", "Sending…")}</span>
+                  <span className="text-sm">{t("tobacconist.sending")}</span>
                 </div>
               )}
 
@@ -224,7 +224,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={t("agent.inputPlaceholder", "Ask a question…")}
+                placeholder={t("tobacconist.inputPlaceholder")}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
               />
               <Button onClick={sendMessage} disabled={!input.trim() || !conversationId || sending}>
@@ -241,7 +241,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 disabled={regeneratePairings.isPending}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                {t("agent.regeneratePairings", "Regenerate Pairings")}
+                {t("tobacconist.regeneratePairings")}
               </Button>
 
               <Button
@@ -250,7 +250,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 disabled={undoPairings.isPending}
               >
                 <Undo className="w-4 h-4 mr-2" />
-                {t("agent.undoPairings", "Undo Pairings")}
+                {t("tobacconist.undoPairings")}
               </Button>
 
               <Button
@@ -259,7 +259,7 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 disabled={regenerateOptimization.isPending}
               >
                 <Target className="w-4 h-4 mr-2" />
-                {t("agent.regenerateOptimization", "Regenerate Optimization")}
+                {t("tobacconist.regenerateOptimization")}
               </Button>
 
               <Button
@@ -268,26 +268,26 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
                 disabled={undoOptimization.isPending}
               >
                 <Undo className="w-4 h-4 mr-2" />
-                {t("agent.undoOptimization", "Undo Optimization")}
+                {t("tobacconist.undoOptimization")}
               </Button>
             </div>
 
             <div className="text-xs text-white/60">
               <AlertCircle className="inline-block w-4 h-4 mr-2" />
-              {t("agent.actionsNote", "These actions update AI-generated recommendations.")}
+              {t("tobacconist.actionsNote")}
             </div>
 
             <div className="text-xs text-white/40">
-              {t("agent.fingerprint", "Fingerprint")}: {buildArtifactFingerprint({ pipes, blends })}
+              {t("tobacconist.fingerprint")}: {buildArtifactFingerprint({ pipes, blends })}
             </div>
 
             <div className="text-xs text-white/40">
-              {t("agent.quickAccess", "Quick Access")}: {createPageUrl("Home")}
+              {t("tobacconist.quickAccess")}: {createPageUrl("Home")}
             </div>
 
             <div className="text-xs text-white/40">
               <CheckCircle2 className="inline-block w-4 h-4 mr-2" />
-              {t("agent.actionsReady", "Ready")}
+              {t("tobacconist.actionsReady")}
             </div>
           </TabsContent>
         </Tabs>
