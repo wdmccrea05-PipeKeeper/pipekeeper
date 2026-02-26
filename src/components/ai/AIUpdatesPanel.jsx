@@ -33,7 +33,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     return (
       <UpgradePrompt 
         featureName={t("aiUpdates.featureName","AI Updates & Regeneration")}
-        description={t("aiUpdates.featureDesc","Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier.")}
+        description={t("aiUpdates.description","Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier.")}
       />
     );
   }
@@ -125,9 +125,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Pairings reverted to previous version");
+      toast.success(t("aiUpdates.pairingsRevertSuccess", "Pairings reverted to previous version"));
     },
-    onError: () => toast.error("Failed to undo pairings"),
+    onError: () => toast.error(t("aiUpdates.undoPairingsFail", "Failed to undo pairings")),
   });
 
   const regenOpt = useMutation({
@@ -203,11 +203,11 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Optimization regenerated successfully");
+      toast.success(t("aiUpdates.optimizationRegenSuccess", "Optimization regenerated successfully"));
     },
     onError: () => {
       setBusy(false);
-      toast.error("Failed to regenerate optimization");
+      toast.error(t("aiUpdates.optimizationRegenFail", "Failed to regenerate optimization"));
     },
   });
 
@@ -220,9 +220,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success("Optimization reverted to previous version");
+      toast.success(t("aiUpdates.optimizationRevertSuccess", "Optimization reverted to previous version"));
     },
-    onError: () => toast.error("Failed to undo optimization"),
+    onError: () => toast.error(t("aiUpdates.undoOptimizationFail", "Failed to undo optimization")),
   });
 
   // ✅ FIX: Add the missing "Reclassify Blends" card + function to the AI Updates panel
