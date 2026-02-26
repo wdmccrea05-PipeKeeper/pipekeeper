@@ -406,6 +406,251 @@ export const helpContent = {
       navFAQ: "FAQ",
       navHowTo: "How-To Guides",
       sections: {
+        pageRefresh: {
+          title: "Page Refresh & Caching Issues",
+          items: [
+            {
+              id: "changes-not-appearing",
+              q: "Changes aren't appearing after I update something",
+              a: "Try a hard refresh: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac). This bypasses your browser cache and loads fresh data."
+            },
+            {
+              id: "missing-features",
+              q: "New features or cards are missing",
+              a: "Open the app in an incognito/private window to completely bypass cache. If it appears there, clear your browser cache for this site."
+            },
+            {
+              id: "data-stale",
+              q: "Data seems outdated or stale",
+              a: "Navigate away from the page and back, or use a hard refresh. The app caches data for performance but should auto-refresh when you make changes."
+            },
+            {
+              id: "old-version",
+              q: "App is showing old version after an update",
+              a: "Clear your browser cache completely, or use Ctrl+Shift+Delete to open cache clearing options. Make sure to clear cached images and files."
+            }
+          ]
+        },
+        aiFeatures: {
+          title: "AI Features & Generation",
+          items: [
+            {
+              id: "why-regen-pairings",
+              q: "Why do I need to regenerate pairings?",
+              a: "Pairings become outdated when you add/remove pipes or blends, or update pipe focus. The AI Updates page shows when regeneration is recommended."
+            },
+            {
+              id: "out-of-date-meaning",
+              q: "What does 'out of date' mean on AI Updates?",
+              a: "Your collection has changed since the AI last analyzed it. Regenerating ensures recommendations reflect your current pipes and tobacco."
+            },
+            {
+              id: "undo-ai",
+              q: "Can I undo AI regenerations?",
+              a: "Yes! Each AI feature (pairings, optimization) has an Undo button that reverts to the previous version. You can only undo once - it goes back one step."
+            },
+            {
+              id: "tobacco-matching",
+              q: "How does tobacco-pipe matching work?",
+              a: "The AI considers pipe focus, bowl size, chamber volume, and your preferences to score each tobacco for compatibility (0-10 scale)."
+            },
+            {
+              id: "ai-preferences",
+              q: "What if AI recommendations don't match my preferences?",
+              a: "Update your User Profile with preferred blend types and strength preferences. Also ensure your pipe focus tags accurately describe each pipe's purpose."
+            },
+            {
+              id: "geometry-vs-verified",
+              q: "Which tool should I use: Geometry Analysis or Verified Specs?",
+              a: "'Analyze Geometry from Photos' is the primary tool - it works for all pipes and always provides results. Use it first. 'Find Verified Manufacturer Specs' is optional and only works for some production pipes (often returns no results for artisan/estate pipes)."
+            },
+            {
+              id: "low-confidence-geometry",
+              q: "Geometry analysis shows low confidence",
+              a: "Low confidence means the AI is uncertain. This happens when: photos are unclear/missing, pipe is a unique freehand design, or dimensions are missing. Results still appear so you can review and decide. You can apply suggestions or enter data manually."
+            },
+            {
+              id: "no-verified-specs",
+              q: "Find Verified Specs returns 'No specs found'",
+              a: "This is normal for artisan pipes, estate pipes, or uncommon models. The tool only finds data from manufacturer catalogs. Use 'Analyze Geometry from Photos' instead - it's the primary tool and works from your uploaded images and dimensions."
+            },
+            {
+              id: "geometry-unknown-bug",
+              q: "Geometry analysis won't update fields set to 'Unknown'",
+              a: "If you're seeing this, it's a bug. Geometry analysis should update 'Unknown' fields just like empty fields. Try: 1) Hard refresh the page, 2) Clear browser cache, or 3) Contact support with pipe ID."
+            }
+          ]
+        },
+        blendTypes: {
+          title: "Tobacco Blend Classification",
+          items: [
+            {
+              id: "english-vs-aromatic",
+              q: "What's the difference between English and English Aromatic?",
+              a: "English blends are Latakia-forward with no toppings. English Aromatic has Latakia but includes light casing/topping - a middle ground."
+            },
+            {
+              id: "vaper",
+              q: "When should I use Virginia/Perique vs VaPer?",
+              a: "Virginia/Perique is the standard term for blends with Virginia base and Perique condiment. VaPer is just shorthand for the same thing."
+            },
+            {
+              id: "complex-blend",
+              q: "How do I classify a complex blend with many tobaccos?",
+              a: "Choose the category based on the dominant characteristic. If it has Latakia, it's likely English or Balkan. If heavily topped, it's Aromatic."
+            },
+            {
+              id: "codger-blend",
+              q: "What's a 'Codger Blend'?",
+              a: "Traditional American OTC (over-the-counter) blends, usually Burley-based with light toppings. Examples: Carter Hall, Prince Albert."
+            },
+            {
+              id: "auto-reclassify",
+              q: "Can I reclassify blends automatically?",
+              a: "Yes! Go to AI Updates and click 'Reclassify Blends' to have AI analyze and update your blends to the most accurate categories."
+            },
+            {
+              id: "no-category-fit",
+              q: "What if a blend doesn't fit any category?",
+              a: "Use 'Other' for experimental or unique blends. Add detailed notes in the description to remember what makes it special."
+            }
+          ]
+        },
+        specialization: {
+          title: "Pipe Focus & Specialization",
+          items: [
+            {
+              id: "tag-focus",
+              q: "How should I tag my pipe's focus?",
+              a: "Be specific! Use tags like 'Virginia', 'English', 'Aromatics', 'VaPer', or 'Latakia Blend'. You can add intensity like 'Heavy Aromatics' or 'Light Aromatics'."
+            },
+            {
+              id: "dedicate-pipes",
+              q: "Should I dedicate pipes to specific blends?",
+              a: "Recommended for strongly flavored blends (Lakeland, heavy aromatics, Latakia). Virginias and VaPers can share pipes more easily."
+            },
+            {
+              id: "utility-versatile",
+              q: "What does 'Utility' or 'Versatile' mean?",
+              a: "These tags tell the AI this pipe can handle multiple blend types. Good for rotation pipes that you use for various tobaccos."
+            },
+            {
+              id: "multiple-focus",
+              q: "Can a pipe have multiple focus tags?",
+              a: "Yes! Add multiple tags separated by commas. Example: 'English, Balkan, Latakia Blend' for a dedicated Latakia pipe."
+            },
+            {
+              id: "focus-affects-scores",
+              q: "How does focus affect pairing scores?",
+              a: "The AI gives higher scores to blends that match your focus tags. Aromatic-only pipes get 0 score for non-aromatics and vice versa."
+            },
+            {
+              id: "unknown-focus",
+              q: "What if I don't know what to focus my pipe on?",
+              a: "Use Collection Optimization on the Home page - AI will suggest ideal specializations based on your collection balance."
+            }
+          ]
+        },
+        proFeatures: {
+          title: "Pro Features",
+          items: [
+            {
+              id: "trends-no-data",
+              q: "Trends Report shows no data or is empty",
+              a: "The Trends Report requires smoking log data to display insights. If you see 'No sessions logged', you need to log some smoking sessions first. Go to Home → Log a Session to start tracking. Once you have logs, return to Home → Tobacco Collection Stats → Trends to view your insights. If logs exist but trends are empty, try switching to 'All-Time' time window."
+            },
+            {
+              id: "trends-locked",
+              q: "Trends button is locked (🔒)",
+              a: "Trends Report is a Pro-tier feature. If you see a lock icon, you need to upgrade to Pro to access it. Go to Profile → Subscription to view upgrade options. If you subscribed to Premium before February 1, 2026, you should have access—try refreshing the page or contact support if the lock persists."
+            },
+            {
+              id: "trends-incorrect",
+              q: "Trends data seems incorrect or outdated",
+              a: "Trends are computed from your smoking logs in real-time. If data seems wrong: 1) Check that your smoking logs have accurate dates and pipe/blend selections, 2) Verify time window selection matches what you expect, 3) Refresh the page to recalculate, 4) Compare with your actual smoking log entries on the Home page."
+            },
+            {
+              id: "ai-valuation-no-value",
+              q: "AI tobacco valuation shows no value",
+              a: "AI valuation must be manually triggered for each blend. Go to the tobacco detail page → Tobacco Valuation section → click 'Run AI Valuation'. This analyzes public marketplace data to estimate value. Legacy Premium users (subscribed before Feb 1, 2026) keep this feature."
+            },
+            {
+              id: "valuation-locked",
+              q: "Tobacco valuation fields are locked",
+              a: "Manual Market Value and Cost Basis require Premium tier. AI Assisted Valuation requires Pro tier (or legacy Premium). Free users can track inventory and aging but not valuation."
+            },
+            {
+              id: "value-calc-home",
+              q: "How is tobacco value calculated on the Home page?",
+              a: "The cellared card multiplies each blend's value (manual_market_value or ai_estimated_value) by its cellared quantity from the Cellar Log. Value is per-ounce, so total value = value_per_oz × cellared_oz."
+            },
+            {
+              id: "valuation-card-missing",
+              q: "Valuation card doesn't appear on tobacco detail page",
+              a: "The Tobacco Valuation card should always be visible. If missing, try: 1) Hard refresh (Ctrl+Shift+R), 2) Clear browser cache, 3) Open in incognito mode. If still missing, contact support."
+            },
+            {
+              id: "inventory-locked",
+              q: "Can't add inventory - button is locked",
+              a: "Inventory management is FREE for all users. If you see a lock on Add Lot, Edit Lot, or Log Consumption buttons, this is a bug. Try refreshing the page. Inventory features should never be gated."
+            }
+          ]
+        },
+        appFunctions: {
+          title: "General App Functions",
+          items: [
+            {
+              id: "terms-on-launch",
+              q: "The app shows Terms of Service on launch - is this normal?",
+              a: "Yes! First-time users must accept the Terms of Service and Privacy Policy before accessing the app. This is a one-time requirement. Once accepted, you'll go directly to your Home page. If you keep seeing it after accepting, try a hard refresh or clearing your browser cache."
+            },
+            {
+              id: "add-photos",
+              q: "How do I add photos to pipes or tobacco?",
+              a: "Click the camera icon or 'Add Photo' button on detail pages. You can upload multiple photos per item."
+            },
+            {
+              id: "export-collection",
+              q: "Can I export my collection data?",
+              a: "Yes! Look for export buttons on Pipes and Tobacco pages to download your collection as a spreadsheet."
+            },
+            {
+              id: "track-sessions",
+              q: "How do I track smoking sessions?",
+              a: "Use the Smoking Log on your Home page. Record which pipe and blend you smoked to track usage and build history."
+            },
+            {
+              id: "cellared-vs-open",
+              q: "What's the difference between cellared and open tobacco?",
+              a: "Cellared = sealed/aging for future. Open = currently smoking. Track both to manage your inventory accurately."
+            },
+            {
+              id: "interchangeable-bowls",
+              q: "How do I add interchangeable bowls?",
+              a: "On the pipe detail page, find the 'Interchangeable Bowls' section. Great for Falcon, Gabotherm, and other systems."
+            },
+            {
+              id: "mark-favorites",
+              q: "Can I mark pipes or blends as favorites?",
+              a: "Yes! Click the star/heart icon on any pipe or blend to mark it as a favorite for quick access."
+            },
+            {
+              id: "review-terms",
+              q: "Where can I review the Terms of Service or Privacy Policy?",
+              a: "Both documents are accessible from the Help menu, your Profile page, and the footer links at the bottom of every page. You can review them anytime."
+            },
+            {
+              id: "measurement-preview",
+              q: "How do I know which measurement fields will be updated?",
+              a: "The measurement lookup tool shows a preview before applying: it lists which photos/dimensions exist, which fields are missing, and which sources were used. Only blank or 'Unknown' fields get updated - your existing data is never overwritten."
+            },
+            {
+              id: "undo-measurements",
+              q: "Can I undo measurement or geometry updates?",
+              a: "Measurement updates are immediate and can't be undone automatically. To revert: go to pipe detail page, tap Edit, and manually change fields back. Consider exporting your collection before running bulk updates."
+            }
+          ]
+        },
         tobaccoValuation: {
           title: "Tobacco Valuation",
           items: [
