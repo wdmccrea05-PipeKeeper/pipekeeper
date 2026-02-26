@@ -375,7 +375,7 @@ export default function Layout({ children, currentPageName }) {
         const result = await base44.functions.invoke('syncAppleSubscriptionForMe', payload);
 
         if (result.data?.code === 'ALREADY_LINKED') {
-          showIAPToast('This Apple subscription is already linked to a different account. Please sign in with the original account or contact support.');
+          showIAPToast(t('layout.iapAlreadyLinked'));
           return;
         }
 
@@ -387,7 +387,7 @@ export default function Layout({ children, currentPageName }) {
         }
       } catch (e) {
         console.error("[Layout] Apple subscription sync failed:", e);
-        showIAPToast('Failed to sync subscription. Please try again.');
+        showIAPToast(t('layout.iapSyncFailed'));
       }
     });
 
@@ -454,20 +454,20 @@ export default function Layout({ children, currentPageName }) {
       if (shouldManage(text)) {
         e.preventDefault();
         e.stopPropagation();
-        showIAPToast("Opening Apple Subscriptions…");
+        showIAPToast(t('layout.iapOpeningSubscriptions'));
         nativeDebugPing(`Intercepted manage (${phaseLabel})`);
         const ok = openAppleSubscriptions();
-        if (!ok) showIAPToast("Bridge not available: cannot open Apple subscriptions.");
+        if (!ok) showIAPToast(t('layout.iapBridgeUnavailableSubs'));
         return;
       }
 
       if (shouldUpgrade(text)) {
         e.preventDefault();
         e.stopPropagation();
-        showIAPToast("Opening upgrade…");
+        showIAPToast(t('layout.iapOpeningUpgrade'));
         nativeDebugPing(`Intercepted upgrade (${phaseLabel})`);
         const ok = openNativePaywall();
-        if (!ok) showIAPToast("Bridge not available: cannot open upgrade.");
+        if (!ok) showIAPToast(t('layout.iapBridgeUnavailableUpgrade'));
         return;
       }
     };
@@ -810,7 +810,7 @@ export default function Layout({ children, currentPageName }) {
                 pointerEvents: "none",
               }}
             >
-              Bridge: ✅ | {subActive ? "Pro ✅" : "Free"}
+              Bridge: ✅ | {subActive ? `Pro ✅` : t('subscription.free')}
             </div>
           )}
         </div>

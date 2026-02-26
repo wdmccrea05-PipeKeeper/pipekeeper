@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Tags, Ruler, Layers, Info } from "lucide-react";
 import { toast } from "sonner";
 import { safeUpdate } from "@/components/utils/safeUpdate";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import PipeGeometryAnalyzer from "@/components/ai/PipeGeometryAnalyzer";
@@ -20,6 +21,7 @@ const isMissingGeometry = (v) => isBlank(v) || isUnknown(v);
 
 export default function AIUpdates() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showBatchProcessor, setShowBatchProcessor] = useState(false);
   const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
@@ -68,7 +70,7 @@ export default function AIUpdates() {
 
       const blendsToUpdate = (blends || []).filter(Boolean);
       if (blendsToUpdate.length === 0) {
-        toast.info("No items to categorize");
+        toast.info(t('aiUpdates.noItemsToCategorize'));
         setReclassifyBusy(false);
         return;
       }
@@ -136,7 +138,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
 
       const updates = Array.isArray(result?.updates) ? result.updates : [];
       if (updates.length === 0) {
-        toast.info("All items appear correctly categorized");
+        toast.info(t('aiUpdates.allCorrectlyCategorized'));
         setReclassifyBusy(false);
         return;
       }
@@ -154,14 +156,14 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
       }
 
       queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
-      toast.success(changed > 0 ? `Updated ${changed} item(s)` : "No changes applied");
+      toast.success(changed > 0 ? t('aiUpdates.categoriesUpdated', { count: changed }) : t('aiUpdates.noChangesApplied'));
 
       setReclassifyBusy(false);
     },
     onError: (e) => {
       console.error(e);
       setReclassifyBusy(false);
-      toast.error("Failed to standardize categories");
+      toast.error(t('aiUpdates.failedToStandardize'));
     },
   });
 
@@ -169,12 +171,12 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">
-          {isAppleBuild ? "Inventory Tools" : "AI Updates"}
+          {isAppleBuild ? t('aiUpdates.inventoryTools') : t('aiUpdates.pageTitle')}
         </h1>
         <p className="text-sm text-[#e8d5b7]/70 mt-2">
           {isAppleBuild
-            ? "Tools for cataloging and standardizing collection metadata for easier searching and reporting."
-            : "Review what's out of date and regenerate with approval. You can undo changes and reclassify blends."}
+            ? t('aiUpdates.inventoryToolsDesc')
+            : t('aiUpdates.pageDesc')}
         </p>
       </div>
 
@@ -183,12 +185,12 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Tags className="w-5 h-5 text-blue-400" />
-              Tobacco Blend Classification
+              {t('aiUpdates.tobaccoBlendClassification')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Reclassify your existing tobacco blends using the expanded category system with AI-powered analysis.
+              {t('aiUpdates.reclassifyBlendsDesc')}
             </p>
             <Button
               size="sm"
@@ -201,7 +203,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               ) : (
                 <Tags className="w-4 h-4 mr-1" />
               )}
-              Reclassify Blends ({blends.length} total)
+              {t('aiUpdates.reclassifyBlendsBtn', { count: blends.length })}
             </Button>
           </CardContent>
         </Card>
@@ -219,12 +221,12 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
                 <Ruler className="w-5 h-5 text-blue-400" />
-                Analyze Pipe Geometry
+                {t('aiUpdates.analyzePipeGeometry')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-[#e8d5b7]/80 mb-4">
-                Analyze uploaded pipe photos and existing measurements to determine shape, bowl style, shank shape, bend, and size class.
+                {t('aiUpdates.analyzePipeGeometryDesc')}
               </p>
             </CardContent>
           </Card>
