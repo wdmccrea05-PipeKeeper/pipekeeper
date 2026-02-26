@@ -143,5 +143,6 @@ const translations = {
     reportsTooltip: "Genera resúmenes exportables de tu colección para referencia o documentación.",
     agingTooltip: "Monitorea el tabaco en bodega y obtén recomendaciones sobre tiempos de envejecimiento óptimos según las características de la mezcla.",
   },
+};
 
 export default translations;
