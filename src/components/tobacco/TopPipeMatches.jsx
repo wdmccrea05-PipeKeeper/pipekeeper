@@ -7,7 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
-import { scorePipeBlend } from "@/components/utils/pairingScore";
+import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TopPipeMatches({ blend, pipes }) {

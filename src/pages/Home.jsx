@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Card } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
 
 export default function Home() {
   console.log("🏠 Home component rendering");
@@ -45,7 +46,7 @@ export default function Home() {
           </div>
 
           <div>
-            <div className="text-3xl font-bold">$2,788</div>
+            <div className="text-3xl font-bold">{formatCurrency(2788)}</div>
             <div className="opacity-70">
               {t("home.collectionValue", "Collection Value")}
             </div>
@@ -78,14 +79,14 @@ export default function Home() {
           </div>
 
           <div>
-            <div className="text-3xl font-bold">8.0 oz</div>
+            <div className="text-3xl font-bold">{formatWeight(8.0)}</div>
             <div className="opacity-70">
               {t("home.cellared", "Cellared")}
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-bold">≈ $312</div>
+            <div className="text-3xl font-bold">≈ {formatCurrency(312)}</div>
             <div className="opacity-70">
               {t("home.collectionValue", "Collection Value")}
             </div>

@@ -210,8 +210,19 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return profile?.enable_messaging;
   });
 
-  if (!userEmail || friendsWithMessaging.length === 0) {
+  if (!userEmail) {
     return null;
+  }
+
+  if (friendsWithMessaging.length === 0) {
+    if (friends.length === 0) return null;
+    return (
+      <Card className="bg-white/95 border-[#e8d5b7]/30 p-4">
+        <p className="text-sm text-stone-500 text-center">
+          {t("messaging.noFriendsWithMessaging", "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.")}
+        </p>
+      </Card>
+    );
   }
 
   return (

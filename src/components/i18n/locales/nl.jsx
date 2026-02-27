@@ -380,6 +380,15 @@ const translations = {
     reload: "Pagina herladen",
   },
 
+  error: {
+    tryAgain: "Opnieuw proberen",
+    reloadPage: "Pagina herladen",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Geen van je vrienden heeft berichten nog ingeschakeld. Vraag hen dit in te schakelen in hun profielinstellingen.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Kan App Store-instellingen niet openen. Beheer uw abonnement in de Instellingen-app.",
   },

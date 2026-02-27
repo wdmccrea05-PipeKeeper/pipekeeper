@@ -132,6 +132,10 @@ Deno.serve(async (req) => {
     const unitAmount = best.items?.data?.[0]?.price?.unit_amount;
     const amount = Number.isFinite(unitAmount) ? unitAmount / 100 : null;
 
+    const PRICE_ID_PRO_MONTHLY = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
+    const PRICE_ID_PRO_ANNUAL = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+    const priceId = best.items?.data?.[0]?.price?.id;
+
     const payload = {
       user_email,
       status: best.status,
@@ -181,8 +185,15 @@ Deno.serve(async (req) => {
     let updatedUser = false;
     if (users?.length) {
       const userRec = users[0];
+      // Determine tier: check Stripe price ID against known pro plan IDs,
+      // fall back to existing Subscription entity tier, then default to "premium"
+      // (premium is the base paid tier; pro is the higher tier with extra features)
+      const subTier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL)
+        ? "pro"
+        : (existingSubs?.[0]?.tier || "premium");
       const userUpdate = {
         subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
+        subscription_tier: isPaid ? subTier : "free",
         subscription_status: best.status,
         stripe_customer_id: customerId,
       };

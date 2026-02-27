@@ -381,6 +381,15 @@ const translations = {
     reload: "Reload Page",
   },
 
+  error: {
+    tryAgain: "Try Again",
+    reloadPage: "Reload Page",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Unable to open App Store settings. Please manage your subscription in the Settings app.",
   },

@@ -12,7 +12,7 @@ import { generatePairingsAI } from "@/components/utils/aiGenerators";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateAIQueries } from "@/components/utils/cacheInvalidation";
-import { scorePipeBlend } from "@/components/utils/pairingScore";
+import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";

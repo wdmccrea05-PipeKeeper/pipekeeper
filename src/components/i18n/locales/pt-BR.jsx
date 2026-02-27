@@ -380,6 +380,15 @@ const translations = {
     reload: "Recarregar página",
   },
 
+  error: {
+    tryAgain: "Tentar novamente",
+    reloadPage: "Recarregar página",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Nenhum dos seus amigos habilitou as mensagens ainda. Peça a eles que habilitem nas configurações do perfil.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Não foi possível abrir as configurações da App Store. Gerencie sua assinatura no aplicativo Ajustes.",
   },

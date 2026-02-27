@@ -398,6 +398,15 @@ export default {
     reload: "ページを再読み込み",
   },
 
+  error: {
+    tryAgain: "再試行",
+    reloadPage: "ページを再読み込み",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "まだメッセージを有効にしている友達がいません。プロフィール設定で有効にするよう伝えてください。",
+  },
+
   appleIAP: {
     openSettingsFailed: "App Storeの設定を開けません。設定アプリでサブスクリプションを管理してください。",
   },

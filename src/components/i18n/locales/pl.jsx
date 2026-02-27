@@ -398,6 +398,15 @@ export default {
     reload: "Odśwież stronę",
   },
 
+  error: {
+    tryAgain: "Spróbuj ponownie",
+    reloadPage: "Odśwież stronę",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Żaden z Twoich znajomych nie włączył jeszcze wiadomości. Poproś ich, aby włączyli to w ustawieniach profilu.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Nie można otworzyć ustawień App Store. Zarządzaj subskrypcją w aplikacji Ustawienia.",
   },

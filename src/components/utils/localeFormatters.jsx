@@ -9,8 +9,13 @@ import i18n from "i18next";
  * Get locale code from i18n language
  */
 export function getLocale() {
-  const lang = i18n.language || 'en';
-  
+  let lang = 'en';
+  try {
+    lang = (typeof window !== 'undefined' && localStorage.getItem('pk_lang')) || i18n.language || 'en';
+  } catch {
+    lang = i18n.language || 'en';
+  }
+
   // Map language codes to locale codes
   const localeMap = {
     'en': 'en-US',

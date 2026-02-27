@@ -380,6 +380,15 @@ const translations = {
     reload: "Recharger la page",
   },
 
+  error: {
+    tryAgain: "Réessayer",
+    reloadPage: "Recharger la page",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Aucun de vos amis n'a encore activé la messagerie. Demandez-leur de l'activer dans les paramètres de leur profil.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Impossible d'ouvrir les paramètres de l'App Store. Veuillez gérer votre abonnement dans l'application Réglages.",
   },
