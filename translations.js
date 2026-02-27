@@ -2297,6 +2297,7 @@ export const translations = {
       no: "いいえ",
     },
     aiUpdates: {
+      ...ja.aiUpdates,
       pairingsRevertSuccess: "ペアリングが前のバージョンに戻されました",
       undoPairingsFail: "ペアリングの取り消しに失敗しました",
       optimizationRegenSuccess: "最適化が正常に再生成されました",
@@ -2553,6 +2554,7 @@ export const translations = {
       no: "否",
     },
     aiUpdates: {
+      ...zhHans.aiUpdates,
       pairingsRevertSuccess: "搭配已恢复到上一版本",
       undoPairingsFail: "无法撤销搭配",
       optimizationRegenSuccess: "优化重新生成成功",
