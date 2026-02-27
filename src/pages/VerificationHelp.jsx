@@ -1,10 +1,13 @@
 import React from "react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function VerificationHelp() {
+  const { t } = useTranslation();
+
   const handleResendVerification = async () => {
     try {
       // Attempt to trigger email resend through Base44 auth
@@ -21,42 +24,42 @@ export default function VerificationHelp() {
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <AlertCircle className="w-8 h-8 text-[#A35C5C]" />
-              <CardTitle className="text-2xl">Email Verification Help</CardTitle>
+              <CardTitle className="text-2xl">{t('verificationHelp.pageTitle')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[#E0D8C8]">Verification Code Expired?</h3>
+              <h3 className="text-lg font-semibold text-[#E0D8C8]">{t('verificationHelp.expiredTitle')}</h3>
               <p className="text-[#E0D8C8]/70">
-                If your email verification code expired or you missed the 10-minute window, you have a few options:
+                {t('verificationHelp.expiredDesc')}
               </p>
 
               <div className="space-y-3">
                 <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
                   <h4 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
                     <RefreshCw className="w-4 h-4" />
-                    Option 1: Request a New Verification Code
+                    {t('verificationHelp.option1Title')}
                   </h4>
                   <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                    Click below to return to the login page. Enter your email again and a fresh verification code will be sent automatically with a new 10-minute window.
+                    {t('verificationHelp.option1Desc')}
                   </p>
                   <Button onClick={handleResendVerification} className="w-full">
-                    Request New Code
+                    {t('verificationHelp.requestBtn')}
                   </Button>
                   <p className="text-xs text-[#E0D8C8]/60 mt-2">
-                    ✓ This will send a new 6-digit code to your email<br/>
-                    ✓ You'll have 10 minutes to enter the new code<br/>
-                    ✓ Check your spam folder if you don't see it
+                    {t('verificationHelp.option1Note1')}<br/>
+                    {t('verificationHelp.option1Note2')}<br/>
+                    {t('verificationHelp.option1Note3')}
                   </p>
                 </div>
 
                 <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
                   <h4 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    Option 2: Contact Support
+                    {t('verificationHelp.option2Title')}
                   </h4>
                   <p className="text-sm text-[#E0D8C8]/70 mb-3">
-                    If you're unable to receive a new verification code, please contact us directly:
+                    {t('verificationHelp.option2Desc')}
                   </p>
                   <div className="space-y-2">
                     <a

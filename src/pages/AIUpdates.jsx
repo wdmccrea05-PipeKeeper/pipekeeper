@@ -244,12 +244,12 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]/70 text-base">
               <Info className="w-4 h-4 text-[#e8d5b7]/50" />
-              Find Verified Manufacturer Specs (optional)
+              {t('aiPage.verifiedSpecsTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-[#e8d5b7]/60">
-              Only works for some production pipes. Searches manufacturer catalogs and databases.
+              {t('aiPage.verifiedSpecsDesc')}
             </p>
             
             <Button
@@ -257,7 +257,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
               variant="secondary"
               onClick={() => setShowVerifiedLookup(!showVerifiedLookup)}
             >
-              {showVerifiedLookup ? "Hide Lookup" : "Show Verified Specs Lookup"}
+              {showVerifiedLookup ? t('aiPage.hideLookup') : t('aiPage.showLookup')}
             </Button>
 
             {showVerifiedLookup && (
@@ -271,7 +271,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
                     }
                     disabled={measurementLookupState.status === "running"}
                   >
-                    <option value="">Select a pipe...</option>
+                    <option value="">{t('aiPage.selectPipe')}</option>
                     {pipes.map((p) => (
                       <option key={p.id} value={String(p.id)}>
                         {p.name} {p.maker ? `(${p.maker})` : ""}
@@ -283,7 +283,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
                     variant="secondary"
                     onClick={async () => {
                       if (!measurementLookupState.selectedPipeId) {
-                        toast.error("Please select a pipe first");
+                        toast.error(t('aiPage.pleaseSelectPipe'));
                         return;
                       }
 
@@ -375,7 +375,7 @@ Return JSON with:
                               existingGeometry,
                               sources: result.sources || [],
                             },
-                            message: "No published manufacturer specs found for this pipe. This is common for artisan/estate pipes.",
+                            message: t('aiPage.noSpecsFound'),
                           });
                           return;
                         }
@@ -383,7 +383,7 @@ Return JSON with:
                         await safeUpdate("Pipe", pipe.id, result.updates, user?.email);
                         queryClient.invalidateQueries({ queryKey: ["pipes", user?.email] });
 
-                        toast.success(`Updated ${Object.keys(result.updates).length} field(s)`);
+                        toast.success(t('aiPage.updatedFields', { count: Object.keys(result.updates).length }));
 
                         setMeasurementLookupState({
                           ...measurementLookupState,
@@ -405,7 +405,7 @@ Return JSON with:
                           status: "error",
                           message: err.message || "Failed to search for verified measurements",
                         });
-                        toast.error("Lookup failed");
+                        toast.error(t('aiPage.lookupFailed'));
                       }
                     }}
                     disabled={!measurementLookupState.selectedPipeId || measurementLookupState.status === "running"}
@@ -413,10 +413,10 @@ Return JSON with:
                     {measurementLookupState.status === "running" ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Searching...
+                        {t('aiPage.searching')}
                       </>
                     ) : (
-                      <>Find Specs</>
+                      <>{t('aiPage.findSpecs')}</>
                     )}
                   </Button>
                 </div>
@@ -427,7 +427,7 @@ Return JSON with:
                     {measurementLookupState.status === "completed" && measurementLookupState.results.updates && (
                       <div>
                         <p className="text-sm font-semibold text-green-400 mb-2">
-                          ✓ Updated {Object.keys(measurementLookupState.results.updates).length} field(s)
+                          {t('aiPage.updatedFields', { count: Object.keys(measurementLookupState.results.updates).length })}
                         </p>
                         <div className="text-xs text-[#e8d5b7]/80 space-y-1">
                           {Object.entries(measurementLookupState.results.updates).map(([key, value]) => (
@@ -456,7 +456,7 @@ Return JSON with:
                               }
                             }}
                           >
-                            Enter Measurements Manually
+                            {t('aiPage.enterManually')}
                           </Button>
                         </div>
                       </div>
@@ -476,13 +476,12 @@ Return JSON with:
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#e8d5b7]">
               <Layers className="w-5 h-5 text-purple-400" />
-              Batch Process All Pipes
+              {t('aiPage.batchTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-[#e8d5b7]/80 mb-4">
-              Automatically analyze and update geometry for ALL pipes with missing or "Unknown" fields. Processes
-              your entire collection in one batch.
+              {t('aiPage.batchDesc')}
             </p>
             <Button
               size="sm"
@@ -491,11 +490,11 @@ Return JSON with:
               disabled={pipes.length === 0}
             >
               {showBatchProcessor ? (
-                <>Hide Batch Processor</>
+                <>{t('aiPage.hideBatch')}</>
               ) : (
                 <>
                   <Layers className="w-4 h-4 mr-1" />
-                  Batch Process ({pipes.length} total)
+                  {t('aiPage.showBatch', { count: pipes.length })}
                 </>
               )}
             </Button>

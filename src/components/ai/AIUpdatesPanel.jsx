@@ -234,7 +234,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
 
       const blendsToUpdate = (blends || []).filter(Boolean);
       if (blendsToUpdate.length === 0) {
-        toast.info("No blends to reclassify");
+        toast.info(t("aiUpdates.noBlends"));
         setReclassifyBusy(false);
         return;
       }
@@ -303,7 +303,7 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
 
       const updates = Array.isArray(result?.updates) ? result.updates : [];
       if (updates.length === 0) {
-        toast.info("All blends are already correctly classified");
+        toast.info(t("aiUpdates.allCorrect"));
         setReclassifyBusy(false);
         return;
       }
@@ -327,14 +327,14 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
       // Refresh blends everywhere
       queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
 
-      if (changed > 0) toast.success(`Reclassified ${changed} blend(s)`);
-      else toast.info("No blend changes were applied");
+      if (changed > 0) toast.success(t("aiUpdates.reclassifiedCount", { count: changed }));
+      else toast.info(t("aiUpdates.noChanges"));
 
       setReclassifyBusy(false);
     },
     onError: (error) => {
       setReclassifyBusy(false);
-      toast.error("Failed to reclassify blends");
+      toast.error(t("aiUpdates.reclassifyFailed"));
       console.error(error);
     },
   });
@@ -408,12 +408,12 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
     },
     onSuccess: (count) => {
       invalidatePipeQueries(queryClient, user?.email);
-      if (count > 0) toast.success(`Updated ${count} pipe(s) with verified measurements`);
-      else toast.info("No verified measurements found for your pipes");
+      if (count > 0) toast.success(t("aiUpdates.updatedMeasurements", { count }));
+      else toast.info(t("aiUpdates.noMeasurements"));
     },
     onError: () => {
       setBusy(false);
-      toast.error("Failed to fill measurements");
+      toast.error(t("aiUpdates.fillFailed"));
     },
   });
 
@@ -456,8 +456,8 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Pairing Matrix</h3>
-              <InfoTooltip text="Scored compatibility between each pipe and tobacco blend in your collection" className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.pairingMatrixTitle")}</h3>
+              <InfoTooltip text={t("aiUpdates.pairingMatrixTooltip")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
@@ -500,14 +500,14 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-[#1a2c42]">Collection Optimization</h3>
-              <InfoTooltip text="Recommendations for which pipes to focus on specific tobaccos" className="text-[#1a2c42]/70" />
+              <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.collectionOptTitle")}</h3>
+              <InfoTooltip text={t("aiUpdates.collectionOptTooltip")} className="text-[#1a2c42]/70" />
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {optStale ? (
-                <span className="text-amber-700 font-semibold">Out of date - Regeneration recommended</span>
+                <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDateOpt")}</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">Up to date</span>
+                <span className="text-emerald-700 font-semibold">{t("aiUpdates.upToDateOpt")}</span>
               )}
             </p>
           </div>
