@@ -139,12 +139,12 @@ export default function PairingMatrix({ user }) {
              <div className="flex gap-3">
                <a href={createPageUrl('Pipes')}>
                  <Button variant="outline" size="sm">
-                   Add First Pipe
+                   {t("pairingMatrix.addFirstPipe")}
                  </Button>
                </a>
                <a href={createPageUrl('Tobacco')}>
                  <Button variant="outline" size="sm">
-                   Add First Blend
+                   {t("pairingMatrix.addFirstBlend")}
                  </Button>
                </a>
              </div>
@@ -158,7 +158,7 @@ export default function PairingMatrix({ user }) {
                ) : (
                  <RefreshCw className="h-3 w-3 mr-2" />
                )}
-               Generate Pairings
+               {t("pairingMatrix.generatePairings")}
              </Button>
            </div>
          ) : (
@@ -166,6 +166,10 @@ export default function PairingMatrix({ user }) {
             const key = p.__variant_key;
             const isOpen = !!expanded[key];
             const recs = p.recommendations || [];
+            const recCount = recs?.length || 0;
+            const recLabel = recCount === 1
+              ? t("pairingMatrix.recommendationCount", { count: recCount })
+              : t("pairingMatrix.recommendationCountPlural", { count: recCount });
 
             return (
               <div key={key} className="border rounded-lg bg-white">
@@ -178,7 +182,7 @@ export default function PairingMatrix({ user }) {
                     <div className="font-semibold text-stone-800">{variantLabel(p)}</div>
                   </div>
                   <div className="text-xs text-stone-500">
-                    {(recs?.length || 0)} recommendation{(recs?.length || 0) === 1 ? "" : "s"}
+                    {recLabel}
                   </div>
                 </button>
 
@@ -193,7 +197,7 @@ export default function PairingMatrix({ user }) {
                          ))}
                        </div>
                      ) : (
-                       <div className="text-sm text-stone-600">No recommendations for this variant.</div>
+                       <div className="text-sm text-stone-600">{t("pairingMatrix.noRecommendations")}</div>
                      )}
                     {p.reasoning ? (
                       <div className="mt-3 text-xs text-stone-600 whitespace-pre-wrap">{p.reasoning}</div>

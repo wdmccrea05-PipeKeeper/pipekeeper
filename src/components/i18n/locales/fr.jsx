@@ -68,6 +68,12 @@ const translations = {
     updatedMeasurements: "{count} pipe(s) mise(s) à jour avec des mesures vérifiées",
     noMeasurements: "Aucune mesure vérifiée trouvée pour vos pipes",
     fillFailed: "Échec du remplissage des mesures",
+    pairingsRevertSuccess: "Associations restaurées à la version précédente",
+    undoPairingsFail: "Impossible d'annuler les associations",
+    optimizationRegenSuccess: "Optimisation régénérée avec succès",
+    optimizationRegenFail: "Impossible de régénérer l'optimisation",
+    optimizationRevertSuccess: "Optimisation restaurée à la version précédente",
+    undoOptimizationFail: "Impossible d'annuler l'optimisation",
   },
 
   inviteFull: {
@@ -295,6 +301,12 @@ const translations = {
     regenFailed: "Échec de la régénération des associations",
     noPairingData: "Pas encore de données d'association",
     noPairingDataDesc: "Ajoutez des pipes et du tabac à votre collection, puis générez des recommandations d'association alimentées par l'IA.",
+    addFirstPipe: "Ajouter la première pipe",
+    addFirstBlend: "Ajouter la première mélange",
+    generatePairings: "Générer les associations",
+    recommendationCount: "{count} recommandation",
+    recommendationCountPlural: "{count} recommandations",
+    noRecommendations: "Aucune recommandation pour cette variante.",
   },
 
   tobacconist: {
@@ -330,6 +342,7 @@ const translations = {
     couldntLoadResponse: "Impossible de charger une réponse de l'agent expert. Veuillez réessayer.",
     answeredBy: "Répondu par :",
     askExpertPlaceholder: "Posez des questions sur les pipes, les mélanges, les accords, le vieillissement, la valeur, la redondance…",
+    pressCmdEnter: "Appuyez sur ⌘Entrée pour envoyer",
   },
 
   tobaccoSearch: {
@@ -342,8 +355,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "PipeKeeper n'a pas pu se charger",
+    title: "Quelque chose a mal tourné",
     body: "Veuillez fermer et rouvrir l'application. Si le problème persiste, contactez le support.",
+    message: "Une erreur inattendue s'est produite",
+    reload: "Recharger la page",
   },
 
   appleIAP: {

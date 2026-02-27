@@ -68,6 +68,12 @@ const translations = {
     updatedMeasurements: "{count} cachimbo(s) atualizado(s) com medidas verificadas",
     noMeasurements: "Nenhuma medida verificada encontrada para seus cachimbos",
     fillFailed: "Falha ao preencher medidas",
+    pairingsRevertSuccess: "Combinações revertidas para a versão anterior",
+    undoPairingsFail: "Falha ao desfazer combinações",
+    optimizationRegenSuccess: "Otimização regenerada com sucesso",
+    optimizationRegenFail: "Falha ao regenerar otimização",
+    optimizationRevertSuccess: "Otimização revertida para a versão anterior",
+    undoOptimizationFail: "Falha ao desfazer otimização",
   },
 
   inviteFull: {
@@ -295,6 +301,12 @@ const translations = {
     regenFailed: "Falha ao regenerar combinações",
     noPairingData: "Ainda não há dados de combinação",
     noPairingDataDesc: "Adicione cachimbos e tabaco à sua coleção e, em seguida, gere recomendações de combinação com IA.",
+    addFirstPipe: "Adicionar primeiro cachimbo",
+    addFirstBlend: "Adicionar primeira mistura",
+    generatePairings: "Gerar combinações",
+    recommendationCount: "{count} recomendação",
+    recommendationCountPlural: "{count} recomendações",
+    noRecommendations: "Sem recomendações para esta variante.",
   },
 
   tobacconist: {
@@ -330,6 +342,7 @@ const translations = {
     couldntLoadResponse: "Não foi possível carregar uma resposta do agente especialista. Por favor, tente novamente.",
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pergunte sobre cachimbos, misturas, ideias de combinação, envelhecimento, valor, redundância…",
+    pressCmdEnter: "Pressione ⌘Enter para enviar",
   },
 
   tobaccoSearch: {
@@ -342,8 +355,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "O PipeKeeper não carregou",
+    title: "Algo deu errado",
     body: "Feche e reabra o aplicativo. Se o problema persistir, entre em contato com o suporte.",
+    message: "Ocorreu um erro inesperado",
+    reload: "Recarregar página",
   },
 
   appleIAP: {

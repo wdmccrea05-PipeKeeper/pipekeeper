@@ -68,6 +68,12 @@ const translations = {
     updatedMeasurements: "{count} Pfeife(n) mit verifizierten Maßen aktualisiert",
     noMeasurements: "Keine verifizierten Maße für Ihre Pfeifen gefunden",
     fillFailed: "Maße konnten nicht ausgefüllt werden",
+    pairingsRevertSuccess: "Paarungen auf vorherige Version zurückgesetzt",
+    undoPairingsFail: "Paarungen konnten nicht rückgängig gemacht werden",
+    optimizationRegenSuccess: "Optimierung erfolgreich neu generiert",
+    optimizationRegenFail: "Optimierung konnte nicht neu generiert werden",
+    optimizationRevertSuccess: "Optimierung auf vorherige Version zurückgesetzt",
+    undoOptimizationFail: "Optimierung konnte nicht rückgängig gemacht werden",
   },
 
   inviteFull: {
@@ -295,6 +301,12 @@ const translations = {
     regenFailed: "Neu generieren der Paarungen fehlgeschlagen",
     noPairingData: "Noch keine Paarungsdaten",
     noPairingDataDesc: "Fügen Sie Pfeifen und Tabak zu Ihrer Sammlung hinzu, dann generieren Sie KI-gestützte Paarungsempfehlungen.",
+    addFirstPipe: "Erste Pfeife hinzufügen",
+    addFirstBlend: "Erste Mischung hinzufügen",
+    generatePairings: "Paarungen generieren",
+    recommendationCount: "{count} Empfehlung",
+    recommendationCountPlural: "{count} Empfehlungen",
+    noRecommendations: "Keine Empfehlungen für diese Variante.",
   },
 
   tobacconist: {
@@ -330,6 +342,7 @@ const translations = {
     couldntLoadResponse: "Antwort des Experten-Agenten konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
     answeredBy: "Beantwortet von:",
     askExpertPlaceholder: "Fragen Sie nach Pfeifen, Mischungen, Empfehlungen, Reifung, Wert, Redundanz…",
+    pressCmdEnter: "⌘Eingabe drücken zum Senden",
   },
 
   tobaccoSearch: {
@@ -342,8 +355,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "PipeKeeper konnte nicht geladen werden",
+    title: "Etwas ist schiefgelaufen",
     body: "Bitte schließen und öffnen Sie die App erneut. Falls das Problem weiterhin besteht, kontaktieren Sie den Support.",
+    message: "Ein unerwarteter Fehler ist aufgetreten",
+    reload: "Seite neu laden",
   },
 
   appleIAP: {

@@ -111,6 +111,13 @@ const translations = {
     updatedMeasurements: "Updated {count} pipe(s) with verified measurements",
     noMeasurements: "No verified measurements found for your pipes",
     fillFailed: "Failed to fill measurements",
+    outOfDate: "Out of date - Regeneration recommended",
+    pairingsRevertSuccess: "Pairings reverted to previous version",
+    undoPairingsFail: "Failed to undo pairings",
+    optimizationRegenSuccess: "Optimization regenerated successfully",
+    optimizationRegenFail: "Failed to regenerate optimization",
+    optimizationRevertSuccess: "Optimization reverted to previous version",
+    undoOptimizationFail: "Failed to undo optimization",
   },
 
   inviteFull: {
@@ -295,6 +302,12 @@ const translations = {
     regenFailed: "Failed to regenerate pairings",
     noPairingData: "No pairing data yet",
     noPairingDataDesc: "Add pipes and tobacco to your collection, then generate AI-powered pairing recommendations.",
+    addFirstPipe: "Add First Pipe",
+    addFirstBlend: "Add First Blend",
+    generatePairings: "Generate Pairings",
+    recommendationCount: "{count} recommendation",
+    recommendationCountPlural: "{count} recommendations",
+    noRecommendations: "No recommendations for this variant.",
   },
 
   tobacconist: {
@@ -330,6 +343,7 @@ const translations = {
     couldntLoadResponse: "Couldn't load a response from the expert agent. Please try again.",
     answeredBy: "Answered by:",
     askExpertPlaceholder: "Ask about pipes, blends, pairing ideas, aging, value, redundancy…",
+    pressCmdEnter: "Press ⌘Enter to send",
   },
 
   tobaccoSearch: {
@@ -342,8 +356,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "PipeKeeper failed to load",
+    title: "Something went wrong",
     body: "Please close and reopen the app. If this keeps happening, contact support.",
+    message: "An unexpected error occurred",
+    reload: "Reload Page",
   },
 
   appleIAP: {

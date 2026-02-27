@@ -68,6 +68,12 @@ const translations = {
     updatedMeasurements: "{count} pijp(en) bijgewerkt met geverifieerde metingen",
     noMeasurements: "Geen geverifieerde metingen gevonden voor uw pijpen",
     fillFailed: "Metingen invullen mislukt",
+    pairingsRevertSuccess: "Koppelingen teruggezet naar vorige versie",
+    undoPairingsFail: "Koppelingen ongedaan maken mislukt",
+    optimizationRegenSuccess: "Optimalisatie succesvol opnieuw gegenereerd",
+    optimizationRegenFail: "Opnieuw genereren van optimalisatie mislukt",
+    optimizationRevertSuccess: "Optimalisatie teruggezet naar vorige versie",
+    undoOptimizationFail: "Optimalisatie ongedaan maken mislukt",
   },
 
   inviteFull: {
@@ -295,6 +301,12 @@ const translations = {
     regenFailed: "Opnieuw genereren van koppelingen mislukt",
     noPairingData: "Nog geen koppelingsgegevens",
     noPairingDataDesc: "Voeg pijpen en tabak toe aan uw collectie en genereer vervolgens AI-gestuurde koppelingsaanbevelingen.",
+    addFirstPipe: "Eerste pijp toevoegen",
+    addFirstBlend: "Eerste blend toevoegen",
+    generatePairings: "Koppelingen genereren",
+    recommendationCount: "{count} aanbeveling",
+    recommendationCountPlural: "{count} aanbevelingen",
+    noRecommendations: "Geen aanbevelingen voor deze variant.",
   },
 
   tobacconist: {
@@ -330,6 +342,7 @@ const translations = {
     couldntLoadResponse: "Kon geen reactie laden van de expertagent. Probeer het opnieuw.",
     answeredBy: "Beantwoord door:",
     askExpertPlaceholder: "Stel vragen over pijpen, mengsels, paarideeën, veroudering, waarde, redundantie…",
+    pressCmdEnter: "Druk op ⌘Enter om te verzenden",
   },
 
   tobaccoSearch: {
@@ -342,8 +355,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "PipeKeeper kon niet laden",
+    title: "Er is iets misgegaan",
     body: "Sluit de app en open hem opnieuw. Als dit blijft gebeuren, neem dan contact op met ondersteuning.",
+    message: "Er is een onverwachte fout opgetreden",
+    reload: "Pagina herladen",
   },
 
   appleIAP: {

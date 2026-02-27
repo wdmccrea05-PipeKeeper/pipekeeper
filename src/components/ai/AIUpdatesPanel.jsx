@@ -32,8 +32,8 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   if (!entitlements.canUse("AI_UPDATES")) {
     return (
       <UpgradePrompt 
-        featureName={t("aiUpdates.featureName","AI Updates & Regeneration")}
-        description={t("aiUpdates.description","Automatically update and regenerate pairing matrices, collection optimization, blend classifications, and pipe measurements using AI. Available for legacy Premium users or Pro tier.")}
+        featureName={t("aiUpdates.featureName")}
+        description={t("aiUpdates.description")}
       />
     );
   }
@@ -105,14 +105,14 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
       if (result?.skipped) {
-        toast.success(t("aiUpdates.alreadyUpToDate","Pairings are already up to date"));
+        toast.success(t("aiUpdates.alreadyUpToDate"));
       } else {
-        toast.success(t("aiUpdates.regenerateSuccess","Pairings regenerated successfully"));
+        toast.success(t("aiUpdates.regenerateSuccess"));
       }
     },
     onError: () => {
       setBusy(false);
-      toast.error(t("aiUpdates.regenerateFailed","Failed to regenerate pairings"));
+      toast.error(t("aiUpdates.regenerateFailed"));
     },
   });
 
@@ -125,9 +125,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("aiUpdates.pairingsRevertSuccess", "Pairings reverted to previous version"));
+      toast.success(t("aiUpdates.pairingsRevertSuccess"));
     },
-    onError: () => toast.error(t("aiUpdates.undoPairingsFail", "Failed to undo pairings")),
+    onError: () => toast.error(t("aiUpdates.undoPairingsFail")),
   });
 
   const regenOpt = useMutation({
@@ -203,11 +203,11 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("aiUpdates.optimizationRegenSuccess", "Optimization regenerated successfully"));
+      toast.success(t("aiUpdates.optimizationRegenSuccess"));
     },
     onError: () => {
       setBusy(false);
-      toast.error(t("aiUpdates.optimizationRegenFail", "Failed to regenerate optimization"));
+      toast.error(t("aiUpdates.optimizationRegenFail"));
     },
   });
 
@@ -220,9 +220,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     onSuccess: () => {
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
-      toast.success(t("aiUpdates.optimizationRevertSuccess", "Optimization reverted to previous version"));
+      toast.success(t("aiUpdates.optimizationRevertSuccess"));
     },
-    onError: () => toast.error(t("aiUpdates.undoOptimizationFail", "Failed to undo optimization")),
+    onError: () => toast.error(t("aiUpdates.undoOptimizationFail")),
   });
 
   // ✅ FIX: Add the missing "Reclassify Blends" card + function to the AI Updates panel
@@ -461,9 +461,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
             </div>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
               {pairingsStale ? (
-                <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDate", "Out of date - Regeneration recommended")}</span>
+                <span className="text-amber-700 font-semibold">{t("aiUpdates.outOfDate")}</span>
               ) : (
-                <span className="text-emerald-700 font-semibold">{t("aiUpdates.pairingsUpToDate", "Up to date")}</span>
+                <span className="text-emerald-700 font-semibold">{t("aiUpdates.pairingsUpToDate")}</span>
               )}
             </p>
           </div>
