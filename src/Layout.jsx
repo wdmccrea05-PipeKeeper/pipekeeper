@@ -159,7 +159,7 @@ async function tryStripeSync() {
 }
 
 export default function Layout({ children, currentPageName }) {
-  console.log("8️⃣ Layout component rendering");
+  if (import.meta?.env?.DEV) console.log("8️⃣ Layout component rendering");
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(() => {
@@ -177,7 +177,7 @@ export default function Layout({ children, currentPageName }) {
   const queryClient = useQueryClient();
   const ios = useMemo(() => isIOSWebView(), []);
   const { t, lang } = useTranslation();
-  console.log("9️⃣ Layout useTranslation hook successful");
+  if (import.meta?.env?.DEV) console.log("9️⃣ Layout useTranslation hook successful");
 
   // Debug logging for language state
   useEffect(() => {
@@ -367,7 +367,7 @@ export default function Layout({ children, currentPageName }) {
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     const cleanup = registerNativeSubscriptionListener(async (payload) => {
-      console.log("[Layout] Native subscription payload:", payload);
+      if (import.meta?.env?.DEV) console.log("[Layout] Native subscription payload:", payload);
       const active = !!payload.active;
       setSubActive(active);
 
@@ -562,7 +562,7 @@ export default function Layout({ children, currentPageName }) {
     return null;
   }
 
-  console.log("🔟 Layout JSX about to return");
+  if (import.meta?.env?.DEV) console.log("🔟 Layout JSX about to return");
   return (
     <GlobalErrorBoundary>
       <ErrorBoundary>

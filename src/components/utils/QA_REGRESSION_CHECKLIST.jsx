@@ -567,7 +567,7 @@
  * - Add GraphQL API for third-party integrations
  */
 
-export const QA_VERSION = "2026-02-03";
+export const QA_VERSION = "2026-02-27";
 export const CRITICAL_PATHS = 9;
 export const MANUAL_TESTS = 21;
 export const AUTOMATED_TESTS = 5;
