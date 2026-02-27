@@ -354,6 +354,23 @@ const translations = {
     clarificationFailed: "Verwerken van verduidelijking mislukt. Probeer het opnieuw.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatisch",
+    nonAromatic:     "Niet Aromatisch",
+    lightAromatics:  "Licht Aromatisch",
+    mediumAromatics: "Middel Aromatisch",
+    heavyAromatics:  "Zwaar Aromatisch",
+    english:         "Engels",
+    balkan:          "Balkan",
+    latakiaBlend:    "Latakia Mengsel",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "Burley-gebaseerd",
+    oriental:        "Oriëntaals/Turks",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Er is iets misgegaan",
     body: "Sluit de app en open hem opnieuw. Als dit blijft gebeuren, neem dan contact op met ondersteuning.",

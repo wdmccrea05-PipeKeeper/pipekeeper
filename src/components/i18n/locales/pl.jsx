@@ -372,6 +372,23 @@ export default {
     clarificationFailed: "Przetwarzanie wyjaśnienia nie powiodło się. Spróbuj ponownie.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatyczny",
+    nonAromatic:     "Niearomatyczny",
+    lightAromatics:  "Lekko Aromatyczny",
+    mediumAromatics: "Średnio Aromatyczny",
+    heavyAromatics:  "Mocno Aromatyczny",
+    english:         "Angielski",
+    balkan:          "Bałkański",
+    latakiaBlend:    "Mieszanka Latakia",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "Na bazie Burley",
+    oriental:        "Orientalny/Turecki",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Coś poszło nie tak",
     body: "Zamknij i ponownie otwórz aplikację. Jeśli problem się powtarza, skontaktuj się z pomocą techniczną.",

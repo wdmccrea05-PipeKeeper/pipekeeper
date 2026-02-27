@@ -119,6 +119,12 @@ Deno.serve(async (req) => {
 
     const prompt = `You are an expert pipe tobacconist performing a COLLECTION-LEVEL specialization analysis.
 
+CRITICAL: The recommended_specializations array MUST contain values chosen ONLY from this exact list:
+Aromatic, Non-Aromatic, Light Aromatics, Medium Aromatics, Heavy Aromatics, English, Balkan, Latakia Blend, Virginia, Virginia/Perique, Burley, Burley-based, Oriental/Turkish, Kentucky
+
+Use EXACTLY these spellings — do not translate, rephrase, or use alternative names.
+The reasoning, collection_fit, considerations, and alternative_uses fields may be written in any language.
+
 ## Target Pipe
 ${JSON.stringify(pipeContext, null, 2)}
 

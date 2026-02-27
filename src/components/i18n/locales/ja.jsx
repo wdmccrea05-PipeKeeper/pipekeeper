@@ -372,6 +372,23 @@ export default {
     clarificationFailed: "確認の処理に失敗しました。もう一度お試しください。",
   },
 
+  focusOptions: {
+    aromatic:        "アロマティック",
+    nonAromatic:     "ノンアロマティック",
+    lightAromatics:  "ライトアロマティック",
+    mediumAromatics: "ミディアムアロマティック",
+    heavyAromatics:  "ヘビーアロマティック",
+    english:         "イングリッシュ",
+    balkan:          "バルカン",
+    latakiaBlend:    "ラタキアブレンド",
+    virginia:        "バージニア",
+    virginiaPericue: "バージニア/ペリーク",
+    burley:          "バーレー",
+    burleyBased:     "バーレー系",
+    oriental:        "オリエンタル/トルコ",
+    kentucky:        "ケンタッキー",
+  },
+
   errorBoundary: {
     title: "問題が発生しました",
     body: "アプリを閉じて再度開いてください。この問題が続く場合は、サポートにお問い合わせください。",

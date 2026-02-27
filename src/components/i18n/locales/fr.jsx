@@ -354,6 +354,23 @@ const translations = {
     clarificationFailed: "Échec du traitement de la précision. Veuillez réessayer.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatique",
+    nonAromatic:     "Non Aromatique",
+    lightAromatics:  "Aromatiques Légers",
+    mediumAromatics: "Aromatiques Moyens",
+    heavyAromatics:  "Aromatiques Forts",
+    english:         "Anglais",
+    balkan:          "Balkanique",
+    latakiaBlend:    "Mélange Latakia",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Périque",
+    burley:          "Burley",
+    burleyBased:     "Base Burley",
+    oriental:        "Oriental/Turc",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Quelque chose a mal tourné",
     body: "Veuillez fermer et rouvrir l'application. Si le problème persiste, contactez le support.",

@@ -372,6 +372,23 @@ export default {
     clarificationFailed: "处理说明失败。请重试。",
   },
 
+  focusOptions: {
+    aromatic:        "芳香型",
+    nonAromatic:     "非芳香型",
+    lightAromatics:  "轻芳香型",
+    mediumAromatics: "中芳香型",
+    heavyAromatics:  "重芳香型",
+    english:         "英式",
+    balkan:          "巴尔干式",
+    latakiaBlend:    "拉塔基亚混合",
+    virginia:        "弗吉尼亚",
+    virginiaPericue: "弗吉尼亚/佩里克",
+    burley:          "伯利",
+    burleyBased:     "伯利基底",
+    oriental:        "东方/土耳其式",
+    kentucky:        "肯塔基",
+  },
+
   errorBoundary: {
     title: "出了问题",
     body: "请关闭并重新打开应用程序。如果问题持续存在，请联系支持。",

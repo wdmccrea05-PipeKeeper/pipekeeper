@@ -355,6 +355,23 @@ const translations = {
     clarificationFailed: "Failed to process clarification. Please try again.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatic",
+    nonAromatic:     "Non-Aromatic",
+    lightAromatics:  "Light Aromatics",
+    mediumAromatics: "Medium Aromatics",
+    heavyAromatics:  "Heavy Aromatics",
+    english:         "English",
+    balkan:          "Balkan",
+    latakiaBlend:    "Latakia Blend",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "Burley-based",
+    oriental:        "Oriental/Turkish",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Something went wrong",
     body: "Please close and reopen the app. If this keeps happening, contact support.",
