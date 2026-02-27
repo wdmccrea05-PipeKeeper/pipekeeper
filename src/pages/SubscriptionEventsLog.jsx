@@ -96,9 +96,9 @@ export default function SubscriptionEventsLog() {
                 onChange={(e) => setFilterSuccess(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg bg-[#1a2c42] border border-white/10 text-[#E0D8C8]"
               >
-                <option value="all">All</option>
-                <option value="success">Success</option>
-                <option value="error">Error</option>
+                <option value="all">{t("admin.all", "All")}</option>
+                <option value="success">{t("admin.success", "Success")}</option>
+                <option value="error">{t("admin.error", "Error")}</option>
               </select>
             </div>
           </div>
@@ -108,13 +108,13 @@ export default function SubscriptionEventsLog() {
       {/* Events List */}
       <Card>
         <CardHeader>
-          <CardTitle>Events ({filteredEvents.length})</CardTitle>
+          <CardTitle>{t("admin.eventsCount", "Events ({count})", { count: filteredEvents.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-[#E0D8C8]/70">Loading events...</p>
+            <p className="text-[#E0D8C8]/70">{t("admin.loadingEvents", "Loading events...")}</p>
           ) : filteredEvents.length === 0 ? (
-            <p className="text-[#E0D8C8]/70">No events found</p>
+            <p className="text-[#E0D8C8]/70">{t("admin.noEventsFound", "No events found")}</p>
           ) : (
             <div className="space-y-3">
               {filteredEvents.map((event) => (
