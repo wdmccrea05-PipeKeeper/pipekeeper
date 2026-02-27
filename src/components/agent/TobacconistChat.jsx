@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 
 function MessageBubble({ message, t }) {
   const isUser = message.role === "user";
@@ -139,13 +140,18 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
 
   const sendMessage = async () => {
     if (!input.trim() || !conversationId || sending) return;
-    const userMessage = input.trim();
+    const rawUserMessage = input.trim();
     setInput("");
     setSending(true);
 
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    // Show the user's original message in the chat (untranslated)
+    setMessages((prev) => [...prev, { role: "user", content: rawUserMessage }]);
 
     try {
+      const locale = getCurrentLocale();
+      // Translate user message to English before sending to AI
+      const userMessage = await translateToEnglish(rawUserMessage, locale);
+
       // One-time context injection
       if (!contextSent) {
         const context = [
@@ -175,8 +181,11 @@ export default function TobacconistChat({ open, onOpenChange, pipes = [], blends
             ? res.content
             : "";
 
-      if (content) {
-        setMessages((prev) => [...prev, { role: "assistant", content }]);
+      // Translate AI response back to user's language
+      const translatedContent = await translateFromEnglish(content, locale);
+
+      if (translatedContent) {
+        setMessages((prev) => [...prev, { role: "assistant", content: translatedContent }]);
       } else {
         toast.error(t("tobacconist.failedToSendMessage"));
       }
