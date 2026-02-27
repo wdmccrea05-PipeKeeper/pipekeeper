@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   ShieldCheck,
   Users,
@@ -33,6 +34,7 @@ function TierBadge({ tier }) {
 
 export default function EntitlementAudit() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // Batch reconcile state
   const [batchLoading, setBatchLoading] = useState(false);
@@ -54,16 +56,16 @@ export default function EntitlementAudit() {
       });
       setBatchResult(response.data);
       if (response.data.ok) {
-        toast.success(dryRun ? "Dry run complete" : `Repaired ${response.data.changed} users`);
+        toast.success(dryRun ? t("admin.dryRunComplete", "Dry run complete") : t("admin.repairedUsers", "Repaired {n} users", { n: response.data.changed }));
         if (!dryRun) {
           await queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
           await queryClient.invalidateQueries({ queryKey: ["subscription"] });
         }
       } else {
-        toast.error(response.data.error || "Batch repair failed");
+        toast.error(response.data.error || t("admin.batchRepairFailed", "Batch repair failed"));
       }
     } catch (err) {
-      toast.error(err.message || "Failed to run batch repair");
+      toast.error(err.message || t("admin.failedToRunBatch", "Failed to run batch repair"));
       setBatchResult({ ok: false, error: err.message });
     } finally {
       setBatchLoading(false);
@@ -72,7 +74,7 @@ export default function EntitlementAudit() {
 
   const runSingleRepair = useCallback(async (dryRun) => {
     if (!repairEmail.trim()) {
-      toast.error("Email is required");
+      toast.error(t("admin.emailRequired", "Email is required"));
       return;
     }
     setRepairLoading(true);
@@ -86,10 +88,10 @@ export default function EntitlementAudit() {
       if (response.data.ok) {
         toast.success(
           dryRun
-            ? "Dry run complete - no changes made"
+            ? t("admin.dryRunNoChanges", "Dry run complete - no changes made")
             : response.data.changed
-            ? `Entitlement repaired for ${repairEmail}`
-            : `Entitlements already correct for ${repairEmail}`
+            ? t("admin.entitlementRepaired", "Entitlement repaired for {email}", { email: repairEmail })
+            : t("admin.entitlementsAlreadyCorrect", "Entitlements already correct for {email}", { email: repairEmail })
         );
         if (!dryRun && response.data.changed) {
           await queryClient.invalidateQueries({ queryKey: ["current-user"] });
@@ -97,10 +99,10 @@ export default function EntitlementAudit() {
           await queryClient.invalidateQueries({ queryKey: ["subscription-status"] });
         }
       } else {
-        toast.error(response.data.error || "Repair failed");
+        toast.error(response.data.error || t("admin.repairFailed", "Repair failed"));
       }
     } catch (err) {
-      toast.error(err.message || "Failed to run repair");
+      toast.error(err.message || t("admin.failedToRunRepair", "Failed to run repair"));
       setRepairResult({ ok: false, error: err.message });
     } finally {
       setRepairLoading(false);
@@ -113,9 +115,9 @@ export default function EntitlementAudit() {
       <div className="flex items-center gap-3">
         <ShieldCheck className="w-6 h-6 text-indigo-600" />
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Entitlement Audit</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t("admin.entitlementAudit", "Entitlement Audit")}</h2>
           <p className="text-sm text-gray-500">
-            Monitor and repair subscription tier propagation issues
+            {t("admin.entitlementAuditDesc", "Monitor and repair subscription tier propagation issues")}
           </p>
         </div>
       </div>

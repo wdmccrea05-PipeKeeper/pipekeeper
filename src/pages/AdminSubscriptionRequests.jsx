@@ -202,11 +202,11 @@ export default function AdminSubscriptionRequests() {
             <Table>
               <TableHeader className="bg-[#243548]">
                 <TableRow className="border-[#A35C5C]/20">
-                  <TableHead className="text-[#E0D8C8]">Email</TableHead>
-                  <TableHead className="text-[#E0D8C8]">Tier / Term</TableHead>
-                  <TableHead className="text-[#E0D8C8]">Payment Ref</TableHead>
-                  <TableHead className="text-[#E0D8C8]">Status</TableHead>
-                  <TableHead className="text-[#E0D8C8] text-right">Actions</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.emailLabel", "Email")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.tierTerm", "Tier / Term")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.paymentRef", "Payment Ref")}</TableHead>
+                  <TableHead className="text-[#E0D8C8]">{t("admin.status", "Status")}</TableHead>
+                  <TableHead className="text-[#E0D8C8] text-right">{t("admin.actions", "Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -249,7 +249,7 @@ export default function AdminSubscriptionRequests() {
                             {req.user_message && (
                               <div>
                                 <p className="text-xs text-[#E0D8C8]/50 uppercase tracking-wide mb-1">
-                                  User Message
+                                  {t("admin.userMessage", "User Message")}
                                 </p>
                                 <p className="text-[#E0D8C8] bg-[#1A2B3A] p-2 rounded text-sm">
                                   {req.user_message}
@@ -261,7 +261,7 @@ export default function AdminSubscriptionRequests() {
                             {req.admin_notes && (
                               <div>
                                 <p className="text-xs text-[#E0D8C8]/50 uppercase tracking-wide mb-1">
-                                  Admin Notes
+                                  {t("admin.adminNotesLabel", "Admin Notes")}
                                 </p>
                                 <p className="text-[#E0D8C8] bg-[#1A2B3A] p-2 rounded text-sm">
                                   {req.admin_notes}
@@ -302,10 +302,10 @@ export default function AdminSubscriptionRequests() {
                                   {grantMutation.isPending ? (
                                     <>
                                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                      Granting...
+                                      {t("admin.granting", "Granting...")}
                                     </>
                                   ) : (
-                                    `Grant ${req.requested_tier.toUpperCase()}`
+                                    t("admin.grantTier", "Grant {tier}", { tier: req.requested_tier.toUpperCase() })
                                   )}
                                 </Button>
 
@@ -315,7 +315,7 @@ export default function AdminSubscriptionRequests() {
                                   onClick={() => setRejectingId(req.id)}
                                   className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 flex-1"
                                 >
-                                  Reject
+                                  {t("admin.reject", "Reject")}
                                 </Button>
                               </div>
                             ) : (
@@ -361,7 +361,7 @@ export default function AdminSubscriptionRequests() {
                                 disabled={rejectMutation.isPending}
                                 className="bg-red-700 hover:bg-red-800 flex-1"
                               >
-                                Confirm Rejection
+                                {t("admin.confirmRejection", "Confirm Rejection")}
                               </Button>
                               <Button
                                 size="sm"
@@ -372,7 +372,7 @@ export default function AdminSubscriptionRequests() {
                                 }}
                                 className="text-[#E0D8C8] flex-1"
                               >
-                                Cancel
+                                {t("admin.cancel", "Cancel")}
                               </Button>
                             </div>
                           </div>
