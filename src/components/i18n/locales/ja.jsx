@@ -190,6 +190,12 @@ export default {
     updatedMeasurements: "{count}件のパイプを検証済み測定値で更新しました",
     noMeasurements: "パイプの検証済み測定値が見つかりませんでした",
     fillFailed: "測定値の入力に失敗しました",
+    pairingsRevertSuccess: "ペアリングが前のバージョンに戻されました",
+    undoPairingsFail: "ペアリングの取り消しに失敗しました",
+    optimizationRegenSuccess: "最適化が正常に再生成されました",
+    optimizationRegenFail: "最適化の再生成に失敗しました",
+    optimizationRevertSuccess: "最適化が前のバージョンに戻されました",
+    undoOptimizationFail: "最適化の取り消しに失敗しました",
   },
 
   inviteFull: {
@@ -303,6 +309,12 @@ export default {
     regenFailed: "ペアリングの再生成に失敗しました",
     noPairingData: "まだペアリングデータがありません",
     noPairingDataDesc: "コレクションにパイプとタバコを追加して、AIを使ったペアリング推薦を生成してください。",
+    addFirstPipe: "最初のパイプを追加",
+    addFirstBlend: "最初のブレンドを追加",
+    generatePairings: "ペアリングを生成",
+    recommendationCount: "{count} 件の推奨",
+    recommendationCountPlural: "{count} 件の推奨",
+    noRecommendations: "このバリアントの推奨はありません。",
   },
 
   tobacconist: {
@@ -348,6 +360,7 @@ export default {
     connecting: "タバコニストに接続中...",
     connected: "接続済み",
     disconnected: "切断されました",
+    pressCmdEnter: "⌘Enterで送信",
   },
 
   tobaccoSearch: {
@@ -360,8 +373,10 @@ export default {
   },
 
   errorBoundary: {
-    title: "PipeKeeperを読み込めませんでした",
+    title: "問題が発生しました",
     body: "アプリを閉じて再度開いてください。この問題が続く場合は、サポートにお問い合わせください。",
+    message: "予期しないエラーが発生しました",
+    reload: "ページを再読み込み",
   },
 
   appleIAP: {

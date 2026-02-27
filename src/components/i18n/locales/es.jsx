@@ -87,6 +87,12 @@ const translations = {
     updatedMeasurements: "Se actualizaron {count} pipa(s) con medidas verificadas",
     noMeasurements: "No se encontraron medidas verificadas para tus pipas",
     fillFailed: "Error al completar medidas",
+    pairingsRevertSuccess: "Emparejamientos revertidos a la versión anterior",
+    undoPairingsFail: "Error al deshacer emparejamientos",
+    optimizationRegenSuccess: "Optimización regenerada correctamente",
+    optimizationRegenFail: "Error al regenerar la optimización",
+    optimizationRevertSuccess: "Optimización revertida a la versión anterior",
+    undoOptimizationFail: "Error al deshacer la optimización",
   },
 
   inviteFull: {
@@ -297,6 +303,12 @@ const translations = {
     regenFailed: "Error al regenerar emparejamientos",
     noPairingData: "Sin datos de emparejamiento aún",
     noPairingDataDesc: "Añade pipas y tabaco a tu colección, luego genera recomendaciones de emparejamiento con IA.",
+    addFirstPipe: "Añadir primera pipa",
+    addFirstBlend: "Añadir primera mezcla",
+    generatePairings: "Generar emparejamientos",
+    recommendationCount: "{count} recomendación",
+    recommendationCountPlural: "{count} recomendaciones",
+    noRecommendations: "Sin recomendaciones para esta variante.",
   },
 
   tobacconist: {
@@ -332,6 +344,7 @@ const translations = {
     couldntLoadResponse: "No se pudo cargar una respuesta del agente experto. Por favor, inténtalo de nuevo.",
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pregunta sobre pipas, mezclas, ideas de maridaje, envejecimiento, valor, redundancia…",
+    pressCmdEnter: "Presiona ⌘Intro para enviar",
   },
 
   tobaccoSearch: {
@@ -344,8 +357,10 @@ const translations = {
   },
 
   errorBoundary: {
-    title: "PipeKeeper no pudo cargarse",
+    title: "Algo salió mal",
     body: "Por favor, cierra y vuelve a abrir la aplicación. Si esto sigue ocurriendo, contacta al soporte.",
+    message: "Ocurrió un error inesperado",
+    reload: "Recargar página",
   },
 
   appleIAP: {

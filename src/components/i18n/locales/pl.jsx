@@ -196,6 +196,12 @@ export default {
     updatedMeasurements: "Zaktualizowano {count} fajkę/fajki ze zweryfikowanymi pomiarami",
     noMeasurements: "Nie znaleziono zweryfikowanych pomiarów dla Twoich fajek",
     fillFailed: "Nie udało się uzupełnić pomiarów",
+    pairingsRevertSuccess: "Parowania przywrócone do poprzedniej wersji",
+    undoPairingsFail: "Nie udało się cofnąć parowań",
+    optimizationRegenSuccess: "Optymalizacja pomyślnie wygenerowana ponownie",
+    optimizationRegenFail: "Ponowne generowanie optymalizacji nie powiodło się",
+    optimizationRevertSuccess: "Optymalizacja przywrócona do poprzedniej wersji",
+    undoOptimizationFail: "Nie udało się cofnąć optymalizacji",
   },
 
   inviteFull: {
@@ -303,6 +309,12 @@ export default {
     regenFailed: "Ponowne generowanie parowania nie powiodło się",
     noPairingData: "Brak danych parowania",
     noPairingDataDesc: "Dodaj fajki i tytoń do swojej kolekcji, a następnie wygeneruj rekomendacje parowania oparte na AI.",
+    addFirstPipe: "Dodaj pierwszą fajkę",
+    addFirstBlend: "Dodaj pierwszą mieszankę",
+    generatePairings: "Generuj parowania",
+    recommendationCount: "{count} rekomendacja",
+    recommendationCountPlural: "{count} rekomendacje",
+    noRecommendations: "Brak rekomendacji dla tej wersji.",
   },
 
   tobacconist: {
@@ -348,6 +360,7 @@ export default {
     connecting: "Łączenie z ekspertem...",
     connected: "Połączono",
     disconnected: "Rozłączono",
+    pressCmdEnter: "Naciśnij ⌘Enter, aby wysłać",
   },
 
   tobaccoSearch: {
@@ -360,8 +373,10 @@ export default {
   },
 
   errorBoundary: {
-    title: "PipeKeeper nie mógł się załadować",
+    title: "Coś poszło nie tak",
     body: "Zamknij i ponownie otwórz aplikację. Jeśli problem się powtarza, skontaktuj się z pomocą techniczną.",
+    message: "Wystąpił nieoczekiwany błąd",
+    reload: "Odśwież stronę",
   },
 
   appleIAP: {

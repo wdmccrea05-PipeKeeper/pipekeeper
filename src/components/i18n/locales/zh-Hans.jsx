@@ -190,6 +190,12 @@ export default {
     updatedMeasurements: "已使用已验证的测量值更新{count}支烟斗",
     noMeasurements: "未找到您烟斗的已验证测量值",
     fillFailed: "填充测量值失败",
+    pairingsRevertSuccess: "搭配已恢复到上一版本",
+    undoPairingsFail: "无法撤销搭配",
+    optimizationRegenSuccess: "优化重新生成成功",
+    optimizationRegenFail: "无法重新生成优化",
+    optimizationRevertSuccess: "优化已恢复到上一版本",
+    undoOptimizationFail: "无法撤销优化",
   },
 
   inviteFull: {
@@ -303,6 +309,12 @@ export default {
     regenFailed: "重新生成配对失败",
     noPairingData: "暂无配对数据",
     noPairingDataDesc: "将烟斗和烟草添加到您的收藏，然后生成AI驱动的配对推荐。",
+    addFirstPipe: "添加第一支烟斗",
+    addFirstBlend: "添加第一种混合",
+    generatePairings: "生成配对",
+    recommendationCount: "{count} 个推荐",
+    recommendationCountPlural: "{count} 个推荐",
+    noRecommendations: "此变体没有推荐。",
   },
 
   tobacconist: {
@@ -348,6 +360,7 @@ export default {
     connecting: "正在连接烟草专家...",
     connected: "已连接",
     disconnected: "已断开连接",
+    pressCmdEnter: "按⌘Enter发送",
   },
 
   tobaccoSearch: {
@@ -360,8 +373,10 @@ export default {
   },
 
   errorBoundary: {
-    title: "PipeKeeper 加载失败",
+    title: "出了问题",
     body: "请关闭并重新打开应用程序。如果问题持续存在，请联系支持。",
+    message: "发生了意外错误",
+    reload: "重新加载页面",
   },
 
   appleIAP: {
