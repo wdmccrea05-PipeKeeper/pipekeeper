@@ -361,6 +361,8 @@ export default {
     connected: "接続済み",
     disconnected: "切断されました",
     pressCmdEnter: "⌘Enterで送信",
+    translating: "翻訳中...",
+    translatingInput: "メッセージを翻訳中...",
   },
 
   tobaccoSearch: {

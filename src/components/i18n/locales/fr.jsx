@@ -343,6 +343,8 @@ const translations = {
     answeredBy: "Répondu par :",
     askExpertPlaceholder: "Posez des questions sur les pipes, les mélanges, les accords, le vieillissement, la valeur, la redondance…",
     pressCmdEnter: "Appuyez sur ⌘Entrée pour envoyer",
+    translating: "Traduction en cours...",
+    translatingInput: "Traduction de votre message...",
   },
 
   tobaccoSearch: {

@@ -343,6 +343,8 @@ const translations = {
     answeredBy: "Beantwoord door:",
     askExpertPlaceholder: "Stel vragen over pijpen, mengsels, paarideeën, veroudering, waarde, redundantie…",
     pressCmdEnter: "Druk op ⌘Enter om te verzenden",
+    translating: "Vertalen...",
+    translatingInput: "Uw bericht vertalen...",
   },
 
   tobaccoSearch: {

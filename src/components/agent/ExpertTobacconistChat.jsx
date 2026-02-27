@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -103,8 +104,9 @@ export default function ExpertTobacconistChat({
     if (!text || !threadId || sending) return;
 
     setSending(true);
+    const locale = getCurrentLocale();
 
-    // optimistic add
+    // optimistic add — show user's original text in the UI
     const optimistic = {
       id: `local-${Date.now()}`,
       role: "user",
@@ -115,21 +117,32 @@ export default function ExpertTobacconistChat({
     setInput("");
 
     try {
+      // Translate input to English before sending to AI
+      const englishText = await translateToEnglish(text, locale);
+
       const res = await base44.ai.sendMessage({
         thread_id: threadId,
         agent: "expert_tobacconist",
-        message: text,
+        message: englishText,
       });
 
-      const newMsgs =
-        (res?.messages || []).map((m) => ({
-          id: m.id || `${m.role}-${Math.random()}`,
-          role: m.role,
-          content: m.content || "",
-          meta: m.meta || {},
-        })) || [];
+      // Translate responses back to user locale
+      const newMsgs = await Promise.all(
+        (res?.messages || []).map(async (m) => {
+          const translatedContent =
+            m.role === "assistant"
+              ? await translateFromEnglish(m.content || "", locale)
+              : m.content || "";
+          return {
+            id: m.id || `${m.role}-${Math.random()}`,
+            role: m.role,
+            content: translatedContent,
+            meta: m.meta || {},
+          };
+        })
+      );
 
-      // Replace optimistic “local” with fresh server truth:
+      // Replace optimistic "local" with fresh server truth:
       setMessages((prev) => {
         const withoutLocal = prev.filter((m) => !String(m.id).startsWith("local-"));
         return [...withoutLocal, ...newMsgs];

@@ -361,6 +361,8 @@ export default {
     connected: "已连接",
     disconnected: "已断开连接",
     pressCmdEnter: "按⌘Enter发送",
+    translating: "翻译中...",
+    translatingInput: "正在翻译您的消息...",
   },
 
   tobaccoSearch: {

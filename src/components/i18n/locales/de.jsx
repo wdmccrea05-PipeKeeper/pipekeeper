@@ -343,6 +343,8 @@ const translations = {
     answeredBy: "Beantwortet von:",
     askExpertPlaceholder: "Fragen Sie nach Pfeifen, Mischungen, Empfehlungen, Reifung, Wert, Redundanz…",
     pressCmdEnter: "⌘Eingabe drücken zum Senden",
+    translating: "Übersetzen...",
+    translatingInput: "Ihre Nachricht wird übersetzt...",
   },
 
   tobaccoSearch: {

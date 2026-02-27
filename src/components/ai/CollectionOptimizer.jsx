@@ -55,6 +55,7 @@ import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconi
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 
 /**
  * Drop-in replacement notes:
@@ -629,13 +630,17 @@ User Feedback: ${feedback}
 
     setWhatIfLoading(true);
 
-    // Add user message immediately
+    // Add user message immediately (show original, untranslated text)
     setConversationMessages((prev) => [
       ...prev,
       { role: "user", content: userText, photos: whatIfPhotos, timestamp: new Date().toISOString() },
     ]);
 
     try {
+      const locale = getCurrentLocale();
+      // Translate user text to English before building the AI prompt
+      const englishUserText = await translateToEnglish(userText, locale);
+
       const debugContext = source || "ASK_EXPERT";
       const startTime = Date.now();
 
@@ -678,7 +683,7 @@ RECENT CHAT:
 ${conversationContext || "(none)"}
 
 USER QUESTION:
-${userText}
+${englishUserText}
 `;
 
       const waitPromise = waitForAssistantMessage(convo.id, 90000, { debug: true, context: debugContext });
@@ -705,6 +710,7 @@ ${userText}
 
       let finalResponse = stripRepeatedPrefix(lastAssistantText, agentResponse || "");
       if (!finalResponse || !finalResponse.trim()) finalResponse = t("optimizer.couldntLoadResponse");
+      finalResponse = await translateFromEnglish(finalResponse, locale);
 
       const aiResponse = {
         is_general_advice: true,

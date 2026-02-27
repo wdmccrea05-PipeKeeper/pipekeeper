@@ -361,6 +361,8 @@ export default {
     connected: "Połączono",
     disconnected: "Rozłączono",
     pressCmdEnter: "Naciśnij ⌘Enter, aby wysłać",
+    translating: "Tłumaczenie...",
+    translatingInput: "Tłumaczenie wiadomości...",
   },
 
   tobaccoSearch: {

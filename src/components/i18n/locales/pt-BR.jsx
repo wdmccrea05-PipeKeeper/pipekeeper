@@ -343,6 +343,8 @@ const translations = {
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pergunte sobre cachimbos, misturas, ideias de combinação, envelhecimento, valor, redundância…",
     pressCmdEnter: "Pressione ⌘Enter para enviar",
+    translating: "Traduzindo...",
+    translatingInput: "Traduzindo sua mensagem...",
   },
 
   tobaccoSearch: {

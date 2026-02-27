@@ -344,6 +344,8 @@ const translations = {
     answeredBy: "Answered by:",
     askExpertPlaceholder: "Ask about pipes, blends, pairing ideas, aging, value, redundancy…",
     pressCmdEnter: "Press ⌘Enter to send",
+    translating: "Translating...",
+    translatingInput: "Translating your message...",
   },
 
   tobaccoSearch: {

@@ -345,6 +345,8 @@ const translations = {
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pregunta sobre pipas, mezclas, ideas de maridaje, envejecimiento, valor, redundancia…",
     pressCmdEnter: "Presiona ⌘Intro para enviar",
+    translating: "Traduciendo...",
+    translatingInput: "Traduciendo tu mensaje...",
   },
 
   tobaccoSearch: {

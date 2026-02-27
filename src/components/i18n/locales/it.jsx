@@ -343,6 +343,8 @@ const translations = {
     answeredBy: "Risposto da:",
     askExpertPlaceholder: "Chiedi informazioni su pipe, miscele, abbinamenti, invecchiamento, valore, ridondanza…",
     pressCmdEnter: "Premi ⌘Invio per inviare",
+    translating: "Traduzione in corso...",
+    translatingInput: "Traduzione del tuo messaggio...",
   },
 
   tobaccoSearch: {
