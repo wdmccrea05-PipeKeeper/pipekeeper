@@ -114,7 +114,8 @@ const translations = {
     topicError: "Signaler une erreur",
     topicBilling: "Question de facturation",
     topicTechnical: "Problème technique",
-    topicOther: "Autre"
+    topicOther: "Autre",
+    sendFailed: "Échec de l'envoi de la demande de support. Veuillez réessayer ou envoyer un e-mail directement à admin@pipekeeperapp.com.",
   },
 
   faqExtended: {
@@ -284,6 +285,67 @@ const translations = {
     proAccess: "Accès aux fonctionnalités pro (identification IA, recherche de valeur, optimisation, exports, édition en masse)",
     providerDetection: "Détection du fournisseur (Stripe, Apple, manuel)",
     planLabel: "Génération de l'étiquette de plan",
+  },
+
+  pairingMatrix: {
+    loading: "Chargement des associations...",
+    title: "Matrice d'associations",
+    description: "Compatibilité notée entre chaque pipe et mélange de tabac de votre collection",
+    regenSuccess: "Associations régénérées avec succès",
+    regenFailed: "Échec de la régénération des associations",
+  },
+
+  tobacconist: {
+    tobacconist: "Buraliste expert",
+    avatarAlt: "Buraliste",
+    title: "Le Buraliste",
+    tabChat: "Chat",
+    tabActions: "Actions",
+    sending: "Envoi en cours...",
+    inputPlaceholder: "Posez une question sur les pipes ou le tabac...",
+    regeneratePairings: "Régénérer les associations",
+    undoPairings: "Annuler les associations",
+    regenerateOptimization: "Régénérer l'optimisation",
+    undoOptimization: "Annuler l'optimisation",
+    actionsNote: "Ces actions mettront à jour les données de votre collection.",
+    fingerprint: "Empreinte de collection",
+    quickAccess: "Accès rapide",
+    actionsReady: "Actions prêtes",
+    pairingsRegenerated: "Associations régénérées avec succès",
+    failedToRegeneratePairings: "Échec de la régénération des associations",
+    pairingsReverted: "Associations revenues à la version précédente",
+    failedToUndoPairings: "Échec de l'annulation des associations",
+    optimizationRegenerated: "Optimisation régénérée avec succès",
+    failedToRegenerateOptimization: "Échec de la régénération de l'optimisation",
+    optimizationReverted: "Optimisation revenue à la version précédente",
+    failedToUndoOptimization: "Échec de l'annulation de l'optimisation",
+    failedToStartConversation: "Échec du démarrage de la conversation",
+    failedToSendMessage: "Échec de l'envoi du message",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Rechercher par nom de mélange ou fabricant (ex. : 'Orlik Golden Sliced')",
+    searchBtn: "Rechercher",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Échec du traitement de la précision. Veuillez réessayer.",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper n'a pas pu se charger",
+    body: "Veuillez fermer et rouvrir l'application. Si le problème persiste, contactez le support.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "Impossible d'ouvrir les paramètres de l'App Store. Veuillez gérer votre abonnement dans l'application Réglages.",
+  },
+
+  debug: {
+    snapshotCopied: "Instantané copié",
+    copyFailed: "Échec de la copie : presse-papiers indisponible",
+    i18nReportDownloaded: "Rapport i18n téléchargé",
+    i18nReportCleared: "Rapport i18n effacé",
   },
 };
 

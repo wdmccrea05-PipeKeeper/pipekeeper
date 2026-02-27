@@ -114,7 +114,8 @@ const translations = {
     topicError: "Fout melden",
     topicBilling: "Factureringsvraag",
     topicTechnical: "Technisch probleem",
-    topicOther: "Anders"
+    topicOther: "Anders",
+    sendFailed: "Versturen van ondersteuningsverzoek mislukt. Probeer het opnieuw of stuur een e-mail rechtstreeks naar admin@pipekeeperapp.com.",
   },
 
   faqExtended: {
@@ -284,6 +285,67 @@ const translations = {
     proAccess: "Toegang tot pro-functies (AI-identificatie, waardeopzoeking, optimalisatie, exports, bulkbewerking)",
     providerDetection: "Providerdetectie (Stripe, Apple, handmatig)",
     planLabel: "Generatie van planlabel",
+  },
+
+  pairingMatrix: {
+    loading: "Koppelingen laden...",
+    title: "Koppelingsmatrix",
+    description: "Beoordeelde compatibiliteit tussen elke pijp en tabaksmengsel in uw collectie",
+    regenSuccess: "Koppelingen succesvol opnieuw gegenereerd",
+    regenFailed: "Opnieuw genereren van koppelingen mislukt",
+  },
+
+  tobacconist: {
+    tobacconist: "Expert tabaksspecialist",
+    avatarAlt: "Tabaksspecialist",
+    title: "De Tabaksspecialist",
+    tabChat: "Chat",
+    tabActions: "Acties",
+    sending: "Verzenden...",
+    inputPlaceholder: "Stel een vraag over pijpen of tabak...",
+    regeneratePairings: "Koppelingen opnieuw genereren",
+    undoPairings: "Koppelingen ongedaan maken",
+    regenerateOptimization: "Optimalisatie opnieuw genereren",
+    undoOptimization: "Optimalisatie ongedaan maken",
+    actionsNote: "Deze acties zullen uw collectiegegevens bijwerken.",
+    fingerprint: "Collectie-vingerafdruk",
+    quickAccess: "Snelle toegang",
+    actionsReady: "Acties gereed",
+    pairingsRegenerated: "Koppelingen succesvol opnieuw gegenereerd",
+    failedToRegeneratePairings: "Opnieuw genereren van koppelingen mislukt",
+    pairingsReverted: "Koppelingen teruggezet naar vorige versie",
+    failedToUndoPairings: "Ongedaan maken van koppelingen mislukt",
+    optimizationRegenerated: "Optimalisatie succesvol opnieuw gegenereerd",
+    failedToRegenerateOptimization: "Opnieuw genereren van optimalisatie mislukt",
+    optimizationReverted: "Optimalisatie teruggezet naar vorige versie",
+    failedToUndoOptimization: "Ongedaan maken van optimalisatie mislukt",
+    failedToStartConversation: "Starten van gesprek mislukt",
+    failedToSendMessage: "Verzenden van bericht mislukt",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Zoeken op mengselnaam of fabrikant (bijv. 'Orlik Golden Sliced')",
+    searchBtn: "Zoeken",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Verwerken van verduidelijking mislukt. Probeer het opnieuw.",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper kon niet laden",
+    body: "Sluit de app en open hem opnieuw. Als dit blijft gebeuren, neem dan contact op met ondersteuning.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "Kan App Store-instellingen niet openen. Beheer uw abonnement in de Instellingen-app.",
+  },
+
+  debug: {
+    snapshotCopied: "Momentopname gekopieerd",
+    copyFailed: "Kopiëren mislukt – klembord niet beschikbaar",
+    i18nReportDownloaded: "i18n-rapport gedownload",
+    i18nReportCleared: "i18n-rapport gewist",
   },
 };
 

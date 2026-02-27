@@ -1,6 +1,8 @@
 // Apple In-App Purchase utility for iOS builds
 // Handles opening App Store subscription settings on iOS
 
+import { translate } from "@/components/i18n/safeTranslation";
+
 export async function openAppleSettings() {
   if (!window.__PIPEKEEPER_VARIANT__ || window.__PIPEKEEPER_VARIANT__ !== 'apple') {
     console.warn('openAppleSettings called on non-Apple build');
@@ -17,6 +19,7 @@ export async function openAppleSettings() {
     }
   } catch (error) {
     console.error('[openAppleSettings] Error:', error);
-    alert('Unable to open App Store settings. Please manage your subscription in the Settings app.');
+    const lang = (() => { try { return localStorage.getItem('pk_lang') || 'en'; } catch { return 'en'; } })();
+    alert(translate("appleIAP.openSettingsFailed", {}, lang));
   }
 }

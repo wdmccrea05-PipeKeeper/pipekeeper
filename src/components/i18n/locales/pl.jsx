@@ -118,7 +118,6 @@ export default {
   },
   insights: { insights: "Statystyki", analytics: "Analityka", statistics: "Statystyki", summary: "Podsumowanie", overview: "Przegląd", trends: "Trendy", mostValued: "Najcenniejsze", mostSmoked: "Najczęściej palony", favorites: "Ulubione", recentActivity: "Ostatnia aktywność", recommendations: "Rekomendacje", cellaredBreakdown: "Struktura piwnicy", collectionSize: "Rozmiar kolekcji", totalValue: "Łączna wartość", averageRating: "Średnia ocena", noInsights: "Brak dostępnych statystyk", loadingInsights: "Ładowanie statystyk...", reportsTooltip: "Generuj eksportowalne podsumowania kolekcji do celów referencyjnych lub dokumentacyjnych.", agingTooltip: "Monitoruj przechowywany tytoń i otrzymuj zalecenia dotyczące optymalnych czasów dojrzewania na podstawie cech mieszanki." },
   smokingLog: { smokingLog: "Dziennik palenia", logSmoke: "Zaloguj palenie", addEntry: "Dodaj wpis", date: "Data", pipe: "Fajka", tobacco: "Tytoń", duration: "Czas trwania", roomNote: "Nota zapachowa", noEntries: "Brak wpisów", history: "Historia", statistics: "Statystyki", recent: "Ostatnie" },
-  tobacconist: { tobacconist: "Ekspert tytoniowy", askTobacconist: "Zapytaj eksperta", recommendations: "Rekomendacje", askQuestion: "Zadaj pytanie...", sendMessage: "Wyślij", conversation: "Rozmowa", noMessages: "Brak wiadomości", startConversation: "Rozpocznij rozmowę", connecting: "Łączenie z ekspertem...", connected: "Połączono", disconnected: "Rozłączono" },
   agent: { agent: "Asystent AI", agentTitle: "Ekspert tytoniowy AI", agentDescription: "Zadaj pytanie dotyczące fajek i tytoniu", loading: "Ładowanie asystenta...", thinking: "Asystent myśli...", sending: "Wysyłanie...", connected: "Połączono z asystentem", disconnected: "Asystent niedostępny", error: "Błąd asystenta. Spróbuj ponownie.", clearChat: "Wyczyść czat", newConversation: "Nowa rozmowa", messageInput: "Wpisz wiadomość...", sendMessage: "Wyślij wiadomość", suggestions: "Sugestie", disclaimer: "Odpowiedzi AI służą wyłącznie celom informacyjnym." },
   auth: { login: "Zaloguj się", logout: "Wyloguj się", register: "Zarejestruj się", signup: "Zarejestruj się", signin: "Zaloguj się", forgotPassword: "Zapomniałeś hasła?", resetPassword: "Resetuj hasło", verifyEmail: "Weryfikuj e-mail", verificationCode: "Kod weryfikacyjny", checkEmail: "Sprawdź swoją skrzynkę e-mail", codeExpired: "Kod wygasł", requestNewCode: "Poproś o nowy kod", emailSent: "Wysłano e-mail", openEmail: "Otwórz klienta pocztowego", emailNotReceived: "Nie otrzymałeś e-maila?", spamFolder: "Sprawdź folder spam", tryAgain: "Spróbuj ponownie", loginRequired: "Wymagane logowanie", sessionExpired: "Sesja wygasła", pleaseLogin: "Zaloguj się, aby kontynuować", loginWith: "Zaloguj się przez", orContinueWith: "Lub kontynuuj przez", acceptTerms: "Akceptuję regulamin", loginRequired: "Musisz być zalogowany, aby uzyskać dostęp do tej funkcji." },
   community: { community: "Społeczność", posts: "Posty", comments: "Komentarze", likes: "Polubienia", shares: "Udostępnienia", followers: "Obserwujący", following: "Obserwujesz", follow: "Obserwuj", unfollow: "Przestań obserwować", createPost: "Utwórz post", sharePost: "Udostępnij post", likePost: "Polub post", unlikePost: "Cofnij polubienie", addComment: "Dodaj komentarz", replyTo: "Odpowiedz na", reportPost: "Zgłoś post", deletePost: "Usuń post", editPost: "Edytuj post", savePost: "Zapisz post", commentsDisabled: "Komentarze są wyłączone dla tego posta.", commentsEnabled: "Komentarze są włączone dla tego posta.", noComments: "Brak komentarzy", beCivil: "Bądź uprzejmy", respectOthers: "Szanuj innych", noBullying: "Bez prześladowania", noSpam: "Bez spamu", guidelines: "Wytyczne społeczności", viewProfile: "Zobacz profil", message: "Wiadomość" },
@@ -243,7 +242,8 @@ export default {
     topicError: "Zgłoś błąd",
     topicBilling: "Pytanie dotyczące rozliczeń",
     topicTechnical: "Problem techniczny",
-    topicOther: "Inne"
+    topicOther: "Inne",
+    sendFailed: "Wysyłanie prośby o pomoc techniczną nie powiodło się. Spróbuj ponownie lub wyślij e-mail bezpośrednio na adres admin@pipekeeperapp.com.",
   },
 
   faqExtended: {
@@ -293,5 +293,76 @@ export default {
     proAccess: "Dostęp do funkcji pro (identyfikacja AI, wyszukiwanie wartości, optymalizacja, eksporty, edycja masowa)",
     providerDetection: "Wykrywanie dostawcy (Stripe, Apple, ręcznie)",
     planLabel: "Generowanie etykiety planu",
-  }
+  },
+
+  pairingMatrix: {
+    loading: "Ładowanie parowania...",
+    title: "Macierz parowania",
+    description: "Oceniona zgodność między każdą fajką a mieszanką tytoniową w Twojej kolekcji",
+    regenSuccess: "Parowanie pomyślnie wygenerowane ponownie",
+    regenFailed: "Ponowne generowanie parowania nie powiodło się",
+  },
+
+  tobacconist: {
+    tobacconist: "Ekspert tytoniowy",
+    avatarAlt: "Tytoniarz",
+    title: "Tytoniarz",
+    tabChat: "Czat",
+    tabActions: "Akcje",
+    sending: "Wysyłanie...",
+    inputPlaceholder: "Zapytaj o fajki lub tytoń...",
+    regeneratePairings: "Wygeneruj parowanie ponownie",
+    undoPairings: "Cofnij parowanie",
+    regenerateOptimization: "Wygeneruj optymalizację ponownie",
+    undoOptimization: "Cofnij optymalizację",
+    actionsNote: "Te akcje zaktualizują dane Twojej kolekcji.",
+    fingerprint: "Odcisk kolekcji",
+    quickAccess: "Szybki dostęp",
+    actionsReady: "Akcje gotowe",
+    pairingsRegenerated: "Parowanie pomyślnie wygenerowane ponownie",
+    failedToRegeneratePairings: "Ponowne generowanie parowania nie powiodło się",
+    pairingsReverted: "Parowanie przywrócone do poprzedniej wersji",
+    failedToUndoPairings: "Cofnięcie parowania nie powiodło się",
+    optimizationRegenerated: "Optymalizacja pomyślnie wygenerowana ponownie",
+    failedToRegenerateOptimization: "Ponowne generowanie optymalizacji nie powiodło się",
+    optimizationReverted: "Optymalizacja przywrócona do poprzedniej wersji",
+    failedToUndoOptimization: "Cofnięcie optymalizacji nie powiodło się",
+    failedToStartConversation: "Rozpoczęcie rozmowy nie powiodło się",
+    failedToSendMessage: "Wysyłanie wiadomości nie powiodło się",
+    askTobacconist: "Zapytaj eksperta",
+    recommendations: "Rekomendacje",
+    askQuestion: "Zadaj pytanie...",
+    sendMessage: "Wyślij",
+    conversation: "Rozmowa",
+    noMessages: "Brak wiadomości",
+    startConversation: "Rozpocznij rozmowę",
+    connecting: "Łączenie z ekspertem...",
+    connected: "Połączono",
+    disconnected: "Rozłączono",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Szukaj według nazwy mieszanki lub producenta (np. 'Orlik Golden Sliced')",
+    searchBtn: "Szukaj",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Przetwarzanie wyjaśnienia nie powiodło się. Spróbuj ponownie.",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper nie mógł się załadować",
+    body: "Zamknij i ponownie otwórz aplikację. Jeśli problem się powtarza, skontaktuj się z pomocą techniczną.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "Nie można otworzyć ustawień App Store. Zarządzaj subskrypcją w aplikacji Ustawienia.",
+  },
+
+  debug: {
+    snapshotCopied: "Migawka skopiowana",
+    copyFailed: "Kopiowanie nie powiodło się – schowek niedostępny",
+    i18nReportDownloaded: "Raport i18n pobrany",
+    i18nReportCleared: "Raport i18n wyczyszczony",
+  },
 };

@@ -114,7 +114,8 @@ const translations = {
     topicError: "Relatar um erro",
     topicBilling: "Pergunta sobre cobrança",
     topicTechnical: "Problema técnico",
-    topicOther: "Outro"
+    topicOther: "Outro",
+    sendFailed: "Falha ao enviar a solicitação de suporte. Tente novamente ou envie um e-mail diretamente para admin@pipekeeperapp.com.",
   },
 
   faqExtended: {
@@ -284,6 +285,67 @@ const translations = {
     proAccess: "Acesso a recursos pro (identificação por IA, pesquisa de valor, otimização, exportações, edição em lote)",
     providerDetection: "Detecção de provedor (Stripe, Apple, manual)",
     planLabel: "Geração de rótulo de plano",
+  },
+
+  pairingMatrix: {
+    loading: "Carregando combinações...",
+    title: "Matriz de combinações",
+    description: "Compatibilidade pontuada entre cada cachimbo e mistura de tabaco na sua coleção",
+    regenSuccess: "Combinações regeneradas com sucesso",
+    regenFailed: "Falha ao regenerar combinações",
+  },
+
+  tobacconist: {
+    tobacconist: "Tabacário especialista",
+    avatarAlt: "Tabacário",
+    title: "O Tabacário",
+    tabChat: "Chat",
+    tabActions: "Ações",
+    sending: "Enviando...",
+    inputPlaceholder: "Pergunte sobre cachimbos ou tabaco...",
+    regeneratePairings: "Regenerar combinações",
+    undoPairings: "Desfazer combinações",
+    regenerateOptimization: "Regenerar otimização",
+    undoOptimization: "Desfazer otimização",
+    actionsNote: "Estas ações atualizarão os dados da sua coleção.",
+    fingerprint: "Impressão digital da coleção",
+    quickAccess: "Acesso rápido",
+    actionsReady: "Ações prontas",
+    pairingsRegenerated: "Combinações regeneradas com sucesso",
+    failedToRegeneratePairings: "Falha ao regenerar combinações",
+    pairingsReverted: "Combinações revertidas para a versão anterior",
+    failedToUndoPairings: "Falha ao desfazer combinações",
+    optimizationRegenerated: "Otimização regenerada com sucesso",
+    failedToRegenerateOptimization: "Falha ao regenerar a otimização",
+    optimizationReverted: "Otimização revertida para a versão anterior",
+    failedToUndoOptimization: "Falha ao desfazer a otimização",
+    failedToStartConversation: "Falha ao iniciar a conversa",
+    failedToSendMessage: "Falha ao enviar a mensagem",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Pesquise por nome de mistura ou fabricante (ex.: 'Orlik Golden Sliced')",
+    searchBtn: "Pesquisar",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Falha ao processar o esclarecimento. Tente novamente.",
+  },
+
+  errorBoundary: {
+    title: "O PipeKeeper não carregou",
+    body: "Feche e reabra o aplicativo. Se o problema persistir, entre em contato com o suporte.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "Não foi possível abrir as configurações da App Store. Gerencie sua assinatura no aplicativo Ajustes.",
+  },
+
+  debug: {
+    snapshotCopied: "Snapshot copiado",
+    copyFailed: "Falha ao copiar – área de transferência indisponível",
+    i18nReportDownloaded: "Relatório i18n baixado",
+    i18nReportCleared: "Relatório i18n limpo",
   },
 };
 

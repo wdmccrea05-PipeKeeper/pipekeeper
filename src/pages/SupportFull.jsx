@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SupportFull() {
@@ -65,7 +66,7 @@ ${formData.message}
       setFormData({ topic: "", name: "", email: "", message: "" });
     } catch (error) {
       console.error('Support email error:', error);
-      alert(`Failed to send support request: ${error?.message || 'Unknown error'}. Please try again or email admin@pipekeeperapp.com directly.`);
+      toast.error(t("supportFull.sendFailed"));
     } finally {
       setIsSubmitting(false);
     }
