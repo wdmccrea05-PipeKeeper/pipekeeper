@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export default function PipeGeometryAnalyzer({ pipes, user, onComplete }) {
   const [selectedPipeId, setSelectedPipeId] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
+  const { t } = useTranslation();
 
   const selectedPipe = pipes.find((p) => String(p.id) === String(selectedPipeId));
 
@@ -33,7 +35,7 @@ export default function PipeGeometryAnalyzer({ pipes, user, onComplete }) {
       selectedPipe.weight_grams;
 
     if (!hasPhotos && !hasDimensions) {
-      toast.error("This pipe needs photos or dimensions to analyze geometry");
+      toast.error(t('pipeGeometry.needsPhotoOrDims'));
       return;
     }
 
@@ -248,7 +250,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
       });
     } catch (err) {
       console.error("Analysis error:", err);
-      toast.error("Failed to analyze pipe geometry");
+      toast.error(t('pipeGeometry.analyzeError'));
     } finally {
       setAnalyzing(false);
     }
@@ -266,11 +268,11 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         applied: { ...prev.applied, [field]: true },
       }));
 
-      toast.success(`Updated ${field}`);
+      toast.success(t('pipeGeometry.updateSuccess', { field }));
       onComplete?.();
     } catch (err) {
       console.error("Apply error:", err);
-      toast.error(`Failed to update ${field}`);
+      toast.error(t('pipeGeometry.updateFailed', { field }));
     }
   };
 
@@ -286,7 +288,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
       });
 
       if (Object.keys(updates).length === 0) {
-        toast.info("No high-confidence suggestions to apply");
+        toast.info(t('pipeGeometry.noHighConfidence'));
         return;
       }
 
@@ -300,11 +302,11 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         return { ...prev, applied: newApplied };
       });
 
-      toast.success(`Applied ${Object.keys(updates).length} updates`);
+      toast.success(t('pipeGeometry.applySuccess', { count: Object.keys(updates).length }));
       onComplete?.();
     } catch (err) {
       console.error("Apply all error:", err);
-      toast.error("Failed to apply updates");
+      toast.error(t('pipeGeometry.applyFailed'));
     }
   };
 
@@ -312,12 +314,12 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
     <div className="space-y-4">
       <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
         <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">Select Pipe to Analyze</CardTitle>
+          <CardTitle className="text-[#e8d5b7]">{t('pipeGeometry.selectPipeTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Select value={selectedPipeId} onValueChange={setSelectedPipeId}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose a pipe..." />
+              <SelectValue placeholder={t('pipeGeometry.choosePipe')} />
             </SelectTrigger>
             <SelectContent>
               {pipes.map((pipe) => (
@@ -331,7 +333,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
           {selectedPipe && (
             <div className="text-sm text-[#e8d5b7]/70 space-y-1">
               <p>
-                Photos: {selectedPipe.photos?.length || 0} | Dimensions:{" "}
+                {t('pipeGeometry.photosCount', { count: selectedPipe.photos?.length || 0 })} | {t('pipeGeometry.dimensions')}:{" "}
                 {[
                   selectedPipe.length_mm && "Length",
                   selectedPipe.bowl_height_mm && "Bowl Height",
@@ -339,7 +341,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
                   selectedPipe.weight_grams && "Weight",
                 ]
                   .filter(Boolean)
-                  .join(", ") || "None"}
+                  .join(", ") || t('pipeGeometry.noDimensions')}
               </p>
             </div>
           )}
@@ -352,12 +354,12 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
             {analyzing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing...
+                {t('pipeGeometry.analyzing')}
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                Analyze Pipe Geometry
+                {t('pipeGeometry.analyzeBtn')}
               </>
             )}
           </Button>
@@ -368,14 +370,14 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
         <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-[#e8d5b7]">Analysis Results</CardTitle>
+              <CardTitle className="text-[#e8d5b7]">{t('pipeGeometry.analysisResults')}</CardTitle>
               <p className="text-xs text-[#e8d5b7]/70 mt-1">
-                Analyzed {results.photos_analyzed || 0} photos
-                {results.dimensions_used && " and dimensions"}
+                {t('pipeGeometry.analyzedPhotos', { count: results.photos_analyzed || 0 })}
+                {results.dimensions_used && t('pipeGeometry.andDimensions')}
               </p>
             </div>
             <Button size="sm" onClick={handleApplyAll} variant="outline">
-              Apply All High Confidence
+              {t('pipeGeometry.applyAllHigh')}
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -397,8 +399,8 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
                 <Info className="w-12 h-12 mx-auto mb-3 text-[#e8d5b7]/50" />
                 <p className="text-[#e8d5b7]/70">
                   {results.warnings?.length > 0
-                    ? "Unable to suggest changes due to missing data."
-                    : "All geometry fields appear correctly set or insufficient data to suggest changes."}
+                    ? t('pipeGeometry.noSuggestionsWarning')
+                    : t('pipeGeometry.noSuggestionsData')}
                 </p>
               </div>
             )}
@@ -420,7 +422,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
                   {results.applied[suggestion.field] ? (
                     <Badge variant="success">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Applied
+                      {t('pipeGeometry.applied')}
                     </Badge>
                   ) : (
                     <Button
@@ -428,7 +430,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
                       variant="outline"
                       onClick={() => handleApply(suggestion.field, suggestion.suggested_value)}
                     >
-                      Apply
+                      {t('pipeGeometry.apply')}
                     </Button>
                   )}
                 </div>
@@ -436,11 +438,11 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
                 <div className="text-sm space-y-1">
                   {suggestion.current_value && (
                     <p className="text-[#e8d5b7]/60">
-                      Current: <span className="text-[#e8d5b7]/80">{suggestion.current_value}</span>
+                      {t('pipeGeometry.current')} <span className="text-[#e8d5b7]/80">{suggestion.current_value}</span>
                     </p>
                   )}
                   <p className="text-[#e8d5b7]/80">
-                    Suggested: <span className="font-medium text-teal-400">{suggestion.suggested_value}</span>
+                    {t('pipeGeometry.suggested')} <span className="font-medium text-teal-400">{suggestion.suggested_value}</span>
                   </p>
                   {suggestion.reasoning && (
                     <p className="text-xs text-[#e8d5b7]/60 italic">{suggestion.reasoning}</p>

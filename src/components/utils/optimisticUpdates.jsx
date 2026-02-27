@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { translate } from '@/components/i18n/safeTranslation';
 
 // Optimistic favorite toggle for pipes
 export function useOptimisticPipeFavorite() {
@@ -34,10 +35,10 @@ export function useOptimisticPipeFavorite() {
       // Rollback on error
       queryClient.setQueryData(['pipes'], context.previousPipes);
       queryClient.setQueryData(['pipe', pipeId], context.previousPipe);
-      toast.error('Failed to update favorite');
+      toast.error(translate('optimistic.favoriteFailed'));
     },
     onSuccess: ({ isFavorite }) => {
-      toast.success(isFavorite ? 'Added to favorites' : 'Removed from favorites');
+      toast.success(isFavorite ? translate('optimistic.addedFavorite') : translate('optimistic.removedFavorite'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['pipes'] });
@@ -73,10 +74,10 @@ export function useOptimisticBlendFavorite() {
     onError: (err, { blendId }, context) => {
       queryClient.setQueryData(['tobacco'], context.previousBlends);
       queryClient.setQueryData(['blend', blendId], context.previousBlend);
-      toast.error('Failed to update favorite');
+      toast.error(translate('optimistic.favoriteFailed'));
     },
     onSuccess: ({ isFavorite }) => {
-      toast.success(isFavorite ? 'Added to favorites' : 'Removed from favorites');
+      toast.success(isFavorite ? translate('optimistic.addedFavorite') : translate('optimistic.removedFavorite'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tobacco'] });
@@ -112,10 +113,10 @@ export function useOptimisticBlendRating() {
     onError: (err, { blendId }, context) => {
       queryClient.setQueryData(['tobacco'], context.previousBlends);
       queryClient.setQueryData(['blend', blendId], context.previousBlend);
-      toast.error('Failed to update rating');
+      toast.error(translate('optimistic.ratingFailed'));
     },
     onSuccess: () => {
-      toast.success('Rating updated');
+      toast.success(translate('optimistic.ratingUpdated'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tobacco'] });
@@ -147,10 +148,10 @@ export function useOptimisticNotesUpdate(entityType) {
     },
     onError: (err, { id }, context) => {
       queryClient.setQueryData([queryKey, id], context.previous);
-      toast.error('Failed to save notes');
+      toast.error(translate('optimistic.notesFailed'));
     },
     onSuccess: () => {
-      toast.success('Notes saved');
+      toast.success(translate('optimistic.notesSaved'));
     },
     onSettled: (data, error, { id }) => {
       queryClient.invalidateQueries({ queryKey: [queryKey, id] });

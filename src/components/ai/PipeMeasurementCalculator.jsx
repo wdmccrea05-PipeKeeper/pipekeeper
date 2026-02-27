@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Loader2, Ruler } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -6,6 +7,7 @@ import { toast } from "sonner";
 
 export default function PipeMeasurementCalculator({ pipe, onUpdate }) {
   const [calculating, setCalculating] = useState(false);
+  const { t } = useTranslation();
 
   const hasMeasurements = pipe.length_mm || pipe.weight_grams || pipe.bowl_diameter_mm || pipe.bowl_depth_mm;
   
@@ -101,13 +103,13 @@ Return JSON with ONLY the missing measurements and geometry details you found ve
 
       if (foundAny) {
         await onUpdate(updates);
-        toast.success(`Found ${Object.keys(updates).filter(k => k !== 'dimensions_found' && k !== 'dimensions_source' && k !== 'notes').length} verified measurements`);
+        toast.success(t('measurementCalc.foundMeasurements', { count: Object.keys(updates).filter(k => k !== 'dimensions_found' && k !== 'dimensions_source' && k !== 'notes').length }));
       } else {
-        toast.info('No verified measurements found for this pipe');
+        toast.info(t('measurementCalc.notFound'));
       }
     } catch (error) {
       console.error('Measurement calculation error:', error);
-      toast.error('Failed to calculate measurements');
+      toast.error(t('measurementCalc.failed'));
     } finally {
       setCalculating(false);
     }
@@ -118,10 +120,10 @@ Return JSON with ONLY the missing measurements and geometry details you found ve
       <div className="flex items-start gap-3">
         <Ruler className="w-5 h-5 text-stone-400 mt-1" />
         <div className="flex-1">
-          <h3 className="font-medium text-stone-800 mb-1">Calculate Missing Measurements</h3>
+          <h3 className="font-medium text-stone-800 mb-1">{t('measurementCalc.title')}</h3>
           <p className="text-sm text-stone-600 mb-3">
-            AI will search for verified manufacturer specifications to fill in missing dimensions.
-            {hasMeasurements && " Only missing measurements will be added."}
+            {t('measurementCalc.desc')}
+            {hasMeasurements && t('measurementCalc.descWithExisting')}
           </p>
           <Button 
             size="sm"
@@ -132,12 +134,12 @@ Return JSON with ONLY the missing measurements and geometry details you found ve
             {calculating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Searching...
+                {t('measurementCalc.searching')}
               </>
             ) : (
               <>
                 <Ruler className="w-4 h-4 mr-2" />
-                Find Measurements
+                {t('measurementCalc.findBtn')}
               </>
             )}
           </Button>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export default function BatchPipeMeasurements({ user, onComplete }) {
   const [dryRun, setDryRun] = useState(false);
   const [progress, setProgress] = useState(null);
   const [results, setResults] = useState(null);
+  const { t } = useTranslation();
 
   const handleBatchProcess = async () => {
     setProcessing(true);
@@ -57,7 +59,7 @@ export default function BatchPipeMeasurements({ user, onComplete }) {
       const allPipes = await fetchAllPipes(user?.email);
       
       if (allPipes.length === 0) {
-        toast.info("No pipes in collection");
+        toast.info(t('batchPipes.noPipes'));
         setProcessing(false);
         return;
       }
@@ -78,7 +80,7 @@ export default function BatchPipeMeasurements({ user, onComplete }) {
           details: [],
         });
         setProcessing(false);
-        toast.info("All pipes already have complete geometry data");
+        toast.info(t('batchPipes.alreadyComplete'));
         return;
       }
 
@@ -246,14 +248,14 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
       });
 
       if (!dryRun && updateCount > 0) {
-        toast.success(`Updated ${updateCount} pipe(s)`);
+        toast.success(t('batchPipes.updatedPipes', { count: updateCount }));
         onComplete?.();
       } else if (dryRun) {
-        toast.info(`Preview: ${batchResults.filter((r) => r.status === "preview").length} pipe(s) would be updated`);
+        toast.info(t('batchPipes.previewWouldUpdate', { count: batchResults.filter((r) => r.status === "preview").length }));
       }
     } catch (err) {
       console.error("Batch processing error:", err);
-      toast.error("Batch processing failed");
+      toast.error(t('batchPipes.batchFailed'));
       setResults({
         total: 0,
         eligible: 0,
@@ -271,17 +273,17 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
   return (
     <Card className="border-[#8b3a3a]/40 bg-[#243548]/95">
       <CardHeader>
-        <CardTitle className="text-[#e8d5b7]">Batch Process All Pipes</CardTitle>
+        <CardTitle className="text-[#e8d5b7]">{t('batchPipes.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-[#e8d5b7]/80">
-          Automatically analyze and update geometry classifications for all pipes with missing or "Unknown" fields.
+          {t('batchPipes.desc')}
         </p>
 
         <div className="flex items-center gap-2">
           <Switch id="dry-run" checked={dryRun} onCheckedChange={setDryRun} disabled={processing} />
           <Label htmlFor="dry-run" className="text-sm text-[#e8d5b7]/80 cursor-pointer">
-            Preview changes only (dry run)
+            {t('batchPipes.dryRunLabel')}
           </Label>
         </div>
 
@@ -293,10 +295,10 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
           {processing ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
+              {t('batchPipes.processing')}
             </>
           ) : (
-            <>Process All Pipes</>
+            <>{t('batchPipes.processBtn')}</>
           )}
         </Button>
 
@@ -305,7 +307,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
           <div className="border border-[#e8d5b7]/20 rounded-lg p-4 bg-[#1a2c42]/50">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-[#e8d5b7]">
-                Processing: {progress.current} / {progress.total}
+                {t('batchPipes.processingProgress', { current: progress.current, total: progress.total })}
               </span>
               <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
             </div>
