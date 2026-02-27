@@ -269,6 +269,22 @@ const translations = {
     reportsTooltip: "Generate exportable summaries of your collection for reference or documentation.",
     agingTooltip: "Monitor cellared tobacco and get recommendations on optimal aging times based on blend characteristics.",
   },
+
+  subscriptionTest: {
+    backToHome: "Back to Home",
+    heading: "🧪 Subscription & Permissions E2E Test Suite",
+    description: "This page runs comprehensive tests on the subscription and permissions system to verify that paid users receive correct access to all premium and pro features. Tests run automatically on load.",
+    coverageTitle: "Test Coverage:",
+    hookIntegrity: "Hook data integrity (user, subscription objects)",
+    tierResolution: "Canonical tier resolution across all sources",
+    accessFlags: "Access flag consistency (hasPaid, hasPro, isTrial)",
+    entitlements: "Entitlements system calculations",
+    limitCheck: "Limit check parameter compatibility",
+    premiumAccess: "Premium feature access (unlimited collection, pairing, matching, messaging)",
+    proAccess: "Pro feature access (AI identify, value lookup, optimization, exports, bulk edit)",
+    providerDetection: "Provider detection (Stripe, Apple, manual)",
+    planLabel: "Plan label generation",
+  },
 };
 
 export default translations;

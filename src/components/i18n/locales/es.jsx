@@ -271,6 +271,22 @@ const translations = {
     reportsTooltip: "Genera resúmenes exportables de tu colección para referencia o documentación.",
     agingTooltip: "Monitorea el tabaco en bodega y obtén recomendaciones sobre tiempos de envejecimiento óptimos según las características de la mezcla.",
   },
+
+  subscriptionTest: {
+    backToHome: "Volver al inicio",
+    heading: "🧪 Suite de pruebas E2E de suscripción y permisos",
+    description: "Esta página ejecuta pruebas exhaustivas del sistema de suscripción y permisos para verificar que los usuarios de pago reciban acceso correcto a todas las funciones premium y pro. Las pruebas se ejecutan automáticamente al cargar.",
+    coverageTitle: "Cobertura de pruebas:",
+    hookIntegrity: "Integridad de datos del hook (objetos de usuario y suscripción)",
+    tierResolution: "Resolución canónica de nivel entre todas las fuentes",
+    accessFlags: "Consistencia de indicadores de acceso (hasPaid, hasPro, isTrial)",
+    entitlements: "Cálculos del sistema de derechos",
+    limitCheck: "Compatibilidad de parámetros de verificación de límites",
+    premiumAccess: "Acceso a funciones premium (colección ilimitada, emparejamiento, coincidencia, mensajería)",
+    proAccess: "Acceso a funciones pro (identificación AI, búsqueda de valor, optimización, exportaciones, edición masiva)",
+    providerDetection: "Detección de proveedor (Stripe, Apple, manual)",
+    planLabel: "Generación de etiqueta de plan",
+  },
 };
 
 export default translations;

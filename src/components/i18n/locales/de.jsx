@@ -269,6 +269,22 @@ const translations = {
     reportsTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zur Referenz oder Dokumentation.",
     agingTooltip: "Überwachen Sie gekellertes Tabak und erhalten Sie Empfehlungen zu optimalen Reifungszeiten basierend auf Mischeigenschaften.",
   },
+
+  subscriptionTest: {
+    backToHome: "Zurück zur Startseite",
+    heading: "🧪 Abonnement & Berechtigungen E2E-Test-Suite",
+    description: "Diese Seite führt umfassende Tests des Abonnement- und Berechtigungssystems durch, um zu überprüfen, dass zahlende Nutzer den korrekten Zugriff auf alle Premium- und Pro-Funktionen erhalten. Tests werden beim Laden automatisch ausgeführt.",
+    coverageTitle: "Testabdeckung:",
+    hookIntegrity: "Hook-Datenintegrität (Benutzer- und Abonnementobjekte)",
+    tierResolution: "Kanonische Stufenauflösung über alle Quellen",
+    accessFlags: "Konsistenz der Zugriffsflags (hasPaid, hasPro, isTrial)",
+    entitlements: "Berechnungen des Berechtigungssystems",
+    limitCheck: "Kompatibilität der Limit-Prüfparameter",
+    premiumAccess: "Zugriff auf Premium-Funktionen (unbegrenzte Sammlung, Paarung, Matching, Messaging)",
+    proAccess: "Zugriff auf Pro-Funktionen (KI-Identifikation, Wertsuche, Optimierung, Exporte, Massenbearbeitung)",
+    providerDetection: "Anbietererkennung (Stripe, Apple, manuell)",
+    planLabel: "Generierung von Planbezeichnungen",
+  },
 };
 
 export default translations;

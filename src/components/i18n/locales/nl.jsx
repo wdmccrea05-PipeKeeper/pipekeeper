@@ -269,6 +269,22 @@ const translations = {
     reportsTooltip: "Genereer exporteerbare samenvattingen van uw collectie voor referentie of documentatie.",
     agingTooltip: "Bewaak gecellerd tabak en ontvang aanbevelingen voor optimale rijpingstijden op basis van mengkenmerken.",
   },
+
+  subscriptionTest: {
+    backToHome: "Terug naar home",
+    heading: "🧪 Abonnement & Machtigingen E2E-testsuite",
+    description: "Deze pagina voert uitgebreide tests uit op het abonnements- en machtigingssysteem om te verifiëren dat betalende gebruikers correct toegang krijgen tot alle premium- en pro-functies. Tests worden automatisch uitgevoerd bij laden.",
+    coverageTitle: "Testdekking:",
+    hookIntegrity: "Hook-gegevensintegriteit (gebruikers- en abonnementsobjecten)",
+    tierResolution: "Canonieke niveauresolutie over alle bronnen",
+    accessFlags: "Consistentie van toegangsvlaggen (hasPaid, hasPro, isTrial)",
+    entitlements: "Berekeningen van het rechtensysteem",
+    limitCheck: "Compatibiliteit van limietcontroleparameters",
+    premiumAccess: "Toegang tot premiumfuncties (onbeperkte collectie, koppeling, matching, berichten)",
+    proAccess: "Toegang tot pro-functies (AI-identificatie, waardeopzoeking, optimalisatie, exports, bulkbewerking)",
+    providerDetection: "Providerdetectie (Stripe, Apple, handmatig)",
+    planLabel: "Generatie van planlabel",
+  },
 };
 
 export default translations;

@@ -277,5 +277,21 @@ export default {
     purchaseSuggestions: "Sugerowane nabycia",
     avgScoreImprovement: "średnia poprawa wyniku",
     fillsGapFor: "Wypełnia lukę",
+  },
+
+  subscriptionTest: {
+    backToHome: "Powrót do strony głównej",
+    heading: "🧪 Pakiet testów E2E subskrypcji i uprawnień",
+    description: "Ta strona przeprowadza kompleksowe testy systemu subskrypcji i uprawnień, aby zweryfikować, że płacący użytkownicy otrzymują prawidłowy dostęp do wszystkich funkcji premium i pro. Testy uruchamiają się automatycznie po załadowaniu.",
+    coverageTitle: "Zakres testów:",
+    hookIntegrity: "Integralność danych hooka (obiekty użytkownika i subskrypcji)",
+    tierResolution: "Kanoniczna rozdzielczość poziomu we wszystkich źródłach",
+    accessFlags: "Spójność flag dostępu (hasPaid, hasPro, isTrial)",
+    entitlements: "Obliczenia systemu uprawnień",
+    limitCheck: "Zgodność parametrów sprawdzania limitów",
+    premiumAccess: "Dostęp do funkcji premium (nieograniczona kolekcja, parowanie, dopasowywanie, wiadomości)",
+    proAccess: "Dostęp do funkcji pro (identyfikacja AI, wyszukiwanie wartości, optymalizacja, eksporty, edycja masowa)",
+    providerDetection: "Wykrywanie dostawcy (Stripe, Apple, ręcznie)",
+    planLabel: "Generowanie etykiety planu",
   }
 };
