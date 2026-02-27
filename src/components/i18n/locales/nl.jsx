@@ -329,7 +329,7 @@ const translations = {
     collectionLoadingRetry: "Collectiegegevens worden geladen… probeer het over een moment opnieuw.",
     couldntLoadResponse: "Kon geen reactie laden van de expertagent. Probeer het opnieuw.",
     answeredBy: "Beantwoord door:",
-    askExpertPlaceholder: "Stel vragen over pijpen, mengsels, parideeën, veroudering, waarde, redundantie…",
+    askExpertPlaceholder: "Stel vragen over pijpen, mengsels, paarideeën, veroudering, waarde, redundantie…",
   },
 
   tobaccoSearch: {
