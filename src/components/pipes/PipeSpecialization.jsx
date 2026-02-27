@@ -40,8 +40,8 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
       onUpdate({ focus: updated });
       // Invalidate AI queries when focus changes
       invalidateAIQueries(queryClient, pipe.created_by);
-      toast.success('Focus updated - AI recommendations will refresh', {
-        description: 'Regenerate pairings and optimizations to see updated scores'
+      toast.success(t("pipeDetailTabs.focusUpdated"), {
+        description: t("pipeDetailTabs.regenerateToSeeUpdates")
       });
     }
   };
