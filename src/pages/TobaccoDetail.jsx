@@ -449,7 +449,7 @@ export default function TobaccoDetailPage() {
               <Card className="border-white/10">
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.notes")}</p>
-                  <p className="text-[#E0D8C8]/80">{blend.notes}</p>
+                  <p className="text-[#E0D8C8]/80 break-words">{blend.notes}</p>
                 </CardContent>
               </Card>
             )}

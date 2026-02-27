@@ -51,14 +51,14 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
             </Button>
           </div>
           {pipe.estimated_value && (
-            <div className="absolute bottom-3 left-3">
-              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm text-sm">
+            <div className="absolute bottom-3 left-3 max-w-[calc(100%-24px)]">
+              <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm font-semibold shadow-sm text-sm truncate max-w-full">
                 {formatCurrency(+pipe.estimated_value)}
               </Badge>
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4 min-w-0">
          <h3 className="font-semibold text-[#E0D8C8] truncate text-base">{pipe.name}</h3>
          <p className="text-sm text-[#E0D8C8]/70 truncate">{pipe.maker || t("pipesExtended.unknownMaker")}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
