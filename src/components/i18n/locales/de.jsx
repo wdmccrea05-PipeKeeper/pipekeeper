@@ -354,6 +354,23 @@ const translations = {
     clarificationFailed: "Verarbeitung der Präzisierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatisch",
+    nonAromatic:     "Nicht Aromatisch",
+    lightAromatics:  "Leicht Aromatisch",
+    mediumAromatics: "Mittel Aromatisch",
+    heavyAromatics:  "Stark Aromatisch",
+    english:         "Englisch",
+    balkan:          "Balkan",
+    latakiaBlend:    "Latakia-Mischung",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "Burley-basiert",
+    oriental:        "Oriental/Türkisch",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Etwas ist schiefgelaufen",
     body: "Bitte schließen und öffnen Sie die App erneut. Falls das Problem weiterhin besteht, kontaktieren Sie den Support.",

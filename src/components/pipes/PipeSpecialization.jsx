@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Target, Plus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -12,38 +12,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SpecializationRecommender from "./SpecializationRecommender";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { FOCUS_OPTIONS, FOCUS_LABEL_KEY } from "@/components/utils/focusOptions";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [newDesignation, setNewDesignation] = useState('');
   const [designations, setDesignations] = useState(pipe.focus || []);
-  const [isAdding, setIsAdding] = useState(false);
-  
-  const suggestedFocusOptions = [
-    'Aromatic',
-    'Non-Aromatic',
-    'English',
-    'Virginia',
-    'Virginia/Perique',
-    'Balkan',
-    'Latakia Blend',
-    'Burley'
-  ];
 
-  const handleAdd = () => {
-    if (newDesignation.trim()) {
-      const updated = [...designations, newDesignation.trim()];
-      setDesignations(updated);
-      setNewDesignation('');
-      onUpdate({ focus: updated });
-      // Invalidate AI queries when focus changes
-      invalidateAIQueries(queryClient, pipe.created_by);
-      toast.success(t("pipeDetailTabs.focusUpdated"), {
-        description: t("pipeDetailTabs.regenerateToSeeUpdates")
-      });
-    }
+  const handleSelectFocus = (canonical) => {
+    if (!canonical || designations.includes(canonical)) return;
+    const updated = [...designations, canonical];
+    setDesignations(updated);
+    onUpdate({ focus: updated });
+    invalidateAIQueries(queryClient, pipe.created_by);
+    toast.success(t("pipeDetailTabs.focusUpdated"), {
+      description: t("pipeDetailTabs.regenerateToSeeUpdates")
+    });
   };
 
   const handleRemove = (index) => {
@@ -143,47 +128,49 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {designations.map((designation, idx) => (
-            <Badge key={idx} className="bg-blue-100 text-blue-800 border-blue-200 pr-1">
-              {designation}
-              {editing && (
-                <button
-                  onClick={() => handleRemove(idx)}
-                  className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </Badge>
-          ))}
+          {designations.map((canonical, idx) => {
+            const labelKey = FOCUS_LABEL_KEY[canonical];
+            const label = labelKey ? t(labelKey, canonical) : canonical;
+            return (
+              <Badge key={idx} className="bg-blue-100 text-blue-800 border-blue-200 pr-1">
+                {label}
+                {editing && (
+                  <button
+                    onClick={() => handleRemove(idx)}
+                    className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </Badge>
+            );
+          })}
         </div>
 
         {editing && (
           <div className="space-y-2">
-            <div className="flex gap-2">
-              <Input
-                placeholder={t("pipeDetailTabs.addDesignationPlaceholder")}
-                value={newDesignation}
-                onChange={(e) => setNewDesignation(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-                className="text-sm"
-              />
-              <Button size="sm" onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+            <Select onValueChange={handleSelectFocus}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder={t("pipeDetailTabs.addDesignationPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {FOCUS_OPTIONS.filter(o => !designations.includes(o.canonical)).map(option => (
+                  <SelectItem key={option.canonical} value={option.canonical}>
+                    {t(option.labelKey, option.canonical)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="flex flex-wrap gap-1.5">
               <p className="text-xs text-stone-500 w-full mb-1">{t("pipeDetailTabs.quickAdd")}</p>
-              {suggestedFocusOptions.map(option => (
+              {FOCUS_OPTIONS.filter(o => !designations.includes(o.canonical)).map(option => (
                 <Badge
-                  key={option}
+                  key={option.canonical}
                   variant="outline"
                   className="cursor-pointer hover:bg-blue-100 text-xs border-blue-200"
-                  onClick={() => {
-                    setNewDesignation(option);
-                  }}
+                  onClick={() => handleSelectFocus(option.canonical)}
                 >
-                  {option}
+                  {t(option.labelKey, option.canonical)}
                 </Badge>
               ))}
             </div>

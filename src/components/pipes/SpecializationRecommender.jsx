@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { FOCUS_LABEL_KEY } from "@/components/utils/focusOptions";
 
 export default function SpecializationRecommender({ pipe, onApplyRecommendation }) {
   const { t } = useTranslation();
@@ -104,11 +105,15 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
                     <div className="flex-1">
                       <h3 className="font-semibold text-purple-900">{t("specializationRec.recommendedSpecializations")}</h3>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {recommendation.recommended_specializations?.map((spec, idx) => (
-                          <Badge key={idx} className="bg-purple-100 text-purple-800 border-purple-300">
-                            {spec}
-                          </Badge>
-                        ))}
+                        {recommendation.recommended_specializations?.map((canonical, idx) => {
+                          const labelKey = FOCUS_LABEL_KEY[canonical];
+                          const label = labelKey ? t(labelKey, canonical) : canonical;
+                          return (
+                            <Badge key={idx} className="bg-purple-100 text-purple-800 border-purple-300">
+                              {label}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

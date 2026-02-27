@@ -356,6 +356,23 @@ const translations = {
     clarificationFailed: "Error al procesar la aclaración. Por favor, inténtalo de nuevo.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromático",
+    nonAromatic:     "No Aromático",
+    lightAromatics:  "Aromáticos Ligeros",
+    mediumAromatics: "Aromáticos Medios",
+    heavyAromatics:  "Aromáticos Intensos",
+    english:         "Inglés",
+    balkan:          "Balcán",
+    latakiaBlend:    "Mezcla de Latakia",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "Base de Burley",
+    oriental:        "Oriental/Turco",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Algo salió mal",
     body: "Por favor, cierra y vuelve a abrir la aplicación. Si esto sigue ocurriendo, contacta al soporte.",

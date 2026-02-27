@@ -354,6 +354,23 @@ const translations = {
     clarificationFailed: "Elaborazione del chiarimento non riuscita. Riprova.",
   },
 
+  focusOptions: {
+    aromatic:        "Aromatico",
+    nonAromatic:     "Non Aromatico",
+    lightAromatics:  "Aromatici Leggeri",
+    mediumAromatics: "Aromatici Medi",
+    heavyAromatics:  "Aromatici Intensi",
+    english:         "Inglese",
+    balkan:          "Balcanico",
+    latakiaBlend:    "Miscela Latakia",
+    virginia:        "Virginia",
+    virginiaPericue: "Virginia/Perique",
+    burley:          "Burley",
+    burleyBased:     "A base di Burley",
+    oriental:        "Orientale/Turco",
+    kentucky:        "Kentucky",
+  },
+
   errorBoundary: {
     title: "Si è verificato un errore",
     body: "Chiudi e riapri l'app. Se il problema persiste, contatta il supporto.",

@@ -426,9 +426,9 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         <div className="flex items-start gap-3 mb-3">
           <Tags className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a2c42]">{t("tobacconist.tobaccoBlendClassification")}</h3>
+            <h3 className="font-semibold text-[#1a2c42]">{t("aiUpdates.tobaccoBlendClassification")}</h3>
             <p className="text-sm text-[#1a2c42]/85 mt-1">
-              {t("tobacconist.tobaccoBlendClassificationDesc")}
+              {t("aiUpdates.reclassifyBlendsDesc")}
             </p>
           </div>
         </div>
@@ -443,7 +443,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
           ) : (
             <Tags className="w-3 h-3 mr-1" />
           )}
-          {t("tobacconist.reclassifyBlends")} ({(blends || []).length} {t("tobacconist.total")})
+          {t("aiUpdates.reclassifyBlendsBtn", { count: (blends || []).length })}
         </Button>
       </div>
 
