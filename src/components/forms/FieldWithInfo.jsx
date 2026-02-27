@@ -7,7 +7,7 @@ export default function FieldWithInfo({ label, required, helpText, children }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Label>{label} {required && '*'}</Label>
+        <Label className="break-words">{label} {required && '*'}</Label>
         {helpText && (
           <Popover>
             <PopoverTrigger asChild>

@@ -540,7 +540,7 @@ Return complete and accurate information based on the blend name or description 
             {/* Label/Logo */}
              <div className="space-y-2">
                <div className="flex items-center justify-between">
-                 <Label className="text-sm font-medium">{t("tobaccoExtended.labelLogo")}</Label>
+                 <Label className="text-sm font-medium break-words">{t("tobaccoExtended.labelLogo")}</Label>
                  <Button
                    type="button"
                    variant="outline"

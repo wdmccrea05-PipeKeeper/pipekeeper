@@ -361,6 +361,13 @@ export default {
     connected: "接続済み",
     disconnected: "切断されました",
     pressCmdEnter: "⌘Enterで送信",
+    subtitle: "パイプとタバコのAIアシスタント",
+    welcomeMessage: "こんにちは！パイプとタバコのコレクションについて何でも聞いてください。",
+    sendMessage: "メッセージを送信",
+    askTheExpert: "専門家に聞く",
+    askExpertTooltip: "コレクション戦略、仮想購入、またはペアリングアドバイスについて質問してください。",
+    askExpertInstructions: "コレクション戦略、仮想購入、またはペアリングアドバイスについて質問してください。",
+    askPlaceholder: "より大きなビリヤードを追加したらどうなりますか？次に試すべきタバコは何ですか？",
     translating: "翻訳中...",
     translatingInput: "メッセージを翻訳中...",
   },
@@ -401,6 +408,8 @@ export default {
   error: {
     tryAgain: "再試行",
     reloadPage: "ページを再読み込み",
+    somethingWentWrong: "問題が発生しました",
+    unexpectedErrorRefresh: "予期しないエラーが発生しました。ページを更新してみてください。",
   },
 
   messaging: {
@@ -416,5 +425,15 @@ export default {
     copyFailed: "コピー失敗 – クリップボードが利用できません",
     i18nReportDownloaded: "i18nレポートをダウンロードしました",
     i18nReportCleared: "i18nレポートをクリアしました",
+  },
+
+  pipes: {
+    allShapes: "すべての形状",
+    allMaterials: "すべての素材",
+  },
+
+  tobacco: {
+    allTypes: "すべてのタイプ",
+    allStrengths: "すべての強度",
   },
 };

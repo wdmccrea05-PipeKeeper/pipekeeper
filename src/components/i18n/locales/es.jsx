@@ -345,6 +345,13 @@ const translations = {
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pregunta sobre pipas, mezclas, ideas de maridaje, envejecimiento, valor, redundancia…",
     pressCmdEnter: "Presiona ⌘Intro para enviar",
+    subtitle: "Asistente IA para Pipa y Tabaco",
+    welcomeMessage: "¡Hola! Pregúntame lo que quieras sobre tu colección de pipas y tabaco.",
+    sendMessage: "Enviar Mensaje",
+    askTheExpert: "Preguntar al Experto",
+    askExpertTooltip: "Haz preguntas sobre la estrategia de tu colección, compras hipotéticas o consejos de emparejamiento.",
+    askExpertInstructions: "Haz preguntas sobre estrategia de colección, compras hipotéticas o consejos de emparejamiento.",
+    askPlaceholder: "¿Y si añadiera un billar más grande? ¿Qué tabaco debería probar a continuación?",
     translating: "Traduciendo...",
     translatingInput: "Traduciendo tu mensaje...",
   },
@@ -385,6 +392,8 @@ const translations = {
   error: {
     tryAgain: "Intentar de nuevo",
     reloadPage: "Recargar página",
+    somethingWentWrong: "Algo salió mal",
+    unexpectedErrorRefresh: "Hemos encontrado un error inesperado. Por favor, intenta recargar la página.",
   },
 
   messaging: {
@@ -432,6 +441,16 @@ const translations = {
     requestResolved: "Request marked as resolved",
     pendingRequestsSuffix: "pending request(s)",
     userEmailPlaceholder: "user@example.com",
+  },
+
+  pipes: {
+    allShapes: "Todas las formas",
+    allMaterials: "Todos los materiales",
+  },
+
+  tobacco: {
+    allTypes: "Todos los tipos",
+    allStrengths: "Todas las intensidades",
   },
 };
 

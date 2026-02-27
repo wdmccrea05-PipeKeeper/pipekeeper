@@ -343,6 +343,13 @@ const translations = {
     answeredBy: "Beantwortet von:",
     askExpertPlaceholder: "Fragen Sie nach Pfeifen, Mischungen, Empfehlungen, Reifung, Wert, Redundanz…",
     pressCmdEnter: "⌘Eingabe drücken zum Senden",
+    subtitle: "KI-Assistent für Pfeife und Tabak",
+    welcomeMessage: "Hallo! Stellen Sie mir Fragen zu Ihrer Pfeifen- und Tabaksammlung.",
+    sendMessage: "Nachricht Senden",
+    askTheExpert: "Den Experten Fragen",
+    askExpertTooltip: "Stellen Sie Fragen zur Strategie Ihrer Sammlung, zu hypothetischen Käufen oder zu Paarungsratschlägen.",
+    askExpertInstructions: "Stellen Sie Fragen zur Sammlungsstrategie, zu hypothetischen Käufen oder zu Paarungsratschlägen.",
+    askPlaceholder: "Was wäre, wenn ich eine größere Billiard hinzufügen würde? Welchen Tabak sollte ich als nächstes probieren?",
     translating: "Übersetzen...",
     translatingInput: "Ihre Nachricht wird übersetzt...",
   },
@@ -383,6 +390,8 @@ const translations = {
   error: {
     tryAgain: "Erneut versuchen",
     reloadPage: "Seite neu laden",
+    somethingWentWrong: "Etwas ist schiefgelaufen",
+    unexpectedErrorRefresh: "Wir haben einen unerwarteten Fehler festgestellt. Bitte versuche, die Seite neu zu laden.",
   },
 
   messaging: {
@@ -430,6 +439,16 @@ const translations = {
     requestResolved: "Request marked as resolved",
     pendingRequestsSuffix: "pending request(s)",
     userEmailPlaceholder: "user@example.com",
+  },
+
+  pipes: {
+    allShapes: "Alle Formen",
+    allMaterials: "Alle Materialien",
+  },
+
+  tobacco: {
+    allTypes: "Alle Typen",
+    allStrengths: "Alle Stärken",
   },
 };
 

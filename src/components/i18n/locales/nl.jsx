@@ -343,6 +343,13 @@ const translations = {
     answeredBy: "Beantwoord door:",
     askExpertPlaceholder: "Stel vragen over pijpen, mengsels, paarideeën, veroudering, waarde, redundantie…",
     pressCmdEnter: "Druk op ⌘Enter om te verzenden",
+    subtitle: "AI Assistent voor Pijp en Tabak",
+    welcomeMessage: "Hallo! Stel me alles over uw pijp- en tabakcollectie.",
+    sendMessage: "Bericht Verzenden",
+    askTheExpert: "Vraag de Expert",
+    askExpertTooltip: "Stel vragen over uw collectiestrategie, hypothetische aankopen of koppelingsadvies.",
+    askExpertInstructions: "Stel vragen over collectiestrategie, hypothetische aankopen of koppelingsadvies.",
+    askPlaceholder: "Wat als ik een grotere billiard toevoeg? Welke tabak moet ik daarna proberen?",
     translating: "Vertalen...",
     translatingInput: "Uw bericht vertalen...",
   },
@@ -383,6 +390,8 @@ const translations = {
   error: {
     tryAgain: "Opnieuw proberen",
     reloadPage: "Pagina herladen",
+    somethingWentWrong: "Er is iets misgegaan",
+    unexpectedErrorRefresh: "We zijn een onverwachte fout tegengekomen. Probeer de pagina te vernieuwen.",
   },
 
   messaging: {
@@ -430,6 +439,16 @@ const translations = {
     requestResolved: "Request marked as resolved",
     pendingRequestsSuffix: "pending request(s)",
     userEmailPlaceholder: "user@example.com",
+  },
+
+  pipes: {
+    allShapes: "Alle vormen",
+    allMaterials: "Alle materialen",
+  },
+
+  tobacco: {
+    allTypes: "Alle typen",
+    allStrengths: "Alle sterktes",
   },
 };
 
