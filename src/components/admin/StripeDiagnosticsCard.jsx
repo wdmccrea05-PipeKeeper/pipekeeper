@@ -5,8 +5,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { base44 } from "@/api/base44Client";
 import { Activity, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function StripeDiagnosticsCard() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [runtimeKey, setRuntimeKey] = useState(null);
@@ -19,14 +21,14 @@ export default function StripeDiagnosticsCard() {
       const res = await base44.functions.invoke('stripeRuntimeKey');
       setRuntimeKey(res.data);
       if (res.data?.ok && res.data.prefix === "sk") {
-        toast.success('Runtime key check passed');
+        toast.success(t("admin.runtimeKeyPassed", "Runtime key check passed"));
       } else if (res.data?.looksExpired) {
-        toast.error('WARNING: Key may be expired');
+        toast.error(t("admin.keyMayBeExpired", "WARNING: Key may be expired"));
       } else {
-        toast.error('Runtime key issue detected');
+        toast.error(t("admin.runtimeKeyIssue", "Runtime key issue detected"));
       }
     } catch (err) {
-      toast.error('Runtime key check failed: ' + (err.message || 'Unknown error'));
+      toast.error(t("admin.runtimeKeyFailed", "Runtime key check failed: {msg}", { msg: err.message || "Unknown error" }));
       setRuntimeKey({ ok: false, error: err.message });
     }
   };
@@ -36,17 +38,17 @@ export default function StripeDiagnosticsCard() {
     try {
       const res = await base44.functions.invoke('forceStripeRefresh');
       if (res.data?.ok) {
-        toast.success('Stripe refreshed and validated');
+        toast.success(t("admin.stripeRefreshed", "Stripe refreshed and validated"));
         // Re-check all diagnostics
         await Promise.all([
           runRuntimeKeyCheck(),
           checkDeploymentStatus()
         ]);
       } else {
-        toast.error('Stripe refresh failed: ' + (res.data?.message || 'Unknown'));
+        toast.error(t("admin.stripeRefreshFailed", "Stripe refresh failed: {msg}", { msg: res.data?.message || "Unknown" }));
       }
     } catch (err) {
-      toast.error('Refresh failed: ' + (err.message || 'Unknown error'));
+      toast.error(t("admin.refreshFailed", "Refresh failed: {msg}", { msg: err.message || "Unknown error" }));
     } finally {
       setRefreshing(false);
     }
@@ -88,12 +90,12 @@ export default function StripeDiagnosticsCard() {
       
       setDeployStatus(transformed);
       if (transformed.ok) {
-        toast.success('Deployment status: Healthy');
+        toast.success(t("admin.deploymentHealthy", "Deployment status: Healthy"));
       } else {
-        toast.warning('Deployment issues detected');
+        toast.warning(t("admin.deploymentIssues", "Deployment issues detected"));
       }
     } catch (err) {
-      toast.error('Status check failed: ' + (err.message || 'Unknown'));
+      toast.error(t("admin.statusCheckFailed", "Status check failed: {msg}", { msg: err.message || "Unknown" }));
       setDeployStatus({ ok: false, error: err.message });
     }
   };
@@ -103,12 +105,12 @@ export default function StripeDiagnosticsCard() {
       const res = await base44.functions.invoke('stripeForbiddenScan');
       setForbiddenScan(res.data);
       if (res.data?.ok && res.data.violationCount === 0) {
-        toast.success('No forbidden Stripe patterns found');
+        toast.success(t("admin.noForbiddenPatterns", "No forbidden Stripe patterns found"));
       } else if (res.data?.violationCount > 0) {
-        toast.error(`Found ${res.data.violationCount} forbidden Stripe pattern(s)`);
+        toast.error(t("admin.forbiddenPatternsFound", "Found {n} forbidden Stripe pattern(s)", { n: res.data.violationCount }));
       }
     } catch (err) {
-      toast.error('Forbidden scan failed: ' + (err.message || 'Unknown error'));
+      toast.error(t("admin.forbiddenScanFailed", "Forbidden scan failed: {msg}", { msg: err.message || "Unknown error" }));
       setForbiddenScan({ ok: false, error: err.message });
     }
   };
@@ -117,12 +119,12 @@ export default function StripeDiagnosticsCard() {
     try {
       const res = await base44.functions.invoke('adminPing');
       if (res.data?.ok) {
-        toast.success('Admin routing is working');
+        toast.success(t("admin.adminRoutingWorking", "Admin routing is working"));
       } else {
-        toast.error('Admin ping failed');
+        toast.error(t("admin.adminPingFailed", "Admin ping failed"));
       }
     } catch (err) {
-      toast.error('Admin ping failed: ' + (err.message || 'Unknown error'));
+      toast.error(t("admin.adminPingFailedMsg", "Admin ping failed: {msg}", { msg: err.message || "Unknown error" }));
     }
   };
 
@@ -135,14 +137,14 @@ export default function StripeDiagnosticsCard() {
       setResult(response.data);
       
       if (response.data.hardFail) {
-        toast.error("Critical: Forbidden Stripe constructors detected!");
+        toast.error(t("admin.criticalForbiddenConstructors", "Critical: Forbidden Stripe constructors detected!"));
       } else if (!response.data.stripeSanityOk) {
-        toast.error("Stripe authentication failed");
+        toast.error(t("admin.stripeAuthFailed", "Stripe authentication failed"));
       } else {
-        toast.success("Stripe diagnostics passed");
+        toast.success(t("admin.stripeDiagsPassed", "Stripe diagnostics passed"));
       }
     } catch (err) {
-      toast.error(err.message || "Failed to run diagnostics");
+      toast.error(err.message || t("admin.failedToRunDiagnostics", "Failed to run diagnostics"));
       setResult({ ok: false, error: err.message });
     } finally {
       setLoading(false);
