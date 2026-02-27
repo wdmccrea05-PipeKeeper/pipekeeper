@@ -152,6 +152,7 @@ export const translations = {
       welcomeMessage: "Hello! Ask me anything about your pipe and tobacco collection.",
       answeredBy: "Answered by:",
       askExpertPlaceholder: "Ask about pipes, blends, pairing ideas, aging, value, redundancy…",
+      expertTobacconistAlt: "Expert Tobacconist",
       pressCmdEnter: "Press ⌘Enter to send",
     },
     layout: {
@@ -359,6 +360,7 @@ export const translations = {
       welcomeMessage: "¡Hola! Pregúntame lo que quieras sobre tu colección de pipas y tabaco.",
       answeredBy: "Respondido por:",
       askExpertPlaceholder: "Pregunta sobre pipas, mezclas, ideas de emparejamiento, envejecimiento, valor, redundancia…",
+      expertTobacconistAlt: "Tabaquista experto",
       pressCmdEnter: "Presiona ⌘Intro para enviar",
     },
     layout: {
@@ -566,6 +568,7 @@ export const translations = {
       welcomeMessage: "Bonjour ! Posez-moi n'importe quelle question sur votre collection de pipes et de tabac.",
       answeredBy: "Répondu par :",
       askExpertPlaceholder: "Posez des questions sur les pipes, mélanges, associations, vieillissement, valeur, redondance…",
+      expertTobacconistAlt: "Buraliste expert",
       pressCmdEnter: "Appuyez sur ⌘Entrée pour envoyer",
     },
     layout: {
@@ -773,6 +776,7 @@ export const translations = {
       welcomeMessage: "Hallo! Stellen Sie mir Fragen zu Ihrer Pfeifen- und Tabaksammlung.",
       answeredBy: "Beantwortet von:",
       askExpertPlaceholder: "Fragen zu Pfeifen, Mischungen, Pairing-Ideen, Reifung, Wert, Redundanz…",
+      expertTobacconistAlt: "Experten-Tabakhändler",
       pressCmdEnter: "⌘Eingabe drücken zum Senden",
     },
     layout: {
@@ -980,6 +984,7 @@ export const translations = {
       welcomeMessage: "Ciao! Chiedimi qualsiasi cosa sulla tua collezione di pipe e tabacco.",
       answeredBy: "Risposto da:",
       askExpertPlaceholder: "Chiedi di pipe, miscele, abbinamenti, invecchiamento, valore, ridondanze…",
+      expertTobacconistAlt: "Tabaccaio esperto",
       pressCmdEnter: "Premi ⌘Invio per inviare",
     },
     layout: {
@@ -1187,6 +1192,7 @@ export const translations = {
       welcomeMessage: "Olá! Pergunte-me qualquer coisa sobre sua coleção de cachimbos e tabaco.",
       answeredBy: "Respondido por:",
       askExpertPlaceholder: "Pergunte sobre cachimbos, blends, ideias de emparelhamento, envelhecimento, valor, redundâncias…",
+      expertTobacconistAlt: "Tabacário especialista",
       pressCmdEnter: "Pressione ⌘Enter para enviar",
     },
     layout: {
@@ -1394,6 +1400,7 @@ export const translations = {
       welcomeMessage: "Hallo! Stel me alles over uw pijp- en tabakcollectie.",
       answeredBy: "Beantwoord door:",
       askExpertPlaceholder: "Vraag over pijpen, mengsels, koppelingsideeën, rijping, waarde, redundantie…",
+      expertTobacconistAlt: "Expert tabaksspecialist",
       pressCmdEnter: "Druk op ⌘Enter om te verzenden",
     },
     layout: {
@@ -1601,6 +1608,7 @@ export const translations = {
       welcomeMessage: "Cześć! Zapytaj mnie o cokolwiek dotyczącego Twojej kolekcji fajek i tytoniu.",
       answeredBy: "Odpowiedział:",
       askExpertPlaceholder: "Pytaj o fajki, mieszanki, pomysły parowania, dojrzewanie, wartość, redundancje…",
+      expertTobacconistAlt: "Ekspert tytoniowy",
       pressCmdEnter: "Naciśnij ⌘Enter, aby wysłać",
     },
     aiUpdates: {
@@ -1803,6 +1811,7 @@ export const translations = {
       welcomeMessage: "こんにちは！パイプとタバコのコレクションについて何でも聞いてください。",
       answeredBy: "回答者：",
       askExpertPlaceholder: "パイプ、ブレンド、ペアリングアイデア、熟成、価値、重複についてお聞きください…",
+      expertTobacconistAlt: "エキスパートタバコニスト",
       pressCmdEnter: "⌘Enterで送信",
     },
     aiUpdates: {
@@ -2005,6 +2014,7 @@ export const translations = {
       welcomeMessage: "您好！有关烟斗和烟草收藏的任何问题都可以问我。",
       answeredBy: "回答者：",
       askExpertPlaceholder: "询问有关烟斗、混合料、搭配想法、陈化、价值、冗余的问题…",
+      expertTobacconistAlt: "专业烟草商",
       pressCmdEnter: "按⌘Enter发送",
     },
     aiUpdates: {

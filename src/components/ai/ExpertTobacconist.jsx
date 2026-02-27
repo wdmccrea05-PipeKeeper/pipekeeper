@@ -29,7 +29,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg">
             <img 
               src={TOBACCONIST_ICON}
-              alt="Expert Tobacconist"
+              alt={t("tobacconist.expertTobacconistAlt")}
               className="w-full h-full object-cover scale-110"
             />
           </div>

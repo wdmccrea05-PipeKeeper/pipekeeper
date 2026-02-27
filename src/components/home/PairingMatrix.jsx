@@ -132,9 +132,9 @@ export default function PairingMatrix({ user }) {
       <CardContent className="space-y-3">
          {pairings.length === 0 ? (
            <div className="flex flex-col items-center justify-center py-8 text-center">
-             <p className="text-sm text-[#E0D8C8]/70 mb-2">No pairing data yet</p>
+             <p className="text-sm text-[#E0D8C8]/70 mb-2">{t("pairingMatrix.noPairingData")}</p>
              <p className="text-xs text-[#E0D8C8]/50 mb-4 max-w-md">
-               Add pipes and tobacco to your collection, then generate AI-powered pairing recommendations.
+               {t("pairingMatrix.noPairingDataDesc")}
              </p>
              <div className="flex gap-3">
                <a href={createPageUrl('Pipes')}>

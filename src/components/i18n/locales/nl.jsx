@@ -293,6 +293,8 @@ const translations = {
     description: "Beoordeelde compatibiliteit tussen elke pijp en tabaksmengsel in uw collectie",
     regenSuccess: "Koppelingen succesvol opnieuw gegenereerd",
     regenFailed: "Opnieuw genereren van koppelingen mislukt",
+    noPairingData: "Nog geen koppelingsgegevens",
+    noPairingDataDesc: "Voeg pijpen en tabak toe aan uw collectie en genereer vervolgens AI-gestuurde koppelingsaanbevelingen.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Ongedaan maken van optimalisatie mislukt",
     failedToStartConversation: "Starten van gesprek mislukt",
     failedToSendMessage: "Verzenden van bericht mislukt",
+    expertTobacconistAlt: "Expert tabaksspecialist",
+    aiTobacconistAlt: "AI-tabaksspecialist",
+    failedToInitializeExpertChat: "Initialiseren van expertchat mislukt",
+    collectionLoadingRetry: "Collectiegegevens worden geladen… probeer het over een moment opnieuw.",
+    couldntLoadResponse: "Kon geen reactie laden van de expertagent. Probeer het opnieuw.",
+    answeredBy: "Beantwoord door:",
+    askExpertPlaceholder: "Stel vragen over pijpen, mengsels, paarideeën, veroudering, waarde, redundantie…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Kopiëren mislukt – klembord niet beschikbaar",
     i18nReportDownloaded: "i18n-rapport gedownload",
     i18nReportCleared: "i18n-rapport gewist",
+  },
+
+  admin: {
+    accessRequired: "Beheerderstoegang vereist",
+    adminOnly: "Alleen beheerders hebben toegang tot deze pagina.",
+    searchEmail: "E-mail zoeken",
+    source: "Bron",
+    allSources: "Alle bronnen",
+    loading: "Verzoeken laden...",
+    subscriptionEventsLog: "Abonnementsgebeurtenissenlogboek",
+    refresh: "Vernieuwen",
+    subSupportQueue: "Abonnement-ondersteuningswachtrij",
+    created: "Aangemaakt",
+    grantedBy: "Toegewezen door",
+    noPendingRequests: "Geen openstaande verzoeken",
+    noMatchingRequests: "Geen overeenkomende verzoeken gevonden",
+    searchByEmail: "Zoeken op e-mail...",
+    tier: "Niveau",
+    status: "Status",
+    notes: "Notities (optioneel)",
+    adminNotes: "Beheerdersnotities...",
+    processing: "Verwerken...",
+    grantAccess: "Toegang verlenen",
+    revokeAccess: "Toegang intrekken",
+    updatedAt: "Bijgewerkt op",
+    active: "Actief",
+    inactive: "Inactief",
   },
 };
 

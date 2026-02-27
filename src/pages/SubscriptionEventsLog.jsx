@@ -7,9 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { AlertCircle, CheckCircle, XCircle, Search } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SubscriptionEventsLog() {
   const { isAdmin } = useCurrentUser();
+  const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchEmail, setSearchEmail] = useState("");
@@ -37,7 +39,7 @@ export default function SubscriptionEventsLog() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Admin access required</AlertDescription>
+          <AlertDescription>{t("admin.accessRequired")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -55,9 +57,9 @@ export default function SubscriptionEventsLog() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#E0D8C8]">Subscription Events Log</h1>
+        <h1 className="text-3xl font-bold text-[#E0D8C8]">{t("admin.subscriptionEventsLog")}</h1>
         <Button onClick={loadEvents} disabled={loading}>
-          Refresh
+          {t("admin.refresh")}
         </Button>
       </div>
 
@@ -66,7 +68,7 @@ export default function SubscriptionEventsLog() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Search Email</label>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">{t("admin.searchEmail")}</label>
               <Input
                 placeholder="user@example.com"
                 value={searchEmail}
@@ -74,21 +76,21 @@ export default function SubscriptionEventsLog() {
               />
             </div>
             <div>
-              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Source</label>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">{t("admin.source")}</label>
               <select
                 value={filterSource}
                 onChange={(e) => setFilterSource(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg bg-[#1a2c42] border border-white/10 text-[#E0D8C8]"
               >
-                <option value="all">All Sources</option>
+                <option value="all">{t("admin.allSources")}</option>
                 <option value="stripe">Stripe</option>
                 <option value="cloudflare">Cloudflare</option>
                 <option value="app">App</option>
-                <option value="admin">Admin</option>
+                <option value="admin">{t("layout.admin")}</option>
               </select>
             </div>
             <div>
-              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">Status</label>
+              <label className="text-sm text-[#E0D8C8]/70 mb-2 block">{t("admin.status")}</label>
               <select
                 value={filterSuccess}
                 onChange={(e) => setFilterSuccess(e.target.value)}

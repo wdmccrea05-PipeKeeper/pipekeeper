@@ -293,6 +293,8 @@ const translations = {
     description: "Bewertete Kompatibilität zwischen jeder Pfeife und Tabakgemisch in Ihrer Sammlung",
     regenSuccess: "Paarungen erfolgreich neu generiert",
     regenFailed: "Neu generieren der Paarungen fehlgeschlagen",
+    noPairingData: "Noch keine Paarungsdaten",
+    noPairingDataDesc: "Fügen Sie Pfeifen und Tabak zu Ihrer Sammlung hinzu, dann generieren Sie KI-gestützte Paarungsempfehlungen.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Rückgängigmachen der Optimierung fehlgeschlagen",
     failedToStartConversation: "Starten der Unterhaltung fehlgeschlagen",
     failedToSendMessage: "Senden der Nachricht fehlgeschlagen",
+    expertTobacconistAlt: "Experten-Tabakhändler",
+    aiTobacconistAlt: "KI-Tabakhändler",
+    failedToInitializeExpertChat: "Experten-Chat konnte nicht initialisiert werden",
+    collectionLoadingRetry: "Sammlungsdaten werden geladen… Bitte versuchen Sie es in einem Moment erneut.",
+    couldntLoadResponse: "Antwort des Experten-Agenten konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    answeredBy: "Beantwortet von:",
+    askExpertPlaceholder: "Fragen Sie nach Pfeifen, Mischungen, Empfehlungen, Reifung, Wert, Redundanz…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Kopieren fehlgeschlagen – Zwischenablage nicht verfügbar",
     i18nReportDownloaded: "i18n-Bericht heruntergeladen",
     i18nReportCleared: "i18n-Bericht geleert",
+  },
+
+  admin: {
+    accessRequired: "Admin-Zugang erforderlich",
+    adminOnly: "Nur Administratoren können auf diese Seite zugreifen.",
+    searchEmail: "E-Mail suchen",
+    source: "Quelle",
+    allSources: "Alle Quellen",
+    loading: "Anfragen werden geladen...",
+    subscriptionEventsLog: "Abonnement-Ereignisprotokoll",
+    refresh: "Aktualisieren",
+    subSupportQueue: "Abonnement-Support-Warteschlange",
+    created: "Erstellt",
+    grantedBy: "Gewährt von",
+    noPendingRequests: "Keine ausstehenden Anfragen",
+    noMatchingRequests: "Keine übereinstimmenden Anfragen gefunden",
+    searchByEmail: "Nach E-Mail suchen...",
+    tier: "Stufe",
+    status: "Status",
+    notes: "Notizen (optional)",
+    adminNotes: "Admin-Notizen...",
+    processing: "Wird verarbeitet...",
+    grantAccess: "Zugang gewähren",
+    revokeAccess: "Zugang widerrufen",
+    updatedAt: "Aktualisiert am",
+    active: "Aktiv",
+    inactive: "Inaktiv",
   },
 };
 

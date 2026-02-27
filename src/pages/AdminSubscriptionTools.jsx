@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [tier, setTier] = useState("premium");
   const [status, setStatus] = useState("active");
@@ -26,9 +28,9 @@ export default function AdminSubscriptionTools() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-500 mb-4">
               <AlertCircle className="w-5 h-5" />
-              <span>Admin access required</span>
+              <span>{t("admin.accessRequired")}</span>
             </div>
-            <p className="text-sm text-[#E0D8C8]/70">Only administrators can access this tool.</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t("admin.adminOnly")}</p>
           </CardContent>
         </Card>
       </div>
@@ -130,7 +132,7 @@ export default function AdminSubscriptionTools() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">Tier</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.tier")}</label>
                 <Select value={tier} onValueChange={setTier} disabled={loading}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
@@ -143,22 +145,22 @@ export default function AdminSubscriptionTools() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">Status</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.status")}</label>
                 <Select value={status} onValueChange={setStatus} disabled={loading}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="active">{t("admin.active")}</SelectItem>
+                    <SelectItem value="inactive">{t("admin.inactive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">Notes (optional)</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.notes")}</label>
                 <Textarea
-                  placeholder="Admin notes..."
+                  placeholder={t("admin.adminNotes")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] min-h-20"
@@ -187,7 +189,7 @@ export default function AdminSubscriptionTools() {
                   disabled={loading || !email.trim()}
                   className="flex-1 bg-green-700 hover:bg-green-800"
                 >
-                  {loading ? "Processing..." : "Grant Access"}
+                  {loading ? t("admin.processing") : t("admin.grantAccess")}
                 </Button>
                 <Button
                   onClick={handleRevoke}
@@ -195,7 +197,7 @@ export default function AdminSubscriptionTools() {
                   variant="destructive"
                   className="flex-1"
                 >
-                  Revoke Access
+                  {t("admin.revokeAccess")}
                 </Button>
               </div>
             </CardContent>
@@ -224,14 +226,14 @@ export default function AdminSubscriptionTools() {
                  </div>
                  <div>
                    <p className="text-[#E0D8C8]/50">Subscription Status</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || "Inactive"}</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || t("admin.inactive")}</p>
                  </div>
                  <div>
                    <p className="text-[#E0D8C8]/50">Subscription Tier</p>
                    <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_tier || "None"}</p>
                  </div>
                 <div>
-                  <p className="text-[#E0D8C8]/50">Updated At</p>
+                  <p className="text-[#E0D8C8]/50">{t("admin.updatedAt")}</p>
                   <p className="text-[#E0D8C8] font-medium">
                     {updatedUser.subscriptionUpdatedAt
                       ? new Date(updatedUser.subscriptionUpdatedAt).toLocaleString()
