@@ -83,7 +83,8 @@ const translations = {
     sending: "Uitnodigingen verzenden...",
     successTitle: "Uitnodigingen verzonden!",
     successMessage: "Uw vrienden ontvangen binnenkort hun uitnodigingsmails.",
-    inviteMore: "Meer vrienden uitnodigen"
+    inviteMore: "Meer vrienden uitnodigen",
+    sendError: "Verzenden van uitnodigingen mislukt. Probeer het opnieuw.",
   },
 
   supportFull: {
@@ -184,6 +185,7 @@ const translations = {
     batchDesc: "Automatisch de geometrie van ALLE pijpen met ontbrekende of \"Onbekende\" velden analyseren en bijwerken. Verwerkt uw gehele collectie in één batch.",
     hideBatch: "Batchprocessor verbergen",
     showBatch: "Batchverwerking ({count} totaal)",
+    errorLabel: "Fout:",
   },
   pipeGeometry: {
     selectPipeTitle: "Pijp selecteren om te analyseren",
@@ -255,6 +257,13 @@ const translations = {
     option1Note3: "✓ Controleer uw spammap als u het niet ziet",
     option2Title: "Optie 2: Contact opnemen met ondersteuning",
     option2Desc: "Als u geen nieuwe verificatiecode kunt ontvangen, neem dan rechtstreeks contact met ons op:",
+    option2ContactNote: "Voeg uw e-mailadres toe en beschrijf het probleem dat u ondervindt",
+    troubleshootingTitle: "Tips voor probleemoplossing",
+    tip1: "Controleer uw spam-/ongewenste e-mailmap voor de verificatiemail",
+    tip2: "Zorg ervoor dat u het juiste e-mailadres gebruikt",
+    tip3: "Wacht een paar minuten en probeer opnieuw in te loggen om een nieuw code te ontvangen",
+    tip4: "Wis de cache en cookies van uw browser als het probleem aanhoudt",
+    backTo: "← Terug naar PipeKeeper",
   },
   insights: {
     reportsTooltip: "Genereer exporteerbare samenvattingen van uw collectie voor referentie of documentatie.",

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft, Mail, UserPlus, CheckCircle, X } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from "sonner";
 
 export default function InviteFull() {
   const { t } = useTranslation();
@@ -76,7 +77,7 @@ The PipeKeeper Team
       setEmailFields(['']);
       setPersonalMessage('');
     } catch (error) {
-      alert('Failed to send invitations. Please try again.');
+      toast.error(t("inviteFull.sendError"));
     } finally {
       setIsSubmitting(false);
     }

@@ -83,7 +83,8 @@ const translations = {
     sending: "Invio inviti...",
     successTitle: "Inviti inviati!",
     successMessage: "I tuoi amici riceveranno a breve le loro email di invito.",
-    inviteMore: "Invita più amici"
+    inviteMore: "Invita più amici",
+    sendError: "Invio degli inviti non riuscito. Per favore riprova.",
   },
 
   supportFull: {
@@ -184,6 +185,7 @@ const translations = {
     batchDesc: "Analizza e aggiorna automaticamente la geometria di TUTTE le pipe con campi mancanti o \"Sconosciuti\". Elabora l'intera collezione in un unico batch.",
     hideBatch: "Nascondi elaboratore batch",
     showBatch: "Elaborazione batch ({count} in totale)",
+    errorLabel: "Errore:",
   },
   pipeGeometry: {
     selectPipeTitle: "Seleziona pipa da analizzare",
@@ -255,6 +257,13 @@ const translations = {
     option1Note3: "✓ Controlla la cartella spam se non lo vedi",
     option2Title: "Opzione 2: Contatta il supporto",
     option2Desc: "Se non riesci a ricevere un nuovo codice di verifica, contattaci direttamente:",
+    option2ContactNote: "Includi il tuo indirizzo email e descrivi il problema che stai riscontrando",
+    troubleshootingTitle: "Suggerimenti per la risoluzione dei problemi",
+    tip1: "Controlla la cartella spam/posta indesiderata per l'email di verifica",
+    tip2: "Assicurati di utilizzare l'indirizzo email corretto",
+    tip3: "Aspetta qualche minuto e prova ad accedere di nuovo per ricevere un codice fresco",
+    tip4: "Cancella la cache e i cookie del browser se il problema persiste",
+    backTo: "← Torna a PipeKeeper",
   },
   insights: {
     reportsTooltip: "Genera riepiloghi esportabili della tua collezione per riferimento o documentazione.",

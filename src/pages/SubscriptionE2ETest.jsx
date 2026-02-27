@@ -5,6 +5,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft } from "lucide-react";
 
 export default function SubscriptionE2ETestPage() {
+  // i18n: dev-only, intentionally untranslated
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-6">
       <div className="max-w-4xl mx-auto">

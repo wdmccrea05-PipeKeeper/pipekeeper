@@ -83,7 +83,8 @@ const translations = {
     sending: "Einladungen werden gesendet...",
     successTitle: "Einladungen gesendet!",
     successMessage: "Ihre Freunde erhalten in Kürze ihre Einladungs-E-Mails.",
-    inviteMore: "Weitere Freunde einladen"
+    inviteMore: "Weitere Freunde einladen",
+    sendError: "Einladungen konnten nicht gesendet werden. Bitte versuchen Sie es erneut.",
   },
 
   supportFull: {
@@ -184,6 +185,7 @@ const translations = {
     batchDesc: "Automatisch die Geometrie ALLER Pfeifen mit fehlenden oder \"Unbekannten\" Feldern analysieren und aktualisieren. Verarbeitet Ihre gesamte Sammlung in einem Stapel.",
     hideBatch: "Stapelprozessor ausblenden",
     showBatch: "Stapelverarbeitung ({count} gesamt)",
+    errorLabel: "Fehler:",
   },
   pipeGeometry: {
     selectPipeTitle: "Zu analysierende Pfeife auswählen",
@@ -255,6 +257,13 @@ const translations = {
     option1Note3: "✓ Prüfen Sie Ihren Spam-Ordner, falls Sie ihn nicht sehen",
     option2Title: "Option 2: Support kontaktieren",
     option2Desc: "Wenn Sie keinen neuen Verifizierungscode erhalten können, kontaktieren Sie uns direkt:",
+    option2ContactNote: "Geben Sie Ihre E-Mail-Adresse an und beschreiben Sie das Problem, das Sie haben",
+    troubleshootingTitle: "Tipps zur Fehlerbehebung",
+    tip1: "Prüfen Sie Ihren Spam-/Junk-Ordner auf die Verifizierungs-E-Mail",
+    tip2: "Stellen Sie sicher, dass Sie die richtige E-Mail-Adresse verwenden",
+    tip3: "Warten Sie einige Minuten und versuchen Sie sich erneut anzumelden, um einen frischen Code zu erhalten",
+    tip4: "Löschen Sie den Browser-Cache und die Cookies, wenn das Problem weiterhin besteht",
+    backTo: "← Zurück zu PipeKeeper",
   },
   insights: {
     reportsTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zur Referenz oder Dokumentation.",

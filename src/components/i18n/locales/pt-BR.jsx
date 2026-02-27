@@ -83,7 +83,8 @@ const translations = {
     sending: "Enviando convites...",
     successTitle: "Convites enviados!",
     successMessage: "Seus amigos receberão os e-mails de convite em breve.",
-    inviteMore: "Convidar mais amigos"
+    inviteMore: "Convidar mais amigos",
+    sendError: "Falha ao enviar os convites. Por favor, tente novamente.",
   },
 
   supportFull: {
@@ -184,6 +185,7 @@ const translations = {
     batchDesc: "Analisar e atualizar automaticamente a geometria de TODOS os cachimbos com campos ausentes ou \"Desconhecidos\". Processa toda a sua coleção em um lote.",
     hideBatch: "Ocultar processador em lote",
     showBatch: "Processamento em lote ({count} no total)",
+    errorLabel: "Erro:",
   },
   pipeGeometry: {
     selectPipeTitle: "Selecionar cachimbo para analisar",
@@ -255,6 +257,13 @@ const translations = {
     option1Note3: "✓ Verifique sua pasta de spam se não encontrar",
     option2Title: "Opção 2: Contatar suporte",
     option2Desc: "Se você não conseguir receber um novo código de verificação, entre em contato conosco diretamente:",
+    option2ContactNote: "Inclua seu endereço de e-mail e descreva o problema que está enfrentando",
+    troubleshootingTitle: "Dicas de solução de problemas",
+    tip1: "Verifique sua pasta de spam/lixo eletrônico para o e-mail de verificação",
+    tip2: "Certifique-se de estar usando o endereço de e-mail correto",
+    tip3: "Aguarde alguns minutos e tente fazer login novamente para receber um código novo",
+    tip4: "Limpe o cache e os cookies do navegador se o problema persistir",
+    backTo: "← Voltar ao PipeKeeper",
   },
   insights: {
     reportsTooltip: "Gere resumos exportáveis da sua coleção para referência ou documentação.",

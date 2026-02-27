@@ -69,19 +69,19 @@ export default function VerificationHelp() {
                       admin@pipekeeperapp.com
                     </a>
                     <p className="text-xs text-[#E0D8C8]/60 text-center">
-                      Include your email address and describe the issue you're experiencing
+                      {t('verificationHelp.option2ContactNote')}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="mt-6 p-4 bg-[#2EAF6F]/10 border border-[#2EAF6F]/30 rounded-lg">
-                <h4 className="font-semibold text-[#E0D8C8] mb-2">Troubleshooting Tips</h4>
+                <h4 className="font-semibold text-[#E0D8C8] mb-2">{t('verificationHelp.troubleshootingTitle')}</h4>
                 <ul className="text-sm text-[#E0D8C8]/70 space-y-1 list-disc list-inside">
-                  <li>Check your spam/junk folder for the verification email</li>
-                  <li>Make sure you're using the correct email address</li>
-                  <li>Wait a few minutes and try logging in again to receive a fresh code</li>
-                  <li>Clear your browser cache and cookies if the issue persists</li>
+                  <li>{t('verificationHelp.tip1')}</li>
+                  <li>{t('verificationHelp.tip2')}</li>
+                  <li>{t('verificationHelp.tip3')}</li>
+                  <li>{t('verificationHelp.tip4')}</li>
                 </ul>
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function VerificationHelp() {
             href="https://pipekeeper.app"
             className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-sm transition-colors"
           >
-            ← Back to PipeKeeper
+            {t('verificationHelp.backTo')}
           </a>
         </div>
       </div>

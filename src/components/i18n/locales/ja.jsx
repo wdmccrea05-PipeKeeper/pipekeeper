@@ -36,6 +36,7 @@ export default {
     batchDesc: "欠落または「不明」フィールドのあるすべてのパイプのジオメトリを自動的に分析・更新します。コレクション全体を一度に処理します。",
     hideBatch: "バッチプロセッサを非表示",
     showBatch: "一括処理（合計{count}件）",
+    errorLabel: "エラー：",
   },
   pipeGeometry: {
     selectPipeTitle: "分析するパイプを選択",
@@ -107,6 +108,13 @@ export default {
     option1Note3: "✓ 見つからない場合はスパムフォルダを確認してください",
     option2Title: "オプション2：サポートに連絡",
     option2Desc: "新しい認証コードを受け取れない場合は、直接お問い合わせください：",
+    option2ContactNote: "メールアドレスと発生している問題の説明を含めてください",
+    troubleshootingTitle: "トラブルシューティングのヒント",
+    tip1: "認証メールについてスパム/迷惑メールフォルダを確認してください",
+    tip2: "正しいメールアドレスを使用していることを確認してください",
+    tip3: "数分待ってから再度ログインして新しいコードを受け取ってください",
+    tip4: "問題が続く場合はブラウザのキャッシュとCookieをクリアしてください",
+    backTo: "← PipeKeeperに戻る",
   },
   insights: { insights: "インサイト", analytics: "分析", statistics: "統計", summary: "まとめ", overview: "概要", trends: "トレンド", mostValued: "最も価値がある", mostSmoked: "最もよく吸われている", favorites: "お気に入り", recentActivity: "最近のアクティビティ", recommendations: "おすすめ", cellaredBreakdown: "セラーの内訳", collectionSize: "コレクションのサイズ", totalValue: "合計価値", averageRating: "平均評価", noInsights: "まだインサイトがありません", loadingInsights: "インサイトを読み込み中...", reportsTooltip: "コレクションのエクスポート可能なサマリーを参照や記録用に生成します。", agingTooltip: "セラーのタバコを監視し、ブレンドの特性に基づいた最適な熟成時間の推奨を受け取ります。" },
   smokingLog: { smokingLog: "喫煙ログ", logSmoke: "喫煙を記録", addEntry: "エントリを追加", date: "日付", pipe: "パイプ", tobacco: "タバコ", duration: "時間", roomNote: "ルームノート", noEntries: "エントリがありません", history: "履歴", statistics: "統計", recent: "最近" },
@@ -198,7 +206,8 @@ export default {
     sending: "招待を送信中...",
     successTitle: "招待を送信しました！",
     successMessage: "友達に招待メールが間もなく届きます。",
-    inviteMore: "さらに友達を招待"
+    inviteMore: "さらに友達を招待",
+    sendError: "招待の送信に失敗しました。もう一度お試しください。",
   },
 
   supportFull: {

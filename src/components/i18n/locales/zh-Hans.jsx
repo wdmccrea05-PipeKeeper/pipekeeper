@@ -36,6 +36,7 @@ export default {
     batchDesc: "自动分析和更新所有缺少或\"未知\"字段的烟斗几何形状。一次性处理您的整个藏品。",
     hideBatch: "隐藏批量处理器",
     showBatch: "批量处理（共{count}支）",
+    errorLabel: "错误：",
   },
   pipeGeometry: {
     selectPipeTitle: "选择要分析的烟斗",
@@ -107,6 +108,13 @@ export default {
     option1Note3: "✓ 如果找不到，请检查垃圾邮件文件夹",
     option2Title: "选项2：联系支持",
     option2Desc: "如果您无法收到新的验证码，请直接联系我们：",
+    option2ContactNote: "请提供您的电子邮件地址并描述您遇到的问题",
+    troubleshootingTitle: "故障排除提示",
+    tip1: "检查垃圾邮件/垃圾箱文件夹中的验证邮件",
+    tip2: "确保您使用的是正确的电子邮件地址",
+    tip3: "等待几分钟后再次尝试登录以获取新验证码",
+    tip4: "如果问题仍然存在，请清除浏览器缓存和Cookie",
+    backTo: "← 返回PipeKeeper",
   },
   insights: { insights: "见解", analytics: "分析", statistics: "统计数据", summary: "摘要", overview: "概述", trends: "趋势", mostValued: "最有价值", mostSmoked: "最常吸的", favorites: "收藏夹", recentActivity: "最近活动", recommendations: "推荐", cellaredBreakdown: "酒窖详情", collectionSize: "收藏规模", totalValue: "总价值", averageRating: "平均评分", noInsights: "还没有见解", loadingInsights: "正在加载见解...", reportsTooltip: "生成可导出的收藏摘要，用于参考或记录。", agingTooltip: "监控窖藏烟草，并根据混合特性获得最佳陈化时间建议。" },
   smokingLog: { smokingLog: "吸烟日志", logSmoke: "记录吸烟", addEntry: "添加条目", date: "日期", pipe: "烟斗", tobacco: "烟草", duration: "持续时间", roomNote: "房间气味", noEntries: "没有条目", history: "历史记录", statistics: "统计数据", recent: "最近" },
@@ -198,7 +206,8 @@ export default {
     sending: "正在发送邀请...",
     successTitle: "邀请已发送！",
     successMessage: "您的朋友将很快收到邀请邮件。",
-    inviteMore: "邀请更多朋友"
+    inviteMore: "邀请更多朋友",
+    sendError: "发送邀请失败。请重试。",
   },
 
   supportFull: {

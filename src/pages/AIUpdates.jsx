@@ -463,7 +463,7 @@ Return JSON with:
                     )}
 
                     {measurementLookupState.status === "error" && (
-                      <p className="text-sm text-red-400">Error: {measurementLookupState.message}</p>
+                      <p className="text-sm text-red-400">{t('aiPage.errorLabel')} {measurementLookupState.message}</p>
                     )}
                   </div>
                 )}
