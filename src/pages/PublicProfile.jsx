@@ -27,6 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatWeight, formatCurrency } from "@/components/utils/localeFormatters";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -407,7 +408,7 @@ export default function PublicProfilePage() {
                             )}
                             {!profile.privacy_hide_values && pipe.estimated_value && (
                               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
-                                ${(+pipe.estimated_value).toFixed(2)}
+                                {formatCurrency(+pipe.estimated_value)}
                               </Badge>
                             )}
                           </div>
@@ -503,12 +504,12 @@ export default function PublicProfilePage() {
                               <>
                                 {(blend.tin_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
-                                    {(+blend.tin_total_quantity_oz).toFixed(2)}oz {t("units.tinPlural")}
+                                    {formatWeight(+blend.tin_total_quantity_oz, 'oz')} {t("units.tinPlural")}
                                   </Badge>
                                 )}
                                 {(blend.bulk_total_quantity_oz || 0) > 0 && (
                                   <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
-                                    {(+blend.bulk_total_quantity_oz).toFixed(2)}oz bulk
+                                    {formatWeight(+blend.bulk_total_quantity_oz, 'oz')} {t("units.bulkPlural", "bulk")}
                                   </Badge>
                                 )}
                               </>

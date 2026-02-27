@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { formatCurrency } from "@/components/utils/localeFormatters";
+import { formatCurrency, formatMeasurement, formatWeight } from "@/components/utils/localeFormatters";
 import { 
   ArrowLeft, Edit, Trash2, Heart, DollarSign, 
   Sparkles, ScanSearch, Ruler, Calendar, MapPin, ArrowLeftRight, Weight, CheckCircle2,
@@ -511,7 +511,7 @@ export default function PipeDetailPage() {
                        <div>
                          <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.length")}</p>
                          <p className="font-medium text-[#E0D8C8]">
-                          {useImperial ? `${(pipe.length_mm / 25.4).toFixed(2)}"` : `${pipe.length_mm.toFixed(0)} mm`}
+                          {useImperial ? formatMeasurement(pipe.length_mm / 25.4, 'in') : formatMeasurement(pipe.length_mm, 'mm')}
                          </p>
                       </div>
                     </div>
@@ -522,7 +522,7 @@ export default function PipeDetailPage() {
                       <div>
                         <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.weight")}</p>
                         <p className="font-medium text-[#E0D8C8]">
-                          {useImperial ? `${(pipe.weight_grams / 28.35).toFixed(2)} oz` : `${pipe.weight_grams.toFixed(0)} g`}
+                          {useImperial ? formatWeight(pipe.weight_grams / 28.35, 'oz') : formatWeight(pipe.weight_grams, 'g')}
                         </p>
                       </div>
                     </div>
@@ -531,7 +531,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlHeight")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_height_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_height_mm.toFixed(0)} mm`}
+                        {useImperial ? formatMeasurement(pipe.bowl_height_mm / 25.4, 'in') : formatMeasurement(pipe.bowl_height_mm, 'mm')}
                       </p>
                     </div>
                   )}
@@ -539,7 +539,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.bowlWidth")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_width_mm / 25.4).toFixed(2)}"` : `${pipe.bowl_width_mm.toFixed(0)} mm`}
+                        {useImperial ? formatMeasurement(pipe.bowl_width_mm / 25.4, 'in') : formatMeasurement(pipe.bowl_width_mm, 'mm')}
                       </p>
                     </div>
                   )}
@@ -547,7 +547,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.chamberDiameter")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_diameter_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_diameter_mm).toFixed(2)}mm`}
+                        {useImperial ? formatMeasurement(pipe.bowl_diameter_mm / 25.4, 'in') : formatMeasurement(pipe.bowl_diameter_mm, 'mm')}
                       </p>
                     </div>
                   )}
@@ -555,7 +555,7 @@ export default function PipeDetailPage() {
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.chamberDepth")}</p>
                       <p className="font-medium text-[#E0D8C8]">
-                        {useImperial ? `${(pipe.bowl_depth_mm / 25.4).toFixed(2)}"` : `${(pipe.bowl_depth_mm).toFixed(2)}mm`}
+                        {useImperial ? formatMeasurement(pipe.bowl_depth_mm / 25.4, 'in') : formatMeasurement(pipe.bowl_depth_mm, 'mm')}
                       </p>
                     </div>
                   )}

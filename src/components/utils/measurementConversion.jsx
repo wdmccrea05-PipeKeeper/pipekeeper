@@ -105,6 +105,7 @@ export function MeasurementProvider({ children }) {
         getWeightUnit,
         formatLength,
         formatWeight,
+        isInitialized,
       }}
     >
       {children}
