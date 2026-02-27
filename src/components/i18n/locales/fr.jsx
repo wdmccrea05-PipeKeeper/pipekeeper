@@ -83,7 +83,8 @@ const translations = {
     sending: "Envoi des invitations...",
     successTitle: "Invitations envoyées !",
     successMessage: "Vos amis recevront leurs e-mails d'invitation sous peu.",
-    inviteMore: "Inviter plus d'amis"
+    inviteMore: "Inviter plus d'amis",
+    sendError: "Échec de l'envoi des invitations. Veuillez réessayer.",
   },
 
   supportFull: {
@@ -184,6 +185,7 @@ const translations = {
     batchDesc: "Analyser et mettre à jour automatiquement la géométrie de TOUTES les pipes avec des champs manquants ou \"Inconnus\". Traite toute votre collection en un seul lot.",
     hideBatch: "Masquer le processeur par lot",
     showBatch: "Traitement par lot ({count} au total)",
+    errorLabel: "Erreur :",
   },
   pipeGeometry: {
     selectPipeTitle: "Sélectionner la pipe à analyser",
@@ -255,6 +257,13 @@ const translations = {
     option1Note3: "✓ Vérifiez votre dossier spam si vous ne le voyez pas",
     option2Title: "Option 2 : Contacter le support",
     option2Desc: "Si vous ne pouvez pas recevoir un nouveau code de vérification, contactez-nous directement :",
+    option2ContactNote: "Incluez votre adresse e-mail et décrivez le problème que vous rencontrez",
+    troubleshootingTitle: "Conseils de dépannage",
+    tip1: "Vérifiez votre dossier spam/courrier indésirable pour l'e-mail de vérification",
+    tip2: "Assurez-vous d'utiliser la bonne adresse e-mail",
+    tip3: "Attendez quelques minutes et essayez de vous reconnecter pour recevoir un nouveau code",
+    tip4: "Effacez le cache et les cookies de votre navigateur si le problème persiste",
+    backTo: "← Retour à PipeKeeper",
   },
   insights: {
     reportsTooltip: "Générez des résumés exportables de votre collection pour référence ou documentation.",

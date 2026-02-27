@@ -36,6 +36,7 @@ export default {
     batchDesc: "Automatycznie analizuj i aktualizuj geometrię WSZYSTKICH fajek z brakującymi lub \"Nieznanymi\" polami. Przetwarza całą kolekcję w jednej partii.",
     hideBatch: "Ukryj procesor wsadowy",
     showBatch: "Przetwarzanie wsadowe ({count} łącznie)",
+    errorLabel: "Błąd:",
   },
   pipeGeometry: {
     selectPipeTitle: "Wybierz fajkę do analizy",
@@ -107,6 +108,13 @@ export default {
     option1Note3: "✓ Sprawdź folder spam, jeśli go nie widzisz",
     option2Title: "Opcja 2: Skontaktuj się z pomocą techniczną",
     option2Desc: "Jeśli nie możesz otrzymać nowego kodu weryfikacyjnego, skontaktuj się z nami bezpośrednio:",
+    option2ContactNote: "Podaj swój adres e-mail i opisz problem, który napotykasz",
+    troubleshootingTitle: "Wskazówki dotyczące rozwiązywania problemów",
+    tip1: "Sprawdź folder spam/niechciane wiadomości w poszukiwaniu e-maila weryfikacyjnego",
+    tip2: "Upewnij się, że używasz właściwego adresu e-mail",
+    tip3: "Poczekaj kilka minut i spróbuj zalogować się ponownie, aby otrzymać nowy kod",
+    tip4: "Wyczyść pamięć podręczną przeglądarki i pliki cookie, jeśli problem nadal występuje",
+    backTo: "← Wróć do PipeKeeper",
   },
   insights: { insights: "Statystyki", analytics: "Analityka", statistics: "Statystyki", summary: "Podsumowanie", overview: "Przegląd", trends: "Trendy", mostValued: "Najcenniejsze", mostSmoked: "Najczęściej palony", favorites: "Ulubione", recentActivity: "Ostatnia aktywność", recommendations: "Rekomendacje", cellaredBreakdown: "Struktura piwnicy", collectionSize: "Rozmiar kolekcji", totalValue: "Łączna wartość", averageRating: "Średnia ocena", noInsights: "Brak dostępnych statystyk", loadingInsights: "Ładowanie statystyk...", reportsTooltip: "Generuj eksportowalne podsumowania kolekcji do celów referencyjnych lub dokumentacyjnych.", agingTooltip: "Monitoruj przechowywany tytoń i otrzymuj zalecenia dotyczące optymalnych czasów dojrzewania na podstawie cech mieszanki." },
   smokingLog: { smokingLog: "Dziennik palenia", logSmoke: "Zaloguj palenie", addEntry: "Dodaj wpis", date: "Data", pipe: "Fajka", tobacco: "Tytoń", duration: "Czas trwania", roomNote: "Nota zapachowa", noEntries: "Brak wpisów", history: "Historia", statistics: "Statystyki", recent: "Ostatnie" },
@@ -204,7 +212,8 @@ export default {
     sending: "Wysyłanie zaproszeń...",
     successTitle: "Zaproszenia wysłane!",
     successMessage: "Twoi znajomi otrzymają wkrótce e-maile z zaproszeniem.",
-    inviteMore: "Zaproś więcej znajomych"
+    inviteMore: "Zaproś więcej znajomych",
+    sendError: "Nie udało się wysłać zaproszeń. Spróbuj ponownie.",
   },
 
   supportFull: {

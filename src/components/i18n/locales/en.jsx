@@ -126,7 +126,8 @@ const translations = {
     sending: "Sending Invitations...",
     successTitle: "Invitations Sent!",
     successMessage: "Your friends will receive their invitation emails shortly.",
-    inviteMore: "Invite More Friends"
+    inviteMore: "Invite More Friends",
+    sendError: "Failed to send invitations. Please try again.",
   },
 
   supportFull: {
@@ -178,6 +179,7 @@ const translations = {
     batchDesc: "Automatically analyze and update geometry for ALL pipes with missing or \"Unknown\" fields. Processes your entire collection in one batch.",
     hideBatch: "Hide Batch Processor",
     showBatch: "Batch Process ({count} total)",
+    errorLabel: "Error:",
   },
 
   pipeGeometry: {
@@ -254,6 +256,13 @@ const translations = {
     option1Note3: "✓ Check your spam folder if you don't see it",
     option2Title: "Option 2: Contact Support",
     option2Desc: "If you're unable to receive a new verification code, please contact us directly:",
+    option2ContactNote: "Include your email address and describe the issue you're experiencing",
+    troubleshootingTitle: "Troubleshooting Tips",
+    tip1: "Check your spam/junk folder for the verification email",
+    tip2: "Make sure you're using the correct email address",
+    tip3: "Wait a few minutes and try logging in again to receive a fresh code",
+    tip4: "Clear your browser cache and cookies if the issue persists",
+    backTo: "← Back to PipeKeeper",
   },
 
   insights: {
