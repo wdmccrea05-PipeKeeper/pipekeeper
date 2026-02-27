@@ -380,6 +380,15 @@ const translations = {
     reload: "Seite neu laden",
   },
 
+  error: {
+    tryAgain: "Erneut versuchen",
+    reloadPage: "Seite neu laden",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Keiner deiner Freunde hat das Messaging noch aktiviert. Bitte sie, es in ihren Profileinstellungen zu aktivieren.",
+  },
+
   appleIAP: {
     openSettingsFailed: "App Store-Einstellungen konnten nicht geöffnet werden. Bitte verwalten Sie Ihr Abonnement in der Einstellungen-App.",
   },

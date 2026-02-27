@@ -380,6 +380,15 @@ const translations = {
     reload: "Ricarica pagina",
   },
 
+  error: {
+    tryAgain: "Riprova",
+    reloadPage: "Ricarica pagina",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "Nessuno dei tuoi amici ha ancora abilitato la messaggistica. Chiedi loro di abilitarla nelle impostazioni del profilo.",
+  },
+
   appleIAP: {
     openSettingsFailed: "Impossibile aprire le impostazioni dell'App Store. Gestisci il tuo abbonamento nell'app Impostazioni.",
   },

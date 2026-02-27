@@ -129,6 +129,12 @@ export function detectCellarDrift(blend, cellarLogs) {
   
   const drift = Math.abs(logCellared - entityCellared);
   
+  if (drift > 0.5) {
+    console.warn(
+      `[CellarDrift] Blend "${blend.tobacco_name || blend.name || blend.id}": log-based=${logCellared.toFixed(2)} oz, entity-based=${entityCellared.toFixed(2)} oz, delta=${drift.toFixed(2)} oz`
+    );
+  }
+
   return {
     hasDrift: drift > 0.1, // 0.1 oz tolerance for rounding
     logValue: logCellared,

@@ -398,6 +398,15 @@ export default {
     reload: "重新加载页面",
   },
 
+  error: {
+    tryAgain: "重试",
+    reloadPage: "重新加载页面",
+  },
+
+  messaging: {
+    noFriendsWithMessaging: "您的好友尚未启用消息功能。请让他们在个人资料设置中启用。",
+  },
+
   appleIAP: {
     openSettingsFailed: "无法打开 App Store 设置。请在「设置」应用中管理您的订阅。",
   },
