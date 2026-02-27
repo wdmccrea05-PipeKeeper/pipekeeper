@@ -217,6 +217,10 @@ export const translations = {
     matching: {
       recommendationsFor: "Recommendations for",
     },
+    error: {
+      somethingWentWrong: "Something went wrong",
+      unexpectedErrorRefresh: "We've encountered an unexpected error. Please try refreshing the page.",
+    },
   },
   es: {
     ...es,
@@ -424,6 +428,10 @@ export const translations = {
     },
     matching: {
       recommendationsFor: "Recomendaciones para",
+    },
+    error: {
+      somethingWentWrong: "Algo salió mal",
+      unexpectedErrorRefresh: "Hemos encontrado un error inesperado. Por favor, intenta recargar la página.",
     },
   },
   fr: {
@@ -633,6 +641,10 @@ export const translations = {
     matching: {
       recommendationsFor: "Recommandations pour",
     },
+    error: {
+      somethingWentWrong: "Une erreur s'est produite",
+      unexpectedErrorRefresh: "Nous avons rencontré une erreur inattendue. Veuillez essayer de rafraîchir la page.",
+    },
   },
   de: {
     ...de,
@@ -840,6 +852,10 @@ export const translations = {
     },
     matching: {
       recommendationsFor: "Empfehlungen für",
+    },
+    error: {
+      somethingWentWrong: "Etwas ist schiefgelaufen",
+      unexpectedErrorRefresh: "Wir haben einen unerwarteten Fehler festgestellt. Bitte versuche, die Seite neu zu laden.",
     },
   },
   it: {
@@ -1049,6 +1065,10 @@ export const translations = {
     matching: {
       recommendationsFor: "Raccomandazioni per",
     },
+    error: {
+      somethingWentWrong: "Qualcosa è andato storto",
+      unexpectedErrorRefresh: "Si è verificato un errore imprevisto. Prova ad aggiornare la pagina.",
+    },
   },
   "pt-BR": {
     ...ptBR,
@@ -1256,6 +1276,10 @@ export const translations = {
     },
     matching: {
       recommendationsFor: "Recomendações para",
+    },
+    error: {
+      somethingWentWrong: "Algo deu errado",
+      unexpectedErrorRefresh: "Encontramos um erro inesperado. Por favor, tente recarregar a página.",
     },
   },
   nl: {
@@ -1465,6 +1489,10 @@ export const translations = {
     matching: {
       recommendationsFor: "Aanbevelingen voor",
     },
+    error: {
+      somethingWentWrong: "Er is iets misgegaan",
+      unexpectedErrorRefresh: "We zijn een onverwachte fout tegengekomen. Probeer de pagina te vernieuwen.",
+    },
   },
   pl: {
     ...pl,
@@ -1667,6 +1695,10 @@ export const translations = {
     },
     matching: {
       recommendationsFor: "Rekomendacje dla",
+    },
+    error: {
+      somethingWentWrong: "Coś poszło nie tak",
+      unexpectedErrorRefresh: "Napotkaliśmy nieoczekiwany błąd. Spróbuj odświeżyć stronę.",
     },
   },
   ja: {
@@ -1871,6 +1903,10 @@ export const translations = {
     matching: {
       recommendationsFor: "推奨：",
     },
+    error: {
+      somethingWentWrong: "問題が発生しました",
+      unexpectedErrorRefresh: "予期しないエラーが発生しました。ページを更新してみてください。",
+    },
   },
   "zh-Hans": {
     ...zhHans,
@@ -2073,6 +2109,10 @@ export const translations = {
     },
     matching: {
       recommendationsFor: "推荐给",
+    },
+    error: {
+      somethingWentWrong: "出了点问题",
+      unexpectedErrorRefresh: "我们遇到了一个意外错误。请尝试刷新页面。",
     },
   },
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
+import { translate } from '@/components/i18n/safeTranslation';
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -79,9 +80,9 @@ class GlobalErrorBoundary extends React.Component {
               </div>
               
               <div>
-                <h1 className="text-2xl font-bold text-[#E0D8C8] mb-2">Something went wrong</h1>
+                <h1 className="text-2xl font-bold text-[#E0D8C8] mb-2">{translate('error.somethingWentWrong')}</h1>
                 <p className="text-[#E0D8C8]/70 text-sm">
-                  We've encountered an unexpected error. Please try refreshing the page.
+                  {translate('error.unexpectedErrorRefresh')}
                 </p>
               </div>
               
