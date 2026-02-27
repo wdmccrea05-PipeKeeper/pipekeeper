@@ -70,7 +70,7 @@ export default function SubscriptionEventsLog() {
             <div>
               <label className="text-sm text-[#E0D8C8]/70 mb-2 block">{t("admin.searchEmail")}</label>
               <Input
-                placeholder="user@example.com"
+                placeholder={t("admin.userEmailPlaceholder", "user@example.com")}
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
               />

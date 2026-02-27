@@ -138,8 +138,8 @@ export default function AdminSubscriptionTools() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="premium">{t("subscription.premium")}</SelectItem>
+                    <SelectItem value="pro">{t("subscription.pro")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
