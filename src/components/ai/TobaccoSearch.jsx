@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TobaccoSearch({ onSelect }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -109,7 +111,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by blend name or manufacturer (e.g., 'Orlik Golden Sliced')"
+          placeholder={t("tobaccoSearch.placeholder")}
           className="border-stone-200"
         />
         <Button 
@@ -122,7 +124,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
           ) : (
             <>
               <Search className="w-4 h-4 mr-2" />
-              Search
+              {t("tobaccoSearch.searchBtn")}
             </>
           )}
         </Button>

@@ -72,9 +72,9 @@ export default function PairingMatrix({ user }) {
         mode: "merge"
       });
       await queryClient.invalidateQueries({ queryKey: ["activePairings", user.email] });
-      toast.success("Pairings regenerated successfully");
+      toast.success(t("pairingMatrix.regenSuccess"));
     } catch (error) {
-      toast.error("Failed to regenerate pairings");
+      toast.error(t("pairingMatrix.regenFailed"));
     } finally {
       setRegenerating(false);
     }

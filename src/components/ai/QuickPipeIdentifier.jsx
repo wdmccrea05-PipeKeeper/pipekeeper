@@ -12,6 +12,7 @@ import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from "sonner";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const { t } = useTranslation();
@@ -301,7 +302,7 @@ Return JSON with these exact fields:
       }
     } catch (error) {
       console.error('Clarification failed:', error);
-      alert('Failed to process clarification. Please try again.');
+      toast.error(t("quickPipeIdentifier.clarificationFailed"));
     } finally {
       setLoading(false);
     }

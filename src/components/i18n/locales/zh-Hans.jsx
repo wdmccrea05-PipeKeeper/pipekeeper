@@ -118,7 +118,6 @@ export default {
   },
   insights: { insights: "见解", analytics: "分析", statistics: "统计数据", summary: "摘要", overview: "概述", trends: "趋势", mostValued: "最有价值", mostSmoked: "最常吸的", favorites: "收藏夹", recentActivity: "最近活动", recommendations: "推荐", cellaredBreakdown: "酒窖详情", collectionSize: "收藏规模", totalValue: "总价值", averageRating: "平均评分", noInsights: "还没有见解", loadingInsights: "正在加载见解...", reportsTooltip: "生成可导出的收藏摘要，用于参考或记录。", agingTooltip: "监控窖藏烟草，并根据混合特性获得最佳陈化时间建议。" },
   smokingLog: { smokingLog: "吸烟日志", logSmoke: "记录吸烟", addEntry: "添加条目", date: "日期", pipe: "烟斗", tobacco: "烟草", duration: "持续时间", roomNote: "房间气味", noEntries: "没有条目", history: "历史记录", statistics: "统计数据", recent: "最近" },
-  tobacconist: { tobacconist: "专业烟草商", askTobacconist: "咨询烟草专家", recommendations: "推荐", askQuestion: "提问...", sendMessage: "发送", conversation: "对话", noMessages: "没有消息", startConversation: "开始对话", connecting: "正在连接烟草专家...", connected: "已连接", disconnected: "已断开连接" },
   agent: { agent: "AI助手", agentTitle: "AI烟草专家", agentDescription: "询问有关烟斗和烟草的问题", loading: "正在加载助手...", thinking: "助手正在思考...", sending: "发送中...", connected: "已连接到助手", disconnected: "助手不可用", error: "助手错误。请重试。", clearChat: "清除聊天", newConversation: "新对话", messageInput: "输入消息...", sendMessage: "发送消息", suggestions: "建议", disclaimer: "AI回复仅供参考。" },
   auth: { login: "登录", logout: "退出登录", register: "注册", signup: "注册", signin: "登录", forgotPassword: "忘记密码？", resetPassword: "重置密码", verifyEmail: "验证电子邮件", verificationCode: "验证码", checkEmail: "请检查您的电子邮件", codeExpired: "验证码已过期", requestNewCode: "请求新验证码", emailSent: "电子邮件已发送", openEmail: "打开电子邮件应用", emailNotReceived: "没有收到电子邮件？", spamFolder: "请检查您的垃圾邮件文件夹", tryAgain: "重试", loginRequired: "需要登录", sessionExpired: "会话已过期", pleaseLogin: "请登录以继续", loginWith: "使用以下方式登录", orContinueWith: "或继续使用", acceptTerms: "我接受条款", loginRequired: "您必须登录才能访问此功能。" },
   community: { community: "社区", posts: "帖子", comments: "评论", likes: "点赞", shares: "分享", followers: "粉丝", following: "正在关注", follow: "关注", unfollow: "取消关注", createPost: "创建帖子", sharePost: "分享帖子", likePost: "点赞帖子", unlikePost: "取消点赞", addComment: "添加评论", replyTo: "回复", reportPost: "举报帖子", deletePost: "删除帖子", editPost: "编辑帖子", savePost: "保存帖子", commentsDisabled: "此帖子的评论已禁用。", commentsEnabled: "此帖子的评论已启用。", noComments: "还没有评论", beCivil: "请保持文明", respectOthers: "尊重他人", noBullying: "禁止欺凌", noSpam: "禁止垃圾信息", guidelines: "社区准则", viewProfile: "查看个人资料", message: "消息" },
@@ -237,7 +236,8 @@ export default {
     topicError: "报告错误",
     topicBilling: "账单问题",
     topicTechnical: "技术问题",
-    topicOther: "其他"
+    topicOther: "其他",
+    sendFailed: "发送支持请求失败。请重试或直接发送电子邮件至 admin@pipekeeperapp.com。",
   },
 
   subscription: {
@@ -293,5 +293,76 @@ export default {
     proAccess: "专业功能访问（AI识别、价值查询、优化、导出、批量编辑）",
     providerDetection: "提供商检测（Stripe、Apple、手动）",
     planLabel: "套餐标签生成",
-  }
+  },
+
+  pairingMatrix: {
+    loading: "正在加载配对...",
+    title: "配对矩阵",
+    description: "您藏品中每支烟斗与每种烟草混合之间的兼容性评分",
+    regenSuccess: "配对已成功重新生成",
+    regenFailed: "重新生成配对失败",
+  },
+
+  tobacconist: {
+    tobacconist: "专业烟草商",
+    avatarAlt: "烟草商",
+    title: "烟草专家",
+    tabChat: "聊天",
+    tabActions: "操作",
+    sending: "发送中...",
+    inputPlaceholder: "询问有关烟斗或烟草的问题...",
+    regeneratePairings: "重新生成配对",
+    undoPairings: "撤销配对",
+    regenerateOptimization: "重新生成优化",
+    undoOptimization: "撤销优化",
+    actionsNote: "这些操作将更新您的藏品数据。",
+    fingerprint: "藏品指纹",
+    quickAccess: "快速访问",
+    actionsReady: "操作就绪",
+    pairingsRegenerated: "配对已成功重新生成",
+    failedToRegeneratePairings: "重新生成配对失败",
+    pairingsReverted: "配对已恢复到之前的版本",
+    failedToUndoPairings: "撤销配对失败",
+    optimizationRegenerated: "优化已成功重新生成",
+    failedToRegenerateOptimization: "重新生成优化失败",
+    optimizationReverted: "优化已恢复到之前的版本",
+    failedToUndoOptimization: "撤销优化失败",
+    failedToStartConversation: "启动对话失败",
+    failedToSendMessage: "发送消息失败",
+    askTobacconist: "咨询烟草专家",
+    recommendations: "推荐",
+    askQuestion: "提问...",
+    sendMessage: "发送",
+    conversation: "对话",
+    noMessages: "没有消息",
+    startConversation: "开始对话",
+    connecting: "正在连接烟草专家...",
+    connected: "已连接",
+    disconnected: "已断开连接",
+  },
+
+  tobaccoSearch: {
+    placeholder: "按混合名称或制造商搜索（例如：'Orlik Golden Sliced'）",
+    searchBtn: "搜索",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "处理说明失败。请重试。",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper 加载失败",
+    body: "请关闭并重新打开应用程序。如果问题持续存在，请联系支持。",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "无法打开 App Store 设置。请在「设置」应用中管理您的订阅。",
+  },
+
+  debug: {
+    snapshotCopied: "快照已复制",
+    copyFailed: "复制失败 – 剪贴板不可用",
+    i18nReportDownloaded: "i18n 报告已下载",
+    i18nReportCleared: "i18n 报告已清除",
+  },
 };

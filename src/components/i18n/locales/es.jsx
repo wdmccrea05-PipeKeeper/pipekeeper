@@ -133,7 +133,8 @@ const translations = {
     topicError: "Reportar un error",
     topicBilling: "Pregunta de facturación",
     topicTechnical: "Problema técnico",
-    topicOther: "Otro"
+    topicOther: "Otro",
+    sendFailed: "Error al enviar la solicitud de soporte. Por favor, inténtalo de nuevo o envía un correo electrónico directamente a admin@pipekeeperapp.com.",
   },
 
   faqExtended: {
@@ -286,6 +287,67 @@ const translations = {
     proAccess: "Acceso a funciones pro (identificación AI, búsqueda de valor, optimización, exportaciones, edición masiva)",
     providerDetection: "Detección de proveedor (Stripe, Apple, manual)",
     planLabel: "Generación de etiqueta de plan",
+  },
+
+  pairingMatrix: {
+    loading: "Cargando emparejamientos...",
+    title: "Matriz de emparejamientos",
+    description: "Compatibilidad puntuada entre cada pipa y mezcla de tabaco en tu colección",
+    regenSuccess: "Emparejamientos regenerados exitosamente",
+    regenFailed: "Error al regenerar emparejamientos",
+  },
+
+  tobacconist: {
+    tobacconist: "Tabaquista experto",
+    avatarAlt: "Tabaquista",
+    title: "El Tabaquista",
+    tabChat: "Chat",
+    tabActions: "Acciones",
+    sending: "Enviando...",
+    inputPlaceholder: "Pregunta sobre pipas o tabaco...",
+    regeneratePairings: "Regenerar emparejamientos",
+    undoPairings: "Deshacer emparejamientos",
+    regenerateOptimization: "Regenerar optimización",
+    undoOptimization: "Deshacer optimización",
+    actionsNote: "Estas acciones actualizarán los datos de tu colección.",
+    fingerprint: "Huella de colección",
+    quickAccess: "Acceso rápido",
+    actionsReady: "Acciones listas",
+    pairingsRegenerated: "Emparejamientos regenerados exitosamente",
+    failedToRegeneratePairings: "Error al regenerar emparejamientos",
+    pairingsReverted: "Emparejamientos revertidos a la versión anterior",
+    failedToUndoPairings: "Error al deshacer emparejamientos",
+    optimizationRegenerated: "Optimización regenerada exitosamente",
+    failedToRegenerateOptimization: "Error al regenerar la optimización",
+    optimizationReverted: "Optimización revertida a la versión anterior",
+    failedToUndoOptimization: "Error al deshacer la optimización",
+    failedToStartConversation: "Error al iniciar la conversación",
+    failedToSendMessage: "Error al enviar el mensaje",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Busca por nombre de mezcla o fabricante (p. ej., 'Orlik Golden Sliced')",
+    searchBtn: "Buscar",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Error al procesar la aclaración. Por favor, inténtalo de nuevo.",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper no pudo cargarse",
+    body: "Por favor, cierra y vuelve a abrir la aplicación. Si esto sigue ocurriendo, contacta al soporte.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "No se puede abrir la configuración de la App Store. Por favor, administra tu suscripción en la aplicación Configuración.",
+  },
+
+  debug: {
+    snapshotCopied: "Instantánea copiada",
+    copyFailed: "Error al copiar: portapapeles no disponible",
+    i18nReportDownloaded: "Informe i18n descargado",
+    i18nReportCleared: "Informe i18n borrado",
   },
 };
 

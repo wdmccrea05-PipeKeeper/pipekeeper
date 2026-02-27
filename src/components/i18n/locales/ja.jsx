@@ -118,7 +118,6 @@ export default {
   },
   insights: { insights: "インサイト", analytics: "分析", statistics: "統計", summary: "まとめ", overview: "概要", trends: "トレンド", mostValued: "最も価値がある", mostSmoked: "最もよく吸われている", favorites: "お気に入り", recentActivity: "最近のアクティビティ", recommendations: "おすすめ", cellaredBreakdown: "セラーの内訳", collectionSize: "コレクションのサイズ", totalValue: "合計価値", averageRating: "平均評価", noInsights: "まだインサイトがありません", loadingInsights: "インサイトを読み込み中...", reportsTooltip: "コレクションのエクスポート可能なサマリーを参照や記録用に生成します。", agingTooltip: "セラーのタバコを監視し、ブレンドの特性に基づいた最適な熟成時間の推奨を受け取ります。" },
   smokingLog: { smokingLog: "喫煙ログ", logSmoke: "喫煙を記録", addEntry: "エントリを追加", date: "日付", pipe: "パイプ", tobacco: "タバコ", duration: "時間", roomNote: "ルームノート", noEntries: "エントリがありません", history: "履歴", statistics: "統計", recent: "最近" },
-  tobacconist: { tobacconist: "エキスパートタバコニスト", askTobacconist: "タバコニストに聞く", recommendations: "おすすめ", askQuestion: "質問する...", sendMessage: "送信", conversation: "会話", noMessages: "メッセージがありません", startConversation: "会話を始める", connecting: "タバコニストに接続中...", connected: "接続済み", disconnected: "切断されました" },
   agent: { agent: "AIアシスタント", agentTitle: "AIタバコニスト", agentDescription: "パイプとタバコについて質問してください", loading: "アシスタントを読み込み中...", thinking: "アシスタントが考えています...", sending: "送信中...", connected: "アシスタントに接続済み", disconnected: "アシスタントが利用できません", error: "アシスタントエラーです。もう一度試してください。", clearChat: "チャットをクリア", newConversation: "新しい会話", messageInput: "メッセージを入力...", sendMessage: "メッセージを送信", suggestions: "提案", disclaimer: "AIの回答は情報提供のみを目的としています。" },
   auth: { login: "ログイン", logout: "ログアウト", register: "登録", signup: "サインアップ", signin: "サインイン", forgotPassword: "パスワードをお忘れですか？", resetPassword: "パスワードをリセット", verifyEmail: "メールを確認", verificationCode: "確認コード", checkEmail: "メールを確認してください", codeExpired: "コードの有効期限が切れました", requestNewCode: "新しいコードをリクエスト", emailSent: "メールを送信しました", openEmail: "メールアプリを開く", emailNotReceived: "メールが届いていませんか？", spamFolder: "迷惑メールフォルダを確認してください", tryAgain: "もう一度試す", loginRequired: "ログインが必要です", sessionExpired: "セッションが切れました", pleaseLogin: "続行するにはログインしてください", loginWith: "でログイン", orContinueWith: "または続行する", acceptTerms: "利用規約に同意します", loginRequired: "この機能にアクセスするにはログインが必要です。" },
   community: { community: "コミュニティ", posts: "投稿", comments: "コメント", likes: "いいね", shares: "シェア", followers: "フォロワー", following: "フォロー中", follow: "フォロー", unfollow: "フォロー解除", createPost: "投稿を作成", sharePost: "投稿をシェア", likePost: "いいねする", unlikePost: "いいねを取り消す", addComment: "コメントを追加", replyTo: "返信する", reportPost: "投稿を報告", deletePost: "投稿を削除", editPost: "投稿を編集", savePost: "投稿を保存", commentsDisabled: "この投稿のコメントは無効です。", commentsEnabled: "この投稿のコメントは有効です。", noComments: "まだコメントがありません", beCivil: "マナーを守りましょう", respectOthers: "他のユーザーを尊重してください", noBullying: "いじめ禁止", noSpam: "スパム禁止", guidelines: "コミュニティガイドライン", viewProfile: "プロフィールを見る", message: "メッセージ" },
@@ -237,7 +236,8 @@ export default {
     topicError: "エラーを報告",
     topicBilling: "請求に関する質問",
     topicTechnical: "技術的な問題",
-    topicOther: "その他"
+    topicOther: "その他",
+    sendFailed: "サポートリクエストの送信に失敗しました。もう一度試すか、admin@pipekeeperapp.com に直接メールをお送りください。",
   },
 
   subscription: {
@@ -293,5 +293,76 @@ export default {
     proAccess: "プロ機能へのアクセス（AI識別、価値検索、最適化、エクスポート、一括編集）",
     providerDetection: "プロバイダー検出（Stripe、Apple、手動）",
     planLabel: "プランラベルの生成",
-  }
+  },
+
+  pairingMatrix: {
+    loading: "ペアリングを読み込み中...",
+    title: "ペアリングマトリックス",
+    description: "コレクション内の各パイプとタバコブレンドの相性スコア",
+    regenSuccess: "ペアリングを正常に再生成しました",
+    regenFailed: "ペアリングの再生成に失敗しました",
+  },
+
+  tobacconist: {
+    tobacconist: "エキスパートタバコニスト",
+    avatarAlt: "タバコニスト",
+    title: "タバコニスト",
+    tabChat: "チャット",
+    tabActions: "アクション",
+    sending: "送信中...",
+    inputPlaceholder: "パイプやタバコについて質問する...",
+    regeneratePairings: "ペアリングを再生成",
+    undoPairings: "ペアリングを元に戻す",
+    regenerateOptimization: "最適化を再生成",
+    undoOptimization: "最適化を元に戻す",
+    actionsNote: "これらのアクションはコレクションデータを更新します。",
+    fingerprint: "コレクションフィンガープリント",
+    quickAccess: "クイックアクセス",
+    actionsReady: "アクション準備完了",
+    pairingsRegenerated: "ペアリングを正常に再生成しました",
+    failedToRegeneratePairings: "ペアリングの再生成に失敗しました",
+    pairingsReverted: "ペアリングを以前のバージョンに戻しました",
+    failedToUndoPairings: "ペアリングの取り消しに失敗しました",
+    optimizationRegenerated: "最適化を正常に再生成しました",
+    failedToRegenerateOptimization: "最適化の再生成に失敗しました",
+    optimizationReverted: "最適化を以前のバージョンに戻しました",
+    failedToUndoOptimization: "最適化の取り消しに失敗しました",
+    failedToStartConversation: "会話の開始に失敗しました",
+    failedToSendMessage: "メッセージの送信に失敗しました",
+    askTobacconist: "タバコニストに聞く",
+    recommendations: "おすすめ",
+    askQuestion: "質問する...",
+    sendMessage: "送信",
+    conversation: "会話",
+    noMessages: "メッセージがありません",
+    startConversation: "会話を始める",
+    connecting: "タバコニストに接続中...",
+    connected: "接続済み",
+    disconnected: "切断されました",
+  },
+
+  tobaccoSearch: {
+    placeholder: "ブレンド名またはメーカーで検索（例：'Orlik Golden Sliced'）",
+    searchBtn: "検索",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "確認の処理に失敗しました。もう一度お試しください。",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeperを読み込めませんでした",
+    body: "アプリを閉じて再度開いてください。この問題が続く場合は、サポートにお問い合わせください。",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "App Storeの設定を開けません。設定アプリでサブスクリプションを管理してください。",
+  },
+
+  debug: {
+    snapshotCopied: "スナップショットをコピーしました",
+    copyFailed: "コピー失敗 – クリップボードが利用できません",
+    i18nReportDownloaded: "i18nレポートをダウンロードしました",
+    i18nReportCleared: "i18nレポートをクリアしました",
+  },
 };

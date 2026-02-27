@@ -1,5 +1,6 @@
 // src/components/system/ErrorBoundary.jsx
 import React from "react";
+import { translate } from "@/components/i18n/safeTranslation";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -20,6 +21,8 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    const lang = (() => { try { return localStorage.getItem('pk_lang') || 'en'; } catch { return 'en'; } })();
+
     const isDev =
       typeof window !== "undefined" &&
       (window.location?.hostname?.includes("localhost") ||
@@ -28,9 +31,9 @@ export default class ErrorBoundary extends React.Component {
 
     return (
       <div style={{ padding: 18, fontFamily: "system-ui", lineHeight: 1.4 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>PipeKeeper failed to load</h2>
+        <h2 style={{ fontSize: 18, marginBottom: 8 }}>{translate("errorBoundary.title", {}, lang)}</h2>
         <p style={{ opacity: 0.8, marginBottom: 12 }}>
-          Please close and reopen the app. If this keeps happening, contact support.
+          {translate("errorBoundary.body", {}, lang)}
         </p>
 
         {isDev && (

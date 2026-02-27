@@ -157,7 +157,8 @@ const translations = {
     topicError: "Report an Error",
     topicBilling: "Billing Question",
     topicTechnical: "Technical Issue",
-    topicOther: "Other"
+    topicOther: "Other",
+    sendFailed: "Failed to send support request. Please try again or email admin@pipekeeperapp.com directly.",
   },
 
   // ... all other existing namespaces and keys
@@ -284,6 +285,67 @@ const translations = {
     proAccess: "Pro feature access (AI identify, value lookup, optimization, exports, bulk edit)",
     providerDetection: "Provider detection (Stripe, Apple, manual)",
     planLabel: "Plan label generation",
+  },
+
+  pairingMatrix: {
+    loading: "Loading pairings...",
+    title: "Pairing Matrix",
+    description: "Scored compatibility between each pipe and tobacco blend in your collection",
+    regenSuccess: "Pairings regenerated successfully",
+    regenFailed: "Failed to regenerate pairings",
+  },
+
+  tobacconist: {
+    tobacconist: "Expert Tobacconist",
+    avatarAlt: "Tobacconist",
+    title: "The Tobacconist",
+    tabChat: "Chat",
+    tabActions: "Actions",
+    sending: "Sending...",
+    inputPlaceholder: "Ask about pipes or tobacco...",
+    regeneratePairings: "Regenerate Pairings",
+    undoPairings: "Undo Pairings",
+    regenerateOptimization: "Regenerate Optimization",
+    undoOptimization: "Undo Optimization",
+    actionsNote: "These actions will update your collection data.",
+    fingerprint: "Collection fingerprint",
+    quickAccess: "Quick access",
+    actionsReady: "Actions ready",
+    pairingsRegenerated: "Pairings regenerated successfully",
+    failedToRegeneratePairings: "Failed to regenerate pairings",
+    pairingsReverted: "Pairings reverted to previous version",
+    failedToUndoPairings: "Failed to undo pairings",
+    optimizationRegenerated: "Optimization regenerated successfully",
+    failedToRegenerateOptimization: "Failed to regenerate optimization",
+    optimizationReverted: "Optimization reverted to previous version",
+    failedToUndoOptimization: "Failed to undo optimization",
+    failedToStartConversation: "Failed to start conversation",
+    failedToSendMessage: "Failed to send message",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Search by blend name or manufacturer (e.g., 'Orlik Golden Sliced')",
+    searchBtn: "Search",
+  },
+
+  quickPipeIdentifier: {
+    clarificationFailed: "Failed to process clarification. Please try again.",
+  },
+
+  errorBoundary: {
+    title: "PipeKeeper failed to load",
+    body: "Please close and reopen the app. If this keeps happening, contact support.",
+  },
+
+  appleIAP: {
+    openSettingsFailed: "Unable to open App Store settings. Please manage your subscription in the Settings app.",
+  },
+
+  debug: {
+    snapshotCopied: "Snapshot copied",
+    copyFailed: "Copy failed - clipboard unavailable",
+    i18nReportDownloaded: "i18n report downloaded",
+    i18nReportCleared: "i18n report cleared",
   },
 };
 

@@ -3,6 +3,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isLegacyPremium, isFoundingMember } from '@/components/utils/premiumAccess';
 import { ChevronDown, ChevronUp, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { downloadMissingKeysReport, clearMissingKeys } from '@/components/i18n/missingKeyRegistry';
 
 // Detect dev mode using Vite's import.meta.env (browser-safe)
@@ -44,6 +45,7 @@ export default function EntitlementDebug() {
   const [isMounted, setIsMounted] = useState(false);
 
   const { user, subscription, isLoading, hasPaid, hasPremium, isInTrial, isAdmin } = useCurrentUser();
+  const { t } = useTranslation();
 
   // Safely check visibility after mount to avoid hydration mismatch
   useEffect(() => {
@@ -81,20 +83,20 @@ export default function EntitlementDebug() {
     if (copied) {
       setJustCopied(true);
       setTimeout(() => setJustCopied(false), 2000);
-      toast.success('Snapshot copied');
+      toast.success(t("debug.snapshotCopied"));
     } else {
-      toast.error('Copy failed - clipboard unavailable');
+      toast.error(t("debug.copyFailed"));
     }
   };
 
   const handleDownloadI18nReport = () => {
     downloadMissingKeysReport();
-    toast.success('i18n report downloaded');
+    toast.success(t("debug.i18nReportDownloaded"));
   };
 
   const handleClearI18nReport = () => {
     clearMissingKeys();
-    toast.success('i18n report cleared');
+    toast.success(t("debug.i18nReportCleared"));
   };
 
   return (
