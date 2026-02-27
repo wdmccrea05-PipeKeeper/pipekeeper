@@ -39,7 +39,7 @@ export default function AdminSubscriptionTools() {
 
   const handleGrant = async () => {
     if (!email.trim()) {
-      setResult({ ok: false, message: "Please enter an email address" });
+      setResult({ ok: false, message: t("admin.pleaseEnterEmail", "Please enter an email address") });
       return;
     }
 
@@ -56,7 +56,7 @@ export default function AdminSubscriptionTools() {
       });
 
       if (response?.data?.ok) {
-        setResult({ ok: true, message: "Access granted successfully!" });
+        setResult({ ok: true, message: t("admin.accessGrantedSuccess", "Access granted successfully!") });
         setUpdatedUser(response.data.user);
         setEmail("");
         setTier("premium");
@@ -65,7 +65,7 @@ export default function AdminSubscriptionTools() {
       } else {
         setResult({
           ok: false,
-          message: response?.data?.message || "Failed to grant access",
+          message: response?.data?.message || t("admin.failedToGrantAccess", "Failed to grant access"),
         });
       }
     } catch (err) {
@@ -77,7 +77,7 @@ export default function AdminSubscriptionTools() {
 
   const handleRevoke = async () => {
     if (!email.trim()) {
-      setResult({ ok: false, message: "Please enter an email address" });
+      setResult({ ok: false, message: t("admin.pleaseEnterEmail", "Please enter an email address") });
       return;
     }
 
@@ -92,14 +92,14 @@ export default function AdminSubscriptionTools() {
       });
 
       if (response?.data?.ok) {
-        setResult({ ok: true, message: "Access revoked successfully!" });
+        setResult({ ok: true, message: t("admin.accessRevokedSuccess", "Access revoked successfully!") });
         setUpdatedUser(response.data.user);
         setEmail("");
         setNotes("");
       } else {
         setResult({
           ok: false,
-          message: response?.data?.message || "Failed to revoke access",
+          message: response?.data?.message || t("admin.failedToRevokeAccess", "Failed to revoke access"),
         });
       }
     } catch (err) {
@@ -112,18 +112,18 @@ export default function AdminSubscriptionTools() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">Subscription Admin Tools</h1>
+        <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">{t("admin.subscriptionAdminTools", "Subscription Admin Tools")}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
             <CardHeader>
-              <CardTitle className="text-[#E0D8C8]">Manage User Subscription</CardTitle>
+              <CardTitle className="text-[#E0D8C8]">{t("admin.manageUserSubscription", "Manage User Subscription")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.emailAddress", "Email Address")}</label>
                 <Input
-                  placeholder="user@example.com"
+                  placeholder={t("admin.userEmailPlaceholder", "user@example.com")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]"
@@ -208,29 +208,29 @@ export default function AdminSubscriptionTools() {
               <CardHeader>
                 <CardTitle className="text-[#E0D8C8] flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  Updated User
+                  {t("admin.updatedUser", "Updated User")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div>
-                  <p className="text-[#E0D8C8]/50">Email</p>
+                  <p className="text-[#E0D8C8]/50">{t("admin.emailLabel", "Email")}</p>
                   <p className="text-[#E0D8C8] font-medium">{updatedUser.email}</p>
                 </div>
                 <div>
-                  <p className="text-[#E0D8C8]/50">Name</p>
+                  <p className="text-[#E0D8C8]/50">{t("admin.nameLabel", "Name")}</p>
                   <p className="text-[#E0D8C8] font-medium">{updatedUser.full_name}</p>
                 </div>
                 <div>
-                   <p className="text-[#E0D8C8]/50">Subscription Level</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_level || "Free"}</p>
+                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionLevel", "Subscription Level")}</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_level || t("subscription.free", "Free")}</p>
                  </div>
                  <div>
-                   <p className="text-[#E0D8C8]/50">Subscription Status</p>
+                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionStatus", "Subscription Status")}</p>
                    <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || t("admin.inactive")}</p>
                  </div>
                  <div>
-                   <p className="text-[#E0D8C8]/50">Subscription Tier</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_tier || "None"}</p>
+                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionTier", "Subscription Tier")}</p>
+                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_tier || t("admin.none", "None")}</p>
                  </div>
                 <div>
                   <p className="text-[#E0D8C8]/50">{t("admin.updatedAt")}</p>

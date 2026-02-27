@@ -235,7 +235,7 @@ export default function AdminSubscriptionRequests() {
                           }
                           className="text-[#A35C5C] hover:bg-[#A35C5C]/20"
                         >
-                          {expandedId === req.id ? "Hide" : "Show"}
+                          {expandedId === req.id ? t("admin.hide", "Hide") : t("admin.show", "Show")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -329,7 +329,7 @@ export default function AdminSubscriptionRequests() {
                                   disabled={resolveMutation.isPending}
                                   className="text-[#A35C5C] hover:bg-[#A35C5C]/20 flex-1"
                                 >
-                                  {resolveMutation.isPending ? "Resolving..." : "Mark Resolved"}
+                                  {resolveMutation.isPending ? t("admin.resolving", "Resolving...") : t("admin.markResolved", "Mark Resolved")}
                                 </Button>
                               </div>
                             )}
@@ -344,7 +344,7 @@ export default function AdminSubscriptionRequests() {
                         <TableCell colSpan="5" className="p-4">
                           <div className="space-y-3">
                             <Textarea
-                              placeholder="Optional rejection reason..."
+                              placeholder={t("admin.rejectionReasonPlaceholder", "Optional rejection reason...")}
                               value={rejectNotes}
                               onChange={(e) => setRejectNotes(e.target.value)}
                               className="bg-[#243548] border-red-500/30 text-[#E0D8C8] min-h-20"
