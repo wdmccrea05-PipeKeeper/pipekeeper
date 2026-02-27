@@ -1,31 +1,29 @@
+
 // This file re-exports translations from the locale files via the index
 // Import from the locales/index instead of a non-existent root translations.js
+// Translations bundle: all 10 supported locales imported statically for sync access
 import en from './locales/en.js';
+import es from './locales/es.js';
+import fr from './locales/fr.js';
+import de from './locales/de.js';
+import it from './locales/it.js';
+import ptBR from './locales/pt-BR.js';
+import nl from './locales/nl.js';
+import pl from './locales/pl.js';
+import ja from './locales/ja.js';
+import zhHans from './locales/zh-Hans.js';
 
-// The canonical translations object is keyed by language code
-// Other locales are loaded lazily via locales/index.js
-// For synchronous use (useTranslation hook), we pre-bundle all locales here
+const translations = {
+  en,
+  es,
+  fr,
+  de,
+  it,
+  'pt-BR': ptBR,
+  nl,
+  pl,
+  ja,
+  'zh-Hans': zhHans,
+};
 
-let _translations = null;
-
-function getTranslations() {
-  if (_translations) return _translations;
-  
-  // Start with English as the base
-  _translations = { en };
-  
-  // Eagerly import all supported locales synchronously
-  try { _translations['es'] = require('./locales/es.js').default; } catch {}
-  try { _translations['fr'] = require('./locales/fr.js').default; } catch {}
-  try { _translations['de'] = require('./locales/de.js').default; } catch {}
-  try { _translations['it'] = require('./locales/it.js').default; } catch {}
-  try { _translations['pt-BR'] = require('./locales/pt-BR.js').default; } catch {}
-  try { _translations['nl'] = require('./locales/nl.js').default; } catch {}
-  try { _translations['pl'] = require('./locales/pl.js').default; } catch {}
-  try { _translations['ja'] = require('./locales/ja.js').default; } catch {}
-  try { _translations['zh-Hans'] = require('./locales/zh-Hans.js').default; } catch {}
-  
-  return _translations;
-}
-
-export default getTranslations();
+export default translations;
