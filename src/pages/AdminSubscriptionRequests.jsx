@@ -102,7 +102,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success("Access granted and request updated");
+      toast.success(t("admin.requestGranted", "Access granted and request updated"));
     },
     onError: (err) => {
       toast.error(`Error: ${err.message}`);
@@ -121,7 +121,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success("Request rejected");
+      toast.success(t("admin.requestRejected", "Request rejected"));
       setRejectingId(null);
       setRejectNotes("");
     },
@@ -139,7 +139,7 @@ export default function AdminSubscriptionRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
-      toast.success("Request marked as resolved");
+      toast.success(t("admin.requestResolved", "Request marked as resolved"));
     },
     onError: (err) => {
       toast.error(`Error: ${err.message}`);
@@ -168,7 +168,7 @@ export default function AdminSubscriptionRequests() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("admin.subSupportQueue")}</h1>
           <p className="text-[#E0D8C8]/60">
-            {filteredRequests.length} pending request{filteredRequests.length !== 1 ? "s" : ""}
+            {filteredRequests.length} {t("admin.pendingRequestsSuffix", "pending request(s)")}
           </p>
         </div>
 

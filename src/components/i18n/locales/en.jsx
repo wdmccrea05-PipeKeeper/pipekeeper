@@ -382,6 +382,11 @@ const translations = {
     updatedAt: "Updated At",
     active: "Active",
     inactive: "Inactive",
+    requestGranted: "Access granted and request updated",
+    requestRejected: "Request rejected",
+    requestResolved: "Request marked as resolved",
+    pendingRequestsSuffix: "pending request(s)",
+    userEmailPlaceholder: "user@example.com",
   },
 };
 
