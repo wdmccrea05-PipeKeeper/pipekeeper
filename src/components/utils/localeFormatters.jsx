@@ -1,19 +1,17 @@
 /**
  * Locale-aware formatting utilities for numbers, dates, and currency
- * Respects user's selected language (i18n.language)
+ * Respects user's selected language (pk_lang from localStorage)
  */
 
-import i18n from "i18next";
-
 /**
- * Get locale code from i18n language
+ * Get locale code from pk_lang localStorage key
  */
 export function getLocale() {
   let lang = 'en';
   try {
-    lang = (typeof window !== 'undefined' && localStorage.getItem('pk_lang')) || i18n.language || 'en';
+    lang = (typeof window !== 'undefined' && window?.localStorage?.getItem('pk_lang')) || 'en';
   } catch {
-    lang = i18n.language || 'en';
+    lang = 'en';
   }
 
   // Map language codes to locale codes

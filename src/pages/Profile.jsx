@@ -382,7 +382,7 @@ export default function ProfilePage() {
 
             {/* Avatar */}
             <div className="space-y-2">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.profilePicture","Profile picture")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture","Profile picture")}</Label>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center">
                   {formData.avatar_url ? (
@@ -412,20 +412,20 @@ export default function ProfilePage() {
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-stone-700 font-medium">{t("profileExtended.displayName","Display name")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.displayName","Display name")}</Label>
                 <Input
                   value={formData.display_name}
                   onChange={(e) => setFormData((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div>
-                <Label className="text-stone-700 font-medium">{t("common.email","Email")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("common.email","Email")}</Label>
                 <Input value={user?.email || ""} disabled className="bg-stone-50 text-stone-500 cursor-not-allowed" />
               </div>
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium">{t("profileExtended.bio","Bio")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.bio","Bio")}</Label>
               <Textarea
                 value={formData.bio}
                 onChange={(e) => setFormData((p) => ({ ...p, bio: e.target.value }))}
@@ -436,7 +436,7 @@ export default function ProfilePage() {
             {/* Location */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-stone-700 font-medium">{t("profileExtended.location","Location")}</Label>
+                <Label className="text-stone-700 font-medium break-words">{t("profileExtended.location","Location")}</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-stone-600">{t("profileExtended.showOnProfile","Show on profile")}</span>
                   <Switch
@@ -473,7 +473,7 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.privacy","Privacy")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.privacy","Privacy")}</Label>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-700">{t("profileExtended.hideValues","Hide values")}</span>
@@ -517,7 +517,7 @@ export default function ProfilePage() {
 
             {/* Preferences */}
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);
@@ -535,7 +535,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-stone-700 font-medium">{t("profileExtended.preferredPipeShapes","Preferred pipe shapes")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredPipeShapes","Preferred pipe shapes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PIPE_SHAPES.map((sh) => {
                   const active = formData.preferred_shapes.includes(sh);
@@ -553,7 +553,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="text-stone-700 font-medium">{t("common.notes","Notes")}</Label>
+              <Label className="text-stone-700 font-medium break-words">{t("common.notes","Notes")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}

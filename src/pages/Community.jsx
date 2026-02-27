@@ -660,7 +660,7 @@ export default function CommunityPage() {
                               </a>
                               <p className="text-xs text-[#E0D8C8]/60">{t("communityExtended.wantsToBeFriends")}</p>
                             </div>
-                            <div className="flex flex-col gap-2 flex-shrink-0">
+                            <div className="flex flex-col gap-2 flex-shrink-0 min-w-0">
                               <Button
                                 size="sm"
                                 onClick={() => acceptFriendRequestMutation.mutate(request.id)}
@@ -781,7 +781,7 @@ export default function CommunityPage() {
                         {t("communityExtended.displayName")}: <strong>{userProfile.display_name || t("communityExtended.notSet")}</strong>
                       </p>
                       {userProfile.bio && (
-                        <p className="text-sm text-[#E0D8C8]/70">
+                        <p className="text-sm text-[#E0D8C8]/70 break-words">
                           {t("communityExtended.bio")}: {userProfile.bio}
                         </p>
                       )}
