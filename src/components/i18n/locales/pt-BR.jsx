@@ -343,6 +343,13 @@ const translations = {
     answeredBy: "Respondido por:",
     askExpertPlaceholder: "Pergunte sobre cachimbos, misturas, ideias de combinação, envelhecimento, valor, redundância…",
     pressCmdEnter: "Pressione ⌘Enter para enviar",
+    subtitle: "Assistente IA para Cachimbo e Tabaco",
+    welcomeMessage: "Olá! Pergunte-me qualquer coisa sobre sua coleção de cachimbos e tabaco.",
+    sendMessage: "Enviar Mensagem",
+    askTheExpert: "Perguntar ao Especialista",
+    askExpertTooltip: "Faça perguntas sobre a estratégia da sua coleção, compras hipotéticas ou conselhos de combinação.",
+    askExpertInstructions: "Faça perguntas sobre estratégia de coleção, compras hipotéticas ou conselhos de combinação.",
+    askPlaceholder: "E se eu adicionasse um billiard maior? Qual tabaco devo experimentar a seguir?",
     translating: "Traduzindo...",
     translatingInput: "Traduzindo sua mensagem...",
   },
@@ -383,6 +390,8 @@ const translations = {
   error: {
     tryAgain: "Tentar novamente",
     reloadPage: "Recarregar página",
+    somethingWentWrong: "Algo deu errado",
+    unexpectedErrorRefresh: "Encontramos um erro inesperado. Por favor, tente recarregar a página.",
   },
 
   messaging: {
@@ -430,6 +439,16 @@ const translations = {
     requestResolved: "Request marked as resolved",
     pendingRequestsSuffix: "pending request(s)",
     userEmailPlaceholder: "user@example.com",
+  },
+
+  pipes: {
+    allShapes: "Todas as formas",
+    allMaterials: "Todos os materiais",
+  },
+
+  tobacco: {
+    allTypes: "Todos os tipos",
+    allStrengths: "Todas as intensidades",
   },
 };
 

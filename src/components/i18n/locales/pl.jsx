@@ -361,6 +361,13 @@ export default {
     connected: "Połączono",
     disconnected: "Rozłączono",
     pressCmdEnter: "Naciśnij ⌘Enter, aby wysłać",
+    subtitle: "Asystent AI ds. Fajek i Tytoniu",
+    welcomeMessage: "Cześć! Zapytaj mnie o cokolwiek dotyczącego Twojej kolekcji fajek i tytoniu.",
+    sendMessage: "Wyślij Wiadomość",
+    askTheExpert: "Zapytaj Eksperta",
+    askExpertTooltip: "Zadaj pytania dotyczące strategii swojej kolekcji, hipotetycznych zakupów lub porad dotyczących parowania.",
+    askExpertInstructions: "Zadaj pytania dotyczące strategii kolekcji, hipotetycznych zakupów lub porad dotyczących parowania.",
+    askPlaceholder: "Co gdybym dodał większy billiard? Jakiego tytoniu powinienem spróbować następnie?",
     translating: "Tłumaczenie...",
     translatingInput: "Tłumaczenie wiadomości...",
   },
@@ -401,6 +408,8 @@ export default {
   error: {
     tryAgain: "Spróbuj ponownie",
     reloadPage: "Odśwież stronę",
+    somethingWentWrong: "Coś poszło nie tak",
+    unexpectedErrorRefresh: "Napotkaliśmy nieoczekiwany błąd. Spróbuj odświeżyć stronę.",
   },
 
   messaging: {
@@ -416,5 +425,15 @@ export default {
     copyFailed: "Kopiowanie nie powiodło się – schowek niedostępny",
     i18nReportDownloaded: "Raport i18n pobrany",
     i18nReportCleared: "Raport i18n wyczyszczony",
+  },
+
+  pipes: {
+    allShapes: "Wszystkie kształty",
+    allMaterials: "Wszystkie materiały",
+  },
+
+  tobacco: {
+    allTypes: "Wszystkie typy",
+    allStrengths: "Wszystkie moce",
   },
 };

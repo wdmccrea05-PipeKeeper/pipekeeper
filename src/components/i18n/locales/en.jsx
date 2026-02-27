@@ -344,6 +344,13 @@ const translations = {
     answeredBy: "Answered by:",
     askExpertPlaceholder: "Ask about pipes, blends, pairing ideas, aging, value, redundancy…",
     pressCmdEnter: "Press ⌘Enter to send",
+    subtitle: "AI Pipe & Tobacco Assistant",
+    welcomeMessage: "Hello! Ask me anything about your pipe and tobacco collection.",
+    sendMessage: "Send Message",
+    askTheExpert: "Ask the Expert",
+    askExpertTooltip: "Ask questions about your collection strategy, hypothetical purchases, or pairing advice.",
+    askExpertInstructions: "Ask questions about collection strategy, hypothetical purchases, or pairing advice.",
+    askPlaceholder: "What if I added a larger billiard? Which tobacco should I try next?",
     translating: "Translating...",
     translatingInput: "Translating your message...",
   },
@@ -384,6 +391,8 @@ const translations = {
   error: {
     tryAgain: "Try Again",
     reloadPage: "Reload Page",
+    somethingWentWrong: "Something went wrong",
+    unexpectedErrorRefresh: "We've encountered an unexpected error. Please try refreshing the page.",
   },
 
   messaging: {
@@ -500,6 +509,16 @@ const translations = {
     stripeAuthFailed: "Stripe authentication failed",
     stripeDiagsPassed: "Stripe diagnostics passed",
     failedToRunDiagnostics: "Failed to run diagnostics",
+  },
+
+  pipes: {
+    allShapes: "All Shapes",
+    allMaterials: "All Materials",
+  },
+
+  tobacco: {
+    allTypes: "All Types",
+    allStrengths: "All Strengths",
   },
 };
 

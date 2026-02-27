@@ -361,6 +361,13 @@ export default {
     connected: "已连接",
     disconnected: "已断开连接",
     pressCmdEnter: "按⌘Enter发送",
+    subtitle: "烟斗和烟草AI助手",
+    welcomeMessage: "您好！有关烟斗和烟草收藏的任何问题都可以问我。",
+    sendMessage: "发送消息",
+    askTheExpert: "咨询专家",
+    askExpertTooltip: "提问关于您的收藏策略、假设购买或搭配建议的问题。",
+    askExpertInstructions: "提问关于收藏策略、假设购买或搭配建议的问题。",
+    askPlaceholder: "如果我添加一个更大的圆形斗会怎样？我下一步应该尝试哪种烟草？",
     translating: "翻译中...",
     translatingInput: "正在翻译您的消息...",
   },
@@ -401,6 +408,8 @@ export default {
   error: {
     tryAgain: "重试",
     reloadPage: "重新加载页面",
+    somethingWentWrong: "出了点问题",
+    unexpectedErrorRefresh: "我们遇到了一个意外错误。请尝试刷新页面。",
   },
 
   messaging: {
@@ -416,5 +425,15 @@ export default {
     copyFailed: "复制失败 – 剪贴板不可用",
     i18nReportDownloaded: "i18n 报告已下载",
     i18nReportCleared: "i18n 报告已清除",
+  },
+
+  pipes: {
+    allShapes: "所有形状",
+    allMaterials: "所有材料",
+  },
+
+  tobacco: {
+    allTypes: "所有类型",
+    allStrengths: "所有强度",
   },
 };
