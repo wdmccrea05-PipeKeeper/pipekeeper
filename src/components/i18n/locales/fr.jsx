@@ -269,6 +269,22 @@ const translations = {
     reportsTooltip: "Générez des résumés exportables de votre collection pour référence ou documentation.",
     agingTooltip: "Surveillez le tabac en cave et obtenez des recommandations sur les durées d'affinage optimales selon les caractéristiques du mélange.",
   },
+
+  subscriptionTest: {
+    backToHome: "Retour à l'accueil",
+    heading: "🧪 Suite de tests E2E d'abonnement et de permissions",
+    description: "Cette page exécute des tests complets sur le système d'abonnement et de permissions pour vérifier que les utilisateurs payants reçoivent le bon accès à toutes les fonctionnalités premium et pro. Les tests s'exécutent automatiquement au chargement.",
+    coverageTitle: "Couverture des tests :",
+    hookIntegrity: "Intégrité des données du hook (objets utilisateur et abonnement)",
+    tierResolution: "Résolution canonique du niveau entre toutes les sources",
+    accessFlags: "Cohérence des indicateurs d'accès (hasPaid, hasPro, isTrial)",
+    entitlements: "Calculs du système de droits",
+    limitCheck: "Compatibilité des paramètres de vérification des limites",
+    premiumAccess: "Accès aux fonctionnalités premium (collection illimitée, appariement, correspondance, messagerie)",
+    proAccess: "Accès aux fonctionnalités pro (identification IA, recherche de valeur, optimisation, exports, édition en masse)",
+    providerDetection: "Détection du fournisseur (Stripe, Apple, manuel)",
+    planLabel: "Génération de l'étiquette de plan",
+  },
 };
 
 export default translations;

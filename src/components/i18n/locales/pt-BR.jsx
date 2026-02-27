@@ -269,6 +269,22 @@ const translations = {
     reportsTooltip: "Gere resumos exportáveis da sua coleção para referência ou documentação.",
     agingTooltip: "Monitore o tabaco na adega e receba recomendações sobre os tempos de envelhecimento ideais com base nas características do blend.",
   },
+
+  subscriptionTest: {
+    backToHome: "Voltar ao início",
+    heading: "🧪 Suite de testes E2E de assinatura e permissões",
+    description: "Esta página executa testes abrangentes no sistema de assinatura e permissões para verificar que os usuários pagantes recebem o acesso correto a todos os recursos premium e pro. Os testes são executados automaticamente ao carregar.",
+    coverageTitle: "Cobertura de testes:",
+    hookIntegrity: "Integridade de dados do hook (objetos de usuário e assinatura)",
+    tierResolution: "Resolução canônica de nível entre todas as fontes",
+    accessFlags: "Consistência de sinalizadores de acesso (hasPaid, hasPro, isTrial)",
+    entitlements: "Cálculos do sistema de direitos",
+    limitCheck: "Compatibilidade de parâmetros de verificação de limite",
+    premiumAccess: "Acesso a recursos premium (coleção ilimitada, emparelhamento, correspondência, mensagens)",
+    proAccess: "Acesso a recursos pro (identificação por IA, pesquisa de valor, otimização, exportações, edição em lote)",
+    providerDetection: "Detecção de provedor (Stripe, Apple, manual)",
+    planLabel: "Geração de rótulo de plano",
+  },
 };
 
 export default translations;

@@ -277,5 +277,21 @@ export default {
     purchaseSuggestions: "推奨購入品",
     avgScoreImprovement: "平均スコア改善",
     fillsGapFor: "ギャップを補完",
+  },
+
+  subscriptionTest: {
+    backToHome: "ホームに戻る",
+    heading: "🧪 サブスクリプションと権限のE2Eテストスイート",
+    description: "このページは、有料ユーザーがすべてのプレミアムおよびプロ機能への正しいアクセスを受け取ることを確認するために、サブスクリプションおよび権限システムの包括的なテストを実行します。テストはロード時に自動的に実行されます。",
+    coverageTitle: "テスト範囲：",
+    hookIntegrity: "フックデータの整合性（ユーザーおよびサブスクリプションオブジェクト）",
+    tierResolution: "すべてのソースにわたる標準的なティア解決",
+    accessFlags: "アクセスフラグの一貫性（hasPaid、hasPro、isTrial）",
+    entitlements: "エンタイトルメントシステムの計算",
+    limitCheck: "制限チェックパラメータの互換性",
+    premiumAccess: "プレミアム機能へのアクセス（無制限コレクション、ペアリング、マッチング、メッセージング）",
+    proAccess: "プロ機能へのアクセス（AI識別、価値検索、最適化、エクスポート、一括編集）",
+    providerDetection: "プロバイダー検出（Stripe、Apple、手動）",
+    planLabel: "プランラベルの生成",
   }
 };

@@ -277,5 +277,21 @@ export default {
     purchaseSuggestions: "建议购买",
     avgScoreImprovement: "平均得分提升",
     fillsGapFor: "填补缺口",
+  },
+
+  subscriptionTest: {
+    backToHome: "返回主页",
+    heading: "🧪 订阅与权限端到端测试套件",
+    description: "此页面对订阅和权限系统运行全面测试，以验证付费用户是否能正确访问所有高级版和专业版功能。测试在加载时自动运行。",
+    coverageTitle: "测试覆盖范围：",
+    hookIntegrity: "Hook数据完整性（用户和订阅对象）",
+    tierResolution: "所有来源的规范层级解析",
+    accessFlags: "访问标志一致性（hasPaid、hasPro、isTrial）",
+    entitlements: "权限系统计算",
+    limitCheck: "限制检查参数兼容性",
+    premiumAccess: "高级功能访问（无限收藏、配对、匹配、消息）",
+    proAccess: "专业功能访问（AI识别、价值查询、优化、导出、批量编辑）",
+    providerDetection: "提供商检测（Stripe、Apple、手动）",
+    planLabel: "套餐标签生成",
   }
 };
