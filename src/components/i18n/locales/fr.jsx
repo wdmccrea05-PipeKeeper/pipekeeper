@@ -293,6 +293,8 @@ const translations = {
     description: "Compatibilité notée entre chaque pipe et mélange de tabac de votre collection",
     regenSuccess: "Associations régénérées avec succès",
     regenFailed: "Échec de la régénération des associations",
+    noPairingData: "Pas encore de données d'association",
+    noPairingDataDesc: "Ajoutez des pipes et du tabac à votre collection, puis générez des recommandations d'association alimentées par l'IA.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Échec de l'annulation de l'optimisation",
     failedToStartConversation: "Échec du démarrage de la conversation",
     failedToSendMessage: "Échec de l'envoi du message",
+    expertTobacconistAlt: "Buraliste expert",
+    aiTobacconistAlt: "Buraliste IA",
+    failedToInitializeExpertChat: "Impossible d'initialiser le chat expert",
+    collectionLoadingRetry: "Chargement des données de votre collection… réessayez dans un instant.",
+    couldntLoadResponse: "Impossible de charger une réponse de l'agent expert. Veuillez réessayer.",
+    answeredBy: "Répondu par :",
+    askExpertPlaceholder: "Posez des questions sur les pipes, les mélanges, les accords, le vieillissement, la valeur, la redondance…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Échec de la copie : presse-papiers indisponible",
     i18nReportDownloaded: "Rapport i18n téléchargé",
     i18nReportCleared: "Rapport i18n effacé",
+  },
+
+  admin: {
+    accessRequired: "Accès administrateur requis",
+    adminOnly: "Seuls les administrateurs peuvent accéder à cette page.",
+    searchEmail: "Rechercher un e-mail",
+    source: "Source",
+    allSources: "Toutes les sources",
+    loading: "Chargement des demandes...",
+    subscriptionEventsLog: "Journal des événements d'abonnement",
+    refresh: "Actualiser",
+    subSupportQueue: "File d'attente du support d'abonnement",
+    created: "Créé",
+    grantedBy: "Accordé par",
+    noPendingRequests: "Aucune demande en attente",
+    noMatchingRequests: "Aucune demande correspondante trouvée",
+    searchByEmail: "Rechercher par e-mail...",
+    tier: "Niveau",
+    status: "Statut",
+    notes: "Notes (optionnel)",
+    adminNotes: "Notes d'administrateur...",
+    processing: "Traitement en cours...",
+    grantAccess: "Accorder l'accès",
+    revokeAccess: "Révoquer l'accès",
+    updatedAt: "Mis à jour le",
+    active: "Actif",
+    inactive: "Inactif",
   },
 };
 

@@ -293,6 +293,8 @@ const translations = {
     description: "Scored compatibility between each pipe and tobacco blend in your collection",
     regenSuccess: "Pairings regenerated successfully",
     regenFailed: "Failed to regenerate pairings",
+    noPairingData: "No pairing data yet",
+    noPairingDataDesc: "Add pipes and tobacco to your collection, then generate AI-powered pairing recommendations.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Failed to undo optimization",
     failedToStartConversation: "Failed to start conversation",
     failedToSendMessage: "Failed to send message",
+    expertTobacconistAlt: "Expert Tobacconist",
+    aiTobacconistAlt: "AI Tobacconist",
+    failedToInitializeExpertChat: "Failed to initialize expert chat",
+    collectionLoadingRetry: "Loading your collection data… try again in a moment.",
+    couldntLoadResponse: "Couldn't load a response from the expert agent. Please try again.",
+    answeredBy: "Answered by:",
+    askExpertPlaceholder: "Ask about pipes, blends, pairing ideas, aging, value, redundancy…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Copy failed - clipboard unavailable",
     i18nReportDownloaded: "i18n report downloaded",
     i18nReportCleared: "i18n report cleared",
+  },
+
+  admin: {
+    accessRequired: "Admin access required",
+    adminOnly: "Only administrators can access this page.",
+    searchEmail: "Search Email",
+    source: "Source",
+    allSources: "All Sources",
+    loading: "Loading requests...",
+    subscriptionEventsLog: "Subscription Events Log",
+    refresh: "Refresh",
+    subSupportQueue: "Subscription Support Queue",
+    created: "Created",
+    grantedBy: "Granted By",
+    noPendingRequests: "No pending requests",
+    noMatchingRequests: "No matching requests found",
+    searchByEmail: "Search by email...",
+    tier: "Tier",
+    status: "Status",
+    notes: "Notes (optional)",
+    adminNotes: "Admin notes...",
+    processing: "Processing...",
+    grantAccess: "Grant Access",
+    revokeAccess: "Revoke Access",
+    updatedAt: "Updated At",
+    active: "Active",
+    inactive: "Inactive",
   },
 };
 

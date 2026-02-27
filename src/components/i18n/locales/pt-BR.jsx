@@ -293,6 +293,8 @@ const translations = {
     description: "Compatibilidade pontuada entre cada cachimbo e mistura de tabaco na sua coleção",
     regenSuccess: "Combinações regeneradas com sucesso",
     regenFailed: "Falha ao regenerar combinações",
+    noPairingData: "Ainda não há dados de combinação",
+    noPairingDataDesc: "Adicione cachimbos e tabaco à sua coleção e, em seguida, gere recomendações de combinação com IA.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Falha ao desfazer a otimização",
     failedToStartConversation: "Falha ao iniciar a conversa",
     failedToSendMessage: "Falha ao enviar a mensagem",
+    expertTobacconistAlt: "Tabacário especialista",
+    aiTobacconistAlt: "Tabacário de IA",
+    failedToInitializeExpertChat: "Falha ao inicializar o chat especialista",
+    collectionLoadingRetry: "Carregando os dados da sua coleção… tente novamente em um momento.",
+    couldntLoadResponse: "Não foi possível carregar uma resposta do agente especialista. Por favor, tente novamente.",
+    answeredBy: "Respondido por:",
+    askExpertPlaceholder: "Pergunte sobre cachimbos, misturas, ideias de combinação, envelhecimento, valor, redundância…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Falha ao copiar – área de transferência indisponível",
     i18nReportDownloaded: "Relatório i18n baixado",
     i18nReportCleared: "Relatório i18n limpo",
+  },
+
+  admin: {
+    accessRequired: "Acesso de administrador necessário",
+    adminOnly: "Somente administradores podem acessar esta página.",
+    searchEmail: "Pesquisar e-mail",
+    source: "Fonte",
+    allSources: "Todas as fontes",
+    loading: "Carregando solicitações...",
+    subscriptionEventsLog: "Registro de eventos de assinatura",
+    refresh: "Atualizar",
+    subSupportQueue: "Fila de suporte de assinatura",
+    created: "Criado",
+    grantedBy: "Concedido por",
+    noPendingRequests: "Nenhuma solicitação pendente",
+    noMatchingRequests: "Nenhuma solicitação correspondente encontrada",
+    searchByEmail: "Pesquisar por e-mail...",
+    tier: "Nível",
+    status: "Status",
+    notes: "Notas (opcional)",
+    adminNotes: "Notas do administrador...",
+    processing: "Processando...",
+    grantAccess: "Conceder acesso",
+    revokeAccess: "Revogar acesso",
+    updatedAt: "Atualizado em",
+    active: "Ativo",
+    inactive: "Inativo",
   },
 };
 

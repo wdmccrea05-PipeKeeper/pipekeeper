@@ -295,6 +295,8 @@ const translations = {
     description: "Compatibilidad puntuada entre cada pipa y mezcla de tabaco en tu colección",
     regenSuccess: "Emparejamientos regenerados exitosamente",
     regenFailed: "Error al regenerar emparejamientos",
+    noPairingData: "Sin datos de emparejamiento aún",
+    noPairingDataDesc: "Añade pipas y tabaco a tu colección, luego genera recomendaciones de emparejamiento con IA.",
   },
 
   tobacconist: {
@@ -323,6 +325,13 @@ const translations = {
     failedToUndoOptimization: "Error al deshacer la optimización",
     failedToStartConversation: "Error al iniciar la conversación",
     failedToSendMessage: "Error al enviar el mensaje",
+    expertTobacconistAlt: "Tabaquista experto",
+    aiTobacconistAlt: "Tabaquista de IA",
+    failedToInitializeExpertChat: "Error al inicializar el chat experto",
+    collectionLoadingRetry: "Cargando los datos de tu colección… inténtalo de nuevo en un momento.",
+    couldntLoadResponse: "No se pudo cargar una respuesta del agente experto. Por favor, inténtalo de nuevo.",
+    answeredBy: "Respondido por:",
+    askExpertPlaceholder: "Pregunta sobre pipas, mezclas, ideas de maridaje, envejecimiento, valor, redundancia…",
   },
 
   tobaccoSearch: {
@@ -348,6 +357,33 @@ const translations = {
     copyFailed: "Error al copiar: portapapeles no disponible",
     i18nReportDownloaded: "Informe i18n descargado",
     i18nReportCleared: "Informe i18n borrado",
+  },
+
+  admin: {
+    accessRequired: "Acceso de administrador requerido",
+    adminOnly: "Solo los administradores pueden acceder a esta página.",
+    searchEmail: "Buscar correo",
+    source: "Fuente",
+    allSources: "Todas las fuentes",
+    loading: "Cargando solicitudes...",
+    subscriptionEventsLog: "Registro de eventos de suscripción",
+    refresh: "Actualizar",
+    subSupportQueue: "Cola de soporte de suscripciones",
+    created: "Creado",
+    grantedBy: "Concedido por",
+    noPendingRequests: "No hay solicitudes pendientes",
+    noMatchingRequests: "No se encontraron solicitudes coincidentes",
+    searchByEmail: "Buscar por correo...",
+    tier: "Nivel",
+    status: "Estado",
+    notes: "Notas (opcional)",
+    adminNotes: "Notas de administrador...",
+    processing: "Procesando...",
+    grantAccess: "Conceder acceso",
+    revokeAccess: "Revocar acceso",
+    updatedAt: "Actualizado el",
+    active: "Activo",
+    inactive: "Inactivo",
   },
 };
 

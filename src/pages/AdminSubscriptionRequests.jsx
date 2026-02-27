@@ -17,6 +17,7 @@ import {
 import { AlertCircle, CheckCircle2, Clock, Loader2, Search, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-800",
@@ -36,6 +37,7 @@ const STATUS_ICONS = {
 
 export default function AdminSubscriptionRequests() {
   const { user, isLoading: userLoading } = useCurrentUser();
+  const { t } = useTranslation();
   const [searchEmail, setSearchEmail] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
@@ -50,9 +52,9 @@ export default function AdminSubscriptionRequests() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-500 mb-4">
               <AlertCircle className="w-5 h-5" />
-              <span>Admin access required</span>
+              <span>{t("admin.accessRequired")}</span>
             </div>
-            <p className="text-sm text-[#E0D8C8]/70">Only administrators can access this page.</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t("admin.adminOnly")}</p>
           </CardContent>
         </Card>
       </div>
@@ -154,7 +156,7 @@ export default function AdminSubscriptionRequests() {
       <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2">
           <Loader2 className="w-5 h-5 text-[#A35C5C] animate-spin" />
-          <span className="text-[#E0D8C8]">Loading requests...</span>
+          <span className="text-[#E0D8C8]">{t("admin.loading")}</span>
         </div>
       </div>
     );
@@ -164,7 +166,7 @@ export default function AdminSubscriptionRequests() {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">Subscription Support Queue</h1>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("admin.subSupportQueue")}</h1>
           <p className="text-[#E0D8C8]/60">
             {filteredRequests.length} pending request{filteredRequests.length !== 1 ? "s" : ""}
           </p>
@@ -176,7 +178,7 @@ export default function AdminSubscriptionRequests() {
             <div className="relative">
               <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/40" />
               <Input
-                placeholder="Search by email..."
+                placeholder={t("admin.searchByEmail")}
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
                 className="pl-10 bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]"
@@ -191,7 +193,7 @@ export default function AdminSubscriptionRequests() {
             <CardContent className="pt-12 pb-12 text-center">
               <ZoomOut className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
               <p className="text-[#E0D8C8]/70">
-                {searchEmail ? "No matching requests found" : "No pending requests"}
+                {searchEmail ? t("admin.noMatchingRequests") : t("admin.noPendingRequests")}
               </p>
             </CardContent>
           </Card>
@@ -270,14 +272,14 @@ export default function AdminSubscriptionRequests() {
                             {/* Metadata */}
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                               <div>
-                                <p className="text-[#E0D8C8]/50 text-xs">Created</p>
+                                <p className="text-[#E0D8C8]/50 text-xs">{t("admin.created")}</p>
                                 <p className="text-[#E0D8C8]">
                                   {new Date(req.created_date).toLocaleDateString()}
                                 </p>
                               </div>
                               {req.granted_at && (
                                 <div>
-                                  <p className="text-[#E0D8C8]/50 text-xs">Granted By</p>
+                                  <p className="text-[#E0D8C8]/50 text-xs">{t("admin.grantedBy")}</p>
                                   <p className="text-[#E0D8C8] truncate">{req.granted_by}</p>
                                 </div>
                               )}

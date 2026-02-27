@@ -293,6 +293,8 @@ const translations = {
     description: "Compatibilità valutata tra ogni pipa e miscela di tabacco nella tua collezione",
     regenSuccess: "Abbinamenti rigenerati con successo",
     regenFailed: "Rigenerazione degli abbinamenti non riuscita",
+    noPairingData: "Nessun dato di abbinamento ancora",
+    noPairingDataDesc: "Aggiungi pipe e tabacco alla tua collezione, poi genera raccomandazioni di abbinamento con l'IA.",
   },
 
   tobacconist: {
@@ -321,6 +323,13 @@ const translations = {
     failedToUndoOptimization: "Annullamento dell'ottimizzazione non riuscito",
     failedToStartConversation: "Avvio della conversazione non riuscito",
     failedToSendMessage: "Invio del messaggio non riuscito",
+    expertTobacconistAlt: "Tabaccaio esperto",
+    aiTobacconistAlt: "Tabaccaio IA",
+    failedToInitializeExpertChat: "Impossibile inizializzare la chat esperta",
+    collectionLoadingRetry: "Caricamento dei dati della collezione… riprova tra un momento.",
+    couldntLoadResponse: "Impossibile caricare una risposta dall'agente esperto. Riprova.",
+    answeredBy: "Risposto da:",
+    askExpertPlaceholder: "Chiedi informazioni su pipe, miscele, abbinamenti, invecchiamento, valore, ridondanza…",
   },
 
   tobaccoSearch: {
@@ -346,6 +355,33 @@ const translations = {
     copyFailed: "Copia non riuscita – appunti non disponibili",
     i18nReportDownloaded: "Rapporto i18n scaricato",
     i18nReportCleared: "Rapporto i18n cancellato",
+  },
+
+  admin: {
+    accessRequired: "Accesso amministratore richiesto",
+    adminOnly: "Solo gli amministratori possono accedere a questa pagina.",
+    searchEmail: "Cerca e-mail",
+    source: "Fonte",
+    allSources: "Tutte le fonti",
+    loading: "Caricamento richieste...",
+    subscriptionEventsLog: "Registro eventi di abbonamento",
+    refresh: "Aggiorna",
+    subSupportQueue: "Coda supporto abbonamento",
+    created: "Creato",
+    grantedBy: "Concesso da",
+    noPendingRequests: "Nessuna richiesta in sospeso",
+    noMatchingRequests: "Nessuna richiesta corrispondente trovata",
+    searchByEmail: "Cerca per e-mail...",
+    tier: "Livello",
+    status: "Stato",
+    notes: "Note (opzionale)",
+    adminNotes: "Note amministratore...",
+    processing: "Elaborazione in corso...",
+    grantAccess: "Concedi accesso",
+    revokeAccess: "Revoca accesso",
+    updatedAt: "Aggiornato il",
+    active: "Attivo",
+    inactive: "Inattivo",
   },
 };
 
