@@ -15,6 +15,7 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
 
 export default function CollectionReportExporter({ user }) {
   const { t } = useTranslation();
@@ -57,7 +58,7 @@ export default function CollectionReportExporter({ user }) {
       <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle","Pipe Collection Report")}</h1>
       <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
       <p><strong>${t("reports.totalPipes","Total Pipes")}:</strong> ${pipes.length}</p>
-      <p><strong>${t("reports.totalValue","Total Value")}:</strong> $${totalValue.toLocaleString()}</p>
+      <p><strong>${t("reports.totalValue","Total Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">`;
     
     pipes.forEach(p => {
@@ -115,8 +116,8 @@ export default function CollectionReportExporter({ user }) {
           <tr><td style="padding: 5px; width: 150px;"><strong>${t("tobaccoExtended.manufacturer","Manufacturer")}:</strong></td><td>${b.manufacturer || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>${t("common.type","Type")}:</strong></td><td>${b.blend_type || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>${t("tobaccoExtended.strength","Strength")}:</strong></td><td>${b.strength || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.totalQuantity","Total Quantity")}:</strong></td><td>${totalOz.toFixed(1)} oz</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("reports.cellared","Cellared")}:</strong></td><td>${cellaredOz.toFixed(1)} oz</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("reports.totalQuantity","Total Quantity")}:</strong></td><td>${formatWeight(totalOz, 'oz')}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("reports.cellared","Cellared")}:</strong></td><td>${formatWeight(cellaredOz, 'oz')}</td></tr>
           <tr><td style="padding: 5px;"><strong>${t("common.rating","Rating")}:</strong></td><td>${b.rating || '-'} / 5</td></tr>
         </table>
       </div>`;
@@ -133,7 +134,7 @@ export default function CollectionReportExporter({ user }) {
     let csv = t("reports.insuranceValuationReport","Insurance Valuation Report") + "\n";
     csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n`;
     csv += t("reports.owner","Owner") + `: ${user?.full_name || user?.email}\n`;
-    csv += t("reports.totalCollectionValue","Total Collection Value") + `: $${totalValue.toLocaleString()}\n\n`;
+    csv += t("reports.totalCollectionValue","Total Collection Value") + `: ${formatCurrency(totalValue)}\n\n`;
     csv += `${t("reports.item","Item")},${t("pipesExtended.maker","Maker")},${t("reports.year","Year")},${t("pipesExtended.condition","Condition")},${t("reports.purchaseDate","Purchase Date")},${t("reports.purchasePrice","Purchase Price")},${t("reports.currentValue","Current Value")},${t("common.description","Description")}\n`;
     
     pipes.forEach(p => {
@@ -151,7 +152,7 @@ export default function CollectionReportExporter({ user }) {
       <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport","Insurance Valuation Report")}</h1>
       <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
       <p><strong>${t("reports.owner","Owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> $${totalValue.toLocaleString()}</p>
+      <p><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
       <p style="font-style: italic; color: #666;">${t("reports.insuranceReportDesc","This report provides an itemized valuation of the pipe collection for insurance purposes.")}</p>
       <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -192,12 +193,12 @@ export default function CollectionReportExporter({ user }) {
     csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n\n`;
     csv += t("reports.pipeCollectionSection","PIPE COLLECTION") + "\n";
     csv += `${t("reports.totalPipes","Total Pipes")},${pipes.length}\n`;
-    csv += `${t("reports.totalValue","Total Value")},$${totalValue.toLocaleString()}\n`;
-    csv += `${t("reports.avgValuePerPipe","Average Value per Pipe")},$${pipes.length > 0 ? Math.round(totalValue / pipes.length) : 0}\n\n`;
+    csv += `${t("reports.totalValue","Total Value")},${formatCurrency(totalValue)}\n`;
+    csv += `${t("reports.avgValuePerPipe","Average Value per Pipe")},${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}\n\n`;
     
     csv += t("reports.tobaccoCollectionSection","TOBACCO COLLECTION") + "\n";
     csv += `${t("reports.totalBlends","Total Blends")},${blends.length}\n`;
-    csv += `${t("reports.totalQuantity","Total Quantity")},${totalOz.toFixed(1)} oz\n\n`;
+    csv += `${t("reports.totalQuantity","Total Quantity")},${formatWeight(totalOz, 'oz')}\n\n`;
     
     csv += t("reports.usageActivitySection","USAGE ACTIVITY") + "\n";
     csv += `${t("reports.totalSessions","Total Sessions")},${logs.length}\n`;
@@ -224,14 +225,14 @@ export default function CollectionReportExporter({ user }) {
       <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection","Pipe Collection")}</h2>
       <ul>
         <li>${t("reports.totalPipes","Total Pipes")}: ${pipes.length}</li>
-        <li>${t("reports.totalValue","Total Value")}: $${totalValue.toLocaleString()}</li>
-        <li>${t("reports.avgValue","Average Value")}: $${pipes.length > 0 ? Math.round(totalValue / pipes.length) : 0}</li>
+        <li>${t("reports.totalValue","Total Value")}: ${formatCurrency(totalValue)}</li>
+        <li>${t("reports.avgValue","Average Value")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
       </ul>
       
       <h2 style="color: #3d5a4d;">${t("reports.tobaccoCollectionSection","Tobacco Collection")}</h2>
       <ul>
         <li>${t("reports.totalBlends","Total Blends")}: ${blends.length}</li>
-        <li>${t("reports.totalQuantity","Total Quantity")}: ${totalOz.toFixed(1)} oz</li>
+        <li>${t("reports.totalQuantity","Total Quantity")}: ${formatWeight(totalOz, 'oz')}</li>
       </ul>
       
       <h2 style="color: #1a2c42;">${t("reports.usageActivitySection","Usage Activity")}</h2>
