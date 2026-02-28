@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatWeight, formatNumber } from "@/components/utils/localeFormatters";
 
 export default function OpenInventorySummary({ blend }) {
   const { t } = useTranslation();
@@ -12,10 +13,10 @@ export default function OpenInventorySummary({ blend }) {
   const pouchOpen = blend.pouch_pouches_open || 0;
   const pouchSize = blend.pouch_size_oz || 0;
 
-  const tinOpenOz = (tinOpen * tinSize).toFixed(2);
-  const pouchOpenOz = (pouchOpen * pouchSize).toFixed(2);
+  const tinOpenOz = tinOpen * tinSize;
+  const pouchOpenOz = pouchOpen * pouchSize;
   
-  const totalOpenOz = parseFloat(tinOpenOz) + parseFloat(bulkOpen || 0) + parseFloat(pouchOpenOz);
+  const totalOpenOz = tinOpenOz + parseFloat(bulkOpen || 0) + pouchOpenOz;
 
   const hasOpenInventory = tinOpen > 0 || bulkOpen > 0 || pouchOpen > 0;
 
@@ -37,7 +38,7 @@ export default function OpenInventorySummary({ blend }) {
           <Package className="w-5 h-5 text-amber-700" />
           <h3 className="font-semibold text-amber-900">{t("inventory.totalOpen")}</h3>
         </div>
-        <p className="text-3xl font-bold text-amber-900">{totalOpenOz.toFixed(2)} oz</p>
+        <p className="text-3xl font-bold text-amber-900">{formatWeight(totalOpenOz)}</p>
         <p className="text-sm text-amber-700 mt-1">{t("inventory.readyToSmoke")}</p>
       </div>
 
@@ -50,21 +51,21 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                  Tins
+                  {t("units.tinPlural", "Tins")}
                 </Badge>
                 <span className="text-sm font-medium text-[#1a2c42]">
-                  {tinOpen} {tinOpen === 1 ? 'tin' : 'tins'} open
+                  {tinOpen} {tinOpen === 1 ? t("units.tin", "tin") : t("units.tinPlural", "tins")} {t("common.open", "open")}
                 </span>
               </div>
               {tinSize > 0 && (
                 <p className="text-xs text-[#1a2c42]/70 mt-1">
-                  {tinSize} oz per tin
+                  {formatWeight(tinSize)} {t("inventory.perTin", "per tin")}
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="font-semibold text-[#1a2c42]">{tinOpenOz} oz</p>
-              <p className="text-xs text-[#1a2c42]/60">{(tinOpenOz * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{formatWeight(tinOpenOz)}</p>
+              <p className="text-xs text-[#1a2c42]/60">{formatNumber(tinOpenOz * 28.35, 2)}g</p>
             </div>
           </div>
         )}
@@ -74,14 +75,14 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                  Bulk
+                  {t("units.bulkLabel", "Bulk")}
                 </Badge>
-                <span className="text-sm font-medium text-[#1a2c42]">Open quantity</span>
+                <span className="text-sm font-medium text-[#1a2c42]">{t("inventory.openQuantity", "Open quantity")}</span>
               </div>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-[#1a2c42]">{parseFloat(bulkOpen).toFixed(2)} oz</p>
-              <p className="text-xs text-[#1a2c42]/60">{(bulkOpen * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{formatWeight(parseFloat(bulkOpen))}</p>
+              <p className="text-xs text-[#1a2c42]/60">{formatNumber(bulkOpen * 28.35, 2)}g</p>
             </div>
           </div>
         )}
@@ -91,21 +92,21 @@ export default function OpenInventorySummary({ blend }) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  Pouches
+                  {t("units.pouchesLabel", "Pouches")}
                 </Badge>
                 <span className="text-sm font-medium text-[#1a2c42]">
-                  {pouchOpen} {pouchOpen === 1 ? 'pouch' : 'pouches'} open
+                  {pouchOpen} {pouchOpen === 1 ? t("units.pouch", "pouch") : t("units.pouchesLabel", "pouches")} {t("common.open", "open")}
                 </span>
               </div>
               {pouchSize > 0 && (
                 <p className="text-xs text-[#1a2c42]/70 mt-1">
-                  {pouchSize} oz per pouch
+                  {formatWeight(pouchSize)} {t("inventory.perPouch", "per pouch")}
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="font-semibold text-[#1a2c42]">{pouchOpenOz} oz</p>
-              <p className="text-xs text-[#1a2c42]/60">{(pouchOpenOz * 28.35).toFixed(2)}g</p>
+              <p className="font-semibold text-[#1a2c42]">{formatWeight(pouchOpenOz)}</p>
+              <p className="text-xs text-[#1a2c42]/60">{formatNumber(pouchOpenOz * 28.35, 2)}g</p>
             </div>
           </div>
         )}

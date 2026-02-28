@@ -15,7 +15,7 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
+import { formatCurrency, formatWeight, formatDate } from "@/components/utils/localeFormatters";
 
 export default function CollectionReportExporter({ user }) {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ export default function CollectionReportExporter({ user }) {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     
     let csv = t("reports.pipeCollectionReportTitle","Pipe Collection Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n`;
+    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
     csv += t("reports.totalPipes","Total Pipes") + `: ${pipes.length}\n\n`;
     csv += `${t("common.name","Name")},${t("pipesExtended.maker","Maker")},${t("pipesExtended.country","Country")},${t("pipesExtended.shape","Shape")},${t("pipesExtended.bowlMaterial","Bowl Material")},${t("pipesExtended.stemMaterial","Stem Material")},${t("pipesExtended.length","Length")} (mm),${t("pipesExtended.weight","Weight")} (g),${t("pipesExtended.chamberVolume","Chamber Volume")},${t("pipesExtended.condition","Condition")},${t("reports.purchasePrice","Purchase Price")},${t("reports.estimatedValue","Estimated Value")},${t("reports.yearMade","Year Made")},${t("common.notes","Notes")}\n`;
     
@@ -56,7 +56,7 @@ export default function CollectionReportExporter({ user }) {
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
       <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle","Pipe Collection Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <p><strong>${t("reports.totalPipes","Total Pipes")}:</strong> ${pipes.length}</p>
       <p><strong>${t("reports.totalValue","Total Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">`;
@@ -69,7 +69,7 @@ export default function CollectionReportExporter({ user }) {
           <tr><td style="padding: 5px;"><strong>${t("pipesExtended.shape","Shape")}:</strong></td><td>${p.shape || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>${t("reports.materials","Materials")}:</strong></td><td>${p.bowl_material || '-'} / ${p.stem_material || '-'}</td></tr>
           <tr><td style="padding: 5px;"><strong>${t("pipesExtended.condition","Condition")}:</strong></td><td>${p.condition || '-'}</td></tr>
-          <tr><td style="padding: 5px;"><strong>${t("common.value","Value")}:</strong></td><td>$${p.estimated_value || 0}</td></tr>
+          <tr><td style="padding: 5px;"><strong>${t("common.value","Value")}:</strong></td><td>${formatCurrency(p.estimated_value || 0)}</td></tr>
         </table>
       </div>`;
     });
@@ -82,7 +82,7 @@ export default function CollectionReportExporter({ user }) {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
     
     let csv = t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n`;
+    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
     csv += t("reports.totalBlends","Total Blends") + `: ${blends.length}\n\n`;
     csv += `${t("common.name","Name")},${t("tobaccoExtended.manufacturer","Manufacturer")},${t("tobaccoExtended.blendType","Blend Type")},${t("tobaccoExtended.cut","Cut")},${t("tobaccoExtended.strength","Strength")},${t("tobaccoExtended.roomNote","Room Note")},${t("tobaccoExtended.agingPotential","Aging Potential")},${t("common.rating","Rating")},${t("reports.tinQuantity","Tin Quantity (oz)")},${t("reports.bulkQuantity","Bulk Quantity (oz)")},${t("reports.pouchQuantity","Pouch Quantity (oz)")},${t("reports.total","Total")} (oz),${t("reports.cellared","Cellared")} (oz),${t("common.notes","Notes")}\n`;
     
@@ -103,7 +103,7 @@ export default function CollectionReportExporter({ user }) {
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
       <h1 style="color: #1a2c42;">${t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <p><strong>${t("reports.totalBlends","Total Blends")}:</strong> ${blends.length}</p>
       <hr style="margin: 20px 0;">`;
     
@@ -132,13 +132,13 @@ export default function CollectionReportExporter({ user }) {
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
     let csv = t("reports.insuranceValuationReport","Insurance Valuation Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n`;
+    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n`;
     csv += t("reports.owner","Owner") + `: ${user?.full_name || user?.email}\n`;
     csv += t("reports.totalCollectionValue","Total Collection Value") + `: ${formatCurrency(totalValue)}\n\n`;
     csv += `${t("reports.item","Item")},${t("pipesExtended.maker","Maker")},${t("reports.year","Year")},${t("pipesExtended.condition","Condition")},${t("reports.purchaseDate","Purchase Date")},${t("reports.purchasePrice","Purchase Price")},${t("reports.currentValue","Current Value")},${t("common.description","Description")}\n`;
     
     pipes.forEach(p => {
-      csv += `"${p.name || ''}","${p.maker || ''}","${p.year_made || ''}","${p.condition || ''}","${p.created_date ? new Date(p.created_date).toLocaleDateString() : ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.shape || ''} ${t("reports.pipe","pipe")}, ${p.bowl_material || ''} ${t("reports.bowl","bowl")}, ${p.stem_material || ''} ${t("reports.stem","stem")}"\n`;
+      csv += `"${p.name || ''}","${p.maker || ''}","${p.year_made || ''}","${p.condition || ''}","${p.created_date ? formatDate(new Date(p.created_date), 'short') : ''}",${p.purchase_price || ''},${p.estimated_value || ''},"${p.shape || ''} ${t("reports.pipe","pipe")}, ${p.bowl_material || ''} ${t("reports.bowl","bowl")}, ${p.stem_material || ''} ${t("reports.stem","stem")}"\n`;
     });
 
     return { csv, filename: `Insurance-Report-${new Date().toISOString().split('T')[0]}.csv` };
@@ -150,7 +150,7 @@ export default function CollectionReportExporter({ user }) {
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
       <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport","Insurance Valuation Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <p><strong>${t("reports.owner","Owner")}:</strong> ${user?.full_name || user?.email}</p>
       <p><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
@@ -171,7 +171,7 @@ export default function CollectionReportExporter({ user }) {
         <td style="border: 1px solid #ddd; padding: 8px;">${p.name || t("reports.unnamed","Unnamed")}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${p.maker || '-'}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${p.condition || '-'}</td>
-        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">$${(p.estimated_value || 0).toLocaleString()}</td>
+        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatCurrency(p.estimated_value || 0)}</td>
       </tr>`;
     });
     
@@ -190,7 +190,7 @@ export default function CollectionReportExporter({ user }) {
     const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
 
     let csv = t("reports.collectionStatisticsReport","Collection Statistics Report") + "\n";
-    csv += t("reports.generated","Generated") + `: ${new Date().toLocaleDateString()}\n\n`;
+    csv += t("reports.generated","Generated") + `: ${formatDate(new Date(), 'short')}\n\n`;
     csv += t("reports.pipeCollectionSection","PIPE COLLECTION") + "\n";
     csv += `${t("reports.totalPipes","Total Pipes")},${pipes.length}\n`;
     csv += `${t("reports.totalValue","Total Value")},${formatCurrency(totalValue)}\n`;
@@ -219,7 +219,7 @@ export default function CollectionReportExporter({ user }) {
     
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
       <h1 style="color: #1a2c42;">${t("reports.collectionStatisticsReport","Collection Statistics Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${new Date().toLocaleDateString()}</p>
+      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <hr style="margin: 20px 0;">
       
       <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection","Pipe Collection")}</h2>

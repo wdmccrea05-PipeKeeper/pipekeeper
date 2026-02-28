@@ -7,6 +7,7 @@
  */
 
 import { calculateCellaredOzFromLogs, calculateCellaredOzFromBlend, detectCellarDrift } from './tobaccoQuantityHelpers';
+import { formatNumber } from '@/components/utils/localeFormatters';
 
 /**
  * Analyze entire collection for cellar drift
@@ -101,7 +102,7 @@ export function formatDriftInfo(drift) {
   
   return {
     severity: Math.abs(diff) > 2 ? 'high' : Math.abs(diff) > 0.5 ? 'medium' : 'low',
-    message: `Cellared amount is ${direction} by ${Math.abs(diff).toFixed(2)} oz`,
-    correction: `Should be ${drift.logValue.toFixed(2)} oz (currently ${drift.entityValue.toFixed(2)} oz)`
+    message: `Cellared amount is ${direction} by ${formatNumber(Math.abs(diff), 2)} oz`,
+    correction: `Should be ${formatNumber(drift.logValue, 2)} oz (currently ${formatNumber(drift.entityValue, 2)} oz)`
   };
 }

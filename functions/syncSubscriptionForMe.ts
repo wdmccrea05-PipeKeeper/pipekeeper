@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
     const endOk = !periodEnd || new Date(periodEnd).getTime() > Date.now();
     const isPaid = (status === "active" || status === "trialing") && endOk;
 
-    const FOUNDING_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
+    const FOUNDING_CUTOFF = new Date("2026-03-31T00:00:00.000Z");
     const trialEnd = isoFromUnixSeconds(best.trial_end);
     const startedAt = periodStart || (trialEnd ? new Date(trialEnd).toISOString() : null);
     

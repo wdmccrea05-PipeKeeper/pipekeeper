@@ -4,16 +4,16 @@
  */
 
 const locales = {
-  'en': () => import('./locales/en').then(m => m.default),
-  'es': () => import('./locales/es').then(m => m.default),
-  'fr': () => import('./locales/fr').then(m => m.default),
-  'de': () => import('./locales/de').then(m => m.default),
-  'it': () => import('./locales/it').then(m => m.default),
-  'pt-BR': () => import('./locales/pt-BR').then(m => m.default),
-  'nl': () => import('./locales/nl').then(m => m.default),
-  'pl': () => import('./locales/pl').then(m => m.default),
-  'ja': () => import('./locales/ja').then(m => m.default),
-  'zh-Hans': () => import('./locales/zh-Hans').then(m => m.default),
+  'en': () => import('./en').then(m => m.default),
+  'es': () => import('./es').then(m => m.default),
+  'fr': () => import('./fr').then(m => m.default),
+  'de': () => import('./de').then(m => m.default),
+  'it': () => import('./it').then(m => m.default),
+  'pt-BR': () => import('./pt-BR').then(m => m.default),
+  'nl': () => import('./nl').then(m => m.default),
+  'pl': () => import('./pl').then(m => m.default),
+  'ja': () => import('./ja').then(m => m.default),
+  'zh-Hans': () => import('./zh-Hans').then(m => m.default),
 };
 
 const cache = {};
