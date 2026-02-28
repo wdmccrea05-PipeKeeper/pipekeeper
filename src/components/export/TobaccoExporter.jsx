@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { calculateCellaredOzFromLogs } from "@/components/utils/tobaccoQuantityHelpers";
+import { formatNumber } from "@/components/utils/localeFormatters";
 
 export default function TobaccoExporter() {
   const { t } = useTranslation();
@@ -151,44 +152,44 @@ export default function TobaccoExporter() {
       doc.text(t('export.pdfTinInventory'), 20, y);
       doc.setFont(undefined, 'normal');
       y += 6;
-      doc.text(`  ${t('export.pdfTotalTins')} ${totalTins} (${tinWeightOz.toFixed(1)} oz)`, 20, y);
+      doc.text(`  ${t('export.pdfTotalTins')} ${totalTins} (${formatNumber(tinWeightOz, 1)} oz)`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfOpen')} ${tinOpenOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfOpen')} ${formatNumber(tinOpenOz, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfCellared')} ${tinCellaredOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfCellared')} ${formatNumber(tinCellaredOz, 1)} oz`, 20, y);
       y += 10;
       
       doc.setFont(undefined, 'bold');
       doc.text(t('export.pdfBulkInventory'), 20, y);
       doc.setFont(undefined, 'normal');
       y += 6;
-      doc.text(`  ${t('export.pdfTotal')} ${bulkWeightOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfTotal')} ${formatNumber(bulkWeightOz, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfOpen')} ${bulkOpenOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfOpen')} ${formatNumber(bulkOpenOz, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfCellared')} ${bulkCellaredOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfCellared')} ${formatNumber(bulkCellaredOz, 1)} oz`, 20, y);
       y += 10;
       
       doc.setFont(undefined, 'bold');
       doc.text(t('export.pdfPouchInventory'), 20, y);
       doc.setFont(undefined, 'normal');
       y += 6;
-      doc.text(`  ${t('export.pdfTotalPouches')} ${totalPouches} (${pouchWeightOz.toFixed(1)} oz)`, 20, y);
+      doc.text(`  ${t('export.pdfTotalPouches')} ${totalPouches} (${formatNumber(pouchWeightOz, 1)} oz)`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfOpen')} ${pouchOpenOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfOpen')} ${formatNumber(pouchOpenOz, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfCellared')} ${pouchCellaredOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfCellared')} ${formatNumber(pouchCellaredOz, 1)} oz`, 20, y);
       y += 10;
       
       doc.setFont(undefined, 'bold');
       doc.text(t('export.pdfOverallTotals'), 20, y);
       doc.setFont(undefined, 'normal');
       y += 6;
-      doc.text(`  ${t('export.pdfTotalWeight')} ${totalWeight.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfTotalWeight')} ${formatNumber(totalWeight, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfTotalOpen')} ${totalOpenOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfTotalOpen')} ${formatNumber(totalOpenOz, 1)} oz`, 20, y);
       y += 6;
-      doc.text(`  ${t('export.pdfTotalCellared')} ${totalCellaredOz.toFixed(1)} oz`, 20, y);
+      doc.text(`  ${t('export.pdfTotalCellared')} ${formatNumber(totalCellaredOz, 1)} oz`, 20, y);
       
       // Blends list
       y += 10;
@@ -225,18 +226,18 @@ export default function TobaccoExporter() {
         
         if (totalBlendWeight > 0) {
           if (tinWeight > 0) {
-            doc.text(`${t('export.pdfTins')} ${blend.tin_total_tins || 0} (${tinWeight.toFixed(2)} oz) - ${blend.tin_tins_open || 0} open, ${blend.tin_tins_cellared || 0} cellared`, 25, y);
+            doc.text(`${t('export.pdfTins')} ${blend.tin_total_tins || 0} (${formatNumber(tinWeight, 2)} oz) - ${blend.tin_tins_open || 0} open, ${blend.tin_tins_cellared || 0} cellared`, 25, y);
             y += 5;
           }
           if (bulkWeight > 0) {
-            doc.text(`${t('export.pdfBulk')} ${bulkWeight.toFixed(2)} oz - ${(blend.bulk_open || 0).toFixed(2)} oz open, ${(blend.bulk_cellared || 0).toFixed(2)} oz cellared`, 25, y);
+            doc.text(`${t('export.pdfBulk')} ${formatNumber(bulkWeight, 2)} oz - ${formatNumber(blend.bulk_open || 0, 2)} oz open, ${formatNumber(blend.bulk_cellared || 0, 2)} oz cellared`, 25, y);
             y += 5;
           }
           if (pouchWeight > 0) {
-            doc.text(`${t('export.pdfPouches')} ${blend.pouch_total_pouches || 0} (${pouchWeight.toFixed(2)} oz) - ${blend.pouch_pouches_open || 0} open, ${blend.pouch_pouches_cellared || 0} cellared`, 25, y);
+            doc.text(`${t('export.pdfPouches')} ${blend.pouch_total_pouches || 0} (${formatNumber(pouchWeight, 2)} oz) - ${blend.pouch_pouches_open || 0} open, ${blend.pouch_pouches_cellared || 0} cellared`, 25, y);
             y += 5;
           }
-          doc.text(`${t('export.pdfTotal')} ${totalBlendWeight.toFixed(2)} oz`, 25, y);
+          doc.text(`${t('export.pdfTotal')} ${formatNumber(totalBlendWeight, 2)} oz`, 25, y);
           y += 5;
         }
         
