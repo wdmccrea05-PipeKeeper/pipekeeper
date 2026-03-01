@@ -514,11 +514,27 @@ const translations = {
   pipes: {
     allShapes: "All Shapes",
     allMaterials: "All Materials",
+    allFinishes: "All Finishes",
+    allConditions: "All Conditions",
   },
 
   tobacco: {
     allTypes: "All Types",
     allStrengths: "All Strengths",
+    allCuts: "All Cuts",
+    allRoomNotes: "All Room Notes",
+    allStatuses: "All Statuses",
+  },
+
+  tobaccoPage: {
+    recentlyAdded: "Recently Added",
+    favoritesFirst: "Favorites First",
+    nameAZ: "Name (A–Z)",
+    nameZA: "Name (Z–A)",
+    highestRated: "Highest Rated",
+    lowestRated: "Lowest Rated",
+    oldestInCellar: "Oldest in Cellar",
+    newestInCellar: "Newest in Cellar",
   },
 };
 

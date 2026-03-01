@@ -434,21 +434,37 @@ const translations = {
     updatedAt: "Bijgewerkt op",
     active: "Actief",
     inactive: "Inactief",
-    requestGranted: "Access granted and request updated",
-    requestRejected: "Request rejected",
-    requestResolved: "Request marked as resolved",
-    pendingRequestsSuffix: "pending request(s)",
+    requestGranted: "Toegang verleend en verzoek bijgewerkt",
+    requestRejected: "Verzoek afgewezen",
+    requestResolved: "Verzoek gemarkeerd als opgelost",
+    pendingRequestsSuffix: "openstaand(e) verzoek(en)",
     userEmailPlaceholder: "user@example.com",
   },
 
   pipes: {
     allShapes: "Alle vormen",
     allMaterials: "Alle materialen",
+    allFinishes: "Alle afwerkingen",
+    allConditions: "Alle condities",
   },
 
   tobacco: {
     allTypes: "Alle typen",
     allStrengths: "Alle sterktes",
+    allCuts: "Alle sneden",
+    allRoomNotes: "Alle kameraroma's",
+    allStatuses: "Alle statussen",
+  },
+
+  tobaccoPage: {
+    recentlyAdded: "Recent toegevoegd",
+    favoritesFirst: "Favorieten eerst",
+    nameAZ: "Naam (A–Z)",
+    nameZA: "Naam (Z–A)",
+    highestRated: "Hoogst beoordeeld",
+    lowestRated: "Laagst beoordeeld",
+    oldestInCellar: "Oudste in kelder",
+    newestInCellar: "Nieuwste in kelder",
   },
 };
 

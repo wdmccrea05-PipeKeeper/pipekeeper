@@ -84,5 +84,11 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  label {
+    overflow-wrap: break-word;
   }
 }

@@ -677,7 +677,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </Select>
           </FieldWithInfo>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.length")} ({getLengthUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.length")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -699,7 +699,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.weight")} ({getWeightUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.weight")} ({getWeightUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -721,7 +721,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.bowlHeight")} ({getLengthUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.bowlHeight")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -743,7 +743,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.bowlWidth")} ({getLengthUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.bowlWidth")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -765,7 +765,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.chamberDiameter")} ({getLengthUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.chamberDiameter")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -787,7 +787,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.chamberDepth")} ({getLengthUnit()})</Label>
+            <Label className="break-words">{t("pipesExtended.chamberDepth")} ({getLengthUnit()})</Label>
             <Input
               type="number"
               step="0.01"
@@ -819,7 +819,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("pipesExtended.purchasePrice")}</Label>
+              <Label className="break-words">{t("pipesExtended.purchasePrice")}</Label>
               <Input
                 type="number"
                 value={formData.purchase_price}
@@ -828,7 +828,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("pipesExtended.estimatedValue")}</Label>
+              <Label className="break-words">{t("pipesExtended.estimatedValue")}</Label>
               <Input
                 type="number"
                 value={formData.estimated_value}
@@ -838,7 +838,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>{t("pipesExtended.usageCharacteristics")}</Label>
+            <Label className="break-words">{t("pipesExtended.usageCharacteristics")}</Label>
             <Textarea
               value={formData.usage_characteristics || formData.smoking_characteristics}
               onChange={(e) => {
@@ -850,7 +850,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("common.notes")}</Label>
+            <Label className="break-words">{t("common.notes")}</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
@@ -863,7 +863,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               checked={formData.is_favorite}
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
-            <Label>{t("formsExtended.markAsFavorite")}</Label>
+            <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
           </div>
         </CardContent>
       </Card>
@@ -888,7 +888,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
             />
-            <Label>{t("pipesExtended.hasInterchangeableBowls")}</Label>
+            <Label className="break-words">{t("pipesExtended.hasInterchangeableBowls")}</Label>
           </div>
           {hasInterchangeableBowls && (
             <div className="pt-2">
