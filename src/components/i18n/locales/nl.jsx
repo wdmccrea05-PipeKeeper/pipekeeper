@@ -447,7 +447,7 @@ const translations = {
     allShapes: "Alle vormen",
     allMaterials: "Alle materialen",
     allFinishes: "Alle afwerkingen",
-    allConditions: "Alle omstandigheden",
+    allConditions: "Alle condities",
   },
 
   tobacco: {
