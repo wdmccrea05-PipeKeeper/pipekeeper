@@ -27,7 +27,11 @@ export default function PairingExporter({ pipes, blends }) {
   const exportToCSV = () => {
     if (!pairingMatrix?.pairings) return;
 
-    const headers = ['Pipe Name', 'Pipe Shape', 'Blend Name', 'Blend Type', 'Match Score', 'Reasoning'];
+    const headers = [
+      t('pairingExporter.csvPipeName'), t('pairingExporter.csvPipeShape'),
+      t('pairingExporter.csvBlendName'), t('pairingExporter.csvBlendType'),
+      t('pairingExporter.csvMatchScore'), t('pairingExporter.csvReasoning'),
+    ];
     
     const rows = [];
     pairingMatrix.pairings.forEach(pairing => {

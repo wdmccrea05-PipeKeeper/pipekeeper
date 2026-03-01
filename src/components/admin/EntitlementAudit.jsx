@@ -127,22 +127,22 @@ export default function EntitlementAudit() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-green-600" />
-            <CardTitle className="text-green-900">Repair User Entitlement by Email</CardTitle>
+            <CardTitle className="text-green-900">{t("admin.repairUserEntitlementTitle", "Repair User Entitlement by Email")}</CardTitle>
           </div>
           <CardDescription className="text-green-800">
-            Discover and apply the correct subscription tier for a single user across all providers
+            {t("admin.repairUserEntitlementDesc", "Discover and apply the correct subscription tier for a single user across all providers")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert className="bg-green-100 border-green-300">
             <AlertTriangle className="h-4 w-4 text-green-700" />
             <AlertDescription className="text-green-900 text-sm">
-              Checks Stripe and Apple subscriptions to determine the correct tier and updates the user record.
+              {t("admin.checksStripeApple", "Checks Stripe and Apple subscriptions to determine the correct tier and updates the user record.")}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <Label htmlFor="repair-email" className="text-green-900">User Email</Label>
+            <Label htmlFor="repair-email" className="text-green-900">{t("admin.userEmail", "User Email")}</Label>
             <Input
               id="repair-email"
               type="email"
@@ -160,14 +160,14 @@ export default function EntitlementAudit() {
               variant="outline"
               className="border-green-400 text-green-900 hover:bg-green-100"
             >
-              {repairLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />Running...</> : "Dry Run"}
+              {repairLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />{t("admin.running", "Running...")}</> : t("admin.dryRunBtn", "Dry Run")}
             </Button>
             <Button
               onClick={() => runSingleRepair(false)}
               disabled={repairLoading || !repairEmail.trim()}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {repairLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />Running...</> : <><Wrench className="w-4 h-4 mr-1" />Repair Now</>}
+              {repairLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />{t("admin.running", "Running...")}</> : <><Wrench className="w-4 h-4 mr-1" />{t("admin.repairNowBtn", "Repair Now")}</>}
             </Button>
           </div>
 
@@ -176,23 +176,23 @@ export default function EntitlementAudit() {
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircle className="w-5 h-5" />
                 <span className="font-semibold">
-                  {repairResult.changed ? (repairResult.applied ? "Repaired" : "Dry Run - Changes Found") : "Already Correct"}
+                  {repairResult.changed ? (repairResult.applied ? t("admin.repaired", "Repaired") : t("admin.dryRunChangesFound", "Dry Run - Changes Found")) : t("admin.alreadyCorrect", "Already Correct")}
                 </span>
               </div>
               {repairResult.changed && (
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-white/50 rounded p-2">
-                    <div className="text-green-600 text-xs mb-1">Before</div>
+                    <div className="text-green-600 text-xs mb-1">{t("admin.before", "Before")}</div>
                     <TierBadge tier={repairResult.before?.subscription_tier} />
                     <div className="text-xs text-gray-500 mt-1">{repairResult.before?.subscription_level}</div>
                   </div>
                   <div className="bg-white/50 rounded p-2">
-                    <div className="text-green-600 text-xs mb-1">After</div>
+                    <div className="text-green-600 text-xs mb-1">{t("admin.after", "After")}</div>
                     <TierBadge tier={repairResult.after?.subscription_tier} />
                     <div className="text-xs text-gray-500 mt-1">{repairResult.after?.subscription_level}</div>
                   </div>
                   <div className="bg-white/50 rounded p-2 col-span-2">
-                    <div className="text-green-600 text-xs">Provider Used</div>
+                    <div className="text-green-600 text-xs">{t("admin.providerUsed", "Provider Used")}</div>
                     <div className="text-green-900 font-semibold">{repairResult.provider}</div>
                   </div>
                 </div>
@@ -216,23 +216,22 @@ export default function EntitlementAudit() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-600" />
-            <CardTitle className="text-indigo-900">Batch Entitlement Repair</CardTitle>
+            <CardTitle className="text-indigo-900">{t("admin.batchEntitlementRepair", "Batch Entitlement Repair")}</CardTitle>
           </div>
           <CardDescription className="text-indigo-800">
-            Reconcile subscription entitlements for multiple users at once
+            {t("admin.reconcileMultipleUsers", "Reconcile subscription entitlements for multiple users at once")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert className="bg-indigo-100 border-indigo-300">
             <Activity className="h-4 w-4 text-indigo-700" />
             <AlertDescription className="text-indigo-900 text-sm">
-              Processes users in batches, checking Stripe and Apple subscriptions to correct any mismatched tiers.
-              Always run a dry run first to preview changes.
+              {t("admin.processesInBatches", "Processes users in batches, checking Stripe and Apple subscriptions to correct any mismatched tiers. Always run a dry run first to preview changes.")}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <Label htmlFor="batch-size" className="text-indigo-900">Batch Size (max 500)</Label>
+            <Label htmlFor="batch-size" className="text-indigo-900">{t("admin.batchSizeLabel", "Batch Size (max 500)")}</Label>
             <Input
               id="batch-size"
               type="number"
@@ -252,14 +251,14 @@ export default function EntitlementAudit() {
               variant="outline"
               className="border-indigo-400 text-indigo-900 hover:bg-indigo-100"
             >
-              {batchLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />Running...</> : "Dry Run"}
+              {batchLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />{t("admin.running", "Running...")}</> : t("admin.dryRunBtn", "Dry Run")}
             </Button>
             <Button
               onClick={() => runBatchReconcile(false)}
               disabled={batchLoading}
               className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
-              {batchLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />Running...</> : <><Wrench className="w-4 h-4 mr-1" />Repair Batch</>}
+              {batchLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />{t("admin.running", "Running...")}</> : <><Wrench className="w-4 h-4 mr-1" />{t("admin.repairBatchBtn", "Repair Batch")}</>}
             </Button>
           </div>
 
@@ -268,27 +267,27 @@ export default function EntitlementAudit() {
               <div className="flex items-center gap-2 text-indigo-700">
                 <CheckCircle className="w-5 h-5" />
                 <span className="font-semibold">
-                  {batchResult.dryRun ? "Dry Run Complete" : "Batch Repair Complete"}
+                  {batchResult.dryRun ? t("admin.dryRunComplete2", "Dry Run Complete") : t("admin.batchRepairComplete", "Batch Repair Complete")}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-white/50 rounded p-2">
-                  <div className="text-indigo-600 text-xs">Processed</div>
+                  <div className="text-indigo-600 text-xs">{t("admin.processed", "Processed")}</div>
                   <div className="text-indigo-900 text-xl font-bold">{batchResult.processed}</div>
                 </div>
                 <div className="bg-white/50 rounded p-2">
-                  <div className="text-indigo-600 text-xs">Changed</div>
+                  <div className="text-indigo-600 text-xs">{t("admin.changed", "Changed")}</div>
                   <div className={`text-xl font-bold ${batchResult.changed > 0 ? "text-amber-600" : "text-green-600"}`}>
                     {batchResult.changed}
                   </div>
                 </div>
                 <div className="bg-white/50 rounded p-2">
-                  <div className="text-indigo-600 text-xs">Already Correct</div>
+                  <div className="text-indigo-600 text-xs">{t("admin.alreadyCorrectLabel", "Already Correct")}</div>
                   <div className="text-green-700 text-xl font-bold">{batchResult.alreadyCorrect}</div>
                 </div>
                 <div className="bg-white/50 rounded p-2">
-                  <div className="text-indigo-600 text-xs">Errors</div>
+                  <div className="text-indigo-600 text-xs">{t("admin.errorsLabel", "Errors")}</div>
                   <div className={`text-xl font-bold ${batchResult.errors > 0 ? "text-red-600" : "text-green-600"}`}>
                     {batchResult.errors}
                   </div>
@@ -297,7 +296,7 @@ export default function EntitlementAudit() {
 
               {batchResult.sampleFixes && batchResult.sampleFixes.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-indigo-700 text-sm font-semibold">Sample Fixes:</div>
+                  <div className="text-indigo-700 text-sm font-semibold">{t("admin.sampleFixes", "Sample Fixes:")}</div>
                   {batchResult.sampleFixes.map((fix, i) => (
                     <div key={i} className="bg-white/50 rounded p-2 text-xs">
                       <div className="font-mono text-indigo-900 truncate">{fix.email}</div>
@@ -314,7 +313,7 @@ export default function EntitlementAudit() {
 
               {batchResult.sampleErrors && batchResult.sampleErrors.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-red-700 text-sm font-semibold">Errors:</div>
+                  <div className="text-red-700 text-sm font-semibold">{t("admin.errorsHeading", "Errors:")}</div>
                   {batchResult.sampleErrors.map((err, i) => (
                     <div key={i} className="bg-red-50 rounded p-2 text-xs border border-red-200">
                       <div className="font-mono text-red-900 truncate">{err.email}</div>
