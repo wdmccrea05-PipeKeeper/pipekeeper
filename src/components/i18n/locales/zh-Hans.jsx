@@ -440,7 +440,7 @@ export default {
     allTypes: "所有类型",
     allStrengths: "所有强度",
     allCuts: "所有切割",
-    allRoomNotes: "所有室内气味",
+    allRoomNotes: "所有室内香气",
     allStatuses: "所有状态",
   },
 

@@ -440,21 +440,21 @@ const translations = {
     requestRejected: "Demande rejetée",
     requestResolved: "Demande marquée comme résolue",
     pendingRequestsSuffix: "demande(s) en attente",
-    userEmailPlaceholder: "user@example.com",
+    userEmailPlaceholder: "utilisateur@example.com",
   },
 
   pipes: {
     allShapes: "Toutes les formes",
     allMaterials: "Tous les matériaux",
     allFinishes: "Toutes les finitions",
-    allConditions: "Tous les états",
+    allConditions: "Toutes les conditions",
   },
 
   tobacco: {
     allTypes: "Tous les types",
     allStrengths: "Toutes les intensités",
     allCuts: "Toutes les coupes",
-    allRoomNotes: "Toutes les notes d'ambiance",
+    allRoomNotes: "Toutes les notes de salle",
     allStatuses: "Tous les statuts",
   },
 

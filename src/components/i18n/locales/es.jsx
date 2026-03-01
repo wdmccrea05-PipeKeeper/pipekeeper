@@ -442,7 +442,7 @@ const translations = {
     requestRejected: "Solicitud rechazada",
     requestResolved: "Solicitud marcada como resuelta",
     pendingRequestsSuffix: "solicitud(es) pendiente(s)",
-    userEmailPlaceholder: "user@example.com",
+    userEmailPlaceholder: "usuario@example.com",
   },
 
   pipes: {
@@ -456,7 +456,7 @@ const translations = {
     allTypes: "Todos los tipos",
     allStrengths: "Todas las intensidades",
     allCuts: "Todos los cortes",
-    allRoomNotes: "Todas las notas de habitación",
+    allRoomNotes: "Todas las notas de ambiente",
     allStatuses: "Todos los estados",
   },
 

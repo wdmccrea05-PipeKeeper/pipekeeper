@@ -440,14 +440,14 @@ const translations = {
     requestRejected: "Verzoek afgewezen",
     requestResolved: "Verzoek gemarkeerd als opgelost",
     pendingRequestsSuffix: "openstaand(e) verzoek(en)",
-    userEmailPlaceholder: "user@example.com",
+    userEmailPlaceholder: "gebruiker@example.com",
   },
 
   pipes: {
     allShapes: "Alle vormen",
     allMaterials: "Alle materialen",
     allFinishes: "Alle afwerkingen",
-    allConditions: "Alle condities",
+    allConditions: "Alle omstandigheden",
   },
 
   tobacco: {

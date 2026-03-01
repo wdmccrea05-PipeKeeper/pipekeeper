@@ -440,7 +440,7 @@ const translations = {
     requestRejected: "Solicitação rejeitada",
     requestResolved: "Solicitação marcada como resolvida",
     pendingRequestsSuffix: "solicitação(ões) pendente(s)",
-    userEmailPlaceholder: "user@example.com",
+    userEmailPlaceholder: "usuario@example.com",
   },
 
   pipes: {
