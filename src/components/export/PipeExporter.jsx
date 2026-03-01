@@ -23,9 +23,13 @@ export default function PipeExporter() {
 
   const exportToCSV = () => {
     const headers = [
-      'Name', 'Maker', 'Country', 'Shape', 'Material', 'Finish', 'Length (mm)', 
-      'Weight (g)', 'Bowl Diameter (mm)', 'Bowl Depth (mm)', 'Chamber Volume',
-      'Year Made', 'Condition', 'Purchase Price', 'Estimated Value', 'Notes'
+      t('pipeExporter.csvName'), t('pipeExporter.csvMaker'), t('pipeExporter.csvCountry'),
+      t('pipeExporter.csvShape'), t('pipeExporter.csvMaterial'), t('pipeExporter.csvFinish'),
+      t('pipeExporter.csvLengthMm'), t('pipeExporter.csvWeightG'),
+      t('pipeExporter.csvBowlDiamMm'), t('pipeExporter.csvBowlDepthMm'),
+      t('pipeExporter.csvChamberVolume'), t('pipeExporter.csvYearMade'),
+      t('pipeExporter.csvCondition'), t('pipeExporter.csvPurchasePrice'),
+      t('pipeExporter.csvEstimatedValue'), t('pipeExporter.csvNotes'),
     ];
 
     const rows = pipes.map(p => [
@@ -178,7 +182,7 @@ export default function PipeExporter() {
         }
         
         if (pipe.stamping) {
-          doc.text(`Stamping: ${pipe.stamping}`, 25, y);
+          doc.text(`${t("pipeExporter.stampingPrefix")} ${pipe.stamping}`, 25, y);
           y += 5;
         }
         
@@ -186,7 +190,7 @@ export default function PipeExporter() {
         if (pipe.stamping_photos && pipe.stamping_photos.length > 0) {
           doc.setFontSize(8);
           doc.setFont(undefined, 'bold');
-          doc.text('Stamping Photos:', 25, y);
+          doc.text(t("pipeExporter.stampingPhotosLabel"), 25, y);
           doc.setFont(undefined, 'normal');
           y += 5;
           
@@ -211,7 +215,7 @@ export default function PipeExporter() {
         }
         
         if (pipe.notes) {
-          const notesLines = doc.splitTextToSize(`Notes: ${pipe.notes}`, pageWidth - 50);
+          const notesLines = doc.splitTextToSize(`${t("pipeExporter.notesPrefix")} ${pipe.notes}`, pageWidth - 50);
           if (y + notesLines.length * 5 > pageHeight - 20) {
             doc.addPage();
             y = 20;

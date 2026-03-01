@@ -14,17 +14,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export function Combobox({ 
   value, 
   onValueChange, 
   options = [], 
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
-  emptyText = "No results found.",
+  placeholder,
+  searchPlaceholder,
+  emptyText,
   allowCustom = true,
   className
 }) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("ui.selectPlaceholder", "Select...");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t("ui.searchPlaceholder", "Search...");
+  const resolvedEmptyText = emptyText ?? t("ui.noResultsFound", "No results found.");
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
@@ -52,14 +57,14 @@ export function Combobox({
           aria-expanded={open}
           className={cn("w-full justify-between", className)}
         >
-          {value || placeholder}
+          {value || resolvedPlaceholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
           <CommandInput 
-            placeholder={searchPlaceholder} 
+            placeholder={resolvedSearchPlaceholder} 
             value={search}
             onValueChange={setSearch}
             onKeyDown={(e) => {
@@ -78,12 +83,12 @@ export function Combobox({
                   className="w-full justify-start text-xs"
                   onClick={handleCustomValue}
                 >
-                  Use "{search.trim()}"
+                  {t("ui.useCustomValue", 'Use "{value}"', { value: search.trim() })}
                 </Button>
               </div>
             ) : (
               <div className="p-2 text-xs text-center text-muted-foreground">
-                {emptyText}
+                {resolvedEmptyText}
               </div>
             )}
           </CommandEmpty>
