@@ -133,7 +133,7 @@ export default function PairingMatrix({ user }) {
          {pairings.length === 0 ? (
            <div className="flex flex-col items-center justify-center py-8 text-center">
              <p className="text-sm text-[#E0D8C8]/70 mb-2">{t("pairingMatrix.noPairingData")}</p>
-             <p className="text-xs text-[#E0D8C8]/50 mb-4 max-w-md">
+             <p className="text-xs text-[#8F9DB3] mb-4 max-w-md">
                {t("pairingMatrix.noPairingDataDesc")}
              </p>
              <div className="flex gap-3">

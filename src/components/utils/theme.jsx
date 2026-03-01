@@ -23,7 +23,7 @@ export const COLORS = {
   text: {
     primary: '#E0D8C8',
     secondary: 'rgba(224, 216, 200, 0.7)',
-    muted: 'rgba(224, 216, 200, 0.5)',
+    muted: '#8F9DB3',
     contrast: '#1a2c42',
   },
   
@@ -39,9 +39,9 @@ export const COLORS = {
   // Status colors
   status: {
     success: '#2E7D5C',
-    warning: '#D6A24A',
+    warning: '#E8B86D',
     error: '#BE3C3C',
-    info: '#4A7BA7',
+    info: '#6B9FCC',
   },
 };
 
@@ -71,7 +71,7 @@ export const TYPOGRAPHY = {
   // Body text
   body: 'text-base text-[#E0D8C8]',
   bodySecondary: 'text-sm text-[#E0D8C8]/70',
-  bodyMuted: 'text-sm text-[#E0D8C8]/50',
+  bodyMuted: 'text-sm text-[#8F9DB3]',
   
   // Small text
   caption: 'text-xs text-[#E0D8C8]/70',
@@ -126,7 +126,7 @@ export const EMPTY_STATE = {
   container: 'text-center py-12 px-6',
   icon: 'w-16 h-16 mx-auto mb-4 text-[#E0D8C8]/30',
   title: 'text-xl font-semibold text-[#E0D8C8] mb-2',
-  description: 'text-sm text-[#E0D8C8]/60 mb-6 max-w-md mx-auto',
+  description: 'text-sm text-[#A4B0C4] mb-6 max-w-md mx-auto',
 };
 
 // ============================================================

@@ -162,7 +162,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
   if (pipesLoading || pairingsLoading || blendsLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-[#E0D8C8]/60">
+      <div className="flex items-center justify-center py-12 text-[#A4B0C4]">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         {t("pairingGrid.loading")}
       </div>
@@ -208,7 +208,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       {!collapsed && (
         <CardContent className="space-y-3">
           {rows.length === 0 ? (
-            <div className="text-sm text-[#E0D8C8]/60">{t("pairingGrid.noPipes")}</div>
+            <div className="text-sm text-[#A4B0C4]">{t("pairingGrid.noPipes")}</div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {rows.map((r) => (
@@ -362,7 +362,7 @@ function PipeCard({ row, allBlends }) {
             ))}
           </div>
         ) : (
-          <span className="text-xs text-[#E0D8C8]/60">{t("pairingGrid.noRecommendations")}</span>
+          <span className="text-xs text-[#A4B0C4]">{t("pairingGrid.noRecommendations")}</span>
         )}
       </div>
 

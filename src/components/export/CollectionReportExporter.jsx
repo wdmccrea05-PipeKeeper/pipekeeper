@@ -54,11 +54,11 @@ export default function CollectionReportExporter({ user }) {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
       <h1 style="color: #1a2c42;">${t("reports.pipeCollectionReportTitle","Pipe Collection Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p><strong>${t("reports.totalPipes","Total Pipes")}:</strong> ${pipes.length}</p>
-      <p><strong>${t("reports.totalValue","Total Value")}:</strong> ${formatCurrency(totalValue)}</p>
+      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalPipes","Total Pipes")}:</strong> ${pipes.length}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalValue","Total Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">`;
     
     pipes.forEach(p => {
@@ -101,10 +101,10 @@ export default function CollectionReportExporter({ user }) {
   const generateTobaccoPDF = async () => {
     const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
     
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
       <h1 style="color: #1a2c42;">${t("reports.tobaccoCollectionReportTitle","Tobacco Collection Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p><strong>${t("reports.totalBlends","Total Blends")}:</strong> ${blends.length}</p>
+      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalBlends","Total Blends")}:</strong> ${blends.length}</p>
       <hr style="margin: 20px 0;">`;
     
     blends.forEach(b => {
@@ -148,13 +148,13 @@ export default function CollectionReportExporter({ user }) {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
       <h1 style="color: #1a2c42;">${t("reports.insuranceValuationReport","Insurance Valuation Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
-      <p><strong>${t("reports.owner","Owner")}:</strong> ${user?.full_name || user?.email}</p>
-      <p><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> ${formatCurrency(totalValue)}</p>
+      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.owner","Owner")}:</strong> ${user?.full_name || user?.email}</p>
+      <p style="color: #111827;"><strong>${t("reports.totalCollectionValue","Total Collection Value")}:</strong> ${formatCurrency(totalValue)}</p>
       <hr style="margin: 20px 0;">
-      <p style="font-style: italic; color: #666;">${t("reports.insuranceReportDesc","This report provides an itemized valuation of the pipe collection for insurance purposes.")}</p>
+      <p style="font-style: italic; color: #444444;">${t("reports.insuranceReportDesc","This report provides an itemized valuation of the pipe collection for insurance purposes.")}</p>
       <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
           <tr style="background-color: #f0f0f0;">
@@ -217,28 +217,28 @@ export default function CollectionReportExporter({ user }) {
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     const totalOz = blends.reduce((sum, b) => sum + calculateTotalOzFromBlend(b), 0);
     
-    let html = `<div style="font-family: Arial, sans-serif; padding: 40px;">
+    let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #111827;">
       <h1 style="color: #1a2c42;">${t("reports.collectionStatisticsReport","Collection Statistics Report")}</h1>
-      <p><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
+      <p style="color: #111827;"><strong>${t("reports.generated","Generated")}:</strong> ${formatDate(new Date(), 'short')}</p>
       <hr style="margin: 20px 0;">
       
       <h2 style="color: #8b3a3a;">${t("reports.pipeCollectionSection","Pipe Collection")}</h2>
       <ul>
-        <li>${t("reports.totalPipes","Total Pipes")}: ${pipes.length}</li>
-        <li>${t("reports.totalValue","Total Value")}: ${formatCurrency(totalValue)}</li>
-        <li>${t("reports.avgValue","Average Value")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
+        <li style="color: #111827;">${t("reports.totalPipes","Total Pipes")}: ${pipes.length}</li>
+        <li style="color: #111827;">${t("reports.totalValue","Total Value")}: ${formatCurrency(totalValue)}</li>
+        <li style="color: #111827;">${t("reports.avgValue","Average Value")}: ${pipes.length > 0 ? formatCurrency(Math.round(totalValue / pipes.length)) : formatCurrency(0)}</li>
       </ul>
       
       <h2 style="color: #3d5a4d;">${t("reports.tobaccoCollectionSection","Tobacco Collection")}</h2>
       <ul>
-        <li>${t("reports.totalBlends","Total Blends")}: ${blends.length}</li>
-        <li>${t("reports.totalQuantity","Total Quantity")}: ${formatWeight(totalOz, 'oz')}</li>
+        <li style="color: #111827;">${t("reports.totalBlends","Total Blends")}: ${blends.length}</li>
+        <li style="color: #111827;">${t("reports.totalQuantity","Total Quantity")}: ${formatWeight(totalOz, 'oz')}</li>
       </ul>
       
       <h2 style="color: #1a2c42;">${t("reports.usageActivitySection","Usage Activity")}</h2>
       <ul>
-        <li>${t("reports.totalSessions","Total Sessions")}: ${logs.length}</li>
-        <li>${t("reports.breakInSessions","Break-In Sessions")}: ${logs.filter(l => l.is_break_in).length}</li>
+        <li style="color: #111827;">${t("reports.totalSessions","Total Sessions")}: ${logs.length}</li>
+        <li style="color: #111827;">${t("reports.breakInSessions","Break-In Sessions")}: ${logs.filter(l => l.is_break_in).length}</li>
       </ul>
     </div>`;
     

@@ -10,8 +10,8 @@ export const PK_THEME = {
   textTitle: "text-[#F1E9D9]",
   textHeading: "text-[#E5DAC4]",
   textBody: "text-[#E0D8C8]",
-  textSubtle: "text-[#A8B3C7]",
-  textMuted: "text-[#7A879A]",
+  textSubtle: "text-[#B8C3D7]",
+  textMuted: "text-[#8F9DB3]",
 
   // Accent
   accentText: "text-[#C9A46A]",
