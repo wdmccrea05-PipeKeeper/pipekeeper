@@ -16,6 +16,7 @@ import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatWeight } from "@/components/utils/localeFormatters";
 
 export default function TobaccoCollectionStats() {
   const { t } = useTranslation();
@@ -503,30 +504,30 @@ export default function TobaccoCollectionStats() {
                     const oz = blend.tin_total_quantity_oz || 0;
                     const open = (blend.tin_tins_open || 0) * (blend.tin_size_oz || 0);
                     const cellared = (blend.tin_tins_cellared || 0) * (blend.tin_size_oz || 0);
-                    quantityText = drillDown.type === 'tinOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
-                                   drillDown.type === 'tinCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${tins} ${tins > 1 ? t("units.tinPlural") : t("units.tin")} • ${oz.toFixed(2)} oz`;
+                    quantityText = drillDown.type === 'tinOpen' ? `${formatWeight(open, 'oz')} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'tinCellared' ? `${formatWeight(cellared, 'oz')} ${t("stats.ozCellared")}` :
+                                   `${tins} ${tins > 1 ? t("units.tinPlural") : t("units.tin")} • ${formatWeight(oz, 'oz')}`;
                   } else if (drillDown.type.startsWith('bulk')) {
                     const total = blend.bulk_total_quantity_oz || 0;
                     const open = blend.bulk_open || 0;
                     const cellared = blend.bulk_cellared || 0;
-                    quantityText = drillDown.type === 'bulkOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
-                                   drillDown.type === 'bulkCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${total.toFixed(2)} ${t("stats.ozBulk")}`;
+                    quantityText = drillDown.type === 'bulkOpen' ? `${formatWeight(open, 'oz')} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'bulkCellared' ? `${formatWeight(cellared, 'oz')} ${t("stats.ozCellared")}` :
+                                   `${formatWeight(total, 'oz')} ${t("stats.ozBulk")}`;
                   } else if (drillDown.type.startsWith('pouch')) {
                     const pouches = blend.pouch_total_pouches || 0;
                     const oz = blend.pouch_total_quantity_oz || 0;
                     const open = (blend.pouch_pouches_open || 0) * (blend.pouch_size_oz || 0);
                     const cellared = (blend.pouch_pouches_cellared || 0) * (blend.pouch_size_oz || 0);
-                    quantityText = drillDown.type === 'pouchOpen' ? `${open.toFixed(2)} ${t("stats.ozOpen")}` :
-                                   drillDown.type === 'pouchCellared' ? `${cellared.toFixed(2)} ${t("stats.ozCellared")}` :
-                                   `${pouches} ${pouches > 1 ? t("units.pouchPlural") : t("units.pouch")} • ${oz.toFixed(2)} oz`;
+                    quantityText = drillDown.type === 'pouchOpen' ? `${formatWeight(open, 'oz')} ${t("stats.ozOpen")}` :
+                                   drillDown.type === 'pouchCellared' ? `${formatWeight(cellared, 'oz')} ${t("stats.ozCellared")}` :
+                                   `${pouches} ${pouches > 1 ? t("units.pouchPlural") : t("units.pouch")} • ${formatWeight(oz, 'oz')}`;
                   } else {
                     const tinOz = blend.tin_total_quantity_oz || 0;
                     const bulkOz = blend.bulk_total_quantity_oz || 0;
                     const pouchOz = blend.pouch_total_quantity_oz || 0;
                     const total = tinOz + bulkOz + pouchOz;
-                    quantityText = `${total.toFixed(2)} ${t("stats.ozTotal")}`;
+                    quantityText = `${formatWeight(total, 'oz')} ${t("stats.ozTotal")}`;
                   }
                   
                   return (

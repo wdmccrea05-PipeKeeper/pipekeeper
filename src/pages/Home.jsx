@@ -1,14 +1,48 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Card } from "@/components/ui/card";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
+import { base44 } from "@/api/base44Client";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function Home() {
   console.log("🏠 Home component rendering");
-  
+
+  const { t } = useTranslation();
+  const { user } = useCurrentUser();
+
+  const { data: pipes = [] } = useQuery({
+    queryKey: ['pipes', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const { data: blends = [] } = useQuery({
+    queryKey: ['blends', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
+  const totalCellaredOz = blends.reduce((sum, b) => {
+    const tinOz = b.tin_total_quantity_oz || 0;
+    const bulkOz = b.bulk_total_quantity_oz || 0;
+    const pouchOz = b.pouch_total_quantity_oz || 0;
+    return sum + tinOz + bulkOz + pouchOz;
+  }, 0);
+  const totalTobaccoValue = blends.reduce((sum, b) => sum + (Number(b?.estimated_value) || 0), 0);
+
   try {
-    const { t } = useTranslation();
     console.log("🏠 Home useTranslation hook successful");
 
   return (
@@ -39,14 +73,14 @@ export default function Home() {
 
         <div className="mt-6 space-y-3">
           <div>
-            <div className="text-3xl font-bold">14</div>
+            <div className="text-3xl font-bold">{pipes.length}</div>
             <div className="opacity-70">
               {t("home.pipesInCollection", "Pipes in Collection")}
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-bold">{formatCurrency(2788)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(totalPipeValue)}</div>
             <div className="opacity-70">
               {t("home.collectionValue", "Collection Value")}
             </div>
@@ -72,21 +106,21 @@ export default function Home() {
 
         <div className="mt-6 space-y-3">
           <div>
-            <div className="text-3xl font-bold">24</div>
+            <div className="text-3xl font-bold">{blends.length}</div>
             <div className="opacity-70">
               {t("home.tobaccoBlends", "Tobacco Blends")}
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-bold">{formatWeight(8.0)}</div>
+            <div className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</div>
             <div className="opacity-70">
               {t("home.cellared", "Cellared")}
             </div>
           </div>
 
           <div>
-            <div className="text-3xl font-bold">≈ {formatCurrency(312)}</div>
+            <div className="text-3xl font-bold">≈ {formatCurrency(totalTobaccoValue)}</div>
             <div className="opacity-70">
               {t("home.collectionValue", "Collection Value")}
             </div>
