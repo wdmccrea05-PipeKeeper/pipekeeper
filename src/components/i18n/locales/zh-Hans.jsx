@@ -283,6 +283,8 @@ export default {
     purchaseSuggestions: "建议购买",
     avgScoreImprovement: "平均得分提升",
     fillsGapFor: "填补缺口",
+    errorPrefix: "抱歉，发生了错误：",
+    pleaseTryAgain: " 请重试。",
   },
 
   subscriptionTest: {

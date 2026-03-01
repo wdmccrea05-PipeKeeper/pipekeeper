@@ -283,6 +283,8 @@ export default {
     purchaseSuggestions: "推奨購入品",
     avgScoreImprovement: "平均スコア改善",
     fillsGapFor: "ギャップを補完",
+    errorPrefix: "申し訳ありません、エラーが発生しました：",
+    pleaseTryAgain: " もう一度お試しください。",
   },
 
   subscriptionTest: {
