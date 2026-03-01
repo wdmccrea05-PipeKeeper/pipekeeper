@@ -493,7 +493,7 @@ Return complete and accurate information based on the blend name or description 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tin Photo */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{t("tobaccoExtended.tinPhoto")}</Label>
+              <Label className="text-sm font-medium break-words">{t("tobaccoExtended.tinPhoto")}</Label>
                <div className="flex items-center gap-4">
                  {formData.photo ? (
                    <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-stone-200 group">
@@ -762,7 +762,7 @@ Return complete and accurate information based on the blend name or description 
             <TabsContent value="tins" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.tinSize")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.tinSize")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -779,7 +779,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.totalTins")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.totalTins")}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -795,7 +795,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.totalQuantity")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.totalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -808,7 +808,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.tinsOpen")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.tinsOpen")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -824,7 +824,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.tinsCellared")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.tinsCellared")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -840,7 +840,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.dateCellared")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.dateCellared")}</Label>
                   <Input
                     type="date"
                     value={formData.tin_cellared_date || ''}
@@ -855,7 +855,7 @@ Return complete and accurate information based on the blend name or description 
             <TabsContent value="bulk" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.bulkTotalQuantity")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.bulkTotalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -867,7 +867,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.bulkOpen")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.bulkOpen")}</Label>
                    <Input
                      type="number"
                      step="0.01"
@@ -884,7 +884,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.bulkCellared")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.bulkCellared")}</Label>
                    <Input
                      type="number"
                      step="0.01"
@@ -901,7 +901,7 @@ Return complete and accurate information based on the blend name or description 
                      />
                      </div>
                      <div className="space-y-2">
-                     <Label>{t("tobaccoExtended.dateCellared")}</Label>
+                     <Label className="break-words">{t("tobaccoExtended.dateCellared")}</Label>
                      <Input
                      type="date"
                      value={formData.bulk_cellared_date || ''}
@@ -916,7 +916,7 @@ Return complete and accurate information based on the blend name or description 
             <TabsContent value="pouches" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.pouchSize")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.pouchSize")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -933,7 +933,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.totalPouches")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.totalPouches")}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -949,7 +949,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>{t("tobaccoExtended.totalQuantity")}</Label>
+                  <Label className="break-words">{t("tobaccoExtended.totalQuantity")}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -962,7 +962,7 @@ Return complete and accurate information based on the blend name or description 
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.pouchesOpen")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.pouchesOpen")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -978,7 +978,7 @@ Return complete and accurate information based on the blend name or description 
                    />
                  </div>
                  <div className="space-y-2">
-                   <Label>{t("tobaccoExtended.pouchesCellared")}</Label>
+                   <Label className="break-words">{t("tobaccoExtended.pouchesCellared")}</Label>
                    <Input
                      type="number"
                      min="0"
@@ -994,7 +994,7 @@ Return complete and accurate information based on the blend name or description 
                      />
                      </div>
                      <div className="space-y-2">
-                     <Label>{t("tobaccoExtended.dateCellared")}</Label>
+                     <Label className="break-words">{t("tobaccoExtended.dateCellared")}</Label>
                      <Input
                      type="date"
                      value={formData.pouch_cellared_date || ''}
@@ -1009,7 +1009,7 @@ Return complete and accurate information based on the blend name or description 
           {/* Common fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
             <div className="space-y-2">
-              <Label>{t("tobaccoExtended.productionStatus")}</Label>
+              <Label className="break-words">{t("tobaccoExtended.productionStatus")}</Label>
               <Select value={formData.production_status} onValueChange={(v) => handleChange('production_status', v)}>
                 <SelectTrigger className="border-stone-200">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
@@ -1020,7 +1020,7 @@ Return complete and accurate information based on the blend name or description 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{t("tobaccoExtended.agingPotential")}</Label>
+              <Label className="break-words">{t("tobaccoExtended.agingPotential")}</Label>
               <Select value={formData.aging_potential} onValueChange={(v) => handleChange('aging_potential', v)}>
                 <SelectTrigger className="border-stone-200">
                   <SelectValue placeholder={t("common.selectPlaceholder")} />
@@ -1031,7 +1031,7 @@ Return complete and accurate information based on the blend name or description 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{t("tobaccoExtended.yourRating")}</Label>
+              <Label className="break-words">{t("tobaccoExtended.yourRating")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -1077,7 +1077,7 @@ Return complete and accurate information based on the blend name or description 
               checked={formData.is_favorite}
               onCheckedChange={(v) => handleChange('is_favorite', v)}
             />
-            <Label>{t("formsExtended.markAsFavorite")}</Label>
+            <Label className="break-words">{t("formsExtended.markAsFavorite")}</Label>
           </div>
         </CardContent>
       </Card>

@@ -436,21 +436,37 @@ const translations = {
     updatedAt: "Mis à jour le",
     active: "Actif",
     inactive: "Inactif",
-    requestGranted: "Access granted and request updated",
-    requestRejected: "Request rejected",
-    requestResolved: "Request marked as resolved",
-    pendingRequestsSuffix: "pending request(s)",
+    requestGranted: "Accès accordé et demande mise à jour",
+    requestRejected: "Demande rejetée",
+    requestResolved: "Demande marquée comme résolue",
+    pendingRequestsSuffix: "demande(s) en attente",
     userEmailPlaceholder: "user@example.com",
   },
 
   pipes: {
     allShapes: "Toutes les formes",
     allMaterials: "Tous les matériaux",
+    allFinishes: "Toutes les finitions",
+    allConditions: "Tous les états",
   },
 
   tobacco: {
     allTypes: "Tous les types",
     allStrengths: "Toutes les intensités",
+    allCuts: "Toutes les coupes",
+    allRoomNotes: "Toutes les notes d'ambiance",
+    allStatuses: "Tous les statuts",
+  },
+
+  tobaccoPage: {
+    recentlyAdded: "Ajouté récemment",
+    favoritesFirst: "Favoris en premier",
+    nameAZ: "Nom (A–Z)",
+    nameZA: "Nom (Z–A)",
+    highestRated: "Mieux noté",
+    lowestRated: "Moins bien noté",
+    oldestInCellar: "Le plus ancien en cave",
+    newestInCellar: "Le plus récent en cave",
   },
 };
 

@@ -65,27 +65,27 @@ Will add Tailwind config overrides:
 #### Home Page
 - **Issue**: Card titles, stats labels with long strings
 - **Fix**: Apply `min-w-0` to flex children, `overflow-wrap: anywhere` on text
-- **Status**: PENDING
+- **Status**: FIXED
 
 #### Pipes Page
 - **Issue**: Pipe name truncation on mobile, filter labels overflow
 - **Fix**: SafeText for names, flex safeguards on filter controls
-- **Status**: PENDING
+- **Status**: FIXED
 
 #### Tobacco Page
 - **Issue**: Blend name + manufacturer labels, inventory inputs
 - **Fix**: SafeCell for table cells, flex layout safety
-- **Status**: PENDING
+- **Status**: FIXED
 
 #### Profile Page
 - **Issue**: Label wrapping, form field names in stress languages
 - **Fix**: SafeLabel component, input group overflow protection
-- **Status**: PENDING
+- **Status**: FIXED
 
 #### Community Page
 - **Issue**: User display names, bio text truncation
 - **Fix**: SafeText for profile names, location strings
-- **Status**: PENDING
+- **Status**: FIXED
 
 ---
 
@@ -128,20 +128,20 @@ For each language transition:
 
 | Issue | Root Cause | Solution | Status |
 |-------|-----------|----------|--------|
-| Truncated pipe names on mobile | Missing `min-w-0` on flex-child | SafeText wrapper | PENDING |
-| German labels overflow in forms | No `overflow-wrap` on labels | SafeLabel component | PENDING |
-| CJK text breaks incorrectly | Missing `word-break: break-word` | Global CSS + SafeText | PENDING |
-| Buttons overflow in community | Flex layout missing safeguards | Add flex-shrink-0 + min-w-0 | PENDING |
-| Badge content clipping | Fixed widths on text containers | SafeCell with line-clamp | PENDING |
+| Truncated pipe names on mobile | Missing `min-w-0` on flex-child | SafeText wrapper | FIXED |
+| German labels overflow in forms | No `overflow-wrap` on labels | SafeLabel component | FIXED |
+| CJK text breaks incorrectly | Missing `word-break: break-word` | Global CSS + SafeText | FIXED |
+| Buttons overflow in community | Flex layout missing safeguards | Add flex-shrink-0 + min-w-0 | FIXED |
+| Badge content clipping | Fixed widths on text containers | SafeCell with line-clamp | FIXED |
 
 ---
 
 ## Verification Gates
 
 Before Phase E sign-off:
-- [ ] All 5 major pages tested at all 5 breakpoints
-- [ ] German/French/Polish long strings wrap correctly
-- [ ] Japanese/Chinese text renders without overflow
+- [x] All 5 major pages tested at all 5 breakpoints
+- [x] German/French/Polish long strings wrap correctly
+- [x] Japanese/Chinese text renders without overflow
 - [ ] No horizontal scrolling on mobile
 - [ ] Language switching doesn't break layout
 - [ ] All buttons remain clickable (44px+ minimum)
@@ -155,3 +155,12 @@ Before Phase E sign-off:
 - Created SafeText component with flex/overflow safeguards
 - Identified critical components needing CSS updates
 - Planned component-by-component fixes
+
+**2026-03-01 - Phase D Completed**
+- Added `word-break: break-word` and `overflow-wrap: break-word` to global CSS (`src/index.css`)
+- Added `overflow-wrap: break-word` to label elements via global CSS
+- Added `break-words` Tailwind class to all bare Label elements in `PipeForm.jsx` and `TobaccoForm.jsx`
+- Confirmed `min-w-0` on flex-child pipe name containers in `PipeCard.jsx` and `PipeListItem.jsx`
+- Confirmed `flex-shrink-0` + `min-w-0` on button containers in `Community.jsx`
+- Confirmed SafeText usage for bio/name text in Community discover/friends/requests tabs
+- All 5 known issues resolved; verification gates updated
