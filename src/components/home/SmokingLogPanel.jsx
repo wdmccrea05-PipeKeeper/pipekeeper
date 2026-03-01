@@ -514,7 +514,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-medium text-[#E0D8C8]">{log.pipe_name}</p>
-                      <span className="text-[#E0D8C8]/50">+</span>
+                      <span className="text-[#8F9DB3]">+</span>
                       <p className="font-medium text-[#E0D8C8]">{log.blend_name}</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/90 font-medium">
@@ -657,7 +657,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 onChange={(e) => setFormData({ ...formData, bowls_smoked: e.target.value })}
               />
               {formData.pipe_id && formData.bowls_smoked && (
-                <p className="text-xs text-[#E0D8C8]/60">
+                <p className="text-xs text-[#A4B0C4]">
                   {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1)).toFixed(2)} oz
                 </p>
               )}

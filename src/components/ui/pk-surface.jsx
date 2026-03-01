@@ -49,7 +49,7 @@ export const PK_TW = {
   divider: "border-t border-white/10",
 
   // Optional: a consistent "field surface" for custom controls that aren't using <Input/>
-  field: "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[#F5F1E7] placeholder:text-[#E0D8C8]/50 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/40",
+  field: "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[#F5F1E7] placeholder:text-[#8F9DB3] focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/40",
 };
 
 export function PKCard({ className, children, ...props }) {

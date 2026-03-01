@@ -109,7 +109,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             />
             <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm text-[#E0D8C8]/60">{t("insights.subtitle")}</p>
+          <p className="text-sm text-[#A4B0C4]">{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
@@ -162,7 +162,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             {pipes.length === 0 && blends.length === 0 ? (
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                <p className="text-[#E0D8C8]/60 mb-4">{t("insights.statsEmpty")}</p>
+                <p className="text-[#A4B0C4] mb-4">{t("insights.statsEmpty")}</p>
                 <a href={createPageUrl('Pipes')}>
                   <Button>{t("insights.addFirstItem")}</Button>
                 </a>
@@ -178,8 +178,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 || blends.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.usageLogNoPipes")}</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.usageLogAction")}</p>
+                    <p className="text-[#A4B0C4] mb-2">{t("empty.usageLogNoPipes")}</p>
+                    <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.usageLogAction")}</p>
                     <div className="flex gap-3 justify-center">
                       {pipes.length === 0 && (
                         <a href={createPageUrl('Pipes')}>
@@ -207,8 +207,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 ? (
                   <div className="text-center py-12">
                     <CalendarClock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.rotationNoPipes")}</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.rotationAction")}</p>
+                    <p className="text-[#A4B0C4] mb-2">{t("empty.rotationNoPipes")}</p>
+                    <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.rotationAction")}</p>
                     <a href={createPageUrl('Pipes')}>
                       <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
                     </a>
@@ -222,8 +222,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {pipes.length === 0 && blends.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-1">{t("insights.reportsEmpty")}</p>
-                    <p className="text-sm text-[#E0D8C8]/40">{t("insights.reportsEmptyDesc")}</p>
+                    <p className="text-[#A4B0C4] mb-1">{t("insights.reportsEmpty")}</p>
+                    <p className="text-sm text-[#8F9DB3]">{t("insights.reportsEmptyDesc")}</p>
                   </div>
                 ) : (
                   <>
@@ -232,7 +232,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports", {defaultValue: "Reports"})}</h3>
                         <InfoTooltip text={t("insights.reportsTooltip")} />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.reportsSubtitle", {defaultValue: "Export your collection and smoking logs"})}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle", {defaultValue: "Export your collection and smoking logs"})}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
@@ -265,8 +265,8 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 {blends.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
-                    <p className="text-[#E0D8C8]/60 mb-2">{t("empty.agingNoBlends")}</p>
-                    <p className="text-sm text-[#E0D8C8]/40 mb-4">{t("empty.agingAction")}</p>
+                    <p className="text-[#A4B0C4] mb-2">{t("empty.agingNoBlends")}</p>
+                    <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.agingAction")}</p>
                     <a href={createPageUrl('Tobacco')}>
                       <Button size="sm">{t("tobacconist.addFirstBlend")}</Button>
                     </a>
@@ -278,7 +278,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard", {defaultValue: "Aging Dashboard"})}</h3>
                         <InfoTooltip text={t("insights.agingTooltip")} />
                       </div>
-                      <p className="text-sm text-[#E0D8C8]/60">{t("insights.agingSubtitle", {defaultValue: "Track cellared tobacco aging progress"})}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle", {defaultValue: "Track cellared tobacco aging progress"})}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>

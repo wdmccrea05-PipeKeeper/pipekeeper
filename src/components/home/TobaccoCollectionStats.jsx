@@ -545,7 +545,7 @@ export default function TobaccoCollectionStats() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-stone-800 truncate">{blend.name}</p>
-                          <p className="text-sm text-stone-500 truncate">
+                          <p className="text-sm text-stone-600 truncate">
                             {blend.manufacturer}
                           </p>
                         </div>
