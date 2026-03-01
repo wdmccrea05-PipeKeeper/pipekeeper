@@ -125,7 +125,7 @@ export default {
   subscriptionSuccess: { title: "订阅已激活！", subtitle: "您的PipeKeeper Pro订阅已激活", activating: "正在激活您的订阅...", activated: "订阅已激活", failed: "订阅激活失败", tryAgain: "重试", continueToApp: "继续使用应用", goHome: "返回首页", thankYou: "感谢您的订阅！", welcome: "欢迎使用PipeKeeper Pro", planDetails: "计划详情", manageSubscription: "管理订阅", checkingStatus: "正在检查订阅状态...", timeout: "验证时间超出预期" },
   invite: { title: "邀请好友", subtitle: "分享PipeKeeper给好友并获取奖励", inviteCode: "邀请码", enterCode: "输入邀请码", applyCode: "应用邀请码", codeApplied: "邀请码应用成功！", invalidCode: "邀请码无效", expiredCode: "此邀请码已过期", shareInvite: "分享邀请", copyLink: "复制链接", linkCopied: "链接已复制！", inviteFriends: "邀请好友", description: "邀请好友加入PipeKeeper，一起享受烟斗和烟草收藏的乐趣", referralBonus: "推荐奖励", yourInviteLink: "您的邀请链接", shareVia: "通过以下方式分享" },
   support: { title: "支持中心", subtitle: "我们如何帮助您？", contactUs: "联系我们", email: "admin@pipekeeperapp.com", phone: "电话", hours: "支持时间", faq: "常见问题", documentation: "文档", community: "社区", feedback: "提交反馈", reportBug: "报告错误", featureRequest: "功能请求", ticketSubmitted: "工单已提交", responseTime: "响应时间：24-48小时", liveChat: "在线聊天", tickets: "我的工单", createTicket: "创建工单", viewTickets: "查看工单", knowledgeBase: "知识库" },
-  admin: { title: "管理面板", dashboard: "仪表板", users: "用户", subscriptions: "订阅", reports: "报告", moderation: "内容审核", settings: "设置", analytics: "分析", logs: "日志", tools: "工具", accessDenied: "访问被拒绝。需要管理员权限。", manageUsers: "管理用户", viewReports: "查看报告", subscriptionTools: "订阅工具", eventsLog: "事件日志", contentModeration: "内容审核", userManagement: "用户管理", systemStatus: "系统状态", accessRequired: "需要管理员访问权限", adminOnly: "只有管理员才能访问此页面。", searchEmail: "搜索邮箱", source: "来源", allSources: "所有来源", loading: "正在加载请求...", subscriptionEventsLog: "订阅事件日志", refresh: "刷新", subSupportQueue: "订阅支持队列", created: "创建时间", grantedBy: "授予者", noPendingRequests: "没有待处理的请求", noMatchingRequests: "未找到匹配的请求", searchByEmail: "按邮箱搜索...", tier: "等级", status: "状态", notes: "备注（可选）", adminNotes: "管理员备注...", processing: "处理中...", grantAccess: "授予访问权限", revokeAccess: "撤销访问权限", updatedAt: "更新时间", active: "活跃", inactive: "非活跃", requestGranted: "已授予访问权限并更新请求", requestRejected: "请求已拒绝", requestResolved: "请求已标记为已解决", pendingRequestsSuffix: "个待处理请求", userEmailPlaceholder: "用户@example.com" },
+  admin: { title: "管理面板", dashboard: "仪表板", users: "用户", subscriptions: "订阅", reports: "报告", moderation: "内容审核", settings: "设置", analytics: "分析", logs: "日志", tools: "工具", accessDenied: "访问被拒绝。需要管理员权限。", manageUsers: "管理用户", viewReports: "查看报告", subscriptionTools: "订阅工具", eventsLog: "事件日志", contentModeration: "内容审核", userManagement: "用户管理", systemStatus: "系统状态", accessRequired: "需要管理员访问权限", adminOnly: "只有管理员才能访问此页面。", searchEmail: "搜索邮箱", source: "来源", allSources: "所有来源", loading: "正在加载请求...", subscriptionEventsLog: "订阅事件日志", refresh: "刷新", subSupportQueue: "订阅支持队列", created: "创建时间", grantedBy: "授予者", noPendingRequests: "没有待处理的请求", noMatchingRequests: "未找到匹配的请求", searchByEmail: "按邮箱搜索...", tier: "等级", status: "状态", notes: "备注（可选）", adminNotes: "管理员备注...", processing: "处理中...", grantAccess: "授予访问权限", revokeAccess: "撤销访问权限", updatedAt: "更新时间", active: "活跃", inactive: "非活跃", requestGranted: "已授予访问权限并更新请求", requestRejected: "请求已拒绝", requestResolved: "请求已标记为已解决", pendingRequestsSuffix: "个待处理请求", userEmailPlaceholder: "用户@example.com", createdUsers: "已创建用户 ({count})", linkedSubscriptions: "已关联订阅 ({count})", conflictsMismatches: "冲突/不匹配 ({count})", logHistory: "日志历史", dryRun: "测试", applyRun: "应用", batch: "批次:", scanned: "已扫描:", linked: "已关联:", conflicts: "冲突:", userIdLabel: "用户ID:", stripeCustomerLabel: "Stripe客户:", errorLabel: "错误:" },
   import: { title: "导入数据", subtitle: "从CSV文件导入您的收藏", selectFile: "选择文件", uploadFile: "上传文件", csvTemplate: "CSV模板", downloadTemplate: "下载模板", preview: "预览", importing: "导入中...", imported: "导入完成", failed: "导入失败", columns: "列", mapping: "映射", errors: "错误", warnings: "警告", success: "导入成功", rowsImported: "已导入{count}行", rowsFailed: "{count}行失败", backToImport: "返回导入", viewImported: "查看已导入内容", fileRequirements: "文件要求", supportedFormats: "支持的格式：CSV" },
   troubleshooting: { title: "故障排除", subtitle: "查找常见问题的解决方案", commonIssues: "常见问题", loginIssue: "登录问题", syncIssue: "同步问题", subscriptionIssue: "订阅问题", dataIssue: "数据问题", performanceIssue: "性能问题", contactSupport: "联系支持", reportBug: "报告错误", clearCache: "清除缓存", resetApp: "重置应用", knownIssues: "已知问题", workarounds: "解决方法", steps: "步骤", solution: "解决方案", didItHelp: "这有帮助吗？", stillNeedHelp: "还需要帮助吗？" },
 
@@ -453,5 +453,40 @@ export default {
     lowestRated: "评分最低",
     oldestInCellar: "储藏最久",
     newestInCellar: "最近储藏",
+  },
+
+  pipeSearch: {
+    searchPlaceholder: "按制造商、型号或品牌搜索（例如，'Peterson System 314'）",
+    searchButton: "搜索",
+    typicalValue: "典型价值",
+    noResults: "未找到结果。请尝试搜索制造商或型号名称。",
+  },
+
+  pipeExporter: {
+    insuranceReportTitle: "烟斗收藏 - 保险报告",
+    collectionSummary: "收藏摘要",
+    individualPipeDetails: "各烟斗详情：",
+    generated: "生成时间：",
+    owner: "所有者：",
+    totalPipes: "烟斗总数：",
+    totalPurchaseValue: "总购买价值：",
+    currentEstimatedValue: "当前估计价值：",
+    makerPrefix: "制造商：",
+    shapePrefix: "形状：",
+    materialPrefix: "材质：",
+    yearPrefix: "年份：",
+    conditionPrefix: "状态：",
+    purchasePricePrefix: "购买价格：",
+    currentValuePrefix: "当前价值：",
+  },
+
+  pairingExporter: {
+    title: "配对参考指南",
+    generated: "生成时间：",
+    shape: "形状：",
+    bestBlendMatches: "最佳混合搭配：",
+    type: "类型：",
+    exportCSV: "导出CSV",
+    exportPDF: "导出PDF",
   },
 };

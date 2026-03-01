@@ -4,8 +4,10 @@ import { FileText, FileSpreadsheet } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PairingExporter({ pipes, blends }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const { data: user } = useQuery({
@@ -66,10 +68,10 @@ export default function PairingExporter({ pipes, blends }) {
       const pageWidth = doc.internal.pageSize.getWidth();
       
       doc.setFontSize(20);
-      doc.text('Pairing Reference Guide', pageWidth / 2, 20, { align: 'center' });
+      doc.text(t("pairingExporter.title"), pageWidth / 2, 20, { align: 'center' });
       
       doc.setFontSize(10);
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+      doc.text(`${t("pairingExporter.generated")} ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
       
       let y = 40;
       
@@ -89,14 +91,14 @@ export default function PairingExporter({ pipes, blends }) {
         y += 6;
         
         if (pipe?.shape) {
-          doc.text(`Shape: ${pipe.shape}`, 25, y);
+          doc.text(`${t("pairingExporter.shape")} ${pipe.shape}`, 25, y);
           y += 5;
         }
         
         y += 2;
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text('Best Blend Matches:', 25, y);
+        doc.text(t("pairingExporter.bestBlendMatches"), 25, y);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(8);
         y += 5;
@@ -115,7 +117,7 @@ export default function PairingExporter({ pipes, blends }) {
           y += 4;
           
           if (blend?.blend_type) {
-            doc.text(`Type: ${blend.blend_type}`, 35, y);
+            doc.text(`${t("pairingExporter.type")} ${blend.blend_type}`, 35, y);
             y += 4;
           }
           
@@ -144,7 +146,7 @@ export default function PairingExporter({ pipes, blends }) {
         disabled={loading || !pairingMatrix?.pairings}
       >
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Export CSV
+        {t("pairingExporter.exportCSV")}
       </Button>
       <Button
         variant="outline"
@@ -153,7 +155,7 @@ export default function PairingExporter({ pipes, blends }) {
         disabled={loading || !pairingMatrix?.pairings}
       >
         <FileText className="w-4 h-4 mr-2" />
-        Export PDF
+        {t("pairingExporter.exportPDF")}
       </Button>
     </div>
   );

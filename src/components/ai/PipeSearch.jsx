@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PipeSearch({ onSelect }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -165,7 +167,7 @@ Return an array of relevant pipe matches with detailed information.`,
               handleSearch();
             }
           }}
-          placeholder="Search by maker, model, or brand (e.g., 'Peterson System 314')"
+          placeholder={t("pipeSearch.searchPlaceholder")}
           className="border-stone-200"
         />
         <Button 
@@ -179,7 +181,7 @@ Return an array of relevant pipe matches with detailed information.`,
           ) : (
             <>
               <Search className="w-4 h-4 mr-2" />
-              Search
+              {t("pipeSearch.searchButton")}
             </>
           )}
         </Button>
@@ -228,7 +230,7 @@ Return an array of relevant pipe matches with detailed information.`,
                     </div>
                     {(pipe.price_range_low || pipe.price_range_high) && (
                       <div className="text-right shrink-0">
-                        <p className="text-xs text-stone-500">Typical Value</p>
+                        <p className="text-xs text-stone-500">{t("pipeSearch.typicalValue")}</p>
                         <p className="font-semibold text-emerald-700">
                           ${pipe.price_range_low?.toLocaleString()}
                           {pipe.price_range_high && ` - $${pipe.price_range_high?.toLocaleString()}`}
@@ -245,7 +247,7 @@ Return an array of relevant pipe matches with detailed information.`,
 
       {!loading && hasSearched && results.length === 0 && query && (
         <p className="text-sm text-stone-500 text-center py-4">
-          No results found. Try searching for a maker or model name.
+          {t("pipeSearch.noResults")}
         </p>
       )}
     </div>

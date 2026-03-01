@@ -509,6 +509,19 @@ const translations = {
     stripeAuthFailed: "Stripe authentication failed",
     stripeDiagsPassed: "Stripe diagnostics passed",
     failedToRunDiagnostics: "Failed to run diagnostics",
+    createdUsers: "Created Users ({count})",
+    linkedSubscriptions: "Linked Subscriptions ({count})",
+    conflictsMismatches: "Conflicts/Mismatches ({count})",
+    logHistory: "Log History",
+    dryRun: "DRY",
+    applyRun: "APPLY",
+    batch: "Batch:",
+    scanned: "Scanned:",
+    linked: "Linked:",
+    conflicts: "Conflicts:",
+    userIdLabel: "User ID:",
+    stripeCustomerLabel: "Stripe Customer:",
+    errorLabel: "Error:",
   },
 
   pipes: {
@@ -540,6 +553,41 @@ const translations = {
   optimizer: {
     errorPrefix: "Sorry, an error occurred:",
     pleaseTryAgain: " Please try again.",
+  },
+
+  pipeSearch: {
+    searchPlaceholder: "Search by maker, model, or brand (e.g., 'Peterson System 314')",
+    searchButton: "Search",
+    typicalValue: "Typical Value",
+    noResults: "No results found. Try searching for a maker or model name.",
+  },
+
+  pipeExporter: {
+    insuranceReportTitle: "Pipe Collection - Insurance Report",
+    collectionSummary: "Collection Summary",
+    individualPipeDetails: "Individual Pipe Details:",
+    generated: "Generated:",
+    owner: "Owner:",
+    totalPipes: "Total Pipes:",
+    totalPurchaseValue: "Total Purchase Value:",
+    currentEstimatedValue: "Current Estimated Value:",
+    makerPrefix: "Maker:",
+    shapePrefix: "Shape:",
+    materialPrefix: "Material:",
+    yearPrefix: "Year:",
+    conditionPrefix: "Condition:",
+    purchasePricePrefix: "Purchase Price:",
+    currentValuePrefix: "Current Value:",
+  },
+
+  pairingExporter: {
+    title: "Pairing Reference Guide",
+    generated: "Generated:",
+    shape: "Shape:",
+    bestBlendMatches: "Best Blend Matches:",
+    type: "Type:",
+    exportCSV: "Export CSV",
+    exportPDF: "Export PDF",
   },
 };
 

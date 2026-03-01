@@ -10,8 +10,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { AlertCircle, Play, FastForward, XCircle, Trash2, CheckCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function SubscriptionMigrationCard() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [dryRun, setDryRun] = useState(true);
   const [limit, setLimit] = useState(500);
@@ -267,7 +269,7 @@ export default function SubscriptionMigrationCard() {
               {lastResult.createdUsers?.length > 0 && (
                 <AccordionItem value="created">
                   <AccordionTrigger className="text-[#E0D8C8] text-sm">
-                    Created Users ({lastResult.createdUsers.length})
+                    {t("admin.createdUsers", { count: lastResult.createdUsers.length })}
                   </AccordionTrigger>
                   <AccordionContent>
                     <pre className="text-xs bg-black/30 p-3 rounded overflow-auto max-h-48 text-[#E0D8C8]/80">
@@ -280,7 +282,7 @@ export default function SubscriptionMigrationCard() {
               {lastResult.linkedSubs?.length > 0 && (
                 <AccordionItem value="linked">
                   <AccordionTrigger className="text-[#E0D8C8] text-sm">
-                    Linked Subscriptions ({lastResult.linkedSubs.length})
+                    {t("admin.linkedSubscriptions", { count: lastResult.linkedSubs.length })}
                   </AccordionTrigger>
                   <AccordionContent>
                     <pre className="text-xs bg-black/30 p-3 rounded overflow-auto max-h-48 text-[#E0D8C8]/80">
@@ -293,7 +295,7 @@ export default function SubscriptionMigrationCard() {
               {lastResult.mismatches?.length > 0 && (
                 <AccordionItem value="mismatches">
                   <AccordionTrigger className="text-[#A35C5C] text-sm">
-                    Conflicts/Mismatches ({lastResult.mismatches.length})
+                    {t("admin.conflictsMismatches", { count: lastResult.mismatches.length })}
                   </AccordionTrigger>
                   <AccordionContent>
                     <pre className="text-xs bg-black/30 p-3 rounded overflow-auto max-h-48 text-[#A35C5C]/80">
@@ -309,7 +311,7 @@ export default function SubscriptionMigrationCard() {
         {/* Log Entries */}
         {logEntries.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-[#E0D8C8]">Log History</h4>
+            <h4 className="text-sm font-semibold text-[#E0D8C8]">{t("admin.logHistory")}</h4>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {logEntries.map((entry, idx) => (
                 <div key={idx} className="text-xs bg-white/5 rounded p-2 space-y-1">
@@ -317,18 +319,18 @@ export default function SubscriptionMigrationCard() {
                     <span>{new Date(entry.ts).toLocaleString()}</span>
                     <div className="flex gap-2">
                       <Badge variant={entry.dryRun ? "secondary" : "destructive"} className="text-xs">
-                        {entry.dryRun ? 'DRY' : 'APPLY'}
+                        {entry.dryRun ? t("admin.dryRun") : t("admin.applyRun")}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        Batch: {entry.limit}
+                        {t("admin.batch")} {entry.limit}
                       </Badge>
                     </div>
                   </div>
                   <div className="text-[#E0D8C8] font-mono">
-                    Scanned: {entry.result?.scanned || 0} | 
-                    Linked: {entry.result?.subsLinkedToUserId || 0} | 
-                    Created: {entry.result?.usersCreated || 0} | 
-                    Conflicts: {entry.result?.conflicts || 0}
+                    {t("admin.scanned")} {entry.result?.scanned || 0} | 
+                    {t("admin.linked")} {entry.result?.subsLinkedToUserId || 0} | 
+                    {t("admin.created")} {entry.result?.usersCreated || 0} | 
+                    {t("admin.conflicts")} {entry.result?.conflicts || 0}
                   </div>
                 </div>
               ))}
