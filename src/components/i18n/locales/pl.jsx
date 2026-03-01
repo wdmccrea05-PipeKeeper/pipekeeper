@@ -125,7 +125,7 @@ export default {
   subscriptionSuccess: { title: "Subskrypcja aktywowana!", subtitle: "Twoja subskrypcja PipeKeeper Pro jest aktywna", activating: "Aktywacja Twojej subskrypcji...", activated: "Subskrypcja aktywna", failed: "Aktywacja subskrypcji nie powiodła się", tryAgain: "Spróbuj ponownie", continueToApp: "Przejdź do aplikacji", goHome: "Idź do strony głównej", thankYou: "Dziękujemy za subskrypcję!", welcome: "Witaj w PipeKeeper Pro", planDetails: "Szczegóły planu", manageSubscription: "Zarządzaj subskrypcją", checkingStatus: "Sprawdzanie statusu subskrypcji...", timeout: "Weryfikacja trwa dłużej niż oczekiwano" },
   invite: { title: "Zaproś znajomych", subtitle: "Udostępnij PipeKeeper znajomym i zdobądź nagrody", inviteCode: "Kod zaproszenia", enterCode: "Wprowadź kod zaproszenia", applyCode: "Zastosuj kod", codeApplied: "Kod zastosowany pomyślnie!", invalidCode: "Nieprawidłowy kod zaproszenia", expiredCode: "Ten kod zaproszenia wygasł", shareInvite: "Udostępnij zaproszenie", copyLink: "Kopiuj link", linkCopied: "Link skopiowany!", inviteFriends: "Zaproś znajomych", description: "Zaproś znajomych do dołączenia do PipeKeeper i korzystaj razem z kolekcji fajek i tytoniu", referralBonus: "Bonus za polecenie", yourInviteLink: "Twój link zaproszenia", shareVia: "Udostępnij przez" },
   support: { title: "Centrum wsparcia", subtitle: "Jak możemy Ci pomóc?", contactUs: "Skontaktuj się z nami", email: "admin@pipekeeperapp.com", phone: "Telefon", hours: "Godziny wsparcia", faq: "Często zadawane pytania", documentation: "Dokumentacja", community: "Społeczność", feedback: "Prześlij opinię", reportBug: "Zgłoś błąd", featureRequest: "Poproś o funkcję", ticketSubmitted: "Zgłoszenie zostało przesłane", responseTime: "Czas odpowiedzi: 24–48 godzin", liveChat: "Czat na żywo", tickets: "Moje zgłoszenia", createTicket: "Utwórz zgłoszenie", viewTickets: "Zobacz zgłoszenia", knowledgeBase: "Baza wiedzy" },
-  admin: { title: "Panel administracyjny", dashboard: "Panel", users: "Użytkownicy", subscriptions: "Subskrypcje", reports: "Raporty", moderation: "Moderacja", settings: "Ustawienia", analytics: "Analityka", logs: "Dzienniki", tools: "Narzędzia", accessDenied: "Odmowa dostępu. Wymagane uprawnienia administratora.", manageUsers: "Zarządzaj użytkownikami", viewReports: "Przeglądaj raporty", subscriptionTools: "Narzędzia subskrypcji", eventsLog: "Dziennik zdarzeń", contentModeration: "Moderacja treści", userManagement: "Zarządzanie użytkownikami", systemStatus: "Stan systemu", accessRequired: "Wymagany dostęp administratora", adminOnly: "Tylko administratorzy mogą uzyskać dostęp do tej strony.", searchEmail: "Szukaj e-mail", source: "Źródło", allSources: "Wszystkie źródła", loading: "Ładowanie żądań...", subscriptionEventsLog: "Dziennik zdarzeń subskrypcji", refresh: "Odśwież", subSupportQueue: "Kolejka wsparcia subskrypcji", created: "Utworzono", grantedBy: "Przyznane przez", noPendingRequests: "Brak oczekujących żądań", noMatchingRequests: "Nie znaleziono pasujących żądań", searchByEmail: "Szukaj po e-mail...", tier: "Poziom", status: "Status", notes: "Uwagi (opcjonalne)", adminNotes: "Uwagi administratora...", processing: "Przetwarzanie...", grantAccess: "Przyznaj dostęp", revokeAccess: "Cofnij dostęp", updatedAt: "Zaktualizowano", active: "Aktywny", inactive: "Nieaktywny", requestGranted: "Dostęp przyznany i żądanie zaktualizowane", requestRejected: "Żądanie odrzucone", requestResolved: "Żądanie oznaczone jako rozwiązane", pendingRequestsSuffix: "oczekujące żądanie/a", userEmailPlaceholder: "uzytkownik@example.com" },
+  admin: { title: "Panel administracyjny", dashboard: "Panel", users: "Użytkownicy", subscriptions: "Subskrypcje", reports: "Raporty", moderation: "Moderacja", settings: "Ustawienia", analytics: "Analityka", logs: "Dzienniki", tools: "Narzędzia", accessDenied: "Odmowa dostępu. Wymagane uprawnienia administratora.", manageUsers: "Zarządzaj użytkownikami", viewReports: "Przeglądaj raporty", subscriptionTools: "Narzędzia subskrypcji", eventsLog: "Dziennik zdarzeń", contentModeration: "Moderacja treści", userManagement: "Zarządzanie użytkownikami", systemStatus: "Stan systemu", accessRequired: "Wymagany dostęp administratora", adminOnly: "Tylko administratorzy mogą uzyskać dostęp do tej strony.", searchEmail: "Szukaj e-mail", source: "Źródło", allSources: "Wszystkie źródła", loading: "Ładowanie żądań...", subscriptionEventsLog: "Dziennik zdarzeń subskrypcji", refresh: "Odśwież", subSupportQueue: "Kolejka wsparcia subskrypcji", created: "Utworzono", grantedBy: "Przyznane przez", noPendingRequests: "Brak oczekujących żądań", noMatchingRequests: "Nie znaleziono pasujących żądań", searchByEmail: "Szukaj po e-mail...", tier: "Poziom", status: "Status", notes: "Uwagi (opcjonalne)", adminNotes: "Uwagi administratora...", processing: "Przetwarzanie...", grantAccess: "Przyznaj dostęp", revokeAccess: "Cofnij dostęp", updatedAt: "Zaktualizowano", active: "Aktywny", inactive: "Nieaktywny", requestGranted: "Dostęp przyznany i żądanie zaktualizowane", requestRejected: "Żądanie odrzucone", requestResolved: "Żądanie oznaczone jako rozwiązane", pendingRequestsSuffix: "oczekujące żądanie/a", userEmailPlaceholder: "uzytkownik@example.com", createdUsers: "Utworzeni użytkownicy ({count})", linkedSubscriptions: "Powiązane subskrypcje ({count})", conflictsMismatches: "Konflikty/Niezgodności ({count})", logHistory: "Historia dziennika", dryRun: "TEST", applyRun: "ZASTOSUJ", batch: "Partia:", scanned: "Przeskanowane:", linked: "Powiązane:", conflicts: "Konflikty:", userIdLabel: "ID użytkownika:", stripeCustomerLabel: "Klient Stripe:", errorLabel: "Błąd:" },
   import: { title: "Importuj dane", subtitle: "Importuj swoją kolekcję z pliku CSV", selectFile: "Wybierz plik", uploadFile: "Prześlij plik", csvTemplate: "Szablon CSV", downloadTemplate: "Pobierz szablon", preview: "Podgląd", importing: "Importowanie...", imported: "Importowanie zakończone", failed: "Import nie powiódł się", columns: "Kolumny", mapping: "Mapowanie", errors: "Błędy", warnings: "Ostrzeżenia", success: "Import zakończony sukcesem", rowsImported: "{count} wierszy zaimportowano", rowsFailed: "{count} wierszy nie powiodło się", backToImport: "Wróć do importu", viewImported: "Zobacz zaimportowane", fileRequirements: "Wymagania dotyczące pliku", supportedFormats: "Obsługiwane formaty: CSV" },
   troubleshooting: { title: "Rozwiązywanie problemów", subtitle: "Znajdź rozwiązania typowych problemów", commonIssues: "Typowe problemy", loginIssue: "Problemy z logowaniem", syncIssue: "Problemy z synchronizacją", subscriptionIssue: "Problemy z subskrypcją", dataIssue: "Problemy z danymi", performanceIssue: "Problemy z wydajnością", contactSupport: "Skontaktuj się z pomocą techniczną", reportBug: "Zgłoś błąd", clearCache: "Wyczyść pamięć podręczną", resetApp: "Zresetuj aplikację", knownIssues: "Znane problemy", workarounds: "Obejścia", steps: "Kroki", solution: "Rozwiązanie", didItHelp: "Czy to pomogło?", stillNeedHelp: "Nadal potrzebujesz pomocy?" },
 
@@ -453,5 +453,40 @@ export default {
     lowestRated: "Najniżej oceniane",
     oldestInCellar: "Najstarsze w piwnicy",
     newestInCellar: "Najnowsze w piwnicy",
+  },
+
+  pipeSearch: {
+    searchPlaceholder: "Szukaj po producencie, modelu lub marce (np. 'Peterson System 314')",
+    searchButton: "Szukaj",
+    typicalValue: "Typowa wartość",
+    noResults: "Nie znaleziono wyników. Spróbuj wyszukać producenta lub nazwę modelu.",
+  },
+
+  pipeExporter: {
+    insuranceReportTitle: "Kolekcja fajek - Raport ubezpieczeniowy",
+    collectionSummary: "Podsumowanie kolekcji",
+    individualPipeDetails: "Szczegóły poszczególnych fajek:",
+    generated: "Wygenerowano:",
+    owner: "Właściciel:",
+    totalPipes: "Łączna liczba fajek:",
+    totalPurchaseValue: "Łączna wartość zakupu:",
+    currentEstimatedValue: "Aktualna szacowana wartość:",
+    makerPrefix: "Producent:",
+    shapePrefix: "Kształt:",
+    materialPrefix: "Materiał:",
+    yearPrefix: "Rok:",
+    conditionPrefix: "Stan:",
+    purchasePricePrefix: "Cena zakupu:",
+    currentValuePrefix: "Aktualna wartość:",
+  },
+
+  pairingExporter: {
+    title: "Przewodnik po parach",
+    generated: "Wygenerowano:",
+    shape: "Kształt:",
+    bestBlendMatches: "Najlepsze dopasowania mieszanek:",
+    type: "Typ:",
+    exportCSV: "Eksportuj CSV",
+    exportPDF: "Eksportuj PDF",
   },
 };

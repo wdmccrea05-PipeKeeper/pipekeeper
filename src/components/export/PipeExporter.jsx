@@ -92,11 +92,11 @@ export default function PipeExporter() {
       
       // Title
       doc.setFontSize(20);
-      doc.text('Pipe Collection - Insurance Report', pageWidth / 2, 20, { align: 'center' });
+      doc.text(t("pipeExporter.insuranceReportTitle"), pageWidth / 2, 20, { align: 'center' });
       
       doc.setFontSize(10);
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
-      doc.text(`Owner: ${user?.full_name || user?.email}`, pageWidth / 2, 34, { align: 'center' });
+      doc.text(`${t("pipeExporter.generated")} ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+      doc.text(`${t("pipeExporter.owner")} ${user?.full_name || user?.email}`, pageWidth / 2, 34, { align: 'center' });
       
       // Summary
       const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
@@ -104,18 +104,18 @@ export default function PipeExporter() {
       
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('Collection Summary', 20, 45);
+      doc.text(t("pipeExporter.collectionSummary"), 20, 45);
       doc.setFont(undefined, 'normal');
       doc.setFontSize(10);
-      doc.text(`Total Pipes: ${pipes.length}`, 20, 52);
-      doc.text(`Total Purchase Value: $${totalPurchase.toLocaleString()}`, 20, 58);
-      doc.text(`Current Estimated Value: $${totalValue.toLocaleString()}`, 20, 64);
+      doc.text(`${t("pipeExporter.totalPipes")} ${pipes.length}`, 20, 52);
+      doc.text(`${t("pipeExporter.totalPurchaseValue")} $${totalPurchase.toLocaleString()}`, 20, 58);
+      doc.text(`${t("pipeExporter.currentEstimatedValue")} $${totalValue.toLocaleString()}`, 20, 64);
       
       // Individual pipes
       let y = 75;
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('Individual Pipe Details:', 20, y);
+      doc.text(t("pipeExporter.individualPipeDetails"), 20, y);
       y += 8;
       
       for (const [idx, pipe] of pipes.entries()) {
@@ -151,28 +151,28 @@ export default function PipeExporter() {
         }
         
         if (pipe.maker) {
-          doc.text(`Maker: ${pipe.maker}${pipe.country_of_origin ? ` (${pipe.country_of_origin})` : ''}`, 25, y);
+          doc.text(`${t("pipeExporter.makerPrefix")} ${pipe.maker}${pipe.country_of_origin ? ` (${pipe.country_of_origin})` : ''}`, 25, y);
           y += 5;
         }
         
         if (pipe.shape || pipe.bowl_material) {
-          doc.text(`Shape: ${pipe.shape || 'N/A'} | Material: ${pipe.bowl_material || 'N/A'}`, 25, y);
+          doc.text(`${t("pipeExporter.shapePrefix")} ${pipe.shape || 'N/A'} | ${t("pipeExporter.materialPrefix")} ${pipe.bowl_material || 'N/A'}`, 25, y);
           y += 5;
         }
         
         if (pipe.year_made) {
-          doc.text(`Year: ${pipe.year_made}`, 25, y);
+          doc.text(`${t("pipeExporter.yearPrefix")} ${pipe.year_made}`, 25, y);
           y += 5;
         }
         
         if (pipe.condition) {
-          doc.text(`Condition: ${pipe.condition}`, 25, y);
+          doc.text(`${t("pipeExporter.conditionPrefix")} ${pipe.condition}`, 25, y);
           y += 5;
         }
         
         if (pipe.purchase_price || pipe.estimated_value) {
           doc.setFont(undefined, 'bold');
-          doc.text(`Purchase Price: $${pipe.purchase_price || 'N/A'} | Current Value: $${pipe.estimated_value || 'N/A'}`, 25, y);
+          doc.text(`${t("pipeExporter.purchasePricePrefix")} $${pipe.purchase_price || 'N/A'} | ${t("pipeExporter.currentValuePrefix")} $${pipe.estimated_value || 'N/A'}`, 25, y);
           doc.setFont(undefined, 'normal');
           y += 5;
         }

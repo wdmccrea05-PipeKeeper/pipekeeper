@@ -137,13 +137,13 @@ export default function SubscriptionEventsLog() {
                   </div>
                   
                   <div className="text-sm space-y-1 text-[#E0D8C8]/70">
-                    {event.email && <p>Email: {event.email}</p>}
-                    {event.user_id && <p>User ID: {event.user_id}</p>}
+                    {event.email && <p>{t("admin.emailLabel")} {event.email}</p>}
+                    {event.user_id && <p>{t("admin.userIdLabel")} {event.user_id}</p>}
                     {event.stripe_customer_id && (
-                      <p>Stripe Customer: {event.stripe_customer_id}</p>
+                      <p>{t("admin.stripeCustomerLabel")} {event.stripe_customer_id}</p>
                     )}
                     {event.error && (
-                      <p className="text-red-400">Error: {event.error}</p>
+                      <p className="text-red-400">{t("admin.errorLabel")} {event.error}</p>
                     )}
                     <p className="text-xs text-[#E0D8C8]/50">
                       {new Date(event.created_date).toLocaleString()}
