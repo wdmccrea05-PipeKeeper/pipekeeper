@@ -440,7 +440,7 @@ const translations = {
     requestRejected: "Anfrage abgelehnt",
     requestResolved: "Anfrage als gelöst markiert",
     pendingRequestsSuffix: "ausstehende Anfrage(n)",
-    userEmailPlaceholder: "user@example.com",
+    userEmailPlaceholder: "benutzer@example.com",
   },
 
   pipes: {
@@ -454,7 +454,7 @@ const translations = {
     allTypes: "Alle Typen",
     allStrengths: "Alle Stärken",
     allCuts: "Alle Schnitte",
-    allRoomNotes: "Alle Raumgerüche",
+    allRoomNotes: "Alle Raumnotizen",
     allStatuses: "Alle Status",
   },
 
