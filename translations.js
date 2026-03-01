@@ -263,6 +263,8 @@ export const translations = {
       purchaseSuggestions: "Suggested Acquisitions",
       avgScoreImprovement: "avg score improvement",
       fillsGapFor: "Fills gap",
+      errorPrefix: "Sorry, an error occurred:",
+      pleaseTryAgain: " Please try again.",
     },
     matching: {
       recommendationsFor: "Recommendations for",
@@ -525,6 +527,8 @@ export const translations = {
       purchaseSuggestions: "Adquisiciones sugeridas",
       avgScoreImprovement: "mejora promedio de puntuación",
       fillsGapFor: "Cubre la brecha",
+      errorPrefix: "Lo sentimos, ocurrió un error:",
+      pleaseTryAgain: " Por favor, inténtelo de nuevo.",
     },
     matching: {
       recommendationsFor: "Recomendaciones para",
@@ -787,6 +791,8 @@ export const translations = {
       purchaseSuggestions: "Acquisitions suggérées",
       avgScoreImprovement: "amélioration moyenne du score",
       fillsGapFor: "Comble le manque",
+      errorPrefix: "Désolé, une erreur s'est produite :",
+      pleaseTryAgain: " Veuillez réessayer.",
     },
     matching: {
       recommendationsFor: "Recommandations pour",
@@ -1049,6 +1055,8 @@ export const translations = {
       purchaseSuggestions: "Empfohlene Anschaffungen",
       avgScoreImprovement: "durchschnittliche Bewertungsverbesserung",
       fillsGapFor: "Schließt Lücke",
+      errorPrefix: "Es tut uns leid, ein Fehler ist aufgetreten:",
+      pleaseTryAgain: " Bitte versuchen Sie es erneut.",
     },
     matching: {
       recommendationsFor: "Empfehlungen für",
@@ -1311,6 +1319,8 @@ export const translations = {
       purchaseSuggestions: "Acquisizioni suggerite",
       avgScoreImprovement: "miglioramento medio del punteggio",
       fillsGapFor: "Colma il divario",
+      errorPrefix: "Siamo spiacenti, si è verificato un errore:",
+      pleaseTryAgain: " Riprovare.",
     },
     matching: {
       recommendationsFor: "Raccomandazioni per",
@@ -1573,6 +1583,8 @@ export const translations = {
       purchaseSuggestions: "Aquisições sugeridas",
       avgScoreImprovement: "melhoria média na pontuação",
       fillsGapFor: "Preenche a lacuna",
+      errorPrefix: "Desculpe, ocorreu um erro:",
+      pleaseTryAgain: " Por favor, tente novamente.",
     },
     matching: {
       recommendationsFor: "Recomendações para",
@@ -1835,6 +1847,8 @@ export const translations = {
       purchaseSuggestions: "Aanbevolen aankopen",
       avgScoreImprovement: "gemiddelde scoreverbetering",
       fillsGapFor: "Vult hiaat op",
+      errorPrefix: "Sorry, er is een fout opgetreden:",
+      pleaseTryAgain: " Probeer het opnieuw.",
     },
     matching: {
       recommendationsFor: "Aanbevelingen voor",
@@ -2092,6 +2106,8 @@ export const translations = {
       purchaseSuggestions: "Sugerowane nabycia",
       avgScoreImprovement: "średnia poprawa wyniku",
       fillsGapFor: "Wypełnia lukę",
+      errorPrefix: "Przepraszamy, wystąpił błąd:",
+      pleaseTryAgain: " Spróbuj ponownie.",
     },
     matching: {
       recommendationsFor: "Rekomendacje dla",
@@ -2349,6 +2365,8 @@ export const translations = {
       purchaseSuggestions: "推奨購入品",
       avgScoreImprovement: "平均スコア改善",
       fillsGapFor: "ギャップを補完",
+      errorPrefix: "申し訳ありません、エラーが発生しました：",
+      pleaseTryAgain: " もう一度お試しください。",
     },
     matching: {
       recommendationsFor: "推奨：",
@@ -2606,6 +2624,8 @@ export const translations = {
       purchaseSuggestions: "建议购买",
       avgScoreImprovement: "平均得分提升",
       fillsGapFor: "填补缺口",
+      errorPrefix: "抱歉，发生了错误：",
+      pleaseTryAgain: " 请重试。",
     },
     matching: {
       recommendationsFor: "推荐给",

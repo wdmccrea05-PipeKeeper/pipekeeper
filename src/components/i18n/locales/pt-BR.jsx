@@ -155,6 +155,8 @@ const translations = {
     purchaseSuggestions: "Aquisições sugeridas",
     avgScoreImprovement: "melhoria média na pontuação",
     fillsGapFor: "Preenche a lacuna",
+    errorPrefix: "Desculpe, ocorreu um erro:",
+    pleaseTryAgain: " Por favor, tente novamente.",
   },
 
   auth: {

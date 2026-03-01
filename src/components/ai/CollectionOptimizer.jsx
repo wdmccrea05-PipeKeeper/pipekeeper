@@ -102,6 +102,9 @@ const stripRepeatedPrefix = (prevText, nextText) => {
   return nextText;
 };
 
+const truncateContext = (ctx, maxLen = 4000) =>
+  ctx.length > maxLen ? "..." + ctx.slice(-maxLen) : ctx;
+
 class PKErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -628,6 +631,11 @@ User Feedback: ${feedback}
       return;
     }
 
+    // Guard: warn if a follow-up is sent without a live conversation ID
+    if (conversationMessages.length > 0 && !currentConversationIdRef.current) {
+      console.warn("[sendToExpertAgent] Follow-up sent but conversationId is null; a new conversation will be started.");
+    }
+
     setWhatIfLoading(true);
 
     // Add user message immediately (show original, untranslated text)
@@ -680,7 +688,7 @@ USAGE:
 ${safeStringify(usageStats, 3000)}
 
 RECENT CHAT:
-${conversationContext || "(none)"}
+${truncateContext(conversationContext) || "(none)"}
 
 USER QUESTION:
 ${englishUserText}
@@ -705,11 +713,15 @@ ${englishUserText}
       }
 
       const lastAssistantMsg = [...conversationMessages].reverse().find((m) => m.role === "assistant");
-      const lastAssistantText =
-        lastAssistantMsg?.content?.response || lastAssistantMsg?.content?.advice || lastAssistantMsg?.content?.detailed_reasoning || "";
+      const lastAssistantText = asText(
+        lastAssistantMsg?.content?.advice ||
+        lastAssistantMsg?.content?.response ||
+        lastAssistantMsg?.content?.detailed_reasoning ||
+        ""
+      );
 
       let finalResponse = stripRepeatedPrefix(lastAssistantText, agentResponse || "");
-      if (!finalResponse || !finalResponse.trim()) finalResponse = t("optimizer.couldntLoadResponse");
+      if (!finalResponse || finalResponse.trim().length < 20) finalResponse = agentResponse || t("optimizer.couldntLoadResponse");
       finalResponse = await translateFromEnglish(finalResponse, locale);
 
       const aiResponse = {
@@ -826,6 +838,12 @@ ${englishUserText}
     setWhatIfResult(null);
     setConversationMessages([]);
     setCurrentConversationId(null);
+  };
+
+  const submitFollowUp = () => {
+    const text = whatIfFollowUp;
+    setWhatIfFollowUp("");
+    sendToExpertAgent({ userText: text, source: "ask_expert_followup" });
   };
 
   const handlePhotoUpload = async (files) => {
@@ -1045,10 +1063,13 @@ ${englishUserText}
               className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  const text = conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery;
-                  if (conversationMessages.length > 0) setWhatIfFollowUp("");
-                  else setWhatIfQuery("");
-                  sendToExpertAgent({ userText: text, source: "ask_expert" });
+                  if (conversationMessages.length > 0) {
+                    submitFollowUp();
+                  } else {
+                    const text = whatIfQuery;
+                    setWhatIfQuery("");
+                    sendToExpertAgent({ userText: text, source: "ask_expert" });
+                  }
                 }
               }}
             />
@@ -1102,11 +1123,7 @@ ${englishUserText}
             {conversationMessages.length > 0 ? (
               <>
                 <Button
-                  onClick={() => {
-                    const text = whatIfFollowUp;
-                    setWhatIfFollowUp("");
-                    sendToExpertAgent({ userText: text, source: "ask_expert_followup" });
-                  }}
+                  onClick={submitFollowUp}
                   disabled={whatIfLoading || !whatIfFollowUp.trim()}
                   className="bg-indigo-600 hover:bg-indigo-700 w-full"
                 >

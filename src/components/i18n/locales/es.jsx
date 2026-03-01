@@ -174,6 +174,8 @@ const translations = {
     purchaseSuggestions: "Adquisiciones sugeridas",
     avgScoreImprovement: "mejora promedio de puntuación",
     fillsGapFor: "Cubre la brecha",
+    errorPrefix: "Lo sentimos, ocurrió un error:",
+    pleaseTryAgain: " Por favor, inténtelo de nuevo.",
   },
 
   aiPage: {

@@ -153,8 +153,10 @@ const translations = {
     coverageRate: "Dekkingsgraad",
     redundancies: "Specialisatieredundanties",
     purchaseSuggestions: "Aanbevolen aankopen",
-    avgScoreImprovement: "gemiddelde scoreverbete ring",
+    avgScoreImprovement: "gemiddelde scoreverbetering",
     fillsGapFor: "Vult hiaat op",
+    errorPrefix: "Sorry, er is een fout opgetreden:",
+    pleaseTryAgain: " Probeer het opnieuw.",
   },
 
   auth: {

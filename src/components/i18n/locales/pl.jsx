@@ -283,6 +283,8 @@ export default {
     purchaseSuggestions: "Sugerowane nabycia",
     avgScoreImprovement: "średnia poprawa wyniku",
     fillsGapFor: "Wypełnia lukę",
+    errorPrefix: "Przepraszamy, wystąpił błąd:",
+    pleaseTryAgain: " Spróbuj ponownie.",
   },
 
   subscriptionTest: {

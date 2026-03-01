@@ -520,6 +520,11 @@ const translations = {
     allTypes: "All Types",
     allStrengths: "All Strengths",
   },
+
+  optimizer: {
+    errorPrefix: "Sorry, an error occurred:",
+    pleaseTryAgain: " Please try again.",
+  },
 };
 
 export default translations;
