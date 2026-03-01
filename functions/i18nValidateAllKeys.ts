@@ -2,8 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // Quick validation that all expected keys exist in all 10 languages
 const REQUIRED_KEYS_BY_SECTION = {
-  pipes: ['allShapes', 'allMaterials'],
-  tobacco: ['allTypes', 'allStrengths'],
+  pipes: ['allShapes', 'allMaterials', 'allFinishes', 'allConditions'],
+  tobacco: ['allTypes', 'allStrengths', 'allCuts', 'allRoomNotes', 'allStatuses'],
   pipesPage: [
     'myPipes', 'totalValue', 'exportCSV', 'insuranceReport', 'quickSearchAdd',
     'addPipe', 'searchPlaceholder', 'newestFirst', 'favoritesFirst',

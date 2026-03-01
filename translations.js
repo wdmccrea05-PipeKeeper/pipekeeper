@@ -12,19 +12,6 @@ import zhHans from './src/components/i18n/locales/zh-Hans.jsx';
 export const translations = {
   en: {
     ...en,
-    pipes: {
-      allShapes: "All Shapes",
-      allMaterials: "All Materials",
-      allFinishes: "All Finishes",
-      allConditions: "All Conditions",
-    },
-    tobacco: {
-      allTypes: "All Types",
-      allStrengths: "All Strengths",
-      allCuts: "All Cuts",
-      allRoomNotes: "All Room Notes",
-      allStatuses: "All Statuses",
-    },
     featureGate: {
       collectionOptimizationName: "Collection Optimization",
       collectionOptimizationDesc: "Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access.",
@@ -276,19 +263,6 @@ export const translations = {
   },
   es: {
     ...es,
-    pipes: {
-      allShapes: "Todas las formas",
-      allMaterials: "Todos los materiales",
-      allFinishes: "Todos los acabados",
-      allConditions: "Todas las condiciones",
-    },
-    tobacco: {
-      allTypes: "Todos los tipos",
-      allStrengths: "Todas las intensidades",
-      allCuts: "Todos los cortes",
-      allRoomNotes: "Todas las notas de habitación",
-      allStatuses: "Todos los estados",
-    },
     featureGate: {
       collectionOptimizationName: "Optimización de colección",
       collectionOptimizationDesc: "Obtén un análisis impulsado por IA de tu colección con recomendaciones de especialización, identificación de brechas y planificación de escenarios con acceso Pro o Premium heredado.",
@@ -540,19 +514,6 @@ export const translations = {
   },
   fr: {
     ...fr,
-    pipes: {
-      allShapes: "Toutes les formes",
-      allMaterials: "Tous les matériaux",
-      allFinishes: "Toutes les finitions",
-      allConditions: "Tous les états",
-    },
-    tobacco: {
-      allTypes: "Tous les types",
-      allStrengths: "Toutes les intensités",
-      allCuts: "Toutes les coupes",
-      allRoomNotes: "Toutes les notes d'ambiance",
-      allStatuses: "Tous les statuts",
-    },
     featureGate: {
       collectionOptimizationName: "Optimisation de collection",
       collectionOptimizationDesc: "Obtenez une analyse pilotée par IA de votre collection avec des recommandations de spécialisation, l'identification des lacunes et la planification de scénarios avec un accès Pro ou Premium hérité.",
@@ -804,19 +765,6 @@ export const translations = {
   },
   de: {
     ...de,
-    pipes: {
-      allShapes: "Alle Formen",
-      allMaterials: "Alle Materialien",
-      allFinishes: "Alle Oberflächen",
-      allConditions: "Alle Zustände",
-    },
-    tobacco: {
-      allTypes: "Alle Typen",
-      allStrengths: "Alle Stärken",
-      allCuts: "Alle Schnitte",
-      allRoomNotes: "Alle Raumgerüche",
-      allStatuses: "Alle Status",
-    },
     featureGate: {
       collectionOptimizationName: "Sammlungsoptimierung",
       collectionOptimizationDesc: "Erhalten Sie eine KI-gestützte Analyse Ihrer Sammlung mit Spezialisierungsempfehlungen, Lückenidentifikation und Was-wäre-wenn-Szenarioplanung mit Pro- oder Legacy-Premium-Zugang.",
@@ -1068,19 +1016,6 @@ export const translations = {
   },
   it: {
     ...it,
-    pipes: {
-      allShapes: "Tutte le forme",
-      allMaterials: "Tutti i materiali",
-      allFinishes: "Tutte le finiture",
-      allConditions: "Tutte le condizioni",
-    },
-    tobacco: {
-      allTypes: "Tutti i tipi",
-      allStrengths: "Tutte le intensità",
-      allCuts: "Tutti i tagli",
-      allRoomNotes: "Tutte le note di sala",
-      allStatuses: "Tutti gli stati",
-    },
     featureGate: {
       collectionOptimizationName: "Ottimizzazione della collezione",
       collectionOptimizationDesc: "Ottieni un'analisi basata sull'IA della tua collezione con raccomandazioni di specializzazione, identificazione delle lacune e pianificazione di scenari con accesso Pro o Premium legacy.",
@@ -1332,19 +1267,6 @@ export const translations = {
   },
   "pt-BR": {
     ...ptBR,
-    pipes: {
-      allShapes: "Todas as formas",
-      allMaterials: "Todos os materiais",
-      allFinishes: "Todos os acabamentos",
-      allConditions: "Todas as condições",
-    },
-    tobacco: {
-      allTypes: "Todos os tipos",
-      allStrengths: "Todas as intensidades",
-      allCuts: "Todos os cortes",
-      allRoomNotes: "Todas as notas de ambiente",
-      allStatuses: "Todos os estados",
-    },
     featureGate: {
       collectionOptimizationName: "Otimização de coleção",
       collectionOptimizationDesc: "Obtenha uma análise baseada em IA da sua coleção com recomendações de especialização, identificação de lacunas e planejamento de cenários com acesso Pro ou Premium legado.",
@@ -1596,19 +1518,6 @@ export const translations = {
   },
   nl: {
     ...nl,
-    pipes: {
-      allShapes: "Alle vormen",
-      allMaterials: "Alle materialen",
-      allFinishes: "Alle afwerkingen",
-      allConditions: "Alle condities",
-    },
-    tobacco: {
-      allTypes: "Alle typen",
-      allStrengths: "Alle sterktes",
-      allCuts: "Alle sneden",
-      allRoomNotes: "Alle kameraroma's",
-      allStatuses: "Alle statussen",
-    },
     featureGate: {
       collectionOptimizationName: "Collectie-optimalisatie",
       collectionOptimizationDesc: "Krijg een AI-gestuurde analyse van uw collectie met specialisatieaanbevelingen, lacune-identificatie en what-if-scenarioplanning met Pro- of legacy Premium-toegang.",
@@ -1860,19 +1769,6 @@ export const translations = {
   },
   pl: {
     ...pl,
-    pipes: {
-      allShapes: "Wszystkie kształty",
-      allMaterials: "Wszystkie materiały",
-      allFinishes: "Wszystkie wykończenia",
-      allConditions: "Wszystkie stany",
-    },
-    tobacco: {
-      allTypes: "Wszystkie typy",
-      allStrengths: "Wszystkie moce",
-      allCuts: "Wszystkie cięcia",
-      allRoomNotes: "Wszystkie nuty pokojowe",
-      allStatuses: "Wszystkie statusy",
-    },
     featureGate: {
       collectionOptimizationName: "Optymalizacja kolekcji",
       collectionOptimizationDesc: "Uzyskaj analizę swojej kolekcji opartą na AI z rekomendacjami specjalizacji, identyfikacją luk i planowaniem scenariuszy z dostępem Pro lub starszym Premium.",
@@ -2119,19 +2015,6 @@ export const translations = {
   },
   ja: {
     ...ja,
-    pipes: {
-      allShapes: "すべての形状",
-      allMaterials: "すべての素材",
-      allFinishes: "すべての仕上げ",
-      allConditions: "すべての状態",
-    },
-    tobacco: {
-      allTypes: "すべての種類",
-      allStrengths: "すべての強度",
-      allCuts: "すべてのカット",
-      allRoomNotes: "すべての部屋の香り",
-      allStatuses: "すべてのステータス",
-    },
     featureGate: {
       collectionOptimizationName: "コレクション最適化",
       collectionOptimizationDesc: "AI主導のコレクション分析で、専門化の推奨、ギャップの特定、What-Ifシナリオ計画を取得できます。ProまたはレガシーPremiumアクセスが必要です。",
@@ -2378,19 +2261,6 @@ export const translations = {
   },
   "zh-Hans": {
     ...zhHans,
-    pipes: {
-      allShapes: "所有形状",
-      allMaterials: "所有材料",
-      allFinishes: "所有工艺",
-      allConditions: "所有状态",
-    },
-    tobacco: {
-      allTypes: "所有类型",
-      allStrengths: "所有强度",
-      allCuts: "所有切割",
-      allRoomNotes: "所有室内气味",
-      allStatuses: "所有状态",
-    },
     featureGate: {
       collectionOptimizationName: "收藏优化",
       collectionOptimizationDesc: "获取由AI驱动的收藏分析，包括专业化建议、差距识别和假设场景规划，需要Pro或旧版Premium访问权限。",
