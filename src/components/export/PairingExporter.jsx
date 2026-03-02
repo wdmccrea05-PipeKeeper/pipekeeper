@@ -41,7 +41,7 @@ export default function PairingExporter({ pipes, blends }) {
         rows.push([
         pipe?.name || t('pairingExporter.unknownPipe', 'Unknown'),
           pipe?.shape || '',
-          blend?.name || 'Unknown',
+          blend?.name || t('pairingExporter.unknownBlend', 'Unknown'),
           blend?.blend_type || '',
           match.match_score || '',
           match.reasoning || ''

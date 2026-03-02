@@ -531,7 +531,7 @@ export default {
     section4Text2: "サブスクリプション処理は使用するプラットフォームによって異なります：",
     section4IosLabel: "iOS：",
     section4IosText: "サブスクリプションはApple App StoreのIn-App Purchase システムを通じて処理され、Apple IDで管理されます。",
-    section4WebLabel: "Webおよびandroid：",
+    section4WebLabel: "WebおよびAndroid：",
     section4WebText: "サブスクリプションはPipeKeeperがセキュアなサードパーティ決済プロバイダーを通じて処理し、アカウントプロフィールで管理されます。",
     section4Text3: "サブスクリプションの機能、価格、利用可能性はプラットフォームによって異なる場合があります。",
     section5Title: "5. 請求と返金",
