@@ -153,7 +153,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
           <div className="flex flex-wrap gap-1.5 mt-3">
             {agingRec && (
               <Badge className={`${agingColorClass} border text-xs font-medium`}>
-                {agingRec.message}
+                {t(agingRec.messageKey)}
               </Badge>
             )}
             {blend.blend_type && (

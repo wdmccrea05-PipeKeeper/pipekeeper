@@ -436,8 +436,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
     // Check free tier limits
     if (entitlements.tier === "free") {
-    const existingLogs = await base44.entities.SmokingLog.filter({ created_by: user?.email });
-    if (existingLogs.length >= entitlements.limits.smokingLogs) {
+    if ((logs || []).length >= entitlements.limits.smokingLogs) {
       toast.error(t("smokingLog.freeLimitReached", { limit: entitlements.limits.smokingLogs }));
       return;
     }

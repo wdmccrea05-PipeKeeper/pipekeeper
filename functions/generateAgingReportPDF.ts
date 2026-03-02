@@ -14,6 +14,13 @@ Deno.serve(async (req) => {
 
     await requireEntitlement(base44, user, 'EXPORT_REPORTS');
 
+    const getAgingStatus = (months: number, potential: string): string => {
+      if (potential === 'Excellent') return months >= 24 ? 'Ready' : 'Aging';
+      if (potential === 'Good') return months >= 12 ? 'Ready' : 'Aging';
+      if (potential === 'Fair') return months >= 3 ? 'Ready' : 'Aging';
+      return 'Ready'; // Poor/unknown = best fresh, always ready
+    };
+
     const payload = await req.json();
     const { startDate, endDate } = payload;
 
@@ -38,7 +45,12 @@ Deno.serve(async (req) => {
         if (!oldestDate || oldestDate < startDateObj || oldestDate > endDateObj) return null;
 
         const months = differenceInMonths(new Date(), oldestDate);
-        const totalOz = (b.tin_total_quantity_oz || 0) + (b.bulk_total_quantity_oz || 0) + (b.pouch_total_quantity_oz || 0);
+        const totalOz = Math.max(0, cellarLogs
+          .filter(l => l.blend_id === b.id)
+          .reduce((sum, l) => {
+            const amt = Number(l.amount_oz) || 0;
+            return l.transaction_type === 'added' ? sum + amt : sum - amt;
+          }, 0));
 
         return {
           name: b.name,
@@ -47,7 +59,7 @@ Deno.serve(async (req) => {
           months_aging: months,
           total_oz: totalOz,
           aging_potential: b.aging_potential || 'Unknown',
-          status: months >= 24 ? 'Ready' : 'Aging'
+          status: getAgingStatus(months, b.aging_potential || 'Poor')
         };
       })
       .filter(Boolean)

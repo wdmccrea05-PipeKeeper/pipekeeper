@@ -28,9 +28,6 @@ export function shouldApplyTrialRestrictions() {
  */
 export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
   try {
-    // Debug logging
-    console.log('[canCreatePipe]', { userEmail, hasPaidAccess, isTrialing });
-
     // Paid subscribers have unlimited access
     if (hasPaidAccess) {
       return { canCreate: true, currentCount: 0, limit: null };
@@ -73,9 +70,6 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
  */
 export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
   try {
-    // Debug logging
-    console.log('[canCreateTobacco]', { userEmail, hasPaidAccess, isTrialing });
-
     // Paid subscribers have unlimited access
     if (hasPaidAccess) {
       return { canCreate: true, currentCount: 0, limit: null };
@@ -106,20 +100,5 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
   } catch (err) {
     console.warn("Failed to check tobacco limit:", err);
     return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: 'limits.unableToVerify' };
-  }
-}
-
-export async function canAddPhoto(currentPhotoCount, freePhotoLimit) {
-  return currentPhotoCount < freePhotoLimit;
-}
-
-export async function canCreateSmokingLog(userEmail, freeLogLimit) {
-  try {
-    const logs = await base44.entities.SmokingLog.filter({ created_by: userEmail });
-    const count = logs?.length || 0;
-    return count < freeLogLimit;
-  } catch (err) {
-    console.warn("Failed to check smoking log limit:", err);
-    return false;
   }
 }

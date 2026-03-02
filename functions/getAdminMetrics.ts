@@ -310,7 +310,6 @@ Deno.serve(async (req) => {
         newUsers,
         newPaidSubscribers,
         newProSubscribers,
-        netGrowth: newUsers - dropoffLast30d,
       });
     }
 
@@ -318,42 +317,36 @@ Deno.serve(async (req) => {
 
     // 5. CHURN METRICS (last 30 days)
     const churned30dPremium = allSubscriptions.filter(sub => {
-      const tier = sub.tier || 'premium';
+      const tier = (sub.tier || 'premium').toLowerCase();
       const status = (sub.status || '').toLowerCase();
       const cancelledAt = sub.updated_date ? new Date(sub.updated_date) : null;
       return tier === 'premium' && status === 'canceled' && cancelledAt && cancelledAt >= thirtyDaysAgo;
     }).length;
 
     const activePremium30d = allSubscriptions.filter(sub => {
-      const tier = sub.tier || 'premium';
+      const tier = (sub.tier || 'premium').toLowerCase();
       const status = (sub.status || '').toLowerCase();
-      const startedAt = sub.started_at || sub.current_period_start;
       return (
         tier === 'premium' &&
-        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete') &&
-        startedAt &&
-        new Date(startedAt) >= sixtyDaysAgo
+        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete')
       );
     }).length;
 
     const premiumChurn30d = activePremium30d > 0 ? Math.round((churned30dPremium / activePremium30d) * 10000) / 100 : 0;
 
     const churned30dPro = allSubscriptions.filter(sub => {
-      const tier = sub.tier || 'premium';
+      const tier = (sub.tier || '').toLowerCase();
       const status = (sub.status || '').toLowerCase();
       const cancelledAt = sub.updated_date ? new Date(sub.updated_date) : null;
       return tier === 'pro' && status === 'canceled' && cancelledAt && cancelledAt >= thirtyDaysAgo;
     }).length;
 
     const activePro30d = allSubscriptions.filter(sub => {
-      const tier = sub.tier || 'premium';
+      const tier = (sub.tier || '').toLowerCase();
       const status = (sub.status || '').toLowerCase();
-      const startedAt = sub.started_at || sub.current_period_start;
       return (
         tier === 'pro' &&
-        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete') &&
-        startedAt &&
-        new Date(startedAt) >= sixtyDaysAgo
+        (status === 'active' || status === 'trialing' || status === 'past_due' || status === 'incomplete')
       );
     }).length;
 
