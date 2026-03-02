@@ -315,8 +315,6 @@ const translations = {
     sendFailed: "Failed to send support request. Please try again or email admin@pipekeeperapp.com directly.",
   },
 
-  // ... all other existing namespaces and keys
-
   aiPage: {
     verifiedSpecsTitle: "Find Verified Manufacturer Specs (optional)",
     verifiedSpecsDesc: "Only works for some production pipes. Searches manufacturer catalogs and databases.",
