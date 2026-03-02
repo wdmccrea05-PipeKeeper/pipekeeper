@@ -84,9 +84,9 @@ export function PKSection({ className, children, ...props }) {
   );
 }
 
-export function PKHeader({ title, subtitle, right, className, ...props }) {
+export function PKHeader({ id, title, subtitle, right, className, ...props }) {
   return (
-    <div className={cn("flex items-start justify-between gap-4", className)} {...props}>
+    <div id={id} className={cn("flex items-start justify-between gap-4", className)} {...props}>
       <div className="min-w-0">
         {title ? <div className={PK_TW.h2}>{title}</div> : null}
         {subtitle ? <div className={PK_TW.sub}>{subtitle}</div> : null}
