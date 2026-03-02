@@ -88,6 +88,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   });
 
   // Calculate tobacco usage based on pipe bowl size
+  const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
+  const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
   const estimateTobaccoUsage = (pipe, bowls) => {
     if (!pipe) return 0;
     
@@ -99,10 +101,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       const radiusMm = pipe.bowl_diameter_mm / 2;
       const depthMm = pipe.bowl_depth_mm;
       const volumeMm3 = Math.PI * radiusMm * radiusMm * depthMm;
-      const volumeCm3 = volumeMm3 / 1000;
+      const volumeCm3 = (volumeMm3 / 1000) * BOWL_GEOMETRY_FACTOR;
       
-      // Tobacco density is roughly 0.35 g/cm³ for average pipe tobacco
-      const gramsPerBowl = volumeCm3 * 0.35;
+      const gramsPerBowl = volumeCm3 * TOBACCO_DENSITY_GCM3;
       const totalGrams = gramsPerBowl * numBowls;
       const ozPerGram = 0.035274;
       
