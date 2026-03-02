@@ -24,6 +24,8 @@ function interpolate(str, vars) {
 }
 
 export function useTranslation(languageOverride = null) {
+  // NOTE: localStorage is read once on mount. Language changes during a session
+  // require a page reload to take effect. This is intentional for simplicity.
   const lang = useMemo(() => {
     if (languageOverride) return languageOverride;
     try {
