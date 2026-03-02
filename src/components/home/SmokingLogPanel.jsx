@@ -25,6 +25,9 @@ import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
+const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
+const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
+
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
 
@@ -88,8 +91,6 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   });
 
   // Calculate tobacco usage based on pipe bowl size
-  const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
-  const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
   const estimateTobaccoUsage = (pipe, bowls) => {
     if (!pipe) return 0;
     
