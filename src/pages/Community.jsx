@@ -15,13 +15,11 @@ import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { hasPremiumAccess } from "@/components/utils/premiumAccess";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText, SafeLabel } from "@/components/ui/SafeText";
 
-export default function CommunityPage() {
-  if (isAppleBuild) return null;
-
+function CommunityPageInner() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,15 +39,7 @@ export default function CommunityPage() {
   const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 10000,
-    retry: 2,
-    refetchOnMount: 'always',
-  });
-
-  const hasPaidAccess = hasPremiumAccess(user);
+  const { user, isLoading: userLoading, hasPaid } = useCurrentUser();
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
@@ -94,13 +84,13 @@ export default function CommunityPage() {
       });
     },
     enabled: !!user?.email,
-    refetchInterval: 5000,
+    refetchInterval: activeTab === 'inbox' ? 5000 : 30000,
     retry: false,
   });
 
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
-    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }),
+    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }, '-updated_date', 200),
   });
 
   const publicProfiles = React.useMemo(() => {
@@ -218,7 +208,7 @@ export default function CommunityPage() {
   const acceptedFriends = friendships.filter(f => f.status === 'accepted');
   const unreadInboxCount = unreadMessages.length;
 
-  if (!hasPaidAccess) {
+  if (!hasPaid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -837,4 +827,9 @@ export default function CommunityPage() {
       </div>
     </div>
   );
+}
+
+export default function CommunityPage() {
+  if (isAppleBuild) return null;
+  return <CommunityPageInner />;
 }

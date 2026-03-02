@@ -155,13 +155,13 @@ export default function PipeDetailPage() {
     staleTime: 10000,
   });
 
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.email],
+  const { data: ownerProfile } = useQuery({
+    queryKey: ['user-profile', pipe?.created_by],
     queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: pipe?.created_by });
       return profiles[0];
     },
-    enabled: !!user?.email,
+    enabled: !!pipe?.created_by,
   });
 
   // Canonical premium access check
@@ -246,6 +246,7 @@ export default function PipeDetailPage() {
   }
 
   const allPhotos = pipe ? [...(pipe.photos || []), ...(pipe.stamping_photos || [])] : [];
+  const photoCount = (pipe?.photos || []).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
@@ -303,7 +304,7 @@ export default function PipeDetailPage() {
                  <TabsTrigger value="breakin" className="flex items-center gap-1.5">
                    <Flame className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.breakIn")}</span>
-                   <span className="sm:hidden">{t("common.hide").slice(0,5)}</span>
+                   <span className="sm:hidden">{t("pipeDetailTabs.breakInShort", "Break")}</span>
                  </TabsTrigger>
                 </TabsList>
 
@@ -377,13 +378,18 @@ export default function PipeDetailPage() {
                   <button
                     key={idx}
                     onClick={() => setSelectedPhoto(idx)}
-                    className={`w-20 h-12 rounded-lg overflow-hidden shrink-0 transition-all ${
+                    className={`relative w-20 h-12 rounded-lg overflow-hidden shrink-0 transition-all ${
                       selectedPhoto === idx 
                         ? 'ring-2 ring-amber-600 ring-offset-2' 
                         : 'opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={photo} alt="" className="w-full h-full object-cover" />
+                    {idx >= photoCount && (
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] text-center py-0.5 leading-tight">
+                        {t("pipesExtended.stamping", "Stamping")}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -707,7 +713,7 @@ export default function PipeDetailPage() {
         </Tabs>
 
         {/* Comments Section */}
-        {userProfile?.allow_comments && (
+        {ownerProfile?.allow_comments && (
           <Card className="border-white/10 mt-8">
             <CardContent className="p-6">
               <CommentSection

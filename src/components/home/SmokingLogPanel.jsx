@@ -11,6 +11,16 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Plus, Flame, Calendar, Info, CheckCircle, Crown, Edit, ChevronDown } from "lucide-react";
@@ -36,6 +46,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
+  const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -261,8 +272,12 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       // Update break-in schedules for affected pipe
       const log = logs.find(l => l.id === logId);
       if (log?.is_break_in && log?.pipe_id) {
-        const freshPipes = await base44.entities.Pipe.filter({ id: log.pipe_id });
-        const pipe = freshPipes[0];
+        let pipe;
+        try {
+          pipe = await base44.entities.Pipe.get(log.pipe_id);
+        } catch {
+          // pipe not found, skip break-in schedule update gracefully
+        }
         const currentSchedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
         if (currentSchedule.length > 0) {
           const updatedSchedule = currentSchedule.map(item => {
@@ -740,9 +755,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 await updateLogMutation.mutateAsync({ id: editingLog.id, data });
               }}
               onDelete={async () => {
-                if (window.confirm(t("smokingLog.deleteConfirm"))) {
-                  await deleteLogMutation.mutateAsync(editingLog.id);
-                }
+                setConfirmDeleteLog(editingLog.id);
               }}
               onCancel={() => setEditingLog(null)}
               isLoading={updateLogMutation.isPending || deleteLogMutation.isPending}
@@ -750,6 +763,31 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
           )}
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("smokingLog.deleteConfirmTitle", "Delete Session")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("smokingLog.deleteConfirm")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={async () => {
+                if (confirmDeleteLog) {
+                  await deleteLogMutation.mutateAsync(confirmDeleteLog);
+                  setConfirmDeleteLog(null);
+                }
+              }}
+            >
+              {t("common.delete", "Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
@@ -37,7 +36,6 @@ export default function PublicProfilePage() {
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [expandedImage, setExpandedImage] = React.useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -102,7 +100,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail,
+    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
     retry: 1,
     staleTime: 5000,
   });
@@ -118,7 +116,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail,
+    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
     retry: 1,
     staleTime: 5000,
   });
@@ -134,7 +132,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail,
+    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
     retry: 1,
     staleTime: 5000,
   });
@@ -166,7 +164,7 @@ export default function PublicProfilePage() {
     onSuccess: () => {
       setBlockOpen(false);
       toast.success(t("publicProfile.userBlocked"));
-      navigate(createPageUrl('Community'));
+      window.location.href = createPageUrl('Community');
     },
     onError: () => toast.error(t("publicProfile.couldNotBlockUser")),
   });
@@ -585,9 +583,6 @@ export default function PublicProfilePage() {
                       )}
                     </div>
                   </div>
-                  {log.notes && (
-                    <p className="text-sm text-stone-600 mb-3">{log.notes}</p>
-                  )}
                   {profile.allow_comments && !isPreview && (
                     <div className="pt-3 border-t">
                       <CommentSection

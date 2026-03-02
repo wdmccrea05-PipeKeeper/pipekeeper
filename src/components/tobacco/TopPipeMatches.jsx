@@ -9,6 +9,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function TopPipeMatches({ blend, pipes }) {
   const { t } = useTranslation();
@@ -16,12 +17,7 @@ export default function TopPipeMatches({ blend, pipes }) {
   const [matches, setMatches] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-    retry: 1,
-  });
+  const { user } = useCurrentUser();
 
   const { data: savedPairings } = useQuery({
     // Use the same cache key as PairingGrid / AI panel so refresh/regenerate stay in sync
