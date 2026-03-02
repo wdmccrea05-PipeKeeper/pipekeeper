@@ -15,6 +15,7 @@ export default function RotationPlanner({ user }) {
   const { t } = useTranslation();
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
+  const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
@@ -65,6 +66,10 @@ export default function RotationPlanner({ user }) {
 
   const needsRotation = pipeRotation
     .filter(p => p.daysSince !== null && p.daysSince > 60)
+    .sort((a, b) => b.daysSince - a.daysSince);
+
+  const inRegularRotation = pipeRotation
+    .filter(p => p.daysSince !== null && p.daysSince > 7 && p.daysSince <= 60)
     .sort((a, b) => b.daysSince - a.daysSince);
 
   const recentlySmoked = pipeRotation
@@ -201,7 +206,53 @@ export default function RotationPlanner({ user }) {
               </div>
             )}
 
-            {needsRotation.length === 0 && neverSmoked.length === 0 && recentlySmoked.length === 0 && (
+            {inRegularRotation.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-500" />
+                    <h3 className="font-semibold text-sm">{t("tobacconist.inRegularRotation", "In Regular Rotation")} ({inRegularRotation.length})</h3>
+                  </div>
+                  {inRegularRotation.length > 3 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedInRegularRotation(!expandedInRegularRotation)}
+                      className="h-7 text-xs"
+                    >
+                      {expandedInRegularRotation ? (
+                        <>{t("tobacconist.showLess")} <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>{t("tobacconist.showMore")} <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {inRegularRotation.slice(0, expandedInRegularRotation ? inRegularRotation.length : 3).map(pipe => (
+                    <Link
+                      key={pipe.id}
+                      to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                        <div>
+                          <p className="font-medium text-sm">{pipe.name}</p>
+                          <p className="text-xs text-stone-500">
+                            {t("tobacconist.lastSmokedDaysAgo")} {pipe.daysSince} {t("tobacconist.daysAgo")}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-blue-600 border-blue-300">
+                          {pipe.daysSince}d
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {needsRotation.length === 0 && neverSmoked.length === 0 && recentlySmoked.length === 0 && inRegularRotation.length === 0 && (
               <p className="text-center text-stone-500 py-8">
                 {t("tobacconist.noPipesInCollection")}
               </p>

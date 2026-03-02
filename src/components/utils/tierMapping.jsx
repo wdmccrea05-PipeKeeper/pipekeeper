@@ -10,7 +10,7 @@
  * ================
  * 
  * Free: Limited collection tracking
- *   - 3 pipes, 10 tobacco blends, 10 smoking logs, 1 photo per item
+ *   - 5 pipes, 10 tobacco blends, 50 smoking logs, 3 photos per item
  *   - No AI tools or analytics
  * 
  * Premium: Full collection features + basic AI tools
@@ -48,10 +48,10 @@ export const PRO_LAUNCH_CUTOFF_ISO = '2026-02-01T00:00:00.000Z';
  * ----------------------
  * Feature                  | Free | Premium | Pro | Legacy Premium
  * ------------------------|------|---------|-----|---------------
- * Pipes                   | 3    | ∞       | ∞   | ∞
+ * Pipes                   | 5    | ∞       | ∞   | ∞
  * Tobacco Blends          | 10   | ∞       | ∞   | ∞
- * Photos per Item         | 1    | ∞       | ∞   | ∞
- * Smoking Logs            | 10   | ∞       | ∞   | ∞
+ * Photos per Item         | 3    | ∞       | ∞   | ∞
+ * Smoking Logs            | 50   | ∞       | ∞   | ∞
  * 
  * AI Tools - Identification:
  * --------------------------
@@ -118,10 +118,10 @@ export const FEATURE_KEYS = {
  */
 export const TIER_LIMITS = {
   free: {
-    pipes: 3,
+    pipes: 5,
     tobaccos: 10,
-    smokingLogs: 10,
-    photosPerItem: 1,
+    smokingLogs: 50,
+    photosPerItem: 3,
   },
   premium: {
     pipes: Infinity,

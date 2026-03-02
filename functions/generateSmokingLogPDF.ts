@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       doc.text(log.blend_name || 'Unknown', 110, y);
       doc.text(String(log.bowls_smoked || 1), 160, y);
 
+      // Notes are intentionally included in personal exports (not shown on public profiles)
       if (log.notes) {
         y += 5;
         const noteText = `Notes: ${log.notes}`;

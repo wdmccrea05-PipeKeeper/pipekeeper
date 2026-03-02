@@ -1,29 +1,10 @@
-# PipeKeeper QA & Regression Testing Checklist
+# PIPEKEEPER QA & REGRESSION TESTING CHECKLIST
 **Version:** 2026-02-03  
-**Status:** Production-Ready  
-**Last Updated:** 2026-02-03
+**Run before each release to production**
 
 ---
 
-## 🎯 Critical Paths Overview
-
-| Path | Tests | Priority | Est. Time |
-|------|-------|----------|-----------|
-| Data Consistency | 3 | **CRITICAL** | 15 min |
-| Subscription & Entitlements | 3 | **CRITICAL** | 20 min |
-| Apple Compliance | 2 | **CRITICAL** | 10 min |
-| UX & Empty States | 3 | HIGH | 10 min |
-| AI Features | 3 | HIGH | 15 min |
-| Subscription Flows | 3 | **CRITICAL** | 15 min |
-| Internationalization | 2 | MEDIUM | 10 min |
-| Exports & Reports | 2 | HIGH | 10 min |
-| Performance & Errors | 2 | MEDIUM | 10 min |
-
-**Total Manual Testing Time:** ~1.5-2 hours
-
----
-
-## ✅ CRITICAL PATH 1: Data Consistency
+## CRITICAL PATH 1: DATA CONSISTENCY
 
 ### TEST 1.1: Tobacco Quantity Totals Match Everywhere
 **Expected:** Home stats, TobaccoCollectionStats, CSV exports all show IDENTICAL totals
@@ -88,7 +69,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 2: Subscription & Entitlements
+## CRITICAL PATH 2: SUBSCRIPTION & ENTITLEMENTS
 
 ### TEST 2.1: Free Tier Limits Enforced
 
@@ -172,7 +153,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 3: Apple Compliance
+## CRITICAL PATH 3: APPLE COMPLIANCE
 
 ### TEST 3.1: Terminology Replacement
 
@@ -217,7 +198,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 4: UX & Empty States
+## CRITICAL PATH 4: UX & EMPTY STATES
 
 ### TEST 4.1: Empty State Action Buttons Work
 
@@ -241,11 +222,11 @@
 
 **Steps:**
 1. Hover over (i) icon next to "Collection Insights"
-2. Should see: "This section summarizes patterns..."
-3. Navigate to AI Tools → Hover over "Collection Optimization" tooltip
-4. Should see: "AI analyzes your collection and recommends..."
-5. Navigate to Pairing Grid → Hover over title tooltip
-6. Should see: "AI-generated compatibility scores for each pipe-tobacco pairing..."
+2. Should see: "Summaries and trends across your collection"
+3. Navigate to AI Tools → Hover over "Identify" tab tooltip
+4. Should see: "Upload photos of pipes or tobacco tins to identify..."
+5. Navigate to AI Updates → Hover over "Geometry Analysis" tooltip
+6. Should see: "AI analyzes pipe photos to classify shape..."
 
 **Expected Outcome:**
 - Tooltips appear on hover
@@ -270,7 +251,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 5: AI Features
+## CRITICAL PATH 5: AI FEATURES
 
 ### TEST 5.1: Pairing Matrix Regeneration
 
@@ -333,7 +314,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 6: Subscription Flows
+## CRITICAL PATH 6: SUBSCRIPTION FLOWS
 
 ### TEST 6.1: Stripe Subscription Creation
 
@@ -398,7 +379,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 7: Internationalization
+## CRITICAL PATH 7: INTERNATIONALIZATION
 
 ### TEST 7.1: Language Switching
 
@@ -407,7 +388,7 @@
 2. Navigation should translate: "Home" → "Inicio", "Pipes" → "Pipas"
 3. Subscription page: "Subscribe" → "Suscribirse"
 4. Switch to Japanese → All UI translates
-5. Refresh page → Language persists (localStorage: `pk_lang`)
+5. Refresh page → Language persists (`localStorage: pk_lang`)
 
 **Expected Outcome:**
 - 10 languages supported: en, es, fr, de, it, pt-BR, nl, pl, ja, zh-Hans
@@ -422,13 +403,10 @@
 ### TEST 7.2: New Microcopy Translated
 
 **Check these keys exist in all 10 languages:**
-- `subscription.premiumActive`
-- `subscription.premiumActiveSubtextTrial`
-- `subscription.premiumActiveSubtextPaid`
-- `subscription.annualSavings`
-- `empty.usageLogNoPipes`
-- `empty.usageLogAction`
-- All other `empty.*` keys
+- `docs.tobaccoValuation.*` (11 keys)
+- `nav.cellar` (for iOS build)
+- Any new empty state messages
+- Any new tooltip text
 
 **Expected Outcome:**
 - No "undefined" or "[missing key]" in non-English locales
@@ -436,7 +414,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 8: Exports & Reports
+## CRITICAL PATH 8: EXPORTS & REPORTS
 
 ### TEST 8.1: CSV Export Accuracy
 
@@ -470,7 +448,7 @@
 
 ---
 
-## ✅ CRITICAL PATH 9: Performance & Errors
+## CRITICAL PATH 9: PERFORMANCE & ERRORS
 
 ### TEST 9.1: Large Collection Performance
 
@@ -504,9 +482,9 @@
 
 ---
 
-## 🧪 Automated Test Suite
+## AUTOMATED TEST SUITE
 
-### Run Unit Tests:
+**Run unit tests:**
 ```bash
 npm test components/utils/__tests__/pairingScore.test.js
 ```
@@ -518,9 +496,7 @@ npm test components/utils/__tests__/pairingScore.test.js
 - Keyword matching
 - Deterministic sorting
 
----
-
-### Build Validation:
+**Build validation:**
 ```bash
 npm run build
 ```
@@ -529,7 +505,7 @@ npm run build
 
 ---
 
-## 📋 Pre-Release Checklist
+## RELEASE CHECKLIST
 
 **Before deploying to production:**
 
@@ -547,34 +523,7 @@ npm run build
 
 ---
 
-## 🚀 Post-Deployment Validation
-
-**Within 24 hours of release:**
-
-1. **Test subscription creation in production**
-   - Complete 1 test Premium subscription
-   - Complete 1 test Pro subscription
-   - Verify webhook delivery (Stripe dashboard → Webhooks → Events)
-
-2. **Monitor error rates**
-   - Check error tracking dashboard
-   - Investigate any 500 errors
-   - Review client-side console errors
-
-3. **Verify entitlement sync for first 10 users**
-   - Confirm Stripe webhooks processed
-   - Check Subscription entity records created
-   - Verify feature gates unlock correctly
-
-4. **Test Apple IAP (iOS build)**
-   - Submit TestFlight build
-   - Complete 1 test subscription via App Store Sandbox
-   - Verify receipt validation
-   - Check entitlements sync
-
----
-
-## 🛠️ Known Limitations & Future Work
+## KNOWN LIMITATIONS & FUTURE WORK
 
 **Phase 8 (Future):**
 - Add unit tests for `tobaccoQuantityHelpers.js`
@@ -587,52 +536,3 @@ npm run build
 - Add mobile app deep linking
 - Implement offline mode with sync queue
 - Add GraphQL API for third-party integrations
-
----
-
-## 📊 Test Coverage Summary
-
-| Category | Manual Tests | Automated Tests | Coverage |
-|----------|--------------|-----------------|----------|
-| Data Consistency | 3 | 5 | ✅ High |
-| Subscriptions | 6 | 0 | ⚠️ Manual Only |
-| UI/UX | 6 | 0 | ⚠️ Manual Only |
-| AI Features | 3 | 0 | ⚠️ Manual Only |
-| Performance | 2 | 0 | ⚠️ Manual Only |
-| **TOTAL** | **21** | **5** | — |
-
-**Recommendation:** Add integration tests for subscription flows in Phase 8.
-
----
-
-## 📝 Release Notes Template
-
-**Version X.X.X - YYYY-MM-DD**
-
-**New Features:**
-- Auto-suggest for pipe maker, country, materials
-- Auto-suggest for tobacco manufacturer
-- Premium active indicator for trial/paid users
-- Quick Access navigation panel
-- Enhanced tooltips for AI features
-
-**Improvements:**
-- Apple-compliant terminology (usage vs smoking)
-- Cellar drift detection with reconciliation preview
-- Schema compatibility for legacy data
-- Annual plan savings messaging
-- i18n coverage expanded to 18 new keys
-
-**Bug Fixes:**
-- Fixed pairing score consistency across views
-- Fixed cellar totals reconciliation idempotency
-- Fixed badge color contrast for accessibility
-
-**Technical:**
-- Added `schemaCompatibility.js` helper module
-- Added QA regression documentation
-- Improved error handling in subscription flows
-
----
-
-**END OF CHECKLIST**

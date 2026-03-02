@@ -19,25 +19,25 @@ export const getAgingRecommendation = (blend) => {
   if (!potential) return null;
   
   if (potential === "Excellent") {
-    if (months < 6) return { message: "Early stage - best after 1-2 years", color: "blue" };
-    if (months < 24) return { message: "Developing nicely - continue aging", color: "yellow" };
-    return { message: "Peak aging achieved!", color: "green" };
+    if (months < 6) return { messageKey: "tobacconist.agingExcellentYoung", color: "blue" };
+    if (months < 24) return { messageKey: "tobacconist.agingExcellentDeveloping", color: "yellow" };
+    return { messageKey: "tobacconist.agingExcellentPeak", color: "green" };
   }
   
   if (potential === "Good") {
-    if (months < 3) return { message: "Early stage - best after 6-12 months", color: "blue" };
-    if (months < 12) return { message: "Coming along well", color: "yellow" };
-    return { message: "Ready to enjoy!", color: "green" };
+    if (months < 3) return { messageKey: "tobacconist.agingGoodYoung", color: "blue" };
+    if (months < 12) return { messageKey: "tobacconist.agingGoodDeveloping", color: "yellow" };
+    return { messageKey: "tobacconist.agingGoodPeak", color: "green" };
   }
   
   if (potential === "Fair") {
-    if (months < 3) return { message: "Brief aging may help", color: "blue" };
-    return { message: "Ready - minimal aging benefit", color: "green" };
+    if (months < 3) return { messageKey: "tobacconist.agingFairYoung", color: "blue" };
+    return { messageKey: "tobacconist.agingFairReady", color: "green" };
   }
   
   if (potential === "Poor") {
-    return { message: "Best smoked fresh — aging adds little benefit", color: "green" };
+    return { messageKey: "tobacconist.agingBestFresh", color: "green" };
   }
 
-  return { message: "Best smoked fresh", color: "green" };
+  return { messageKey: "tobacconist.agingBestFresh", color: "green" };
 };

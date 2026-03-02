@@ -17,7 +17,7 @@ export async function ensureFreeGrandfatherFlag(user) {
     const tobaccoCount = tobaccos?.length || 0;
 
     const overLimit =
-      pipeCount > FREE_LIMITS.pipes || tobaccoCount > FREE_LIMITS.tobaccos;
+      pipeCount >= FREE_LIMITS.pipes || tobaccoCount >= FREE_LIMITS.tobaccos;
 
     if (!overLimit) return;
 

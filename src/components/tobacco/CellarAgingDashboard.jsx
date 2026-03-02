@@ -22,7 +22,7 @@ export default function CellarAgingDashboard({ user }) {
   });
 
   const { data: cellarLogs = [] } = useQuery({
-    queryKey: ["cellar-logs", user?.email],
+    queryKey: ["cellar-logs-all", user?.email],
     queryFn: async () => {
       const logs = await base44.entities.CellarLog.filter({ created_by: user?.email });
       return Array.isArray(logs) ? logs : [];
@@ -163,6 +163,14 @@ export default function CellarAgingDashboard({ user }) {
     ? cellarBlends.reduce((sum, b) => sum + getAgingInfo(b).months, 0) / cellarBlends.length 
     : 0;
 
+  // Pre-compute aging info to avoid redundant calls per render
+  const blendsWithAging = cellarBlends.map(blend => ({
+    ...blend,
+    _aging: getAgingInfo(blend),
+    _recommendation: getAgingRecommendation(blend),
+    _logData: getCellarDataFromLogs(blend.id),
+  }));
+
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
@@ -200,18 +208,16 @@ export default function CellarAgingDashboard({ user }) {
 
       {/* Aging Progress List */}
       <div className="space-y-3">
-        {cellarBlends
-          .sort((a, b) => getAgingInfo(b).days - getAgingInfo(a).days)
+        {blendsWithAging
+          .sort((a, b) => b._aging.days - a._aging.days)
           .map(blend => {
-            const aging = getAgingInfo(blend);
-            const recommendation = getAgingRecommendation(blend);
-            const logData = getCellarDataFromLogs(blend.id);
+            const aging = blend._aging;
+            const recommendation = blend._recommendation;
+            const totalOz = blend._logData.net;
             
-            // Use cellar logs as source of truth for cellared amounts
-            const totalOz = logData.net;
-            
-            const maxMonths = blend.aging_potential === "Excellent" ? 24 : 
-                             blend.aging_potential === "Good" ? 12 : 6;
+            const maxMonths = blend.aging_potential === "Excellent" ? 24 :
+                             blend.aging_potential === "Good" ? 12 :
+                             blend.aging_potential === "Fair" ? 3 : 3;
             const progress = Math.min((aging.months / maxMonths) * 100, 100);
             
             return (
@@ -230,7 +236,7 @@ export default function CellarAgingDashboard({ user }) {
                           <span>•</span>
                           <span>{t("tobacconist.sinceDateFormat")} {format(aging.oldestDate, 'MMM yyyy')}</span>
                           <span>•</span>
-                          <span className="font-medium">{aging.months}m {aging.days % 30}d</span>
+                          <span className="font-medium">{aging.months}m {aging.days - aging.months * 30}d</span>
                         </>
                       )}
                     </div>

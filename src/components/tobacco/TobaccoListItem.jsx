@@ -108,7 +108,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
             <div className="flex flex-wrap gap-2 mb-2">
               {agingRec && (
                 <Badge className={`${agingColorClass} border text-xs font-medium`}>
-                  {agingRec.message}
+                  {t(agingRec.messageKey)}
                 </Badge>
               )}
               {blend.blend_type && (
