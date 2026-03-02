@@ -14,7 +14,6 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete, onCancel, isLoading }) {
   const { t } = useTranslation();
-  if (isAppleBuild) return null;
 
   const [formData, setFormData] = useState({
      pipe_id: log?.pipe_id || '',
@@ -35,6 +34,8 @@ export default function SmokingLogEditor({ log, pipes, blends, onSave, onDelete,
       return aName.localeCompare(bName, undefined, { sensitivity: 'base', numeric: true });
     });
   }, [blends]);
+
+  if (isAppleBuild) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();

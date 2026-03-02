@@ -18,7 +18,6 @@ import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
-  if (isAppleBuild) return null;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [regenerating, setRegenerating] = useState(false);
@@ -129,6 +128,8 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
       }
     }).sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
   }, [pipeVariants, allPipes, pairingsByVariant]);
+
+  if (isAppleBuild) return null;
 
   const regenPairings = async () => {
     setRegenerating(true);

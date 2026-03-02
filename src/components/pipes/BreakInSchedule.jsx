@@ -17,8 +17,6 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function BreakInSchedule({ pipe, blends }) {
-  if (isAppleBuild) return null;
-
   const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
   const [schedule, setSchedule] = useState(pipe.break_in_schedule || []);
@@ -170,6 +168,8 @@ export default function BreakInSchedule({ pipe, blends }) {
       setShowRegenDialog(false);
     },
   });
+
+  if (isAppleBuild) return null;
 
   const totalBowls = schedule.reduce((sum, s) => sum + s.suggested_bowls, 0);
   const completedBowls = schedule.reduce((sum, s) => sum + (s.bowls_completed || 0), 0);

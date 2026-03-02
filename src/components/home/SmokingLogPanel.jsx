@@ -27,19 +27,10 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
-  if (isAppleBuild) return null;
 
   const { hasPaid } = useCurrentUser();
   const entitlements = useEntitlements();
 
-  if (!hasPaid) {
-    return (
-      <UpgradePrompt 
-        featureName={t("smokingLog.usageLog")}
-        description={t("smokingLog.upgradeDesc")}
-      />
-    );
-  }
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
@@ -470,6 +461,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const totalBowls = getTotalBowlsFromLogs(logs);
   const breakInBowls = getBreakInBowlsFromLogs(logs);
+
+  if (isAppleBuild) return null;
+
+  if (!hasPaid) {
+    return (
+      <UpgradePrompt 
+        featureName={t("smokingLog.usageLog")}
+        description={t("smokingLog.upgradeDesc")}
+      />
+    );
+  }
 
   return (
     <>
