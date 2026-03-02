@@ -25,21 +25,15 @@ import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
+const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
+const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
+
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
-  if (isAppleBuild) return null;
 
   const { hasPaid } = useCurrentUser();
   const entitlements = useEntitlements();
 
-  if (!hasPaid) {
-    return (
-      <UpgradePrompt 
-        featureName={t("smokingLog.usageLog")}
-        description={t("smokingLog.upgradeDesc")}
-      />
-    );
-  }
   const [showAddLog, setShowAddLog] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const [autoReduceInventory, setAutoReduceInventory] = useState(true);
@@ -108,10 +102,9 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       const radiusMm = pipe.bowl_diameter_mm / 2;
       const depthMm = pipe.bowl_depth_mm;
       const volumeMm3 = Math.PI * radiusMm * radiusMm * depthMm;
-      const volumeCm3 = volumeMm3 / 1000;
+      const volumeCm3 = (volumeMm3 / 1000) * BOWL_GEOMETRY_FACTOR;
       
-      // Tobacco density is roughly 0.35 g/cm³ for average pipe tobacco
-      const gramsPerBowl = volumeCm3 * 0.35;
+      const gramsPerBowl = volumeCm3 * TOBACCO_DENSITY_GCM3;
       const totalGrams = gramsPerBowl * numBowls;
       const ozPerGram = 0.035274;
       
@@ -470,6 +463,17 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const totalBowls = getTotalBowlsFromLogs(logs);
   const breakInBowls = getBreakInBowlsFromLogs(logs);
+
+  if (isAppleBuild) return null;
+
+  if (!hasPaid) {
+    return (
+      <UpgradePrompt 
+        featureName={t("smokingLog.usageLog")}
+        description={t("smokingLog.upgradeDesc")}
+      />
+    );
+  }
 
   return (
     <>

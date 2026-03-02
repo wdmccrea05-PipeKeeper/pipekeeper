@@ -124,11 +124,11 @@ export default function TermsOfService() {
 
       <p className="mt-10 text-sm text-[#cdbfae]">
         {t("termsOfService.relatedPolicies", "Related policies:")}{" "}
-        <a className="underline text-[#f3e7d3] hover:text-white" href="/privacy">
+        <a className="underline text-[#f3e7d3] hover:text-white" href={createPageUrl("PrivacyPolicy")}>
           {t("termsOfService.privacyPolicy", "Privacy Policy")}
         </a>{" "}
         ·{" "}
-        <a className="underline text-[#f3e7d3] hover:text-white" href="/faq">
+        <a className="underline text-[#f3e7d3] hover:text-white" href={createPageUrl("FAQFull")}>
           {t("termsOfService.faq", "FAQ")}
         </a>
       </p>

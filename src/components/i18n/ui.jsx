@@ -1,9 +1,9 @@
-import i18n from "./index";
+import { translate } from "./index.jsx";
 
 // Usage: ui("nav.home") -> translated string, falls back to key if missing
 export function ui(key, options = {}) {
   try {
-    const out = i18n.t(key, { ...options, defaultValue: key });
+    const out = translate(key, options);
     return out || key;
   } catch {
     return key;

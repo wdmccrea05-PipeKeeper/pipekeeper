@@ -14,8 +14,6 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PairingMatrix({ user }) {
-  if (isAppleBuild) return null;
-
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState({});
   const [regenerating, setRegenerating] = useState(false);
@@ -94,6 +92,8 @@ export default function PairingMatrix({ user }) {
     (pipes || []).forEach((p) => map.set(String(p.id), p.name));
     return map;
   }, [pipes]);
+
+  if (isAppleBuild) return null;
 
   const variantLabel = (pair) => {
     const base = pipeNameById.get(String(pair.pipe_id)) || pair.pipe_name || "Unknown Pipe";

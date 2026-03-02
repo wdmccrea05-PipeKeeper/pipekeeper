@@ -29,7 +29,11 @@ Deno.serve(async (req) => {
     ];
 
     // Return audit template
+    // NOTE: This audit is simulated. It does not read actual source files at runtime.
+    // Manual verification is required for accurate results.
     const report = {
+      simulated: true,
+      warning: 'This audit is simulated. Manual verification required.',
       summary: {
         totalIssuesFound: 0,
         criticalLeaks: 0,

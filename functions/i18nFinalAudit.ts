@@ -11,6 +11,8 @@ Deno.serve(async (req) => {
   try {
     const report = {
       status: 'UNKNOWN',
+      simulated: true,
+      warning: 'This audit is simulated. Manual verification required.',
       note: 'Server-side file scan not yet implemented — run client-side audit',
       timestamp: new Date().toISOString(),
       releaseGates: {
