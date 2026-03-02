@@ -107,7 +107,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
 
             <div className="flex flex-wrap gap-2 mb-2">
               {agingRec && (
-                <Badge className={`${agingColorClass} border text-xs font-medium`}>
+                <Badge className={`${agingColorClass} border text-xs font-medium hidden sm:inline-flex`}>
                   {t(agingRec.messageKey)}
                 </Badge>
               )}
@@ -122,7 +122,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
                </Badge>
               )}
               {blend.cut && (
-               <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs">
+               <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs hidden sm:inline-flex">
                  {blend.cut}
                </Badge>
               )}

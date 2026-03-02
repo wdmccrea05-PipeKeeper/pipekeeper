@@ -85,7 +85,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
           </div>
           <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1">
             {(blend.tin_total_quantity_oz || 0) > 0 && (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
                   {t("tobaccoExtended.tin")}: {formatWeight(+(blend.tin_total_quantity_oz || 0))}
                 </Badge>
@@ -102,7 +102,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
               </div>
             )}
             {(blend.bulk_total_quantity_oz || 0) > 0 && (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
                   {t("tobaccoExtended.bulk")}: {formatWeight(+(blend.bulk_total_quantity_oz || 0))}
                 </Badge>
@@ -119,7 +119,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
               </div>
             )}
             {(blend.pouch_total_quantity_oz || 0) > 0 && (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
                   {t("tobaccoExtended.pouches")}: {formatWeight(+(blend.pouch_total_quantity_oz || 0))}
                 </Badge>
