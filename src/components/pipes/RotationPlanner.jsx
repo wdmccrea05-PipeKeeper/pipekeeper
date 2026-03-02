@@ -103,13 +103,13 @@ export default function RotationPlanner({ user }) {
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors">
-                        <div>
-                          <p className="font-medium text-sm">{pipe.name}</p>
-                          <p className="text-xs text-stone-500">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{pipe.name}</p>
+                          <p className="text-xs text-stone-500 truncate">
                             {t("tobacconist.lastSmokedDaysAgo")} {pipe.daysSince} {t("tobacconist.daysAgo")}
                           </p>
                         </div>
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                        <Badge variant="outline" className="text-orange-600 border-orange-300 flex-shrink-0">
                           {pipe.daysSince}d
                         </Badge>
                       </div>
@@ -149,11 +149,11 @@ export default function RotationPlanner({ user }) {
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
-                        <div>
-                          <p className="font-medium text-sm">{pipe.name}</p>
-                          <p className="text-xs text-stone-500">{t("tobacconist.noUsageSessionsRecorded")}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{pipe.name}</p>
+                          <p className="text-xs text-stone-500 truncate">{t("tobacconist.noUsageSessionsRecorded")}</p>
                         </div>
-                        <Badge variant="outline" className="text-red-600 border-red-300">
+                        <Badge variant="outline" className="text-red-600 border-red-300 flex-shrink-0">
                           {t("tobacconist.new")}
                         </Badge>
                       </div>
@@ -191,13 +191,13 @@ export default function RotationPlanner({ user }) {
                       key={pipe.id} 
                       className="flex items-center justify-between p-3 border border-green-200 rounded-lg"
                     >
-                      <div>
-                        <p className="font-medium text-sm">{pipe.name}</p>
-                        <p className="text-xs text-stone-500">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{pipe.name}</p>
+                        <p className="text-xs text-stone-500 truncate">
                           {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-green-600 border-green-300">
+                      <Badge variant="outline" className="text-green-600 border-green-300 flex-shrink-0">
                         {t("tobacconist.active")}
                       </Badge>
                     </div>

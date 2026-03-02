@@ -426,7 +426,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[100vh] overflow-hidden flex flex-col p-3 sm:p-6">
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[95dvh] overflow-hidden flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Crop & Adjust Image</DialogTitle>
           <p className="text-xs sm:text-sm text-stone-500">

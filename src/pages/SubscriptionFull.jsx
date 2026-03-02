@@ -273,7 +273,7 @@ export default function SubscriptionFull() {
        </div>
 
       {/* Tier Selection */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3 mt-4">
         {/* Free Tier */}
         <Card className="border-white/10">
           <CardHeader>
@@ -294,7 +294,7 @@ export default function SubscriptionFull() {
         </Card>
 
         {/* Premium Tier - Emphasized */}
-        <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative">
+        <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative overflow-visible">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
             {t("subscriptionFull.recommended","Recommended")}
           </div>

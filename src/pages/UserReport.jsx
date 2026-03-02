@@ -419,29 +419,29 @@ export default function UserReport() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
-                <p className="text-xs text-orange-600 font-medium">{t("userReport.currentlyOnTrial","Currently on Trial")}</p>
+                <p className="text-xs text-orange-600 font-medium truncate">{t("userReport.currentlyOnTrial","Currently on Trial")}</p>
                 <p className="text-2xl font-bold text-orange-800">{trialMetrics.currentlyOnTrial || 0}</p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium">{t("userReport.endingIn3Days","Ending in 3 Days")}</p>
+                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.endingIn3Days","Ending in 3 Days")}</p>
                 <p className="text-2xl font-bold text-red-800">{trialMetrics.endingIn3Days || 0}</p>
               </div>
               <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                <p className="text-xs text-yellow-600 font-medium">{t("userReport.endingIn7Days","Ending in 7 Days")}</p>
+                <p className="text-xs text-yellow-600 font-medium truncate">{t("userReport.endingIn7Days","Ending in 7 Days")}</p>
                 <p className="text-2xl font-bold text-yellow-800">{trialMetrics.endingIn7Days || 0}</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium">{t("userReport.avgDaysRemaining","Avg Days Remaining")}</p>
+                <p className="text-xs text-blue-600 font-medium truncate">{t("userReport.avgDaysRemaining","Avg Days Remaining")}</p>
                 <p className="text-2xl font-bold text-blue-800">{trialMetrics.avgDaysRemaining || 0}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                <p className="text-xs text-green-600 font-medium">{t("userReport.converted30d","Converted (30d)")}</p>
+                <p className="text-xs text-green-600 font-medium truncate">{t("userReport.converted30d","Converted (30d)")}</p>
                 <p className="text-2xl font-bold text-green-800">{trialMetrics.convertedLast30d || 0}</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium">{t("userReport.dropoffs30d","Drop-offs (30d)")}</p>
+                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.dropoffs30d","Drop-offs (30d)")}</p>
                 <p className="text-2xl font-bold text-rose-800">{trialMetrics.dropoffLast30d || 0}</p>
               </div>
             </div>
@@ -487,19 +487,19 @@ export default function UserReport() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-                <p className="text-xs text-red-600 font-medium">{t("userReport.premiumChurnRate","Premium Churn Rate")}</p>
+                <p className="text-xs text-red-600 font-medium truncate">{t("userReport.premiumChurnRate","Premium Churn Rate")}</p>
                 <p className="text-2xl font-bold text-red-800">{churnMetrics.premiumChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <p className="text-xs text-rose-600 font-medium">{t("userReport.proChurnRate","Pro Churn Rate")}</p>
+                <p className="text-xs text-rose-600 font-medium truncate">{t("userReport.proChurnRate","Pro Churn Rate")}</p>
                 <p className="text-2xl font-bold text-rose-800">{churnMetrics.proChurn30d || 0}%</p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                <p className="text-xs text-purple-600 font-medium">{t("userReport.proToPremium","Pro → Premium")}</p>
+                <p className="text-xs text-purple-600 font-medium truncate">{t("userReport.proToPremium","Pro → Premium")}</p>
                 <p className="text-2xl font-bold text-purple-800">{churnMetrics.proToPremiumDowngrade || 0}</p>
               </div>
               <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
-                <p className="text-xs text-pink-600 font-medium">{t("userReport.premiumToFree","Premium → Free")}</p>
+                <p className="text-xs text-pink-600 font-medium truncate">{t("userReport.premiumToFree","Premium → Free")}</p>
                 <p className="text-2xl font-bold text-pink-800">{churnMetrics.premiumToFreeDowngrade || 0}</p>
               </div>
             </div>
