@@ -84,7 +84,7 @@ export function PKSection({ className, children, ...props }) {
   );
 }
 
-export function PKHeader({ title, subtitle, right, className, ...props }) {
+export function PKHeader({ title, subtitle, right, id, className, ...props }) {
   return (
     <div className={cn("flex items-start justify-between gap-4", className)} {...props}>
       <div className="min-w-0">
