@@ -8,6 +8,8 @@ import { CalendarClock, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } fro
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { differenceInCalendarDays } from 'date-fns';
+import { parseLocalCalendarDate } from '@/components/utils/schemaCompatibility';
 
 export default function RotationPlanner({ user }) {
   const { t } = useTranslation();
@@ -40,10 +42,10 @@ export default function RotationPlanner({ user }) {
 
        if (lastLog?.date) {
          try {
-           const d = new Date(lastLog.date);
+           const d = parseLocalCalendarDate(lastLog.date);
            if (!Number.isNaN(d.getTime())) {
              lastSmoked = d;
-             daysSince = Math.floor((new Date() - d) / (1000 * 60 * 60 * 24));
+             daysSince = differenceInCalendarDays(new Date(), d);
            }
          } catch {
            // invalid date, leave as null

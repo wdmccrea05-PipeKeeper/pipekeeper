@@ -808,6 +808,14 @@ const translations = {
     noResultsFound: "No results found.",
     useCustomValue: "Use \"{value}\"",
   },
+  quickPipeIdentifier: {
+    title: "AI Pipe Identifier",
+    subtitle: "Upload photos to identify and add pipes instantly",
+    failedToIdentify: "Failed to identify pipe. Please try again.",
+    identificationTimedOut: "Identification timed out. Please try again.",
+    clarificationFailed: "Failed to submit clarification. Please try again.",
+    lowConfidenceWarning: "Low confidence identification — results may be inaccurate.",
+  },
 };
 
 export default translations;

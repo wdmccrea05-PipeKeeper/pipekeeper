@@ -17,6 +17,16 @@ export default function ValueLookup({ pipe, onUpdateValue }) {
   const lookupValue = async () => {
     setLoading(true);
     try {
+      const condition = pipe.condition_tracking?.overall_condition || pipe.condition || 'Unknown';
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+      // Collect stamping photos if available
+      const stampingPhotos = (pipe.photos || []).filter(
+        p => typeof p === 'string'
+          ? p.toLowerCase().includes('stamp')
+          : p?.photo_type === 'stamping'
+      ).map(p => typeof p === 'string' ? p : p?.url).filter(Boolean);
+
       const pipeDescription = `
         Pipe: ${pipe.name}
         Maker: ${pipe.maker || 'Unknown'}
@@ -26,12 +36,14 @@ export default function ValueLookup({ pipe, onUpdateValue }) {
         Stem Material: ${pipe.stem_material || 'Unknown'}
         Finish: ${pipe.finish || 'Unknown'}
         Year Made: ${pipe.year_made || 'Unknown'}
-        Condition: ${pipe.condition || 'Unknown'}
+        Condition: ${condition}
         Stamping: ${pipe.stamping || 'Not specified'}
       `;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert pipe appraiser with extensive knowledge of the estate pipe market. Research and estimate the current market value of this pipe based on recent sales data, collector interest, and market trends.
+
+Current date: ${today}
 
 ${pipeDescription}
 
@@ -64,6 +76,7 @@ Provide a detailed valuation in JSON format with:
 - notes: any important considerations for this specific pipe (no sources or links)
 - value_trend: "rising", "stable", or "declining"`,
         add_context_from_internet: true,
+        ...(stampingPhotos.length > 0 ? { file_urls: stampingPhotos } : {}),
         response_json_schema: {
           type: "object",
           properties: {
@@ -88,8 +101,9 @@ Provide a detailed valuation in JSON format with:
   };
 
   const handleApplyValue = () => {
-    if (valuation?.estimated_value_mid) {
-      onUpdateValue(Math.round(valuation.estimated_value_mid));
+    const mid = valuation?.estimated_value_mid;
+    if (mid != null && !isNaN(Number(mid))) {
+      onUpdateValue(Math.round(Number(mid)));
     }
   };
 
@@ -218,7 +232,7 @@ Provide a detailed valuation in JSON format with:
                 <CardTitle className="text-lg">{t("matching.comparableSales")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-stone-600">{valuation.comparable_sales}</p>
+                <p className="text-stone-600">{(valuation.comparable_sales || '').replace(/https?:\/\/\S+/g, '[link removed]')}</p>
               </CardContent>
             </Card>
 

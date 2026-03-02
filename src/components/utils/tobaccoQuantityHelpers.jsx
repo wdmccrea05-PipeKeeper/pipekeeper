@@ -136,7 +136,7 @@ export function detectCellarDrift(blend, cellarLogs) {
   }
 
   return {
-    hasDrift: drift > 0.1, // 0.1 oz tolerance for rounding
+    hasDrift: drift > 0.5, // 0.5 oz tolerance for rounding
     logValue: logCellared,
     entityValue: entityCellared,
     drift

@@ -29,7 +29,7 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   const [impactAnalysis, setImpactAnalysis] = useState(null);
   const [adding, setAdding] = useState(false);
   const [clarificationNeeded, setClarificationNeeded] = useState(null);
-  const [clarificationResponses, setClarificationResponses] = useState({});
+  const [clarificationAnswers, setClarificationAnswers] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -116,7 +116,7 @@ Return a JSON object:
       await performFinalIdentification(additionalContext);
     } catch (error) {
       console.error('Identification failed:', error);
-      alert('Failed to identify pipe. Please try again.');
+      toast.error(t('quickPipeIdentifier.failedToIdentify'));
       setLoading(false);
     }
   };
@@ -131,8 +131,9 @@ Return a JSON object:
         metadata: { source: 'pipe_identifier_final' }
       });
       
-      const clarificationContext = Object.entries(clarificationResponses)
-        .map(([q, a]) => `Q: ${q}\nA: ${a}`)
+      const clarificationContext = (clarificationNeeded?.clarification_questions || [])
+        .map((q, i) => clarificationAnswers[i] ? `Q: ${q}\nA: ${clarificationAnswers[i]}` : null)
+        .filter(Boolean)
         .join('\n\n');
 
       const identificationPrompt = `Please identify this pipe from the photos and provide detailed information.
@@ -161,9 +162,14 @@ ${additionalContext ? `User provided context:\n${additionalContext}\n\n` : ''}${
       // Wait for assistant response asynchronously
       let responseText = "";
       try {
-        responseText = await waitForAssistantMessage(conversation.id);
+        responseText = await waitForAssistantMessage(conversation.id, 30000, { context: 'pipe_identifier' });
       } catch (err) {
         console.error('[IDENTIFY] Response wait failed:', err);
+        if (err?.message?.includes('Timed out')) {
+          toast.error(t('quickPipeIdentifier.identificationTimedOut'));
+        } else {
+          toast.error(t('quickPipeIdentifier.failedToIdentify'));
+        }
         responseText = "Failed to receive identification. Please try again.";
       }
       
@@ -209,10 +215,10 @@ Return JSON:
 
       setIdentified({ ...parsed, agent_response: responseText });
       setClarificationNeeded(null);
-      setClarificationResponses({});
+      setClarificationAnswers([]);
     } catch (error) {
       console.error('Identification failed:', error);
-      alert('Failed to identify pipe. Please try again.');
+      toast.error(t('quickPipeIdentifier.failedToIdentify'));
     } finally {
       setLoading(false);
     }
@@ -225,8 +231,10 @@ Return JSON:
       
       // If we have a conversation ID from clarification, continue it
       if (clarificationNeeded?.agent_conversation_id) {
-        const clarificationText = Object.entries(clarificationResponses)
-          .map(([q, a]) => `${q}\nAnswer: ${a}`)
+        const questions = clarificationNeeded.clarification_questions || [];
+        const clarificationText = questions
+          .map((q, i) => clarificationAnswers[i] ? `${q}\nAnswer: ${clarificationAnswers[i]}` : null)
+          .filter(Boolean)
           .join('\n\n');
         
         await base44.agents.addMessage(
@@ -240,9 +248,14 @@ Return JSON:
         // Wait for assistant response asynchronously
         let responseText = "";
         try {
-          responseText = await waitForAssistantMessage(clarificationNeeded.agent_conversation_id);
+          responseText = await waitForAssistantMessage(clarificationNeeded.agent_conversation_id, 30000, { context: 'pipe_identifier' });
         } catch (err) {
           console.error('[IDENTIFY] Clarification response wait failed:', err);
+          if (err?.message?.includes('Timed out')) {
+            toast.error(t('quickPipeIdentifier.identificationTimedOut'));
+          } else {
+            toast.error(t('quickPipeIdentifier.clarificationFailed'));
+          }
           responseText = "Failed to receive clarification response.";
         }
         
@@ -288,7 +301,7 @@ Return JSON with these exact fields:
 
         setIdentified({ ...parsed, agent_response: responseText });
         setClarificationNeeded(null);
-        setClarificationResponses({});
+        setClarificationAnswers([]);
       } else {
         // Fallback to original logic if no conversation ID
         const additionalContext = [
@@ -347,9 +360,12 @@ Please analyze the impact of adding this pipe:
       // Wait for assistant response asynchronously
       let responseText = "";
       try {
-        responseText = await waitForAssistantMessage(conversation.id);
+        responseText = await waitForAssistantMessage(conversation.id, 60000, { context: 'pipe_impact_analysis' });
       } catch (err) {
         console.error('[IMPACT] Response wait failed:', err);
+        if (err?.message?.includes('Timed out')) {
+          toast.error(t('quickPipeIdentifier.identificationTimedOut'));
+        }
         responseText = "Failed to receive impact analysis.";
       }
       
@@ -384,7 +400,7 @@ Return JSON:
       setImpactAnalysis({ ...parsed, agent_response: responseText });
     } catch (error) {
       console.error('Impact analysis failed:', error);
-      alert('Failed to analyze impact. You can still add the pipe directly.');
+      toast.error(t('quickPipeIdentifier.failedToIdentify'));
     } finally {
       setAnalyzing(false);
     }
@@ -416,7 +432,7 @@ Return JSON:
       navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(newPipe.id)}`));
     } catch (error) {
       console.error('Failed to add pipe:', error);
-      alert('Failed to add pipe to collection. Please try again.');
+      toast.error(t('quickPipeIdentifier.failedToIdentify'));
     } finally {
       setAdding(false);
     }
@@ -428,7 +444,7 @@ Return JSON:
     setIdentified(null);
     setImpactAnalysis(null);
     setClarificationNeeded(null);
-    setClarificationResponses({});
+    setClarificationAnswers([]);
   };
 
   return (
@@ -444,8 +460,8 @@ Return JSON:
             <Sparkles className="w-5 h-5 text-[#A35C5C]" />
           </div>
           <div>
-            <p className="font-semibold text-[#E0D8C8] text-lg">AI Pipe Identifier</p>
-            <p className="text-sm text-[#E0D8C8]/70">Upload photos to identify and add pipes instantly</p>
+            <p className="font-semibold text-[#E0D8C8] text-lg">{t('quickPipeIdentifier.title')}</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t('quickPipeIdentifier.subtitle')}</p>
           </div>
         </div>
 
@@ -466,11 +482,12 @@ Return JSON:
                      <Label className="text-sm text-[#E0D8C8] mb-1.5 block font-medium">{question}</Label>
                      <Input
                        placeholder={t("aiIdentifier.yourAnswer")}
-                       value={clarificationResponses[question] || ''}
-                       onChange={(e) => setClarificationResponses({
-                         ...clarificationResponses,
-                         [question]: e.target.value
-                       })}
+                       value={clarificationAnswers[idx] || ''}
+                       onChange={(e) => {
+                         const updated = [...clarificationAnswers];
+                         updated[idx] = e.target.value;
+                         setClarificationAnswers(updated);
+                       }}
                      />
                   </div>
                 ))}
@@ -495,7 +512,7 @@ Return JSON:
               <Button
                 onClick={() => {
                   setClarificationNeeded(null);
-                  setClarificationResponses({});
+                  setClarificationAnswers([]);
                 }}
                 variant="outline"
                 className="border-[#e8d5b7]/30"

@@ -7,7 +7,8 @@ export const getAgingRecommendation = (blend) => {
     blend.pouch_cellared_date
   ].filter(Boolean);
   
-  const oldestDate = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null;
+  const timestamps = dates.map(d => new Date(d).getTime()).filter(ts => !isNaN(ts));
+  const oldestDate = timestamps.length > 0 ? new Date(Math.min(...timestamps)) : null;
   
   if (!oldestDate) return null;
   
@@ -34,5 +35,9 @@ export const getAgingRecommendation = (blend) => {
     return { message: "Ready - minimal aging benefit", color: "green" };
   }
   
+  if (potential === "Poor") {
+    return { message: "Best smoked fresh — aging adds little benefit", color: "green" };
+  }
+
   return { message: "Best smoked fresh", color: "green" };
 };
