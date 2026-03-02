@@ -507,10 +507,6 @@ const translations = {
     searchBtn: "Search",
   },
 
-  quickPipeIdentifier: {
-    clarificationFailed: "Failed to process clarification. Please try again.",
-  },
-
   focusOptions: {
     aromatic:        "Aromatic",
     nonAromatic:     "Non-Aromatic",
