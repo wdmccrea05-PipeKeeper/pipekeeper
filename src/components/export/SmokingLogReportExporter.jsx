@@ -11,6 +11,13 @@ import { toast } from "sonner";
 export default function SmokingLogReportExporter({ user }) {
   const entitlements = useEntitlements();
   const { t } = useTranslation();
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 3);
+    return d.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
@@ -20,13 +27,6 @@ export default function SmokingLogReportExporter({ user }) {
       />
     );
   }
-  const [startDate, setStartDate] = useState(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 3);
-    return d.toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(false);
 
   const handleExportPDF = async () => {
     setLoading(true);
