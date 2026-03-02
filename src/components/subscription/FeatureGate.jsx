@@ -1,5 +1,6 @@
 import React from "react";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import UpgradePrompt from "./UpgradePrompt";
 
 /**
@@ -19,13 +20,14 @@ export default function FeatureGate({
   requiredTier = "premium"
 }) {
   const entitlements = useEntitlements();
+  const { t } = useTranslation();
 
   // Check if user has access to this feature
   if (feature && !entitlements.canUse(feature)) {
     return (
       <UpgradePrompt 
-        featureName={featureName || feature}
-        description={description || `This feature requires ${requiredTier === 'pro' ? 'Pro' : 'Premium'} tier.`}
+        featureName={featureName || t(requiredTier === 'pro' ? 'featureGate.proFeature' : 'featureGate.premiumFeature')}
+        description={description || t(requiredTier === 'pro' ? 'featureGate.requiresProTier' : 'featureGate.requiresPremiumTier')}
       />
     );
   }
@@ -39,8 +41,8 @@ export default function FeatureGate({
     if (!hasAccess) {
       return (
         <UpgradePrompt 
-          featureName={featureName || `${requiredTier} Feature`}
-          description={description || `This feature requires ${requiredTier === 'pro' ? 'Pro' : 'Premium'} tier.`}
+          featureName={featureName || t(requiredTier === 'pro' ? 'featureGate.proFeature' : 'featureGate.premiumFeature')}
+          description={description || t(requiredTier === 'pro' ? 'featureGate.requiresProTier' : 'featureGate.requiresPremiumTier')}
         />
       );
     }

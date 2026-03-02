@@ -10,19 +10,20 @@ Deno.serve(async (req) => {
   
   try {
     const report = {
-      status: 'PASS',
+      status: 'UNKNOWN',
+      note: 'Server-side file scan not yet implemented — run client-side audit',
       timestamp: new Date().toISOString(),
       releaseGates: {
         codeWiring: {
-          status: 'PASS',
+          status: 'UNKNOWN',
           violations: 0,
           hardcodedStrings: 0,
           leakedKeys: 0,
           runtimeErrors: 0,
-          details: 'All user-facing strings use t() or safeTranslation hooks'
+          details: 'Server-side file scan not yet implemented — run client-side audit'
         },
         translationCoverage: {
-          status: 'PASS',
+          status: 'UNKNOWN',
           totalLocales: 10,
           completeLocales: 10,
           missingKeysPerLocale: {
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
         debugMode: 'Available with ?i18nDebug=1 query parameter'
       },
       smokeTest: {
-        status: 'PASS',
+        status: 'UNKNOWN',
         routesCovered: [
           'Home', 'Pipes List', 'Pipe Detail', 'Tobacco List', 'Tobacco Detail',
           'Profile', 'Subscription', 'Community', 'Help Center', 'AI Tobacconist'
@@ -64,8 +65,8 @@ Deno.serve(async (req) => {
         untranslatedStrings: 0,
         enforcementMarkers: 0
       },
-      readyForProduction: true,
-      summary: 'All release gates passed. App ready for multilingual production deployment.'
+      readyForProduction: false,
+      summary: 'Server-side file scan not yet implemented. Run client-side audit to verify translation completeness.'
     };
 
     return Response.json(report);
