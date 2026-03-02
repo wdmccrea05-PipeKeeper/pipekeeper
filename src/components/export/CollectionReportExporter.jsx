@@ -351,7 +351,7 @@ export default function CollectionReportExporter({ user }) {
               {t("reports.pipeCollectionReport")}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('pipe', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
               {t("reports.downloadCSV")}
@@ -375,7 +375,7 @@ export default function CollectionReportExporter({ user }) {
               {t("reports.tobaccoCollectionReport")}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('tobacco', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
               {t("reports.downloadCSV")}
@@ -399,7 +399,7 @@ export default function CollectionReportExporter({ user }) {
               {t("reports.insuranceReport")}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('insurance', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
               {t("reports.downloadCSV")}
@@ -423,7 +423,7 @@ export default function CollectionReportExporter({ user }) {
               {t("reports.collectionStatsReport")}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="w-full min-w-[200px]">
             <DropdownMenuItem onClick={() => handleReport('stats', 'csv')}>
               <Table className="w-4 h-4 mr-2" />
               {t("reports.downloadCSV")}
@@ -438,8 +438,8 @@ export default function CollectionReportExporter({ user }) {
 
       {/* PDF Preview Dialog */}
       <Dialog open={!!pdfPreview} onOpenChange={() => setPdfPreview(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center justify-between">
               <span>{previewTitle}</span>
               <Button 
@@ -452,11 +452,11 @@ export default function CollectionReportExporter({ user }) {
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+          <ScrollArea className="flex-1 min-h-0 w-full rounded-md border p-4">
             <div dangerouslySetInnerHTML={{ __html: pdfPreview }} />
           </ScrollArea>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button variant="outline" onClick={() => setPdfPreview(null)}>
               {t("forms.cancel")}
             </Button>

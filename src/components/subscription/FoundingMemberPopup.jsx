@@ -6,7 +6,7 @@ import { Heart } from "lucide-react";
 export default function FoundingMemberPopup({ isOpen, onClose }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="w-12 h-12 rounded-full bg-[#A35C5C]/20 flex items-center justify-center">

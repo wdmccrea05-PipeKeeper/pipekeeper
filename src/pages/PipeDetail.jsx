@@ -289,22 +289,22 @@ export default function PipeDetailPage() {
                  <TabsTrigger value="specialization" className="flex items-center gap-1.5">
                    <Target className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.specialization")}</span>
-                   <span className="sm:hidden">{t("pipeDetailTabs.focus")}</span>
+                   <span className="sm:hidden truncate">{t("pipeDetailTabs.focus")}</span>
                  </TabsTrigger>
                  <TabsTrigger value="condition" className="flex items-center gap-1.5">
                    <Activity className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.condition")}</span>
-                   <span className="sm:hidden">{t("pipeDetailTabs.status")}</span>
+                   <span className="sm:hidden truncate">{t("pipeDetailTabs.status")}</span>
                  </TabsTrigger>
                  <TabsTrigger value="maintenance" className="flex items-center gap-1.5">
                    <Wrench className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.maintenance")}</span>
-                   <span className="sm:hidden">{t("pipeDetailTabs.care")}</span>
+                   <span className="sm:hidden truncate">{t("pipeDetailTabs.care")}</span>
                  </TabsTrigger>
                  <TabsTrigger value="breakin" className="flex items-center gap-1.5">
                    <Flame className="w-4 h-4" />
                    <span className="hidden sm:inline">{t("pipeDetailTabs.breakIn")}</span>
-                   <span className="sm:hidden">{t("pipeDetailTabs.breakInShort", "Break")}</span>
+                   <span className="sm:hidden truncate">{t("pipeDetailTabs.breakInShort", "Break")}</span>
                  </TabsTrigger>
                 </TabsList>
 
@@ -654,17 +654,17 @@ export default function PipeDetailPage() {
             <TabsTrigger value="match" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <Sparkles className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.tobaccoMatching")}</span>
-              <span className="sm:hidden">{t("pipesExtended.matching")}</span>
+              <span className="sm:hidden truncate">{t("pipesExtended.matching")}</span>
             </TabsTrigger>
             <TabsTrigger value="value" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <DollarSign className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.valueLookup")}</span>
-              <span className="sm:hidden">{t("pipesExtended.value")}</span>
+              <span className="sm:hidden truncate">{t("pipesExtended.value")}</span>
             </TabsTrigger>
             <TabsTrigger value="identify" className="data-[state=active]:bg-[#A35C5C] data-[state=active]:text-[#E0D8C8] text-[#E0D8C8]/70 shrink-0">
               <ScanSearch className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("pipesExtended.identifyPipe")}</span>
-              <span className="sm:hidden">{t("pipesExtended.identify")}</span>
+              <span className="sm:hidden truncate">{t("pipesExtended.identify")}</span>
             </TabsTrigger>
           </TabsList>
 

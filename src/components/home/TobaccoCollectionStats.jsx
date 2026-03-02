@@ -594,7 +594,7 @@ export default function TobaccoCollectionStats() {
 
       {/* Trends Dialog */}
       <Dialog open={showTrends} onOpenChange={setShowTrends}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="sr-only">{t("stats.trendsReport")}</DialogTitle>
           </DialogHeader>

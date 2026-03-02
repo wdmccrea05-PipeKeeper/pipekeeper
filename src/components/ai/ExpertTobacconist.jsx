@@ -46,19 +46,19 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
       <CardContent className="pt-6 space-y-6">
         <Tabs defaultValue="identifier">
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="identifier" className="flex items-center justify-center gap-1 md:gap-2">
+            <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1 md:gap-2">
               <Camera className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("tobacconist.identify")}</span>
             </TabsTrigger>
-            <TabsTrigger value="optimizer" className="flex items-center justify-center gap-1 md:gap-2">
+            <TabsTrigger value="optimizer" aria-label={t("tobacconist.optimize")} className="flex items-center justify-center gap-1 md:gap-2">
               <TrendingUp className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("tobacconist.optimize")}</span>
             </TabsTrigger>
-            <TabsTrigger value="whatif" className="flex items-center justify-center gap-1 md:gap-2">
+            <TabsTrigger value="whatif" aria-label={t("tobacconist.whatIf")} className="flex items-center justify-center gap-1 md:gap-2">
               <Lightbulb className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("tobacconist.whatIf")}</span>
             </TabsTrigger>
-            <TabsTrigger value="updates" className="flex items-center justify-center gap-1 md:gap-2">
+            <TabsTrigger value="updates" aria-label={t("tobacconist.aiUpdates")} className="flex items-center justify-center gap-1 md:gap-2">
               <RefreshCw className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("tobacconist.aiUpdates")}</span>
             </TabsTrigger>

@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef(function DialogContent(
         className={cn(
           "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%]",
           "rounded-2xl border border-[#E0D8C8]/15 bg-[#243548]/95 text-[#E0D8C8] shadow-2xl backdrop-blur-md",
-          "p-6",
+          "max-h-[90vh] overflow-y-auto p-6",
           className
         )}
         {...props}

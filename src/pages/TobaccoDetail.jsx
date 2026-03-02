@@ -272,7 +272,8 @@ export default function TobaccoDetailPage() {
             {/* Inventory & Cellaring Management */}
             <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 overflow-hidden">
               <Tabs defaultValue="containers" className="w-full">
-                <div className="border-b border-[#A35C5C]/30 overflow-x-auto">
+                <div className="relative border-b border-[#A35C5C]/30">
+                  <div className="overflow-x-auto">
                   <TabsList className="w-full justify-start bg-transparent h-auto p-0 rounded-none inline-flex min-w-full">
                     <TabsTrigger 
                       value="containers" 
@@ -295,6 +296,8 @@ export default function TobaccoDetailPage() {
                       {t("tobaccoExtended.inventory")}
                     </TabsTrigger>
                   </TabsList>
+                  </div>
+                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0B1320] to-transparent" />
                 </div>
 
                 <TabsContent value="containers" className="m-0">

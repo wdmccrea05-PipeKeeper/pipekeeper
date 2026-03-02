@@ -53,8 +53,8 @@ export default function ProUpgradeModal({ isOpen, onClose, featureName = undefin
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="border-[#e8d5b7]/30 text-[#e8d5b7]">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto border-[#e8d5b7]/30 text-[#e8d5b7]">
             {t("proUpgrade.notNow")}
           </Button>
           <a href={createPageUrl("Subscription")} className="flex-1">
