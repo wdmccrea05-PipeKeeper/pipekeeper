@@ -701,7 +701,7 @@ const translations = {
     section11Title: "11. Contact en Meldingen",
     contactText: "Als u vragen heeft over dit Privacybeleid, aanstootgevende inhoud wilt melden of hulp nodig heeft bij uw account, neem dan contact op met de PipeKeeper-ondersteuning.",
     relatedDocuments: "Gerelateerde documenten:",
-    termsOfService: "Gebruiksvoorwaarden",
+    termsOfService: "Servicevoorwaarden",
     faq: "Veelgestelde vragen",
   },
   ui: {
