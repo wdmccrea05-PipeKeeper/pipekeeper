@@ -42,9 +42,6 @@ export default function Home() {
   }, 0);
   const totalTobaccoValue = blends.reduce((sum, b) => sum + (Number(b?.estimated_value) || 0), 0);
 
-  try {
-    console.log("🏠 Home useTranslation hook successful");
-
   return (
     <div className="space-y-8">
       {/* HERO */}
@@ -135,8 +132,4 @@ export default function Home() {
       </Card>
     </div>
   );
-  } catch (error) {
-    console.error("❌ HOME ERROR:", error);
-    return <div>Home Error: {error.message}</div>;
-  }
 }
