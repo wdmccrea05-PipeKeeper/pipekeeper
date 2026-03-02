@@ -34,7 +34,17 @@ export function buildEntitlements(input) {
     // Premium tier gets core Premium features
     // Pro-only features: BULK_EDIT, AI_IDENTIFY, AI_VALUE_LOOKUP, EXPORT_REPORTS, etc.
     if (tier === "premium") {
-      return ["UNLIMITED_COLLECTION", "PAIRING_BASIC", "MATCHING_ENGINE", "MESSAGING"].includes(featureKey);
+      return [
+        "UNLIMITED_COLLECTION",
+        "SMOKING_LOG",
+        "CELLAR_LOG",
+        "PAIRING_MANUAL",
+        "PAIRING_BASIC",
+        "MATCHING_ENGINE",
+        "ADVANCED_FILTERS",
+        "MESSAGING",
+        "TOBACCO_LIBRARY_SYNC",
+      ].includes(featureKey);
     }
     
     // Free tier gets nothing special

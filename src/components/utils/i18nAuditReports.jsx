@@ -55,19 +55,7 @@ export function generateMissingKeysReport(i18n) {
   console.log('🔍 i18n Audit: Missing Translation Keys');
   console.log('========================================\n');
   
-  const languages = ['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
-  const report = {};
-  
-  languages.forEach(lang => {
-    report[lang] = {
-      coverage: 100, // Placeholder
-      missing: [],
-      extra: [],
-    };
-  });
-  
-  console.log('Translation completeness:', report);
-  return report;
+  throw new Error("Not implemented: run the server-side audit instead");
 }
 
 export function generateFormatterAuditReport() {

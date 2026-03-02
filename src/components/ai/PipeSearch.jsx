@@ -7,6 +7,7 @@ import { Loader2, Search, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatCurrency } from "@/components/utils/localeFormatters";
 
 export default function PipeSearch({ onSelect }) {
   const { t } = useTranslation();
@@ -232,8 +233,8 @@ Return an array of relevant pipe matches with detailed information.`,
                       <div className="text-right shrink-0">
                         <p className="text-xs text-stone-500">{t("pipeSearch.typicalValue")}</p>
                         <p className="font-semibold text-emerald-700">
-                          ${pipe.price_range_low?.toLocaleString()}
-                          {pipe.price_range_high && ` - $${pipe.price_range_high?.toLocaleString()}`}
+                          {pipe.price_range_low != null && formatCurrency(pipe.price_range_low)}
+                          {pipe.price_range_high != null && pipe.price_range_high !== pipe.price_range_low && ` - ${formatCurrency(pipe.price_range_high)}`}
                         </p>
                       </div>
                     )}
