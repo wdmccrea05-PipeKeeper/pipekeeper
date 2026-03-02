@@ -64,6 +64,9 @@ Deno.serve(async (req) => {
     };
 
     // Inline pairing score computation (mirrors pairingScoreCanonical logic)
+    // NOTE: This function is a server-side mirror of scorePipeBlend() in pairingScoreCanonical.jsx.
+    // If you update the scoring logic in either location, update the other to stay in sync.
+    // Tracked issue: scoring divergence between server-side recommendations and client-side pairings.
     const NON_AROMATIC_TYPES = ["english","balkan","latakia","virginia","burley","oriental","perique"];
 
     function computePairingScore(pipeObj: any, blend: any): number {

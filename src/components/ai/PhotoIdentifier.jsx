@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Camera, Sparkles } from "lucide-react";
+import { Loader2, Camera, Sparkles, AlertTriangle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureGate from "@/components/subscription/FeatureGate";
@@ -13,6 +13,7 @@ export default function PhotoIdentifier({ onIdentify }) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState([]);
+  const [lowConfidence, setLowConfidence] = useState(false);
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -75,9 +76,11 @@ Provide detailed identification results including geometry fields that can be us
             stem_material: { type: "string" },
             finish: { type: "string" },
             stamping_text: { type: "string" },
+            stampings: { type: "array", items: { type: "string" } },
             estimated_era: { type: "string" },
             condition: { type: "string" },
             confidence: { type: "string" },
+            estimated_value: { type: "number" },
             estimated_value_range: { type: "string" },
             identification_notes: { type: "string" },
             chamber_volume: { type: "string" }
@@ -98,13 +101,18 @@ Provide detailed identification results including geometry fields that can be us
         bowl_material: result.bowl_material || '',
         stem_material: result.stem_material || '',
         finish: result.finish || '',
-        stamping: result.stamping_text || '',
+        stamping: result.stampings?.join(', ') || result.stamping_text || '',
         year_made: result.estimated_era || '',
         condition: result.condition || '',
+        estimated_value: result.estimated_value || '',
         chamber_volume: result.chamber_volume || '',
         notes: result.identification_notes || '',
         photos: uploadedPhotos
       };
+
+      // Show low-confidence warning if confidence is low or maker not identified
+      const isLowConfidence = result.confidence === 'low' || !result.identified_maker;
+      setLowConfidence(isLowConfidence);
 
       onIdentify(formData);
       setUploadedPhotos([]);
@@ -182,6 +190,13 @@ Provide detailed identification results including geometry fields that can be us
           <p className="text-xs text-stone-500 text-center">
             {t("photoIdentifier.uploadHint")}
           </p>
+        )}
+
+        {lowConfidence && (
+          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+            <span>{t("quickPipeIdentifier.lowConfidenceWarning")} Consider providing additional photos or context.</span>
+          </div>
         )}
       </CardContent>
     </Card>
