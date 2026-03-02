@@ -40,10 +40,13 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   // Update last seen every 30 seconds
   useEffect(() => {
     if (!userEmail) return;
+
+    let cancelled = false;
     
     const updateLastSeen = async () => {
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: userEmail });
+        if (cancelled) return;
         if (profiles[0]) {
           await safeUpdate('UserProfile', profiles[0].id, {
             last_seen: new Date().toISOString()
@@ -56,7 +59,10 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
     updateLastSeen();
     const interval = setInterval(updateLastSeen, 30000); // 30 seconds
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [userEmail]);
 
   const { data: messages = [] } = useQuery({
