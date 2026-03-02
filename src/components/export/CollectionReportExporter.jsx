@@ -269,10 +269,24 @@ export default function CollectionReportExporter({ user }) {
 
   const downloadPDF = () => {
     const printWindow = window.open('', '_blank');
+
+    // Guard against popup blockers
+    if (!printWindow) {
+      toast.error(t("reports.popupBlocked", "Please allow popups to print/download the PDF."));
+      return;
+    }
+
     printWindow.document.write(pdfPreview);
     printWindow.document.close();
-    printWindow.print();
-    setPdfPreview(null);
+
+    // Wait for the window to load before printing
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.onafterprint = () => {
+        printWindow.close();
+      };
+    };
   };
 
   const handleReport = async (type, format) => {
