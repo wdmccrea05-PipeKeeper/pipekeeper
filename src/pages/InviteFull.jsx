@@ -43,6 +43,13 @@ export default function InviteFull() {
 
     try {
       const validEmails = emailFields.filter(email => email.trim() !== '');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = validEmails.filter(email => !emailRegex.test(email.trim()));
+      if (invalidEmails.length > 0) {
+        toast.error(t("inviteFull.invalidEmail", `Invalid email address: ${invalidEmails[0]}`));
+        setIsSubmitting(false);
+        return;
+      }
       
       for (const email of validEmails) {
         const emailBody = `

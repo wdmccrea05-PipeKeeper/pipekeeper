@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { getTobaccoLogo } from "@/components/tobacco/TobaccoLogoLibrary";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function TobaccoLibrarySyncPage() {
   const { t } = useTranslation();
@@ -16,11 +17,7 @@ export default function TobaccoLibrarySyncPage() {
   const [results, setResults] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    retry: 1,
-  });
+  const { user } = useCurrentUser();
 
   const { data: blends = [] } = useQuery({
     queryKey: ['blends', user?.email],

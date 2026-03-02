@@ -35,7 +35,7 @@ export default function FeatureGate({
   // Check tier if specified (for simple tier gating without feature key)
   if (!feature && requiredTier) {
     const hasAccess = requiredTier === "premium" 
-      ? entitlements.tier !== "free"
+      ? entitlements.tier !== "free" || entitlements.isFreeGrandfathered
       : entitlements.tier === "pro" || entitlements.isPremiumLegacy;
 
     if (!hasAccess) {

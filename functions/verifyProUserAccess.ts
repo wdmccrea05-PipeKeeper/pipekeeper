@@ -19,12 +19,6 @@ Deno.serve(async (req) => {
       issues: [],
     };
 
-    // Test specific known Pro users
-    const testEmails = [
-      'dallas.hinton@outlook.com', // Dallas Hinton
-      'michael@woodburylawfl.com', // Michael Woodbury
-    ];
-
     // Get all users with Pro tier from Subscription entity
     const proSubs = await base44.asServiceRole.entities.Subscription.filter({
       tier: 'pro',
@@ -32,7 +26,6 @@ Deno.serve(async (req) => {
     });
 
     const proEmails = new Set([
-      ...testEmails,
       ...proSubs.map((s) => s.user_email?.toLowerCase()).filter(Boolean),
     ]);
 

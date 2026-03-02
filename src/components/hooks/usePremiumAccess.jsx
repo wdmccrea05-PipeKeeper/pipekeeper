@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 
 /**
+ * @deprecated DO NOT USE. Legacy hook. Use useCurrentUser() and useEntitlements() instead.
+ */
+
+/**
  * Premium rules:
  * - If user has an active/trialing Stripe subscription row -> premium
  * - Else if account is < 7 days old -> premium (free trial for new accounts)

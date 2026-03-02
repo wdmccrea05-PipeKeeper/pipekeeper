@@ -44,6 +44,14 @@ export function buildEntitlements(input) {
         "ADVANCED_FILTERS",
         "MESSAGING",
         "TOBACCO_LIBRARY_SYNC",
+        "SHARE_CARDS",
+        "COMMUNITY_SAFETY",
+        "CONDITION_TRACKING",
+        "MAINTENANCE_LOGS",
+        "ROTATION_PLANNER",
+        "CELLAR_AGING",
+        "INVENTORY_FORECAST",
+        "BLEND_JOURNAL",
       ].includes(featureKey);
     }
     

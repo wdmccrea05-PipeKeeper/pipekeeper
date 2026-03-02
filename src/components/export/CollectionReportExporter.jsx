@@ -20,6 +20,9 @@ import { formatCurrency, formatWeight, formatDate } from "@/components/utils/loc
 export default function CollectionReportExporter({ user }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
+  const [isExporting, setIsExporting] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
@@ -31,9 +34,6 @@ export default function CollectionReportExporter({ user }) {
       </div>
     );
   }
-  const [isExporting, setIsExporting] = useState(false);
-  const [pdfPreview, setPdfPreview] = useState(null);
-  const [previewTitle, setPreviewTitle] = useState("");
 
   const generatePipeCSV = async () => {
     const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
@@ -245,10 +245,6 @@ export default function CollectionReportExporter({ user }) {
     return html;
   };
 
-  const exportPDF = () => {
-    window.open('/UserReport', '_blank');
-  };
-
   const downloadCSV = (csv, filename) => {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -276,7 +272,7 @@ export default function CollectionReportExporter({ user }) {
       return;
     }
 
-    printWindow.document.write(pdfPreview);
+    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${pdfPreview}</body></html>`);
     printWindow.document.close();
 
     // Wait for the window to load before printing
