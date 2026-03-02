@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { toast } from 'sonner';
 
 export default function PipeExporter() {
   const { t } = useTranslation();
@@ -130,7 +131,7 @@ export default function PipeExporter() {
         
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
-        doc.text(`${idx + 1}. ${pipe.name}`, 20, y);
+        doc.text(`${idx + 1}. ${pipe.name || t("reports.unnamed", "Unnamed")}`, 20, y);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(9);
         y += 6;
@@ -228,6 +229,10 @@ export default function PipeExporter() {
       }
       
       doc.save(`pipe-insurance-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      // Fix: show user-visible error instead of silently failing
+      console.error('Insurance PDF export failed:', error);
+      toast.error(t("reports.exportFailed", "Export failed") + ": " + error.message);
     } finally {
       setLoading(false);
     }
