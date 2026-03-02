@@ -174,17 +174,6 @@ const translations = {
     tinPlural: "tins",
     outOf5: "out of 5",
   },
-  units: {
-    tin: "tin",
-    tinPlural: "tins",
-    outOf5: "out of 5"
-  },
-
-  subscription: {
-    free: "Free",
-    premium: "Premium",
-    pro: "Pro"
-  },
 
   faqExtended: {
     appleTitle: "Frequently Asked Questions",
