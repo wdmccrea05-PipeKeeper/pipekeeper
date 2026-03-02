@@ -23,6 +23,7 @@ export default function CollectionReportExporter({ user }) {
   const [isExporting, setIsExporting] = useState(false);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [previewTitle, setPreviewTitle] = useState("");
+  const MAX_REPORT_LOGS = 500;
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
@@ -186,7 +187,7 @@ export default function CollectionReportExporter({ user }) {
     const [pipes, blends, logs] = await Promise.all([
       base44.entities.Pipe.filter({ created_by: user?.email }),
       base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
-      base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 500)
+      base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', MAX_REPORT_LOGS)
     ]);
 
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
@@ -214,7 +215,7 @@ export default function CollectionReportExporter({ user }) {
     const [pipes, blends, logs] = await Promise.all([
       base44.entities.Pipe.filter({ created_by: user?.email }),
       base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
-      base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 500)
+      base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', MAX_REPORT_LOGS)
     ]);
 
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);

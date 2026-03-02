@@ -276,7 +276,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         try {
           pipe = await base44.entities.Pipe.get(log.pipe_id);
         } catch {
-          // pipe not found, skip break-in schedule update gracefully
+          // Pipe may have been deleted; skip break-in schedule update gracefully
         }
         const currentSchedule = Array.isArray(pipe?.break_in_schedule) ? pipe.break_in_schedule : [];
         if (currentSchedule.length > 0) {
