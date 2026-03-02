@@ -137,6 +137,7 @@ export default function BreakInSchedule({ pipe, blends }) {
       blend_name: scheduleItem.blend_name,
       bowls_smoked: 1,
       is_break_in: true,
+      created_by: pipe.created_by,
       date: new Date().toISOString(),
     });
     

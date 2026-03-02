@@ -12,6 +12,13 @@ import { toast } from "sonner";
 export default function AgingReportExporter({ user }) {
   const entitlements = useEntitlements();
   const { t } = useTranslation();
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
   if (!entitlements.canUse("EXPORT_REPORTS")) {
     return (
@@ -21,13 +28,6 @@ export default function AgingReportExporter({ user }) {
       />
     );
   }
-  const [startDate, setStartDate] = useState(() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - 1);
-    return d.toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(false);
 
   const handleExportPDF = async () => {
     setLoading(true);
