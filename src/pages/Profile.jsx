@@ -44,8 +44,8 @@ const PIPE_SHAPES = [
 function pickBestProfile(rows = []) {
   if (!Array.isArray(rows) || rows.length === 0) return null;
   const scored = rows.map((r) => {
-    const updated = Date.parse(r.updated_date || r.updated_at || r.updatedAt || "") || 0;
-    const created = Date.parse(r.created_at || r.createdAt || "") || 0;
+    const updated = Date.parse(r.updated_date ?? r.updated_at ?? r.updatedAt ?? "") || 0;
+    const created = Date.parse(r.created_at ?? r.createdAt ?? "") || 0;
     const hasName = r.display_name ? 1 : 0;
     const hasTos = r.tos_accepted_at ? 1 : 0;
     const hasAvatar = r.avatar_url ? 1 : 0;
@@ -256,6 +256,15 @@ export default function ProfilePage() {
     );
   }
 
+  const statusLabels = {
+    active: t("profileExtended.statusActive", "Active"),
+    trialing: t("profileExtended.statusTrialing", "Trial"),
+    past_due: t("profileExtended.statusPastDue", "Past Due"),
+    canceled: t("profileExtended.statusCanceled", "Canceled"),
+    incomplete: t("profileExtended.statusIncomplete", "Incomplete"),
+    unpaid: t("profileExtended.statusUnpaid", "Unpaid"),
+  };
+
   return (
     <div className={`min-h-screen ${PK_THEME.pageBg}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -378,14 +387,7 @@ export default function ProfilePage() {
               )}
               {subscription?.status ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
-                  {t("profileExtended.statusLabel","Status")}: {({
-                    active: t("profileExtended.statusActive", "Active"),
-                    trialing: t("profileExtended.statusTrialing", "Trial"),
-                    past_due: t("profileExtended.statusPastDue", "Past Due"),
-                    canceled: t("profileExtended.statusCanceled", "Canceled"),
-                    incomplete: t("profileExtended.statusIncomplete", "Incomplete"),
-                    unpaid: t("profileExtended.statusUnpaid", "Unpaid"),
-                  })[subscription.status] || subscription.status}
+                  {t("profileExtended.statusLabel","Status")}: {statusLabels[subscription.status] || subscription.status}
                 </Badge>
               ) : null}
             </div>

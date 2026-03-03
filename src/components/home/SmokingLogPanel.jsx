@@ -684,7 +684,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               />
               {formData.pipe_id && formData.bowls_used && (
                 <p className="text-xs text-[#A4B0C4]">
-                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz", "oz")}
+                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(selectedPipe, parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz", "oz")}
                 </p>
               )}
             </div>

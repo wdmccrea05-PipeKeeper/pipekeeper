@@ -599,6 +599,7 @@ const translations = {
     updatesTitle: "AI Updates",
     updatesTooltip: "Review and regenerate pairing matrices and collection optimization.",
     updatesSubtitle: "Review what's out of date and regenerate with approval.",
+    upgradeInOptimizeTab: "Upgrade via the Optimize tab to unlock What-If analysis.",
   },
 
   tobaccoSearch: {

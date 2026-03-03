@@ -110,7 +110,7 @@ export default function CellarLog({ blend }) {
       // Use cached logs when available to avoid a redundant network call; the cache
       // may not include the just-created/deleted entry yet, so fall back to a fresh fetch.
       const cachedLogs = queryClient.getQueryData(['cellar-logs', blend.id]);
-      const allLogs = cachedLogs && cachedLogs.length > 0
+      const allLogs = cachedLogs !== undefined
         ? cachedLogs
         : await base44.entities.CellarLog.filter({ 
             blend_id: blend.id, 

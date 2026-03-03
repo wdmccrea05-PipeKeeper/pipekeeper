@@ -33,9 +33,14 @@ const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/p
 // Parse ISO date string as local calendar date to avoid UTC off-by-one
 const formatLogDate = (dateStr) => {
   if (!dateStr) return '';
-  const ymd = dateStr.split('T')[0];
-  const [year, month, day] = ymd.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString();
+  try {
+    const ymd = dateStr.split('T')[0];
+    const [year, month, day] = ymd.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    return new Date(year, month - 1, day).toLocaleDateString();
+  } catch {
+    return '';
+  }
 };
 
 export default function PublicProfilePage() {
