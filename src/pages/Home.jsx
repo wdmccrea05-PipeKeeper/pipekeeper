@@ -86,81 +86,87 @@ export default function Home() {
       {/* 3. PIPE COLLECTION & TOBACCO CELLAR CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Pipe Collection Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm min-h-[320px] flex flex-col">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/847ca6ee3_Image1.jpeg')` }}
           />
           <div className="absolute inset-0 bg-[#6b2d2d]/85" />
-          <div className="relative p-6 text-[#F5F1E7]">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-2xl font-semibold">{t("home.pipeCollectionTitle", "Pipe Collection")}</h2>
-              <div className="flex gap-2">
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" aria-label={t("common.refresh", "Refresh")}>
+          <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
+            <div className="flex items-start justify-between mb-1">
+              <div>
+                <h2 className="text-2xl font-bold">{t("home.pipeCollectionTitle", "Pipe Collection")}</h2>
+                <p className="text-sm opacity-60 mt-0.5">{t("home.pipeCollectionSubtitle", "Track and value your pipes")}</p>
+              </div>
+              <div className="flex gap-1">
+                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh", "Refresh")}>
                   <RefreshCw className="w-4 h-4" />
                 </a>
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" aria-label={t("common.view", "View")}>
+                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view", "View")}>
                   <Download className="w-4 h-4" />
                 </a>
               </div>
             </div>
-            <p className="opacity-70 mb-4">{t("home.pipeCollectionSubtitle", "Track and value your pipes")}</p>
-            <div className="space-y-2">
-              <div>
-                <span className="text-3xl font-bold">{pipes.length}</span>
-                <span className="ml-2 opacity-70">{t("home.pipesInCollection", "Pipes in Collection")}</span>
+            <div className="flex flex-col gap-3 mt-5 flex-1">
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-3xl font-bold">{pipes.length}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection", "Pipes in Collection")}</div>
               </div>
-              <div>
-                <span className="text-3xl font-bold">{formatCurrency(totalPipeValue)}</span>
-                <span className="ml-2 opacity-70">{t("home.collectionValue", "Collection Value")}</span>
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-3xl font-bold">{formatCurrency(totalPipeValue)}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
               </div>
             </div>
-            <div className="mt-6">
-              <a href={createPageUrl("Pipes")} className="text-[#F5F1E7] font-medium hover:underline">
-                {t("home.viewCollection", "View Collection")} →
+            <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
+              <a href={createPageUrl("Pipes")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
+                {t("home.viewCollection", "View Collection")}
               </a>
+              <span className="opacity-60">→</span>
             </div>
           </div>
         </div>
 
         {/* Tobacco Cellar Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm min-h-[320px] flex flex-col">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/2f3158c10_7084B1F4-A823-4AA9-8340-8DCA2DEB5B79-1024x768.jpg')` }}
           />
-          <div className="absolute inset-0 bg-[#1c3d2e]/75" />
-          <div className="relative p-6 text-[#F5F1E7]">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-2xl font-semibold">{t("home.tobaccoCellarTitle", "Tobacco Cellar")}</h2>
-              <div className="flex gap-2">
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" aria-label={t("common.refresh", "Refresh")}>
+          <div className="absolute inset-0 bg-[#1c3d2e]/80" />
+          <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
+            <div className="flex items-start justify-between mb-1">
+              <div>
+                <h2 className="text-2xl font-bold">{t("home.tobaccoCellarTitle", "Tobacco Cellar")}</h2>
+                <p className="text-sm opacity-60 mt-0.5">{t("home.tobaccoCellarSubtitle", "Manage your blends")}</p>
+              </div>
+              <div className="flex gap-1">
+                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh", "Refresh")}>
                   <RefreshCw className="w-4 h-4" />
                 </a>
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" aria-label={t("common.view", "View")}>
+                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view", "View")}>
                   <Leaf className="w-4 h-4" />
                 </a>
               </div>
             </div>
-            <p className="opacity-70 mb-4">{t("home.tobaccoCellarSubtitle", "Manage your blends")}</p>
-            <div className="space-y-2">
-              <div>
-                <span className="text-3xl font-bold">{blends.length}</span>
-                <span className="ml-2 opacity-70">{t("home.tobaccoBlends", "Tobacco Blends")}</span>
+            <div className="flex flex-col gap-3 mt-5 flex-1">
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-3xl font-bold">{blends.length}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.tobaccoBlends", "Tobacco Blends")}</div>
               </div>
-              <div>
-                <span className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</span>
-                <span className="ml-2 opacity-70">{t("home.cellared", "Cellared")}</span>
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.cellared", "Cellared")}</div>
               </div>
-              <div>
-                <span className="text-3xl font-bold">≈ {formatCurrency(Math.round(totalTobaccoValue))}</span>
-                <span className="ml-2 opacity-70">{t("home.collectionValue", "Collection Value")}</span>
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-3xl font-bold">≈ {formatCurrency(Math.round(totalTobaccoValue))}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
               </div>
             </div>
-            <div className="mt-6">
-              <a href={createPageUrl("Tobacco")} className="text-[#F5F1E7] font-medium hover:underline">
-                {t("home.viewCellar", "View Cellar")} →
+            <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
+              <a href={createPageUrl("Tobacco")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
+                {t("home.viewCellar", "View Cellar")}
               </a>
+              <span className="opacity-60">→</span>
             </div>
           </div>
         </div>
