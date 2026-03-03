@@ -40,6 +40,8 @@ export function buildEntitlements(input) {
         "CELLAR_LOG",
         "PAIRING_MANUAL",
         "PAIRING_BASIC",
+        "PAIRING_ADVANCED",
+        "PAIRING_MATRIX_AI",
         "MATCHING_ENGINE",
         "ADVANCED_FILTERS",
         "MESSAGING",
