@@ -153,7 +153,7 @@ export default function Home() {
                 <span className="ml-2 opacity-70">{t("home.cellared", "Cellared")}</span>
               </div>
               <div>
-                <span className="text-3xl font-bold">≈ {formatCurrency(totalTobaccoValue)}</span>
+                <span className="text-3xl font-bold">≈ {formatCurrency(Math.round(totalTobaccoValue))}</span>
                 <span className="ml-2 opacity-70">{t("home.collectionValue", "Collection Value")}</span>
               </div>
             </div>
