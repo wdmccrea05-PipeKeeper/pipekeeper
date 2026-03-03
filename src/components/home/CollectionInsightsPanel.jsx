@@ -28,11 +28,11 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { hasPro } = useCurrentUser();
   const [activeTab, setActiveTab] = useState(isAppleBuild ? "stats" : "log");
 
-  // Check for aging alerts
+  // Check for aging alerts — use already-fetched blends prop to avoid extra query
   const { data: agingAlertCount = 0 } = useQuery({
-    queryKey: ["aging-alerts", user?.email],
+    queryKey: ["aging-alerts", user?.email, blends?.length],
     queryFn: async () => {
-      const tobaccoBlends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      const tobaccoBlends = blends || [];
       
       const cellarBlends = (tobaccoBlends || []).filter(b => {
        if (!b) return false;
@@ -168,7 +168,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </Button>
               </div>
             ) : (
-              <TobaccoCollectionStats />
+              <TobaccoCollectionStats user={user} />
             )}
           </TabsContent>
 

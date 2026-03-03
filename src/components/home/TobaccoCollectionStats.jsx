@@ -16,7 +16,7 @@ import { calculateCellaredOzFromLogs, calculateCellaredOzFromBlend } from "@/com
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
-export default function TobaccoCollectionStats() {
+export default function TobaccoCollectionStats({ user: userProp }) {
   const { t } = useTranslation();
   const [drillDown, setDrillDown] = useState(null);
   const [lowInventoryThreshold, setLowInventoryThreshold] = useState(() => {
@@ -25,7 +25,8 @@ export default function TobaccoCollectionStats() {
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   
-  const { user, hasPro } = useCurrentUser();
+  const { user: currentUser, hasPro } = useCurrentUser();
+  const user = userProp || currentUser;
 
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
