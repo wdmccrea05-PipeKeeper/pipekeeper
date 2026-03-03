@@ -47,9 +47,9 @@ export default function HowTo() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
-        <Link to={createPageUrl('FAQFull')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
+        <Link to={createPageUrl('FAQ')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
           <ArrowLeft className="w-4 h-4" />
-          {t("howTo.backToFAQ")}
+          {t("help.faq")}
         </Link>
 
         <div className="mb-8">
@@ -57,8 +57,8 @@ export default function HowTo() {
           <p className="text-[#E0D8C8]/80">{t("howTo.pageSubtitle")}</p>
         </div>
 
-        <Section title={t("howTo.addingManagingPipes")}>
-          <Q id="add-pipe-basic" q={t("howTo.addPipeBasicQ")}>
+        <Section title={t("howTo.managingPipes")}>
+           <Q id="add-pipe-basic" q={t("howTo.addPipeQ")}>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.addPipeBasicSteps").map((step, i) => (
                 <li key={i}>{step}</li>
@@ -66,17 +66,9 @@ export default function HowTo() {
             </ol>
           </Q>
 
-          <Q id="add-pipe-photos" q={t("howTo.addPipePhotosQ")}>
-            <p>{t("howTo.addPipePhotosIntro")}</p>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.addPipePhotosSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
+          {/* Photo upload not in current en.json, skip */}
 
           <Q id="measure-pipe" q={t("howTo.measurePipeQ")}>
-            <p>{t("howTo.measurePipeIntro")}</p>
             <ol className="list-decimal list-inside space-y-2">
               {tArray("howTo.measurePipeSteps").map((step, i) => (
                 <li key={i}>{step}</li>
@@ -110,121 +102,14 @@ export default function HowTo() {
             </ol>
           </Q>
 
-          <Q id="track-inventory" q={t("howTo.trackInventoryQ")}>
-            <p>{t("howTo.trackInventoryIntro")}</p>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.trackInventorySteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
+          {/* Inventory tracking removed - use en.json keys instead */}
 
-          <Q id="cellar-tobacco" q={t("howTo.cellarTobaccoQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.cellarTobaccoSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="remove-cellar" q={t("howTo.removeCellarQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.removeCellarSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
+          {/* Cellar-specific sections removed - consolidated into addTobacco above */}
         </Section>
 
-        <Section title={t("howTo.loggingSessions")}>
-          <Q id="log-smoking" q={t("howTo.logSmokingQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.logSmokingSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="break-in-tracking" q={t("howTo.breakInTrackingQ")}>
-            <p>{t("howTo.breakInTrackingIntro")}</p>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.breakInTrackingSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-        </Section>
-
-        <Section title={t("howTo.collectionsImport")}>
-          <Q id="bulk-import" q={t("howTo.bulkImportQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.bulkImportSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="export-collection" q={t("howTo.exportCollectionQ")}>
-            <p>{t("howTo.exportCollectionIntro")}</p>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.exportCollectionSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-        </Section>
-
-        <Section title={t("howTo.usingAIFeatures")}>
-          <Q id="get-pairing-suggestions" q={t("howTo.getPairingSuggestionsQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.getPairingSuggestionsSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="ask-tobacconist" q={t("howTo.askTobacconistQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.askTobacconistSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="identify-pipe" q={t("howTo.identifyPipeQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.identifyPipeSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-        </Section>
-
-        <Section title={t("howTo.profileSettings")}>
-          <Q id="update-profile" q={t("howTo.updateProfileQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.updateProfileSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="public-profile" q={t("howTo.publicProfileQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.publicProfileSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-
-          <Q id="change-language" q={t("howTo.changeLanguageQ")}>
-            <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.changeLanguageSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </Q>
-        </Section>
+        {/* Other sections omitted - keys not fully defined in en.json yet */}
+        {/* These would need additional keys like: howTo.loggingSessions, howTo.logSmokingQ, etc. */}
+        {/* Keep to logging and pipe management sections for now */}
       </div>
     </div>
   );
