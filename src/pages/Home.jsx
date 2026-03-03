@@ -90,7 +90,6 @@ export default function Home() {
             <div className="font-semibold text-amber-400">{planLabel}</div>
             <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting", "Thank you for supporting PipeKeeper")}</div>
           </div>
-          {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50">{planLabel}</span>}
         </div>
       )}
 

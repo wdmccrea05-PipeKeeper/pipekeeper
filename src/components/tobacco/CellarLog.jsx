@@ -365,7 +365,7 @@ export default function CellarLog({ blend }) {
                         )}
                         <span className="flex items-center gap-1 text-xs text-[#1a2c42]/60">
                           <Calendar className="w-3 h-3" />
-                          {(() => { try { return format(parseISO(log.date), 'MMM d, yyyy'); } catch { return log.date || '—'; } })()}
+                          {log.date ? (() => { try { return format(parseISO(log.date), 'MMM d, yyyy'); } catch { return log.date; } })() : '—'}
                         </span>
                       </div>
                     </div>
