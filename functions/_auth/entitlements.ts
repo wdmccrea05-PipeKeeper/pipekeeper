@@ -42,6 +42,8 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     'CELLAR_AGING',
     'INVENTORY_FORECAST',
     'BLEND_JOURNAL',
+    'COLLECTION_OPTIMIZATION',
+    'AI_UPDATES',
   ];
 
   // Free tier features

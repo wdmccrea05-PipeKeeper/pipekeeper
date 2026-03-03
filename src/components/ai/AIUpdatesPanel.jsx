@@ -23,6 +23,7 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const { t } = useTranslation();
@@ -32,11 +33,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ["current-user"],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-  });
+  const { user } = useCurrentUser();
 
   const currentFingerprint = useMemo(
     () => buildArtifactFingerprint({ pipes, blends, profile }),
@@ -88,7 +85,6 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         activePairings,
         skipIfUpToDate: true,
       });
-      setBusy(false);
       return result;
     },
     onSuccess: (result) => {
@@ -101,8 +97,10 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       }
     },
     onError: () => {
-      setBusy(false);
       toast.error(t("aiUpdates.regenerateFailed"));
+    },
+    onSettled: () => {
+      setBusy(false);
     },
   });
 
@@ -188,7 +186,6 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         generated_date: new Date().toISOString(),
       });
 
-      setBusy(false);
     },
     onSuccess: () => {
       refetchOpt();
@@ -196,8 +193,10 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
       toast.success(t("aiUpdates.optimizationRegenSuccess"));
     },
     onError: () => {
-      setBusy(false);
       toast.error(t("aiUpdates.optimizationRegenFail"));
+    },
+    onSettled: () => {
+      setBusy(false);
     },
   });
 
@@ -393,7 +392,6 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
         }
       }
 
-      setBusy(false);
       return updatedCount;
     },
     onSuccess: (count) => {
@@ -402,8 +400,10 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       else toast.info(t("aiUpdates.noMeasurements"));
     },
     onError: () => {
-      setBusy(false);
       toast.error(t("aiUpdates.fillFailed"));
+    },
+    onSettled: () => {
+      setBusy(false);
     },
   });
 

@@ -52,6 +52,8 @@ export function buildEntitlements(input) {
         "CELLAR_AGING",
         "INVENTORY_FORECAST",
         "BLEND_JOURNAL",
+        "COLLECTION_OPTIMIZATION",
+        "AI_UPDATES",
       ].includes(featureKey);
     }
     

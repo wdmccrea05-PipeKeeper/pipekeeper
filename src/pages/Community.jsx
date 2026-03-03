@@ -302,7 +302,7 @@ function CommunityPageInner() {
                         placeholder={t("communityExtended.searchByName")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && setActiveSearchQuery(searchQuery)}
+                        onKeyDown={(e) => e.key === 'Enter' && setActiveSearchQuery(searchQuery)}
                         className="pl-10"
                       />
                     </div>
