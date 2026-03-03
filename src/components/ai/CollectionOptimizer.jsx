@@ -12,7 +12,6 @@ import {
   Loader2,
   Target,
   TrendingUp,
-  ShoppingCart,
   ShoppingBag,
   Sparkles,
   CheckCircle2,
@@ -50,7 +49,6 @@ import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateAIQueries } from "@/components/utils/cacheInvalidation";
 import PhotoUploader from "@/components/PhotoUploader";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { safeToString } from "@/components/utils/SafeRender";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
@@ -139,8 +137,6 @@ function CollectionOptimizerInner({
   showWhatIf: initialShowWhatIf = false,
   improvedWhatIf = false, // kept for compatibility
 }) {
-  if (isAppleBuild) return null;
-
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
@@ -1866,6 +1862,7 @@ ${englishUserText}
 }
 
 export default function CollectionOptimizer(props) {
+  if (isAppleBuild) return null;
   return (
     <PKErrorBoundary>
       <CollectionOptimizerInner {...props} />

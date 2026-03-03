@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +9,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { scopedEntities } from "@/components/api/scopedEntities";
-import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
+import { BarChart3, Leaf, Star, TrendingUp, ChevronRight, AlertTriangle, ChevronDown } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
+import { calculateCellaredOzFromLogs, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
