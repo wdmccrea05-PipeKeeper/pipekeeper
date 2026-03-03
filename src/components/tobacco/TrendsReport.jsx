@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  TrendingUp, Calendar, Clock, Flame, Award, RefreshCw,
-  Download, Share2, ChevronRight, Sparkles, Star
+  TrendingUp, Calendar, Award,
+  Download, Share2, Sparkles
 } from "lucide-react";
-import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO } from "date-fns";
+import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO, differenceInCalendarDays } from "date-fns";
 import html2canvas from 'html2canvas';
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -159,7 +159,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     const window = TIME_WINDOWS[timeWindow];
     const daysInPeriod = window.all 
       ? Math.max(1, Math.ceil((Date.now() - new Date(Math.min(...logs.map(l => new Date(l.date)))).getTime()) / (1000 * 60 * 60 * 24)))
-      : window.days || 30;
+      : window.days || (window.months ? window.months * 30 : window.ytd ? differenceInCalendarDays(new Date(), startOfYear(new Date())) + 1 : 30);
     
     const sessionsPerWeek = (totalSessions / daysInPeriod) * 7;
 

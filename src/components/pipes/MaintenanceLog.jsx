@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Wrench, Plus, Calendar, DollarSign, Trash2 } from 'lucide-react';
+import { Wrench, Plus, DollarSign, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
@@ -110,7 +110,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium">{maintenanceTypes[log.maintenance_type]}</span>
                       <span className="text-xs text-stone-500">
-                        {new Date(log.date).toLocaleDateString()}
+                        {new Date(log.date + 'T12:00:00').toLocaleDateString()}
                       </span>
                     </div>
                     {log.description && (

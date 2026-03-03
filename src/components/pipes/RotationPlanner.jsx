@@ -16,6 +16,7 @@ export default function RotationPlanner({ user }) {
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
+  const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
@@ -91,12 +92,28 @@ export default function RotationPlanner({ user }) {
           <div className="space-y-4">
             {needsRotation.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
+                  </div>
+                  {needsRotation.length > 5 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedNeedsRotation(!expandedNeedsRotation)}
+                      className="h-7 text-xs"
+                    >
+                      {expandedNeedsRotation ? (
+                        <>{t("tobacconist.showLess")} <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>{t("tobacconist.showAll")} <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  {needsRotation.slice(0, 5).map(pipe => (
+                  {needsRotation.slice(0, expandedNeedsRotation ? needsRotation.length : 5).map(pipe => (
                     <Link 
                       key={pipe.id} 
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
