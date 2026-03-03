@@ -105,10 +105,16 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const deleteMessageMutation = useMutation({
-    mutationFn: (messageId) => base44.entities.Message.delete(messageId),
+    mutationFn: (messageId) => {
+      // Only allow deletion if sender (ownership check)
+      return safeUpdate('Message', messageId, {}, userEmail);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       toast.success(t("messaging.messageDeleted"));
+    },
+    onError: (err) => {
+      toast.error(t("messaging.cannotDeleteOtherMessage", { defaultValue: "You can only delete your own messages" }));
     },
   });
 
@@ -395,29 +401,30 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                             <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
                               {new Date(message.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
-                            {isSent ? (
-                              <div className="flex gap-1">
-                                <button
-                                  onClick={() => {
-                                    setEditingMessageId(message.id);
-                                    setEditText(message.content);
-                                  }}
-                                  className="hover:opacity-70"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm('Delete this message?')) {
-                                      deleteMessageMutation.mutate(message.id);
-                                    }
-                                  }}
-                                  className="hover:opacity-70"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ) : (
+                            {isSent && (
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => {
+                                      setEditingMessageId(message.id);
+                                      setEditText(message.content);
+                                    }}
+                                    className="hover:opacity-70"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (window.confirm(t("messaging.deleteConfirm"))) {
+                                        deleteMessageMutation.mutate(message.id);
+                                      }
+                                    }}
+                                    className="hover:opacity-70"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )}
+                            {!isSent && (
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => toggleSaveMutation.mutate({ 
