@@ -7,9 +7,13 @@ import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
+import { toast } from "sonner";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function ValueLookup({ pipe, onUpdateValue }) {
   const { t } = useTranslation();
+  const { hasPremium } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -95,6 +99,7 @@ Provide a detailed valuation in JSON format with:
       setValuation(result);
     } catch (err) {
       console.error('Error looking up value:', err);
+      toast.error(t("errors.valueLookupFailed", { defaultValue: "Failed to look up value. Please try again." }));
     } finally {
       setLoading(false);
     }
@@ -118,6 +123,15 @@ Provide a detailed valuation in JSON format with:
     stable: <div className="w-4 h-4 border-t-2 border-stone-400" />,
     declining: <TrendingUp className="w-4 h-4 text-rose-600 rotate-180" />
   };
+
+  if (!hasPremium) {
+    return (
+      <UpgradePrompt
+        featureName={t("matching.marketValueLookup", { defaultValue: "Market Value Lookup" })}
+        description={t("matching.searchMarketDesc", { defaultValue: "Search recent market data, auctions, and estate pipe sales to estimate current value" })}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
