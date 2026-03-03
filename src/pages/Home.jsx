@@ -89,7 +89,7 @@ export default function Home() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://images.invaluable.com/housePhotos/brunk/49/649149/H0098-L128003413.jpg'), linear-gradient(135deg, #5a2020 0%, #8b3a3a 100%)` }}
+            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/847ca6ee3_Image1.jpeg')` }}
           />
           <div className="absolute inset-0 bg-[#6b2d2d]/85" />
           <div className="relative p-6 text-[#F5F1E7]">
@@ -127,7 +127,7 @@ export default function Home() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1601924638867-3a6de6b7a500?w=1200&q=80'), linear-gradient(135deg, #1a3a2a 0%, #2d5a3a 100%)` }}
+            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/2f3158c10_7084B1F4-A823-4AA9-8340-8DCA2DEB5B79-1024x768.jpg')` }}
           />
           <div className="absolute inset-0 bg-[#1c3d2e]/75" />
           <div className="relative p-6 text-[#F5F1E7]">
