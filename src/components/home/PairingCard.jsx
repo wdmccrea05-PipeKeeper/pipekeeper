@@ -23,9 +23,9 @@ export default function PairingCard({ pipe, blend, score, reasoning }) {
       doc.text(t("pairingCard.title"), 10, 15);
       
       doc.setFontSize(12);
-      doc.text(`Pipe: ${(pipe?.maker || "")} ${(pipe?.name || "")}`.trim(), 10, 30);
-      doc.text(`Blend: ${(blend?.manufacturer || "")} ${(blend?.name || "")}`.trim(), 10, 40);
-      doc.text(`Score: ${score}/10`, 10, 50);
+      doc.text(`${t("pairingCard.pipe")}: ${(pipe?.maker || "")} ${(pipe?.name || "")}`.trim(), 10, 30);
+       doc.text(`${t("pairingCard.blend")}: ${(blend?.manufacturer || "")} ${(blend?.name || "")}`.trim(), 10, 40);
+       doc.text(`${t("pairingCard.scoreLabel")}: ${score}/10`, 10, 50);
       
       doc.setFontSize(10);
       const lines = doc.splitTextToSize(`${t("pairingCard.reason")}: ${reasoning || ""}`, 180);

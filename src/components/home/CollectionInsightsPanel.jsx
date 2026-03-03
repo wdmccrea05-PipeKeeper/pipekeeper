@@ -168,7 +168,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </Button>
               </div>
             ) : (
-              <TobaccoCollectionStats user={user} />
+              <TobaccoCollectionStats user={user} blends={blends} />
             )}
           </TabsContent>
 

@@ -87,50 +87,50 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             {(blend.tin_total_quantity_oz || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
                 <Badge className="bg-amber-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  {t("tobaccoExtended.tin")}: {formatWeight(+(blend.tin_total_quantity_oz || 0))}
+                  {t("tobaccoExtended.tin")}: {formatWeight(Number(blend.tin_total_quantity_oz) || 0)}
                 </Badge>
-                {(blend.tin_tins_open || 0) > 0 && (
+                {(Number(blend.tin_tins_open) || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.tin_tins_open || 0) * +(blend.tin_size_oz || 0))} {t("tobacco.open")}
+                    {formatWeight((Number(blend.tin_tins_open) || 0) * (Number(blend.tin_size_oz) || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
-                {(blend.tin_tins_cellared || 0) > 0 && (
+                {(Number(blend.tin_tins_cellared) || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.tin_tins_cellared || 0) * +(blend.tin_size_oz || 0))} {t("tobaccoExtended.cellared")}
+                    {formatWeight((Number(blend.tin_tins_cellared) || 0) * (Number(blend.tin_size_oz) || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
             )}
-            {(blend.bulk_total_quantity_oz || 0) > 0 && (
+            {(Number(blend.bulk_total_quantity_oz) || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
                 <Badge className="bg-blue-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  {t("tobaccoExtended.bulk")}: {formatWeight(+(blend.bulk_total_quantity_oz || 0))}
+                  {t("tobaccoExtended.bulk")}: {formatWeight(Number(blend.bulk_total_quantity_oz) || 0)}
                 </Badge>
-                {(blend.bulk_open || 0) > 0 && (
+                {(Number(blend.bulk_open) || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.bulk_open || 0))} {t("tobacco.open")}
+                    {formatWeight(Number(blend.bulk_open) || 0)} {t("tobacco.open")}
                   </Badge>
                 )}
-                {(blend.bulk_cellared || 0) > 0 && (
+                {(Number(blend.bulk_cellared) || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.bulk_cellared || 0))} {t("tobaccoExtended.cellared")}
+                    {formatWeight(Number(blend.bulk_cellared) || 0)} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
             )}
-            {(blend.pouch_total_quantity_oz || 0) > 0 && (
+            {(Number(blend.pouch_total_quantity_oz) || 0) > 0 && (
               <div className="flex flex-wrap gap-1">
                 <Badge className="bg-purple-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                  {t("tobaccoExtended.pouches")}: {formatWeight(+(blend.pouch_total_quantity_oz || 0))}
+                  {t("tobaccoExtended.pouches")}: {formatWeight(Number(blend.pouch_total_quantity_oz) || 0)}
                 </Badge>
-                {(blend.pouch_pouches_open || 0) > 0 && (
+                {(Number(blend.pouch_pouches_open) || 0) > 0 && (
                   <Badge className="bg-sky-500/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.pouch_pouches_open || 0) * +(blend.pouch_size_oz || 0))} {t("tobacco.open")}
+                    {formatWeight((Number(blend.pouch_pouches_open) || 0) * (Number(blend.pouch_size_oz) || 0))} {t("tobacco.open")}
                   </Badge>
                 )}
-                {(blend.pouch_pouches_cellared || 0) > 0 && (
+                {(Number(blend.pouch_pouches_cellared) || 0) > 0 && (
                   <Badge className="bg-emerald-600/90 text-white border-0 backdrop-blur-sm text-xs font-semibold shadow-sm">
-                    {formatWeight(+(blend.pouch_pouches_cellared || 0) * +(blend.pouch_size_oz || 0))} {t("tobaccoExtended.cellared")}
+                    {formatWeight((Number(blend.pouch_pouches_cellared) || 0) * (Number(blend.pouch_size_oz) || 0))} {t("tobaccoExtended.cellared")}
                   </Badge>
                 )}
               </div>
@@ -146,7 +146,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite }) {
             {blend.rating && (
               <div className="flex items-center gap-0.5 shrink-0">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-sm font-medium text-amber-300">{(+blend.rating).toFixed(1)}/5</span>
+                <span className="text-sm font-medium text-amber-300">{(Number(blend.rating) || 0).toFixed(1)}/5</span>
               </div>
             )}
           </div>
