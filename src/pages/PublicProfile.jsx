@@ -567,7 +567,7 @@ export default function PublicProfilePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-stone-500">
-                        {new Date(log.date + 'T12:00:00').toLocaleDateString()}
+                        {new Date(/T/.test(log.date) ? log.date : log.date + 'T12:00:00').toLocaleDateString()}
                       </p>
                       {(log.bowls_used ?? log.bowls_smoked) && (
                         <Badge variant="outline" className="text-xs mt-1 font-semibold text-stone-700">

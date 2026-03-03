@@ -374,7 +374,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       let foundAny = false;
 
       Object.keys(result || {}).forEach((key) => {
-        if (PIPE_SCHEMA_FIELDS.has(key) && result[key] !== null && result[key] !== undefined && !pipe[key]) {
+        if (PIPE_SCHEMA_FIELDS.has(key) && result[key] !== null && result[key] !== undefined && (pipe[key] === null || pipe[key] === undefined)) {
           updates[key] = result[key];
           foundAny = true;
         }
