@@ -124,6 +124,23 @@ const translations = {
     sendFailed: "Senden der Support-Anfrage fehlgeschlagen. Bitte versuchen Sie es erneut oder senden Sie eine E-Mail direkt an admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Support",
+    subtitle: "Hilfe für die Verwaltung von Sammlungen und Keller-Inventar.",
+    beforeContactTitle: "Bevor Sie den Support kontaktieren",
+    checkAccount: "Bestätigen Sie, dass Sie im richtigen Konto angemeldet sind.",
+    restartApp: "Schließen und öffnen Sie die App erneut und versuchen Sie es dann noch einmal.",
+    checkConnection: "Überprüfen Sie Ihre Internetverbindung.",
+    screenshots: "Machen Sie wenn möglich Screenshots des Problems.",
+    includeInMessageTitle: "Was Sie in Ihre Nachricht aufnehmen sollten",
+    deviceModel: "Gerätemodell und iOS-Version",
+    whatPage: "Auf welcher Seite Sie sich befanden (Pfeifen, Keller, Profil, etc.)",
+    stepsToReproduce: "Schritte zur Reproduktion des Problems",
+    screenshotsRecommended: "Screenshots (empfohlen)",
+    aboutBuildTitle: "Über den iOS-Build",
+    aboutBuildBody: "Dieser iOS-Build ist für die Verwaltung von Sammlungen und Keller-Inventar konzipiert. Funktionen, die als Empfehlungs- oder Nutzungshinweise interpretiert werden könnten, sind in dieser Version nicht enthalten.",
+  },
+
   faqExtended: {
     appleTitle: "Häufig gestellte Fragen",
     appleDesc: "Alles, was Sie über PipeKeeper für iOS wissen müssen",

@@ -124,6 +124,23 @@ const translations = {
     sendFailed: "Versturen van ondersteuningsverzoek mislukt. Probeer het opnieuw of stuur een e-mail rechtstreeks naar admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Ondersteuning",
+    subtitle: "Hulp bij collectie- en kelderbeheer.",
+    beforeContactTitle: "Voordat u contact opneemt met ondersteuning",
+    checkAccount: "Bevestig dat u bent aangemeld bij het juiste account.",
+    restartApp: "Sluit de app en open hem opnieuw, probeer het dan opnieuw.",
+    checkConnection: "Controleer uw internetverbinding.",
+    screenshots: "Maak indien mogelijk schermafbeeldingen van het probleem.",
+    includeInMessageTitle: "Wat u in uw bericht moet opnemen",
+    deviceModel: "Apparaatmodel en iOS-versie",
+    whatPage: "Op welke pagina u zich bevond (Pijpen, Kelder, Profiel, etc.)",
+    stepsToReproduce: "Stappen om het probleem te reproduceren",
+    screenshotsRecommended: "Schermafbeeldingen (aanbevolen)",
+    aboutBuildTitle: "Over de iOS-build",
+    aboutBuildBody: "Deze iOS-build is ontworpen voor collectie- en kelderbeheer. Functies die kunnen worden geïnterpreteerd als aanbevelings- of gebruiksbegeleiding zijn niet opgenomen in deze versie.",
+  },
+
   faqExtended: {
     appleTitle: "Veelgestelde Vragen",
     appleDesc: "Alles wat u moet weten over PipeKeeper voor iOS",

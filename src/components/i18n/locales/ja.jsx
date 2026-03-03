@@ -246,6 +246,23 @@ export default {
     sendFailed: "サポートリクエストの送信に失敗しました。もう一度試すか、admin@pipekeeperapp.com に直接メールをお送りください。",
   },
 
+  appleSupport: {
+    title: "サポート",
+    subtitle: "コレクションとセラー在庫管理のサポート。",
+    beforeContactTitle: "サポートに連絡する前に",
+    checkAccount: "正しいアカウントにサインインしていることを確認してください。",
+    restartApp: "アプリを閉じて再度開き、もう一度お試しください。",
+    checkConnection: "インターネット接続を確認してください。",
+    screenshots: "可能であれば、問題のスクリーンショットを撮ってください。",
+    includeInMessageTitle: "メッセージに含めるべきこと",
+    deviceModel: "デバイスのモデルとiOSのバージョン",
+    whatPage: "どのページにいたか（パイプ、セラー、プロフィールなど）",
+    stepsToReproduce: "問題を再現する手順",
+    screenshotsRecommended: "スクリーンショット（推奨）",
+    aboutBuildTitle: "iOSビルドについて",
+    aboutBuildBody: "このiOSビルドは、コレクションとセラー在庫管理のために設計されています。推奨または使用ガイダンスとして解釈される可能性のある機能は、このバージョンには含まれていません。",
+  },
+
   subscription: {
     free: "無料",
     premium: "プレミアム",

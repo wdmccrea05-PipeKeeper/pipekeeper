@@ -124,6 +124,23 @@ const translations = {
     sendFailed: "Invio della richiesta di supporto non riuscito. Riprova o invia un'e-mail direttamente a admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Supporto",
+    subtitle: "Aiuto per la gestione della collezione e dell'inventario della cantina.",
+    beforeContactTitle: "Prima di contattare il supporto",
+    checkAccount: "Conferma di aver effettuato l'accesso all'account corretto.",
+    restartApp: "Chiudi e riapri l'app, poi riprova.",
+    checkConnection: "Controlla la tua connessione internet.",
+    screenshots: "Fai screenshot del problema se possibile.",
+    includeInMessageTitle: "Cosa includere nel tuo messaggio",
+    deviceModel: "Modello del dispositivo e versione iOS",
+    whatPage: "Su quale pagina ti trovavi (Pipe, Cantina, Profilo, ecc.)",
+    stepsToReproduce: "Passaggi per riprodurre il problema",
+    screenshotsRecommended: "Screenshot (consigliati)",
+    aboutBuildTitle: "Informazioni sulla build iOS",
+    aboutBuildBody: "Questa build iOS è progettata per la gestione della collezione e dell'inventario della cantina. Le funzionalità che potrebbero essere interpretate come indicazioni di raccomandazione o utilizzo non sono incluse in questa versione.",
+  },
+
   faqExtended: {
     appleTitle: "Domande Frequenti",
     appleDesc: "Tutto quello che devi sapere su PipeKeeper per iOS",
