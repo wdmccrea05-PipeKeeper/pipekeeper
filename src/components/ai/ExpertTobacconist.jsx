@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Sparkles, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
+import { Camera, TrendingUp, Lightbulb, RefreshCw } from "lucide-react";
 import QuickPipeIdentifier from "@/components/ai/QuickPipeIdentifier";
 import CollectionOptimizer from "@/components/ai/CollectionOptimizer";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import InfoTooltip from "@/components/ui/InfoTooltip";
