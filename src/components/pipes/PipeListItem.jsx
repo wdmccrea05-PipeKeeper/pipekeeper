@@ -28,7 +28,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite }) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <PipeShapeIcon shape={pipe.shape} className="text-3xl text-[#E0D8C8]/50" />
+                <PipeShapeIcon shape={pipe.shape} className="w-12 h-12 opacity-50" />
               </div>
             )}
             <div className="absolute top-1 right-1">

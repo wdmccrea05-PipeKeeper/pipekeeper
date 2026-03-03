@@ -31,7 +31,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite }) {
           ) : (
             <div className="w-full h-full flex items-center justify-center">
             <div className="text-[#E0D8C8]/50 text-center">
-                <PipeShapeIcon shape={pipe.shape} className="text-5xl mb-2" />
+                <PipeShapeIcon shape={pipe.shape} className="w-16 h-16 mb-2" />
                 <p className="text-xs">{pipe.shape || t("pipesExtended.noPhoto")}</p>
               </div>
             </div>

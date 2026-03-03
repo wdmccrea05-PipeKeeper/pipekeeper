@@ -63,7 +63,7 @@ export default function Home() {
     <div className="space-y-8">
       {/* 1. HERO */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">
+        <h1 className="text-4xl font-bold font-serif">
           {t("home.title", "Pipe & Tobacco Collection")}
         </h1>
         <p className="text-lg opacity-80 max-w-3xl mx-auto">
@@ -89,7 +89,7 @@ export default function Home() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/pipes-bg.jpg')` }}
+            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/pipes-bg.jpg'), linear-gradient(135deg, #5a2020 0%, #8b3a3a 100%)` }}
           />
           <div className="absolute inset-0 bg-[#6b2d2d]/80" />
           <div className="relative p-6 text-[#F5F1E7]">
@@ -127,7 +127,7 @@ export default function Home() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/tobacco-bg.jpg')` }}
+            style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/tobacco-bg.jpg'), linear-gradient(135deg, #1a3a2a 0%, #2d5a3a 100%)` }}
           />
           <div className="absolute inset-0 bg-[#1c3d2e]/80" />
           <div className="relative p-6 text-[#F5F1E7]">
