@@ -111,6 +111,12 @@ const translations = {
     addTobacco: "Add Tobacco",
     logSession: "Log Session",
     viewPairings: "View Pairings",
+    favorites: "Favorites",
+    recentPipes: "Recent Pipes",
+    recentTobacco: "Recent Tobacco",
+    viewAll: "View All",
+    bulkImport: "Bulk Import",
+    importDesc: "Import pipes & tobacco from CSV",
   },
 
   footer: {
@@ -147,6 +153,8 @@ const translations = {
     trialEndedBody: "Subscribe to continue using all features.",
     continueFree: "Continue Free",
     subscribe: "Subscribe",
+    proBadge: "Pro Active",
+    thankYouSupporting: "Thank you for supporting PipeKeeper",
   },
 
   quickAccess: {
