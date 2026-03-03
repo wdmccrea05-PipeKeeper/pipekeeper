@@ -45,6 +45,7 @@ const translations = {
     from: "from",
     for: "for",
     with: "with",
+    tobacco: { title: "Tobacco" },
   },
 
   auth: {
@@ -89,6 +90,7 @@ const translations = {
     syncing: "Syncing…",
     following: "Following",
     settings: "Settings",
+    goHome: "Go Home",
   },
 
   home: {
@@ -237,7 +239,14 @@ const translations = {
     topicBlendTypes: "Tobacco Blend Classification",
     topicSpecialization: "Pipe Focus & Specialization",
     topicProFeatures: "Pro Features",
-    topicAppFunctions: "General App Functions"
+    topicAppFunctions: "General App Functions",
+    faq: "FAQ",
+    howTo: "How To",
+    troubleshooting: "Troubleshooting",
+    helpCenter: "Help Center",
+    findAnswers: "Find answers to common questions",
+    quickLinks: "Quick Links",
+    contactSupport: "Contact Support",
   },
 
   aiUpdates: {
@@ -814,6 +823,9 @@ const translations = {
     tobaccoMatching: "Tobacco Matching",
     valueLookup: "Value Lookup",
     identifyPipe: "Identify Pipe",
+    noPhoto: "No Photo",
+    unknownMaker: "Unknown Maker",
+    matching: "Matching",
   },
 
   matching: {
@@ -1013,6 +1025,240 @@ const translations = {
     pipeNotAvailable: "Pipe data not available",
     addToCellarFailed: "Failed to add to cellar",
     recommendationFailed: "Failed to get recommendation",
+  },
+
+  search: {
+    searchPlaceholder: "Search...",
+    noResults: "No results found.",
+  },
+
+  messages: {
+    checkYourEmail: "Need more help? Check out our",
+  },
+
+  help: {
+    faq: "FAQ",
+    howTo: "How To",
+    troubleshooting: "Troubleshooting",
+    contactSupport: "Contact Support",
+  },
+
+  debug: {
+    snapshotCopied: "Snapshot copied to clipboard",
+    copyFailed: "Failed to copy",
+    i18nReportDownloaded: "i18n report downloaded",
+    i18nReportCleared: "i18n report cleared",
+  },
+
+  error: {
+    pageNotFound: "Page Not Found",
+    pageNotFoundDescription: "The page",
+    pageNotFoundSuffix: "could not be found.",
+    adminNote: "Admin Note",
+    adminNoteDescription: "This page does not exist in the routing configuration. Check pages.config.js to register it.",
+  },
+
+  aiIdentifier: {
+    analyzing: "Analyzing...",
+  },
+
+  howTo: {
+    pageTitle: "How To",
+    pageSubtitle: "Quick answers with clear navigation paths",
+    managingPipes: "Managing Pipes",
+    addPipeQ: "How do I add a pipe to my collection?",
+    addPipeBasicSteps: [
+      "Tap the Pipes tab in the navigation menu",
+      "Tap the + Add Pipe button in the top right",
+      "Fill in the pipe details (name, maker, shape, etc.)",
+      "Optionally add photos using the photo upload area",
+      "Tap Save to add the pipe to your collection"
+    ],
+    updatePipeQ: "How do I update a pipe's details?",
+    updatePipeSteps: [
+      "Navigate to the Pipes page",
+      "Tap the pipe you want to edit",
+      "On the pipe detail page, tap the Edit (pencil) icon",
+      "Make your changes",
+      "Tap Save"
+    ],
+    markFavoriteQ: "How do I mark a pipe as a favorite?",
+    markFavoriteSteps: [
+      "Navigate to the Pipes page or the pipe's detail page",
+      "Tap the heart icon on the pipe card or detail page",
+      "The heart will turn red to indicate it is a favorite"
+    ],
+    managingTobacco: "Managing Tobacco",
+    addTobaccoQ: "How do I add a tobacco blend?",
+    addTobaccoSteps: [
+      "Tap the Tobacco tab in the navigation menu",
+      "Tap the + Add Blend button",
+      "Search for the blend by name to auto-fill details, or enter manually",
+      "Set your inventory (tins, bulk oz, status)",
+      "Tap Save"
+    ],
+    updateTobaccoQ: "How do I update a tobacco blend?",
+    updateTobaccoSteps: [
+      "Navigate to the Tobacco page",
+      "Tap the blend you want to edit",
+      "On the blend detail page, tap the Edit icon",
+      "Make your changes and tap Save"
+    ],
+    loggingSessions: "Logging Sessions",
+    logSessionQ: "How do I log a smoking session?",
+    logSessionSteps: [
+      "Go to the Home page",
+      "Scroll to the Collection Insights panel",
+      "Tap the Log tab",
+      "Select the pipe and tobacco blend you used",
+      "Fill in session details (duration, rating, notes)",
+      "Tap Save Session"
+    ],
+    viewLogsQ: "How do I view my smoking history?",
+    viewLogsSteps: [
+      "Go to the Home page",
+      "Scroll to the Collection Insights panel",
+      "Tap the Log tab to see your session history"
+    ],
+    measurements: "Pipe Measurements",
+    measurePipeQ: "How do I add measurements to a pipe?",
+    measurePipeSteps: [
+      "Open the pipe detail page",
+      "Tap the Edit icon",
+      "Scroll to the measurements section",
+      "Enter the dimensions manually, or use the AI Geometry tool to auto-fill from photos",
+      "Tap Save"
+    ],
+    aiFeatures: "AI Features",
+    generatePairingsQ: "How do I generate pipe-tobacco pairing recommendations?",
+    generatePairingsSteps: [
+      "Go to the Home page",
+      "Find the AI Updates panel",
+      "Tap Regenerate next to Pairing Matrix",
+      "Once generated, view pairings in Collection Insights > Pairing Grid"
+    ],
+    identifyPipeQ: "How do I use AI to identify a pipe?",
+    identifyPipeSteps: [
+      "Go to the AI Tobacconist page (or Expert Tobacconist tab)",
+      "Tap the Identification tab",
+      "Upload a photo of your pipe",
+      "Tap Analyze to get AI identification results"
+    ],
+    subscriptions: "Subscriptions",
+    upgradeQ: "How do I upgrade my subscription?",
+    upgradeSteps: [
+      "Go to the Profile page",
+      "Tap Manage Subscription or Upgrade",
+      "Select your desired plan",
+      "Complete the checkout process"
+    ],
+    cancelQ: "How do I cancel my subscription?",
+    cancelSteps: [
+      "Go to the Profile page",
+      "Tap Manage Subscription",
+      "Follow the cancellation steps in your subscription portal"
+    ],
+  },
+
+  troubleshooting: {
+    pageTitle: "Troubleshooting",
+    pageSubtitle: "Common issues and how to fix them",
+    loginAccess: "Login & Account Access",
+    cantLoginQ: "I can't log in — what do I do?",
+    cantLoginSteps: [
+      "Check that your email address is spelled correctly",
+      "Request a new verification code from the login page",
+      "Check your spam/junk folder for the code email",
+      "Clear your browser cache and cookies, then try again",
+      "Contact support at admin@pipekeeperapp.com if the issue persists"
+    ],
+    sessionExpiredQ: "My session keeps expiring — how do I fix this?",
+    sessionExpiredSteps: [
+      "Make sure your browser allows cookies from the app",
+      "Avoid using private/incognito mode for persistent sessions",
+      "Check that your browser is not set to clear cookies on close",
+      "Try a different browser if the problem continues"
+    ],
+    dataSync: "Data & Sync Issues",
+    dataNotSavingQ: "My data isn't saving — what should I do?",
+    dataNotSavingSteps: [
+      "Check your internet connection",
+      "Try refreshing the page and repeating the action",
+      "Ensure you tapped Save after making changes",
+      "Try logging out and back in"
+    ],
+    dataNotLoadingQ: "My collection isn't loading — how do I fix this?",
+    dataNotLoadingSteps: [
+      "Refresh the page",
+      "Check your internet connection",
+      "Clear browser cache and reload",
+      "Log out and log back in"
+    ],
+    photos: "Photos",
+    photoNotUploadingQ: "My photo isn't uploading — what do I do?",
+    photoNotUploadingSteps: [
+      "Ensure the image file is under 10MB",
+      "Use a supported format: JPG, PNG, or WebP",
+      "Check your internet connection",
+      "Try refreshing the page and uploading again"
+    ],
+    photoBlurryQ: "My uploaded photo looks blurry — why?",
+    photoBlurrySteps: [
+      "Upload a higher resolution photo (at least 800x600 recommended)",
+      "Avoid screenshots; use original photos when possible",
+      "Ensure good lighting when taking the photo"
+    ],
+    deletePhotoQ: "How do I delete a photo?",
+    deletePhotoSteps: [
+      "Open the pipe or tobacco detail page",
+      "Tap Edit",
+      "Tap the X or trash icon on the photo you want to remove",
+      "Tap Save"
+    ],
+    aiFeatures: "AI Features",
+    aiSlowQ: "AI features are very slow — is that normal?",
+    aiSlowSteps: [
+      "AI operations can take 10-30 seconds depending on collection size",
+      "Ensure you have a stable internet connection",
+      "Try refreshing and retrying if it appears stuck",
+      "Avoid running multiple AI operations simultaneously"
+    ],
+    aiWrongSuggestionQ: "The AI gave me a wrong or strange suggestion — what should I do?",
+    aiWrongSuggestionIntro: "AI suggestions are based on your collection data and may not always be perfect. You can:",
+    aiWrongSuggestionSteps: [
+      "Update your pipe's focus tags to better reflect its usage",
+      "Add more detail to your tobacco blend entries",
+      "Regenerate pairings after updating your data",
+      "Use the feedback option if available to report inaccurate results"
+    ],
+    aiNotWorkingQ: "AI features aren't working at all — how do I fix this?",
+    aiNotWorkingSteps: [
+      "Ensure you have an active Premium or Pro subscription",
+      "Refresh the page and try again",
+      "Check that you have at least one pipe and one tobacco blend in your collection",
+      "Contact support if the issue persists"
+    ],
+    subscriptionBilling: "Subscription & Billing",
+    subscriptionNotWorkingQ: "My subscription isn't being recognized — what do I do?",
+    subscriptionNotWorkingSteps: [
+      "Log out and log back in to refresh your account status",
+      "Check that the subscription is active in your payment portal",
+      "On mobile, use the 'Restore Purchases' option if available",
+      "Contact support with your subscription email if the issue continues"
+    ],
+    billingIssueQ: "I was charged but don't have access — what should I do?",
+    billingIssueSteps: [
+      "Log out and log back in",
+      "Check your subscription status in the Profile page",
+      "Contact support at admin@pipekeeperapp.com with your payment confirmation"
+    ],
+    cancelSubscriptionQ: "How do I cancel my subscription?",
+    cancelSubscriptionSteps: [
+      "Go to the Profile page",
+      "Tap Manage Subscription",
+      "Follow the cancellation steps in Stripe (web) or the App Store/Play Store (mobile)"
+    ],
+    stillNeedHelp: "Still need help?",
   },
 };
 

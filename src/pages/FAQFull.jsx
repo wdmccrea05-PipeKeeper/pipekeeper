@@ -56,7 +56,7 @@ export default function FAQFull() {
                 {t("helpContent.faqFull.navHowTo")}
               </Button>
             </Link>
-            <Link to={createPageUrl('Troubleshooting')}>
+            <Link to={createPageUrl('TroubleshootingFull')}>
               <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                 <Wrench className="w-4 h-4 mr-2" />
                 {t("helpContent.faqFull.navTroubleshooting")}
