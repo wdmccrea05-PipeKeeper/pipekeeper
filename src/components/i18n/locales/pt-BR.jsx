@@ -124,6 +124,23 @@ const translations = {
     sendFailed: "Falha ao enviar a solicitação de suporte. Tente novamente ou envie um e-mail diretamente para admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Suporte",
+    subtitle: "Ajuda para gerenciamento de coleção e inventário de adega.",
+    beforeContactTitle: "Antes de entrar em contato com o suporte",
+    checkAccount: "Confirme que você está conectado à conta correta.",
+    restartApp: "Feche e reabra o aplicativo, depois tente novamente.",
+    checkConnection: "Verifique sua conexão com a internet.",
+    screenshots: "Tire capturas de tela do problema, se possível.",
+    includeInMessageTitle: "O que incluir na sua mensagem",
+    deviceModel: "Modelo do dispositivo e versão do iOS",
+    whatPage: "Em qual página você estava (Cachimbos, Adega, Perfil, etc.)",
+    stepsToReproduce: "Passos para reproduzir o problema",
+    screenshotsRecommended: "Capturas de tela (recomendadas)",
+    aboutBuildTitle: "Sobre a versão iOS",
+    aboutBuildBody: "Esta versão iOS foi desenvolvida para gerenciamento de coleção e inventário de adega. Recursos que possam ser interpretados como orientação de recomendação ou uso não estão incluídos nesta versão.",
+  },
+
   faqExtended: {
     appleTitle: "Perguntas Frequentes",
     appleDesc: "Tudo o que você precisa saber sobre o PipeKeeper para iOS",

@@ -252,6 +252,23 @@ export default {
     sendFailed: "Wysyłanie prośby o pomoc techniczną nie powiodło się. Spróbuj ponownie lub wyślij e-mail bezpośrednio na adres admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Wsparcie",
+    subtitle: "Pomoc w zarządzaniu kolekcją i inwentarzem piwnicy.",
+    beforeContactTitle: "Przed kontaktem z pomocą techniczną",
+    checkAccount: "Upewnij się, że jesteś zalogowany na właściwe konto.",
+    restartApp: "Zamknij i ponownie otwórz aplikację, a następnie spróbuj ponownie.",
+    checkConnection: "Sprawdź połączenie internetowe.",
+    screenshots: "Jeśli to możliwe, zrób zrzuty ekranu problemu.",
+    includeInMessageTitle: "Co uwzględnić w wiadomości",
+    deviceModel: "Model urządzenia i wersja iOS",
+    whatPage: "Na jakiej stronie się znajdowałeś (Fajki, Piwnica, Profil, itp.)",
+    stepsToReproduce: "Kroki do odtworzenia problemu",
+    screenshotsRecommended: "Zrzuty ekranu (zalecane)",
+    aboutBuildTitle: "O kompilacji iOS",
+    aboutBuildBody: "Ta kompilacja iOS jest przeznaczona do zarządzania kolekcją i inwentarzem piwnicy. Funkcje, które mogłyby być interpretowane jako zalecenia lub wskazówki dotyczące użytkowania, nie są uwzględnione w tej wersji.",
+  },
+
   faqExtended: {
     appleTitle: "Często Zadawane Pytania",
     appleDesc: "Wszystko, co musisz wiedzieć o PipeKeeper dla iOS",

@@ -124,6 +124,23 @@ const translations = {
     sendFailed: "Échec de l'envoi de la demande de support. Veuillez réessayer ou envoyer un e-mail directement à admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Assistance",
+    subtitle: "Aide pour la gestion de la collection et de l'inventaire de cave.",
+    beforeContactTitle: "Avant de contacter le support",
+    checkAccount: "Confirmez que vous êtes connecté au bon compte.",
+    restartApp: "Fermez et rouvrez l'application, puis réessayez.",
+    checkConnection: "Vérifiez votre connexion internet.",
+    screenshots: "Prenez des captures d'écran du problème si possible.",
+    includeInMessageTitle: "Ce qu'il faut inclure dans votre message",
+    deviceModel: "Modèle de l'appareil et version d'iOS",
+    whatPage: "Sur quelle page vous étiez (Pipes, Cave, Profil, etc.)",
+    stepsToReproduce: "Étapes pour reproduire le problème",
+    screenshotsRecommended: "Captures d'écran (recommandées)",
+    aboutBuildTitle: "À propos de la version iOS",
+    aboutBuildBody: "Cette version iOS est conçue pour la gestion de collections et d'inventaires de cave. Les fonctionnalités pouvant être interprétées comme des recommandations ou des conseils d'utilisation ne sont pas incluses dans cette version.",
+  },
+
   faqExtended: {
     appleTitle: "Questions Fréquemment Posées",
     appleDesc: "Tout ce que vous devez savoir sur PipeKeeper pour iOS",

@@ -143,6 +143,23 @@ const translations = {
     sendFailed: "Error al enviar la solicitud de soporte. Por favor, inténtalo de nuevo o envía un correo electrónico directamente a admin@pipekeeperapp.com.",
   },
 
+  appleSupport: {
+    title: "Soporte",
+    subtitle: "Ayuda para la gestión de colecciones e inventario de bodega.",
+    beforeContactTitle: "Antes de contactar soporte",
+    checkAccount: "Confirma que has iniciado sesión en la cuenta correcta.",
+    restartApp: "Cierra y vuelve a abrir la aplicación, luego inténtalo de nuevo.",
+    checkConnection: "Comprueba tu conexión a internet.",
+    screenshots: "Toma capturas de pantalla del problema si es posible.",
+    includeInMessageTitle: "Qué incluir en tu mensaje",
+    deviceModel: "Modelo del dispositivo y versión de iOS",
+    whatPage: "En qué página estabas (Pipas, Bodega, Perfil, etc.)",
+    stepsToReproduce: "Pasos para reproducir el problema",
+    screenshotsRecommended: "Capturas de pantalla (recomendadas)",
+    aboutBuildTitle: "Sobre la versión iOS",
+    aboutBuildBody: "Esta versión de iOS está diseñada para la gestión de colecciones e inventario de bodega. Las funciones que podrían interpretarse como orientación de recomendación o uso no están incluidas en esta versión.",
+  },
+
   faqExtended: {
     appleTitle: "Preguntas Frecuentes",
     appleDesc: "Todo lo que necesitas saber sobre PipeKeeper para iOS",

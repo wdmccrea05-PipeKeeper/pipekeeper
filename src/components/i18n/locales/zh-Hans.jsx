@@ -246,6 +246,23 @@ export default {
     sendFailed: "发送支持请求失败。请重试或直接发送电子邮件至 admin@pipekeeperapp.com。",
   },
 
+  appleSupport: {
+    title: "支持",
+    subtitle: "收藏和酒窖库存管理的帮助。",
+    beforeContactTitle: "联系支持前",
+    checkAccount: "确认您已登录正确的账户。",
+    restartApp: "关闭并重新打开应用程序，然后重试。",
+    checkConnection: "检查您的网络连接。",
+    screenshots: "如果可能，请对问题进行截图。",
+    includeInMessageTitle: "消息中应包含的内容",
+    deviceModel: "设备型号和iOS版本",
+    whatPage: "您所在的页面（烟斗、酒窖、个人资料等）",
+    stepsToReproduce: "重现问题的步骤",
+    screenshotsRecommended: "截图（推荐）",
+    aboutBuildTitle: "关于iOS版本",
+    aboutBuildBody: "此iOS版本专为收藏和酒窖库存管理而设计。可能被解释为推荐或使用指导的功能不包含在此版本中。",
+  },
+
   subscription: {
     free: "免费",
     premium: "高级",
