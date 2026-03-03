@@ -163,9 +163,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               <div className="text-center py-12">
                 <BarChart3 className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                 <p className="text-[#A4B0C4] mb-4">{t("insights.statsEmpty")}</p>
-                <a href={createPageUrl('Pipes')}>
-                  <Button>{t("insights.addFirstItem")}</Button>
-                </a>
+                <Button asChild>
+                  <a href={createPageUrl('Pipes')}>{t("insights.addFirstItem")}</a>
+                </Button>
               </div>
             ) : (
               <TobaccoCollectionStats />
@@ -182,14 +182,14 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.usageLogAction")}</p>
                     <div className="flex gap-3 justify-center">
                       {pipes.length === 0 && (
-                        <a href={createPageUrl('Pipes')}>
-                          <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
-                        </a>
+                        <Button asChild size="sm">
+                          <a href={createPageUrl('Pipes')}>{t("tobacconist.addFirstPipe")}</a>
+                        </Button>
                       )}
                       {blends.length === 0 && (
-                        <a href={createPageUrl('Tobacco')}>
-                          <Button size="sm" variant="outline">{t("tobacconist.addFirstBlend")}</Button>
-                        </a>
+                        <Button asChild size="sm" variant="outline">
+                          <a href={createPageUrl('Tobacco')}>{t("tobacconist.addFirstBlend")}</a>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -209,9 +209,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <CalendarClock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                     <p className="text-[#A4B0C4] mb-2">{t("empty.rotationNoPipes")}</p>
                     <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.rotationAction")}</p>
-                    <a href={createPageUrl('Pipes')}>
-                      <Button size="sm">{t("tobacconist.addFirstPipe")}</Button>
-                    </a>
+                    <Button asChild size="sm">
+                      <a href={createPageUrl('Pipes')}>{t("tobacconist.addFirstPipe")}</a>
+                    </Button>
                   </div>
                 ) : (
                   <RotationPlanner user={user} />
@@ -267,9 +267,9 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     <Clock className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                     <p className="text-[#A4B0C4] mb-2">{t("empty.agingNoBlends")}</p>
                     <p className="text-sm text-[#8F9DB3] mb-4">{t("empty.agingAction")}</p>
-                    <a href={createPageUrl('Tobacco')}>
-                      <Button size="sm">{t("tobacconist.addFirstBlend")}</Button>
-                    </a>
+                    <Button asChild size="sm">
+                      <a href={createPageUrl('Tobacco')}>{t("tobacconist.addFirstBlend")}</a>
+                    </Button>
                   </div>
                 ) : (
                   <>

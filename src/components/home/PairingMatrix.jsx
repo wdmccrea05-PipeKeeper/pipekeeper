@@ -137,16 +137,12 @@ export default function PairingMatrix({ user }) {
                {t("pairingMatrix.noPairingDataDesc")}
              </p>
              <div className="flex gap-3">
-               <a href={createPageUrl('Pipes')}>
-                 <Button variant="outline" size="sm">
-                   {t("pairingMatrix.addFirstPipe")}
-                 </Button>
-               </a>
-               <a href={createPageUrl('Tobacco')}>
-                 <Button variant="outline" size="sm">
-                   {t("pairingMatrix.addFirstBlend")}
-                 </Button>
-               </a>
+               <Button asChild variant="outline" size="sm">
+                 <a href={createPageUrl('Pipes')}>{t("pairingMatrix.addFirstPipe")}</a>
+               </Button>
+               <Button asChild variant="outline" size="sm">
+                 <a href={createPageUrl('Tobacco')}>{t("pairingMatrix.addFirstBlend")}</a>
+               </Button>
              </div>
              <Button 
                onClick={regenPairings} 
