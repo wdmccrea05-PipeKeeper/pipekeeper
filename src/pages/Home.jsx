@@ -1,7 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Card } from "@/components/ui/card";
+import { PKCard } from "@/components/ui/pk-surface";
+import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
 import { base44 } from "@/api/base44Client";
@@ -71,7 +72,7 @@ export default function Home() {
       </div>
 
       {/* PIPE COLLECTION CARD */}
-      <Card className="p-6">
+      <PKCard className="p-6">
         <h2 className="text-2xl font-semibold">
           {t("home.pipeCollectionTitle", "Pipe Collection")}
         </h2>
@@ -97,14 +98,14 @@ export default function Home() {
         </div>
 
         <div className="mt-6">
-          <a href={createPageUrl("Pipes")}>
-            {t("home.viewCollection", "View Collection")}
-          </a>
+          <Button asChild>
+            <a href={createPageUrl("Pipes")}>{t("home.viewCollection", "View Collection")}</a>
+          </Button>
         </div>
-      </Card>
+      </PKCard>
 
       {/* TOBACCO CELLAR CARD */}
-      <Card className="p-6">
+      <PKCard className="p-6">
         <h2 className="text-2xl font-semibold">
           {t("home.tobaccoCellarTitle", "Tobacco Cellar")}
         </h2>
@@ -137,11 +138,11 @@ export default function Home() {
         </div>
 
         <div className="mt-6">
-          <a href={createPageUrl("Tobacco")}>
-            {t("home.viewCellar", "View Cellar")}
-          </a>
+          <Button asChild>
+            <a href={createPageUrl("Tobacco")}>{t("home.viewCellar", "View Cellar")}</a>
+          </Button>
         </div>
-      </Card>
+      </PKCard>
 
       {/* AI UPDATES PANEL */}
       <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />

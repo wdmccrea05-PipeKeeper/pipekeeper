@@ -28,15 +28,6 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
   const navigate = useNavigate();
-
-  if (!entitlements.canUse("AI_UPDATES")) {
-    return (
-      <UpgradePrompt 
-        featureName={t("aiUpdates.featureName")}
-        description={t("aiUpdates.description")}
-      />
-    );
-  }
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
@@ -418,6 +409,15 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
   });
 
   const anyBusy = busy || reclassifyBusy;
+
+  if (!entitlements.canUse("AI_UPDATES")) {
+    return (
+      <UpgradePrompt
+        featureName={t("aiUpdates.featureName")}
+        description={t("aiUpdates.description")}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
