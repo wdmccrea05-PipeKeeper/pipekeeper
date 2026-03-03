@@ -17,6 +17,7 @@ import { formatWeight } from "@/components/utils/localeFormatters";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCorrectCellaredValues } from "@/components/utils/cellarReconciliation";
 import { detectCellarDrift } from "@/components/utils/tobaccoQuantityHelpers";
+import { safeUpdate } from "@/components/utils/safeUpdate";
 
 export default function CellarLog({ blend }) {
   const { t } = useTranslation();
@@ -39,7 +40,8 @@ export default function CellarLog({ blend }) {
     queryFn: async () => {
       const result = await base44.entities.CellarLog.filter(
         { blend_id: blend.id, created_by: user?.email },
-        '-date'
+        '-date',
+        100
       );
       return Array.isArray(result) ? result : [];
     },
@@ -105,10 +107,15 @@ export default function CellarLog({ blend }) {
 
   const syncBlendCellarQuantities = async () => {
     try {
-      const allLogs = await base44.entities.CellarLog.filter({ 
-        blend_id: blend.id, 
-        created_by: user?.email 
-      });
+      // Use cached logs when available to avoid a redundant network call; the cache
+      // may not include the just-created/deleted entry yet, so fall back to a fresh fetch.
+      const cachedLogs = queryClient.getQueryData(['cellar-logs', blend.id]);
+      const allLogs = cachedLogs !== undefined
+        ? cachedLogs
+        : await base44.entities.CellarLog.filter({ 
+            blend_id: blend.id, 
+            created_by: user?.email 
+          });
 
       const correctValues = calculateCorrectCellaredValues(blend, allLogs);
 
@@ -133,7 +140,7 @@ export default function CellarLog({ blend }) {
         pouch_cellared_date: correctValues.pouch_pouches_cellared > 0 ? oldestDate(datesByContainer.pouch) : null,
       };
 
-      await base44.entities.TobaccoBlend.update(blend.id, updateData);
+      await safeUpdate('TobaccoBlend', blend.id, updateData, user?.email);
 
       // Data integrity check: warn if significant drift remains after sync
       const updatedBlend = { ...blend, ...updateData };
@@ -154,6 +161,14 @@ export default function CellarLog({ blend }) {
       />
     );
   }
+
+  const containerLabel = {
+    tin: t("cellarLog.containerTin", "Tin"),
+    jar: t("cellarLog.containerJar", "Jar"),
+    pouch: t("cellarLog.containerPouch", "Pouch"),
+    bulk: t("cellarLog.containerBulk", "Bulk"),
+    other: t("common.other", "Other"),
+  };
 
   return (
     <>
@@ -339,7 +354,7 @@ export default function CellarLog({ blend }) {
                           {log.amount_oz} {t("cellarLog.ozUnit","oz")}
                         </Badge>
                         <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
-                          {log.container_type}
+                          {containerLabel[log.container_type] || log.container_type}
                         </Badge>
                         {log.removal_destination && (
                           <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
