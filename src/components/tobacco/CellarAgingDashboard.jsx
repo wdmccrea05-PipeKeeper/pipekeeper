@@ -62,8 +62,18 @@ export default function CellarAgingDashboard({ user }) {
     }
   };
 
+  // Pre-compute log data once per blend to avoid O(n²) repeated filtering
+  const logDataByBlend = React.useMemo(() => {
+    const map = {};
+    (blends || []).forEach(b => {
+      map[b.id] = getCellarDataFromLogs(b.id);
+    });
+    return map;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cellarLogs, blends]);
+
   const cellarBlends = blends.filter(b => {
-    const logData = getCellarDataFromLogs(b.id);
+    const logData = logDataByBlend[b.id] || { net: 0 };
     const hasCellared = (b.tin_tins_cellared || 0) > 0 || 
                         (b.bulk_cellared || 0) > 0 || 
                         (b.pouch_pouches_cellared || 0) > 0 ||
@@ -73,7 +83,7 @@ export default function CellarAgingDashboard({ user }) {
   });
 
   const getAgingInfo = (blend) => {
-     const logData = getCellarDataFromLogs(blend.id);
+     const logData = logDataByBlend[blend.id] || { net: 0, oldestDate: null };
      const dates = [
        blend.tin_cellared_date,
        blend.bulk_cellared_date,
@@ -132,8 +142,7 @@ export default function CellarAgingDashboard({ user }) {
   const getTotalCellarWeight = () => {
     let total = 0;
     cellarBlends.forEach(b => {
-      const logData = getCellarDataFromLogs(b.id);
-      // Use cellar logs as source of truth for cellared amounts
+      const logData = logDataByBlend[b.id] || { net: 0 };
       total += logData.net;
     });
     return total;
@@ -169,7 +178,7 @@ export default function CellarAgingDashboard({ user }) {
     ...blend,
     _aging: getAgingInfo(blend),
     _recommendation: getAgingRecommendation(blend),
-    _logData: getCellarDataFromLogs(blend.id),
+    _logData: logDataByBlend[blend.id] || { net: 0, oldestDate: null },
   }));
 
   return (
@@ -235,7 +244,7 @@ export default function CellarAgingDashboard({ user }) {
                       {aging.oldestDate && (
                         <>
                           <span>•</span>
-                          <span>{t("tobacconist.sinceDateFormat")} {format(aging.oldestDate, 'MMM yyyy')}</span>
+                          <span>{t("tobacconist.sinceDateFormat")} {format(new Date(aging.oldestDate), 'MMM yyyy')}</span>
                           <span>•</span>
                           <span className="font-medium">{aging.months}m {aging.days - aging.months * 30}d</span>
                         </>
