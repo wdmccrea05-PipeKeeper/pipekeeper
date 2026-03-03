@@ -89,7 +89,7 @@ export default function Home() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=800&q=80')` }}
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1574169208507-84376144848b?w=800&q=80')` }}
           />
           <div className="absolute inset-0 bg-[#6b2d2d]/75" />
           <div className="relative p-6 text-[#F5F1E7]">
