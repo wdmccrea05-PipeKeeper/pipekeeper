@@ -54,7 +54,7 @@ export function calculateCellaredOzFromLogs(cellarLogs, blendId = null) {
     ? logs.filter(log => String(log.blend_id) === String(blendId))
     : logs;
   
-  return relevantLogs.reduce((sum, log) => {
+  const netOz = relevantLogs.reduce((sum, log) => {
     if (!log) return sum;
     const amount = Number(log.amount_oz) || 0;
     
@@ -65,6 +65,7 @@ export function calculateCellaredOzFromLogs(cellarLogs, blendId = null) {
     }
     return sum;
   }, 0);
+  return Math.max(0, netOz);
 }
 
 /**

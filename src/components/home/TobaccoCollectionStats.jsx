@@ -12,7 +12,6 @@ import { base44 } from "@/api/base44Client";
 import { scopedEntities } from "@/components/api/scopedEntities";
 import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle, Settings, ChevronDown, Sparkles } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -26,9 +25,8 @@ export default function TobaccoCollectionStats() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
-  const [showTrends, setShowTrends] = useState(false);
   
-  const { user, isPro } = useCurrentUser();
+  const { user, hasPro } = useCurrentUser();
 
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
@@ -219,7 +217,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-blue-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{formatWeight(bulkWeightOz, 'oz')}</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-blue-600" />
@@ -254,7 +252,7 @@ export default function TobaccoCollectionStats() {
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 bg-white rounded hover:bg-purple-50 transition-colors group"
                 >
-                  <span className="text-xs text-stone-600">Total</span>
+                  <span className="text-xs text-stone-600">{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-emerald-700">{formatWeight(pouchWeightOz, 'oz')}</span>
                     <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-purple-600" />
@@ -315,6 +313,15 @@ export default function TobaccoCollectionStats() {
               <TrendingUp className="w-4 h-4 text-emerald-600" />
               {t("stats.blendTypeBreakdown")}
             </h3>
+            {lowInventoryBlends.length > 0 && (
+              <button
+                onClick={() => handleDrillDown('lowInventory', lowInventoryBlends)}
+                className="w-full flex justify-between items-center py-2 px-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+              >
+                <span className="text-xs font-semibold text-amber-800">⚠ Low Inventory ({lowInventoryBlends.length} blend{lowInventoryBlends.length > 1 ? 's' : ''})</span>
+                <ChevronRight className="w-4 h-4 text-amber-600" />
+              </button>
+            )}
             <div className="space-y-2">
               {sortedBlendTypes.map(([type, count]) => {
                 const typeBlends = blends.filter(b => (b.blend_type || 'Unassigned') === type);
@@ -589,21 +596,6 @@ export default function TobaccoCollectionStats() {
               </>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Trends Dialog */}
-      <Dialog open={showTrends} onOpenChange={setShowTrends}>
-        <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="sr-only">{t("stats.trendsReport")}</DialogTitle>
-          </DialogHeader>
-          <TrendsReport
-            logs={smokingLogs}
-            pipes={pipes}
-            blends={blends}
-            user={user}
-          />
         </DialogContent>
       </Dialog>
 

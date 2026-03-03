@@ -251,12 +251,6 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   />
                 ) : (
                   <ProFeatureLock featureName="Trends Report">
-                    <TrendsReport 
-                      logs={[]} 
-                      pipes={pipes} 
-                      blends={blends} 
-                      user={user}
-                    />
                   </ProFeatureLock>
                 )}
               </TabsContent>

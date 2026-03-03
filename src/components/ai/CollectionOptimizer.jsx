@@ -175,6 +175,7 @@ function CollectionOptimizerInner({
   const [selectedChanges, setSelectedChanges] = useState({});
   const [showRegenDialog, setShowRegenDialog] = useState(false);
   const [showPipesList, setShowPipesList] = useState(true);
+  const dismissedOptRegenDialog = useRef(false);
 
   // Sticky conversation reuse for agent follow-ups
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -247,7 +248,7 @@ function CollectionOptimizerInner({
 
   const [lastShownOptId, setLastShownOptId] = useState(null);
   useEffect(() => {
-    if (isStale && optimization?.id && lastShownOptId !== optimization.id) {
+    if (isStale && optimization?.id && lastShownOptId !== optimization.id && !dismissedOptRegenDialog.current) {
       setShowRegenDialog(true);
       setLastShownOptId(optimization.id);
     }
@@ -891,13 +892,6 @@ ${englishUserText}
 
     if (!pipe_changes.length) return;
 
-    const batch = await base44.entities.AIApplyBatch.create({
-      created_by: user?.email,
-      type: "optimization_focus_apply",
-      created_at: new Date().toISOString(),
-      pipe_changes,
-    });
-
     for (const ch of pipe_changes) {
       const p = pipeMap.get(ch.pipe_id);
       if (!p) continue;
@@ -917,7 +911,6 @@ ${englishUserText}
     invalidatePipeQueries(queryClient, user?.email);
     invalidateAIQueries(queryClient, user?.email);
 
-    return batch;
   };
 
   // --- UI guards ---
@@ -1211,7 +1204,7 @@ ${englishUserText}
           </DialogHeader>
 
           <div className="flex flex-col sm:flex-row gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowRegenDialog(false)} className="w-full sm:w-auto">
+            <Button variant="outline" onClick={() => { dismissedOptRegenDialog.current = true; setShowRegenDialog(false); }} className="w-full sm:w-auto">
               {t("tobacconist.notNow")}
             </Button>
 
