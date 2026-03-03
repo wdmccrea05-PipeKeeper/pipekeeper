@@ -366,7 +366,7 @@ export default function PipeDetailPage() {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-stone-400 text-center">
-                    <PipeShapeIcon shape={pipe.shape} className="text-9xl mb-4" />
+                    <PipeShapeIcon shape={pipe.shape} className="w-24 h-24 mb-4" />
                     <p>{pipe.shape || t("pipesExtended.noPhoto")}</p>
                   </div>
                 </div>
