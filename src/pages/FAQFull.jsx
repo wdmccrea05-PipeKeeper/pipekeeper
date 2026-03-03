@@ -65,78 +65,40 @@ export default function FAQFull() {
           </div>
         </div>
 
-      <Section title={sections.general?.title || t("faqFull.general","General")}>
-        <Card className="bg-[#A35C5C]/10 border-[#A35C5C]/40 mb-6">
-          <button
-            onClick={() => toggleItem('verification-help')}
-            className="w-full text-left p-4 flex items-center justify-between hover:bg-[#A35C5C]/5 transition-colors"
-          >
-            <span className="font-semibold text-[#E0D8C8] pr-4">{verificationHelp.q}</span>
-            <ChevronDown 
-              className={`w-5 h-5 text-[#E0D8C8]/70 flex-shrink-0 transition-transform ${openItems['verification-help'] ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {openItems['verification-help'] && (
-            <CardContent className="px-4 pb-4 pt-0 text-[#E0D8C8]/80 leading-relaxed space-y-3">
-              <p>{verificationHelp.intro}</p>
-              <ol className="list-decimal list-inside space-y-2">
-                {verificationHelp.steps?.map((step, i) => <li key={i}>{step}</li>)}
-              </ol>
-              <p className="text-sm mt-3">{verificationHelp.note}</p>
-            </CardContent>
-          )}
-        </Card>
+      <Section title={t("helpCenter.topicGeneral", "General")}>
+         <Q id="verification-help" q={t("verificationHelp.pageTitle", "Email Verification Help")}>
+           <div className="space-y-3">
+             <p>{t("verificationHelp.expiredDesc", "If your email verification code expired or you missed the 10-minute window, you have a few options:")}</p>
+             <div className="bg-stone-50 p-3 rounded">
+               <p className="font-semibold mb-2">{t("verificationHelp.option1Title", "Option 1: Request a New Verification Code")}</p>
+               <p className="text-sm">{t("verificationHelp.option1Desc", "Click below to return to the login page. Enter your email again and a fresh verification code will be sent automatically with a new 10-minute window.")}</p>
+             </div>
+           </div>
+         </Q>
+       </Section>
 
-        {sections.general?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>
-            <p>{item.a}</p>
-            {item.disclaimer && <div className="mt-2 font-semibold">{item.disclaimer}</div>}
-          </Q>
-        ))}
-      </Section>
+       <Section title={t("helpCenter.topicGettingStarted", "Getting Started")}>
+         <Q id="getting-started" q={t("help.gettingStarted", "How do I get started with PipeKeeper?")}>
+           <p>{t("helpCenter.gettingStartedDesc", "Start by adding your first pipe and tobacco blend to your collection. Then explore features like smoking logs, pairing recommendations, and collection insights.")}</p>
+         </Q>
+       </Section>
 
-      <Section title={sections.gettingStarted?.title || t("faqFull.gettingStarted","Getting Started")}>
-        {sections.gettingStarted?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>
-            {item.a}
-            {item.cta && (
-              <div className="mt-4">
-                <a href={createPageUrl('Home?restart_tutorial=true')} className="inline-block">
-                  <button className="px-4 py-2 bg-[#8b3a3a] text-white rounded-lg hover:bg-[#a94747] transition-colors">
-                    {item.cta}
-                  </button>
-                </a>
-              </div>
-            )}
-          </Q>
-        ))}
-      </Section>
+       <Section title={t("helpCenter.topicFieldDefinitions", "Field Definitions")}>
+         <Q id="field-definitions" q={t("help.fieldDefinitions", "What do the different fields mean?")}>
+           <p>{t("helpCenter.fieldDefinitionsDesc", "Check the Help menu for detailed explanations of each field in the pipe and tobacco forms.")}</p>
+         </Q>
+       </Section>
 
-      <Section title={sections.fieldDefinitions?.title || t("faqFull.fieldDefinitions","Field Definitions")}>
-        {sections.fieldDefinitions?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
-        ))}
-      </Section>
+       <Section title={t("helpCenter.topicTobaccoValuation", "Tobacco Valuation")}>
+         <Q id="tobacco-valuation" q={t("help.tobaccoValuation", "How is tobacco value calculated?")}>
+           <p>{t("helpCenter.tobaccoValuationDesc", "AI valuation analyzes public marketplace data to estimate market value. Manual market value can be entered directly on the tobacco detail page.")}</p>
+         </Q>
+       </Section>
 
-      <Section title={sections.tobaccoValuation?.title || t("faqFull.tobaccoValuation","Tobacco Valuation")}>
-        {sections.tobaccoValuation?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
-        ))}
-      </Section>
-
-      <Section title={sections.featuresAndTools?.title || t("faqFull.featuresAndTools","Features & Tools")}>
-        {sections.featuresAndTools?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>
-            {item.intro && <p>{item.intro}</p>}
-            {item.points && (
-              <ul className="list-disc ml-6 mt-2 space-y-1">
-                {item.points.map((point, i) => <li key={i}>{point}</li>)}
-              </ul>
-            )}
-            {item.a && <p>{item.a}</p>}
-            {item.conclusion && <p className="mt-2">{item.conclusion}</p>}
-          </Q>
-        ))}
+       <Section title={t("helpCenter.topicFeaturesAndTools", "Features & Tools")}>
+         <Q id="features-ai" q={t("help.aiFeatures", "What AI features are available?")}>
+           <p>{t("helpCenter.aiDesc", "PipeKeeper includes AI pipe identification, tobacco matching, collection optimization, and geometry analysis from photos.")}</p>
+         </Q>
 
         {/* Subscription Tiers Comparison */}
         <Q id="subscription-tiers" q={t("faqFull.subscriptionTiersQuestion","What are the subscription tiers and what's included?")}>
@@ -189,33 +151,34 @@ export default function FAQFull() {
         </Q>
       </Section>
 
-      <Section title={sections.accountsAndData?.title || t("faqFull.accountsAndData","Accounts & Data")}>
-        {sections.accountsAndData?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
-        ))}
+      <Section title={t("helpCenter.topicAccountsAndData", "Accounts & Data")}>
+        <Q id="account-security" q={t("help.accountSecurity", "How is my account secured?")}>
+          <p>{t("helpCenter.accountSecurityDesc", "Your account data is encrypted and secured by Base44's authentication system. We never store password data.")}</p>
+        </Q>
       </Section>
 
-      <Section title={sections.ai?.title || t("faqFull.ai","AI Features & Accuracy")}>
-        {sections.ai?.items?.map((item) => (
-          <Q key={item.id} id={item.id} q={item.q}>{item.a}</Q>
-        ))}
+      <Section title={t("helpCenter.topicAI", "AI Features & Accuracy")}>
+        <Q id="ai-accuracy" q={t("help.aiAccuracy", "How accurate are the AI recommendations?")}>
+          <p>{t("helpCenter.aiAccuracyDesc", "AI recommendations are based on your collection data and preferences. Results improve as you add more details and log smoking sessions.")}</p>
+        </Q>
       </Section>
 
-      <Section title={sections.support?.title || t("common.support","Support")}>
-        <Q id="contact-support" q={sections.support?.contactQ || t("faqFull.contactSupport","How do I contact support?")}>
-          {sections.support?.contactIntro}{" "}
-          <a href="https://pipekeeper.app" target="_blank" rel="noreferrer" className="text-[#8b3a3a] hover:text-[#a94747] underline">
-            pipekeeper.app
-          </a>
-          . {sections.support?.contactLinks}
-          <ul className="mt-2 space-y-1">
-            <li>
-              <Link to={createPageUrl('TermsOfService')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.terms")}</Link>
-            </li>
-            <li>
-              <Link to={createPageUrl('PrivacyPolicy')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.privacy")}</Link>
-            </li>
-          </ul>
+      <Section title={t("helpCenter.topicSupport", "Support")}>
+        <Q id="contact-support" q={t("help.contactSupport", "How do I contact support?")}>
+          <div className="space-y-3">
+            <p>{t("helpCenter.contactDesc", "Visit the Support page in the app menu or email us directly. Links to all support resources are available in the footer.")}</p>
+            <ul className="mt-2 space-y-1">
+              <li>
+                <Link to={createPageUrl('Support')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.support")}</Link>
+              </li>
+              <li>
+                <Link to={createPageUrl('TermsOfService')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.terms")}</Link>
+              </li>
+              <li>
+                <Link to={createPageUrl('PrivacyPolicy')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("nav.privacy")}</Link>
+              </li>
+            </ul>
+          </div>
         </Q>
       </Section>
     </div>
