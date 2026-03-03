@@ -625,6 +625,10 @@ const translations = {
     updatesTooltip: "Review and regenerate pairing matrices and collection optimization.",
     updatesSubtitle: "Review what's out of date and regenerate with approval.",
     upgradeInOptimizeTab: "Upgrade via the Optimize tab to unlock What-If analysis.",
+    outOfDate: "Out of date",
+    outOfDateMessage: "Data needs regeneration to reflect current collection",
+    notNow: "Not Now",
+    undoLastChange: "Undo Last Change",
   },
 
   tobaccoSearch: {
