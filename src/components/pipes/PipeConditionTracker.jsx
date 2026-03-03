@@ -58,7 +58,7 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             onValueChange={(value) => handleUpdate('overall_condition', value)}
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder={t("conditionTracker.selectCondition", "Select condition")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Mint">Mint</SelectItem>

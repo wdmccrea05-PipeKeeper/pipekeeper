@@ -59,6 +59,8 @@ export default function TobaccoDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [expandedImage, setExpandedImage] = useState(null);
+  const [primaryImgError, setPrimaryImgError] = useState(false);
+  const [fallbackImgError, setFallbackImgError] = useState(false);
 
   const queryClient = useQueryClient();
   const { user, hasPaid } = useCurrentUser();
@@ -113,6 +115,11 @@ export default function TobaccoDetailPage() {
       }
     }
   }, [blend?.id, user?.email]);
+
+  useEffect(() => {
+    setPrimaryImgError(false);
+    setFallbackImgError(false);
+  }, [blend?.id]);
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -243,28 +250,42 @@ export default function TobaccoDetailPage() {
               layoutId={`blend-${blend.id}`}
               onClick={() => setExpandedImage(blend.logo || blend.photo)}
             >
-              {blend.logo || blend.photo ? (
+              {(blend.logo || blend.photo) && !primaryImgError ? (
                 <img 
                   src={blend.logo || blend.photo} 
                   alt={blend.name}
                   className={`w-full h-full ${blend.logo ? 'object-contain p-6' : 'object-cover'} hover:scale-105 transition-transform duration-300`}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    const fallbackLogo = getTobaccoLogo(blend.manufacturer);
-                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-white p-6"><img src="' + fallbackLogo + '" class="w-full h-full object-contain" /></div>';
-                  }}
+                  onError={() => setPrimaryImgError(true)}
                 />
+              ) : primaryImgError ? (
+                <div className="w-full h-full flex items-center justify-center bg-white p-6">
+                  {!fallbackImgError ? (
+                    <img 
+                      src={getTobaccoLogo(blend.manufacturer)} 
+                      alt={blend.manufacturer || 'Tobacco'}
+                      className="w-full h-full object-contain"
+                      onError={() => setFallbackImgError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-amber-600 text-8xl">🍂</div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-white p-6">
-                  <img 
-                    src={getTobaccoLogo(blend.manufacturer)} 
-                    alt={blend.manufacturer || 'Tobacco'}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-amber-600 text-8xl">🍂</div></div>';
-                    }}
-                  />
+                  {!fallbackImgError ? (
+                    <img 
+                      src={getTobaccoLogo(blend.manufacturer)} 
+                      alt={blend.manufacturer || 'Tobacco'}
+                      className="w-full h-full object-contain"
+                      onError={() => setFallbackImgError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-amber-600 text-8xl">🍂</div>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -362,7 +383,7 @@ export default function TobaccoDetailPage() {
                   onClick={() => updateMutation.mutate({ rating: i })}
                 />
               ))}
-              {blend.rating && <span className="text-white ml-2">{blend.rating} {t("units.outOf5", {defaultValue: "Out Of 5"})}</span>}
+              {blend.rating && <span className="text-white ml-2">{blend.rating} {t("units.outOf5") || "out of 5"}</span>}
             </div>
 
             {/* Top Pipe Matches */}
@@ -409,8 +430,8 @@ export default function TobaccoDetailPage() {
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.tobaccoComponents")}</p>
                   <div className="flex flex-wrap gap-2">
-                    {blend.tobacco_components.map((comp, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+                    {blend.tobacco_components.map((comp) => (
+                      <Badge key={comp} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
                         {comp}
                       </Badge>
                     ))}
@@ -425,8 +446,8 @@ export default function TobaccoDetailPage() {
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-2">{t("tobaccoExtended.flavorNotes")}</p>
                   <div className="flex flex-wrap gap-2">
-                    {blend.flavor_notes.map((note, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+                    {blend.flavor_notes.map((note) => (
+                      <Badge key={note} variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
                         {note}
                       </Badge>
                     ))}

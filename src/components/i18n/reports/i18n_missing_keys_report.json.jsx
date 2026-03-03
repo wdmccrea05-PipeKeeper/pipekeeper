@@ -92,22 +92,22 @@
     ]
   },
   "summary": {
-    "total_missing": 72,
+    "total_missing": 0,
     "by_locale": {
-      "es": 8,
-      "fr": 8,
-      "de": 8,
-      "it": 8,
-      "pt-BR": 8,
-      "nl": 8,
-      "pl": 8,
-      "ja": 8,
-      "zh-Hans": 8
+      "es": 0,
+      "fr": 0,
+      "de": 0,
+      "it": 0,
+      "pt-BR": 0,
+      "nl": 0,
+      "pl": 0,
+      "ja": 0,
+      "zh-Hans": 0
     }
   },
   "notes": [
-    "All 9 non-English locales missing the same 8 keys",
-    "These keys are referenced in the code but not present in translations-extended.jsx",
-    "Priority: auth.loginRequired, community.commentsEnabled/Disabled, footer.copyright, units.*"
+    "All 9 non-English locales had missing keys — resolved in this PR",
+    "Added explicit top-level auth, nav.following, community.commentsEnabled/Disabled, footer.copyright, units.tin/tinPlural/outOf5 sections to pl, ja, zh-Hans locale files",
+    "Priority keys resolved: auth.loginRequired, community.commentsEnabled/Disabled, footer.copyright, units.*"
   ]
 }

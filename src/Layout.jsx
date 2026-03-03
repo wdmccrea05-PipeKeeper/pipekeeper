@@ -559,7 +559,11 @@ export default function Layout({ children, currentPageName }) {
 
   // Block render until subscription is ready (prevents provider mis-detection)
   if (!subscriptionReady) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-[#e8d5b7] rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (import.meta?.env?.DEV) console.log("🔟 Layout JSX about to return");
