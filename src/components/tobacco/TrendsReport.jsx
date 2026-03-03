@@ -251,7 +251,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
     const goToCombo = [topShape?.[0], topBowlStyle?.[0], topShankShape?.[0]]
       .filter(Boolean)
-      .join(' + ') || 'N/A';
+      .join(' + ') || t('trends.nA', { defaultValue: 'N/A' });
 
     return {
       shapes: Object.entries(shapes).sort(([, a], [, b]) => b - a).slice(0, 5),
@@ -315,10 +315,12 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     if (sessions === 0) return t("trends.noSessionsLogged","No sessions logged for this period.");
 
     const parts = [];
-    parts.push(t("trends.youLogged","You logged {{count}} session{{count, plural, one {} other {s}}} this period.",{count: sessions}));
+    const sessionWord = sessions === 1 ? t("trends.session","session") : t("trends.sessions","sessions");
+    parts.push(t("trends.youLoggedCount","You logged {{count}} {{sessionWord}} this period.",{count: sessions, sessionWord}));
     
     if (topPipe) {
-      parts.push(t("trends.topPipe","Your #1 pipe was {{name}} ({{count}} session{{count, plural, one {} other {s}}}).",{name: topPipe.pipe_name, count: topPipe.count}));
+      const pipeSessionWord = topPipe.count === 1 ? t("trends.session","session") : t("trends.sessions","sessions");
+      parts.push(t("trends.topPipeName","Your #1 pipe was {{name}} ({{count}} {{sessionWord}}).",{name: topPipe.pipe_name, count: topPipe.count, sessionWord: pipeSessionWord}));
     }
     
     if (topCategory) {
@@ -449,14 +451,14 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
           {t("trends.yourTrends","Your Trends")}
         </h2>
         <div className="flex flex-wrap gap-2">
-          {Object.entries(TIME_WINDOWS).map(([key, { label }]) => (
+          {Object.keys(TIME_WINDOWS).map((key) => (
             <Button
               key={key}
               size="sm"
               variant={timeWindow === key ? 'default' : 'outline'}
               onClick={() => setTimeWindow(key)}
             >
-              {label}
+              {getTimeWindowLabel(key)}
             </Button>
           ))}
         </div>
@@ -471,7 +473,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-bold text-[#E0D8C8] mb-2">
-                {TIME_WINDOWS[timeWindow].label}
+                {getTimeWindowLabel(timeWindow)}
               </h3>
               <p className="text-[#E0D8C8]/80 leading-relaxed">
                 {narrative}
