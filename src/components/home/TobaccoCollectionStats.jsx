@@ -14,7 +14,7 @@ import { BarChart3, Leaf, Package, Star, TrendingUp, ChevronRight, AlertTriangle
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
+import { calculateCellaredOzFromLogs, calculateTotalOzFromBlend, calculateOpenOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 
@@ -124,7 +124,7 @@ export default function TobaccoCollectionStats() {
 
   // Check for low inventory blends
   const lowInventoryBlends = blends.filter(b => {
-    const cellared = b.cellared_amount || 0;
+    const cellared = calculateCellaredOzFromBlend(b);
     return cellared > 0 && cellared <= lowInventoryThreshold;
   });
 
@@ -579,7 +579,7 @@ export default function TobaccoCollectionStats() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-stone-800 truncate">{blend.name}</p>
                         <p className="text-sm text-amber-700">
-                          {formatWeight(blend.cellared_amount, 'oz')} {t("stats.ozRemaining")}
+                          {formatWeight(calculateCellaredOzFromBlend(blend), 'oz')} {t("stats.ozRemaining")}
                         </p>
                       </div>
                       <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />

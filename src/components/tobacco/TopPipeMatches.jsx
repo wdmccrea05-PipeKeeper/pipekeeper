@@ -50,15 +50,6 @@ export default function TopPipeMatches({ blend, pipes }) {
     enabled: !!user?.email,
   });
 
-  const { data: collectionOptimization } = useQuery({
-    queryKey: ['collection-optimization', user?.email],
-    queryFn: async () => {
-      const results = await base44.entities.CollectionOptimization.filter({ created_by: user?.email }, '-created_date', 1);
-      return results[0];
-    },
-    enabled: !!user?.email,
-  });
-
   // Track changes that should trigger auto-refresh
   const pipesFocusFingerprint = React.useMemo(() => 
     JSON.stringify(pipes.map(p => ({ id: p.id, focus: p.focus }))),

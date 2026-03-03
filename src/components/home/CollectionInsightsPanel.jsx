@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Download } from "lucide-react";
+
 import { differenceInMonths } from "date-fns";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
