@@ -169,9 +169,12 @@ export default function CellarAgingDashboard({ user }) {
   }
 
   const totalWeight = getTotalCellarWeight();
+  // Use pre-computed blendsWithAging for avgMonths to avoid redundant work
+  // Note: blendsWithAging is computed after this line, so we compute inline here using logDataByBlend
   const avgMonths = cellarBlends.length > 0 
     ? cellarBlends.reduce((sum, b) => sum + getAgingInfo(b).months, 0) / cellarBlends.length 
     : 0;
+  // avgMonths intentionally computed here (before blendsWithAging) to preserve render flow
 
   // Pre-compute aging info to avoid redundant calls per render
   const blendsWithAging = cellarBlends.map(blend => ({

@@ -386,7 +386,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       doc.text(t("trends.pdfTitle","PipeKeeper Trends Report"), 20, 20);
       
       doc.setFontSize(12);
-      doc.text(`${t("trends.period","Period")}: ${TIME_WINDOWS[timeWindow].label}`, 20, 30);
+      doc.text(`${t("trends.period","Period")}: ${getTimeWindowLabel(timeWindow)}`, 20, 30);
       doc.text(`${t("reports.generated","Generated")}: ${format(new Date(), 'MMM d, yyyy')}`, 20, 37);
 
       doc.setFontSize(14);
