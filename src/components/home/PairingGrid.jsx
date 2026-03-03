@@ -55,12 +55,16 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   });
 
   // Auto-regenerate on first load if no pairings exist and data is ready
+  // NOTE: regenPairings is defined below; this effect only runs after mount so the closure is fine
+  // at runtime (functions defined with const are in scope by the time the effect callback executes).
   React.useEffect(() => {
     if (!hasAutoRegenerated && !regenerating && allPipes.length > 0 && allBlends.length > 0 && user?.email && 
         (!activePairings || (activePairings?.pairings?.length === 0))) {
       setHasAutoRegenerated(true);
-      regenPairings();
+      // Defer to next tick so regenPairings is guaranteed to be defined
+      setTimeout(() => regenPairings(), 0);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email, allPipes.length, allBlends.length, activePairings, hasAutoRegenerated, regenerating]);
 
   const pairingsByVariant = useMemo(() => {
@@ -213,7 +217,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {rows.map((r) => (
-                <PipeCard key={r.key} row={r} allBlends={allBlends} />
+                <PipeCard key={r.key} row={r} allBlends={allBlends} userProfile={profile} />
               ))}
             </div>
           )}
@@ -223,25 +227,10 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   );
 }
 
-function PipeCard({ row, allBlends }) {
+function PipeCard({ row, allBlends, userProfile }) {
   const { t } = useTranslation();
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
-  
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-  });
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.email],
-    queryFn: async () => {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
-    },
-    enabled: !!user?.email,
-  });
 
   // Top matches: use artifact recommendations when present, otherwise compute locally
   const topMatches = useMemo(() => {

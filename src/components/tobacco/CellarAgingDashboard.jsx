@@ -94,10 +94,11 @@ export default function CellarAgingDashboard({ user }) {
     if (!oldestDate) return { months: 0, days: 0, oldestDate: null };
     
     const now = new Date();
-    const months = differenceInMonths(now, oldestDate);
-    const days = differenceInDays(now, oldestDate);
+    const parsedOldest = new Date(oldestDate);
+    const months = differenceInMonths(now, parsedOldest);
+    const days = differenceInDays(now, parsedOldest);
     
-    return { months, days, oldestDate };
+    return { months, days, oldestDate: parsedOldest };
   };
 
   const getAgingRecommendation = (blend) => {
