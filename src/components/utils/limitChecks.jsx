@@ -8,15 +8,12 @@ export const FREE_TIER_LIMITS = {
   SMOKING_LOGS: 50
 };
 
-// February 1, 2026 - Date when trial restrictions take effect
-const TRIAL_RESTRICTION_DATE = new Date('2026-02-01T00:00:00Z');
-
 /**
  * Check if trial restrictions apply based on current date
- * Starting Feb 1, 2026, free trials are limited to Free tier maximums
+ * Restrictions have been permanently active since Feb 1, 2026.
  */
 export function shouldApplyTrialRestrictions() {
-  return new Date() >= TRIAL_RESTRICTION_DATE;
+  return true;
 }
 
 /**
@@ -33,7 +30,7 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
       return { canCreate: true, currentCount: 0, limit: null };
     }
 
-    const pipes = await base44.entities.Pipe.filter({ created_by: userEmail });
+    const pipes = await base44.entities.Pipe.filter({ created_by: userEmail }, undefined, FREE_TIER_LIMITS.PIPES + 1);
     const count = pipes?.length || 0;
 
     // If on trial and restrictions apply, enforce Free tier limits
@@ -57,7 +54,7 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
     };
   } catch (err) {
     console.warn("Failed to check pipe limit:", err);
-    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.PIPES, reason: 'limits.unableToVerify' };
+    return { canCreate: true, currentCount: 0, limit: FREE_TIER_LIMITS.PIPES, reason: 'limits.unableToVerify' };
   }
 }
 
@@ -75,7 +72,7 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
       return { canCreate: true, currentCount: 0, limit: null };
     }
 
-    const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: userEmail });
+    const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: userEmail }, undefined, FREE_TIER_LIMITS.TOBACCO_BLENDS + 1);
     const count = tobaccos?.length || 0;
 
     // If on trial and restrictions apply, enforce Free tier limits
@@ -99,6 +96,6 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
     };
   } catch (err) {
     console.warn("Failed to check tobacco limit:", err);
-    return { canCreate: false, currentCount: 0, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: 'limits.unableToVerify' };
+    return { canCreate: true, currentCount: 0, limit: FREE_TIER_LIMITS.TOBACCO_BLENDS, reason: 'limits.unableToVerify' };
   }
 }

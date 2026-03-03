@@ -81,7 +81,7 @@ function CommunityPageInner() {
       return base44.entities.Message.filter({
         recipient_email: user.email,
         is_read: false,
-      });
+      }, '-created_date', 50);
     },
     enabled: !!user?.email,
     refetchInterval: activeTab === 'inbox' ? 5000 : 30000,
@@ -90,7 +90,7 @@ function CommunityPageInner() {
 
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
-    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }, '-updated_date', 200),
+    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }, '-updated_date', 500),
   });
 
   const publicProfiles = React.useMemo(() => {
@@ -128,6 +128,8 @@ function CommunityPageInner() {
     
     return filtered;
   }, [allPublicProfiles, activeSearchQuery, activeLocationFilters, blocked]);
+
+  const profilesLimitReached = allPublicProfiles.length >= 500;
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({
@@ -295,6 +297,7 @@ function CommunityPageInner() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6">
+                  {profilesLimitReached && <p className="text-xs text-[#E0D8C8]/50 text-center">{t("community.discoverLimitNote")}</p>}
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/50" />
@@ -566,20 +569,22 @@ function CommunityPageInner() {
                       ? friendship.recipient_email 
                       : friendship.requester_email;
                     const profile = publicProfiles.find(p => p.user_email === friendEmail);
+                    const displayName = profile?.display_name || friendEmail.split('@')[0];
+                    const avatarUrl = profile?.avatar_url || null;
                     return (
                       <Card key={friendship.id} className="bg-[#1E2F43] border-[#E0D8C8]/15">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
-                              <AvatarImage src={profile?.avatar_url} />
+                              <AvatarImage src={avatarUrl} />
                               <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
-                                {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
+                                {displayName?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(friendEmail)}`)}>
                                 <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
-                                  {profile?.display_name || friendEmail}
+                                  {displayName}
                                 </h3>
                               </a>
                               {profile?.bio && (
@@ -689,7 +694,7 @@ function CommunityPageInner() {
                   <p>{t("community.notFollowingYet","Not Following Anyone")}</p>
                   <p className="text-sm mt-2">{t("community.notFollowingYetDesc","Discover and follow pipe enthusiasts in the community to see their collections")}</p>
                   <a href={createPageUrl('Community')}>
-                    <Button className="mt-4" onClick={() => setActiveTab('discover')}>
+                    <Button className="mt-4">
                       <Search className="w-4 h-4 mr-2" />
                       {t("community.exploreCommunity","Explore Community")}
                     </Button>

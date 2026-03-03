@@ -177,6 +177,11 @@ const translations = {
   community: {
     commentsEnabled: "Comments are enabled for this post.",
     commentsDisabled: "Comments are disabled for this post.",
+    discoverLimitNote: "Showing top 500 community members. Use search to find specific users.",
+  },
+
+  messaging: {
+    deleteConfirm: "Delete this message?",
   },
 
   units: {
@@ -291,6 +296,10 @@ const translations = {
     optimizationRegenFail: "Failed to regenerate optimization",
     optimizationRevertSuccess: "Optimization reverted to previous version",
     undoOptimizationFail: "Failed to undo optimization",
+    optUsagePattern: "Specialized for: {focus}",
+    optScoreImprovement: "Priority #{rank} change",
+    optBudgetRange: "Varies",
+    optExpectedImprovement: "Expected improvement",
   },
 
   inviteFull: {

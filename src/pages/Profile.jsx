@@ -28,6 +28,8 @@ import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProv
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+const STRIPE_BILLING_PORTAL_URL = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
   "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
@@ -43,7 +45,7 @@ const PIPE_SHAPES = [
 function pickBestProfile(rows = []) {
   if (!Array.isArray(rows) || rows.length === 0) return null;
   const scored = rows.map((r) => {
-    const updated = Date.parse(r.updated_at || r.updatedAt || "") || 0;
+    const updated = Date.parse(r.updated_date || r.created_date || "") || 0;
     const created = Date.parse(r.created_at || r.createdAt || "") || 0;
     const hasName = r.display_name ? 1 : 0;
     const hasTos = r.tos_accepted_at ? 1 : 0;
@@ -131,6 +133,7 @@ export default function ProfilePage() {
     preferred_shapes: [],
     strength_preference: "No Preference",
     notes: "",
+    measurement_preference: "imperial",
   });
 
   const hasActiveSubscription = hasPaid;
@@ -164,6 +167,7 @@ export default function ProfilePage() {
       preferred_shapes: Array.isArray(profile.preferred_shapes) ? profile.preferred_shapes : [],
       strength_preference: profile.strength_preference || "No Preference",
       notes: profile.notes || "",
+      measurement_preference: profile.measurement_preference || "imperial",
     }));
   }, [profile]);
 
@@ -173,7 +177,6 @@ export default function ProfilePage() {
 
       const payload = {
         ...formData,
-        user_id: userId || undefined,
         user_email: email || undefined,
       };
 
@@ -297,7 +300,7 @@ export default function ProfilePage() {
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                           onClick={() => {
                             if (provider === "stripe") {
-                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+                              window.location.href = STRIPE_BILLING_PORTAL_URL;
                             } else if (provider === "apple") {
                               window.location.href = "https://apps.apple.com/account/subscriptions";
                             } else {

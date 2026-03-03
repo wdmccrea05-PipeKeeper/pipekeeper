@@ -39,19 +39,16 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   // Update last seen every 30 seconds
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userEmail || !myProfile?.id) return;
 
     let cancelled = false;
     
     const updateLastSeen = async () => {
       try {
-        const profiles = await base44.entities.UserProfile.filter({ user_email: userEmail });
         if (cancelled) return;
-        if (profiles[0]) {
-          await safeUpdate('UserProfile', profiles[0].id, {
-            last_seen: new Date().toISOString()
-          }, userEmail);
-        }
+        await safeUpdate('UserProfile', myProfile.id, {
+          last_seen: new Date().toISOString()
+        }, userEmail);
       } catch {
         // Non-fatal presence update.
       }
@@ -63,22 +60,24 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [userEmail]);
+  }, [userEmail, myProfile?.id]);
 
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', userEmail],
     queryFn: async () => {
       if (!userEmail) return [];
       try {
-        const sent = await base44.entities.Message.filter({ sender_email: userEmail });
-        const received = await base44.entities.Message.filter({ recipient_email: userEmail });
-        return [...sent, ...received].sort((a, b) => 
-          new Date(a.created_date) - new Date(b.created_date)
-        );
+        const [sent, received] = await Promise.all([
+          base44.entities.Message.filter({ sender_email: userEmail }, '-created_date', 100),
+          base44.entities.Message.filter({ recipient_email: userEmail }, '-created_date', 100),
+        ]);
+        return [...sent, ...received]
+          .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
       } catch {
         return [];
       }
     },
+    staleTime: 3000,
     enabled: !!userEmail,
     refetchInterval: 5000, // Poll every 5 seconds
     retry: false, // Don't retry on error to prevent infinite loops
@@ -94,7 +93,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }),
+    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }, userEmail),
   });
 
   const toggleSaveMutation = useMutation({
@@ -105,7 +104,14 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const deleteMessageMutation = useMutation({
-    mutationFn: (messageId) => base44.entities.Message.delete(messageId),
+    mutationFn: async (messageId) => {
+      const msg = messages.find(m => m.id === messageId);
+      if (!msg) throw new Error('Message not found');
+      if (msg.sender_email !== userEmail && msg.recipient_email !== userEmail) {
+        throw new Error('Not authorized to delete this message');
+      }
+      return base44.entities.Message.delete(messageId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       toast.success(t("messaging.messageDeleted"));
@@ -408,7 +414,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    if (window.confirm('Delete this message?')) {
+                                    if (window.confirm(t("messaging.deleteConfirm"))) {
                                       deleteMessageMutation.mutate(message.id);
                                     }
                                   }}

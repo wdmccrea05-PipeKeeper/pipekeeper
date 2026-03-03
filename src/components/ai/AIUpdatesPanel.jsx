@@ -31,6 +31,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const [busy, setBusy] = useState(false);
   const [reclassifyBusy, setReclassifyBusy] = useState(false);
   const [showVerifiedLookup, setShowVerifiedLookup] = useState(false);
+  const [fillProgress, setFillProgress] = useState({ current: 0, total: 0 });
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -88,10 +89,10 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         activePairings,
         skipIfUpToDate: true,
       });
-      setBusy(false);
       return result;
     },
     onSuccess: (result) => {
+      setBusy(false);
       refetchPairings();
       invalidateAIQueries(queryClient, user?.email);
       if (result?.skipped) {
@@ -144,7 +145,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
           pipe_name: pipeName,
           recommended_blend_types: change.after_focus || [],
           reasoning: change.rationale || "",
-          usage_pattern: `Specialized for: ${(change.after_focus || []).join(", ")}`,
+          usage_pattern: t("aiUpdates.optUsagePattern", { focus: (change.after_focus || []).join(", ") }),
         };
       });
 
@@ -159,7 +160,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         pipe_name: pipes.find((p) => String(p.id) === String(c.pipe_id))?.name || "Unknown",
         current_focus: c.before_focus || [],
         recommended_focus: c.after_focus || [],
-        score_improvement: `Priority #${i + 1} change`,
+        score_improvement: t("aiUpdates.optScoreImprovement", { rank: i + 1 }),
         reasoning: c.rationale || "",
       }));
 
@@ -168,8 +169,8 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         reasoning: rec,
         gap_filled: rec,
         chamber_specs: rec,
-        budget_range: "Varies",
-        score_improvement: "Expected improvement",
+        budget_range: t("aiUpdates.optBudgetRange"),
+        score_improvement: t("aiUpdates.optExpectedImprovement"),
       }));
 
       if (activeOpt?.id) {
@@ -187,10 +188,9 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
         next_pipe_recommendations,
         generated_date: new Date().toISOString(),
       });
-
-      setBusy(false);
     },
     onSuccess: () => {
+      setBusy(false);
       refetchOpt();
       invalidateAIQueries(queryClient, user?.email);
       toast.success(t("aiUpdates.optimizationRegenSuccess"));
@@ -315,7 +315,7 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
       }
 
       // Refresh blends everywhere
-      queryClient.invalidateQueries({ queryKey: ["blends", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["tobacco-blends", user?.email] });
 
       if (changed > 0) toast.success(t("aiUpdates.reclassifiedCount", { count: changed }));
       else toast.info(t("aiUpdates.noChanges"));
@@ -329,80 +329,94 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
     },
   });
 
-  const fillMeasurements = useMutation({
-    mutationFn: async () => {
-      setBusy(true);
-      let updatedCount = 0;
+  const PIPE_SCHEMA_FIELDS = new Set([
+    "length_mm", "weight_grams", "bowl_height_mm", "bowl_width_mm",
+    "bowl_diameter_mm", "bowl_depth_mm", "chamber_volume",
+  ]);
 
-      for (const pipe of pipes) {
-        const hasMissingMeasurements =
-          !pipe.length_mm || !pipe.weight_grams || !pipe.bowl_diameter_mm || !pipe.bowl_depth_mm;
-
-        if (hasMissingMeasurements) {
-          try {
-            const prompt = `Find verified manufacturer specifications for this pipe to fill missing measurements.
+  const processSinglePipe = async (pipe) => {
+    const hasMissingMeasurements =
+      !pipe.length_mm || !pipe.weight_grams || !pipe.bowl_diameter_mm || !pipe.bowl_depth_mm;
+    if (!hasMissingMeasurements) return false;
+    try {
+      const prompt = `Find verified manufacturer specifications for this pipe to fill missing measurements.
 
 Pipe: ${pipe.maker || "Unknown"} ${pipe.name || "Unknown"}
 Shape: ${pipe.shape || "Unknown"}
 Existing: ${pipe.length_mm ? `Length: ${pipe.length_mm}mm` : ""} ${
-              pipe.weight_grams ? `Weight: ${pipe.weight_grams}g` : ""
-            } ${pipe.bowl_diameter_mm ? `Chamber: ${pipe.bowl_diameter_mm}mm` : ""} ${
-              pipe.bowl_depth_mm ? `Depth: ${pipe.bowl_depth_mm}mm` : ""
-            }
+        pipe.weight_grams ? `Weight: ${pipe.weight_grams}g` : ""
+      } ${pipe.bowl_diameter_mm ? `Chamber: ${pipe.bowl_diameter_mm}mm` : ""} ${
+        pipe.bowl_depth_mm ? `Depth: ${pipe.bowl_depth_mm}mm` : ""
+      }
 
 CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT estimate or guess. Return null if no verified data exists.`;
 
-            const result = await base44.integrations.Core.InvokeLLM({
-              prompt,
-              add_context_from_internet: true,
-              response_json_schema: {
-                type: "object",
-                properties: {
-                  length_mm: { type: ["number", "null"] },
-                  weight_grams: { type: ["number", "null"] },
-                  bowl_height_mm: { type: ["number", "null"] },
-                  bowl_width_mm: { type: ["number", "null"] },
-                  bowl_diameter_mm: { type: ["number", "null"] },
-                  bowl_depth_mm: { type: ["number", "null"] },
-                  chamber_volume: { type: ["string", "null"] },
-                  dimensions_found: { type: "boolean" },
-                  dimensions_source: { type: ["string", "null"] },
-                },
-              },
-            });
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            length_mm: { type: ["number", "null"] },
+            weight_grams: { type: ["number", "null"] },
+            bowl_height_mm: { type: ["number", "null"] },
+            bowl_width_mm: { type: ["number", "null"] },
+            bowl_diameter_mm: { type: ["number", "null"] },
+            bowl_depth_mm: { type: ["number", "null"] },
+            chamber_volume: { type: ["string", "null"] },
+            dimensions_found: { type: "boolean" },
+            dimensions_source: { type: ["string", "null"] },
+          },
+        },
+      });
 
-            const updates = {};
-            let foundAny = false;
+      const updates = {};
+      let foundAny = false;
 
-            Object.keys(result || {}).forEach((key) => {
-              if (result[key] !== null && result[key] !== undefined && !pipe[key]) {
-                updates[key] = result[key];
-                if (key !== "dimensions_found" && key !== "dimensions_source") {
-                  foundAny = true;
-                }
-              }
-            });
-
-            if (foundAny) {
-              await safeUpdate("Pipe", pipe.id, updates, user?.email);
-              updatedCount++;
-            }
-          } catch (error) {
-            console.error(`Failed to update pipe ${pipe.id}:`, error);
-          }
+      Object.keys(result || {}).forEach((key) => {
+        if (PIPE_SCHEMA_FIELDS.has(key) && result[key] !== null && result[key] !== undefined && !pipe[key]) {
+          updates[key] = result[key];
+          foundAny = true;
         }
+      });
+
+      if (foundAny) {
+        await safeUpdate("Pipe", pipe.id, updates, user?.email);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error(`Failed to update pipe ${pipe.id}:`, error);
+      return false;
+    }
+  };
+
+  const fillMeasurements = useMutation({
+    mutationFn: async () => {
+      setBusy(true);
+      const BATCH_SIZE = 3;
+      setFillProgress({ current: 0, total: pipes.length });
+      let updatedCount = 0;
+
+      for (let i = 0; i < pipes.length; i += BATCH_SIZE) {
+        const batch = pipes.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(batch.map((pipe) => processSinglePipe(pipe)));
+        updatedCount += results.filter(Boolean).length;
+        setFillProgress({ current: Math.min(i + BATCH_SIZE, pipes.length), total: pipes.length });
       }
 
-      setBusy(false);
       return updatedCount;
     },
     onSuccess: (count) => {
+      setBusy(false);
+      setFillProgress({ current: 0, total: 0 });
       invalidatePipeQueries(queryClient, user?.email);
       if (count > 0) toast.success(t("aiUpdates.updatedMeasurements", { count }));
       else toast.info(t("aiUpdates.noMeasurements"));
     },
     onError: () => {
       setBusy(false);
+      setFillProgress({ current: 0, total: 0 });
       toast.error(t("aiUpdates.fillFailed"));
     },
   });
@@ -583,6 +597,11 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
                 {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Ruler className="w-3 h-3 mr-1" />}
                 {t("tobacconist.findSpecs")}
               </Button>
+              {fillProgress.total > 0 && (
+                <p className="text-xs text-[#1a2c42]/70 mt-1 text-center">
+                  {fillProgress.current} / {fillProgress.total}
+                </p>
+              )}
             </div>
           )}
         </div>

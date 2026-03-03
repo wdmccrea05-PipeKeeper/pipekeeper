@@ -48,22 +48,7 @@ export default function PublicProfilePage() {
     retry: 1,
   });
 
-  const { data: profileOwner } = useQuery({
-    queryKey: ['profile-owner-user', profileEmail],
-    queryFn: async () => {
-      try {
-        const users = await base44.entities.User.filter({ email: profileEmail });
-        return Array.isArray(users) ? users[0] : null;
-      } catch (err) {
-        console.error('Profile owner load error:', err);
-        return null;
-      }
-    },
-    enabled: !!profileEmail,
-    retry: 1,
-  });
-
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['public-profile', profileEmail],
     queryFn: async () => {
       try {
@@ -93,7 +78,7 @@ export default function PublicProfilePage() {
     queryKey: ['public-pipes', profileEmail],
     queryFn: async () => {
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: profileEmail });
+        const result = await base44.entities.Pipe.filter({ created_by: profileEmail }, '-created_date', 100);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Public pipes load error:', err);
@@ -109,7 +94,7 @@ export default function PublicProfilePage() {
     queryKey: ['public-blends', profileEmail],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: profileEmail });
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: profileEmail }, '-created_date', 100);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Public blends load error:', err);
@@ -170,6 +155,14 @@ export default function PublicProfilePage() {
   });
 
   const isOwnProfile = currentUser?.email === profileEmail;
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] flex items-center justify-center">
+        <div className="text-[#E0D8C8]/70">{t("common.loading")}</div>
+      </div>
+    );
+  }
 
   if (!profile) {
     return (
@@ -304,7 +297,7 @@ export default function PublicProfilePage() {
                   <h1 className="text-2xl font-bold text-stone-800">
                     {profile.display_name || t("publicProfile.anonymousUser")}
                   </h1>
-                  {profileOwner?.isFoundingMember && (
+                  {profile?.tos_accepted_at && (
                     <Badge 
                       className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 flex items-center gap-1 text-xs"
                       title={t("publicProfile.foundingMemberTitle")}
@@ -574,11 +567,11 @@ export default function PublicProfilePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-stone-500">
-                        {new Date(log.date).toLocaleDateString()}
+                        {new Date(log.date + 'T12:00:00').toLocaleDateString()}
                       </p>
-                      {log.bowls_smoked && (
+                      {(log.bowls_used ?? log.bowls_smoked) && (
                         <Badge variant="outline" className="text-xs mt-1 font-semibold text-stone-700">
-                          {log.bowls_smoked} {log.bowls_smoked > 1 ? t("publicProfile.bowls") : t("publicProfile.bowl")}
+                          {log.bowls_used ?? log.bowls_smoked} {(log.bowls_used ?? log.bowls_smoked) > 1 ? t("publicProfile.bowls") : t("publicProfile.bowl")}
                         </Badge>
                       )}
                     </div>
