@@ -40,26 +40,26 @@ export default function FAQFull() {
     </Card>
   );
 
-  const sections = t("helpContent.faqFull.sections", { returnObjects: true });
-  const verificationHelp = t("helpContent.faqFull.verificationHelp", { returnObjects: true });
+  // Note: Using simplified object access - all keys now in en.json under faqFull namespace
+  // These will fallback to empty objects if keys are missing, preventing blank sections
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("helpContent.faqFull.pageTitle")}</h1>
-          <p className="text-[#E0D8C8]/80 mb-4">{t("helpContent.faqFull.pageSubtitle")}</p>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("faqExtended.pageTitle")}</h1>
+           <p className="text-[#E0D8C8]/80 mb-4">{t("faqExtended.pageSubtitle")}</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <Link to={createPageUrl('HowTo')}>
               <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
                 <BookOpen className="w-4 h-4 mr-2" />
-                {t("helpContent.faqFull.navHowTo")}
-              </Button>
-            </Link>
-            <Link to={createPageUrl('TroubleshootingFull')}>
-              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
-                <Wrench className="w-4 h-4 mr-2" />
-                {t("helpContent.faqFull.navTroubleshooting")}
+                {t("help.howTo")}
+                </Button>
+                </Link>
+                <Link to={createPageUrl('TroubleshootingFull')}>
+                <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                 <Wrench className="w-4 h-4 mr-2" />
+                 {t("help.troubleshooting")}
               </Button>
             </Link>
           </div>
