@@ -63,9 +63,9 @@ export default function Home() {
     <div className="space-y-8">
       {/* 1. HERO */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold font-serif">
-          {t("home.title", "Pipe & Tobacco Collection")}
-        </h1>
+        <h1 className="text-4xl font-bold font-serif text-[#E0D8C8]">
+            {t("home.title", "Pipe & Tobacco Collection")}
+          </h1>
         <p className="text-lg opacity-80 max-w-3xl mx-auto">
           {t("home.subtitle", "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.")}
         </p>
@@ -219,7 +219,7 @@ export default function Home() {
                   {p.photos?.[0] ? (
                     <img src={p.photos[0]} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <PipeShapeIcon shape={p.shape} className="w-8 h-8" />
+                    <PipeShapeIcon shape={p.shape} className="w-6 h-6" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
