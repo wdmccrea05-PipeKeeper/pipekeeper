@@ -45,6 +45,8 @@ const translations = {
     from: "from",
     for: "for",
     with: "with",
+    email: "Email",
+    upload: "Upload",
   },
 
   auth: {
@@ -154,7 +156,41 @@ const translations = {
     continueFree: "Continue Free",
     subscribe: "Subscribe",
     proBadge: "Pro Active",
+    premiumBadge: "Premium Active",
     thankYouSupporting: "Thank you for supporting PipeKeeper",
+    premiumFeature: "Premium Feature",
+    continueWithPremium: "Continue with Premium",
+    premiumBenefits: "Unlimited collection, AI pairings, pairing grid, and more.",
+    cancelAnytime: "Cancel anytime",
+    dataNotAffected: "Your data is never deleted",
+    manage: "Manage Subscription",
+    premiumActiveSubtextTrial: "Trial active — enjoy full access",
+    premiumActiveSubtextPaid: "Subscription active",
+    appleFeatureFree1: "Up to 10 pipes",
+    appleFeatureFree2: "Up to 10 tobacco blends",
+    appleFeatureFree3: "Basic smoking log",
+    appleFeatureFree4: "Track session notes",
+    appleFeatureFree5: "Favorite pipes & blends",
+    appleFeatureFree6: "Basic collection stats",
+    appleFeatureFree7: "Standard support",
+    appleFeaturePremium1: "Unlimited pipes & tobacco",
+    appleFeaturePremium2: "AI pairing recommendations",
+    appleFeaturePremium3: "Pairing grid & rotation planner",
+    appleFeaturePremium4: "Community access",
+    appleFeaturePremium5: "Advanced statistics",
+    appleFeaturePremium6: "Collection insights",
+    appleFeaturePremium7: "Usage log",
+    appleFeaturePremium8: "Break-in schedule",
+    appleFeaturePremium9: "Export tools",
+    appleFeaturePremium10: "Priority email support",
+    appleFeaturePro1: "Everything in Premium",
+    appleFeaturePro2: "AI pipe identification",
+    appleFeaturePro3: "Collection value estimation",
+    appleFeaturePro4: "Collection optimization",
+    appleFeaturePro5: "Bulk editing tools",
+    appleFeaturePro6: "PDF/CSV export reports",
+    appleFeaturePro7: "Market valuation insights",
+    appleFeaturePro8: "Priority support",
   },
 
   quickAccess: {
@@ -216,6 +252,14 @@ const translations = {
   },
 
   helpCenter: {
+    faq: "FAQ",
+    howTo: "How To",
+    troubleshooting: "Troubleshooting",
+    helpCenter: "Help Center",
+    findAnswers: "Find answers to your questions",
+    quickLinks: "Quick Links",
+    contactSupport: "Contact Support",
+    backToFAQ: "Back to FAQ",
     faqDesc: "Definitions, general information, and disclaimers",
     howToDesc: "Quick answers with clear navigation paths",
     troubleshootingDesc: "Common issues and solutions",
@@ -714,6 +758,7 @@ const translations = {
     created: "Created successfully",
     updated: "Updated successfully",
     deleted: "Deleted successfully",
+    saved: "Saved successfully",
   },
 
   pipeSearch: {
@@ -873,6 +918,10 @@ const translations = {
     personalizeAIRecommendations: "Personalize your AI recommendations",
     logout: "Log Out",
     premiumSubscriptionWebOnly: "Premium subscription management is available on the web at",
+    enableMessaging: "Enable Messaging",
+    enableMessagingDesc: "Allow other users to send you direct messages",
+    avatarUploadedSuccessfully: "Avatar uploaded successfully",
+    failedToUploadImage: "Failed to upload image",
   },
 
   empty: {
@@ -945,6 +994,9 @@ const translations = {
     collectionOptimizationDesc: "AI-powered analysis to maximize your collection coverage",
     whatIfAnalysisName: "What-If Analysis",
     whatIfAnalysisDesc: "Simulate adding new pipes to see the impact on your collection",
+    proFeature: "Pro Feature",
+    requiresProTier: "This feature requires Pro tier.",
+    requiresPremiumTier: "This feature requires Premium tier.",
   },
 
   pairingExporter: {
@@ -1013,6 +1065,52 @@ const translations = {
     pipeNotAvailable: "Pipe data not available",
     addToCellarFailed: "Failed to add to cellar",
     recommendationFailed: "Failed to get recommendation",
+  },
+
+  profileExtended: {
+    providerStripe: "Provider: Stripe",
+    providerApple: "Provider: Apple",
+    statusLabel: "Status",
+    couldNotSave: "Could not save profile. Please try again.",
+    profilePicture: "Profile Picture",
+    avatarAlt: "Profile avatar",
+    uploading: "Uploading…",
+    displayName: "Display Name",
+    bio: "Bio",
+    location: "Location",
+    showOnProfile: "Show on profile",
+    cityPlaceholder: "City",
+    stateProvincePlaceholder: "State/Province",
+    countryPlaceholder: "Country",
+    postalCodePlaceholder: "ZIP / Postal Code",
+    privacy: "Privacy Settings",
+    hideValues: "Hide collection values",
+    hideInventory: "Hide inventory counts",
+    hideCollectionCounts: "Hide collection counts",
+    preferredBlendTypes: "Preferred Blend Types",
+    preferredPipeShapes: "Preferred Pipe Shapes",
+    publicCommunityProfile: "Public Community Profile",
+    allowOthersToView: "Allow others to view your profile in the community.",
+    previewPublicProfile: "Preview public profile",
+    saving: "Saving…",
+  },
+
+  search: {
+    searchPlaceholder: "Search...",
+    noResults: "No results found.",
+  },
+
+  messages: {
+    checkYourEmail: "Need more help? Check out our",
+  },
+
+  messaging: {
+    messagingDisabled: "Messaging Disabled",
+    messagingDisabledDesc: "Enable messaging in your profile settings to send and receive messages.",
+    savedMessages: "Saved Messages",
+    noSaved: "No saved messages",
+    messageDeleted: "Message deleted",
+    deleteConfirm: "Delete this message?",
   },
 };
 

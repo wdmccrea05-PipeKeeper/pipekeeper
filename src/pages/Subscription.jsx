@@ -7,6 +7,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow } from "@/components/utils/nativeIAPBridge";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function FeatureList({ items }) {
   return (
@@ -23,6 +24,7 @@ function FeatureList({ items }) {
 
 function AppleSubscription() {
   const { t } = useTranslation();
+  const { hasPaid } = useCurrentUser();
 
   const freeFeatures = [
     t("subscription.appleFeatureFree1"),
@@ -140,14 +142,16 @@ function AppleSubscription() {
         </Card>
       </div>
 
-      <Card className="bg-black/30 border-white/10">
-        <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-[#e8d5b7]/80">
-          {t("subscription.trialEndedBody")}
-        </CardContent>
-      </Card>
+      {!hasPaid && (
+        <Card className="bg-black/30 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-[#e8d5b7]/80">
+            {t("subscription.trialEndedBody")}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

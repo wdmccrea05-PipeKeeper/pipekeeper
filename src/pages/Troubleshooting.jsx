@@ -43,7 +43,7 @@ export default function Troubleshooting() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
-        <Link to={createPageUrl('FAQFull')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
+        <Link to={createPageUrl('FAQ')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
           <ArrowLeft className="w-4 h-4" />
           {t("troubleshooting.backToFAQ")}
         </Link>

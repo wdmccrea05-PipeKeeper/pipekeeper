@@ -14,7 +14,7 @@ import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 export default function Home() {
   const { t } = useTranslation();
-  const { user, hasPaid, planLabel } = useCurrentUser();
+  const { user, hasPaid, hasPro, planLabel } = useCurrentUser();
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -58,6 +58,12 @@ export default function Home() {
   const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
   const favoritePipes = pipes.filter(p => p?.is_favorite);
   const favoriteBlends = blends.filter(b => b?.is_favorite);
+  const recentPipes = [...pipes]
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
+    .slice(0, 4);
+  const recentBlends = [...blends]
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
+    .slice(0, 4);
 
   return (
     <div className="space-y-8">
@@ -76,7 +82,9 @@ export default function Home() {
         <div className="border-l-4 border-amber-500 bg-[#223447] rounded-r-xl p-4 flex items-center gap-3">
           <Crown className="w-5 h-5 text-amber-400 shrink-0" />
           <div>
-            <div className="font-semibold text-amber-400">{t("subscription.proBadge", "Pro Active")}</div>
+            <div className="font-semibold text-amber-400">
+              {hasPro ? t("subscription.proBadge", "Pro Active") : t("subscription.premiumBadge", "Premium Active")}
+            </div>
             <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting", "Thank you for supporting PipeKeeper")}</div>
           </div>
           {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50">{planLabel}</span>}
@@ -181,16 +189,20 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map(item => (
-              <span key={item.id} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20">
-                <PipeShapeIcon shape={item.shape} className="w-3 h-3" />
-                {item.name}
-              </span>
+              <a key={item.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(item.id)}`)}>
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20 hover:bg-[#2a4057] cursor-pointer transition-colors">
+                  <PipeShapeIcon shape={item.shape} className="w-3 h-3" />
+                  {item.name}
+                </span>
+              </a>
             ))}
             {favoriteBlends.map(item => (
-              <span key={item.id} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20">
-                <Leaf className="w-3 h-3" />
-                {item.name}
-              </span>
+              <a key={item.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(item.id)}`)}>
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20 hover:bg-[#2a4057] cursor-pointer transition-colors">
+                  <Leaf className="w-3 h-3" />
+                  {item.name}
+                </span>
+              </a>
             ))}
           </div>
         </PKCard>
@@ -213,7 +225,7 @@ export default function Home() {
             </a>
           </div>
           <div className="space-y-3">
-            {pipes.slice(0, 4).map(p => (
+            {recentPipes.map(p => (
               <a key={p.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)} className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors">
                 <div className="w-12 h-12 rounded-lg bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {p.photos?.[0] ? (
@@ -243,7 +255,7 @@ export default function Home() {
             </a>
           </div>
           <div className="space-y-3">
-            {blends.slice(0, 4).map(b => (
+            {recentBlends.map(b => (
               <a key={b.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(b.id)}`)} className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors">
                 <div className="w-12 h-12 rounded-full bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {(b.logo || b.photo) ? (

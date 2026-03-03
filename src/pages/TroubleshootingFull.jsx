@@ -79,8 +79,8 @@ export default function TroubleshootingFull() {
     ...topic,
     questions: topic.questions.filter(
       item =>
-        item.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.a.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.q || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.a || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         topic.title.toLowerCase().includes(searchTerm.toLowerCase())
     )
   })).filter(topic => topic.questions.length > 0);
