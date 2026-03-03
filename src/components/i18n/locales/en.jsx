@@ -629,6 +629,49 @@ const translations = {
     outOfDateMessage: "Data needs regeneration to reflect current collection",
     notNow: "Not Now",
     undoLastChange: "Undo Last Change",
+    regenerating: "Regenerating...",
+  },
+
+  pipeDetailTabs: {
+    specialization: "Specialization",
+    focus: "Focus",
+    condition: "Condition",
+    status: "Status",
+    maintenance: "Maintenance",
+    care: "Care",
+    breakIn: "Break-In",
+    breakInShort: "Break",
+    pipeSpecialization: "Pipe Specialization",
+    getAIRecommendation: "Get AI Recommendation",
+    addSpecialization: "Add Specialization",
+    noSpecializationSet: "No specialization set",
+    specializationUpgradeDesc: "Upgrade to set specialization and get AI-driven pairing scores",
+    matchingBlends: "Matching Blends:",
+    more: "more",
+    done: "Done",
+    focusUpdated: "Focus updated - AI recommendations will refresh",
+    regenerateToSeeUpdates: "Regenerate pairings and optimizations to see updated scores",
+    aiSpecializationSuggestion: "AI Specialization Suggestion",
+    aiSpecializationDesc: "Get personalized recommendations on what tobacco types this pipe would be best suited for based on its characteristics and your collection.",
+    valueLookupDesc: "Get instant market value estimates for your pipes based on maker, model, condition, and current market trends.",
+    addDesignationPlaceholder: "Select a designation…",
+    quickAdd: "Quick add:",
+  },
+
+  trends: {
+    last7Days: "Last 7 Days",
+    last30Days: "Last 30 Days",
+    last90Days: "Last 90 Days",
+    last12Months: "Last 12 Months",
+    yearToDate: "Year to Date",
+    allTime: "All Time",
+    yourTrends: "Your Trends",
+    frequencyPatterns: "Frequency & Patterns",
+    totalSessions: "Total Sessions",
+    perWeek: "Per Week",
+    mostCommonDay: "Most Common Day",
+    vsPrevPeriod: "vs prev period",
+    noSessionsLogged: "No sessions logged for this period.",
   },
 
   tobaccoSearch: {
@@ -780,6 +823,8 @@ const translations = {
 
   cellarLog: {
     cellaredTobacco: "Cellared Tobacco",
+    overRemoved: "excess removed",
+    deleteConfirmTitle: "Delete Entry",
   },
 
   inventory: {
@@ -1127,6 +1172,18 @@ const translations = {
   },
 
   search: {
+    trigger: "Search...",
+    openAria: "Open search",
+    commandInputPlaceholder: "Type to search pipes, tobacco, makers...",
+    noResultsFound: "No results found",
+    noResultsMessage: "Try searching for a pipe name, maker, tobacco blend, or shape",
+    sectionPipes: "Pipes",
+    sectionTobacco: "Tobacco",
+    sectionQuickActions: "Quick Actions",
+    actionViewStats: "View Collection Stats",
+    actionExportData: "Export Collection Data",
+    actionAddPipe: "Add New Pipe",
+    actionAddBlend: "Add New Blend",
     searchPlaceholder: "Search...",
     noResults: "No results found.",
     hintTitle: "Start typing to search",
