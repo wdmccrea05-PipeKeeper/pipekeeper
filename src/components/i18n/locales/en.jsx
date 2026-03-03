@@ -197,6 +197,7 @@ const translations = {
     bulkPlural: "bulk",
     in: "in",
     inches: "inches",
+    oz: "oz",
   },
 
   faqExtended: {
@@ -592,6 +593,7 @@ const translations = {
     identificationSubtitle: "AI-powered photo identification for pipes and tobacco",
     identificationTitle: "Photo Identification",
     identificationTooltip: "Use AI to identify pipes and tobacco from photos",
+    upgradeInOptimizeTab: "Upgrade via the Optimize tab to unlock What-If analysis.",
   },
 
   tobaccoSearch: {
@@ -743,12 +745,32 @@ const translations = {
 
   cellarLog: {
     cellaredTobacco: "Cellared Tobacco",
+    overRemoved: "excess removed",
+    deleteConfirmTitle: "Delete Entry",
   },
 
   inventory: {
     totalOpen: "Total Open",
     readyToSmoke: "Ready to smoke",
     openInventory: "Open Inventory",
+  },
+
+  trends: {
+    last7Days: "Last 7 Days",
+    last30Days: "Last 30 Days",
+    last90Days: "Last 90 Days",
+    last12Months: "Last 12 Months",
+    yearToDate: "Year to Date",
+    allTime: "All Time",
+    yourTrends: "Your Trends",
+    frequencyPatterns: "Frequency & Patterns",
+    totalSessions: "Total Sessions",
+    perWeek: "Per Week",
+    mostCommonDay: "Most Common Day",
+    vsPrevPeriod: "vs prev period",
+    noSessionsLogged: "No sessions logged for this period.",
+    youLogged: "You logged {{count}} session{{count, plural, one {} other {s}}} this period.",
+    topPipe: "Your #1 pipe was {{name}} ({{count}} session{{count, plural, one {} other {s}}}).",
   },
 
   stats: {
@@ -1069,6 +1091,32 @@ const translations = {
 
   aiIdentifier: {
     analyzing: "Analyzing...",
+    initialAnalysis: "Initial Observations",
+    additionalInfoNeeded: "Additional Information Needed",
+    yourAnswer: "Your answer",
+    continueIdentification: "Continue Identification",
+    skipIdentifyNow: "Skip / Identify Now",
+    uploadPhotos: "Upload Photos",
+    takePhoto: "Take Photo",
+    optionalHints: "Optional Hints",
+    nameDesc: "Name / description",
+    brandMaker: "Brand / maker",
+    shape: "Shape",
+    stampings: "Stampings / markings",
+    identifying: "Identifying...",
+    identifyPipe: "Identify Pipe",
+    unknownMaker: "Unknown Maker",
+    add: "Add to Collection",
+    adding: "Adding...",
+    tryAnother: "Try Another",
+  },
+
+  quickPipeIdentifier: {
+    title: "Identify a Pipe",
+    subtitle: "Upload a photo to identify your pipe with AI",
+    failedToIdentify: "Failed to identify pipe. Please try again.",
+    identificationTimedOut: "Identification timed out. Please try again.",
+    clarificationFailed: "Failed to get clarification response.",
   },
 
   howTo: {
@@ -1268,6 +1316,15 @@ const translations = {
       "Follow the cancellation steps in Stripe (web) or the App Store/Play Store (mobile)"
     ],
     stillNeedHelp: "Still need help?",
+  },
+
+  profileExtended: {
+    statusActive: "Active",
+    statusTrialing: "Trial",
+    statusPastDue: "Past Due",
+    statusCanceled: "Canceled",
+    statusIncomplete: "Incomplete",
+    statusUnpaid: "Unpaid",
   },
 };
 
