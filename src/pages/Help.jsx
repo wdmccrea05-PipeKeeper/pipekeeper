@@ -49,7 +49,7 @@ export default function Help() {
       color: "text-orange-400",
       bgColor: "bg-orange-400/10",
       borderColor: "border-orange-400/30",
-      link: createPageUrl("Troubleshooting"),
+      link: createPageUrl("TroubleshootingFull"),
       topicsKeys: [
         "helpCenter.topicCaching",
         "helpCenter.topicAIUpdating",
