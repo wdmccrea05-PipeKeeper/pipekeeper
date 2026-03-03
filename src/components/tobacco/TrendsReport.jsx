@@ -95,7 +95,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         };
       }
       pipeUsage[pipeId].count += 1;
-      pipeUsage[pipeId].bowls += log.bowls_smoked || 1;
+      pipeUsage[pipeId].bowls += getBowlsUsed(log);
       if (new Date(log.date) > new Date(pipeUsage[pipeId].lastUsed)) {
         pipeUsage[pipeId].lastUsed = log.date;
       }
@@ -123,7 +123,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         };
       }
       blendUsage[blendId].count += 1;
-      blendUsage[blendId].bowls += log.bowls_smoked || 1;
+      blendUsage[blendId].bowls += getBowlsUsed(log);
       if (new Date(log.date) > new Date(blendUsage[blendId].lastUsed)) {
         blendUsage[blendId].lastUsed = log.date;
       }
@@ -169,7 +169,10 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
     const window = TIME_WINDOWS[timeWindow];
     let daysInPeriod;
     if (window.all) {
-      daysInPeriod = Math.max(1, Math.ceil((Date.now() - new Date(Math.min(...logs.map(l => new Date(l.date)))).getTime()) / (1000 * 60 * 60 * 24)));
+      const timestamps = logs.map(l => new Date(l.date).getTime()).filter(t => !isNaN(t));
+      daysInPeriod = timestamps.length > 0
+        ? Math.max(1, Math.ceil((Date.now() - Math.min(...timestamps)) / (1000 * 60 * 60 * 24)))
+        : 1;
     } else if (window.days) {
       daysInPeriod = window.days;
     } else if (window.months) {
