@@ -10,17 +10,29 @@ import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, ArrowDownToLine, ArrowUpFromLine, Calendar, Package, Trash2, Crown } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCorrectCellaredValues } from "@/components/utils/cellarReconciliation";
 import { detectCellarDrift } from "@/components/utils/tobaccoQuantityHelpers";
+import { safeUpdate } from "@/components/utils/safeUpdate";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function CellarLog({ blend }) {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [formData, setFormData] = useState({
     transaction_type: 'added',
     date: new Date().toISOString().split('T')[0],
@@ -39,7 +51,8 @@ export default function CellarLog({ blend }) {
     queryFn: async () => {
       const result = await base44.entities.CellarLog.filter(
         { blend_id: blend.id, created_by: user?.email },
-        '-date'
+        '-date',
+        100
       );
       return Array.isArray(result) ? result : [];
     },
@@ -105,10 +118,15 @@ export default function CellarLog({ blend }) {
 
   const syncBlendCellarQuantities = async () => {
     try {
-      const allLogs = await base44.entities.CellarLog.filter({ 
-        blend_id: blend.id, 
-        created_by: user?.email 
-      });
+      // Use cached logs when available to avoid a redundant network call; the cache
+      // may not include the just-created/deleted entry yet, so fall back to a fresh fetch.
+      const cachedLogs = queryClient.getQueryData(['cellar-logs', blend.id]);
+      const allLogs = cachedLogs !== undefined
+        ? cachedLogs
+        : await base44.entities.CellarLog.filter({ 
+            blend_id: blend.id, 
+            created_by: user?.email 
+          });
 
       const correctValues = calculateCorrectCellaredValues(blend, allLogs);
 
@@ -133,7 +151,7 @@ export default function CellarLog({ blend }) {
         pouch_cellared_date: correctValues.pouch_pouches_cellared > 0 ? oldestDate(datesByContainer.pouch) : null,
       };
 
-      await base44.entities.TobaccoBlend.update(blend.id, updateData);
+      await safeUpdate('TobaccoBlend', blend.id, updateData, user?.email);
 
       // Data integrity check: warn if significant drift remains after sync
       const updatedBlend = { ...blend, ...updateData };
@@ -154,6 +172,23 @@ export default function CellarLog({ blend }) {
       />
     );
   }
+
+  const containerLabel = {
+    tin: t("cellarLog.containerTin", "Tin"),
+    jar: t("cellarLog.containerJar", "Jar"),
+    pouch: t("cellarLog.containerPouch", "Pouch"),
+    bulk: t("cellarLog.containerBulk", "Bulk"),
+    other: t("common.other", "Other"),
+  };
+
+  const formatCellarDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return format(parseISO(dateStr), 'MMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <>
@@ -298,7 +333,10 @@ export default function CellarLog({ blend }) {
             <Package className="w-4 h-4 text-amber-600" />
             <span className="text-xs text-amber-700 font-medium">{t("cellarLog.net")}</span>
           </div>
-          <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(netCellared)}</p>
+          <p className={`text-lg font-bold ${netCellared < 0 ? 'text-red-700' : 'text-[#1a2c42]'}`}>
+            {formatWeight(Math.abs(netCellared))}
+            {netCellared < 0 && <span className="text-xs ml-1">({t("cellarLog.overRemoved", "excess removed")})</span>}
+          </p>
         </div>
         </div>
 
@@ -339,7 +377,7 @@ export default function CellarLog({ blend }) {
                           {log.amount_oz} {t("cellarLog.ozUnit","oz")}
                         </Badge>
                         <Badge variant="outline" className="text-xs bg-gray-100 text-[#1a2c42] border-[#1a2c42]/20">
-                          {log.container_type}
+                          {containerLabel[log.container_type] || log.container_type}
                         </Badge>
                         {log.removal_destination && (
                           <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
@@ -350,18 +388,14 @@ export default function CellarLog({ blend }) {
                         )}
                         <span className="flex items-center gap-1 text-xs text-[#1a2c42]/60">
                           <Calendar className="w-3 h-3" />
-                          {format(new Date(log.date), 'MMM d, yyyy')}
+                          {formatCellarDate(log.date)}
                         </span>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (window.confirm(t("cellarLog.deleteConfirm"))) {
-                          deleteLogMutation.mutate(log.id);
-                        }
-                      }}
+                      onClick={() => setConfirmDeleteId(log.id)}
                       className="text-[#1a2c42]/40 hover:text-red-600"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -377,6 +411,20 @@ export default function CellarLog({ blend }) {
               )}
               </div>
               </div>
-              </>
+              <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("cellarLog.deleteConfirmTitle", "Delete Entry")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("cellarLog.deleteConfirm", "Are you sure you want to delete this entry?")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { deleteLogMutation.mutate(confirmDeleteId); setConfirmDeleteId(null); }}>
+              {t("common.delete", "Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </>
   );
 }

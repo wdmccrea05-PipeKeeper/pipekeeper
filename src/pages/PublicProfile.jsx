@@ -30,6 +30,19 @@ import { formatWeight, formatCurrency } from "@/components/utils/localeFormatter
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
+// Parse ISO date string as local calendar date to avoid UTC off-by-one
+const formatLogDate = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const ymd = dateStr.split('T')[0];
+    const [year, month, day] = ymd.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    return new Date(year, month - 1, day).toLocaleDateString();
+  } catch {
+    return '';
+  }
+};
+
 export default function PublicProfilePage() {
   const { t } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
@@ -40,6 +53,9 @@ export default function PublicProfilePage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const [expandedPipeComments, setExpandedPipeComments] = useState({});
+  const [expandedBlendComments, setExpandedBlendComments] = useState({});
+  const [expandedLogComments, setExpandedLogComments] = useState({});
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
@@ -424,11 +440,21 @@ export default function PublicProfilePage() {
                     </div>
                     {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
-                        <CommentSection
-                          entityType="pipe"
-                          entityId={pipe.id}
-                          entityOwnerEmail={profileEmail}
-                        />
+                        {expandedPipeComments[pipe.id] ? (
+                          <CommentSection
+                            entityType="pipe"
+                            entityId={pipe.id}
+                            entityOwnerEmail={profileEmail}
+                          />
+                        ) : (
+                          <button
+                            className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-1"
+                            onClick={() => setExpandedPipeComments(prev => ({ ...prev, [pipe.id]: true }))}
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                            {t("publicProfile.viewComments", "View Comments")}
+                          </button>
+                        )}
                       </div>
                     )}
                     {profile.allow_comments && isPreview && (
@@ -527,11 +553,21 @@ export default function PublicProfilePage() {
                     </div>
                     {profile.allow_comments && !isPreview && (
                       <div className="mt-3 pt-3 border-t">
-                        <CommentSection
-                          entityType="blend"
-                          entityId={blend.id}
-                          entityOwnerEmail={profileEmail}
-                        />
+                        {expandedBlendComments[blend.id] ? (
+                          <CommentSection
+                            entityType="blend"
+                            entityId={blend.id}
+                            entityOwnerEmail={profileEmail}
+                          />
+                        ) : (
+                          <button
+                            className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-1"
+                            onClick={() => setExpandedBlendComments(prev => ({ ...prev, [blend.id]: true }))}
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                            {t("publicProfile.viewComments", "View Comments")}
+                          </button>
+                        )}
                       </div>
                     )}
                     {profile.allow_comments && isPreview && (
@@ -557,7 +593,9 @@ export default function PublicProfilePage() {
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
-            {logs.map((log) => (
+            {logs.map((log) => {
+              const bowlCount = log.bowls_used || log.bowls_smoked;
+              return (
               <Card key={log.id} className="bg-white/95 border-stone-200">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
@@ -567,22 +605,32 @@ export default function PublicProfilePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-stone-500">
-                        {new Date(/T/.test(log.date) ? log.date : log.date + 'T12:00:00').toLocaleDateString()}
+                        {formatLogDate(log.date)}
                       </p>
-                      {(log.bowls_used ?? log.bowls_smoked) && (
+                      {bowlCount && (
                         <Badge variant="outline" className="text-xs mt-1 font-semibold text-stone-700">
-                          {log.bowls_used ?? log.bowls_smoked} {(log.bowls_used ?? log.bowls_smoked) > 1 ? t("publicProfile.bowls") : t("publicProfile.bowl")}
+                          {bowlCount} {bowlCount > 1 ? t("publicProfile.bowls") : t("publicProfile.bowl")}
                         </Badge>
                       )}
                     </div>
                   </div>
                   {profile.allow_comments && !isPreview && (
                     <div className="pt-3 border-t">
-                      <CommentSection
-                        entityType="log"
-                        entityId={log.id}
-                        entityOwnerEmail={profileEmail}
-                      />
+                      {expandedLogComments[log.id] ? (
+                        <CommentSection
+                          entityType="log"
+                          entityId={log.id}
+                          entityOwnerEmail={profileEmail}
+                        />
+                      ) : (
+                        <button
+                          className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-1"
+                          onClick={() => setExpandedLogComments(prev => ({ ...prev, [log.id]: true }))}
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                          {t("publicProfile.viewComments", "View Comments")}
+                        </button>
+                      )}
                     </div>
                   )}
                   {profile.allow_comments && isPreview && (
@@ -595,7 +643,8 @@ export default function PublicProfilePage() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
             {logs.length === 0 && (
               <Card className="bg-white/95">
                 <CardContent className="py-12 text-center text-stone-500">
