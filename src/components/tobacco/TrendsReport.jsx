@@ -144,7 +144,13 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       : 0;
 
     const dayOfWeek = {};
-    const timeOfDay = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+    const timeOfDay = {
+      [t("trends.morning","Morning")]: 0,
+      [t("trends.afternoon","Afternoon")]: 0,
+      [t("trends.evening","Evening")]: 0,
+      [t("trends.night","Night")]: 0,
+    };
+    const timeKeys = Object.keys(timeOfDay);
     
     filteredLogs.forEach(log => {
       try {
@@ -153,10 +159,10 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         dayOfWeek[day] = (dayOfWeek[day] || 0) + 1;
 
         const hour = date.getHours();
-        if (hour >= 5 && hour < 12) timeOfDay.morning++;
-        else if (hour >= 12 && hour < 17) timeOfDay.afternoon++;
-        else if (hour >= 17 && hour < 21) timeOfDay.evening++;
-        else timeOfDay.night++;
+        if (hour >= 5 && hour < 12) timeOfDay[timeKeys[0]]++;
+        else if (hour >= 12 && hour < 17) timeOfDay[timeKeys[1]]++;
+        else if (hour >= 17 && hour < 21) timeOfDay[timeKeys[2]]++;
+        else timeOfDay[timeKeys[3]]++;
       } catch {}
     });
 
@@ -164,7 +170,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
     
     const mostCommonTime = Object.entries(timeOfDay)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
+      .sort(([, a], [, b]) => b - a)[0]?.[0] || t('trends.nA', { defaultValue: 'N/A' });
 
     const window = TIME_WINDOWS[timeWindow];
     let daysInPeriod;
@@ -190,7 +196,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       trend,
       sessionsPerWeek,
       mostCommonDay,
-      mostCommonTime: mostCommonTime.charAt(0).toUpperCase() + mostCommonTime.slice(1)
+      mostCommonTime
     };
   }, [filteredLogs, previousPeriodLogs, timeWindow, logs]);
 
