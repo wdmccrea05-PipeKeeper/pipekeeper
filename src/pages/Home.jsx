@@ -6,6 +6,8 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
+import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
 
 export default function Home() {
   console.log("🏠 Home component rendering");
@@ -28,6 +30,16 @@ export default function Home() {
     queryFn: async () => {
       const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.email],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
+      return profiles?.[0] || null;
     },
     enabled: !!user?.email,
     staleTime: 10000,
@@ -85,7 +97,7 @@ export default function Home() {
         </div>
 
         <div className="mt-6">
-          <a href={createPageUrl("PipeCollection")}>
+          <a href={createPageUrl("Pipes")}>
             {t("home.viewCollection", "View Collection")}
           </a>
         </div>
@@ -125,11 +137,17 @@ export default function Home() {
         </div>
 
         <div className="mt-6">
-          <a href={createPageUrl("TobaccoCellar")}>
+          <a href={createPageUrl("Tobacco")}>
             {t("home.viewCellar", "View Cellar")}
           </a>
         </div>
       </Card>
+
+      {/* AI UPDATES PANEL */}
+      <AIUpdatesPanel pipes={pipes} blends={blends} profile={userProfile} />
+
+      {/* COLLECTION INSIGHTS PANEL (Log, Pairing Grid, Rotation, Stats, Trends, Aging, Reports) */}
+      <CollectionInsightsPanel pipes={pipes} blends={blends} user={user} />
     </div>
   );
 }
