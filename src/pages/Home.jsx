@@ -91,7 +91,7 @@ export default function Home() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/847ca6ee3_Image1.jpeg')` }}
           />
-          <div className="absolute inset-0 bg-[#6b2d2d]/85" />
+          <div className="absolute inset-0 bg-[#6b2d2d]/92" />
           <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
             <div className="flex items-start justify-between mb-1">
               <div>
@@ -132,7 +132,7 @@ export default function Home() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/2f3158c10_7084B1F4-A823-4AA9-8340-8DCA2DEB5B79-1024x768.jpg')` }}
           />
-          <div className="absolute inset-0 bg-[#1c3d2e]/80" />
+          <div className="absolute inset-0 bg-[#1c3d2e]/90" />
           <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
             <div className="flex items-start justify-between mb-1">
               <div>
