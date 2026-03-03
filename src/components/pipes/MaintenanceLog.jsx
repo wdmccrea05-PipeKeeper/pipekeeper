@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Wrench, Plus, DollarSign, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { parseLocalCalendarDate } from '@/components/utils/schemaCompatibility';
 
 export default function MaintenanceLog({ pipeId, pipeName }) {
   const { t } = useTranslation();
@@ -110,7 +111,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium">{maintenanceTypes[log.maintenance_type]}</span>
                       <span className="text-xs text-stone-500">
-                        {new Date(log.date + 'T12:00:00').toLocaleDateString()}
+                        {parseLocalCalendarDate(log.date).toLocaleDateString()}
                       </span>
                     </div>
                     {log.description && (

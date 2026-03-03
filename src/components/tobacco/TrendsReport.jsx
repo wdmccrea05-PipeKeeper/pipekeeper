@@ -157,9 +157,18 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
 
     const window = TIME_WINDOWS[timeWindow];
-    const daysInPeriod = window.all 
-      ? Math.max(1, Math.ceil((Date.now() - new Date(Math.min(...logs.map(l => new Date(l.date)))).getTime()) / (1000 * 60 * 60 * 24)))
-      : window.days || (window.months ? window.months * 30 : window.ytd ? differenceInCalendarDays(new Date(), startOfYear(new Date())) + 1 : 30);
+    let daysInPeriod;
+    if (window.all) {
+      daysInPeriod = Math.max(1, Math.ceil((Date.now() - new Date(Math.min(...logs.map(l => new Date(l.date)))).getTime()) / (1000 * 60 * 60 * 24)));
+    } else if (window.days) {
+      daysInPeriod = window.days;
+    } else if (window.months) {
+      daysInPeriod = window.months * 30;
+    } else if (window.ytd) {
+      daysInPeriod = differenceInCalendarDays(new Date(), startOfYear(new Date())) + 1;
+    } else {
+      daysInPeriod = 30;
+    }
     
     const sessionsPerWeek = (totalSessions / daysInPeriod) * 7;
 
