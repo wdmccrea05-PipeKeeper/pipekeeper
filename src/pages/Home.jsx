@@ -7,6 +7,7 @@ import { createPageUrl } from "@/components/utils/createPageUrl";
 import { formatCurrency, formatWeight } from "@/components/utils/localeFormatters";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/components/utils/tobaccoQuantityHelpers";
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import AIUpdatesPanel from "@/components/ai/AIUpdatesPanel";
 
@@ -46,14 +47,19 @@ export default function Home() {
     staleTime: 10000,
   });
 
+  const { data: cellarLogs = [] } = useQuery({
+    queryKey: ['cellar-logs', user?.email],
+    queryFn: async () => {
+      const logs = await base44.entities.CellarLog.filter({ created_by: user?.email });
+      return Array.isArray(logs) ? logs : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
-  const totalCellaredOz = blends.reduce((sum, b) => {
-    const tinOz = b.tin_total_quantity_oz || 0;
-    const bulkOz = b.bulk_total_quantity_oz || 0;
-    const pouchOz = b.pouch_total_quantity_oz || 0;
-    return sum + tinOz + bulkOz + pouchOz;
-  }, 0);
-  const totalTobaccoValue = blends.reduce((sum, b) => sum + (Number(b?.estimated_value) || 0), 0);
+  const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
+  const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
 
   return (
     <div className="space-y-8">

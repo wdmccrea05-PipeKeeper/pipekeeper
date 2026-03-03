@@ -173,6 +173,8 @@ const translations = {
     tin: "tin",
     tinPlural: "tins",
     outOf5: "out of 5",
+    pouch: "pouch",
+    pouchPlural: "pouches",
   },
 
   faqExtended: {
@@ -531,6 +533,8 @@ const translations = {
     breakInSchedules: "Break-In Schedules",
     breakInSchedulesTooltip: "Progressive tobacco recommendations to break in new pipes properly",
     breakInSchedulesDesc: "Personalized break-in recommendations generated per pipe",
+    noCellaredTobaccoYet: "No cellared tobacco yet",
+    avgAge: "Avg. Age",
   },
 
   tobaccoSearch: {
@@ -688,6 +692,15 @@ const translations = {
     totalOpen: "Total Open",
     readyToSmoke: "Ready to smoke",
     openInventory: "Open Inventory",
+  },
+
+  stats: {
+    ozOpen: "oz open",
+    ozCellared: "oz cellared",
+    ozBulk: "oz bulk",
+    ozTotal: "oz total",
+    totalOpen: "Total Open",
+    totalCellared: "Total Cellared",
   },
 
   formsExtended: {
