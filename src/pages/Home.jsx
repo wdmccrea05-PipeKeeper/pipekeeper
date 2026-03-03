@@ -108,14 +108,14 @@ export default function Home() {
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-5 flex-1">
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+              <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{pipes.length}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection", "Pipes in Collection")}</div>
-              </div>
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+              </a>
+              <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{formatCurrency(totalPipeValue)}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
-              </div>
+              </a>
             </div>
             <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
               <a href={createPageUrl("Pipes")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
@@ -149,18 +149,18 @@ export default function Home() {
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-5 flex-1">
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{blends.length}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.tobaccoBlends", "Tobacco Blends")}</div>
-              </div>
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+              </a>
+              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.cellared", "Cellared")}</div>
-              </div>
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+              </a>
+              <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">≈ {formatCurrency(Math.round(totalTobaccoValue))}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
-              </div>
+              </a>
             </div>
             <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
               <a href={createPageUrl("Tobacco")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
