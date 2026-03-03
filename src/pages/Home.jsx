@@ -66,9 +66,9 @@ export default function Home() {
         <h1 className="text-4xl font-bold font-serif text-[#E0D8C8]">
             {t("home.title", "Pipe & Tobacco Collection")}
           </h1>
-        <p className="text-lg opacity-80 max-w-3xl mx-auto">
-          {t("home.subtitle", "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.")}
-        </p>
+        <p className="text-lg text-[#E0D8C8]/80 max-w-3xl mx-auto">
+           {t("home.subtitle", "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.")}
+         </p>
       </div>
 
       {/* 2. SUBSCRIPTION STATUS BANNER */}
