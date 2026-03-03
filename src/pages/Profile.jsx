@@ -28,6 +28,7 @@ import { resolveSubscriptionProvider } from "@/components/utils/subscriptionProv
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+// TODO: Move BLEND_TYPES and PIPE_SHAPES to the translation system so labels are translatable.
 const BLEND_TYPES = [
   "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
   "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
@@ -43,7 +44,7 @@ const PIPE_SHAPES = [
 function pickBestProfile(rows = []) {
   if (!Array.isArray(rows) || rows.length === 0) return null;
   const scored = rows.map((r) => {
-    const updated = Date.parse(r.updated_at || r.updatedAt || "") || 0;
+    const updated = Date.parse(r.updated_date || r.updated_at || r.updatedAt || "") || 0;
     const created = Date.parse(r.created_at || r.createdAt || "") || 0;
     const hasName = r.display_name ? 1 : 0;
     const hasTos = r.tos_accepted_at ? 1 : 0;
@@ -376,7 +377,16 @@ export default function ProfilePage() {
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple","Provider: Apple")}</Badge>
               )}
               {subscription?.status ? (
-                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.statusLabel","Status")}: {subscription.status}</Badge>
+                <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
+                  {t("profileExtended.statusLabel","Status")}: {({
+                    active: t("profileExtended.statusActive", "Active"),
+                    trialing: t("profileExtended.statusTrialing", "Trial"),
+                    past_due: t("profileExtended.statusPastDue", "Past Due"),
+                    canceled: t("profileExtended.statusCanceled", "Canceled"),
+                    incomplete: t("profileExtended.statusIncomplete", "Incomplete"),
+                    unpaid: t("profileExtended.statusUnpaid", "Unpaid"),
+                  })[subscription.status] || subscription.status}
+                </Badge>
               ) : null}
             </div>
 

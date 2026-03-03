@@ -192,6 +192,7 @@ const translations = {
     bulkPlural: "bulk",
     in: "in",
     inches: "inches",
+    oz: "oz",
   },
 
   faqExtended: {
@@ -1327,6 +1328,15 @@ const translations = {
       "Follow the cancellation steps in Stripe (web) or the App Store/Play Store (mobile)"
     ],
     stillNeedHelp: "Still need help?",
+  },
+
+  profileExtended: {
+    statusActive: "Active",
+    statusTrialing: "Trial",
+    statusPastDue: "Past Due",
+    statusCanceled: "Canceled",
+    statusIncomplete: "Incomplete",
+    statusUnpaid: "Unpaid",
   },
 };
 

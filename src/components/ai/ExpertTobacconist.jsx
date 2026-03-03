@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import FeatureGate from "@/components/subscription/FeatureGate";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { Badge } from "@/components/ui/badge";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -19,6 +20,8 @@ const TOBACCONIST_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/ob
 
 export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, userProfile }) {
   const { t } = useTranslation();
+  const entitlements = useEntitlements();
+  const canOptimize = entitlements.canUse("COLLECTION_OPTIMIZATION");
   if (isAppleBuild) return null;
 
   return (
@@ -124,12 +127,8 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
               </div>
               <p className="text-sm text-[#E0D8C8]/60">{t("tobacconist.whatIfSubtitle")}</p>
             </div>
-            <FeatureGate 
-              feature="COLLECTION_OPTIMIZATION"
-              featureName={t("featureGate.whatIfAnalysisName")}
-              description={t("featureGate.whatIfAnalysisDesc")}
-            >
-              {pipes.length === 0 ? (
+            {canOptimize ? (
+              pipes.length === 0 ? (
                 <div className="text-center py-8">
                   <Lightbulb className="w-12 h-12 text-[#E0D8C8]/30 mx-auto mb-3" />
                   <p className="text-[#E0D8C8]/60 mb-4">{t("tobacconist.whatIfEmpty")}</p>
@@ -144,8 +143,12 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
                 </div>
               ) : (
                 <CollectionOptimizer pipes={pipes} blends={blends} showWhatIf={true} improvedWhatIf={true} />
-              )}
-            </FeatureGate>
+              )
+            ) : (
+              <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
+                {t("tobacconist.upgradeInOptimizeTab", "Upgrade via the Optimize tab to unlock What-If analysis.")}
+              </p>
+            )}
           </TabsContent>
 
           <TabsContent value="updates" className="mt-6">

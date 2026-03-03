@@ -54,7 +54,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     bowl_variant_id: '',
     blend_id: '',
     container_id: '',
-    bowls_smoked: 1,
+    bowls_used: 1,
     is_break_in: false,
     date: toLocalDateYmd(),
     notes: ''
@@ -140,7 +140,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   // Get pipe rest status (safe from invalid dates)
    const getPipeRestStatus = (pipeId) => {
-     if (!logs || logs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+     if (!logs || logs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
      const pipeLogs = logs.filter(l => l && l.pipe_id === pipeId).sort((a, b) => {
        try {
@@ -149,11 +149,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
          return 0;
        }
      });
-     if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+     if (pipeLogs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
      try {
        const lastSmoked = parseLocalCalendarDate(pipeLogs[0].date);
-       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: 'No usage logged yet.' };
+       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: t("smokingLog.noUsageLogged", "No usage logged yet.") };
 
        const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
        const daysRested = Math.floor(hoursSinceSmoke / 24);
@@ -169,6 +169,14 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
        return { ready: true, message: t("smokingLog.noUsageLogged") };
      }
    };
+
+  const pipeRestStatusMap = useMemo(() => {
+    const map = {};
+    for (const p of (pipes || [])) {
+      if (p?.id) map[p.id] = getPipeRestStatus(p.id);
+    }
+    return map;
+  }, [pipes, logs]);
 
   const updateBlendMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
@@ -186,7 +194,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       
       // If break-in status or bowl count changed, update the pipe's schedule
       if (oldLog && (oldLog.is_break_in !== newData.is_break_in || 
-                     oldLog.bowls_smoked !== newData.bowls_smoked ||
+                     (oldLog.bowls_used || oldLog.bowls_smoked) !== (newData.bowls_used || newData.bowls_smoked) ||
                      oldLog.blend_id !== newData.blend_id ||
                      oldLog.pipe_id !== newData.pipe_id)) {
         
@@ -200,7 +208,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               if (scheduleMatches(item, oldLog.blend_id, oldLog.blend_name)) {
                 return {
                   ...item,
-                  bowls_completed: Math.max(0, (item.bowls_completed || 0) - oldLog.bowls_smoked)
+                  bowls_completed: Math.max(0, (item.bowls_completed || 0) - (oldLog.bowls_used || oldLog.bowls_smoked || 0))
                 };
               }
               return item;
@@ -232,7 +240,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               updatedSchedule = schedule.map((item, i) =>
                 i !== idx
                   ? item
-                  : { ...item, bowls_completed: (item.bowls_completed || 0) + newData.bowls_smoked }
+                  : { ...item, bowls_completed: (item.bowls_completed || 0) + (newData.bowls_used || newData.bowls_smoked || 0) }
               );
             } else {
               // Append new item
@@ -242,7 +250,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   blend_id: newData.blend_id,
                   blend_name: resolvedBlendName || t("common.unknownBlend"),
                   suggested_bowls: 5,
-                  bowls_completed: Number(newData.bowls_smoked || 1),
+                  bowls_completed: Number(newData.bowls_used || newData.bowls_smoked || 1),
                   reasoning: t("smokingLog.autoAddedEditReasoning"),
                 },
               ];
@@ -284,7 +292,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
             if (scheduleMatches(item, log.blend_id, log.blend_name)) {
               return {
                 ...item,
-                bowls_completed: Math.max(0, (item.bowls_completed || 0) - log.bowls_smoked)
+                bowls_completed: Math.max(0, (item.bowls_completed || 0) - (log.bowls_used || log.bowls_smoked || 0))
               };
             }
             return item;
@@ -318,8 +326,8 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         }
       }
 
-      // Reduce tobacco inventory
-      if (autoReduceInventory && variables.tobaccoUsed > 0) {
+      // Reduce tobacco inventory (Premium feature)
+      if (autoReduceInventory && variables.tobaccoUsed > 0 && hasPaid) {
         const blend = blends.find(b => b.id === variables.blend_id);
         if (blend) {
           // Reduce from opened inventory first
@@ -372,7 +380,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
         // If pipe isn't found, skip schedule update but DO NOT abort the onSuccess flow
         if (pipe?.id) {
-          const bowlsToAdd = Number(variables.bowls_smoked || 1);
+          const bowlsToAdd = Number(variables.bowls_used || variables.bowls_smoked || 1);
 
           const schedule = Array.isArray(pipe.break_in_schedule) ? pipe.break_in_schedule : [];
 
@@ -423,7 +431,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
         bowl_variant_id: '',
         blend_id: '',
         container_id: '',
-        bowls_smoked: 1,
+        bowls_used: 1,
         is_break_in: false,
         date: toLocalDateYmd(),
         notes: ''
@@ -450,7 +458,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       return;
     }
 
-    const bowls = parseInt(formData.bowls_smoked) || 1;
+    const bowls = parseInt(formData.bowls_used) || 1;
     const tobaccoUsed = estimateTobaccoUsage(pipe, bowls);
 
     let bowl_name = null;
@@ -583,7 +591,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 </SelectTrigger>
                 <SelectContent>
                   {pipes.map(p => {
-                    const restStatus = getPipeRestStatus(p.id);
+                    const restStatus = pipeRestStatusMap[p.id] || { ready: true, message: '' };
                     return (
                       <SelectItem key={p.id} value={p.id}>
                         <div className="flex items-center gap-2 w-full">
@@ -603,7 +611,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 <Alert className="mt-2">
                   <Info className="w-4 h-4" />
                   <AlertDescription className="text-xs">
-                    {getPipeRestStatus(formData.pipe_id).message}
+                    {(pipeRestStatusMap[formData.pipe_id] || {}).message}
                   </AlertDescription>
                 </Alert>
               )}
@@ -671,12 +679,12 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               <Input
                 type="number"
                 min="1"
-                value={formData.bowls_smoked}
-                onChange={(e) => setFormData({ ...formData, bowls_smoked: e.target.value })}
+                value={formData.bowls_used}
+                onChange={(e) => setFormData({ ...formData, bowls_used: e.target.value })}
               />
-              {formData.pipe_id && formData.bowls_smoked && (
+              {formData.pipe_id && formData.bowls_used && (
                 <p className="text-xs text-[#A4B0C4]">
-                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_smoked) || 1)).toFixed(2)} oz
+                  {t("smokingLog.estUsage")}: ~{Number(estimateTobaccoUsage(pipes.find(p => p.id === formData.pipe_id), parseInt(formData.bowls_used) || 1)).toFixed(2)} {t("units.oz", "oz")}
                 </p>
               )}
             </div>

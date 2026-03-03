@@ -142,8 +142,9 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
+      const allPipes = queryClient.getQueryData(['pipes', user?.email]) || [];
       await regeneratePairingsConsistent({
-        pipes: [pipe],
+        pipes: allPipes.length > 0 ? allPipes : [pipe],
         blends,
         profile: userProfile,
         user,
