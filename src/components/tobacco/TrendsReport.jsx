@@ -8,22 +8,32 @@ import {
   Download, Share2, Sparkles
 } from "lucide-react";
 import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO, differenceInCalendarDays } from "date-fns";
+import { getBowlsUsed } from "@/components/utils/schemaCompatibility";
 import html2canvas from 'html2canvas';
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
+// Labels resolved at render time via t() — see getTimeWindowLabel()
 const TIME_WINDOWS = {
-  '7d': { label: 'Last 7 Days', days: 7 },
-  '30d': { label: 'Last 30 Days', days: 30 },
-  '90d': { label: 'Last 90 Days', days: 90 },
-  'ytd': { label: 'Year-to-Date', ytd: true },
-  '12m': { label: 'Last 12 Months', months: 12 },
-  'all': { label: 'All-Time', all: true }
+  '7d': { labelKey: 'trends.last7Days', days: 7 },
+  '30d': { labelKey: 'trends.last30Days', days: 30 },
+  '90d': { labelKey: 'trends.last90Days', days: 90 },
+  'ytd': { labelKey: 'trends.yearToDate', ytd: true },
+  '12m': { labelKey: 'trends.last12Months', months: 12 },
+  'all': { labelKey: 'trends.allTime', all: true }
 };
 
 export default function TrendsReport({ logs, pipes, blends, user }) {
   const { t } = useTranslation();
   const [timeWindow, setTimeWindow] = useState('30d');
+
+  const getTimeWindowLabel = (key) => {
+    const defaults = {
+      '7d': 'Last 7 Days', '30d': 'Last 30 Days', '90d': 'Last 90 Days',
+      'ytd': 'Year-to-Date', '12m': 'Last 12 Months', 'all': 'All-Time'
+    };
+    return t(TIME_WINDOWS[key]?.labelKey, { defaultValue: defaults[key] || key });
+  };
   const [shareImageRef, setShareImageRef] = useState(null);
 
   const filteredLogs = useMemo(() => {
