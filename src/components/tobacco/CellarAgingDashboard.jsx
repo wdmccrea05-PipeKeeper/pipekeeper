@@ -94,8 +94,9 @@ export default function CellarAgingDashboard({ user }) {
     if (!oldestDate) return { months: 0, days: 0, oldestDate: null };
     
     const now = new Date();
-    const months = differenceInMonths(now, oldestDate);
-    const days = differenceInDays(now, oldestDate);
+    const oldestDateObj = new Date(oldestDate);
+    const months = differenceInMonths(now, oldestDateObj);
+    const days = differenceInDays(now, oldestDateObj);
     
     return { months, days, oldestDate };
   };
@@ -231,14 +232,17 @@ export default function CellarAgingDashboard({ user }) {
                     <h4 className="font-semibold text-white mb-1">{blend.name}</h4>
                     <div className="flex flex-wrap gap-2 items-center text-xs text-white/80 font-medium">
                       <span>{totalOz.toFixed(1)} {t("stats.ozCellared")}</span>
-                      {aging.oldestDate && (
-                        <>
-                          <span>•</span>
-                          <span>{t("tobacconist.sinceDateFormat")} {format(aging.oldestDate, 'MMM yyyy')}</span>
-                          <span>•</span>
-                          <span className="font-medium">{aging.months}m {aging.days - aging.months * 30}d</span>
-                        </>
-                      )}
+                      {aging.oldestDate && (() => {
+                        const d = new Date(aging.oldestDate);
+                        return !isNaN(d.getTime()) ? (
+                          <>
+                            <span>•</span>
+                            <span>{t("tobacconist.sinceDateFormat")} {format(d, 'MMM yyyy')}</span>
+                            <span>•</span>
+                            <span className="font-medium">{aging.months}m {aging.days - aging.months * 30}d</span>
+                          </>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                   
@@ -259,7 +263,9 @@ export default function CellarAgingDashboard({ user }) {
                     <span>{t("tobacconist.agingProgress")}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
-                  <Progress value={progress} className="h-2" />
+                  {blend.aging_potential && (
+                    <Progress value={progress} className="h-2" />
+                  )}
                 </div>
               </Card>
             );

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { PKCard } from "@/components/ui/pk-surface";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -59,6 +60,16 @@ export default function Home() {
   const favoritePipes = pipes.filter(p => p?.is_favorite);
   const favoriteBlends = blends.filter(b => b?.is_favorite);
 
+  const recentPipes = useMemo(() => (pipes || [])
+    .filter(p => p)
+    .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0))
+    .slice(0, 4), [pipes]);
+
+  const recentBlends = useMemo(() => (blends || [])
+    .filter(b => b)
+    .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0))
+    .slice(0, 4), [blends]);
+
   return (
     <div className="space-y-8">
       {/* 1. HERO */}
@@ -76,7 +87,7 @@ export default function Home() {
         <div className="border-l-4 border-amber-500 bg-[#223447] rounded-r-xl p-4 flex items-center gap-3">
           <Crown className="w-5 h-5 text-amber-400 shrink-0" />
           <div>
-            <div className="font-semibold text-amber-400">{t("subscription.proBadge", "Pro Active")}</div>
+            <div className="font-semibold text-amber-400">{planLabel}</div>
             <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting", "Thank you for supporting PipeKeeper")}</div>
           </div>
           {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50">{planLabel}</span>}
@@ -181,16 +192,16 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map(item => (
-              <span key={item.id} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20">
+              <Link key={item.id} to={createPageUrl(`PipeDetail?id=${encodeURIComponent(item.id)}`)} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20 hover:bg-[#1e3347]/80 transition-colors">
                 <PipeShapeIcon shape={item.shape} className="w-3 h-3" />
                 {item.name}
-              </span>
+              </Link>
             ))}
             {favoriteBlends.map(item => (
-              <span key={item.id} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20">
+              <Link key={item.id} to={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(item.id)}`)} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20 hover:bg-[#1e3347]/80 transition-colors">
                 <Leaf className="w-3 h-3" />
                 {item.name}
-              </span>
+              </Link>
             ))}
           </div>
         </PKCard>
@@ -213,7 +224,7 @@ export default function Home() {
             </a>
           </div>
           <div className="space-y-3">
-            {pipes.slice(0, 4).map(p => (
+            {recentPipes.map(p => (
               <a key={p.id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(p.id)}`)} className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors">
                 <div className="w-12 h-12 rounded-lg bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {p.photos?.[0] ? (
@@ -243,7 +254,7 @@ export default function Home() {
             </a>
           </div>
           <div className="space-y-3">
-            {blends.slice(0, 4).map(b => (
+            {recentBlends.map(b => (
               <a key={b.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(b.id)}`)} className="flex items-center gap-3 hover:bg-white/5 rounded-lg p-1.5 -mx-1.5 transition-colors">
                 <div className="w-12 h-12 rounded-full bg-[#1E2F43] overflow-hidden shrink-0 flex items-center justify-center">
                   {(b.logo || b.photo) ? (

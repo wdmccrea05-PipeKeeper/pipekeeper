@@ -16,6 +16,7 @@ export default function RotationPlanner({ user }) {
   const [expandedNeverSmoked, setExpandedNeverSmoked] = useState(false);
   const [expandedRecentlySmoked, setExpandedRecentlySmoked] = useState(false);
   const [expandedInRegularRotation, setExpandedInRegularRotation] = useState(false);
+  const [expandedNeedsRotation, setExpandedNeedsRotation] = useState(false);
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
     queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }, '-updated_date', 500),
@@ -91,12 +92,28 @@ export default function RotationPlanner({ user }) {
           <div className="space-y-4">
             {needsRotation.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                    <h3 className="font-semibold text-sm">{t("tobacconist.needsRotation")} ({needsRotation.length})</h3>
+                  </div>
+                  {needsRotation.length > 5 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedNeedsRotation(!expandedNeedsRotation)}
+                      className="h-7 text-xs"
+                    >
+                      {expandedNeedsRotation ? (
+                        <>{t("tobacconist.showLess")} <ChevronUp className="w-3 h-3 ml-1" /></>
+                      ) : (
+                        <>{t("tobacconist.showAll")} <ChevronDown className="w-3 h-3 ml-1" /></>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  {needsRotation.slice(0, 5).map(pipe => (
+                  {needsRotation.slice(0, expandedNeedsRotation ? needsRotation.length : 5).map(pipe => (
                     <Link 
                       key={pipe.id} 
                       to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
@@ -187,20 +204,23 @@ export default function RotationPlanner({ user }) {
                 </div>
                 <div className="space-y-2">
                   {recentlySmoked.slice(0, expandedRecentlySmoked ? 10 : 3).map(pipe => (
-                    <div 
-                      key={pipe.id} 
-                      className="flex items-center justify-between p-3 border border-green-200 rounded-lg"
+                    <Link
+                      key={pipe.id}
+                      to={createPageUrl('PipeDetail') + `?id=${pipe.id}`}
+                      className="block"
                     >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{pipe.name}</p>
-                        <p className="text-xs text-stone-500 truncate">
-                          {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
-                        </p>
+                      <div className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{pipe.name}</p>
+                          <p className="text-xs text-stone-500 truncate">
+                            {pipe.daysSince === 0 ? t("tobacconist.today") : `${pipe.daysSince} ${pipe.daysSince > 1 ? t("tobacconist.days") : t("tobacconist.day")} ${t("common.ago")}`}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-green-600 border-green-300 flex-shrink-0">
+                          {t("tobacconist.active")}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-green-600 border-green-300 flex-shrink-0">
-                        {t("tobacconist.active")}
-                      </Badge>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

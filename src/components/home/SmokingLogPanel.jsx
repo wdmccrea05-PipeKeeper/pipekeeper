@@ -140,7 +140,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   // Get pipe rest status (safe from invalid dates)
    const getPipeRestStatus = (pipeId) => {
-     if (!logs || logs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+     if (!logs || logs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged") };
 
      const pipeLogs = logs.filter(l => l && l.pipe_id === pipeId).sort((a, b) => {
        try {
@@ -149,11 +149,11 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
          return 0;
        }
      });
-     if (pipeLogs.length === 0) return { ready: true, message: 'No usage logged yet.' };
+     if (pipeLogs.length === 0) return { ready: true, message: t("smokingLog.noUsageLogged") };
 
      try {
        const lastSmoked = parseLocalCalendarDate(pipeLogs[0].date);
-       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: 'No usage logged yet.' };
+       if (Number.isNaN(lastSmoked.getTime())) return { ready: true, message: t("smokingLog.noUsageLogged") };
 
        const hoursSinceSmoke = differenceInHours(new Date(), lastSmoked);
        const daysRested = Math.floor(hoursSinceSmoke / 24);
@@ -319,7 +319,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
 
       // Reduce tobacco inventory
-      if (autoReduceInventory && variables.tobaccoUsed > 0) {
+      if (autoReduceInventory && hasPaid && variables.tobaccoUsed > 0) {
         const blend = blends.find(b => b.id === variables.blend_id);
         if (blend) {
           // Reduce from opened inventory first
@@ -454,7 +454,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     const tobaccoUsed = estimateTobaccoUsage(pipe, bowls);
 
     let bowl_name = null;
-    if (formData.bowl_variant_id && hasMultipleBowls) {
+    if (formData.bowl_variant_id && formData.bowl_variant_id !== 'none' && hasMultipleBowls) {
       const bowl = selectedPipe.interchangeable_bowls.find(
         b => (b.bowl_variant_id || `bowl_${selectedPipe.interchangeable_bowls.indexOf(b)}`) === formData.bowl_variant_id
       );
@@ -470,7 +470,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       bowls_used: bowls,
       tobaccoUsed,
       blend_id: formData.blend_id,
-      container_id: formData.container_id || null,
+      container_id: (formData.container_id && formData.container_id !== 'none') ? formData.container_id : null,
     });
     createLogMutation.mutate(logData);
   };
@@ -617,7 +617,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.selectBowl")} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value={null}>{t("smokingLog.noSpecificBowl")}</SelectItem>
+                    <SelectItem value="none">{t("smokingLog.noSpecificBowl")}</SelectItem>
                     {selectedPipe.interchangeable_bowls.map((bowl, idx) => {
                       const bowlId = bowl.bowl_variant_id || `bowl_${idx}`;
                       return (
@@ -655,7 +655,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                     <SelectValue placeholder={t("smokingLog.autoNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>{t("smokingLog.autoNone")}</SelectItem>
+                    <SelectItem value="none">{t("smokingLog.autoNone")}</SelectItem>
                     {containers.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g

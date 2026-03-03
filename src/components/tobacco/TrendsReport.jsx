@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,24 +7,33 @@ import {
   TrendingUp, Calendar, Clock, Flame, Award, RefreshCw,
   Download, Share2, ChevronRight, Sparkles, Star
 } from "lucide-react";
-import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO } from "date-fns";
+import { format, subDays, startOfYear, subMonths, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import html2canvas from 'html2canvas';
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-const TIME_WINDOWS = {
-  '7d': { label: 'Last 7 Days', days: 7 },
-  '30d': { label: 'Last 30 Days', days: 30 },
-  '90d': { label: 'Last 90 Days', days: 90 },
-  'ytd': { label: 'Year-to-Date', ytd: true },
-  '12m': { label: 'Last 12 Months', months: 12 },
-  'all': { label: 'All-Time', all: true }
+const TIME_WINDOWS_CONFIG = {
+  '7d': { days: 7 },
+  '30d': { days: 30 },
+  '90d': { days: 90 },
+  'ytd': { ytd: true },
+  '12m': { months: 12 },
+  'all': { all: true }
 };
 
 export default function TrendsReport({ logs, pipes, blends, user }) {
   const { t } = useTranslation();
   const [timeWindow, setTimeWindow] = useState('30d');
-  const [shareImageRef, setShareImageRef] = useState(null);
+  const shareImageRef = useRef(null);
+
+  const TIME_WINDOWS = {
+    '7d': { label: t('trends.last7Days', 'Last 7 Days'), days: 7 },
+    '30d': { label: t('trends.last30Days', 'Last 30 Days'), days: 30 },
+    '90d': { label: t('trends.last90Days', 'Last 90 Days'), days: 90 },
+    'ytd': { label: t('trends.yearToDate', 'Year to Date'), ytd: true },
+    '12m': { label: t('trends.last12Months', 'Last 12 Months'), months: 12 },
+    'all': { label: t('trends.allTime', 'All Time'), all: true },
+  };
 
   const filteredLogs = useMemo(() => {
     if (!logs || logs.length === 0) return [];
@@ -127,6 +136,18 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
   }, [filteredLogs]);
 
   const frequencyStats = useMemo(() => {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      return {
+        totalSessions: 0,
+        sessionsPerWeek: 0,
+        mostCommonDay: '—',
+        mostCommonTime: '—',
+        trend: 0,
+        dayOfWeek: {},
+        timeOfDay: { morning: 0, afternoon: 0, evening: 0, night: 0 },
+      };
+    }
+
     const totalSessions = filteredLogs.length;
     const prevTotalSessions = previousPeriodLogs.length;
     const trend = prevTotalSessions > 0 
@@ -157,11 +178,13 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
 
     const window = TIME_WINDOWS[timeWindow];
-    const daysInPeriod = window.all 
-      ? Math.max(1, Math.ceil((Date.now() - new Date(Math.min(...logs.map(l => new Date(l.date)))).getTime()) / (1000 * 60 * 60 * 24)))
+    const daysInPeriod = window.all
+      ? (filteredLogs.length > 0
+          ? Math.max(1, differenceInDays(new Date(), new Date(Math.min(...filteredLogs.map(l => new Date(l.date).getTime())))))
+          : 1)
       : window.days || 30;
     
-    const sessionsPerWeek = (totalSessions / daysInPeriod) * 7;
+    const sessionsPerWeek = daysInPeriod > 0 ? (totalSessions / daysInPeriod) * 7 : 0;
 
     return {
       totalSessions,
@@ -170,7 +193,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       mostCommonDay,
       mostCommonTime: mostCommonTime.charAt(0).toUpperCase() + mostCommonTime.slice(1)
     };
-  }, [filteredLogs, previousPeriodLogs, timeWindow, logs]);
+  }, [filteredLogs, previousPeriodLogs, timeWindow]);
 
   const tasteProfile = useMemo(() => {
     const blendCategories = {};
@@ -311,10 +334,10 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
   }, [frequencyStats, topPipes, tasteProfile, geometryInsights, t]);
 
   const handleShare = async () => {
-    if (!shareImageRef) return;
+    if (!shareImageRef.current) return;
 
     try {
-      const canvas = await html2canvas(shareImageRef, {
+      const canvas = await html2canvas(shareImageRef.current, {
         backgroundColor: '#1a2c42',
         scale: 2
       });
@@ -441,7 +464,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       </div>
 
       {/* Shareable Summary Card */}
-      <Card ref={setShareImageRef} className="border-amber-300/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10">
+      <Card ref={shareImageRef} className="border-amber-300/30 bg-gradient-to-br from-amber-900/20 to-amber-800/10">
         <CardContent className="p-6">
           <div className="flex items-start gap-4 mb-4">
             <div className="w-12 h-12 rounded-full bg-amber-600/20 flex items-center justify-center flex-shrink-0">

@@ -13,6 +13,7 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function QuickPipeIdentifier({ pipes, blends }) {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
   const [clarificationAnswers, setClarificationAnswers] = useState([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useCurrentUser();
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -426,7 +428,7 @@ Return JSON:
       };
 
       const newPipe = await base44.entities.Pipe.create(pipeData);
-      invalidatePipeQueries(queryClient);
+      invalidatePipeQueries(queryClient, user?.email);
       
       // Navigate to the new pipe detail page
       navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(newPipe.id)}`));
@@ -510,12 +512,20 @@ Return JSON:
                 )}
               </Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
+                  const additionalContext = [
+                    hints.name && `Name/Description: ${hints.name}`,
+                    hints.maker && `Brand/Maker: ${hints.maker}`,
+                    hints.shape && `Shape: ${hints.shape}`,
+                    hints.stamping && `Stampings/Markings: ${hints.stamping}`
+                  ].filter(Boolean).join('\n');
                   setClarificationNeeded(null);
                   setClarificationAnswers([]);
+                  await performFinalIdentification(additionalContext);
                 }}
                 variant="outline"
                 className="border-[#e8d5b7]/30"
+                disabled={loading}
               >
                 {t("aiIdentifier.skipIdentifyNow")}
               </Button>

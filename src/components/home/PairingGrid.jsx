@@ -16,10 +16,12 @@ import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useEntitlements } from "@/components/hooks/useEntitlements";
 
 export default function PairingGrid({ user, pipes, blends, profile }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const entitlements = useEntitlements();
   const [regenerating, setRegenerating] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hasAutoRegenerated, setHasAutoRegenerated] = useState(false);
@@ -32,7 +34,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
   });
 
   const { data: fetchedBlends = [], isLoading: blendsLoading } = useQuery({
-    queryKey: ["tobaccos", user?.email],
+    queryKey: ["blends", user?.email],
     queryFn: async () => (await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, "-updated_date", 500)) || [],
     enabled: !!user?.email && !blends,
   });
@@ -56,8 +58,9 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
   // Auto-regenerate on first load if no pairings exist and data is ready
   React.useEffect(() => {
+    const canAutoRegen = entitlements.canUse("AI_UPDATES") || entitlements.canUse("PAIRING_MATRIX_AI");
     if (!hasAutoRegenerated && !regenerating && allPipes.length > 0 && allBlends.length > 0 && user?.email && 
-        (!activePairings || (activePairings?.pairings?.length === 0))) {
+        (!activePairings || (activePairings?.pairings?.length === 0)) && canAutoRegen) {
       setHasAutoRegenerated(true);
       regenPairings();
     }
