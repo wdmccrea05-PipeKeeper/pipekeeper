@@ -3,14 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen, Crown } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { helpContent } from "@/components/i18n/helpContent";
 
 export default function TroubleshootingFull() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
-
-  const content = helpContent[lang] || helpContent.en;
-  const sections = content?.troubleshooting?.sections || {};
 
   const troubleshootingTopics = [
     {
@@ -18,60 +14,91 @@ export default function TroubleshootingFull() {
       icon: RefreshCw,
       title: t("helpCenter.topicPageRefresh"),
       color: "text-blue-400",
-      questions: (sections.pageRefresh?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.pageRefresh_q1"), a: t("troubleshooting.pageRefresh_a1") },
+        { q: t("troubleshooting.pageRefresh_q2"), a: t("troubleshooting.pageRefresh_a2") },
+        { q: t("troubleshooting.pageRefresh_q3"), a: t("troubleshooting.pageRefresh_a3") },
+        { q: t("troubleshooting.pageRefresh_q4"), a: t("troubleshooting.pageRefresh_a4") },
+      ]
     },
     {
       id: "aiFeatures",
       icon: Sparkles,
       title: t("helpCenter.topicAIFeatures"),
       color: "text-purple-400",
-      questions: (sections.aiFeatures?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.aiFeatures_q1"), a: t("troubleshooting.aiFeatures_a1") },
+        { q: t("troubleshooting.aiFeatures_q2"), a: t("troubleshooting.aiFeatures_a2") },
+        { q: t("troubleshooting.aiFeatures_q3"), a: t("troubleshooting.aiFeatures_a3") },
+        { q: t("troubleshooting.aiFeatures_q4"), a: t("troubleshooting.aiFeatures_a4") },
+        { q: t("troubleshooting.aiFeatures_q5"), a: t("troubleshooting.aiFeatures_a5") },
+        { q: t("troubleshooting.aiFeatures_q6"), a: t("troubleshooting.aiFeatures_a6") },
+        { q: t("troubleshooting.aiFeatures_q7"), a: t("troubleshooting.aiFeatures_a7") },
+        { q: t("troubleshooting.aiFeatures_q8"), a: t("troubleshooting.aiFeatures_a8") },
+        { q: t("troubleshooting.aiFeatures_q9"), a: t("troubleshooting.aiFeatures_a9") },
+      ]
     },
     {
       id: "blendTypes",
       icon: Tags,
       title: t("helpCenter.topicBlendTypes"),
       color: "text-amber-400",
-      questions: (sections.blendTypes?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.blendTypes_q1"), a: t("troubleshooting.blendTypes_a1") },
+        { q: t("troubleshooting.blendTypes_q2"), a: t("troubleshooting.blendTypes_a2") },
+        { q: t("troubleshooting.blendTypes_q3"), a: t("troubleshooting.blendTypes_a3") },
+        { q: t("troubleshooting.blendTypes_q4"), a: t("troubleshooting.blendTypes_a4") },
+        { q: t("troubleshooting.blendTypes_q5"), a: t("troubleshooting.blendTypes_a5") },
+        { q: t("troubleshooting.blendTypes_q6"), a: t("troubleshooting.blendTypes_a6") },
+      ]
     },
     {
       id: "specialization",
       icon: Target,
       title: t("helpCenter.topicSpecialization"),
       color: "text-green-400",
-      questions: (sections.specialization?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.specialization_q1"), a: t("troubleshooting.specialization_a1") },
+        { q: t("troubleshooting.specialization_q2"), a: t("troubleshooting.specialization_a2") },
+        { q: t("troubleshooting.specialization_q3"), a: t("troubleshooting.specialization_a3") },
+        { q: t("troubleshooting.specialization_q4"), a: t("troubleshooting.specialization_a4") },
+        { q: t("troubleshooting.specialization_q5"), a: t("troubleshooting.specialization_a5") },
+        { q: t("troubleshooting.specialization_q6"), a: t("troubleshooting.specialization_a6") },
+      ]
     },
     {
       id: "proFeatures",
       icon: Crown,
       title: t("helpCenter.topicProFeatures"),
       color: "text-amber-400",
-      questions: (sections.proFeatures?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.proFeatures_q1"), a: t("troubleshooting.proFeatures_a1") },
+        { q: t("troubleshooting.proFeatures_q2"), a: t("troubleshooting.proFeatures_a2") },
+        { q: t("troubleshooting.proFeatures_q3"), a: t("troubleshooting.proFeatures_a3") },
+        { q: t("troubleshooting.proFeatures_q4"), a: t("troubleshooting.proFeatures_a4") },
+        { q: t("troubleshooting.proFeatures_q5"), a: t("troubleshooting.proFeatures_a5") },
+        { q: t("troubleshooting.proFeatures_q6"), a: t("troubleshooting.proFeatures_a6") },
+        { q: t("troubleshooting.proFeatures_q7"), a: t("troubleshooting.proFeatures_a7") },
+        { q: t("troubleshooting.proFeatures_q8"), a: t("troubleshooting.proFeatures_a8") },
+      ]
     },
     {
       id: "appFunctions",
       icon: AlertCircle,
       title: t("helpCenter.topicAppFunctions"),
       color: "text-red-400",
-      questions: (sections.appFunctions?.items || []).map(item => ({
-        q: item.q,
-        a: item.a
-      }))
+      questions: [
+        { q: t("troubleshooting.appFunctions_q1"), a: t("troubleshooting.appFunctions_a1") },
+        { q: t("troubleshooting.appFunctions_q2"), a: t("troubleshooting.appFunctions_a2") },
+        { q: t("troubleshooting.appFunctions_q3"), a: t("troubleshooting.appFunctions_a3") },
+        { q: t("troubleshooting.appFunctions_q4"), a: t("troubleshooting.appFunctions_a4") },
+        { q: t("troubleshooting.appFunctions_q5"), a: t("troubleshooting.appFunctions_a5") },
+        { q: t("troubleshooting.appFunctions_q6"), a: t("troubleshooting.appFunctions_a6") },
+        { q: t("troubleshooting.appFunctions_q7"), a: t("troubleshooting.appFunctions_a7") },
+        { q: t("troubleshooting.appFunctions_q8"), a: t("troubleshooting.appFunctions_a8") },
+        { q: t("troubleshooting.appFunctions_q9"), a: t("troubleshooting.appFunctions_a9") },
+        { q: t("troubleshooting.appFunctions_q10"), a: t("troubleshooting.appFunctions_a10") },
+      ]
     }
   ];
 
@@ -89,19 +116,19 @@ export default function TroubleshootingFull() {
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{content?.troubleshooting?.pageTitle || t("troubleshooting.title")}</h1>
-          <p className="text-[#E0D8C8]/80 mb-4">{content?.troubleshooting?.pageSubtitle || t("helpCenter.troubleshootingDesc")}</p>
+          <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("troubleshooting.title")}</h1>
+          <p className="text-[#E0D8C8]/80 mb-4">{t("troubleshooting.subtitle")}</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
             <a href="/HowTo">
               <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
-                {content?.troubleshooting?.navHowTo || t("help.howTo")}
+                {t("troubleshooting.navHowTo")}
               </button>
             </a>
             <a href="/FAQ">
               <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
                 <Info className="w-4 h-4" />
-                {content?.troubleshooting?.navFAQ || t("help.faq")}
+                {t("troubleshooting.navFAQ")}
               </button>
             </a>
           </div>
