@@ -1567,54 +1567,49 @@ ${englishUserText}
 
                                 {/* ✅ Removed beige hex; use readable theme-safe colors */}
                                 <p className="text-sm text-stone-700 dark:text-white/90 mb-2">
-                                  {asText(displaySpec.reasoning)}
+                                  {asText(spec.reasoning)}
                                 </p>
 
-                                {displaySpec.score_improvement && (
+                                {spec.score_improvement && (
                                   <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
                                     <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact")}:</p>
-                                    <p className="text-xs text-emerald-800 font-semibold">{asText(displaySpec.score_improvement)}</p>
+                                    <p className="text-xs text-emerald-800 font-semibold">{asText(spec.score_improvement)}</p>
                                   </div>
                                 )}
 
-                                {displaySpec.trophy_blends && displaySpec.trophy_blends.length > 0 && (
-                                  <div className="bg-amber-50 rounded-lg p-2 border border-amber-200 mb-2">
-                                    <p className="text-xs font-medium text-amber-700 flex items-center gap-1">
-                                      <Trophy className="w-3 h-3" />
-                                      {t("tobacconist.trophyMatches")}:
-                                    </p>
-                                    <p className="text-xs text-amber-800">{asText(displaySpec.trophy_blends.join(", "))}</p>
+                                {spec.score_delta != null && (
+                                  <div className="bg-blue-50 rounded-lg p-2 border border-blue-100 mb-2">
+                                    <p className="text-xs font-medium text-blue-900">{t("tobacconist.scoreImprovement")}:</p>
+                                    <p className="text-xs text-blue-800 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
                                   </div>
                                 )}
 
-                                <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                                  <p className="text-xs font-medium text-blue-900">{t("tobacconist.usagePattern")}</p>
-                                  <p className="text-xs text-stone-800">{asText(displaySpec.usage_pattern)}</p>
-                                </div>
+                                {spec.fills_gap_for && (
+                                  <div className="bg-orange-50 rounded-lg p-2 border border-orange-200 mb-2">
+                                    <p className="text-xs font-medium text-orange-900">{t("tobacconist.fillsGap")}:</p>
+                                    <p className="text-xs text-orange-800">{asText(spec.fills_gap_for)}</p>
+                                  </div>
+                                )}
 
                                 <div className="flex flex-wrap gap-2 mt-3">
-                                   {displaySpec.recommended_blend_types?.length > 0 && (
-                                     <>
-                                       <Button
-                                         size="sm"
-                                         className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                         onClick={() => applySpecialization(pv.pipe_id, displaySpec.recommended_blend_types, pv.bowl_variant_id)}
-                                       >
-                                         <Check className="w-4 h-4 mr-1" />
-                                         {t("tobacconist.adoptThisChange", "Adopt")}
-                                       </Button>
+                                   <Button
+                                     size="sm"
+                                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                     onClick={() => applySpecialization(spec.pipe_id, spec.recommended_blend_types, spec.bowl_variant_id)}
+                                   >
+                                     <Check className="w-4 h-4 mr-1" />
+                                     {t("tobacconist.adoptThisChange", "Adopt")}
+                                   </Button>
 
-                                       <Button
-                                         size="sm"
-                                         variant="outline"
-                                         className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                         onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
-                                       >
-                                         <HelpCircle className="w-4 h-4 mr-1" />
-                                         {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification", "Ask Clarification")}
-                                       </Button>
-                                     </>
-                                   )}
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                     onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                                   >
+                                     <HelpCircle className="w-4 h-4 mr-1" />
+                                     {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification", "Ask Clarification")}
+                                   </Button>
                                  </div>
 
                                 {showFeedbackFor === variantKey && (
