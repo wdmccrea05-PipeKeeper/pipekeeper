@@ -1,3 +1,4 @@
+
 // English translations for PipeKeeper
 
 const translations = {
@@ -1259,10 +1260,27 @@ const translations = {
     messagingDisabled: "Messaging Disabled",
     messagingDisabledDesc: "Enable messaging in your profile settings to send and receive messages.",
     goToSettings: "Go to Settings",
-    savedMessages: "Saved Messages",
-    noSaved: "No saved messages",
+    instantMessaging: "Instant Messaging",
+    inbox: "Inbox",
+    online: "Online",
+    offline: "Offline",
+    typeMessage: "Type a message…",
+    offlineNote: "User is offline",
+    youBlockedUser: "You have blocked this user",
+    edited: "edited",
+    messageSent: "Message sent",
+    failedToSend: "Failed to send message",
     messageDeleted: "Message deleted",
     deleteConfirm: "Delete this message?",
+    cannotDeleteOtherMessage: "You can only delete your own messages",
+    messageEdited: "Message edited",
+    messageInbox: "Message Inbox",
+    unreadMessages: "Unread Messages",
+    noUnread: "No unread messages",
+    savedMessages: "Saved Messages",
+    noSaved: "No saved messages",
+    reply: "Reply",
+    noFriendsWithMessaging: "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.",
   },
 
   profile: {
