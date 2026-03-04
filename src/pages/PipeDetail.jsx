@@ -637,8 +637,8 @@ export default function PipeDetailPage() {
                     </div>
                   )}
                   {pipe.notes && (
-                    <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.notes")}</p>
+                  <div>
+                    <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("common.notes","Notes")}</p>
                       <p className="text-[#E0D8C8]/80 break-words">{pipe.notes}</p>
                     </div>
                   )}
