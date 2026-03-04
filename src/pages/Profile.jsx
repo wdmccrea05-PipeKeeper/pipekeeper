@@ -387,7 +387,7 @@ export default function ProfilePage() {
               )}
               {subscription?.status ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
-                  {t("profileExtended.statusLabel","Status")}: {statusLabels[subscription.status] || subscription.status}
+                  {statusLabels[subscription.status] || subscription.status}
                 </Badge>
               ) : null}
             </div>

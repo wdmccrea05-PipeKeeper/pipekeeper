@@ -65,6 +65,8 @@ import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
@@ -80,12 +82,10 @@ import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
+import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Profile from './pages/Profile';
-import PublicProfile from './pages/PublicProfile';
-import TroubleshootingFull from './pages/TroubleshootingFull';
 import __Layout from './Layout.jsx';
 
 
@@ -108,6 +108,8 @@ export const PAGES = {
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
+    "Profile": Profile,
+    "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
@@ -123,12 +125,10 @@ export const PAGES = {
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
+    "TroubleshootingFull": TroubleshootingFull,
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Profile": Profile,
-    "PublicProfile": PublicProfile,
-    "TroubleshootingFull": TroubleshootingFull,
 }
 
 export const pagesConfig = {

@@ -251,7 +251,7 @@ function CommunityPageInner() {
               </TabsTrigger>
               <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox")}</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox", "Inbox")}</span>
                 {unreadInboxCount > 0 && (
                   <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-rose-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {unreadInboxCount}
