@@ -1060,7 +1060,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Notes */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-stone-800">{t("common.notes")}</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("common.notes")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
