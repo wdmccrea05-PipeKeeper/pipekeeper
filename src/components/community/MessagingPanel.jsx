@@ -32,6 +32,8 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       return rows?.[0] || null;
     },
     enabled: !!userEmail,
+    staleTime: 30_000,
+    gcTime: 60_000,
     retry: 1,
   });
 
