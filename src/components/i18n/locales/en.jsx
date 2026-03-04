@@ -998,6 +998,8 @@ const translations = {
     totalOpen: "Total Open",
     readyToSmoke: "Ready to smoke",
     openInventory: "Open Inventory",
+    saveChanges: "Save Changes",
+    trackDesc: "Track your opened and cellared inventory for this blend.",
   },
 
   stats: {
@@ -1153,6 +1155,11 @@ const translations = {
     tabNotes: "Notes",
     tabPhotos: "Photos",
     identifyPipeDesc: "Upload photos of your pipe to identify the maker, model, and estimated value using AI.",
+    chamber: "Chamber",
+    origin: "Country of Origin",
+    year: "Year Made",
+    stem: "Stem",
+    filter: "Filter Type",
   },
 
   matching: {
@@ -1244,6 +1251,7 @@ const translations = {
     acceptRequest: "Accept",
     declineRequest: "Decline",
     sendInvitations: "Send Invitations",
+    inbox: "Inbox",
   },
 
   messaging: {
@@ -2330,6 +2338,45 @@ const translations = {
     analyzingPhotos: "Analyzing Photos...",
     identifyAndFill: "Identify & Fill Details",
     uploadHint: "Upload clear photos of the pipe and any visible stamps or markings",
+  },
+
+  conditionTracker: {
+    conditionTracking: "Condition Tracking",
+    overallCondition: "Overall Condition",
+    selectCondition: "Select condition",
+    cakeLevel: "Cake Level",
+    optimalRange: "Optimal range: 30–70%",
+    stemOxidation: "Stem Oxidation",
+    good: "Good",
+    thin: "Thin",
+    thick: "Thick",
+    heavyOxidation: "Heavy Oxidation",
+    moderateOxidation: "Moderate Oxidation",
+  },
+
+  maintenanceLog: {
+    maintenanceLog: "Maintenance Log",
+    addEntry: "Add Entry",
+    addMaintenanceEntry: "Add Maintenance Entry",
+    noRecordsYet: "No maintenance records yet.",
+    logAdded: "Maintenance entry added",
+    logAddFailed: "Failed to add maintenance entry",
+    logDeleted: "Maintenance entry deleted",
+    logDeleteFailed: "Failed to delete maintenance entry",
+    cleaning: "Cleaning",
+    restoration: "Restoration",
+    repair: "Repair",
+    reaming: "Reaming",
+    polishing: "Polishing",
+    stemWork: "Stem Work",
+    other: "Other",
+    by: "By",
+    type: "Type",
+    date: "Date",
+    description: "Description",
+    cost: "Cost",
+    performedBy: "Performed By",
+    save: "Save Entry",
   },
 };
 

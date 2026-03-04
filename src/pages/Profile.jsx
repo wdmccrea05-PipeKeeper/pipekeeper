@@ -386,7 +386,7 @@ export default function ProfilePage() {
               {provider === "apple" && (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">{t("profileExtended.providerApple","Provider: Apple")}</Badge>
               )}
-              {subscription?.status ? (
+              {subscription?.status && typeof subscription.status === 'string' ? (
                 <Badge variant="secondary" className="bg-stone-200 text-stone-800 border-stone-300">
                   {statusLabels[subscription.status] || subscription.status}
                 </Badge>
