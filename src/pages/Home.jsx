@@ -58,6 +58,7 @@ export default function Home() {
   const totalPipeValue = pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0);
   const totalCellaredOz = calculateCellaredOzFromLogs(cellarLogs);
   const totalTobaccoValue = calculateTobaccoCollectionValue(blends, cellarLogs);
+  const hideHomeValues = !!userProfile?.home_hide_collection_values;
   const favoritePipes = pipes.filter(p => p?.is_favorite);
   const favoriteBlends = blends.filter(b => b?.is_favorite);
 
@@ -115,7 +116,7 @@ export default function Home() {
                 <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection", "Pipes in Collection")}</div>
               </a>
               <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">{formatCurrency(totalPipeValue)}</div>
+                <div className="text-3xl font-bold">{hideHomeValues ? "••••" : formatCurrency(totalPipeValue)}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
               </a>
             </div>
@@ -160,7 +161,7 @@ export default function Home() {
                 <div className="text-sm opacity-60 mt-0.5">{t("home.cellared", "Cellared")}</div>
               </a>
               <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
-                <div className="text-3xl font-bold">≈ {formatCurrency(Math.round(totalTobaccoValue))}</div>
+                <div className="text-3xl font-bold">{hideHomeValues ? "••••" : `≈ ${formatCurrency(Math.round(totalTobaccoValue))}`}</div>
                 <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
               </a>
             </div>

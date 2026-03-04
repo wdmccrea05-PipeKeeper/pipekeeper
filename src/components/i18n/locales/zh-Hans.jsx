@@ -679,4 +679,8 @@ export default {
     noResultsFound: "未找到结果。",
     useCustomValue: "使用\"{value}\"",
   },
+  profileExtended: {
+    hideHomeValues: "在主页隐藏收藏品价值",
+    hideHomeValuesDesc: "从您的主页仪表板中隐藏烟斗和烟草收藏品价值。计算仍在后台运行。",
+  },
 };

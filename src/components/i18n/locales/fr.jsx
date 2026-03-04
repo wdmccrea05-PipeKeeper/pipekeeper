@@ -785,6 +785,10 @@ const translations = {
     noResultsFound: "Aucun résultat trouvé.",
     useCustomValue: "Utiliser \"{value}\"",
   },
+  profileExtended: {
+    hideHomeValues: "Masquer les valeurs de collection sur la page d'accueil",
+    hideHomeValuesDesc: "Masque les valeurs des collections de pipes et de tabac sur votre tableau de bord d'accueil. Les calculs continuent en arrière-plan.",
+  },
 };
 
 export default translations;

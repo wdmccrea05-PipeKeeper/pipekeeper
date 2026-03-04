@@ -785,6 +785,10 @@ const translations = {
     noResultsFound: "Keine Ergebnisse gefunden.",
     useCustomValue: "\"{value}\" verwenden",
   },
+  profileExtended: {
+    hideHomeValues: "Sammlungswerte auf der Startseite ausblenden",
+    hideHomeValuesDesc: "Blendet Pipe- und Tabaksammlungswerte von Ihrem Startseiten-Dashboard aus. Berechnungen laufen weiterhin im Hintergrund.",
+  },
 };
 
 export default translations;

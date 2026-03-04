@@ -679,4 +679,8 @@ export default {
     noResultsFound: "結果が見つかりませんでした。",
     useCustomValue: "\"{value}\" を使用",
   },
+  profileExtended: {
+    hideHomeValues: "ホームページのコレクション価値を非表示にする",
+    hideHomeValuesDesc: "ホームページのダッシュボードからパイプとタバコのコレクション価値を非表示にします。計算はバックグラウンドで継続されます。",
+  },
 };

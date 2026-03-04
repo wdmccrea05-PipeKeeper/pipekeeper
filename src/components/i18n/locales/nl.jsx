@@ -785,6 +785,10 @@ const translations = {
     noResultsFound: "Geen resultaten gevonden.",
     useCustomValue: "Gebruik \"{value}\"",
   },
+  profileExtended: {
+    hideHomeValues: "Verzamelingswaarden verbergen op de startpagina",
+    hideHomeValuesDesc: "Verbergt pijp- en tabaksverzamelingswaarden op uw startpagina-dashboard. Berekeningen blijven op de achtergrond uitvoeren.",
+  },
 };
 
 export default translations;
