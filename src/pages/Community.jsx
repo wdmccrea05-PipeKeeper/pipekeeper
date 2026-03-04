@@ -285,7 +285,7 @@ function CommunityPageInner() {
           </div>
 
           <TabsContent value="discover" className="space-y-6">
-            {!userProfile?.is_public && (
+            {!profileLoading && !userProfile?.is_public && (
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-4">
                   <p className="text-sm text-[#E0D8C8]/70 mb-2">
@@ -545,13 +545,13 @@ function CommunityPageInner() {
                 </CardContent>
               </Card>
             ) : null}
-            {acceptedFriends.length > 0 && user && userProfile?.enable_messaging ? (
+            {!profileLoading && acceptedFriends.length > 0 && user && userProfile?.enable_messaging ? (
               <MessagingPanel 
                 user={user} 
                 friends={acceptedFriends} 
                 publicProfiles={allPublicProfiles || []}
               />
-            ) : acceptedFriends.length === 0 ? (
+            ) : !profileLoading && acceptedFriends.length === 0 ? (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
