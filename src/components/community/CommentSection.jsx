@@ -110,7 +110,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
           {canComment && (
             <div className="space-y-2">
               <Textarea
-                placeholder={t('comments.leavePlaceholder')}
+                placeholder={t('comments.leaveComment')}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="min-h-[80px]"
@@ -188,19 +188,19 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
       <AlertDialog open={!!reportingComment} onOpenChange={() => setReportingComment(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('comments.reportTitle')}</AlertDialogTitle>
+            <AlertDialogTitle>{t('comments.reportInappropriate')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('comments.reportDesc')}
+              {t('comments.describeViolation')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ReportTextarea
-            placeholder={t('comments.reportPlaceholder')}
+            placeholder={t('comments.explainInappropriate')}
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
             className="min-h-[100px]"
           />
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setReportingComment(null)}>{t('comments.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setReportingComment(null)}>{t('comments.cancelBtn')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleReport}
               disabled={!reportReason.trim() || reportMutation.isPending}
