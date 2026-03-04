@@ -128,7 +128,17 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.User.update(users[0].id, {
         subscription_level: isPaid ? "paid" : "free",
         subscription_status: sub.status,
-        stripe_customer_id: customer.id
+        // FIX ISSUE-05: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
+        entitlement_tier: isPaid ? tier : "free",
+        subscription_tier: isPaid ? tier : "free",
+        stripe_customer_id: customer.id,
+        data: {
+          ...(users[0].data || {}),
+          entitlement_tier: isPaid ? tier : "free",
+          subscription_tier: isPaid ? tier : "free",
+          subscription_level: isPaid ? "paid" : "free",
+          subscription_status: sub.status,
+        },
       });
     }
     

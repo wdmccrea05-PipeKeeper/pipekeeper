@@ -31,21 +31,19 @@ export function buildEntitlements(input) {
       return true;
     }
     
-    // Premium tier gets core Premium features
-    // Pro-only features: BULK_EDIT, AI_IDENTIFY, AI_VALUE_LOOKUP, EXPORT_REPORTS, etc.
+    // MUST MATCH functions/_auth/entitlements.ts — keep these lists in sync
+    // Premium tier gets core Premium features only (post Feb 1, 2026 subscribers)
+    // Pro-only features: PAIRING_ADVANCED, COLLECTION_OPTIMIZATION, BREAK_IN_SCHEDULE,
+    //                    AI_UPDATES, AI_IDENTIFY, ANALYTICS_INSIGHTS, BULK_EDIT, EXPORT_REPORTS
     if (tier === "premium") {
       return [
         "UNLIMITED_COLLECTION",
         "SMOKING_LOG",
         "CELLAR_LOG",
         "PAIRING_MANUAL",
-        "PAIRING_BASIC",
-        "PAIRING_ADVANCED",
-        "PAIRING_MATRIX_AI",
-        "MATCHING_ENGINE",
         "ADVANCED_FILTERS",
-        "MESSAGING",
         "TOBACCO_LIBRARY_SYNC",
+        "MESSAGING",
         "SHARE_CARDS",
         "COMMUNITY_SAFETY",
         "CONDITION_TRACKING",
@@ -54,8 +52,6 @@ export function buildEntitlements(input) {
         "CELLAR_AGING",
         "INVENTORY_FORECAST",
         "BLEND_JOURNAL",
-        "COLLECTION_OPTIMIZATION",
-        "AI_UPDATES",
       ].includes(featureKey);
     }
     

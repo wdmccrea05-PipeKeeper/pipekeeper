@@ -10,7 +10,10 @@ import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/componen
 const STRIPE_PORTAL_FALLBACK = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
 
 export async function handleManageSubscription(user, subscription, navigate, createPageUrl) {
-  const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
+  // FIX ISSUE-22: Prefer the active subscription entity's provider over user.subscription_provider
+  // to handle cases where the user switched providers (e.g., Apple → Stripe or vice versa).
+  // Stale user.subscription_provider can route to the wrong management portal.
+  const provider = resolveSubscriptionProvider(subscription) || resolveProviderFromUser(user);
 
   // Stripe subscription: create portal session
   if (provider === "stripe") {

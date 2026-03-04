@@ -74,10 +74,15 @@ export default function SubscriptionFull() {
       setSubActive(active);
       setSubTier(payload?.tier || (payload?.productId || ""));
       if (active) setMessage(t("subscriptionFull.subActiveCheck","Subscription active ✅"));
+
+      // FIX ISSUE-17: Invalidate cached user/subscription data so FeatureGate re-evaluates
+      // entitlements immediately after the native subscription status updates local state.
+      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
     });
 
     return cleanup;
-  }, [isIOSApp, t]);
+  }, [isIOSApp, t, queryClient]);
 
   useEffect(() => {
     if (isIOSApp) return;

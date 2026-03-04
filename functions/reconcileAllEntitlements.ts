@@ -67,11 +67,21 @@ Deno.serve(async (req) => {
         if (needsUpdate) {
           console.log(`[reconcile] Fixing ${email}: level=${user.subscription_level}->${expectedLevel}, status=${user.subscription_status}->${expectedStatus}, tier=${user.subscription_tier}->${expectedTier}`);
           
+          // FIX ISSUE-05: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
+          // so the canonical resolver getEntitlementTier() reads the correct tier first.
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_level: expectedLevel,
             subscription_status: expectedStatus,
             subscription_tier: expectedTier,
+            entitlement_tier: expectedTier,
             stripe_customer_id: sub.stripe_customer_id || user.stripe_customer_id,
+            data: {
+              ...(user.data || {}),
+              entitlement_tier: expectedTier,
+              subscription_tier: expectedTier,
+              subscription_level: expectedLevel,
+              subscription_status: expectedStatus,
+            },
           });
 
           results.fixed++;

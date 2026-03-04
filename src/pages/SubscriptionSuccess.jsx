@@ -50,6 +50,17 @@ export default function SubscriptionSuccess() {
       try {
         refreshCount++;
 
+        // FIX ISSUE-13: Clear the session-gated sync key so the next app navigation triggers
+        // a fresh sync (handles delayed webhooks after the success page has already run).
+        try {
+          const authUser = await base44.auth.me().catch(() => null);
+          if (authUser?.email) {
+            sessionStorage.removeItem(`pk_subscription_sync_${authUser.email.toLowerCase()}`);
+          }
+        } catch {
+          // Non-fatal
+        }
+
         await base44.functions.invoke("syncSubscriptionForMe", {}).catch(() => null);
 
         const authUser = await base44.auth.me().catch(() => null);

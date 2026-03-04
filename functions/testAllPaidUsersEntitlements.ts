@@ -19,7 +19,9 @@ Deno.serve(async (req) => {
     // Get all active subscriptions
     const allSubs = await base44.asServiceRole.entities.Subscription.list();
     const activeSubs = allSubs.filter(s => {
-      const status = (s.data?.status || '').toLowerCase();
+      // FIX ISSUE-16: subscriptions store status at top level, not nested under data.
+      // Check s.status first, fall back to s.data?.status for schema variants.
+      const status = (s.status || s.data?.status || '').toLowerCase();
       return ['active', 'trialing', 'trial'].includes(status);
     });
 
@@ -30,8 +32,9 @@ Deno.serve(async (req) => {
     const alreadyCorrect = [];
 
     for (const sub of activeSubs) {
-      const email = (sub.data?.user_email || '').toLowerCase();
-      const userId = sub.data?.user_id;
+      // FIX ISSUE-16: Access subscription fields at top level first, fall back to sub.data for schema variants.
+      const email = (sub.user_email || sub.data?.user_email || '').toLowerCase();
+      const userId = sub.user_id || sub.data?.user_id;
       
       if (!email) {
         issues.push({
@@ -51,13 +54,15 @@ Deno.serve(async (req) => {
             email,
             issue: 'user_not_found',
             severity: 'CRITICAL',
-            subscription_tier: sub.data?.tier
+            // FIX ISSUE-16: Use top-level tier field first
+            subscription_tier: sub.tier || sub.data?.tier
           });
           continue;
         }
 
         const targetUser = users[0];
-        const subTier = sub.data?.tier || 'premium';
+        // FIX ISSUE-16: Access tier at top level first, fall back to sub.data?.tier
+        const subTier = sub.tier || sub.data?.tier || 'premium';
         const userTier = targetUser.data?.entitlement_tier || targetUser.data?.subscription_tier;
         const hasNestedData = targetUser.data?.data !== undefined;
         const missingEntitlementFields = !targetUser.data?.entitlement_tier && !targetUser.data?.subscription_tier;
@@ -83,11 +88,13 @@ Deno.serve(async (req) => {
           cleanData.entitlement_tier = subTier;
           cleanData.subscription_tier = subTier;
           cleanData.subscription_level = 'paid';
-          cleanData.subscription_status = sub.data?.status || 'active';
-          cleanData.subscription_provider = sub.data?.provider || 'stripe';
+          // FIX ISSUE-16: Use top-level status/provider fields first
+          cleanData.subscription_status = sub.status || sub.data?.status || 'active';
+          cleanData.subscription_provider = sub.provider || sub.data?.provider || 'stripe';
           
-          if (sub.data?.stripe_customer_id) {
-            cleanData.stripe_customer_id = sub.data.stripe_customer_id;
+          const stripeCustomerId = sub.stripe_customer_id || sub.data?.stripe_customer_id;
+          if (stripeCustomerId) {
+            cleanData.stripe_customer_id = stripeCustomerId;
           }
 
           await base44.asServiceRole.entities.User.update(targetUser.id, {

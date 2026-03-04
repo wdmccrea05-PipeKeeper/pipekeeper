@@ -25,6 +25,7 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     blends: tier === 'free' && !isFreeGrandfathered ? 10 : Infinity,
   };
 
+  // MUST MATCH src/components/utils/entitlements.jsx — keep these lists in sync
   // Core Premium features (new premium users post Feb 1, 2026)
   const corePremiumFeatures = [
     'UNLIMITED_COLLECTION',
@@ -42,8 +43,6 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     'CELLAR_AGING',
     'INVENTORY_FORECAST',
     'BLEND_JOURNAL',
-    'COLLECTION_OPTIMIZATION',
-    'AI_UPDATES',
   ];
 
   // Free tier features
@@ -89,6 +88,8 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
   return {
     tier,
     isLegacyPremium,
+    // FIX ISSUE-09: Include isFreeGrandfathered so FeatureGate can reference it via useEntitlements()
+    isFreeGrandfathered: !!isFreeGrandfathered,
     limits,
     canUse,
   };

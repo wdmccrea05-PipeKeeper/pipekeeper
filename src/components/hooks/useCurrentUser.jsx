@@ -78,7 +78,17 @@ export function useCurrentUser() {
           return ["active", "trialing", "trial", "past_due", "incomplete"].includes(status);
         });
 
-        if (valid.length === 0) return null;
+        if (valid.length === 0) {
+          // FIX BUG-04: When all subscriptions are in a non-active state (e.g. "canceled"
+          // immediately after a Stripe deletion event), return the most recently updated one
+          // as a fallback so user-level entitlement fields remain the tiebreaker.
+          const fallback = [...subs].sort((a, b) => {
+            const aDate = new Date(a.updated_date || a.created_date || 0).getTime();
+            const bDate = new Date(b.updated_date || b.created_date || 0).getTime();
+            return bDate - aDate;
+          });
+          return fallback[0] || null;
+        }
 
         // Pick best subscription: pro > premium, then active > trialing > most recent
         valid.sort((a, b) => {
@@ -150,11 +160,15 @@ export function useCurrentUser() {
   }, [userLoading, user?.email, refetchUser]);
 
   // One-time entitlement sync per session: fixes delayed webhook timing on re-login.
+  // FIX ISSUE-13: Use a timestamp-based gate (5 minutes) instead of a permanent session flag
+  // so that users navigating back to the app after a delayed webhook still get a fresh sync.
   useEffect(() => {
     if (userLoading || !user?.email) return;
 
     const sessionKey = `pk_subscription_sync_${user.email}`;
-    if (sessionStorage.getItem(sessionKey)) return;
+    const lastSync = sessionStorage.getItem(sessionKey);
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    if (lastSync && Date.now() - Number(lastSync) < FIVE_MINUTES) return;
 
     let cancelled = false;
 
@@ -167,7 +181,7 @@ export function useCurrentUser() {
         }
       } finally {
         if (!cancelled) {
-          sessionStorage.setItem(sessionKey, "true");
+          sessionStorage.setItem(sessionKey, String(Date.now()));
           await Promise.all([refetchUser(), refetchSubscription()]);
         }
       }

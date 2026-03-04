@@ -2,6 +2,7 @@ import { base44 } from "@/api/base44Client";
 import { shouldShowPurchaseUI, isIOSCompanion } from "./companion";
 import { createPageUrl } from "./createPageUrl";
 import { isAppleBuild } from "./appVariant";
+import { hasPaidAccess } from "./premiumAccess";
 
 /**
  * Apple's subscription management page (allowed as "manage" link).
@@ -69,14 +70,9 @@ export function shouldShowManageSubscription(subscription, user) {
   // iOS companion: do not show Stripe/portal UI
   if (!shouldShowPurchaseUI()) return false;
 
-  // If paid, show manage. If we have a Stripe customer id, show manage.
-  const level = (user?.subscription_level || "").toLowerCase();
-  const status = (user?.subscription_status || "").toLowerCase();
-  const isPaid = level === "paid" || status === "active";
-
-  const hasCustomerId = !!(user?.stripe_customer_id || subscription?.stripe_customer_id);
-
-  return isPaid || hasCustomerId;
+  // FIX ISSUE-08: Replace independent paid check with canonical resolver to avoid
+  // conflicting logic and ensure admin-granted users also see the manage button.
+  return hasPaidAccess(user, subscription);
 }
 
 export function getManageSubscriptionLabel() {

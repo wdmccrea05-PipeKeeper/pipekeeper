@@ -53,6 +53,10 @@ function subscriptionGrantsPremium(sub) {
 }
 
 export function usePremiumAccess(user) {
+  // FIX ISSUE-19: Emit a runtime console.error on every call so any missed usages
+  // surface in production logs. Replace with useCurrentUser() / useEntitlements().
+  console.error("[usePremiumAccess] DEPRECATED: Replace with useCurrentUser() or useEntitlements(). This hook will be removed in a future release.");
+
   const userId = user?.id;
   const email = (user?.email || "").toLowerCase();
 
