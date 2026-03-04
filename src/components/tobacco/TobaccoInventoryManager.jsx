@@ -191,7 +191,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
       </div>
 
       <p className="text-sm text-[#E0D8C8]/70">
-        {t("inventory.trackDesc")}
+        {t("inventory.trackDesc","Track how much of this blend you have")}
       </p>
 
       <Tabs defaultValue="tins" className="w-full">
