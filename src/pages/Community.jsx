@@ -60,7 +60,7 @@ function CommunityPageInner() {
     enabled: !!user?.email,
   });
 
-  const { data: friendships = [] } = useQuery({
+  const { data: friendships = [], isLoading: friendshipsLoading } = useQuery({
     queryKey: ['friendships', user?.email],
     queryFn: async () => {
       const sent = await base44.entities.Friendship.filter({ requester_email: user?.email });
@@ -515,7 +515,7 @@ function CommunityPageInner() {
           </TabsContent>
 
           <TabsContent value="inbox" className="space-y-6">
-            {(profileLoading || profileFetching) ? (
+            {(profileLoading || profileFetching || friendshipsLoading) ? (
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-4 text-center text-[#E0D8C8]/60 text-sm">
                   Loading...
