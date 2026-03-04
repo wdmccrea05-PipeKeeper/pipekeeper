@@ -1,6 +1,25 @@
 // Dutch translations for PipeKeeper
 
 const translations = {
+  auth: {
+    loginRequired: "Inloggen vereist",
+  },
+  nav: {
+    following: "Volgend",
+  },
+  community: {
+    commentsEnabled: "Reacties ingeschakeld",
+    commentsDisabled: "Reacties uitgeschakeld",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Alle rechten voorbehouden.",
+  },
+  units: {
+    tin: "blik",
+    tinPlural: "blikken",
+    outOf5: "van 5",
+  },
+
   subscription: {
     free: "Gratis",
     premium: "Premium",
@@ -176,24 +195,6 @@ const translations = {
     pleaseTryAgain: " Probeer het opnieuw.",
   },
 
-  auth: {
-    loginRequired: "Inloggen vereist",
-  },
-  nav: {
-    following: "Volgend",
-  },
-  community: {
-    commentsEnabled: "Reacties ingeschakeld",
-    commentsDisabled: "Reacties uitgeschakeld",
-  },
-  footer: {
-    copyright: "© 2026 PipeKeeper. Alle rechten voorbehouden.",
-  },
-  units: {
-    tin: "blik",
-    tinPlural: "blikken",
-    outOf5: "van 5",
-  },
   aiPage: {
     verifiedSpecsTitle: "Geverifieerde fabrikantspecificaties zoeken (optioneel)",
     verifiedSpecsDesc: "Werkt alleen voor sommige productiepijpen. Doorzoekt fabrikantcatalogi en databases.",

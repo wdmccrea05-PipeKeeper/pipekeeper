@@ -1,6 +1,25 @@
 // French translations for PipeKeeper
 
 const translations = {
+  auth: {
+    loginRequired: "Connexion requise",
+  },
+  nav: {
+    following: "Abonnements",
+  },
+  community: {
+    commentsEnabled: "Commentaires activés",
+    commentsDisabled: "Commentaires désactivés",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Tous droits réservés.",
+  },
+  units: {
+    tin: "boîte",
+    tinPlural: "boîtes",
+    outOf5: "sur 5",
+  },
+
   subscription: {
     free: "Gratuit",
     premium: "Premium",
@@ -176,24 +195,6 @@ const translations = {
     pleaseTryAgain: " Veuillez réessayer.",
   },
 
-  auth: {
-    loginRequired: "Connexion requise",
-  },
-  nav: {
-    following: "Abonnements",
-  },
-  community: {
-    commentsEnabled: "Commentaires activés",
-    commentsDisabled: "Commentaires désactivés",
-  },
-  footer: {
-    copyright: "© 2026 PipeKeeper. Tous droits réservés.",
-  },
-  units: {
-    tin: "boîte",
-    tinPlural: "boîtes",
-    outOf5: "sur 5",
-  },
   aiPage: {
     verifiedSpecsTitle: "Trouver les spécifications vérifiées du fabricant (optionnel)",
     verifiedSpecsDesc: "Fonctionne uniquement pour certaines pipes de production. Recherche dans les catalogues et bases de données des fabricants.",

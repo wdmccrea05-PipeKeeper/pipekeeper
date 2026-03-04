@@ -1,6 +1,25 @@
 // German translations for PipeKeeper
 
 const translations = {
+  auth: {
+    loginRequired: "Anmeldung erforderlich",
+  },
+  nav: {
+    following: "Folge ich",
+  },
+  community: {
+    commentsEnabled: "Kommentare aktiviert",
+    commentsDisabled: "Kommentare deaktiviert",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Alle Rechte vorbehalten.",
+  },
+  units: {
+    tin: "Dose",
+    tinPlural: "Dosen",
+    outOf5: "von 5",
+  },
+
   subscription: {
     free: "Kostenlos",
     premium: "Premium",
@@ -176,24 +195,6 @@ const translations = {
     pleaseTryAgain: " Bitte versuchen Sie es erneut.",
   },
 
-  auth: {
-    loginRequired: "Anmeldung erforderlich",
-  },
-  nav: {
-    following: "Folge ich",
-  },
-  community: {
-    commentsEnabled: "Kommentare aktiviert",
-    commentsDisabled: "Kommentare deaktiviert",
-  },
-  footer: {
-    copyright: "© 2026 PipeKeeper. Alle Rechte vorbehalten.",
-  },
-  units: {
-    tin: "Dose",
-    tinPlural: "Dosen",
-    outOf5: "von 5",
-  },
   aiPage: {
     verifiedSpecsTitle: "Verifizierte Herstellerspezifikationen suchen (optional)",
     verifiedSpecsDesc: "Funktioniert nur für einige Produktionspfeifen. Durchsucht Herstellerkataloge und Datenbanken.",
