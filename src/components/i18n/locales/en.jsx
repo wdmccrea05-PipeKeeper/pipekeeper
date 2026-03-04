@@ -1279,6 +1279,8 @@ const translations = {
     reply: "Reply",
     noFriendsWithMessaging: "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.",
     cannotDeleteOtherMessage: "You can only delete your own messages",
+    chatDescription: "Chat conversation",
+    inboxDescription: "Message inbox",
   },
 
   profile: {

@@ -30,6 +30,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       return profiles[0];
     },
     enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   // Load active PairingMatrix (this is the single source of truth)
