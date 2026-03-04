@@ -1498,9 +1498,9 @@ ${englishUserText}
                           <CardContent className="p-4">
                             <div className="flex items-start gap-3">
                               <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden flex items-center justify-center shrink-0">
-                                {pv?.photos?.[0] || pipe?.photos?.[0] ? (
-                                  <img
-                                    src={pv?.photos?.[0] || pipe?.photos?.[0]}
+                                 {pipe?.photos?.[0] ? (
+                                   <img
+                                     src={pipe?.photos?.[0]}
                                     alt=""
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
