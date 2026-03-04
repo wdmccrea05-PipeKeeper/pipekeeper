@@ -70,6 +70,11 @@ export default function PipeDetailPage() {
     queryFn: async () => {
       if (!pipeId) throw new Error('Missing pipe ID');
 
+      // WHY: Pipe IDs were historically stored inconsistently — some as UUIDs (string),
+      // some as auto-increment integers. The 4-step fallback ensures backward compatibility
+      // with older saved pipes. Once all pipes have been migrated to UUID-only IDs,
+      // this can be simplified to a single `Pipe.get(pipeId)` call.
+      // TODO: After confirming all pipes use UUID string IDs, remove steps 2–4.
       const isNumeric = /^\d+$/.test(pipeId);
       const numericId = isNumeric ? Number(pipeId) : null;
 

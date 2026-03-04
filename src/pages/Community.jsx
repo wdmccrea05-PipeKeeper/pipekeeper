@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAppleBuild } from "@/components/utils/appVariant";
@@ -93,9 +93,10 @@ function CommunityPageInner() {
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
     queryFn: () => base44.entities.UserProfile.filter({ is_public: true }, '-updated_date', 200),
+    // TODO: Paginate this query as community grows. Currently capped at 200 most-recently-updated public profiles.
   });
 
-  const publicProfiles = React.useMemo(() => {
+  const publicProfiles = useMemo(() => {
     let filtered = [...allPublicProfiles].filter(p => !blocked.includes(p.user_email));
     
     if (activeSearchQuery.trim()) {
