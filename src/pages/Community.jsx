@@ -41,15 +41,15 @@ function CommunityPageInner() {
 
   const { user, isLoading: userLoading, hasPaid } = useCurrentUser();
 
-  const { data: userProfile, refetch: refetchUserProfile } = useQuery({
-    queryKey: ['user-profile', user?.id, user?.email],
+  const { data: userProfile, isLoading: profileLoading, refetch: refetchUserProfile } = useQuery({
+    queryKey: ['user-profile', user?.auth_user_id || user?.id, user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
-      return profiles[0];
+      return profiles[0] || null;
     },
     enabled: !!user?.email,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 30_000,
+    gcTime: 60_000,
   });
 
   // Refetch profile when switching to inbox tab so messaging toggle is always fresh
@@ -522,7 +522,13 @@ function CommunityPageInner() {
           </TabsContent>
 
           <TabsContent value="inbox" className="space-y-6">
-            {!userProfile?.enable_messaging && (
+            {profileLoading ? (
+              <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
+                <CardContent className="p-4 text-center text-[#E0D8C8]/60 text-sm">
+                  Loading...
+                </CardContent>
+              </Card>
+            ) : !userProfile?.enable_messaging ? (
               <Card className="bg-[#1E2F43] border-amber-500/30">
                 <CardContent className="p-4 flex items-start gap-3">
                   <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
@@ -538,7 +544,7 @@ function CommunityPageInner() {
                   </a>
                 </CardContent>
               </Card>
-            )}
+            ) : null}
             {acceptedFriends.length > 0 && user && userProfile?.enable_messaging ? (
               <MessagingPanel 
                 user={user} 
