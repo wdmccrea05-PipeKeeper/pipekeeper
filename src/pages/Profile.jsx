@@ -198,15 +198,20 @@ export default function ProfilePage() {
     },
   });
 
-  async function handleAvatarUpload(e) {
+  function handleAvatarFileSelected(e) {
     const file = e?.target?.files?.[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropperImage(url);
+    e.target.value = "";
+  }
 
+  async function handleCropComplete(croppedFile) {
+    setCropperImage(null);
     setUploadingAvatar(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       setFormData((p) => ({ ...p, avatar_url: file_url }));
-      // Auto-save avatar immediately so it appears on the public profile
       if (profile?.id) {
         await safeUpdate("UserProfile", profile.id, { avatar_url: file_url }, email);
         await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
@@ -218,7 +223,6 @@ export default function ProfilePage() {
       toast.error(t("profile.failedToUploadImage"));
     } finally {
       setUploadingAvatar(false);
-      e.target.value = "";
     }
   }
 
