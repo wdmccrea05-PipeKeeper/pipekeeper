@@ -410,19 +410,23 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.profilePicture","Profile picture")}</Label>
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center">
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 overflow-hidden flex items-center justify-center group">
                   {formData.avatar_url ? (
                     <img src={formData.avatar_url} alt={t("profileExtended.avatarAlt","Avatar")} className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-10 h-10 text-amber-700" />
                   )}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity rounded-full">
+                    <input type="file" accept="image/*" onChange={handleAvatarFileSelected} className="hidden" disabled={uploadingAvatar} />
+                    <Pencil className="w-5 h-5 text-white" />
+                  </label>
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="inline-flex items-center">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleAvatarUpload}
+                      onChange={handleAvatarFileSelected}
                       className="hidden"
                       disabled={uploadingAvatar}
                     />
@@ -434,6 +438,15 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {cropperImage && (
+              <AvatarCropper
+                image={cropperImage}
+                onCropComplete={handleCropComplete}
+                onCancel={() => setCropperImage(null)}
+                cropShape="round"
+              />
+            )}
 
             {/* Basic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
