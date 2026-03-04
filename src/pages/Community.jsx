@@ -77,7 +77,7 @@ function CommunityPageInner() {
   });
 
   const { data: unreadMessages = [] } = useQuery({
-    queryKey: ['community-unread-messages', user?.email],
+    queryKey: ['community-unread-messages', user?.email, activeTab],
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.Message.filter({
@@ -278,7 +278,7 @@ function CommunityPageInner() {
           </div>
 
           <TabsContent value="discover" className="space-y-6">
-            {!profileLoading && !userProfile?.is_public && (
+            {!profileLoading && !profileFetching && !userProfile?.is_public && (
               <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
                 <CardContent className="p-4">
                   <p className="text-sm text-[#E0D8C8]/70 mb-2">
