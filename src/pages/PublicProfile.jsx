@@ -396,7 +396,7 @@ export default function PublicProfilePage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="pipes">{t("publicProfile.pipes")} ({pipes.length})</TabsTrigger>
             <TabsTrigger value="tobacco">{t("nav.tobacco")} ({blends.length})</TabsTrigger>
-            <TabsTrigger value="logs">{t("nav.sessions", {defaultValue: "Sessions"})} ({logs.length})</TabsTrigger>
+            <TabsTrigger value="logs">{t("publicProfile.smokingSessions")} ({logs.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pipes" className="space-y-4">
