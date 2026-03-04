@@ -10,9 +10,9 @@ import { calculateCellaredOzFromLogs, calculateTobaccoCollectionValue } from "@/
 import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import ExpertTobacconist from "@/components/ai/ExpertTobacconist";
 import { RefreshCw, Leaf, Heart, Sparkles, ArrowRight, Crown } from "lucide-react";
+import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
-import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 
 export default function Home() {
   const { t } = useTranslation();
