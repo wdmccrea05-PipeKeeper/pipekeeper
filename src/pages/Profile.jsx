@@ -159,7 +159,6 @@ export default function ProfilePage() {
       privacy_hide_values: !!profile.privacy_hide_values,
       privacy_hide_inventory: !!profile.privacy_hide_inventory,
       privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
-      home_hide_collection_values: !!profile.home_hide_collection_values,
       show_social_media: !!profile.show_social_media,
       clenching_preference: profile.clenching_preference || "Sometimes",
       smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
