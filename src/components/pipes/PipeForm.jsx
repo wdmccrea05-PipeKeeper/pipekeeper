@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+// NOTE: This component is intentionally large (~900 lines). Each Card section is a
+// logical form section. Future refactor: split each Card into a sub-component.
+// See section comments below for boundaries.
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -288,7 +291,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         />
       )}
       <form onSubmit={handleSubmit} className="space-y-6">
-      {/* AI Search Section */}
+      {/* ===== SECTION: AI Search (new pipes only) ===== */}
       {!pipe && (
         <>
           <Card className="border-[#A35C5C]/50" variant="elevated">
@@ -319,6 +322,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </>
       )}
 
+      {/* ===== SECTION: Pipe Photos ===== */}
       {/* Photos Section */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -371,6 +375,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Stamping Photos ===== */}
       {/* Stamping Photos */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -424,6 +429,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Pipe Identity ===== */}
       {/* Basic Info */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -514,6 +520,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Geometry & Dimensions ===== */}
       {/* Pipe Geometry */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -590,6 +597,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Materials & Finish ===== */}
       {/* Physical Characteristics */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -811,6 +819,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Value & Notes ===== */}
       {/* Value & Notes */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -868,6 +877,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Interchangeable Bowls ===== */}
       {/* Interchangeable Bowls */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
@@ -901,6 +911,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </CardContent>
       </Card>
 
+      {/* ===== SECTION: Form Actions ===== */}
       {/* Actions */}
       <div className="sticky bottom-0 bg-gradient-to-t from-[#243548] to-[#243548]/80 backdrop-blur-sm border-t border-[#E0D8C8]/15 p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
         <Button type="button" variant="outline" onClick={onCancel} className="bg-white/10 border-white/30 text-[#E0D8C8] hover:bg-white/20">
