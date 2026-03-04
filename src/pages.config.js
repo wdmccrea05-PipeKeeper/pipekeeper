@@ -53,10 +53,10 @@ import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
-import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
+import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -64,6 +64,7 @@ import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
@@ -84,8 +85,7 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
+import Community from './pages/Community';
 import __Layout from './Layout.jsx';
 
 
@@ -96,10 +96,10 @@ export const PAGES = {
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
-    "Community": Community,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
+    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
     "Invite": Invite,
@@ -107,6 +107,7 @@ export const PAGES = {
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
+    "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
@@ -127,8 +128,7 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Home": Home,
-    "Profile": Profile,
+    "Community": Community,
 }
 
 export const pagesConfig = {

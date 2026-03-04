@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
-import { User, Crown, ArrowRight, LogOut, Upload, AlertCircle } from "lucide-react";
+import { User, Crown, ArrowRight, LogOut, Upload } from "lucide-react";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
