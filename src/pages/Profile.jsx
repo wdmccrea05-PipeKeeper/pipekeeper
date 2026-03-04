@@ -156,6 +156,7 @@ export default function ProfilePage() {
       enable_messaging: !!profile.enable_messaging,
       allow_web_lookups: profile.allow_web_lookups !== false,
       hide_home_values: !!profile.hide_home_values,
+      home_hide_collection_values: !!profile.home_hide_collection_values,
       privacy_hide_values: !!profile.privacy_hide_values,
       privacy_hide_inventory: !!profile.privacy_hide_inventory,
       privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
