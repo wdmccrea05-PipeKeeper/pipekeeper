@@ -1462,7 +1462,21 @@ ${englishUserText}
               </div>
 
               {showPipesList && (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  {/* Summary of what AI recommends */}
+                  {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4" />
+                        {t("tobacconist.recommendationSummary", "AI Recommendations")}
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length} {t("tobacconist.pipesRecommendedForChange", "pipes recommended for specialization")}. 
+                        {t("tobacconist.adoptOrAsk", "Review each pipe below to adopt changes or ask clarifying questions.")}
+                      </p>
+                    </div>
+                  )}
+
                   {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
                     const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
                     const spec =
@@ -1480,6 +1494,8 @@ ${englishUserText}
                       versatility_score: 5,
                       usage_pattern: t("tobacconist.versatilePattern"),
                     };
+
+                    const hasRecommendation = displaySpec.recommended_blend_types?.length > 0;
 
                     return (
                       <motion.div
