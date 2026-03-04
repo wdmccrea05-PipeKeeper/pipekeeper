@@ -578,7 +578,7 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.year")}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.yearMade","Year Made")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.year_made}</p>
                       </div>
                     </div>
