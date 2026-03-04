@@ -1526,36 +1526,31 @@ ${englishUserText}
                                      </h4>
                                    )}
 
-                                  {(pv?.focus?.length > 0 || pipe?.focus?.length > 0) ? (
+                                  {(pipe?.focus?.length > 0) ? (
                                     <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-xs gap-1 flex-shrink-0">
                                       <Star className="w-3 h-3" />
                                       <span className="hidden sm:inline">{t("tobacconist.specialized")}</span>
                                     </Badge>
-                                  ) : displaySpec.recommended_blend_types?.length > 0 ? (
+                                  ) : (
                                     <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-xs gap-1 flex-shrink-0">
                                       <Star className="w-3 h-3" />
                                       <span className="hidden sm:inline">{t("tobacconist.recommended")}</span>
                                     </Badge>
-                                  ) : (
-                                    <Badge className={`${getVersatilityColor(displaySpec.versatility_score)} text-xs flex-shrink-0`}>
-                                      <span className="hidden sm:inline">{t("tobacconist.versatility")} {asText(displaySpec.versatility_score)}/10</span>
-                                      <span className="sm:hidden">{asText(displaySpec.versatility_score)}/10</span>
-                                    </Badge>
                                   )}
                                   </div>
 
-                                  {pv.focus && pv.focus.length > 0 && (
+                                  {pipe?.focus && pipe.focus.length > 0 && (
                                   <div className="mb-3">
                                     <p className="text-sm font-medium text-stone-700 dark:text-white/90 mb-1">{t("tobacconist.currentFocus")}</p>
                                     <div className="flex flex-wrap gap-1">
-                                      {pv.focus.map((type, i) => (
+                                      {pipe.focus.map((type, i) => (
                                         <Badge key={i} className="bg-indigo-100 text-indigo-800 border-indigo-200">
                                           {asText(type)}
                                         </Badge>
                                       ))}
                                     </div>
                                   </div>
-                                )}
+                                  )}
 
                                 {displaySpec.recommended_blend_types?.length > 0 && (
                                   <div className="mb-3">
