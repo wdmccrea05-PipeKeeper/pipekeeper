@@ -109,7 +109,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
             />
             <InfoTooltip text={t("insights.tooltipSummary")} />
           </div>
-          <p className="text-sm text-[#A4B0C4]">{t("insights.subtitle")}</p>
+          <p className="text-sm text-[#E0D8C8]/70">{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
