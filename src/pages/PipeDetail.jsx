@@ -591,7 +591,7 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.finish && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("formsExtended.finish")}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.finish","Finish")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.finish}</p>
                     </div>
                   )}
