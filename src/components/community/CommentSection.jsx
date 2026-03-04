@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CommentSection({ entityType, entityId, entityOwnerEmail }) {
+  const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [reportingComment, setReportingComment] = useState(null);
@@ -61,7 +62,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
     onSuccess: () => {
       setReportingComment(null);
       setReportReason('');
-      alert('Report submitted. Thank you for helping keep our community safe.');
+      toast.success(t('comments.reportSubmitted'));
     },
   });
 
@@ -100,7 +101,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
         className="text-stone-600 hover:text-stone-800"
       >
         <MessageSquare className="w-4 h-4 mr-1" />
-        {showComments ? 'Hide' : 'Show'} Comments ({comments.length})
+        {showComments ? t('comments.hideComments') : t('comments.showComments')} ({comments.length})
       </Button>
 
       {showComments && (
@@ -109,7 +110,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
           {canComment && (
             <div className="space-y-2">
               <Textarea
-                placeholder="Leave a comment..."
+                placeholder={t('comments.leavePlaceholder')}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="min-h-[80px]"
@@ -121,7 +122,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
                 className="bg-amber-700 hover:bg-amber-800"
               >
                 <Send className="w-4 h-4 mr-2" />
-                Post Comment
+                {t('comments.postComment')}
               </Button>
             </div>
           )}
@@ -176,7 +177,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
 
             {comments.length === 0 && (
               <p className="text-sm text-stone-500 text-center py-4">
-                No comments yet. Be the first to comment!
+                {t('comments.noCommentsYet')}
               </p>
             )}
           </div>
@@ -187,25 +188,25 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
       <AlertDialog open={!!reportingComment} onOpenChange={() => setReportingComment(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Report Inappropriate Comment</AlertDialogTitle>
+            <AlertDialogTitle>{t('comments.reportTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Please describe why this comment violates community guidelines. Reports are reviewed by administrators.
+              {t('comments.reportDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ReportTextarea
-            placeholder="Explain why this comment is inappropriate..."
+            placeholder={t('comments.reportPlaceholder')}
             value={reportReason}
             onChange={(e) => setReportReason(e.target.value)}
             className="min-h-[100px]"
           />
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setReportingComment(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setReportingComment(null)}>{t('comments.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleReport}
               disabled={!reportReason.trim() || reportMutation.isPending}
               className="bg-rose-600 hover:bg-rose-700"
             >
-              Submit Report
+              {t('comments.submitReport')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

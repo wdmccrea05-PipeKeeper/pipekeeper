@@ -123,10 +123,10 @@ export default function RotationPlanner({ user }) {
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm truncate">{pipe.name}</p>
                           <p className="text-xs text-stone-500 truncate">
-                            {t("tobacconist.lastSmokedDaysAgo")} {pipe.daysSince} {t("tobacconist.daysAgo")}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-orange-600 border-orange-300 flex-shrink-0">
+                            {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
+                            </p>
+                            </div>
+                            <Badge variant="outline" className="text-orange-600 border-orange-300 flex-shrink-0">
                           {pipe.daysSince}d
                         </Badge>
                       </div>
@@ -256,10 +256,10 @@ export default function RotationPlanner({ user }) {
                         <div>
                           <p className="font-medium text-sm">{pipe.name}</p>
                           <p className="text-xs text-stone-500">
-                            {t("tobacconist.lastSmokedDaysAgo")} {pipe.daysSince} {t("tobacconist.daysAgo")}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-blue-600 border-blue-300">
+                            {t("tobacconist.lastSmokedDaysAgo", {days: pipe.daysSince})}
+                            </p>
+                            </div>
+                            <Badge variant="outline" className="text-blue-600 border-blue-300">
                           {pipe.daysSince}d
                         </Badge>
                       </div>
