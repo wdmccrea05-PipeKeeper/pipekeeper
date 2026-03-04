@@ -1474,10 +1474,21 @@ ${englishUserText}
                         {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length} {t("tobacconist.pipesRecommendedForChange", "pipes recommended for specialization")}. 
                         {t("tobacconist.adoptOrAsk", "Review each pipe below to adopt changes or ask clarifying questions.")}
                       </p>
+                      {/* Debug: Show which pipes have recommendations */}
+                      {import.meta.env.DEV && (
+                        <div className="mt-3 pt-3 border-t border-blue-300 text-xs text-blue-700">
+                          <p className="font-mono">{optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).map(s => s.pipe_id).join(", ")}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {expandPipesToVariants(pipes, { includeMainWhenBowls: false }).map((pv, idx) => {
+                  {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).map((spec, idx) => {
+                    const pv = pipes.find((p) => p.id === spec.pipe_id) || {};
+                    const variantKey = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
+                    const pipe = pipes.find((p) => p.id === spec.pipe_id);
+
+                    const displaySpec = spec;
                     const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
                     const spec =
                       optimization.pipe_specializations?.find((s) => getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null) === variantKey) ||
