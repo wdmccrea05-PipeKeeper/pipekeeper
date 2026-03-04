@@ -45,7 +45,7 @@ const PIPEKEEPER_LOGO =
 const PIPE_ICON =
   "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
-function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }) {
+function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false, isNav = false }) {
   const isActive = currentPage === item.page;
 
   return (
@@ -53,7 +53,8 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       to={createPageUrl(item.page)}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 transform hover:scale-105 flex-shrink-0 whitespace-nowrap",
+        "flex items-center gap-1 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex-shrink-0 whitespace-nowrap",
+        isNav ? "px-1.5 sm:px-2 py-1.5 sm:py-2 text-xs" : "px-2 py-2 text-xs",
         isActive
           ? "bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] text-[#E0D8C8] shadow-md"
           : isMobile
@@ -66,12 +67,12 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
       title={item.name}
     >
       {item.isIconComponent ? (
-        <item.icon className="w-5 h-5 flex-shrink-0" />
+        <item.icon className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
       ) : (
         <img
           src={item.icon}
           alt={item.name}
-          className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0"
+          className="w-4 sm:w-5 h-4 sm:h-5 object-contain flex-shrink-0"
           style={{
             filter: isMobile
               ? "brightness(0)"
@@ -82,9 +83,9 @@ function NavLink({ item, currentPage, onClick, hasPaidAccess, isMobile = false }
         />
       )}
 
-      <span className={cn("truncate", isMobile ? "inline" : "hidden lg:inline")}>{item.name}</span>
+      <span className={cn("truncate hidden sm:inline text-xs sm:text-sm", isMobile ? "inline" : "")}>{item.name}</span>
 
-      {item.isPremium && !hasPaidAccess && <Crown className="w-3 h-3 text-amber-500" />}
+      {item.isPremium && !hasPaidAccess && <Crown className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-amber-500 flex-shrink-0" />}
     </Link>
   );
 }
@@ -592,6 +593,7 @@ export default function Layout({ children, currentPageName }) {
                        item={item}
                        currentPage={currentPageName}
                        hasPaidAccess={hasPaid}
+                       isNav={true}
                      />
                    ))}
                    {adminNavItems.length > 0 && (
