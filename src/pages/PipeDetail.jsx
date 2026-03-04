@@ -569,7 +569,7 @@ export default function PipeDetailPage() {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-[#E0D8C8]/60" />
                       <div>
-                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.origin")}</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.country","Country of Origin")}</p>
                         <p className="font-medium text-[#E0D8C8]">{pipe.country_of_origin}</p>
                       </div>
                     </div>
