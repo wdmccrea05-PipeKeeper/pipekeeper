@@ -316,55 +316,62 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     };
   });
 
-  const prompt = `You are an expert pipe collection optimizer. Your goal is to produce the BEST POSSIBLE match between pipes and tobacco blends through specialization assignments.
+  const prompt = `You are an expert pipe collection optimizer specializing in maximizing tobacco blend coverage and pairing satisfaction.
 
-## Optimization Goals (in priority order)
-1. Maximize the number of blends in the collection that have at least one well-matched pipe (coverage)
-2. Maximize per-pipe pairing scores by assigning the best-fit specialization
-3. Eliminate redundant specialization overlap where two pipes serve the same blend types identically
-4. Identify blend types with no good pipe match (coverage gaps) and recommend how to fill them
-5. Suggest new pipe purchases only when reassignment cannot close a coverage gap
+## PRIMARY GOAL: Full Blend Type Coverage
+Assign each pipe to one or more preferred blend types from the user's preference list, ensuring:
+1. Every blend type the user prefers has at least ONE dedicated pipe
+2. Every other blend type has coverage options (pipes capable of handling them well)
+3. Pipes are reassigned to eliminate gaps, not just improve redundancy
+
+## Secondary Goals
+- Maximize pairing scores for reassigned pipes (score_delta >= 1.0 is ideal)
+- Identify redundant specializations (multiple pipes serving identical blend types)
+- Suggest purchases only for gaps that cannot be filled by reassignment
 
 ## Rules
-- Each pipe entry represents a bowl configuration (bowl_variant_id = interchangeable bowl)
-- Treat each bowl variant independently
-- Only include a pipe in applyable_changes if its focus SHOULD change
-- Score delta = estimated new average pairing score minus current average_pairing_score
-- A change is worth recommending only if score_delta >= 1.0 OR it resolves a coverage gap
-- Return JSON only
+- User preferred_blend_types are PRIORITY targets for coverage
+- Each pipe can support multiple blend types (versatile pipes are valuable)
+- bowl_variant_id = null means main pipe; otherwise it's an interchangeable bowl
+- Score delta = (estimated new avg score) - (current avg score)
+- Include EVERY pipe with a meaningful reassignment (not just high score_delta)
+- Provide detailed rationale for why each reassignment addresses user goals
 
-${whatIfText ? `## WHAT-IF / USER QUESTION CONTEXT\n${String(whatIfText).substring(0, 2500)}` : ""}
+${whatIfText ? `## USER FEEDBACK / CONTEXT\n${String(whatIfText).substring(0, 2500)}` : ""}
 
-## PIPES WITH CURRENT PAIRING SCORES
+## PIPE SCORING SUMMARY
 ${JSON.stringify(pipeScoreSummaries)}
 
-## FULL PIPES DATA
+## FULL PIPE CONFIGURATIONS
 ${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
 
-## BLENDS DATA
+## BLEND INVENTORY
 ${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
 
 ## USER PREFERENCES
 ${JSON.stringify(profileContext)}
 
-## Required analysis steps
+## Analysis Steps
 
-### Step 1 — Current state assessment
-For each pipe, note its current focus, its average_pairing_score, and how many blends score >=7 with it.
+1. **Coverage Assessment**: List all blend types in inventory. For each, identify which pipes currently match well (avg_score >=6).
 
-### Step 2 — Identify redundancies
-List pairs of pipes whose current focus arrays are nearly identical and serve the same blend types. Flag these as redundant.
+2. **Priority Coverage**: Ensure each user-preferred blend type has at least one dedicated pipe. Recommend reassignments to fill priority gaps.
 
-### Step 3 — Identify coverage gaps
-List blend types present in the collection that are NOT well-covered by any pipe (no pipe scores >=7 with 2+ blends of that type).
+3. **Full Coverage**: For remaining blend types (non-preferred), ensure at least one pipe can handle them well. Suggest reassignments if needed.
 
-### Step 4 — Evaluate focus reassignments
-For each redundant pipe pair and each coverage gap, evaluate whether reassigning a specific pipe's focus would raise its average pairing score (score_delta >= 1.0) or fill a coverage gap. If yes, include it in applyable_changes with estimated score_delta.
+4. **Redundancy Check**: Identify pipes with identical/overlapping focus that serve the same blends. Mark for consolidation or specialization.
 
-### Step 5 — Purchase suggestions
-For coverage gaps that CANNOT be filled by reassignment, provide a specific recommendation for what type of pipe to acquire.
+5. **Specific Recommendations**: For EACH pipe that should change:
+   - Current blend types it serves
+   - Proposed new specialization
+   - Which gaps it would fill (preferred / non-preferred blends)
+   - Expected score impact
+   - Detailed rationale tying to user goals
 
-Respond with JSON matching this exact schema:`;
+6. **Purchase Suggestions**: Only recommend purchases if reassignment cannot achieve full coverage.
+
+Respond with detailed JSON:`;
+
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt,
