@@ -186,7 +186,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
           disabled={isUpdating}
           className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold"
         >
-          {isUpdating ? t("common.saving") : t("inventory.saveChanges")}
+          {isUpdating ? t("common.saving","Saving…") : t("inventory.saveChanges","Save Changes")}
         </Button>
       </div>
 
