@@ -47,9 +47,7 @@ export default function PipesPage() {
   const { user, hasPaid, isTrial } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
-    // sortBy is intentionally excluded from the query key because sorting is applied
-    // client-side on the already-fetched array (see filteredPipes below).
-    queryKey: ['pipes', user?.email],
+    queryKey: ['pipes', user?.email, sortBy],
     queryFn: async () => {
       try {
         const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
