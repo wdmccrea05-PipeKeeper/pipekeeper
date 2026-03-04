@@ -1514,17 +1514,17 @@ ${englishUserText}
 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                  {pipe?.id ? (
-                                    <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pv.pipe_id)}&bowl=${encodeURIComponent(pv.bowl_variant_id || "")}`)}>
-                                      <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors text-sm sm:text-base">
-                                        {asText(pv.name || displaySpec.pipe_name)}
-                                      </h4>
-                                    </a>
-                                  ) : (
-                                    <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title={t("tobacconist.pipeNotFound")}>
-                                      {asText(displaySpec.pipe_name)}
-                                    </h4>
-                                  )}
+                                   {pipe?.id ? (
+                                     <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(spec.pipe_id)}&bowl=${encodeURIComponent(spec.bowl_variant_id || "")}`)}>
+                                       <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors text-sm sm:text-base">
+                                         {asText(spec.pipe_name)}
+                                       </h4>
+                                     </a>
+                                   ) : (
+                                     <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title={t("tobacconist.pipeNotFound")}>
+                                       {asText(spec.pipe_name)}
+                                     </h4>
+                                   )}
 
                                   {(pv?.focus?.length > 0 || pipe?.focus?.length > 0) ? (
                                     <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-xs gap-1 flex-shrink-0">
