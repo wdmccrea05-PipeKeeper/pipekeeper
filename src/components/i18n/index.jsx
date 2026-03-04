@@ -1,22 +1,5 @@
 import { useMemo } from 'react';
-import enBase from './locales/en.jsx';
-import { tobaccoValuation, extraKeys } from './locales/en.tobaccoValuation.js';
-
-// Deep merge two-level namespaces into en base
-function mergeNS(base, extra) {
-  const result = { ...base };
-  for (const [ns, vals] of Object.entries(extra)) {
-    if (result[ns] && typeof result[ns] === 'object' && typeof vals === 'object') {
-      result[ns] = { ...result[ns], ...vals };
-    } else {
-      result[ns] = vals;
-    }
-  }
-  return result;
-}
-
-const en = mergeNS(mergeNS(enBase, { tobaccoValuation }), extraKeys);
-
+import en from './locales/en.jsx';
 import es from './locales/es.jsx';
 import fr from './locales/fr.jsx';
 import de from './locales/de.jsx';
