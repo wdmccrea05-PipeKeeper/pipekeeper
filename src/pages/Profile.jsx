@@ -107,6 +107,7 @@ export default function ProfilePage() {
 
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropperImage, setCropperImage] = useState(null);
 
   const [formData, setFormData] = useState({
     display_name: "",
