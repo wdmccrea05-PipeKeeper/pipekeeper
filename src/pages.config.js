@@ -65,7 +65,6 @@ import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
 import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
@@ -86,6 +85,7 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -108,7 +108,6 @@ export const PAGES = {
     "PipeDetail": PipeDetail,
     "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
-    "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
@@ -129,6 +128,7 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {
