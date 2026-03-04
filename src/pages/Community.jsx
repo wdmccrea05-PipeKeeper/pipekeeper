@@ -544,14 +544,7 @@ function CommunityPageInner() {
                   </a>
                 </CardContent>
               </Card>
-            ) : null}
-            {!profileLoading && acceptedFriends.length > 0 && user && userProfile?.enable_messaging ? (
-              <MessagingPanel 
-                user={user} 
-                friends={acceptedFriends} 
-                publicProfiles={allPublicProfiles || []}
-              />
-            ) : !profileLoading && acceptedFriends.length === 0 ? (
+            ) : acceptedFriends.length === 0 ? (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
@@ -559,7 +552,13 @@ function CommunityPageInner() {
                   <p className="text-sm mt-2">{t("communityExtended.noFriendsToMessageDesc")}</p>
                 </CardContent>
               </Card>
-            ) : null}
+            ) : (
+              <MessagingPanel 
+                user={user} 
+                friends={acceptedFriends} 
+                publicProfiles={allPublicProfiles || []}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">

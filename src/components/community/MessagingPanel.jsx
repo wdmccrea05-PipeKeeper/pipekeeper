@@ -93,6 +93,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       setMessageText('');
       toast.success(t("messaging.messageSent"));
     },
+    onError: () => {
+      toast.error(t("messaging.failedToSend", { defaultValue: "Failed to send message. Please try again." }));
+    },
   });
 
   const markAsReadMutation = useMutation({
@@ -107,15 +110,12 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const deleteMessageMutation = useMutation({
-    mutationFn: (messageId) => {
-      // Only allow deletion if sender (ownership check)
-      return safeUpdate('Message', messageId, {}, userEmail);
-    },
+    mutationFn: (messageId) => base44.entities.Message.delete(messageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
       toast.success(t("messaging.messageDeleted"));
     },
-    onError: (err) => {
+    onError: () => {
       toast.error(t("messaging.cannotDeleteOtherMessage", { defaultValue: "You can only delete your own messages" }));
     },
   });
@@ -159,7 +159,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     let cancelled = false;
     (async () => {
       try {
-        await Promise.all(unreadMessages.map((m) => markAsReadMutation.mutateAsync(m.id)));
+        await Promise.all(
+          unreadMessages.map((m) => safeUpdate('Message', m.id, { is_read: true }))
+        );
         if (!cancelled) {
           queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
         }
@@ -171,12 +173,13 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     return () => {
       cancelled = true;
     };
-  }, [selectedFriend, messages, userEmail, markAsReadMutation, queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFriend, messages, userEmail]);
 
   // Auto scroll to bottom of chat
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, selectedFriend]);
 
@@ -350,7 +353,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
             </SheetTitle>
           </SheetHeader>
 
-          <ScrollArea className="flex-1 px-4 py-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 px-4 py-4">
             <div className="space-y-3">
               {getConversation(selectedFriend).map((message) => {
                 const isSent = message.sender_email === userEmail;
@@ -460,6 +463,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 );
               })}
             </div>
+            <div ref={scrollRef} />
           </ScrollArea>
 
           <div className="border-t p-4">
