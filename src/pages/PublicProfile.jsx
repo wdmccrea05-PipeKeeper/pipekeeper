@@ -92,7 +92,7 @@ export default function PublicProfilePage() {
     },
     enabled: !!profileEmail,
     retry: 1,
-    staleTime: 5000,
+    staleTime: isPreview ? 0 : 5000,
   });
 
   const { data: myProfile } = useQuery({
