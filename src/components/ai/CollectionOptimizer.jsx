@@ -1607,29 +1607,30 @@ ${englishUserText}
                                   <p className="text-xs text-stone-800">{asText(displaySpec.usage_pattern)}</p>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {displaySpec.recommended_blend_types?.length > 0 && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                                      onClick={() => applySpecialization(pv.pipe_id, displaySpec.recommended_blend_types, pv.bowl_variant_id)}
-                                    >
-                                      <Check className="w-4 h-4 mr-1" />
-                                      {t("tobacconist.applySuggested")}
-                                    </Button>
-                                  )}
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                   {displaySpec.recommended_blend_types?.length > 0 && (
+                                     <>
+                                       <Button
+                                         size="sm"
+                                         className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                         onClick={() => applySpecialization(pv.pipe_id, displaySpec.recommended_blend_types, pv.bowl_variant_id)}
+                                       >
+                                         <Check className="w-4 h-4 mr-1" />
+                                         {t("tobacconist.adoptThisChange", "Adopt")}
+                                       </Button>
 
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                                    onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
-                                  >
-                                    <RefreshCw className="w-4 h-4 mr-1" />
-                                    {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.disputeAddInfo")}
-                                  </Button>
-                                </div>
+                                       <Button
+                                         size="sm"
+                                         variant="outline"
+                                         className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                                         onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                                       >
+                                         <HelpCircle className="w-4 h-4 mr-1" />
+                                         {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification", "Ask Clarification")}
+                                       </Button>
+                                     </>
+                                   )}
+                                 </div>
 
                                 {showFeedbackFor === variantKey && (
                                   <motion.div
