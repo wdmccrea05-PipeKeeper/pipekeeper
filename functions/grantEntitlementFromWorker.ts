@@ -100,6 +100,8 @@ Deno.serve(async (req: Request) => {
     existingSubs.sort((a: any, b: any) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
 
     // FIX ISSUE-14: Set current_period_start, current_period_end, and started_at
+    // Manual grants default to 1-year period since there is no billing cycle to derive from.
+    const MANUAL_GRANT_PERIOD_DAYS = 365;
     const subscriptionData: any = {
       user_id: user.id,
       user_email: normalizedEmail,
@@ -108,7 +110,7 @@ Deno.serve(async (req: Request) => {
       tier: normalizedTier,
       billing_interval: normalizedInterval,
       current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      current_period_end: new Date(Date.now() + MANUAL_GRANT_PERIOD_DAYS * 24 * 60 * 60 * 1000).toISOString(),
       started_at: existingSubs?.[0]?.started_at || new Date().toISOString(),
     };
 
