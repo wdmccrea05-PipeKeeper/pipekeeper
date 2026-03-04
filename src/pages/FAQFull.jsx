@@ -81,6 +81,18 @@ export default function FAQFull() {
          <Q id="getting-started" q={t("help.gettingStarted", "How do I get started with PipeKeeper?")}>
            <p>{t("helpCenter.gettingStartedDesc", "Start by adding your first pipe and tobacco blend to your collection. Then explore features like smoking logs, pairing recommendations, and collection insights.")}</p>
          </Q>
+         <Q id="what-is-pipekeeper" q={t("faqExtended.whatIsApp", "What is PipeKeeper?")}>
+           <p>{t("faqExtended.whatIsAppAnswer", "PipeKeeper is a comprehensive pipe and tobacco collection management app for pipe enthusiasts.")}</p>
+         </Q>
+         <Q id="what-can-do" q={t("faqExtended.whatCanDo", "What can I do with PipeKeeper?")}>
+           <ul className="list-disc list-inside space-y-1">
+             <li>{t("faqExtended.whatCanDoList1")}</li>
+             <li>{t("faqExtended.whatCanDoList2")}</li>
+             <li>{t("faqExtended.whatCanDoList3")}</li>
+             <li>{t("faqExtended.whatCanDoList4")}</li>
+             <li>{t("faqExtended.whatCanDoList5")}</li>
+           </ul>
+         </Q>
        </Section>
 
        <Section title={t("helpCenter.topicFieldDefinitions", "Field Definitions")}>
@@ -155,11 +167,30 @@ export default function FAQFull() {
         <Q id="account-security" q={t("help.accountSecurity", "How is my account secured?")}>
           <p>{t("helpCenter.accountSecurityDesc", "Your account data is encrypted and secured by Base44's authentication system. We never store password data.")}</p>
         </Q>
+        <Q id="data-privacy" q={t("help.dataPrivacy", "What data does PipeKeeper collect?")}>
+          <p>{t("helpCenter.dataPrivacyDesc", "PipeKeeper only collects data you explicitly enter — your pipe and tobacco collection details, smoking logs, and profile preferences. We do not sell your data.")}</p>
+        </Q>
+      </Section>
+
+      <Section title={t("helpCenter.topicPlansAndSubscriptions", "Plans & Subscriptions")}>
+        <Q id="tiers" q={t("faqExtended.whatAreTiers", "What are the subscription tiers?")}>
+          <ul className="list-disc list-inside space-y-2">
+            <li><strong>{t("subscription.free")}:</strong> {t("faqExtended.freeTierDesc")}</li>
+            <li><strong>{t("subscription.premium")}:</strong> {t("faqExtended.premiumTierDesc")}</li>
+            <li><strong>{t("subscription.pro")}:</strong> {t("faqExtended.proTierDesc", { date: "February 1, 2026" })}</li>
+          </ul>
+        </Q>
       </Section>
 
       <Section title={t("helpCenter.topicAI", "AI Features & Accuracy")}>
         <Q id="ai-accuracy" q={t("help.aiAccuracy", "How accurate are the AI recommendations?")}>
           <p>{t("helpCenter.aiAccuracyDesc", "AI recommendations are based on your collection data and preferences. Results improve as you add more details and log smoking sessions.")}</p>
+        </Q>
+        <Q id="ai-how-it-works" q={t("help.aiHowItWorks", "How do AI pairings work?")}>
+          <p>{t("helpCenter.aiHowItWorksDesc", "AI pairings analyze your pipe's characteristics (shape, size, focus) and your tobacco blend's profile (type, strength, components) to generate compatibility scores from 0–10.")}</p>
+        </Q>
+        <Q id="ai-regenerate" q={t("help.aiRegenerate", "When should I regenerate AI pairings?")}>
+          <p>{t("helpCenter.aiRegenerateDesc", "Regenerate pairings when you add or remove pipes/blends, update pipe focus tags, or when the AI Updates page shows 'out of date'.")}</p>
         </Q>
       </Section>
 
