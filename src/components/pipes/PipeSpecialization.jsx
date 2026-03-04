@@ -19,12 +19,25 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [designations, setDesignations] = useState(pipe.focus || []);
+  const [customText, setCustomText] = useState("");
 
   const handleSelectFocus = (canonical) => {
     if (!canonical || designations.includes(canonical)) return;
     const updated = [...designations, canonical];
     setDesignations(updated);
     onUpdate({ focus: updated });
+    invalidateAIQueries(queryClient, pipe.created_by);
+    toast.success(t("pipeDetailTabs.focusUpdated"), {
+      description: t("pipeDetailTabs.regenerateToSeeUpdates")
+    });
+  };
+
+  const handleAddCustom = () => {
+    if (!customText.trim() || designations.includes(customText.trim())) return;
+    const updated = [...designations, customText.trim()];
+    setDesignations(updated);
+    onUpdate({ focus: updated });
+    setCustomText("");
     invalidateAIQueries(queryClient, pipe.created_by);
     toast.success(t("pipeDetailTabs.focusUpdated"), {
       description: t("pipeDetailTabs.regenerateToSeeUpdates")
@@ -148,7 +161,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
         </div>
 
         {editing && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Select onValueChange={handleSelectFocus}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder={t("pipeDetailTabs.addDesignationPlaceholder")} />
@@ -173,6 +186,25 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
                   {t(option.labelKey, option.canonical)}
                 </Badge>
               ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customText}
+                onChange={(e) => setCustomText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
+                placeholder="Custom specialization..."
+                className="flex-1 px-2 py-1.5 text-sm border border-blue-200 rounded bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:border-blue-400"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddCustom}
+                disabled={!customText.trim()}
+                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
             </div>
           </div>
         )}
