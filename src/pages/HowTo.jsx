@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ChevronDown, ArrowLeft } from "lucide-react";
+import { ChevronDown, Info, Wrench } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -47,14 +47,23 @@ export default function HowTo() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
-        <Link to={createPageUrl('FAQ')} className="inline-flex items-center gap-2 text-[#8b3a3a] hover:text-[#a94747] mb-6">
-          <ArrowLeft className="w-4 h-4" />
-          {t("help.faq")}
-        </Link>
-
-        <div className="mb-8">
+        <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("howTo.pageTitle")}</h1>
-          <p className="text-[#E0D8C8]/80">{t("howTo.pageSubtitle")}</p>
+          <p className="text-[#E0D8C8]/80 mb-4">{t("howTo.pageSubtitle")}</p>
+          <div className="flex gap-3 justify-center mt-4 flex-wrap">
+            <Link to={createPageUrl('FAQ')}>
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                <Info className="w-4 h-4 mr-2" />
+                {t("help.faq")}
+              </Button>
+            </Link>
+            <Link to={createPageUrl('TroubleshootingFull')}>
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                <Wrench className="w-4 h-4 mr-2" />
+                {t("help.troubleshooting")}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Section title={t("howTo.managingPipes")}>
@@ -102,14 +111,65 @@ export default function HowTo() {
             </ol>
           </Q>
 
-          {/* Inventory tracking removed - use en.json keys instead */}
-
-          {/* Cellar-specific sections removed - consolidated into addTobacco above */}
+          <Q id="update-tobacco" q={t("howTo.updateTobaccoQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.updateTobaccoSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
         </Section>
 
-        {/* Other sections omitted - keys not fully defined in en.json yet */}
-        {/* These would need additional keys like: howTo.loggingSessions, howTo.logSmokingQ, etc. */}
-        {/* Keep to logging and pipe management sections for now */}
+        <Section title={t("howTo.loggingSessions")}>
+          <Q id="log-session" q={t("howTo.logSessionQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.logSessionSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="view-logs" q={t("howTo.viewLogsQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.viewLogsSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("howTo.aiFeatures")}>
+          <Q id="generate-pairings" q={t("howTo.generatePairingsQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.generatePairingsSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="identify-pipe" q={t("howTo.identifyPipeQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.identifyPipeSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("howTo.subscriptions")}>
+          <Q id="upgrade" q={t("howTo.upgradeQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.upgradeSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+          <Q id="cancel" q={t("howTo.cancelQ")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("howTo.cancelSteps").map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </Q>
+        </Section>
       </div>
     </div>
   );

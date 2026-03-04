@@ -1,12 +1,44 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen, Crown } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/components/utils/createPageUrl";
+import { ChevronDown, RefreshCw, AlertCircle, Sparkles, Tags, Target, Info, BookOpen, Crown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function TroubleshootingFull() {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [openItems, setOpenItems] = useState({});
+
+  const toggleItem = (id) => {
+    setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const Section = ({ title, children }) => (
+    <div style={{ marginBottom: 32 }}>
+      <h2 className="text-2xl font-bold text-[#E0D8C8] mb-4">{title}</h2>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+
+  const Q = ({ id, q, children }) => (
+    <Card className="bg-white border-gray-200 overflow-hidden">
+      <button
+        onClick={() => toggleItem(id)}
+        className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+      >
+        <span className="font-semibold text-gray-900 pr-4">{q}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform ${openItems[id] ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {openItems[id] && (
+        <CardContent className="px-4 pb-4 pt-0 text-gray-700 leading-relaxed">
+          {children}
+        </CardContent>
+      )}
+    </Card>
+  );
 
   const troubleshootingTopics = [
     {
@@ -102,91 +134,49 @@ export default function TroubleshootingFull() {
     }
   ];
 
-  const filteredTopics = troubleshootingTopics.map(topic => ({
-    ...topic,
-    questions: topic.questions.filter(
-      item =>
-        (item.q || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.a || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        topic.title.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  })).filter(topic => topic.questions.length > 0);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A] p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A2B3A] via-[#243548] to-[#1A2B3A]">
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: "40px 16px" }}>
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#E0D8C8] mb-2">{t("troubleshooting.title")}</h1>
           <p className="text-[#E0D8C8]/80 mb-4">{t("troubleshooting.subtitle")}</p>
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
-            <a href="/HowTo">
-              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
+            <Link to={createPageUrl('HowTo')}>
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                <BookOpen className="w-4 h-4 mr-2" />
                 {t("troubleshooting.navHowTo")}
-              </button>
-            </a>
-            <a href="/FAQ">
-              <button className="px-4 py-2 border border-gray-300 text-[#1a2c42] bg-white rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
-                <Info className="w-4 h-4" />
+              </Button>
+            </Link>
+            <Link to={createPageUrl('FAQ')}>
+              <Button variant="outline" className="border-gray-300 text-[#1a2c42] bg-white hover:bg-gray-50">
+                <Info className="w-4 h-4 mr-2" />
                 {t("troubleshooting.navFAQ")}
-              </button>
-            </a>
+              </Button>
+            </Link>
           </div>
         </div>
 
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder={t("search.searchPlaceholder")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-[#1a2c42] placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        {filteredTopics.length === 0 ? (
-          <Card className="bg-white border-gray-200">
-            <CardContent className="p-8 text-center">
-              <Info className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-[#1a2c42]/80">{t("search.noResults")}</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {filteredTopics.map((topic) => {
-              const IconComponent = topic.icon;
-              return (
-                <Card key={topic.id} className="bg-white border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
-                      <IconComponent className={`w-6 h-6 ${topic.color}`} />
-                      {topic.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Accordion type="single" collapsible className="w-full">
-                      {topic.questions.map((item, idx) => (
-                        <AccordionItem key={idx} value={`item-${idx}`} className="border-gray-200">
-                          <AccordionTrigger className="text-left text-gray-900 hover:text-blue-600">
-                            {item.q}
-                          </AccordionTrigger>
-                          <AccordionContent className="text-gray-700 leading-relaxed">
-                            {item.a}
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+        {troubleshootingTopics.map((topic) => {
+          const IconComponent = topic.icon;
+          return (
+            <Section
+              key={topic.id}
+              title={<span className="flex items-center gap-2"><IconComponent className={`w-6 h-6 ${topic.color}`} />{topic.title}</span>}
+            >
+              {topic.questions.map((item, idx) => (
+                <Q key={idx} id={`${topic.id}-${idx}`} q={item.q}>
+                  <p>{item.a}</p>
+                </Q>
+              ))}
+            </Section>
+          );
+        })}
 
         <div className="mt-8 p-6 bg-white border border-gray-200 rounded-2xl text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">{t("troubleshooting.stillNeedHelp")}</h2>
           <p className="text-gray-700 mb-4">
-            {t("messages.checkYourEmail")} <a href="/HowTo" className="text-blue-600 hover:underline">{t("help.howTo")}</a>, <a href="/FAQ" className="text-blue-600 hover:underline">{t("help.faq")}</a>, {t("common.or")} <a href="/Support" className="text-blue-600 hover:underline">{t("help.contactSupport")}</a>.
+            {t("troubleshooting.contactText")}{" "}
+            <Link to={createPageUrl('Support')} className="text-[#8b3a3a] hover:text-[#a94747] underline">{t("help.contactSupport")}</Link>.
           </p>
         </div>
       </div>
