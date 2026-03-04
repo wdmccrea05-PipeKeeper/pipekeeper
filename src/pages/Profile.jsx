@@ -257,12 +257,13 @@ export default function ProfilePage() {
   }
 
   const statusLabels = {
-    active: t("profileExtended.statusActive", "Active"),
-    trialing: t("profileExtended.statusTrialing", "Trial"),
-    past_due: t("profileExtended.statusPastDue", "Past Due"),
-    canceled: t("profileExtended.statusCanceled", "Canceled"),
-    incomplete: t("profileExtended.statusIncomplete", "Incomplete"),
-    unpaid: t("profileExtended.statusUnpaid", "Unpaid"),
+    active: t("profileExtended.statusActive"),
+    trialing: t("profileExtended.statusTrialing"),
+    trial: t("profileExtended.statusTrial"),
+    past_due: t("profileExtended.statusPastDue"),
+    canceled: t("profileExtended.statusCanceled"),
+    incomplete: t("profileExtended.statusIncomplete"),
+    unpaid: t("profileExtended.statusUnpaid"),
   };
 
   return (
