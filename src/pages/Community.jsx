@@ -48,6 +48,7 @@ function CommunityPageInner() {
       return profiles[0];
     },
     enabled: !!user?.email,
+    staleTime: 0,
   });
 
   const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
