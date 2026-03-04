@@ -443,16 +443,6 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                 >
                                   <Save className={`w-3 h-3 ${message.is_saved ? 'fill-current' : ''}`} />
                                 </button>
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm(t("messaging.deleteConfirm"))) {
-                                      deleteMessageMutation.mutate(message.id);
-                                    }
-                                  }}
-                                  className="hover:opacity-70"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
                               </div>
                             )}
                           </div>
@@ -472,7 +462,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 placeholder={t("messaging.typeMessage")}
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                 disabled={isBlocked(selectedFriend)}
               />
               <Button 
