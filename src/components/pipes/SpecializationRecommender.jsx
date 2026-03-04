@@ -29,19 +29,24 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
   const handleGetRecommendation = async () => {
     setIsLoading(true);
     try {
-      const { data } = await base44.functions.invoke('getSpecializationRecommendation', {
+      const response = await base44.functions.invoke('getSpecializationRecommendation', {
         pipeId: pipe.id
       });
+      
+      const data = response?.data || response;
 
-      if (data.success) {
+      if (data?.success) {
+        setRecommendation(data.recommendation);
+        setIsOpen(true);
+      } else if (data?.recommendation) {
         setRecommendation(data.recommendation);
         setIsOpen(true);
       } else {
-        toast.error(t("errors.recommendationFailed"));
+        toast.error(t("errors.recommendationFailed", "Failed to get recommendation"));
       }
     } catch (error) {
       console.error('Error getting recommendation:', error);
-      toast.error(t("errors.recommendationFailed"));
+      toast.error(t("errors.recommendationFailed", "Failed to get recommendation"));
     } finally {
       setIsLoading(false);
     }
