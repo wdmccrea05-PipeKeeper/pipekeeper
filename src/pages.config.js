@@ -62,9 +62,7 @@ import Import from './pages/Import';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
-import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
@@ -77,7 +75,6 @@ import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
 import TermsOfService from './pages/TermsOfService';
-import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
@@ -85,7 +82,10 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import Profile from './pages/Profile';
 import Community from './pages/Community';
+import Pipes from './pages/Pipes';
+import Tobacco from './pages/Tobacco';
 import __Layout from './Layout.jsx';
 
 
@@ -105,9 +105,7 @@ export const PAGES = {
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
-    "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
-    "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
@@ -120,7 +118,6 @@ export const PAGES = {
     "Support": Support,
     "SupportFull": SupportFull,
     "TermsOfService": TermsOfService,
-    "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
@@ -128,7 +125,10 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "Profile": Profile,
     "Community": Community,
+    "Pipes": Pipes,
+    "Tobacco": Tobacco,
 }
 
 export const pagesConfig = {

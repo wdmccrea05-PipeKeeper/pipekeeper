@@ -93,7 +93,7 @@ export default function TobaccoPage() {
     queryFn: async () => {
       try {
         const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
-        const result = await scopedEntities.TobaccoBlend.filterForUser(user?.email, {}, actualSort);
+        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email }, actualSort);
         let data = Array.isArray(result) ? result : [];
         if (sortBy === 'favorites') {
           data = data.sort((a, b) => {
@@ -349,7 +349,7 @@ export default function TobaccoPage() {
               <SelectValue placeholder={t("tobacco.allTypes")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("tobacco.allTypes")}</SelectItem>
+              <SelectItem value={null}>{t("tobacco.allTypes")}</SelectItem>
               {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -358,7 +358,7 @@ export default function TobaccoPage() {
               <SelectValue placeholder={t("tobacco.allStrengths")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("tobacco.allStrengths")}</SelectItem>
+              <SelectItem value={null}>{t("tobacco.allStrengths")}</SelectItem>
               {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
             </SelectContent>
           </Select>
