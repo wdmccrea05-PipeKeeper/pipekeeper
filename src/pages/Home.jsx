@@ -184,7 +184,7 @@ export default function Home() {
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map(item => (
               <span key={item.id} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#1e3347] text-[#E0D8C8] text-sm border border-[#E0D8C8]/20">
-                <PipeShapeIcon shape={item.shape} className="w-3 h-3" />
+                 <img src={PIPE_ICON} alt="pipe" className="w-3 h-3 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
                 {item.name}
               </span>
             ))}
