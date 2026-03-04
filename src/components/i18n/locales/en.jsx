@@ -1826,6 +1826,8 @@ const translations = {
     providerApple: "Apple",
     preferredBlendTypes: "Preferred Blend Types",
     preferredPipeShapes: "Preferred Pipe Shapes",
+    hideHomeValues: "Hide collection values on home page",
+    hideHomeValuesDesc: "Hides pipe and tobacco collection values from your home page dashboard. Calculations still run in the background.",
   },
 
   optimizer: {

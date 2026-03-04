@@ -785,6 +785,10 @@ const translations = {
     noResultsFound: "Nenhum resultado encontrado.",
     useCustomValue: "Usar \"{value}\"",
   },
+  profileExtended: {
+    hideHomeValues: "Ocultar valores da coleção na página inicial",
+    hideHomeValuesDesc: "Oculta os valores das coleções de cachimbos e tabaco do seu painel inicial. Os cálculos continuam sendo executados em segundo plano.",
+  },
 };
 
 export default translations;

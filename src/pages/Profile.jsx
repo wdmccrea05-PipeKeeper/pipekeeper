@@ -124,6 +124,7 @@ export default function ProfilePage() {
     privacy_hide_values: false,
     privacy_hide_inventory: false,
     privacy_hide_collection_counts: false,
+    home_hide_collection_values: false,
     show_social_media: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
@@ -157,6 +158,7 @@ export default function ProfilePage() {
       privacy_hide_values: !!profile.privacy_hide_values,
       privacy_hide_inventory: !!profile.privacy_hide_inventory,
       privacy_hide_collection_counts: !!profile.privacy_hide_collection_counts,
+      home_hide_collection_values: !!profile.home_hide_collection_values,
       show_social_media: !!profile.show_social_media,
       clenching_preference: profile.clenching_preference || "Sometimes",
       smoke_duration_preference: profile.smoke_duration_preference || "No Preference",
@@ -511,6 +513,18 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                  className="data-[state=checked]:bg-[#A35C5C]"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-stone-700">{t("profileExtended.hideHomeValues", "Hide collection values on home page")}</span>
+                  <p className="text-xs text-stone-500 mt-0.5">{t("profileExtended.hideHomeValuesDesc", "Hides pipe and tobacco collection values from your home page dashboard. Calculations still run in the background.")}</p>
+                </div>
+                <Switch
+                  checked={formData.home_hide_collection_values}
+                  onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
                   className="data-[state=checked]:bg-[#A35C5C]"
                 />
               </div>

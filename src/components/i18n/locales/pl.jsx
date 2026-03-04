@@ -679,4 +679,8 @@ export default {
     noResultsFound: "Nie znaleziono wyników.",
     useCustomValue: "Użyj \"{value}\"",
   },
+  profileExtended: {
+    hideHomeValues: "Ukryj wartości kolekcji na stronie głównej",
+    hideHomeValuesDesc: "Ukrywa wartości kolekcji fajek i tytoniu na panelu strony głównej. Obliczenia nadal są wykonywane w tle.",
+  },
 };
