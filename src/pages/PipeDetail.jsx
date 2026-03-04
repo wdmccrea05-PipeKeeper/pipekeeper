@@ -486,7 +486,7 @@ export default function PipeDetailPage() {
               )}
               {pipe.chamber_volume && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)} {t("pipesExtended.chamber")}
+                  {pipe.chamber_volume} {t("formsExtended.chamberVolume","Chamber")}
                 </Badge>
               )}
               {pipe.condition && (
