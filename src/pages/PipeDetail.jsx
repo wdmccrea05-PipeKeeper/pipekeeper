@@ -597,7 +597,7 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.filter_type && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filter")}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filterType","Filter Type")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.filter_type}</p>
                     </div>
                   )}
