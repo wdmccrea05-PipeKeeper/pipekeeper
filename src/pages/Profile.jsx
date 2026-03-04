@@ -69,7 +69,7 @@ export default function ProfilePage() {
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["user-profile", userId, email],
     queryFn: async () => {
-      if (!userId && !email) return null;
+      if (!email) return null;
       try {
         const records = await base44.entities.UserProfile.filter({
           user_email: email,
@@ -80,8 +80,7 @@ export default function ProfilePage() {
         return null;
       }
     },
-    enabled: !!(userId || email),
-    staleTime: 30_000,
+    enabled: !!email,
   });
 
   useEffect(() => {
