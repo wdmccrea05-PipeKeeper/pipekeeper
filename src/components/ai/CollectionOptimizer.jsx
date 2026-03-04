@@ -1636,33 +1636,46 @@ ${englishUserText}
                                   <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: "auto" }}
-                                    className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
+                                    className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3"
                                   >
-                                    <p className="text-xs font-medium text-amber-800 mb-2">{t("tobacconist.shareThoughts")}:</p>
-                                    <Textarea
-                                      placeholder={t("tobacconist.feedbackPlaceholder")}
-                                      value={pipeFeedback[variantKey] || ""}
-                                      onChange={(e) => setPipeFeedback({ ...pipeFeedback, [variantKey]: e.target.value })}
-                                      className="min-h-[60px] text-sm mb-2 bg-white text-stone-900 placeholder:text-stone-500"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleSubmitFeedback(variantKey)}
-                                      disabled={!pipeFeedback[variantKey]?.trim() || loading}
-                                      className="bg-amber-600 hover:bg-amber-700 text-white"
-                                    >
-                                      {loading ? (
-                                        <>
-                                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                          {t("tobacconist.reanalyzing")}
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Sparkles className="w-3 h-3 mr-1" />
-                                          {t("tobacconist.submitReanalyze")}
-                                        </>
-                                      )}
-                                    </Button>
+                                    <div>
+                                      <p className="text-sm font-medium text-amber-900 mb-2">{t("tobacconist.whyUnsure", "Why reconsider this recommendation?")}</p>
+                                      <p className="text-xs text-amber-800 mb-3">{t("tobacconist.clarificationHelps", "Help the AI understand your preferences better.")}</p>
+                                      <Textarea
+                                        placeholder={t("tobacconist.clarificationPlaceholder", {defaultValue: "E.g., 'This pipe smokes hot with aromatics', 'I prefer it for English blends', 'Too wet for this type'..."})}
+                                        value={pipeFeedback[variantKey] || ""}
+                                        onChange={(e) => setPipeFeedback({ ...pipeFeedback, [variantKey]: e.target.value })}
+                                        className="min-h-[70px] text-sm bg-white text-stone-900 placeholder:text-stone-500"
+                                      />
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleSubmitFeedback(variantKey)}
+                                        disabled={!pipeFeedback[variantKey]?.trim() || loading}
+                                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+                                      >
+                                        {loading ? (
+                                          <>
+                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                            {t("tobacconist.reanalyzing")}
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Sparkles className="w-3 h-3 mr-1" />
+                                            {t("tobacconist.refineRecommendations", "Refine Recommendations")}
+                                          </>
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setShowFeedbackFor(null)}
+                                        className="border-amber-300"
+                                      >
+                                        {t("common.skip")}
+                                      </Button>
+                                    </div>
                                   </motion.div>
                                 )}
                               </div>
