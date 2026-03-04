@@ -103,6 +103,8 @@ export default function PublicProfilePage() {
     },
     enabled: !!currentUser?.email,
     retry: 1,
+    staleTime: 30_000,
+    gcTime: 60_000,
   });
 
   // NOTE: Intentional sequential waterfall — pipes/blends/logs queries depend on

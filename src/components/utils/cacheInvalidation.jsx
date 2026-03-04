@@ -69,6 +69,13 @@ export function invalidateProfileQueries(queryClient, userEmail = null) {
   invalidateEntityQueries(queryClient, 'user-profile', userEmail);
   invalidateEntityQueries(queryClient, 'current-user', userEmail);
   queryClient.invalidateQueries({ queryKey: ['current-user'] });
+  // Invalidate public-profile and my-profile cache entries for this user
+  if (userEmail) {
+    queryClient.invalidateQueries({ queryKey: ['public-profile', userEmail] });
+    queryClient.invalidateQueries({ queryKey: ['my-profile', userEmail] });
+  }
+  // Invalidate community discover tab profiles list
+  queryClient.invalidateQueries({ queryKey: ['all-public-profiles'] });
 }
 
 /**
