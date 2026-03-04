@@ -1,6 +1,25 @@
 // Portuguese (Brazil) translations for PipeKeeper
 
 const translations = {
+  auth: {
+    loginRequired: "Login necessário",
+  },
+  nav: {
+    following: "Seguindo",
+  },
+  community: {
+    commentsEnabled: "Comentários habilitados",
+    commentsDisabled: "Comentários desabilitados",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Todos os direitos reservados.",
+  },
+  units: {
+    tin: "lata",
+    tinPlural: "latas",
+    outOf5: "de 5",
+  },
+
   subscription: {
     free: "Grátis",
     premium: "Premium",
@@ -176,24 +195,6 @@ const translations = {
     pleaseTryAgain: " Por favor, tente novamente.",
   },
 
-  auth: {
-    loginRequired: "Login necessário",
-  },
-  nav: {
-    following: "Seguindo",
-  },
-  community: {
-    commentsEnabled: "Comentários habilitados",
-    commentsDisabled: "Comentários desabilitados",
-  },
-  footer: {
-    copyright: "© 2026 PipeKeeper. Todos os direitos reservados.",
-  },
-  units: {
-    tin: "lata",
-    tinPlural: "latas",
-    outOf5: "de 5",
-  },
   aiPage: {
     verifiedSpecsTitle: "Encontrar especificações verificadas do fabricante (opcional)",
     verifiedSpecsDesc: "Funciona apenas para alguns cachimbos de produção. Pesquisa em catálogos e bancos de dados de fabricantes.",

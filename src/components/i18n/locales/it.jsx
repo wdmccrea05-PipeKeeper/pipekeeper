@@ -1,6 +1,25 @@
 // Italian translations for PipeKeeper
 
 const translations = {
+  auth: {
+    loginRequired: "Accesso richiesto",
+  },
+  nav: {
+    following: "Seguiti",
+  },
+  community: {
+    commentsEnabled: "Commenti abilitati",
+    commentsDisabled: "Commenti disabilitati",
+  },
+  footer: {
+    copyright: "© 2026 PipeKeeper. Tutti i diritti riservati.",
+  },
+  units: {
+    tin: "lattina",
+    tinPlural: "lattine",
+    outOf5: "su 5",
+  },
+
   subscription: {
     free: "Gratuito",
     premium: "Premium",
@@ -176,24 +195,6 @@ const translations = {
     pleaseTryAgain: " Riprovare.",
   },
 
-  auth: {
-    loginRequired: "Accesso richiesto",
-  },
-  nav: {
-    following: "Seguiti",
-  },
-  community: {
-    commentsEnabled: "Commenti abilitati",
-    commentsDisabled: "Commenti disabilitati",
-  },
-  footer: {
-    copyright: "© 2026 PipeKeeper. Tutti i diritti riservati.",
-  },
-  units: {
-    tin: "lattina",
-    tinPlural: "lattine",
-    outOf5: "su 5",
-  },
   aiPage: {
     verifiedSpecsTitle: "Trova specifiche verificate del produttore (opzionale)",
     verifiedSpecsDesc: "Funziona solo per alcune pipe di produzione. Cerca nei cataloghi e nei database dei produttori.",

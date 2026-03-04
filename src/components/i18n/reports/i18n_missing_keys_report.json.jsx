@@ -1,95 +1,14 @@
 {
   "missing_keys": {
-    "es": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "fr": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "de": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "it": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "pt-BR": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "nl": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "pl": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "ja": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ],
-    "zh-Hans": [
-      "auth.loginRequired",
-      "nav.following",
-      "community.commentsEnabled",
-      "community.commentsDisabled",
-      "footer.copyright",
-      "units.tin",
-      "units.tinPlural",
-      "units.outOf5"
-    ]
+    "es": [],
+    "fr": [],
+    "de": [],
+    "it": [],
+    "pt-BR": [],
+    "nl": [],
+    "pl": [],
+    "ja": [],
+    "zh-Hans": []
   },
   "summary": {
     "total_missing": 0,
@@ -106,8 +25,10 @@
     }
   },
   "notes": [
-    "All 9 non-English locales had missing keys — resolved in this PR",
-    "Added explicit top-level auth, nav.following, community.commentsEnabled/Disabled, footer.copyright, units.tin/tinPlural/outOf5 sections to pl, ja, zh-Hans locale files",
-    "Priority keys resolved: auth.loginRequired, community.commentsEnabled/Disabled, footer.copyright, units.*"
+    "All 9 non-English locales previously had missing keys — now resolved",
+    "Fixed duplicate key bug in fr, de, it, pt-BR, nl: moved auth/nav/community/footer/units stub blocks to the top of each file to match es.jsx structure",
+    "es, pl, ja, zh-Hans were already correctly structured with these keys present",
+    "Translated privacyPolicy section in es.jsx from English to Spanish",
+    "Priority keys resolved: auth.loginRequired, nav.following, community.commentsEnabled/Disabled, footer.copyright, units.tin/tinPlural/outOf5"
   ]
 }
