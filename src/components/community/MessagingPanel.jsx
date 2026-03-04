@@ -99,7 +99,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }),
+    mutationFn: (messageId) => safeUpdate('Message', messageId, { is_read: true }, userEmail),
   });
 
   const toggleSaveMutation = useMutation({
@@ -160,7 +160,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     (async () => {
       try {
         await Promise.all(
-          unreadMessages.map((m) => safeUpdate('Message', m.id, { is_read: true }))
+          unreadMessages.map((m) => safeUpdate('Message', m.id, { is_read: true }, userEmail))
         );
         if (!cancelled) {
           queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
