@@ -1,9 +1,5 @@
 import { useMemo } from 'react';
-import enBase from './locales/en.jsx';
-import { tobaccoValuation } from './locales/en.tobaccoValuation.js';
-
-// Merge tobaccoValuation into en translations (en.jsx is the main file; en.tobaccoValuation.js is an overflow)
-const en = { ...enBase, tobaccoValuation };
+import en from './locales/en.jsx';
 import es from './locales/es.jsx';
 import fr from './locales/fr.jsx';
 import de from './locales/de.jsx';
