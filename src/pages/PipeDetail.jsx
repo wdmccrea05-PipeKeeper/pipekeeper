@@ -632,7 +632,7 @@ export default function PipeDetailPage() {
                 <CardContent className="p-6 space-y-4">
                   {getUsageCharacteristics(pipe) && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("formsExtended.usageCharacteristics")}</p>
+                      <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("pipesExtended.usageCharacteristics","Usage Characteristics")}</p>
                       <p className="text-[#E0D8C8]/80">{getUsageCharacteristics(pipe)}</p>
                     </div>
                   )}
