@@ -1508,7 +1508,7 @@ ${englishUserText}
                                     }}
                                   />
                                 ) : (
-                                  <PipeShapeIcon shape={pv?.shape || pipe?.shape} className="w-10 h-10" />
+                                  <PipeShapeIcon shape={pipe?.shape} className="w-10 h-10" />
                                 )}
                               </div>
 
