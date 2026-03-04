@@ -198,7 +198,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
         <TabsList className="grid w-full grid-cols-3 bg-[#1A2B3A] border-b border-[#E0D8C8]/20">
           <TabsTrigger value="tins" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
             <Package className="w-4 h-4" />
-            <span>{t("tobaccoExtended.tins","Tins")}</span>
+            <span>{t("units.tinPlural","Tins")}</span>
           </TabsTrigger>
           <TabsTrigger value="bulk" className="text-[#E0D8C8] data-[state=active]:text-[#D1A75D] data-[state=active]:border-b-2 data-[state=active]:border-[#D1A75D] flex items-center gap-1.5">
             <Box className="w-4 h-4" />
