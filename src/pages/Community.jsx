@@ -41,7 +41,7 @@ function CommunityPageInner() {
 
   const { user, isLoading: userLoading, hasPaid } = useCurrentUser();
 
-  const { data: userProfile } = useQuery({
+  const { data: userProfile, refetch: refetchUserProfile } = useQuery({
     queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
@@ -49,7 +49,15 @@ function CommunityPageInner() {
     },
     enabled: !!user?.email,
     staleTime: 0,
+    gcTime: 0,
   });
+
+  // Refetch profile when switching to inbox tab so messaging toggle is always fresh
+  React.useEffect(() => {
+    if (activeTab === 'inbox' && user?.email) {
+      refetchUserProfile();
+    }
+  }, [activeTab, user?.email]);
 
   const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
 
