@@ -204,6 +204,12 @@ export default function ProfilePage() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setFormData((p) => ({ ...p, avatar_url: file_url }));
+      // Auto-save avatar immediately so it appears on the public profile
+      if (profile?.id) {
+        await safeUpdate("UserProfile", profile.id, { avatar_url: file_url }, email);
+        await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
+        await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
+      }
       toast.success(t("profile.avatarUploadedSuccessfully"));
     } catch (err) {
       console.error("[Profile] avatar upload error:", err);
