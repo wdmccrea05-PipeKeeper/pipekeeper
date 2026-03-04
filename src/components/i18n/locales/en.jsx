@@ -47,6 +47,10 @@ const translations = {
     with: "with",
     tobacco: { title: "Tobacco" },
     moreInfo: "More info",
+    show: "Show",
+    hide: "Hide",
+    noResults: "No results found.",
+    sending: "Sending…",
   },
 
   auth: {
@@ -704,6 +708,7 @@ const translations = {
     allRoomNotes: "All Room Notes",
     allStatuses: "All Statuses",
     open: "open",
+    search: "Search tobacco",
   },
 
   pipesPage: {
@@ -758,6 +763,8 @@ const translations = {
     lowestRated: "Lowest Rated",
     oldestInCellar: "Oldest in Cellar",
     newestInCellar: "Newest in Cellar",
+    failedToAddBlend: "Failed to add blend",
+    failedToUpdateBlends: "Failed to update blends",
   },
 
   tobaccoExtended: {
@@ -834,6 +841,7 @@ const translations = {
     ratingPlaceholder: "Rate this blend…",
     updateBlend: "Update Blend",
     addBlend: "Add Blend",
+    flavors: "Flavors",
   },
 
   quickSearch: {
@@ -846,6 +854,11 @@ const translations = {
     adding: "Adding…",
     addToCollection: "Add to Collection",
     addToCellar: "Add to Cellar",
+    enterTobaccoName: "Enter a tobacco blend name to search",
+    tobaccoExamples: "e.g. Orlik Golden Sliced, Dunhill Early Morning Pipe",
+    flavors: "Flavors",
+    components: "Components",
+    tinSize: "Tin Size",
   },
 
   quickEdit: {
@@ -1137,6 +1150,10 @@ const translations = {
     personalizeAIRecommendations: "Personalize your AI recommendations",
     logout: "Log Out",
     premiumSubscriptionWebOnly: "Premium subscription management is available on the web at",
+    avatarUploaded: "Avatar uploaded successfully",
+    failedToUploadAvatar: "Failed to upload avatar",
+    enableMessaging: "Enable Messaging",
+    enableMessagingDesc: "Allow other users to send you messages",
   },
 
   empty: {
@@ -1640,6 +1657,7 @@ const translations = {
     couldNotSave: "Could not save. Please try again.",
     statusActive: "Active",
     statusTrialing: "Trial",
+    statusTrial: "Trial",
     statusPastDue: "Past Due",
     statusCanceled: "Canceled",
     statusIncomplete: "Incomplete",
@@ -1652,6 +1670,10 @@ const translations = {
       incomplete: "Incomplete",
       unpaid: "Unpaid",
     },
+    providerStripe: "Stripe",
+    providerApple: "Apple",
+    preferredBlendTypes: "Preferred Blend Types",
+    preferredPipeShapes: "Preferred Pipe Shapes",
   },
 
   optimizer: {
@@ -1787,15 +1809,41 @@ const translations = {
     Cobra: "Cobra",
     Other: "Other",
     Unknown: "Unknown",
+    "Bent Billiard": "Bent Billiard",
+    "Bent Apple": "Bent Apple",
+    "Bent Dublin": "Bent Dublin",
+    Tomato: "Tomato",
+    Egg: "Egg",
+    Cutty: "Cutty",
+    "Devil Anse": "Devil Anse",
+    Hawkbill: "Hawkbill",
+    Diplomat: "Diplomat",
+    Cherrywood: "Cherrywood",
+    Duke: "Duke",
+    Don: "Don",
+    Tankard: "Tankard",
+    Nosewarmer: "Nosewarmer",
+    "Vest Pocket": "Vest Pocket",
+    MacArthur: "MacArthur",
+    "Reverse Calabash": "Reverse Calabash",
+    Author: "Author",
+    Tomahawk: "Tomahawk",
+    Bullmoose: "Bullmoose",
+    Bullcap: "Bullcap",
+    "Oom Paul (Hungarian)": "Oom Paul (Hungarian)",
+    Tyrolean: "Tyrolean",
   },
 
   materials: {
     Briar: "Briar",
     Meerschaum: "Meerschaum",
     Corn: "Corn Cob",
+    "Corn Cob": "Corn Cob",
     Clay: "Clay",
     Cherry: "Cherrywood",
+    "Cherry Wood": "Cherry Wood",
     Olive: "Olivewood",
+    "Olive Wood": "Olive Wood",
     Rosewood: "Rosewood",
     Bamboo: "Bamboo",
     Morta: "Morta",
@@ -1812,6 +1860,7 @@ const translations = {
 
   bowls: {
     bowl: "Bowl",
+    bowls: "Bowls",
   },
 
   countries: {
@@ -1835,7 +1884,180 @@ const translations = {
     newZealand: "New Zealand",
     southAfrica: "South Africa",
     japan: "Japan",
+    poland: "Poland",
+    czechRepublic: "Czech Republic",
     other: "Other",
+  },
+
+  blendTypes: {
+    "Virginia": "Virginia",
+    "Virginia/Perique": "Virginia/Perique",
+    "English": "English",
+    "English Aromatic": "English Aromatic",
+    "Balkan": "Balkan",
+    "Aromatic": "Aromatic",
+    "Burley": "Burley",
+    "Virginia/Burley": "Virginia/Burley",
+    "Latakia Blend": "Latakia Blend",
+    "Oriental/Turkish": "Oriental/Turkish",
+    "Navy Flake": "Navy Flake",
+    "Dark Fired": "Dark Fired",
+    "Cavendish": "Cavendish",
+    "Other": "Other",
+  },
+
+  cuts: {
+    "Ribbon": "Ribbon",
+    "Flake": "Flake",
+    "Broken Flake": "Broken Flake",
+    "Ready Rubbed": "Ready Rubbed",
+    "Plug": "Plug",
+    "Coin": "Coin",
+    "Cube Cut": "Cube Cut",
+    "Crumble Cake": "Crumble Cake",
+    "Shag": "Shag",
+    "Rope": "Rope",
+    "Twist": "Twist",
+    "Other": "Other",
+  },
+
+  strengths: {
+    "Mild": "Mild",
+    "Mild-Medium": "Mild-Medium",
+    "Medium": "Medium",
+    "Medium-Full": "Medium-Full",
+    "Full": "Full",
+  },
+
+  conditions: {
+    "Mint": "Mint",
+    "Excellent": "Excellent",
+    "Very Good": "Very Good",
+    "Good": "Good",
+    "Fair": "Fair",
+    "Poor": "Poor",
+    "Estate - Unrestored": "Estate - Unrestored",
+  },
+
+  filterTypes: {
+    "None": "None",
+    "6mm": "6mm",
+    "9mm": "9mm",
+    "Stinger": "Stinger",
+    "Other": "Other",
+  },
+
+  bowlStyles: {
+    "Cylindrical (Straight Wall)": "Cylindrical (Straight Wall)",
+    "Conical (Tapered)": "Conical (Tapered)",
+    "Rounded / Ball": "Rounded / Ball",
+    "Oval / Egg": "Oval / Egg",
+    "Squat / Pot": "Squat / Pot",
+    "Chimney (Tall)": "Chimney (Tall)",
+    "Paneled": "Paneled",
+    "Faceted / Multi-Panel": "Faceted / Multi-Panel",
+    "Horn-Shaped": "Horn-Shaped",
+    "Freeform": "Freeform",
+    "Unknown": "Unknown",
+  },
+
+  shankShapes: {
+    "Round": "Round",
+    "Diamond": "Diamond",
+    "Square": "Square",
+    "Oval": "Oval",
+    "Paneled / Faceted": "Paneled / Faceted",
+    "Military / Army Mount": "Military / Army Mount",
+    "Freeform": "Freeform",
+    "Unknown": "Unknown",
+  },
+
+  bends: {
+    "Straight": "Straight",
+    "1/4 Bent": "1/4 Bent",
+    "1/2 Bent": "1/2 Bent",
+    "3/4 Bent": "3/4 Bent",
+    "Full Bent": "Full Bent",
+    "S-Bend": "S-Bend",
+    "Unknown": "Unknown",
+  },
+
+  sizeClasses: {
+    "Vest Pocket": "Vest Pocket",
+    "Small": "Small",
+    "Standard": "Standard",
+    "Large": "Large",
+    "Magnum / XL": "Magnum / XL",
+    "Churchwarden": "Churchwarden",
+    "MacArthur": "MacArthur",
+    "Unknown": "Unknown",
+  },
+
+  stemMaterials: {
+    "Acrylic": "Acrylic",
+    "Amber": "Amber",
+    "Bone": "Bone",
+    "Cumberland": "Cumberland",
+    "Ebonite": "Ebonite",
+    "Horn": "Horn",
+    "Lucite": "Lucite",
+    "Metal": "Metal",
+    "Other": "Other",
+    "Vulcanite": "Vulcanite",
+  },
+
+  finishes: {
+    "Smooth": "Smooth",
+    "Sandblast": "Sandblast",
+    "Rusticated": "Rusticated",
+    "Partially Rusticated": "Partially Rusticated",
+    "Carved": "Carved",
+    "Natural": "Natural",
+    "Other": "Other",
+  },
+
+  productionStatus: {
+    "Current Production": "Current Production",
+    "Discontinued": "Discontinued",
+    "Limited Edition": "Limited Edition",
+    "Vintage": "Vintage",
+  },
+
+  agingPotential: {
+    "Poor": "Poor",
+    "Fair": "Fair",
+    "Good": "Good",
+    "Excellent": "Excellent",
+  },
+
+  flavorNotes: {
+    "Earthy": "Earthy",
+    "Sweet": "Sweet",
+    "Nutty": "Nutty",
+    "Woody": "Woody",
+    "Smoky": "Smoky",
+    "Spicy": "Spicy",
+    "Fruity": "Fruity",
+    "Floral": "Floral",
+    "Tangy": "Tangy",
+    "Creamy": "Creamy",
+    "Peppery": "Peppery",
+    "Chocolate": "Chocolate",
+    "Coffee": "Coffee",
+    "Vanilla": "Vanilla",
+    "Honey": "Honey",
+    "Leather": "Leather",
+    "Grass": "Grass",
+    "Hay": "Hay",
+    "Citrus": "Citrus",
+    "Plum": "Plum",
+    "Fig": "Fig",
+    "Raisin": "Raisin",
+  },
+
+  forms: {
+    edit: "Edit",
+    value: "Value",
   },
 };
 
