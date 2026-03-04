@@ -36,7 +36,7 @@ export default function FeatureGate({
   if (!feature && requiredTier) {
     const hasAccess = requiredTier === "premium" 
       ? entitlements.tier !== "free" || entitlements.isFreeGrandfathered
-      : entitlements.tier === "pro" || entitlements.isPremiumLegacy;
+      : entitlements.tier === "pro"; // Pro-only features require actual pro tier, not legacy premium
 
     if (!hasAccess) {
       return (
