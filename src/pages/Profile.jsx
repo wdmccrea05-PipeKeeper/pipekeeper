@@ -569,8 +569,80 @@ export default function ProfilePage() {
             </div>
 
             {/* Preferences */}
-            <div className="space-y-3">
-              <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
+             <div className="space-y-3">
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.clenchingPreference","Clenching preference")}</Label>
+               <div className="flex flex-wrap gap-2">
+                 {["Yes", "No", "Sometimes"].map((pref) => {
+                   const active = formData.clenching_preference === pref;
+                   return (
+                     <Badge
+                       key={pref}
+                       onClick={() => setFormData((p) => ({ ...p, clenching_preference: pref }))}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                     >
+                       {pref}
+                     </Badge>
+                   );
+                 })}
+               </div>
+             </div>
+
+             <div className="space-y-3">
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.smokeDurationPreference","Smoke duration preference")}</Label>
+               <div className="flex flex-wrap gap-2">
+                 {["Short (15-30 min)", "Medium (30-60 min)", "Long (60+ min)", "No Preference"].map((pref) => {
+                   const active = formData.smoke_duration_preference === pref;
+                   return (
+                     <Badge
+                       key={pref}
+                       onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: pref }))}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                     >
+                       {pref}
+                     </Badge>
+                   );
+                 })}
+               </div>
+             </div>
+
+             <div className="space-y-3">
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.pipeSizePreference","Pipe size preference")}</Label>
+               <div className="flex flex-wrap gap-2">
+                 {["Small", "Medium", "Large", "Extra Large", "No Preference"].map((pref) => {
+                   const active = formData.pipe_size_preference === pref;
+                   return (
+                     <Badge
+                       key={pref}
+                       onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: pref }))}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                     >
+                       {pref}
+                     </Badge>
+                   );
+                 })}
+               </div>
+             </div>
+
+             <div className="space-y-3">
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.strengthPreference","Strength preference")}</Label>
+               <div className="flex flex-wrap gap-2">
+                 {["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full", "No Preference"].map((pref) => {
+                   const active = formData.strength_preference === pref;
+                   return (
+                     <Badge
+                       key={pref}
+                       onClick={() => setFormData((p) => ({ ...p, strength_preference: pref }))}
+                       className={`cursor-pointer border ${active ? "bg-violet-600 text-white border-violet-600" : "bg-white text-stone-700 border-stone-200"}`}
+                     >
+                       {pref}
+                     </Badge>
+                   );
+                 })}
+               </div>
+             </div>
+
+             <div className="space-y-3">
+               <Label className="text-stone-700 font-medium break-words">{t("profileExtended.preferredBlendTypes","Preferred blend types")}</Label>
               <div className="flex flex-wrap gap-2">
                 {BLEND_TYPES.map((bt) => {
                   const active = formData.preferred_blend_types.includes(bt);

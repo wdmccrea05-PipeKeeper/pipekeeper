@@ -53,6 +53,7 @@ import AdminSubscriptionRequests from './pages/AdminSubscriptionRequests';
 import AdminSubscriptionTools from './pages/AdminSubscriptionTools';
 import AgeGate from './pages/AgeGate';
 import BulkLogoUpload from './pages/BulkLogoUpload';
+import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
@@ -62,19 +63,20 @@ import Import from './pages/Import';
 import Invite from './pages/Invite';
 import InviteFull from './pages/InviteFull';
 import PipeDetail from './pages/PipeDetail';
+import Pipes from './pages/Pipes';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
-import SubscriptionFull from './pages/SubscriptionFull';
-import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
 import TermsOfService from './pages/TermsOfService';
+import Tobacco from './pages/Tobacco';
 import TobaccoDetail from './pages/TobaccoDetail';
 import TobaccoLibrarySync from './pages/TobaccoLibrarySync';
 import Troubleshooting from './pages/Troubleshooting';
@@ -82,10 +84,8 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import Profile from './pages/Profile';
-import Community from './pages/Community';
-import Pipes from './pages/Pipes';
-import Tobacco from './pages/Tobacco';
+import SubscriptionFull from './pages/SubscriptionFull';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import __Layout from './Layout.jsx';
 
 
@@ -96,6 +96,7 @@ export const PAGES = {
     "AdminSubscriptionTools": AdminSubscriptionTools,
     "AgeGate": AgeGate,
     "BulkLogoUpload": BulkLogoUpload,
+    "Community": Community,
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
@@ -105,19 +106,20 @@ export const PAGES = {
     "Invite": Invite,
     "InviteFull": InviteFull,
     "PipeDetail": PipeDetail,
+    "Pipes": Pipes,
     "PrivacyPolicy": PrivacyPolicy,
+    "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
-    "SubscriptionFull": SubscriptionFull,
-    "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
     "TermsOfService": TermsOfService,
+    "Tobacco": Tobacco,
     "TobaccoDetail": TobaccoDetail,
     "TobaccoLibrarySync": TobaccoLibrarySync,
     "Troubleshooting": Troubleshooting,
@@ -125,10 +127,8 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "Profile": Profile,
-    "Community": Community,
-    "Pipes": Pipes,
-    "Tobacco": Tobacco,
+    "SubscriptionFull": SubscriptionFull,
+    "SubscriptionSuccess": SubscriptionSuccess,
 }
 
 export const pagesConfig = {
