@@ -57,7 +57,6 @@ import Community from './pages/Community';
 import FAQ from './pages/FAQ';
 import FAQFull from './pages/FAQFull';
 import Help from './pages/Help';
-import Home from './pages/Home';
 import HowTo from './pages/HowTo';
 import Import from './pages/Import';
 import Invite from './pages/Invite';
@@ -85,6 +84,7 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
+import Home from './pages/Home';
 import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
@@ -100,7 +100,6 @@ export const PAGES = {
     "FAQ": FAQ,
     "FAQFull": FAQFull,
     "Help": Help,
-    "Home": Home,
     "HowTo": HowTo,
     "Import": Import,
     "Invite": Invite,
@@ -128,6 +127,7 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
+    "Home": Home,
     "Profile": Profile,
 }
 
