@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea as ReportTextarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function CommentSection({ entityType, entityId, entityOwnerEmail }) {
   const [showComments, setShowComments] = useState(false);

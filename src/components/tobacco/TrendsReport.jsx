@@ -322,19 +322,18 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
     const parts = [];
     const sessionWord = sessions === 1 ? t("trends.session","session") : t("trends.sessions","sessions");
-    parts.push(t("trends.youLoggedCount","You logged {{count}} {{sessionWord}} this period.",{count: sessions, sessionWord}));
+    parts.push(t("trends.youLoggedCount", {count: sessions}) || `You logged ${sessions} sessions`);
     
     if (topPipe) {
-      const pipeSessionWord = topPipe.count === 1 ? t("trends.session","session") : t("trends.sessions","sessions");
-      parts.push(t("trends.topPipeName","Your #1 pipe was {{name}} ({{count}} {{sessionWord}}).",{name: topPipe.pipe_name, count: topPipe.count, sessionWord: pipeSessionWord}));
+      parts.push(t("trends.topPipeName", {name: topPipe.pipe_name}) || `Top pipe: ${topPipe.pipe_name}`);
     }
     
     if (topCategory) {
-      parts.push(t("trends.leanedHeavily","You leaned heavily {{category}}.",{category: topCategory[0]}));
+      parts.push(t("trends.leanedHeavily", {type: topCategory[0]}) || `You leaned heavily toward ${topCategory[0]}`);
     }
     
     if (topShape) {
-      parts.push(t("trends.goToShape","Your go-to shape was {{shape}}.",{shape: topShape[0]}));
+      parts.push(t("trends.goToShape", {shape: topShape[0]}) || `Your go-to shape was ${topShape[0]}`);
     }
 
     return parts.join(' ');
@@ -403,7 +402,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         yPos += 7;
         doc.setFontSize(9);
         topPipes.slice(0, 5).forEach(pipe => {
-          doc.text(`${pipe.pipe_name}: ${pipe.count} ${t("nav.sessions","sessions")} (${pipe.percentage.toFixed(1)}%)`, 25, yPos);
+          doc.text(`${pipe.pipe_name}: ${pipe.count} ${t("trends.sessions","sessions")} (${pipe.percentage.toFixed(1)}%)`, 25, yPos);
           yPos += 5;
         });
         yPos += 5;
@@ -416,7 +415,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
         doc.setFontSize(9);
         topBlends.slice(0, 5).forEach(blend => {
           if (yPos > 270) return;
-          doc.text(`${blend.blend_name}: ${blend.count} ${t("nav.sessions","sessions")} (${blend.percentage.toFixed(1)}%)`, 25, yPos);
+          doc.text(`${blend.blend_name}: ${blend.count} ${t("trends.sessions","sessions")} (${blend.percentage.toFixed(1)}%)`, 25, yPos);
           yPos += 5;
         });
       }
@@ -651,43 +650,43 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
                   {tasteProfile.categories.map(([category, count]) => (
                     <div key={category} className="flex items-center justify-between">
                       <span className="text-[#E0D8C8]">{category}</span>
-                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      <Badge>{count} {t("trends.sessions","sessions")}</Badge>
+                      </div>
+                      ))}
+                      </div>
+                      </CardContent>
+                      </Card>
+                      )}
 
-          {tasteProfile.cuts.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("trends.cutTypes","Cut Types")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {tasteProfile.cuts.map(([cut, count]) => (
-                    <div key={cut} className="flex items-center justify-between">
-                      <span className="text-[#E0D8C8]">{cut}</span>
-                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      {tasteProfile.cuts.length > 0 && (
+                      <Card>
+                      <CardHeader>
+                      <CardTitle>{t("trends.cutTypes","Cut Types")}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <div className="space-y-3">
+                      {tasteProfile.cuts.map(([cut, count]) => (
+                      <div key={cut} className="flex items-center justify-between">
+                        <span className="text-[#E0D8C8]">{cut}</span>
+                        <Badge>{count} {t("trends.sessions","sessions")}</Badge>
+                      </div>
+                      ))}
+                      </div>
+                      </CardContent>
+                      </Card>
+                      )}
 
-          {tasteProfile.strengths.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("trends.strengthPreference","Strength Preference")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {tasteProfile.strengths.map(([strength, count]) => (
-                    <div key={strength} className="flex items-center justify-between">
-                      <span className="text-[#E0D8C8]">{strength}</span>
-                      <Badge>{count} {t("nav.sessions","sessions")}</Badge>
+                      {tasteProfile.strengths.length > 0 && (
+                      <Card>
+                      <CardHeader>
+                      <CardTitle>{t("trends.strengthPreference","Strength Preference")}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <div className="space-y-3">
+                      {tasteProfile.strengths.map(([strength, count]) => (
+                      <div key={strength} className="flex items-center justify-between">
+                        <span className="text-[#E0D8C8]">{strength}</span>
+                        <Badge>{count} {t("trends.sessions","sessions")}</Badge>
                     </div>
                   ))}
                 </div>

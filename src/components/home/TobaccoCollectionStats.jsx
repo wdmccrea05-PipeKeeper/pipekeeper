@@ -318,7 +318,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 onClick={() => handleDrillDown('lowInventory', lowInventoryBlends)}
                 className="w-full flex justify-between items-center py-2 px-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
               >
-                <span className="text-xs font-semibold text-amber-800">⚠ Low Inventory ({lowInventoryBlends.length} blend{lowInventoryBlends.length > 1 ? 's' : ''})</span>
+                <span className="text-xs font-semibold text-amber-800">⚠ {t("stats.lowInventoryAlert")} ({lowInventoryBlends.length} {lowInventoryBlends.length > 1 ? t("stats.blends") : t("stats.blend")})</span>
                 <ChevronRight className="w-4 h-4 text-amber-600" />
               </button>
             )}
