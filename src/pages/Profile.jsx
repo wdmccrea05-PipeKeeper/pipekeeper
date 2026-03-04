@@ -64,7 +64,7 @@ export default function ProfilePage() {
   const { user, provider, subscription, isLoading: userLoading, tier, planLabel, hasPaid, hasPro, isTrial } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
-  const userId = user?.auth_user_id || user?.id || null;
+  const userId = user?.id || null;
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["user-profile", userId, email],

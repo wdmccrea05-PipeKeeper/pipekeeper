@@ -39,7 +39,7 @@ export default function Home() {
   });
 
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.auth_user_id || user?.id, user?.email],
+    queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
       const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email });
       return profiles?.[0] || null;
