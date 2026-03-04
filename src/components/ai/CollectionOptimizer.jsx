@@ -1484,29 +1484,8 @@ ${englishUserText}
                   )}
 
                   {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).map((spec, idx) => {
-                    const pv = pipes.find((p) => p.id === spec.pipe_id) || {};
-                    const variantKey = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
                     const pipe = pipes.find((p) => p.id === spec.pipe_id);
-
-                    const displaySpec = spec;
-                    const variantKey = getPipeVariantKey(pv.pipe_id, pv.bowl_variant_id || null);
-                    const spec =
-                      optimization.pipe_specializations?.find((s) => getPipeVariantKey(s.pipe_id, s.bowl_variant_id || null) === variantKey) ||
-                      null;
-
-                    const pipe = pipes.find((p) => p.id === pv.pipe_id);
-
-                    const displaySpec = spec || {
-                      pipe_id: pv.pipe_id,
-                      bowl_variant_id: pv.bowl_variant_id || null,
-                      pipe_name: pv.name,
-                      recommended_blend_types: [],
-                      reasoning: t("tobacconist.noRecommendation"),
-                      versatility_score: 5,
-                      usage_pattern: t("tobacconist.versatilePattern"),
-                    };
-
-                    const hasRecommendation = displaySpec.recommended_blend_types?.length > 0;
+                    const variantKey = getPipeVariantKey(spec.pipe_id, spec.bowl_variant_id || null);
 
                     return (
                       <motion.div
