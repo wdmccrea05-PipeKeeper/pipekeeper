@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ZoomIn, RotateCw, Check, X } from "lucide-react";
 
 export default function AvatarCropper({ image, onCropComplete, onCancel, aspectRatio = 1, cropShape = "round" }) {
@@ -209,6 +209,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Profile Picture</DialogTitle>
+          <DialogDescription className="sr-only">Crop and adjust your profile picture</DialogDescription>
           <p className="text-sm text-stone-500">
             Drag to move • Zoom • Rotate • Crop
           </p>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
@@ -351,6 +351,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 </p>
               </div>
             </SheetTitle>
+            <SheetDescription className="sr-only">{t("messaging.chatDescription", "Chat conversation")}</SheetDescription>
           </SheetHeader>
 
           <ScrollArea className="flex-1 px-4 py-4">
@@ -491,6 +492,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
         <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
           <SheetHeader>
             <SheetTitle>{t("messaging.messageInbox")}</SheetTitle>
+            <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Message inbox")}</SheetDescription>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">

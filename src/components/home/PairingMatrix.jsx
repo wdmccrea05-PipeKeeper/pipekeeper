@@ -55,6 +55,7 @@ export default function PairingMatrix({ user }) {
       return profiles[0];
     },
     enabled: !!user?.email,
+    staleTime: 30_000,
   });
 
   const regenPairings = async () => {
