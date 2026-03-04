@@ -47,6 +47,8 @@ export default function PipesPage() {
   const { user, hasPaid, isTrial } = useCurrentUser();
 
   const { data: pipes = [], isLoading } = useQuery({
+    // sortBy is intentionally excluded from the query key because sorting is applied
+    // client-side on the already-fetched array (see filteredPipes below).
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
