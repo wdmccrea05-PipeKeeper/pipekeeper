@@ -585,7 +585,7 @@ export default function PipeDetailPage() {
                   )}
                   {pipe.stem_material && (
                     <div>
-                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stem")}</p>
+                      <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stemMaterial","Stem Material")}</p>
                       <p className="font-medium text-[#E0D8C8]">{pipe.stem_material}</p>
                     </div>
                   )}
