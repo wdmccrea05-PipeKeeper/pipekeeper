@@ -511,36 +511,35 @@ function CommunityPageInner() {
           </TabsContent>
 
           <TabsContent value="inbox" className="space-y-6">
-            {userProfile?.enable_messaging ? (
-              acceptedFriends.length > 0 && user ? (
-                <MessagingPanel 
-                  user={user} 
-                  friends={acceptedFriends} 
-                  publicProfiles={allPublicProfiles || []}
-                />
-              ) : (
-                <Card className="bg-[#223447] border-[#E0D8C8]/15">
-                  <CardContent className="py-12 text-center text-[#E0D8C8]/70">
-                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                    <p>{t("communityExtended.noFriendsToMessage")}</p>
-                    <p className="text-sm mt-2">{t("communityExtended.noFriendsToMessageDesc")}</p>
-                  </CardContent>
-                </Card>
-              )
-            ) : (
-              <Card className="bg-[#1E2F43] border-[#E0D8C8]/15">
-                <CardContent className="p-6 text-center">
-                  <Mail className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/70" />
-                  <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("messaging.messagingDisabled")}</h3>
-                  <p className="text-sm text-[#E0D8C8]/70 mb-4">
-                    {t("messaging.messagingDisabledDesc")}
-                  </p>
+            {!userProfile?.enable_messaging && (
+              <Card className="bg-[#1E2F43] border-amber-500/30">
+                <CardContent className="p-4 flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-[#E0D8C8]/80 font-medium">{t("messaging.messagingDisabled")}</p>
+                    <p className="text-xs text-[#E0D8C8]/60 mt-1">{t("messaging.messagingDisabledDesc")}</p>
+                  </div>
                   <a href={createPageUrl('Profile')}>
-                    <Button>
+                    <Button size="sm">
                       <Settings className="w-4 h-4 mr-2" />
                       {t("messaging.goToSettings")}
                     </Button>
                   </a>
+                </CardContent>
+              </Card>
+            )}
+            {acceptedFriends.length > 0 && user ? (
+              <MessagingPanel 
+                user={user} 
+                friends={acceptedFriends} 
+                publicProfiles={allPublicProfiles || []}
+              />
+            ) : (
+              <Card className="bg-[#223447] border-[#E0D8C8]/15">
+                <CardContent className="py-12 text-center text-[#E0D8C8]/70">
+                  <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p>{t("communityExtended.noFriendsToMessage")}</p>
+                  <p className="text-sm mt-2">{t("communityExtended.noFriendsToMessageDesc")}</p>
                 </CardContent>
               </Card>
             )}
