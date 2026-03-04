@@ -136,14 +136,14 @@ function CommunityPageInner() {
       status: 'active'
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: ['connections', user?.email] });
     },
   });
 
   const unfollowMutation = useMutation({
     mutationFn: (connectionId) => base44.entities.UserConnection.delete(connectionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: ['connections', user?.email] });
     },
   });
 
@@ -154,29 +154,31 @@ function CommunityPageInner() {
       status: 'pending'
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+      queryClient.invalidateQueries({ queryKey: ['friendships', user?.email] });
     },
   });
 
   const acceptFriendRequestMutation = useMutation({
-    mutationFn: (friendshipId) => safeUpdate('Friendship', friendshipId, { status: 'accepted' }),
+    mutationFn: (friendshipId) =>
+      base44.entities.Friendship.update(friendshipId, { status: 'accepted' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendships'] });
-      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['friendships', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['friend-requests', user?.email] });
     },
   });
 
   const declineFriendRequestMutation = useMutation({
-    mutationFn: (friendshipId) => safeUpdate('Friendship', friendshipId, { status: 'declined' }),
+    mutationFn: (friendshipId) =>
+      base44.entities.Friendship.update(friendshipId, { status: 'declined' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['friend-requests', user?.email] });
     },
   });
 
   const removeFriendMutation = useMutation({
     mutationFn: (friendshipId) => base44.entities.Friendship.delete(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+      queryClient.invalidateQueries({ queryKey: ['friendships', user?.email] });
     },
   });
 
@@ -528,13 +530,13 @@ function CommunityPageInner() {
                 </CardContent>
               </Card>
             )}
-            {acceptedFriends.length > 0 && user ? (
+            {acceptedFriends.length > 0 && user && userProfile?.enable_messaging ? (
               <MessagingPanel 
                 user={user} 
                 friends={acceptedFriends} 
                 publicProfiles={allPublicProfiles || []}
               />
-            ) : (
+            ) : acceptedFriends.length === 0 ? (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-30" />
@@ -542,7 +544,7 @@ function CommunityPageInner() {
                   <p className="text-sm mt-2">{t("communityExtended.noFriendsToMessageDesc")}</p>
                 </CardContent>
               </Card>
-            )}
+            ) : null}
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6">

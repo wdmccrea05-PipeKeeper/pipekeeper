@@ -219,7 +219,10 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
     const friendEmail = f.requester_email === userEmail ? f.recipient_email : f.requester_email;
     if (blocked.includes(friendEmail)) return false;
     const profile = publicProfiles.find(p => p.user_email === friendEmail);
-    return profile?.enable_messaging;
+    // If profile not found (non-public), still allow messaging —
+    // the enable_messaging check only applies when we know the profile.
+    if (!profile) return true;
+    return profile.enable_messaging !== false;
   });
 
   if (!userEmail) {
