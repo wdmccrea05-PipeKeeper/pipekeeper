@@ -10,6 +10,12 @@ const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") 
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
+// FIX ISSUE-15: Warn at startup if Pro price IDs are not configured —
+// without them, Pro subscribers silently fall back to "premium" tier.
+if (!PRICE_ID_PRO_MONTHLY || !PRICE_ID_PRO_ANNUAL) {
+  console.error("[stripeWebhook] CRITICAL: STRIPE_PRICE_ID_PRO_MONTHLY / STRIPE_PRICE_ID_PRO_ANNUAL env vars not set — Pro subscribers will be downgraded to Premium!");
+}
+
 function json(status, body) {
   return new Response(JSON.stringify({ ...body, version: "v26-key-refresh" }), {
     status,
@@ -201,6 +207,20 @@ Deno.serve(async (req) => {
         delete updateFields.subscription_provider;
       }
 
+      // FIX BUG-02: Also write entitlement_tier (highest-priority field for canonical resolver)
+      // and merge data.entitlement_tier for nested-data schema users.
+      if (fields.subscription_tier) {
+        updateFields.entitlement_tier = fields.subscription_tier;
+        const existingData = userRow.data || {};
+        updateFields.data = {
+          ...existingData,
+          entitlement_tier: fields.subscription_tier,
+          subscription_tier: fields.subscription_tier,
+          subscription_level: fields.subscription_level || existingData.subscription_level,
+          subscription_status: fields.subscription_status || existingData.subscription_status,
+        };
+      }
+
       await base44.asServiceRole.entities.User.update(userRow.id, updateFields);
       return { ok: true };
     }
@@ -371,10 +391,18 @@ Deno.serve(async (req) => {
 
         const detectedTier = await getTier(sub, stripe);
         
-        // Keep existing tier if we can't determine new one, default to premium for active subs
-        payload.tier = detectedTier || existing?.tier || (isPaid ? "premium" : null);
+        // FIX ISSUE-15: Also check subscription metadata for a tier hint before falling back.
+        const metaTier = (sub.metadata?.tier || "").toLowerCase();
+        let resolvedTier: string;
+        if (metaTier === "pro" || metaTier === "premium") {
+          resolvedTier = metaTier;
+        } else {
+          // Keep existing tier if we can't determine new one, default to premium for active subs
+          resolvedTier = detectedTier || existing?.tier || (isPaid ? "premium" : null);
+        }
+        payload.tier = resolvedTier;
         
-        if (!detectedTier) {
+        if (!detectedTier && !metaTier) {
           console.warn(`[webhook] Could not determine tier for subscription ${sub.id}, using fallback: ${payload.tier || 'null'}`);
         }
 

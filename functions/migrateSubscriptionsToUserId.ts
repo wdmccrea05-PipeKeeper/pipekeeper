@@ -198,10 +198,20 @@ Deno.serve(async (req: Request) => {
         }
         
         const isPaid = sub.status === 'active' || sub.status === 'trialing';
+        // FIX ISSUE-05: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
         await base44.asServiceRole.entities.User.update(entityUser.id, {
           subscription_level: isPaid ? 'paid' : 'free',
           subscription_status: sub.status,
-          stripe_customer_id: sub.stripe_customer_id || entityUser.stripe_customer_id
+          entitlement_tier: isPaid ? (sub.tier || 'premium') : 'free',
+          subscription_tier: isPaid ? (sub.tier || 'premium') : 'free',
+          stripe_customer_id: sub.stripe_customer_id || entityUser.stripe_customer_id,
+          data: {
+            ...(entityUser.data || {}),
+            entitlement_tier: isPaid ? (sub.tier || 'premium') : 'free',
+            subscription_tier: isPaid ? (sub.tier || 'premium') : 'free',
+            subscription_level: isPaid ? 'paid' : 'free',
+            subscription_status: sub.status,
+          },
         });
         usersUpdated++;
       }

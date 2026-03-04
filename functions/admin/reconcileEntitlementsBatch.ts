@@ -4,7 +4,8 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { reconcileUserEntitlements } from "../_utils/reconcileEntitlements.js";
+// FIX ISSUE-20: Use .ts extension (not .js) — .js imports may fail in some Deno configurations.
+import { reconcileUserEntitlements } from "../_utils/reconcileEntitlements.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 

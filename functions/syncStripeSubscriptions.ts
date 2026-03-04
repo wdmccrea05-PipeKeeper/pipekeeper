@@ -212,7 +212,16 @@ Deno.serve(async (req) => {
           subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
           subscription_status: best.status,
           subscription_tier: tier,
+          // FIX ISSUE-05: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
+          entitlement_tier: isPaid ? tier : "free",
           stripe_customer_id: customerId,
+          data: {
+            ...(userRec.data || {}),
+            entitlement_tier: isPaid ? tier : "free",
+            subscription_tier: isPaid ? tier : "free",
+            subscription_level: isPaid ? "paid" : "free",
+            subscription_status: best.status,
+          },
         });
         updatedUser = true;
       }

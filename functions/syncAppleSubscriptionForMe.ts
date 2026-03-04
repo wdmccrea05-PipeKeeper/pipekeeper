@@ -43,10 +43,20 @@ Deno.serve(async (req) => {
       tier = 'pro';
     }
     
-    // Determine status: Trust iOS client immediately, mark as active when they report active
-    // Background verification can update this later if fraud is detected
-    const status = active ? 'active' : 'expired';
-    
+    // FIX ISSUE-11: Add server-side expiry check.
+    // Do NOT grant paid access if expiresAt is populated and already in the past,
+    // regardless of what the iOS client reports.
+    const clientReportsActive = active;
+    const serverVerifiedExpiry = expiresAt ? new Date(expiresAt) > new Date() : true;
+    const effectiveActive = clientReportsActive && serverVerifiedExpiry;
+
+    if (!effectiveActive && clientReportsActive && !serverVerifiedExpiry) {
+      console.warn(`[syncAppleSubscriptionForMe] Client reports active but expiresAt=${expiresAt} is in the past — marking expired for user ${userId}`);
+    }
+
+    // Determine status: Trust iOS client only when server-side expiry check also passes
+    const status = effectiveActive ? 'active' : 'expired';
+
     // Create stable provider subscription ID
     const providerSubId = originalTransactionId || `apple_unverified_${userId}`;
     
@@ -86,7 +96,7 @@ Deno.serve(async (req) => {
       status,
       tier,
       current_period_end: expiresAt,
-      current_period_start: active ? nowIso : (existingAppleSub?.current_period_start || null),
+      current_period_start: effectiveActive ? nowIso : (existingAppleSub?.current_period_start || null),
       started_at: existingAppleSub?.started_at || nowIso,
       subscriptionStartedAt: existingAppleSub?.subscriptionStartedAt || existingAppleSub?.started_at || nowIso,
       billing_interval: 'month',
@@ -102,8 +112,8 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
     }
     
-    // TRUST iOS CLIENT: Mark as paid immediately when active (background verification can revoke later if needed)
-    const shouldMarkPaid = active;
+    // Only mark paid when server-side expiry check confirms subscription is still active
+    const shouldMarkPaid = effectiveActive;
     
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     if (!users || users.length === 0) {
@@ -113,7 +123,9 @@ Deno.serve(async (req) => {
         role: 'user',
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
-        subscription_tier: tier,
+        subscription_tier: shouldMarkPaid ? tier : 'free',
+        // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier for canonical resolver
+        entitlement_tier: shouldMarkPaid ? tier : 'free',
         platform: 'ios'
       });
       console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
@@ -121,7 +133,16 @@ Deno.serve(async (req) => {
       const updates = {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
-        subscription_tier: tier
+        subscription_tier: shouldMarkPaid ? tier : 'free',
+        // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier (flat) and data.entitlement_tier (nested)
+        entitlement_tier: shouldMarkPaid ? tier : 'free',
+        data: {
+          ...(users[0].data || {}),
+          entitlement_tier: shouldMarkPaid ? tier : 'free',
+          subscription_tier: shouldMarkPaid ? tier : 'free',
+          subscription_level: shouldMarkPaid ? 'paid' : 'free',
+          subscription_status: status,
+        },
       };
       // Only set platform if not already set
       if (!users[0].platform) {

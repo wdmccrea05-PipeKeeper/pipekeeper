@@ -13,19 +13,17 @@
  * or because a component used an old variable name.
  */
 
+// FIX ISSUE-21: Replace overly broad substring matching with exact matching plus an explicit
+// allowlist of known synonyms to prevent arbitrary strings from being promoted to paid tiers.
 const normalizeTier = (raw) => {
   const t = String(raw || "").trim().toLowerCase();
   if (!t) return "free";
 
-  // Common synonyms / legacy values
   if (t === "pro") return "pro";
   if (t === "premium") return "premium";
 
-  if (t.includes("pro")) return "pro";
-  if (t.includes("prem")) return "premium";
-
-  // Some systems may store tiers like "paid", "plus", "subscriber"
-  if (["paid", "plus", "subscriber", "subscribed"].includes(t)) return "premium";
+  // Explicit legacy synonyms only — no substring matching
+  if (t === "paid" || t === "plus" || t === "subscriber" || t === "subscribed") return "premium";
 
   return "free";
 };

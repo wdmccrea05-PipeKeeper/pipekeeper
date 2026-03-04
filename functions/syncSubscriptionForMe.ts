@@ -80,10 +80,40 @@ Deno.serve(async (req) => {
     }
 
     if (!customerId) {
+      // FIX ISSUE-12: syncSubscriptionForMe is Stripe-only; Apple users need a local DB fallback.
+      // Check for an active local Apple subscription and re-apply entitlements if found.
+      const localSubs = await base44.asServiceRole.entities.Subscription.filter({
+        user_id: authUser.id,
+        provider: "apple",
+      });
+      const activeSub = (localSubs || []).find(s => {
+        if (s.status !== "active") return false;
+        if (s.current_period_end && new Date(s.current_period_end) < new Date()) return false;
+        return true;
+      });
+      if (activeSub) {
+        const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
+        if (users?.length) {
+          await base44.asServiceRole.entities.User.update(users[0].id, {
+            subscription_level: "paid",
+            subscription_tier: activeSub.tier || "premium",
+            subscription_status: "active",
+            entitlement_tier: activeSub.tier || "premium",
+            data: {
+              ...(users[0].data || {}),
+              entitlement_tier: activeSub.tier || "premium",
+              subscription_tier: activeSub.tier || "premium",
+              subscription_level: "paid",
+              subscription_status: "active",
+            },
+          });
+        }
+        return Response.json({ ok: true, found: true, provider: "apple", synced: true });
+      }
       return Response.json({
         ok: true,
         found: false,
-        reason: "No Stripe customer found",
+        reason: "No Stripe customer or Apple subscription found",
         email: targetEmail,
       });
     }
@@ -196,6 +226,16 @@ Deno.serve(async (req) => {
         subscription_tier: isPaid ? subTier : "free",
         subscription_status: best.status,
         stripe_customer_id: customerId,
+        // FIX BUG-03: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
+        // so the canonical resolver getEntitlementTier() sees paid status immediately after login.
+        entitlement_tier: isPaid ? subTier : "free",
+        data: {
+          ...(userRec.data || {}),
+          entitlement_tier: isPaid ? subTier : "free",
+          subscription_tier: isPaid ? subTier : "free",
+          subscription_level: isPaid ? "paid" : "free",
+          subscription_status: best.status,
+        },
       };
       
       if (isFoundingMember && !userRec.isFoundingMember) {

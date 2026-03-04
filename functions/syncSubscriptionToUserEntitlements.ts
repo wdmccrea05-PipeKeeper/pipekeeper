@@ -14,7 +14,10 @@ Deno.serve(async (req) => {
     const { event, data } = body;
 
     // Only handle Subscription create/update
-    if (!event?.entity_name === "Subscription" || !["create", "update"].includes(event?.type)) {
+    // FIX BUG-01: Corrected boolean operator precedence in event guard.
+    // Previously `!event?.entity_name === "Subscription"` compared a boolean to a string
+    // (always false), so this condition never short-circuited and the function always skipped.
+    if (event?.entity_name !== "Subscription" || !["create", "update"].includes(event?.type)) {
       return Response.json({ ok: true, skipped: "Not a Subscription event" });
     }
 

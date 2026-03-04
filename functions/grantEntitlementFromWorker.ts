@@ -71,9 +71,18 @@ Deno.serve(async (req: Request) => {
     const userUpdates: any = {
       subscription_level: "paid",
       subscription_tier: normalizedTier,
+      // FIX ISSUE-05 + ISSUE-14: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
+      entitlement_tier: normalizedTier,
       subscription_status: "active",
       subscription_interval: normalizedInterval,
       subscription_provider: provider || "stripe",
+      data: {
+        ...(user.data || {}),
+        entitlement_tier: normalizedTier,
+        subscription_tier: normalizedTier,
+        subscription_level: "paid",
+        subscription_status: "active",
+      },
     };
 
     if (stripe_customer_id) userUpdates.stripe_customer_id = stripe_customer_id;
@@ -82,11 +91,15 @@ Deno.serve(async (req: Request) => {
     await base44.asServiceRole.entities.User.update(user.id, userUpdates);
 
     // 5) Upsert Subscription entity
+    // FIX ISSUE-14: Sort by created date desc and prefer the most recent subscription
+    // to avoid updating an old expired row when multiple exist for the same user+provider.
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
       user_email: normalizedEmail,
       provider: provider || "stripe",
     });
+    existingSubs.sort((a: any, b: any) => new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime());
 
+    // FIX ISSUE-14: Set current_period_start, current_period_end, and started_at
     const subscriptionData: any = {
       user_id: user.id,
       user_email: normalizedEmail,
@@ -94,6 +107,9 @@ Deno.serve(async (req: Request) => {
       status: "active",
       tier: normalizedTier,
       billing_interval: normalizedInterval,
+      current_period_start: new Date().toISOString(),
+      current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      started_at: existingSubs?.[0]?.started_at || new Date().toISOString(),
     };
 
     if (stripe_session_id) subscriptionData.stripe_session_id = stripe_session_id;
