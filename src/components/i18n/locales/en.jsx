@@ -1,3 +1,4 @@
+
 // English translations for PipeKeeper
 
 const translations = {
@@ -702,6 +703,7 @@ const translations = {
     recommended: "Recommended",
     agingProgress: "Aging Progress",
     pouches: "Pouches",
+    clarificationPlaceholder: "Help the AI understand your preferences better.",
   },
 
   pipeDetailTabs: {
