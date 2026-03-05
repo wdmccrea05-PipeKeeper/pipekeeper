@@ -122,7 +122,7 @@ export function useCurrentUser() {
       }
     },
     enabled: !!(userId || email),
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   // Ensure user record exists with platform info
@@ -182,6 +182,8 @@ export function useCurrentUser() {
       } finally {
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, String(Date.now()));
+          // FIX BUG-04: Explicitly invalidate subscription cache after sync
+          await queryClient.invalidateQueries({ queryKey: ["subscription"] });
           await Promise.all([refetchUser(), refetchSubscription()]);
         }
       }

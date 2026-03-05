@@ -60,13 +60,14 @@ export function getEntitlementTier(user, subscription) {
   // 3) Subscription entity / provider-derived
   if (subscription) {
     const subStatus = (subscription.status || "").toLowerCase();
-    const periodEnd = subscription.current_period_end;
     
-    // Check if subscription is active (NOT expired)
-    const isActiveStatus = subStatus === "active" || subStatus === "trialing";
-    const isNotExpired = !periodEnd || new Date(periodEnd).getTime() > Date.now();
+    // FIX BUG-03: Check active status independently from expiration.
+    // Stripe webhooks may lag, so don't reject ACTIVE subscriptions with past period_end.
+    // Only reject if status is explicitly inactive (canceled, expired, incomplete_expired, etc).
+    const activeStatuses = ["active", "trialing", "trial"];
+    const isActiveStatus = activeStatuses.includes(subStatus);
     
-    if (isActiveStatus && isNotExpired) {
+    if (isActiveStatus) {
       const fromSub =
         subscription?.tier ??
         subscription?.subscription_tier ??
