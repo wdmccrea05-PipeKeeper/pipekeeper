@@ -94,10 +94,12 @@ Deno.serve(async (req) => {
       if (activeSub) {
         const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
         if (users?.length) {
+          // FIX BUG-06: Set subscription_provider to "apple" so resolver recognizes Apple subscriptions
           await base44.asServiceRole.entities.User.update(users[0].id, {
             subscription_level: "paid",
             subscription_tier: activeSub.tier || "premium",
             subscription_status: "active",
+            subscription_provider: "apple",
             entitlement_tier: activeSub.tier || "premium",
             data: {
               ...(users[0].data || {}),
@@ -105,6 +107,7 @@ Deno.serve(async (req) => {
               subscription_tier: activeSub.tier || "premium",
               subscription_level: "paid",
               subscription_status: "active",
+              subscription_provider: "apple",
             },
           });
         }
@@ -226,8 +229,7 @@ Deno.serve(async (req) => {
         subscription_tier: isPaid ? subTier : "free",
         subscription_status: best.status,
         stripe_customer_id: customerId,
-        // FIX BUG-03: Also write entitlement_tier (flat) and data.entitlement_tier (nested)
-        // so the canonical resolver getEntitlementTier() sees paid status immediately after login.
+        // FIX BUG-07: Write both flat AND nested entitlement fields so all code paths see updates
         entitlement_tier: isPaid ? subTier : "free",
         data: {
           ...(userRec.data || {}),
