@@ -82,7 +82,7 @@ export default function Home() {
             <div className="font-semibold text-amber-400">{t("subscription.proBadge", "Pro Active")}</div>
             <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting", "Thank you for supporting PipeKeeper")}</div>
           </div>
-          {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50">{planLabel}</span>}
+          {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50 shrink-0 truncate max-w-[60px]">{planLabel}</span>}
         </div>
       )}
 

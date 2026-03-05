@@ -72,6 +72,8 @@ import SubscriptionCancelled from './pages/SubscriptionCancelled';
 import subscriptioncancelledTsx from './pages/SubscriptionCancelled.tsx';
 import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
+import SubscriptionFull from './pages/SubscriptionFull';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionSupport from './pages/SubscriptionSupport';
 import Support from './pages/Support';
 import SupportFull from './pages/SupportFull';
@@ -84,8 +86,6 @@ import TroubleshootingFull from './pages/TroubleshootingFull';
 import UserReport from './pages/UserReport';
 import VerificationHelp from './pages/VerificationHelp';
 import index from './pages/index';
-import SubscriptionFull from './pages/SubscriptionFull';
-import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +115,8 @@ export const PAGES = {
     "SubscriptionCancelled.tsx": subscriptioncancelledTsx,
     "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
+    "SubscriptionFull": SubscriptionFull,
+    "SubscriptionSuccess": SubscriptionSuccess,
     "SubscriptionSupport": SubscriptionSupport,
     "Support": Support,
     "SupportFull": SupportFull,
@@ -127,8 +129,6 @@ export const PAGES = {
     "UserReport": UserReport,
     "VerificationHelp": VerificationHelp,
     "index": index,
-    "SubscriptionFull": SubscriptionFull,
-    "SubscriptionSuccess": SubscriptionSuccess,
 }
 
 export const pagesConfig = {
