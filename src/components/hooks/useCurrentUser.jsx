@@ -11,10 +11,13 @@ import {
 } from "@/components/utils/premiumAccess";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 export function useCurrentUser() {
+  const queryClient = useQueryClient();
+
   const {
     data: user,
     isLoading: userLoading,
