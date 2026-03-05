@@ -326,10 +326,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Photos Section */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipePhotos")}</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipePhotos", "Pipe Photos")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {formData.photos?.map((photo, idx) => (
               <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -379,11 +379,11 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Stamping Photos */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.stampingPhotos")}</CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.stampingPhotosDesc")}</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.stampingPhotos", "Stamping Photos")}</CardTitle>
+          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.stampingPhotosDesc", "Upload photos of any stamps or markings on the pipe")}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {formData.stamping_photos?.map((photo, idx) => (
               <div key={idx} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[#E0D8C8]/15 group">
                 <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -524,8 +524,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Pipe Geometry */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipeGeometry")}</CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.pipeGeometryDesc")}</p>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("pipesExtended.pipeGeometry", "Pipe Geometry")}</CardTitle>
+          <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.pipeGeometryDesc", "Shape, dimensions and physical characteristics")}</p>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -600,9 +600,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* ===== SECTION: Materials & Finish ===== */}
       {/* Physical Characteristics */}
       <Card className="border-[#E0D8C8]/15">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.physicalCharacteristics")}</CardTitle>
+        <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.physicalCharacteristics", "Physical Characteristics")}</CardTitle>
             {dataSource && (
               <p className="text-xs text-[#E0D8C8]/70 mt-1">{t("formsExtended.dataSource")}: {dataSource}</p>
             )}
@@ -612,7 +612,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             variant="outline"
             size="sm"
             onClick={() => setUseImperial(!useImperial)}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap shrink-0"
           >
             <ArrowLeftRight className="w-4 h-4 mr-2" />
             {useImperial ? t("pipesExtended.showMetric") : t("pipesExtended.showImperial")}
@@ -882,10 +882,10 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5" />
-            {t("formsExtended.interchangeableBowls")}
+            <ArrowLeftRight className="w-5 h-5 flex-shrink-0" />
+            {t("formsExtended.interchangeableBowls", "Interchangeable Bowls")}
           </CardTitle>
-          <p className="text-sm text-[#E0D8C8]/70">{t("formsExtended.interchangeableBowlsDesc")}</p>
+          <p className="text-sm text-[#E0D8C8]/70">{t("formsExtended.interchangeableBowlsDesc", "Does this pipe have swappable bowls?")}</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3">
@@ -898,7 +898,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 }
               }}
             />
-            <Label className="break-words">{t("pipesExtended.hasInterchangeableBowls")}</Label>
+            <Label className="break-words">{t("pipesExtended.hasInterchangeableBowls", "This pipe has interchangeable bowls")}</Label>
           </div>
           {hasInterchangeableBowls && (
             <div className="pt-2">

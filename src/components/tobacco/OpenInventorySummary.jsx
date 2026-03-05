@@ -116,7 +116,7 @@ export default function OpenInventorySummary({ blend }) {
       <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-700">
-          <strong>{t("common.note")}:</strong> {t("inventory.autoDeductNote")}
+          <strong>{t("common.note", "Note")}:</strong> {t("inventory.autoDeductNote", "Smoking sessions automatically deduct from your open inventory.")}
         </p>
       </div>
     </div>

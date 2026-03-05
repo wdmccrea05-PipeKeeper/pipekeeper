@@ -37,8 +37,8 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <CardTitle className="text-lg sm:text-2xl text-[#E0D8C8]">{t("tobacconist.title")}</CardTitle>
-              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 whitespace-nowrap">{t("tobacconist.optional", "Optional")}</Badge>
+              <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("tobacconist.title")}</CardTitle>
+              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional", "Optional")}</Badge>
               <InfoTooltip text={t("tobacconist.tooltipText")} />
             </div>
             <p className="text-sm text-[#E0D8C8]/70">{t("tobacconist.subtitle")}</p>
