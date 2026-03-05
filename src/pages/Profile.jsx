@@ -189,8 +189,13 @@ export default function ProfilePage() {
 
       return base44.entities.UserProfile.create(payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (savedData) => {
       toast.success(t("notifications.saved"));
+      // Update local form state with saved data to ensure sync
+      setFormData((prev) => ({
+        ...prev,
+        ...savedData,
+      }));
       await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
     },
