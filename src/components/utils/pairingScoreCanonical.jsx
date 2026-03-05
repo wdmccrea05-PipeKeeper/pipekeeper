@@ -119,6 +119,26 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
   const nf = normalizeFocus(pipeVariant?.focus);
   const aromatic = isAromaticBlend(blend);
 
+  // ── EXACT BLEND NAME MATCH must be checked BEFORE any category gating ──
+  // A pipe focused on "Cowboy Coffee" should always score 10 for Cowboy Coffee,
+  // regardless of what other focus items it has.
+  const blendName = String(blend?.tobacco_name || blend?.name || "").toLowerCase();
+  if (blendName && nf.lower.some((f) => f === blendName)) {
+    return { score: 10, why: "Exact blend match to pipe focus." };
+  }
+
+  // ── Detect if focus contains specific blend names (not just categories) ──
+  // Blend-type/category keywords for category gating (only these should influence gating)
+  const CATEGORY_KEYWORDS = [
+    "aromatic", "aromatics", "english", "virginia", "burley", "balkan", "latakia",
+    "oriental", "turkish", "virginia/perique", "virginia/burley", "navy flake",
+    "dark fired", "cavendish", "perique", "american", "burley-based",
+  ];
+  // Only apply category gating based on focus items that ARE recognized category keywords
+  const categoryFocusItems = nf.lower.filter((f) =>
+    CATEGORY_KEYWORDS.some((k) => f === k || f === k + "s" || f.startsWith(k + " ") || f.endsWith(" " + k))
+  );
+
   // HARD category gating ONLY if pipe is explicitly dedicated
   if (nf.aromaticOnly && !aromatic) {
     return { score: 0, why: "Pipe is dedicated to aromatics only." };
@@ -127,11 +147,14 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
     return { score: 0, why: "Pipe is dedicated to non-aromatics only." };
   }
 
-  // Soft category gating: pipe has aromatic focus but not "only" — penalize non-aromatics heavily
-  const pipeHasAromaticFocus = nf.wantsHeavyAromatics || nf.wantsLightAromatics || nf.wantsMediumAromatics;
-  const pipeHasNonAromaticFocus = !nf.isUtility && nf.lower.some((x) =>
-    ["english", "virginia", "burley", "balkan", "latakia", "oriental", "virginia/perique", "virginia/burley", "navy flake", "dark fired"].some((k) => x.includes(k))
-  ) && !pipeHasAromaticFocus;
+  // Soft category gating: only apply if the focus contains category-type keywords
+  const pipeHasAromaticFocus = nf.wantsHeavyAromatics || nf.wantsLightAromatics || nf.wantsMediumAromatics ||
+    categoryFocusItems.some((x) => x === "aromatic" || x === "aromatics");
+
+  const pipeHasNonAromaticFocus = !nf.isUtility &&
+    categoryFocusItems.some((x) =>
+      ["english", "virginia", "burley", "balkan", "latakia", "oriental", "virginia/perique", "virginia/burley", "navy flake", "dark fired"].some((k) => x.includes(k))
+    ) && !pipeHasAromaticFocus;
 
   if (pipeHasAromaticFocus && !aromatic) {
     return { score: 2, why: "Pipe is focused on aromatics; non-aromatic blends are a poor fit." };
@@ -143,12 +166,6 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
   // Base score
   let score = 4;
   const reasons = [];
-
-  // Exact blend name match in focus (strongest signal)
-  const blendName = String(blend?.tobacco_name || blend?.name || "").toLowerCase();
-  if (blendName && nf.lower.includes(blendName)) {
-    return { score: 10, why: "Exact blend match to pipe focus." };
-  }
 
   // Focus keyword matching vs blend attributes
   const blendType = blend?.blend_type || "";
