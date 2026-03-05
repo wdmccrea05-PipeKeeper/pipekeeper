@@ -6,7 +6,8 @@ function isBeforeProLaunch(isoDate) {
   return new Date(isoDate) < new Date(PRO_LAUNCH_CUTOFF_ISO);
 }
 
-export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscriptionStartedAt, isFreeGrandfathered = false }) {
+// FIX BUG-01: Accept isOnTrial and return it in the result object
+export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscriptionStartedAt, isFreeGrandfathered = false, isOnTrial = false }) {
   // Determine tier
   let tier = 'free';
   let isLegacyPremium = false;
@@ -90,6 +91,8 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
     isLegacyPremium,
     // FIX ISSUE-09: Include isFreeGrandfathered so FeatureGate can reference it via useEntitlements()
     isFreeGrandfathered: !!isFreeGrandfathered,
+    // FIX BUG-01: Include isOnTrial so callers can display/use trial state
+    isOnTrial: !!isOnTrial,
     limits,
     canUse,
   };

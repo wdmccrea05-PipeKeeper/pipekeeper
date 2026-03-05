@@ -33,7 +33,9 @@ export async function canCreatePipe(userEmail, hasPaidAccess, isTrialing) {
       return { canCreate: true, currentCount: 0, limit: null };
     }
 
-    const pipes = await base44.entities.Pipe.filter({ created_by: userEmail });
+    // FIX BUG-13: Pass limit = FREE_TIER_LIMIT + 1 to avoid paginated under-count.
+    // We only need to know if the count exceeds the free tier cap, not the exact total.
+    const pipes = await base44.entities.Pipe.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.PIPES + 1);
     const count = pipes?.length || 0;
 
     // If on trial and restrictions apply, enforce Free tier limits
@@ -75,7 +77,9 @@ export async function canCreateTobacco(userEmail, hasPaidAccess, isTrialing) {
       return { canCreate: true, currentCount: 0, limit: null };
     }
 
-    const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: userEmail });
+    // FIX BUG-13: Pass limit = FREE_TIER_LIMIT + 1 to avoid paginated under-count.
+    // We only need to know if the count exceeds the free tier cap, not the exact total.
+    const tobaccos = await base44.entities.TobaccoBlend.filter({ created_by: userEmail }, null, FREE_TIER_LIMITS.TOBACCO_BLENDS + 1);
     const count = tobaccos?.length || 0;
 
     // If on trial and restrictions apply, enforce Free tier limits

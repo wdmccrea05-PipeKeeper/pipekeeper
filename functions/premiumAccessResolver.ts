@@ -16,7 +16,8 @@ export function normalizeTier(tier) {
 
 /**
  * Returns the user's entitlement tier by checking multiple sources
- * Priority: user.tier > user.entitlementTier > user.subscriptionTier > subscription.tier
+ * Priority: user.tier > user.entitlement_tier > user.entitlementTier > user.subscription_tier > user.subscriptionTier > subscription.tier
+ * FIX BUG-07: Also check snake_case variants to match all write paths
  */
 export function getEntitlementTier(user, subscription) {
   // Admin override - admins get pro tier
@@ -24,7 +25,10 @@ export function getEntitlementTier(user, subscription) {
 
   // Check user object first (server-authoritative)
   if (user?.tier) return normalizeTier(user.tier);
+  // FIX BUG-07: Check snake_case fields (written by all server-side paths)
+  if (user?.entitlement_tier) return normalizeTier(user.entitlement_tier);
   if (user?.entitlementTier) return normalizeTier(user.entitlementTier);
+  if (user?.subscription_tier) return normalizeTier(user.subscription_tier);
   if (user?.subscriptionTier) return normalizeTier(user.subscriptionTier);
 
   // Fallback to subscription entity

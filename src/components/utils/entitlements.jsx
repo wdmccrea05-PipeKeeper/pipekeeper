@@ -1,4 +1,6 @@
 // utils/entitlements.js
+// FIX BUG-01: Accept isOnTrial and return it in the result object
+// FIX BUG-09: Rename isPremiumLegacy -> isLegacyPremium to match backend and premiumAccess.jsx
 export const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
 
 function isBeforeProCutoff(iso) {
@@ -13,7 +15,7 @@ export function buildEntitlements(input) {
       ? "premium"
       : "free";
 
-  const isPremiumLegacy =
+  const isLegacyPremium =
     tier === "premium" && isBeforeProCutoff(input.subscriptionStartedAt);
 
   const limits =
@@ -27,7 +29,7 @@ export function buildEntitlements(input) {
     if (tier === "pro") return true;
     
     // Legacy Premium (subscribed before Feb 1, 2026) gets ALL features
-    if (tier === "premium" && isPremiumLegacy) {
+    if (tier === "premium" && isLegacyPremium) {
       return true;
     }
     
@@ -65,8 +67,9 @@ export function buildEntitlements(input) {
 
   return { 
     tier, 
-    isPremiumLegacy, 
+    isLegacyPremium, 
     isFreeGrandfathered: !!input.isFreeGrandfathered,
+    isOnTrial: !!input.isOnTrial,
     limits, 
     canUse 
   };

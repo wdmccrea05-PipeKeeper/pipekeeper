@@ -209,13 +209,20 @@ Deno.serve(async (req) => {
 
       // FIX BUG-02: Also write entitlement_tier (highest-priority field for canonical resolver)
       // and merge data.entitlement_tier for nested-data schema users.
-      if (fields.subscription_tier) {
-        updateFields.entitlement_tier = fields.subscription_tier;
+      // FIX BUG-03: Write entitlement_tier even when subscription_tier is null, using "premium"
+      // as a safe default when subscription_level is "paid" (user just paid).
+      const effectiveTier = fields.subscription_tier || (fields.subscription_level === "paid" ? "premium" : null);
+      if (effectiveTier) {
+        updateFields.entitlement_tier = effectiveTier;
+        // Backfill subscription_tier if it was missing
+        if (!fields.subscription_tier) {
+          updateFields.subscription_tier = effectiveTier;
+        }
         const existingData = userRow.data || {};
         updateFields.data = {
           ...existingData,
-          entitlement_tier: fields.subscription_tier,
-          subscription_tier: fields.subscription_tier,
+          entitlement_tier: effectiveTier,
+          subscription_tier: effectiveTier,
           subscription_level: fields.subscription_level || existingData.subscription_level,
           subscription_status: fields.subscription_status || existingData.subscription_status,
         };
@@ -274,9 +281,10 @@ Deno.serve(async (req) => {
         // Ensure user exists before setting entitlement
         await ensureUserExists(user_email, customerId);
 
-        // Get tier from session metadata
+        // FIX BUG-03: Default tierValue to "premium" when tier can't be determined from metadata.
+        // The user just paid, so they should receive at least premium access immediately.
         const sessionTier = (session.metadata?.tier || "").toLowerCase();
-        const tierValue = (sessionTier === "pro" || sessionTier === "premium") ? sessionTier : null;
+        const tierValue = (sessionTier === "pro" || sessionTier === "premium") ? sessionTier : "premium";
         
         console.log(`[stripeWebhook] checkout.session.completed for ${user_email}, user_id=${user_id}, tier=${tierValue}`);
         

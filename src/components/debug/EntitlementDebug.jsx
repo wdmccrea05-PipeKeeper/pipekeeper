@@ -44,7 +44,7 @@ export default function EntitlementDebug() {
   const [justCopied, setJustCopied] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  const { user, subscription, isLoading, hasPaid, hasPremium, isInTrial, isAdmin } = useCurrentUser();
+  const { user, subscription, isLoading, hasPaid, hasPremium, isTrial, isAdmin } = useCurrentUser();
   const { t } = useTranslation();
 
   // Safely check visibility after mount to avoid hydration mismatch
@@ -70,7 +70,7 @@ export default function EntitlementDebug() {
 
   const snapshot = {
     tier: subscription?.tier || 'free',
-    isOnTrial: isInTrial,
+    isOnTrial: isTrial,
     subscriptionStartedAt: subscription?.subscriptionStartedAt || null,
     isLegacyPremium: isLegacy,
     isFoundingMember: isFounder,
@@ -143,7 +143,7 @@ export default function EntitlementDebug() {
           <div>Tier: <span className="text-blue-400">{snapshot.tier}</span></div>
           <div>Paid: <span className={hasPaid ? 'text-green-400' : 'text-red-400'}>{hasPaid ? 'Yes' : 'No'}</span></div>
           <div>Premium: <span className={hasPremium ? 'text-green-400' : 'text-red-400'}>{hasPremium ? 'Yes' : 'No'}</span></div>
-          <div>Trial: <span className={isInTrial ? 'text-orange-400' : 'text-gray-500'}>{isInTrial ? 'Yes' : 'No'}</span></div>
+          <div>Trial: <span className={isTrial ? 'text-orange-400' : 'text-gray-500'}>{isTrial ? 'Yes' : 'No'}</span></div>
           <div>Legacy: <span className={isLegacy ? 'text-purple-400' : 'text-gray-500'}>{isLegacy ? 'Yes' : 'No'}</span></div>
           <div>Founder: <span className={isFounder ? 'text-amber-400' : 'text-gray-500'}>{isFounder ? 'Yes' : 'No'}</span></div>
           <div>Source: <span className="text-cyan-400">{planSource}</span></div>
