@@ -1574,7 +1574,7 @@ ${englishUserText}
 
                                 {spec.score_delta != null && (
                                   <div className="bg-blue-50 rounded-lg p-2 border border-blue-100 mb-2">
-                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement", "Score Improvement")}:</p>
+                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement", { defaultValue: "Score Improvement" })}:</p>
                                     <p className="text-xs text-blue-900 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
                                   </div>
                                 )}
