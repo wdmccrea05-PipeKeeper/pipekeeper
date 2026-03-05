@@ -1115,6 +1115,7 @@ const translations = {
     pdfDownloaded: "PDF descargado",
     failedToGeneratePDF: "Error al generar el PDF",
   },
+  combobox: {
     selectPlaceholder: "Seleccionar...",
     searchPlaceholder: "Buscar...",
     noResultsFound: "No se encontraron resultados.",
