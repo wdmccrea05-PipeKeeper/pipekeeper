@@ -1053,6 +1053,39 @@ ${englishUserText}
             </div>
           )}
 
+          {/* Bulk Options (only if there are recommendations ready to apply) */}
+          {showAcceptAll && !conversationMessages.length && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-blue-900 mb-3">{t("tobacconist.reviewApplyDesc", "Review recommendations one by one or apply all at once")}</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                  onClick={() => setShowConfirmation(true)}
+                >
+                  {t("tobacconist.reviewApply", "Review & Apply Changes")}
+                </Button>
+                <Button
+                  onClick={handleAcceptAll}
+                  disabled={acceptingAll}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {acceptingAll ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t("tobacconist.applyingChanges")}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCheck className="w-4 h-4 mr-2" />
+                      {t("tobacconist.acceptAllRecommendations")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Inputs */}
           <div>
             <label className="text-sm font-medium text-stone-800 mb-2 block">
