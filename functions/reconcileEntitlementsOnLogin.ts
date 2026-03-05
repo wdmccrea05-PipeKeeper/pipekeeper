@@ -16,10 +16,12 @@ function getTierPriority(tier) {
 
 async function reconcileUserEntitlements(base44, user) {
   const email = normEmail(user.email);
-  let currentTier = user.subscription_tier || "free";
-  let currentLevel = user.subscription_level || "free";
-  let currentStatus = user.subscription_status || "";
-  let stripeCustomerId = user.stripe_customer_id || null;
+  // Fields may be at top-level OR nested inside user.data — check both
+  const d = user.data || {};
+  let currentTier = user.subscription_tier || d.subscription_tier || d.subscriptionTier || user.entitlement_tier || d.entitlement_tier || "free";
+  let currentLevel = user.subscription_level || d.subscription_level || d.subscriptionLevel || "free";
+  let currentStatus = user.subscription_status || d.subscription_status || d.subscriptionStatus || "";
+  let stripeCustomerId = user.stripe_customer_id || d.stripe_customer_id || null;
 
   const wasEverPaid = currentLevel === "paid" || currentTier === "premium" || currentTier === "pro" || isActiveStatus(currentStatus);
 
