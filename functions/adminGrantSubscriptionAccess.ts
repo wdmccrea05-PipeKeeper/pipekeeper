@@ -57,6 +57,18 @@ Deno.serve(async (req: Request) => {
         subscriptionStatus: status,
         subscriptionTier: tier,
         subscriptionUpdatedAt: new Date().toISOString(),
+        // Canonical entitlement fields - required by getEntitlementTier() resolver
+        entitlement_tier: tier,
+        subscription_tier: tier,
+        subscription_level: "paid",
+        subscription_status: status,
+        data: {
+          ...(targetUser.data || {}),
+          entitlement_tier: tier,
+          subscription_tier: tier,
+          subscription_level: "paid",
+          subscription_status: status,
+        },
       });
 
       // Fetch updated user
