@@ -112,7 +112,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
           <p className="text-sm text-[#E0D8C8]/70">{t("insights.subtitle")}</p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
+          <TabsList className={`grid w-full items-center justify-center ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"} gap-0 h-20`}>
             {isAppleBuild ? (
               <TabsTrigger value="stats" className="flex items-center justify-center gap-2">
                 <BarChart3 className="w-4 h-4" />
