@@ -11,9 +11,7 @@ import {
 } from "@/components/utils/premiumAccess";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
-import { useQuery as useQueryImport, useQueryClient } from "@tanstack/react-query";
-
-const useQuery = useQueryImport;
+import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -25,7 +23,7 @@ export function useCurrentUser() {
     isLoading: userLoading,
     error: userError,
     refetch: refetchUser,
-  } = useQuery({
+  } = useQueryRQ({
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
@@ -60,7 +58,7 @@ export function useCurrentUser() {
     data: subscription,
     isLoading: subLoading,
     refetch: refetchSubscription,
-  } = useQuery({
+  } = useQueryRQ({
     // FIX BUG-02: Use stable key that invalidates when primary lookup changes
     queryKey: ["subscription", userId || email],
     queryFn: async () => {
