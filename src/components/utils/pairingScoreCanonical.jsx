@@ -85,6 +85,7 @@ export function normalizeFocus(focusArr) {
   return {
     focus,
     lower,
+    isUtility,
     aromaticOnly,
     nonAromaticOnly,
     wantsHeavyAromatics,
