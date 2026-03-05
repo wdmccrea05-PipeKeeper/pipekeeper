@@ -56,7 +56,8 @@ export function useCurrentUser() {
     isLoading: subLoading,
     refetch: refetchSubscription,
   } = useQuery({
-    queryKey: ["subscription", userId, email],
+    // FIX BUG-02: Use stable key that invalidates when primary lookup changes
+    queryKey: ["subscription", userId || email],
     queryFn: async () => {
       if (!userId && !email) return null;
 
