@@ -167,10 +167,10 @@ Deno.serve(async (req) => {
       foundingMembers: foundingMemberCount,
     };
 
-    // 2. SUBSCRIPTION BREAKDOWN
-    let activeOrTrialPremium = 0,
-      activeOrTrialPro = 0,
-      cancelledButActive = 0,
+    // 2. SUBSCRIPTION BREAKDOWN (deduplicate by user first)
+    const activePremiumUsers = new Set();
+    const activeProUsers = new Set();
+    let cancelledButActive = 0,
       expired30d = 0,
       expired60d = 0,
       expired90d = 0,
@@ -181,11 +181,12 @@ Deno.serve(async (req) => {
       const status = (sub.status || '').toLowerCase();
       const tier = sub.tier || 'premium';
       const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+      const userIdentifier = sub.user_id || normEmail(sub.user_email);
 
-      // Count active or trialing subscriptions
+      // Count active or trialing subscriptions (per user, not per subscription record)
       if (status === 'active' || status === 'trialing' || status === 'incomplete') {
-        if (tier === 'pro') activeOrTrialPro++;
-        else activeOrTrialPremium++;
+        if (tier === 'pro') activeProUsers.add(userIdentifier);
+        else activePremiumUsers.add(userIdentifier);
       }
 
       if (status === 'canceled' && periodEnd && periodEnd > now) {
@@ -203,8 +204,8 @@ Deno.serve(async (req) => {
     });
 
     const subscriptionBreakdown = {
-      activeOrTrialPremium,
-      activeOrTrialPro,
+      activeOrTrialPremium: activePremiumUsers.size,
+      activeOrTrialPro: activeProUsers.size,
       cancelledButActive,
       expired30d,
       expired60d,
