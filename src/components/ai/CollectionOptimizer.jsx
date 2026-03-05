@@ -1511,12 +1511,12 @@ ${englishUserText}
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                    {pipe?.id ? (
                                      <a href={createPageUrl(`PipeDetail?id=${encodeURIComponent(spec.pipe_id)}&bowl=${encodeURIComponent(spec.bowl_variant_id || "")}`)}>
-                                       <h4 className="font-semibold text-stone-800 hover:text-blue-700 transition-colors text-sm sm:text-base">
+                                       <h4 className="font-semibold text-white hover:text-blue-200 transition-colors text-sm sm:text-base">
                                          {asText(spec.pipe_name)}
                                        </h4>
                                      </a>
                                    ) : (
-                                     <h4 className="font-semibold text-stone-500 text-sm sm:text-base" title={t("tobacconist.pipeNotFound")}>
+                                     <h4 className="font-semibold text-stone-300 text-sm sm:text-base" title={t("tobacconist.pipeNotFound")}>
                                        {asText(spec.pipe_name)}
                                      </h4>
                                    )}
