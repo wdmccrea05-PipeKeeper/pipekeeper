@@ -78,6 +78,15 @@ Deno.serve(async (req) => {
       subscription_tier: finalTier,
       subscription_level: finalLevel,
       subscription_status: finalStatus,
+      // FIX: Write canonical entitlement_tier (flat) and data.* (nested) so all resolver paths agree
+      entitlement_tier: finalTier,
+      data: {
+        ...(userEntity.data || {}),
+        entitlement_tier: finalTier,
+        subscription_tier: finalTier,
+        subscription_level: finalLevel,
+        subscription_status: finalStatus,
+      },
     };
 
     // Only set platform if it's currently empty (don't overwrite original platform)
