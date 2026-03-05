@@ -1549,7 +1549,7 @@ ${englishUserText}
 
                                 {spec.recommended_blend_types?.length > 0 && (
                                   <div className="mb-3">
-                                    <p className="text-sm font-medium text-blue-900 mb-1">{t("tobacconist.specializeFor")}</p>
+                                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t("tobacconist.specializeFor", "Specialize For")}</p>
                                     <div className="flex flex-wrap gap-1">
                                       {spec.recommended_blend_types.map((type, i) => (
                                         <Badge key={i} className="bg-blue-100 text-blue-800 border-blue-200">
