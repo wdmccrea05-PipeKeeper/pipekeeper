@@ -1341,7 +1341,7 @@ ${englishUserText}
                           )}
                           {spec?.fills_gap_for && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-xs">
-                              {t("optimizer.fillsGapFor", "Fills gap")}: {spec.fills_gap_for}
+                              {t("optimizer.fillsGapFor", "Fills gap for")}: {asText(spec.fills_gap_for)}
                             </Badge>
                           )}
                         </div>
