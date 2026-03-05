@@ -2,6 +2,21 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
+// FIX BUG-12: Only backfill subscriptions that predate the legacy cutoff —
+// do not grant legacy status to genuinely new subscribers.
+const LEGACY_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
+
+function shouldBackfill(sub) {
+  // Only process subscriptions missing started_at
+  if (sub.started_at) return false;
+  // Only active or trialing subscriptions
+  if (!["active", "trialing"].includes(sub.status)) return false;
+  // Require evidence the subscription predates the cutoff
+  const createdDate = sub.created_date || sub.current_period_start;
+  if (!createdDate) return false; // no date evidence — do not backfill
+  return new Date(createdDate) < LEGACY_CUTOFF;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -18,23 +33,22 @@ Deno.serve(async (req) => {
     const updates = [];
     
     for (const sub of subscriptions) {
-      if (!sub.started_at && (sub.status === "active" || sub.status === "trialing")) {
-        try {
-          await base44.asServiceRole.entities.Subscription.update(sub.id, {
-            started_at: legacyDate,
-          });
-          updates.push({
-            user_email: sub.user_email,
-            status: "updated",
-            started_at: legacyDate,
-          });
-        } catch (err) {
-          updates.push({
-            user_email: sub.user_email,
-            status: "failed",
-            error: String(err?.message || err),
-          });
-        }
+      if (!shouldBackfill(sub)) continue;
+      try {
+        await base44.asServiceRole.entities.Subscription.update(sub.id, {
+          started_at: legacyDate,
+        });
+        updates.push({
+          user_email: sub.user_email,
+          status: "updated",
+          started_at: legacyDate,
+        });
+      } catch (err) {
+        updates.push({
+          user_email: sub.user_email,
+          status: "failed",
+          error: String(err?.message || err),
+        });
       }
     }
     

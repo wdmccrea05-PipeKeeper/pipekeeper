@@ -169,16 +169,26 @@ Deno.serve(async (req) => {
     const PRICE_ID_PRO_ANNUAL = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
     const priceId = best.items?.data?.[0]?.price?.id;
 
+    // FIX BUG-04: Compute subTier BEFORE building payload so it can be included in the Subscription entity
+    const subTier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL)
+      ? "pro"
+      : "premium";
+
     const payload = {
       user_email,
       status: best.status,
       stripe_subscription_id: best.id,
+      // FIX BUG-11: Include provider fields so upsertSubscription can find/match this row
+      provider: "stripe",
+      provider_subscription_id: best.id,
       stripe_customer_id: typeof customerObj === "string" ? customerObj : customerObj?.id || customerId,
       current_period_start: periodStart,
       current_period_end: periodEnd,
       cancel_at_period_end: !!best.cancel_at_period_end,
       billing_interval: billingInterval,
       amount,
+      // FIX BUG-04: Write tier to the Subscription entity row
+      tier: subTier,
     };
 
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
@@ -218,26 +228,30 @@ Deno.serve(async (req) => {
     let updatedUser = false;
     if (users?.length) {
       const userRec = users[0];
-      // Determine tier: check Stripe price ID against known pro plan IDs,
-      // fall back to existing Subscription entity tier, then default to "premium"
-      // (premium is the base paid tier; pro is the higher tier with extra features)
-      const subTier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL)
-        ? "pro"
-        : (existingSubs?.[0]?.tier || "premium");
+      // FIX BUG-04: subTier is now computed before payload assembly above.
+      // FIX BUG-02: Only overwrite entitlement/subscription tier fields when isPaid is true.
+      // When isPaid is false (e.g. Stripe temporarily unreachable), preserve the user's existing tier.
       const userUpdate = {
         subscription_level: isPaid ? "paid" : (userRec.subscription_level || "free"),
-        subscription_tier: isPaid ? subTier : "free",
         subscription_status: best.status,
         stripe_customer_id: customerId,
-        // FIX BUG-07: Write both flat AND nested entitlement fields so all code paths see updates
-        entitlement_tier: isPaid ? subTier : "free",
-        data: {
-          ...(userRec.data || {}),
-          entitlement_tier: isPaid ? subTier : "free",
-          subscription_tier: isPaid ? subTier : "free",
-          subscription_level: isPaid ? "paid" : "free",
-          subscription_status: best.status,
-        },
+        // FIX BUG-02: Conditionally write tier fields — never downgrade an active paid user
+        ...(isPaid ? {
+          subscription_tier: subTier,
+          entitlement_tier: subTier,
+          data: {
+            ...(userRec.data || {}),
+            entitlement_tier: subTier,
+            subscription_tier: subTier,
+            subscription_level: "paid",
+            subscription_status: best.status,
+          },
+        } : {
+          data: {
+            ...(userRec.data || {}),
+            subscription_status: best.status,
+          },
+        }),
       };
       
       if (isFoundingMember && !userRec.isFoundingMember) {

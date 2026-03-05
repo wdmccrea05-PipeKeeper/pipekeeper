@@ -103,7 +103,7 @@ export default function PermissionDebugPanel() {
               <h4 className="font-semibold mb-2 text-slate-900">Entitlements</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
                 <p className="text-slate-900"><strong>Tier:</strong> {entitlements.tier}</p>
-                <p className="text-slate-900"><strong>Legacy:</strong> {entitlements.isPremiumLegacy ? 'Yes' : 'No'}</p>
+                <p className="text-slate-900"><strong>Legacy:</strong> {entitlements.isLegacyPremium ? 'Yes' : 'No'}</p>
                 <p className="text-slate-900"><strong>Pipes:</strong> {entitlements.limits.pipes === Infinity ? '∞' : entitlements.limits.pipes}</p>
                 <p className="text-slate-900"><strong>Tobacco:</strong> {entitlements.limits.tobaccos === Infinity ? '∞' : entitlements.limits.tobaccos}</p>
                 <p className="text-slate-900"><strong>Photos:</strong> {entitlements.limits.photosPerItem === Infinity ? '∞' : entitlements.limits.photosPerItem}</p>
