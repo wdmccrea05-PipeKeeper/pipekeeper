@@ -38,19 +38,27 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, skipped: `User not found: ${email}` });
     }
 
-    // Build update payload that flattens nested data
+    // FIX BUG-05: Write BOTH flat AND nested entitlement fields so all resolver code paths see updates
+    const subscriptionTier = subscription.tier || "premium";
+    const subscriptionLevel = subscription.status === "active" ? "paid" : "free";
+    
     const updateData = {
+      // Flat fields (checked first by getEntitlementTier)
+      subscription_tier: subscriptionTier,
+      subscription_level: subscriptionLevel,
+      subscription_status: subscription.status,
+      entitlement_tier: subscriptionLevel === "paid" ? subscriptionTier : "free",
+      
+      // Nested fields (fallback)
       data: {
         ...(user.data || {}),
         role: user.data?.role || "user",
         tos_accepted_at: user.data?.tos_accepted_at,
         stripe_customer_id: user.data?.stripe_customer_id || subscription.stripe_customer_id,
-        
-        // Sync from Subscription (source of truth)
-        subscription_tier: subscription.tier || "premium",
-        subscription_level: subscription.status === "active" ? "paid" : "free",
+        subscription_tier: subscriptionTier,
+        subscription_level: subscriptionLevel,
         subscription_status: subscription.status,
-        entitlement_tier: subscription.tier || "premium",
+        entitlement_tier: subscriptionLevel === "paid" ? subscriptionTier : "free",
         
         // Preserve other fields
         ...(user.data?.data || {}),
