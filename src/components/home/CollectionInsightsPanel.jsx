@@ -114,33 +114,33 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className={`grid w-full ${isAppleBuild ? "grid-cols-1" : "grid-cols-7"}`}>
             {isAppleBuild ? (
-              <TabsTrigger value="stats" className="flex items-center gap-2">
+              <TabsTrigger value="stats" className="flex items-center justify-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span>{t("insights.stats")}</span>
               </TabsTrigger>
             ) : (
               <>
-                <TabsTrigger value="log" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="log" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BookOpen className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.log", "Log")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="reference" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="reference" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <Grid3x3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid", "Pairings")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="rotation" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="rotation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <CalendarClock className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.rotation", "Rotation")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="stats" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.stats", "Stats")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="trends" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.trends", "Trends")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="aging" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
+                <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
                   <Clock className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.aging", "Aging")}</span>
                   {agingAlertCount > 0 && (
@@ -149,7 +149,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                     </div>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="reports" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                <TabsTrigger value="reports" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <FileText className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate w-full text-center leading-tight">{t("insights.reports", "Reports")}</span>
                 </TabsTrigger>
