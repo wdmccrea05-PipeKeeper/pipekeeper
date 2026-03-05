@@ -1567,15 +1567,15 @@ ${englishUserText}
 
                                 {spec.score_improvement && (
                                   <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200 mb-2">
-                                    <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact")}:</p>
+                                    <p className="text-xs font-medium text-emerald-700">📈 {t("tobacconist.scoreImpact", "Score Impact")}:</p>
                                     <p className="text-xs text-emerald-800 font-semibold">{asText(spec.score_improvement)}</p>
                                   </div>
                                 )}
 
                                 {spec.score_delta != null && (
                                   <div className="bg-blue-50 rounded-lg p-2 border border-blue-100 mb-2">
-                                    <p className="text-xs font-medium text-blue-900">{t("tobacconist.scoreImprovement")}:</p>
-                                    <p className="text-xs text-blue-800 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
+                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement", "Score Improvement")}:</p>
+                                    <p className="text-xs text-blue-900 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
                                   </div>
                                 )}
 
