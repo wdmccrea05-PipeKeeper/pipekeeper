@@ -291,29 +291,29 @@ export default function CellarLog({ blend }) {
 
       <div>
         {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
+        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-2 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <ArrowDownToLine className="w-4 h-4 text-green-600" />
-            <span className="text-xs text-green-700 font-medium">{t("cellarLog.added", "Added")}</span>
+            <ArrowDownToLine className="w-3.5 h-3.5 text-green-600 shrink-0" />
+            <span className="text-xs text-green-700 font-medium truncate">{t("cellarLog.added", "Added")}</span>
           </div>
-          <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(totalAdded)}</p>
+          <p className="text-base font-bold text-[#1a2c42] leading-tight">{formatWeight(totalAdded)}</p>
         </div>
 
-        <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-center">
+        <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-2 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <ArrowUpFromLine className="w-4 h-4 text-red-600" />
-            <span className="text-xs text-red-700 font-medium">{t("cellarLog.removed", "Removed")}</span>
+            <ArrowUpFromLine className="w-3.5 h-3.5 text-red-600 shrink-0" />
+            <span className="text-xs text-red-700 font-medium truncate">{t("cellarLog.removed", "Removed")}</span>
           </div>
-          <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(totalRemoved)}</p>
+          <p className="text-base font-bold text-[#1a2c42] leading-tight">{formatWeight(totalRemoved)}</p>
         </div>
 
-        <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-3 text-center">
+        <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-2 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <Package className="w-4 h-4 text-amber-600" />
-            <span className="text-xs text-amber-700 font-medium">{t("cellarLog.net", "Net")}</span>
+            <Package className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span className="text-xs text-amber-700 font-medium truncate">{t("cellarLog.net", "Net")}</span>
           </div>
-          <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(netCellared)}</p>
+          <p className="text-base font-bold text-[#1a2c42] leading-tight">{formatWeight(netCellared)}</p>
         </div>
         </div>
 

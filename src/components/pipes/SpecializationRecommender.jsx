@@ -82,10 +82,10 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         variant="outline"
         onClick={handleGetRecommendation}
         disabled={isLoading}
-        className="border-purple-300 text-purple-700 hover:bg-purple-50 w-full sm:w-auto"
+        className="border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-nowrap"
       >
-        <Sparkles className="w-4 h-4 mr-1" />
-        <span className="truncate">{isLoading ? t("specializationRec.analyzing") : t("pipeDetailTabs.getAIRecommendation")}</span>
+        <Sparkles className="w-4 h-4 mr-1 shrink-0" />
+        <span>{isLoading ? t("specializationRec.analyzing", "Analyzing...") : t("pipeDetailTabs.getAIRecommendation", "Get AI Recommendation")}</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
