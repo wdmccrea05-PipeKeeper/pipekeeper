@@ -1,40 +1,12 @@
 /**
- * React Hook for accessing translations in components
- * Usage: const t = useTranslation('en'); const text = t('home.pageTitle');
+ * useTranslation.js — compatibility shim
+ *
+ * This file previously contained a legacy async hook that always defaulted
+ * to English and never read from localStorage. It has been replaced with a
+ * re-export of the canonical hook from index.jsx so that any component
+ * importing from this path gets the correct, reactive hook automatically.
+ *
+ * DO NOT add logic here. Use index.jsx directly for new code.
  */
-
-import { useState, useEffect } from 'react';
-import { getTranslations } from './index';
-
-export function useTranslation(lang = 'en') {
-  const [translations, setTranslations] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    getTranslations(lang)
-      .then(data => {
-        setTranslations(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  }, [lang]);
-
-  // Helper function to get nested translation keys
-  const t = (key) => {
-    const keys = key.split('.');
-    let value = translations;
-    for (const k of keys) {
-      value = value?.[k];
-    }
-    return value || key;
-  };
-
-  return { t, loading, error, translations };
-}
-
-export default useTranslation;
+export { useTranslation, translate, SUPPORTED_LANGS } from './index.jsx';
+export { useTranslation as default } from './index.jsx';
