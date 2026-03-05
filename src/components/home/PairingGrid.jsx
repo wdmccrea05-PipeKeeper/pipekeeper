@@ -232,14 +232,8 @@ function PipeCard({ row, allBlends, userProfile }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
 
-  // Top matches: use artifact recommendations when present, otherwise compute locally
+  // Top matches: always recompute locally to ensure up-to-date scores (artifact may be stale)
   const topMatches = useMemo(() => {
-    const recs = (row.recommendations || []).filter(r => (r.score ?? 0) > 0);
-    if (recs.length) {
-      return [...recs].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3);
-    }
-
-    // Fallback: compute scores locally (fast, consistent)
     const scored = (allBlends || []).map((b) => {
       const { score } = scorePipeBlend(
         { 
