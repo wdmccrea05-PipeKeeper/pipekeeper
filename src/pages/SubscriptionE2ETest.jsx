@@ -4,9 +4,24 @@ import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function SubscriptionE2ETestPage() {
   const { t } = useTranslation();
+  const { user, isLoading } = useCurrentUser();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-[#e8d5b7]">{t("common.loading")}</div>;
+  }
+
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-400">
+        {t("common.accessDenied", "Access denied.")}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42] p-6">
       <div className="max-w-4xl mx-auto">

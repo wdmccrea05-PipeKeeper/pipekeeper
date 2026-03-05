@@ -325,9 +325,19 @@ export default function ProfilePage() {
                     {subscription?.status === "active" || subscription?.status === "trialing" ? (
                         <Button
                           className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                          onClick={() => {
+                          onClick={async () => {
                             if (provider === "stripe") {
-                              window.location.href = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
+                              try {
+                                const response = await base44.functions.invoke('createCustomerPortalSession', {});
+                                if (response.data?.url) {
+                                  window.location.href = response.data.url;
+                                } else {
+                                  toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
+                                }
+                              } catch (e) {
+                                console.error("[Profile] portal session error:", e);
+                                toast.error(t("profile.manageSubError", "Could not open subscription management. Please try again."));
+                              }
                             } else if (provider === "apple") {
                               window.location.href = "https://apps.apple.com/account/subscriptions";
                             } else {
