@@ -169,8 +169,8 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
 
   // Focus keyword matching vs blend attributes
   const blendType = blend?.blend_type || "";
-  const notes = blend?.flavor_notes || "";
-  const comps = blend?.tobacco_components || "";
+  const notes = (Array.isArray(blend?.flavor_notes) ? blend.flavor_notes.join(" ") : blend?.flavor_notes) || "";
+  const comps = (Array.isArray(blend?.tobacco_components) ? blend.tobacco_components.join(" ") : blend?.tobacco_components) || "";
 
   const hits =
     countKeywordMatches(nf.lower, blendType) +
