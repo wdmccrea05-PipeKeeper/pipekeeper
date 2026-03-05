@@ -377,26 +377,26 @@ Deno.serve(async (req) => {
       tobaccosByUser.set(creator, (tobaccosByUser.get(creator) || 0) + 1);
     });
 
+    const calcAvgPerUser = (userTier, dataMap) => {
+      if (userTier.length === 0) return 0;
+      const total = userTier.reduce((sum, u) => sum + (dataMap.get(normEmail(u.email)) || 0), 0);
+      return Math.round((total / userTier.length) * 10) / 10;
+    };
+
     const avgPipesPerUser = {
-      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
-      premium:
-        usersByTier.premium.length > 0
-          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.premium.length) * 10) / 10
-          : 0,
-      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (pipesByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
+      free: calcAvgPerUser(usersByTier.free, pipesByUser),
+      premium: calcAvgPerUser(usersByTier.premium, pipesByUser),
+      pro: calcAvgPerUser(usersByTier.pro, pipesByUser),
     };
 
     const avgTobaccosPerUser = {
-      free: usersByTier.free.length > 0 ? Math.round((usersByTier.free.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.free.length) * 10) / 10 : 0,
-      premium:
-        usersByTier.premium.length > 0
-          ? Math.round((usersByTier.premium.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.premium.length) * 10) / 10
-          : 0,
-      pro: usersByTier.pro.length > 0 ? Math.round((usersByTier.pro.reduce((sum, u) => sum + (tobaccosByUser.get(normEmail(u.email)) || 0), 0) / usersByTier.pro.length) * 10) / 10 : 0,
+      free: calcAvgPerUser(usersByTier.free, tobaccosByUser),
+      premium: calcAvgPerUser(usersByTier.premium, tobaccosByUser),
+      pro: calcAvgPerUser(usersByTier.pro, tobaccosByUser),
     };
 
     const communityEngagementEmails = new Set(allComments.map(c => normEmail(c.commenter_email)));
-    const communityEngagement = Math.round((communityEngagementEmails.size / allUsers.length) * 10000) / 100;
+    const communityEngagement = allUsers.length > 0 ? Math.round((communityEngagementEmails.size / allUsers.length) * 10000) / 100 : 0;
 
     const usageMetrics = {
       avgPipesPerUser,
