@@ -1474,12 +1474,7 @@ ${englishUserText}
                         {optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).length} {t("tobacconist.pipesRecommendedForChange", "pipes recommended for specialization")}. 
                         {t("tobacconist.adoptOrAsk", "Review each pipe below to adopt changes or ask clarifying questions.")}
                       </p>
-                      {/* Debug: Show which pipes have recommendations */}
-                      {import.meta.env.DEV && (
-                        <div className="mt-3 pt-3 border-t border-blue-300 text-xs text-blue-700">
-                          <p className="font-mono">{optimization.pipe_specializations?.filter(s => s.recommended_blend_types?.length > 0).map(s => s.pipe_id).join(", ")}</p>
-                        </div>
-                      )}
+                      {/* Debug: Show which pipes have recommendations - DEV only */}
                     </div>
                   )}
 

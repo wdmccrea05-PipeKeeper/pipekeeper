@@ -120,39 +120,38 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsTrigger>
             ) : (
               <>
-                <TabsTrigger value="log" className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.log")}</span>
+                <TabsTrigger value="log" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <BookOpen className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.log", "Log")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="reference" className="flex items-center gap-2">
-                  <Grid3x3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.pairingGrid")}</span>
+                <TabsTrigger value="reference" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <Grid3x3 className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid", "Pairings")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="rotation" className="flex items-center gap-2">
-                  <CalendarClock className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.rotation")}</span>
+                <TabsTrigger value="rotation" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <CalendarClock className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.rotation", "Rotation")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="stats" className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.stats")}</span>
+                <TabsTrigger value="stats" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.stats", "Stats")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="trends" className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.trends")}</span>
+                <TabsTrigger value="trends" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.trends", "Trends")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="aging" className="flex items-center gap-2 relative">
-                  <Clock className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.aging")}</span>
+                <TabsTrigger value="aging" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
+                  <Clock className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.aging", "Aging")}</span>
                   {agingAlertCount > 0 && (
                     <div className="absolute -top-1 -right-1 flex items-center justify-center">
-                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                      <span className="absolute text-[10px] font-bold text-white">{agingAlertCount}</span>
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                     </div>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="reports" className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.reports")}</span>
+                <TabsTrigger value="reports" className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
+                  <FileText className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate w-full text-center leading-tight">{t("insights.reports", "Reports")}</span>
                 </TabsTrigger>
               </>
             )}
