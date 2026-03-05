@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -7,54 +7,38 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin-only access
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch all users and subscriptions
     const [allUsers, allSubscriptions] = await Promise.all([
       base44.asServiceRole.entities.User.list(),
       base44.asServiceRole.entities.Subscription.list()
     ]);
 
-    // Create a map of normalized user email to best subscription (filter out incomplete_expired)
     const subscriptionMap = new Map();
-    
-    // Group subscriptions by normalized user email OR user_id
     const subsByEmail = new Map();
     const subsByUserId = new Map();
-    
+
     allSubscriptions.forEach(sub => {
-      // Index by user_id (primary)
       if (sub.user_id) {
-        if (!subsByUserId.has(sub.user_id)) {
-          subsByUserId.set(sub.user_id, []);
-        }
+        if (!subsByUserId.has(sub.user_id)) subsByUserId.set(sub.user_id, []);
         subsByUserId.get(sub.user_id).push(sub);
       }
-      
-      // Also index by email (legacy fallback)
       if (sub.user_email) {
         const email = normEmail(sub.user_email);
-        if (!subsByEmail.has(email)) {
-          subsByEmail.set(email, []);
-        }
+        if (!subsByEmail.has(email)) subsByEmail.set(email, []);
         subsByEmail.get(email).push(sub);
       }
     });
-    
-    // Pick best subscription for each user (ignore only incomplete_expired)
+
     const processSubs = (subs, key) => {
-      // Filter out incomplete_expired only
       const validSubs = subs.filter(s => {
         const status = (s.status || '').toLowerCase();
         return status !== 'incomplete_expired';
       });
-      
       if (validSubs.length === 0) return;
-      
-      // Rank: active > trialing > incomplete > past_due > others
+
       const rank = (s) => {
         const st = (s.status || '').toLowerCase();
         if (st === 'active') return 5;
@@ -63,57 +47,42 @@ Deno.serve(async (req) => {
         if (st === 'past_due') return 2;
         return 1;
       };
-      
-      // Sort and pick best
+
       const best = [...validSubs].sort((a, b) => {
         const rDiff = rank(b) - rank(a);
         if (rDiff !== 0) return rDiff;
-        
-        // Prefer pro tier over premium
         const tierA = (a.tier || '').toLowerCase();
         const tierB = (b.tier || '').toLowerCase();
         if (tierB === 'pro' && tierA !== 'pro') return 1;
         if (tierA === 'pro' && tierB !== 'pro') return -1;
-        
-        // If same rank, pick newest by created_date
         const ca = new Date(a.created_date || 0).getTime();
         const cb = new Date(b.created_date || 0).getTime();
         return cb - ca;
       })[0];
-      
+
       subscriptionMap.set(key, best);
     };
-    
-    // Process by user_id first
+
     subsByUserId.forEach(processSubs);
-    
-    // Then by email as fallback
     subsByEmail.forEach(processSubs);
 
-    // Categorize users
     const paidUsers = [];
     const freeUsers = [];
 
-    allUsers.forEach(user => {
-      const email = normEmail(user.email);
-      // Check by user ID first, then fall back to email
-      const subscription = subscriptionMap.get(user.id) || subscriptionMap.get(email);
-      
-      // Determine if user has paid access - check ALL possible sources
+    allUsers.forEach(u => {
+      const email = normEmail(u.email);
+      const subscription = subscriptionMap.get(u.id) || subscriptionMap.get(email);
+
       let isPaid = false;
       let effectiveStatus = 'none';
       let effectiveTier = 'none';
-      
-      // 1. Check Subscription entity
+
       if (subscription) {
         const subStatus = (subscription.status || '').toLowerCase();
         const subTier = subscription.tier || 'premium';
         const subPeriodEnd = subscription.current_period_end;
-        
-        // Check if subscription is active and not expired
         const isActiveStatus = ['active', 'trialing', 'trial', 'incomplete'].includes(subStatus);
         const notExpired = !subPeriodEnd || new Date(subPeriodEnd) > new Date();
-        
         if (isActiveStatus && notExpired) {
           isPaid = true;
           effectiveStatus = subscription.status;
@@ -122,42 +91,36 @@ Deno.serve(async (req) => {
           effectiveStatus = subscription.status;
         }
       }
-      
-      // 2. Check User.data fields (canonical source for entitlements)
-      if (!isPaid && user.data) {
-        const entitlementTier = (user.data.entitlement_tier || '').toLowerCase();
-        const subscriptionTier = (user.data.subscription_tier || '').toLowerCase();
-        
-        // Paid ONLY if tier is premium/pro (not free)
+
+      if (!isPaid && u.data) {
+        const entitlementTier = (u.data.entitlement_tier || '').toLowerCase();
+        const subscriptionTier = (u.data.subscription_tier || '').toLowerCase();
         if (['premium', 'pro'].includes(entitlementTier)) {
           isPaid = true;
           effectiveTier = entitlementTier;
-          effectiveStatus = user.data.subscription_status || 'active';
+          effectiveStatus = u.data.subscription_status || 'active';
         } else if (!entitlementTier && ['premium', 'pro'].includes(subscriptionTier)) {
           isPaid = true;
           effectiveTier = subscriptionTier;
-          effectiveStatus = user.data.subscription_status || 'active';
+          effectiveStatus = u.data.subscription_status || 'active';
         }
       }
-      
-      // 3. Check top-level User fields (legacy compatibility)
+
       if (!isPaid) {
-        const userSubLevel = (user.subscription_level || '').toLowerCase();
-        
-        // Only mark as paid if subscription_level is 'paid', 'premium', or 'pro'
+        const userSubLevel = (u.subscription_level || '').toLowerCase();
         if (['paid', 'premium', 'pro'].includes(userSubLevel)) {
           isPaid = true;
-          effectiveStatus = user.subscription_status || 'active';
+          effectiveStatus = u.subscription_status || 'active';
           effectiveTier = userSubLevel === 'paid' ? 'premium' : userSubLevel;
         }
       }
 
       const userData = {
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        platform: user.data?.platform || user.platform || 'web',
-        created_date: user.created_date,
+        email: u.email,
+        full_name: u.full_name,
+        role: u.role,
+        platform: u.data?.platform || u.platform || 'web',
+        created_date: u.created_date,
         subscription_status: effectiveStatus,
         subscription_tier: effectiveTier,
         subscription_end: subscription?.current_period_end || null,
@@ -177,12 +140,7 @@ Deno.serve(async (req) => {
     const paidPercentage = totalUsers === 0 ? '0.0' : ((paidCount / totalUsers) * 100).toFixed(1);
 
     return Response.json({
-      summary: {
-        total_users: totalUsers,
-        paid_users: paidCount,
-        free_users: freeCount,
-        paid_percentage: paidPercentage
-      },
+      summary: { total_users: totalUsers, paid_users: paidCount, free_users: freeCount, paid_percentage: paidPercentage },
       paid_users: paidUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)),
       free_users: freeUsers.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
     });

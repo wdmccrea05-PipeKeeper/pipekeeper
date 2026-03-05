@@ -48,21 +48,21 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
       <CardContent className="pt-6 space-y-6">
         <Tabs defaultValue="identifier">
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1 md:gap-2">
-              <Camera className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("tobacconist.identify")}</span>
+            <TabsTrigger value="identifier" aria-label={t("tobacconist.identify")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <Camera className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.identify")}</span>
             </TabsTrigger>
-            <TabsTrigger value="optimizer" aria-label={t("tobacconist.optimize")} className="flex items-center justify-center gap-1 md:gap-2">
-              <TrendingUp className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("tobacconist.optimize")}</span>
+            <TabsTrigger value="optimizer" aria-label={t("tobacconist.optimize")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <TrendingUp className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.optimize")}</span>
             </TabsTrigger>
-            <TabsTrigger value="whatif" aria-label={t("tobacconist.whatIf")} className="flex items-center justify-center gap-1 md:gap-2">
-              <Lightbulb className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("tobacconist.whatIf")}</span>
+            <TabsTrigger value="whatif" aria-label={t("tobacconist.whatIf")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <Lightbulb className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.whatIf")}</span>
             </TabsTrigger>
-            <TabsTrigger value="updates" aria-label={t("tobacconist.aiUpdates")} className="flex items-center justify-center gap-1 md:gap-2">
-              <RefreshCw className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("tobacconist.aiUpdates")}</span>
+            <TabsTrigger value="updates" aria-label={t("tobacconist.aiUpdates")} className="flex items-center justify-center gap-1.5 px-2 py-2 min-w-0">
+              <RefreshCw className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">{t("tobacconist.aiUpdates")}</span>
             </TabsTrigger>
           </TabsList>
 
