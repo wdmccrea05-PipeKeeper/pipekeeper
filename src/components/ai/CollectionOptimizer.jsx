@@ -432,8 +432,21 @@ User Feedback: ${feedback}
 ---`;
 
     setUserFeedbackHistory((prev) => prev + feedbackEntry);
+    
+    // Send clarification feedback to expert agent instead of regenerating
     setShowFeedbackFor(null);
-    await analyzeCollection(true);
+    setPipeFeedback((prev) => ({ ...prev, [variantKey]: "" }));
+    
+    setLoading(true);
+    try {
+      const feedbackText = `For ${pipe?.name || "this pipe"}: ${feedback}\n\nPlease provide refined recommendations based on this feedback.`;
+      await sendToExpertAgent({ userText: feedbackText, source: "clarification_feedback" });
+    } catch (err) {
+      console.error("Error sending clarification feedback:", err);
+      toast.error(t("errors.failedToProcess"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSelectedChange = (pipeId, bowlVariantId = null) => {
