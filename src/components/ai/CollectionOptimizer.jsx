@@ -1581,7 +1581,7 @@ ${englishUserText}
 
                                 {spec.fills_gap_for && (
                                   <div className="bg-orange-50 rounded-lg p-2 border border-orange-200 mb-2">
-                                    <p className="text-xs font-medium text-orange-900">{t("tobacconist.fillsGap")}:</p>
+                                    <p className="text-xs font-medium text-orange-900">{t("tobacconist.fillsGap", "Fills gap for")}:</p>
                                     <p className="text-xs text-orange-800">{asText(spec.fills_gap_for)}</p>
                                   </div>
                                 )}
