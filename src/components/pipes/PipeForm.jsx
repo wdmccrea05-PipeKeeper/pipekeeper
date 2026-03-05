@@ -433,7 +433,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Basic Info */}
       <Card className="border-[#E0D8C8]/15">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo", "Basic Info")}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -923,7 +923,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          {pipe ? t("pipesExtended.updatePipe") : t("pipesExtended.addPipe")}
+          {pipe ? t("pipesExtended.updatePipe", "Update Pipe") : t("pipesExtended.addPipe", "Add Pipe")}
         </Button>
       </div>
     </form>

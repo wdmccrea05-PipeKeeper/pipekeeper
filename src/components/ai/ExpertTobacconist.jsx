@@ -27,18 +27,18 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
   return (
     <Card>
       <CardHeader className="border-b border-[#1a2c42]/20">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-[#8b3a3a] to-[#6d2e2e] flex items-center justify-center shadow-lg flex-shrink-0">
             <img 
               src={TOBACCONIST_ICON}
               alt={t("tobacconist.expertTobacconistAlt")}
               className="w-full h-full object-cover scale-110"
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-2xl text-[#E0D8C8]">{t("tobacconist.title")}</CardTitle>
-              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80">{t("tobacconist.optional")}</Badge>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <CardTitle className="text-lg sm:text-2xl text-[#E0D8C8]">{t("tobacconist.title")}</CardTitle>
+              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 whitespace-nowrap">{t("tobacconist.optional", "Optional")}</Badge>
               <InfoTooltip text={t("tobacconist.tooltipText")} />
             </div>
             <p className="text-sm text-[#E0D8C8]/70">{t("tobacconist.subtitle")}</p>

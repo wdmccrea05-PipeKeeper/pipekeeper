@@ -295,7 +295,7 @@ export default function CellarLog({ blend }) {
         <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <ArrowDownToLine className="w-4 h-4 text-green-600" />
-            <span className="text-xs text-green-700 font-medium">{t("cellarLog.added")}</span>
+            <span className="text-xs text-green-700 font-medium">{t("cellarLog.added", "Added")}</span>
           </div>
           <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(totalAdded)}</p>
         </div>
@@ -303,7 +303,7 @@ export default function CellarLog({ blend }) {
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <ArrowUpFromLine className="w-4 h-4 text-red-600" />
-            <span className="text-xs text-red-700 font-medium">{t("cellarLog.removed")}</span>
+            <span className="text-xs text-red-700 font-medium">{t("cellarLog.removed", "Removed")}</span>
           </div>
           <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(totalRemoved)}</p>
         </div>
@@ -311,7 +311,7 @@ export default function CellarLog({ blend }) {
         <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-3 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <Package className="w-4 h-4 text-amber-600" />
-            <span className="text-xs text-amber-700 font-medium">{t("cellarLog.net")}</span>
+            <span className="text-xs text-amber-700 font-medium">{t("cellarLog.net", "Net")}</span>
           </div>
           <p className="text-lg font-bold text-[#1a2c42]">{formatWeight(netCellared)}</p>
         </div>
@@ -322,7 +322,7 @@ export default function CellarLog({ blend }) {
           <p className="text-sm text-[#1a2c42]/60 text-center py-4">{t("common.loading")}</p>
         ) : logs.length === 0 ? (
           <p className="text-sm text-[#1a2c42]/60 text-center py-4">
-            {t("cellarLog.noTransactionsYet")}
+            {t("cellarLog.noTransactionsYet", "No transactions yet")}
           </p>
         ) : (
           <div className="space-y-2">

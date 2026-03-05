@@ -601,7 +601,7 @@ Return complete and accurate information based on the blend name or description 
       {/* Basic Info */}
       <Card className="border-stone-200">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo")}</CardTitle>
+          <CardTitle className="text-lg text-[#E0D8C8]">{t("formsExtended.basicInfo", "Basic Info")}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FieldWithInfo 
@@ -753,9 +753,9 @@ Return complete and accurate information based on the blend name or description 
         <CardContent className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="tins">{t("tobaccoExtended.tins")}</TabsTrigger>
-              <TabsTrigger value="bulk">{t("tobaccoExtended.bulk")}</TabsTrigger>
-              <TabsTrigger value="pouches">{t("tobaccoExtended.pouches")}</TabsTrigger>
+              <TabsTrigger value="tins">{t("tobaccoExtended.tins", "Tins")}</TabsTrigger>
+              <TabsTrigger value="bulk">{t("tobaccoExtended.bulk", "Bulk")}</TabsTrigger>
+              <TabsTrigger value="pouches">{t("tobaccoExtended.pouches", "Pouches")}</TabsTrigger>
             </TabsList>
 
             {/* Tins Tab */}
@@ -1093,7 +1093,7 @@ Return complete and accurate information based on the blend name or description 
           className="bg-amber-700 hover:bg-amber-800"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          {blend ? t("tobaccoExtended.updateBlend") : t("tobaccoExtended.addBlend")}
+          {blend ? t("tobaccoExtended.updateBlend", "Update Blend") : t("tobaccoExtended.addBlend", "Add Blend")}
         </Button>
       </div>
     </form>
