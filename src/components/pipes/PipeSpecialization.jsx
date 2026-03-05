@@ -120,7 +120,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
             <Target className="w-5 h-5 text-blue-600" />
             <span className="font-semibold text-blue-800">{t("pipeDetailTabs.pipeSpecialization")}</span>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto overflow-hidden">
             <SpecializationRecommender 
               pipe={pipe} 
               onApplyRecommendation={(data) => {
@@ -135,7 +135,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               onClick={() => setEditing(!editing)}
               className="shrink-0 text-blue-900 hover:text-blue-950"
             >
-              {editing ? t("pipeDetailTabs.done") : t("common.edit")}
+              {editing ? t("pipeDetailTabs.done", "Done") : t("common.edit", "Edit")}
             </Button>
           </div>
         </div>
