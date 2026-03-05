@@ -11,7 +11,9 @@ import {
 } from "@/components/utils/premiumAccess";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery as useQueryImport, useQueryClient } from "@tanstack/react-query";
+
+const useQuery = useQueryImport;
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
