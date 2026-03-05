@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import en from './locales/en.jsx';
 import es from './locales/es.jsx';
 import fr from './locales/fr.jsx';
@@ -9,8 +9,30 @@ import nl from './locales/nl.jsx';
 import pl from './locales/pl.jsx';
 import ja from './locales/ja.jsx';
 import zhHans from './locales/zh-Hans.jsx';
+import { homeTranslations } from './homeContent.jsx';
 
-const translations = {
+// Deep merge: source keys overwrite target only when target is missing the key
+function deepMerge(target, source) {
+  if (!source || typeof source !== 'object') return target;
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
+    if (
+      source[key] &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key]) &&
+      result[key] &&
+      typeof result[key] === 'object'
+    ) {
+      result[key] = deepMerge(result[key], source[key]);
+    } else if (!(key in result)) {
+      // Only add keys that don't already exist in locale file (locale file wins)
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+const rawLocales = {
   en,
   es,
   fr,
@@ -22,6 +44,14 @@ const translations = {
   ja,
   'zh-Hans': zhHans,
 };
+
+// Merge homeContent translations into each language pack
+const translations = Object.fromEntries(
+  Object.entries(rawLocales).map(([lang, pack]) => [
+    lang,
+    deepMerge(pack, (homeTranslations[lang] || {})),
+  ])
+);
 
 function getNestedValue(obj, path) {
   if (!obj || !path) return undefined;
@@ -45,44 +75,64 @@ function interpolate(str, vars) {
   });
 }
 
-export function useTranslation(languageOverride = null) {
-  // NOTE: localStorage is read once on mount. Language changes during a session
-  // require a page reload to take effect. This is intentional for simplicity.
-  const lang = useMemo(() => {
+// Read lang from localStorage reactively with a storage event listener
+// so language changes propagate to already-mounted components without a full reload.
+function useLang(languageOverride = null) {
+  const [lang, setLang] = useState(() => {
     if (languageOverride) return languageOverride;
     try {
-      return typeof window !== 'undefined' ? (window?.localStorage?.getItem('pk_lang') || 'en') : 'en';
+      return typeof window !== 'undefined'
+        ? (window.localStorage.getItem('pk_lang') || 'en')
+        : 'en';
     } catch {
       return 'en';
     }
+  });
+
+  useEffect(() => {
+    if (languageOverride) return; // override takes precedence
+    const handler = () => {
+      try {
+        setLang(window.localStorage.getItem('pk_lang') || 'en');
+      } catch {
+        setLang('en');
+      }
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
   }, [languageOverride]);
 
-  const translationPack = useMemo(() => {
-    return translations[lang] || translations.en || {};
-  }, [lang]);
+  return languageOverride || lang;
+}
 
-  const t = useMemo(() => {
-    return (key, varsOrFallback = {}) => {
-      const isOptions = typeof varsOrFallback === 'object' && varsOrFallback !== null && !Array.isArray(varsOrFallback);
-      const vars = isOptions ? varsOrFallback : {};
-      const fallbackStr = typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
-      const returnObjects = isOptions && varsOrFallback.returnObjects === true;
+export function useTranslation(languageOverride = null) {
+  const lang = useLang(languageOverride);
+  const translationPack = translations[lang] || translations.en || {};
 
-      const value = getNestedValue(translationPack, key);
-      if (value === undefined) {
-        const fallback = getNestedValue(translations.en, key);
-        if (fallback !== undefined) {
-          if (returnObjects) return fallback;
-          if (typeof fallback === 'string') return interpolate(fallback, vars);
-          return String(fallback);
-        }
-        return fallbackStr !== undefined ? fallbackStr : key;
+  const t = (key, varsOrFallback = {}) => {
+    const isOptions =
+      typeof varsOrFallback === 'object' &&
+      varsOrFallback !== null &&
+      !Array.isArray(varsOrFallback);
+    const vars = isOptions ? varsOrFallback : {};
+    const fallbackStr =
+      typeof varsOrFallback === 'string' ? varsOrFallback : undefined;
+    const returnObjects = isOptions && varsOrFallback.returnObjects === true;
+
+    const value = getNestedValue(translationPack, key);
+    if (value === undefined) {
+      const fallback = getNestedValue(translations.en, key);
+      if (fallback !== undefined) {
+        if (returnObjects) return fallback;
+        if (typeof fallback === 'string') return interpolate(fallback, vars);
+        return String(fallback);
       }
-      if (returnObjects) return value;
-      if (typeof value === 'string') return interpolate(value, vars);
-      return String(value);
-    };
-  }, [translationPack]);
+      return fallbackStr !== undefined ? fallbackStr : key;
+    }
+    if (returnObjects) return value;
+    if (typeof value === 'string') return interpolate(value, vars);
+    return String(value);
+  };
 
   return { t, lang };
 }
