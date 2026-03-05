@@ -1614,6 +1614,7 @@ ${englishUserText}
                                      variant="outline"
                                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
                                      onClick={() => setShowFeedbackFor(showFeedbackFor === variantKey ? null : variantKey)}
+                                     disabled={loading || whatIfLoading}
                                    >
                                      <HelpCircle className="w-4 h-4 mr-1" />
                                      {showFeedbackFor === variantKey ? t("common.cancel") : t("tobacconist.askClarification", "Ask Clarification")}
