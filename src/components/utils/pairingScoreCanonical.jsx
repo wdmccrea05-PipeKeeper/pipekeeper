@@ -129,7 +129,7 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
 
   // Soft category gating: pipe has aromatic focus but not "only" — penalize non-aromatics heavily
   const pipeHasAromaticFocus = nf.wantsHeavyAromatics || nf.wantsLightAromatics || nf.wantsMediumAromatics;
-  const pipeHasNonAromaticFocus = !isUtility && nf.lower.some((x) =>
+  const pipeHasNonAromaticFocus = !nf.isUtility && nf.lower.some((x) =>
     ["english", "virginia", "burley", "balkan", "latakia", "oriental", "virginia/perique", "virginia/burley", "navy flake", "dark fired"].some((k) => x.includes(k))
   ) && !pipeHasAromaticFocus;
 
