@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Tags, Ruler, Layers, Info } from "lucide-react";
@@ -42,11 +43,7 @@ export default function AIUpdates() {
     }
   }, []);
 
-  const { data: user } = useQuery({
-    queryKey: ["current-user"],
-    queryFn: () => base44.auth.me(),
-    staleTime: 5000,
-  });
+  const { user } = useCurrentUser();
 
   const { data: blends = [] } = useQuery({
     queryKey: ["blends", user?.email],

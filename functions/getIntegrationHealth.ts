@@ -16,8 +16,12 @@ Deno.serve(async (req) => {
     const hoursBack = timeWindow === "24h" ? 24 : 168; // 7 days = 168 hours
     const threshold = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
 
-    // Fetch recent events
-    const events = await base44.asServiceRole.entities.SubscriptionIntegrationEvent.filter({});
+    // NOTE: Limited to 500 most recent events. For large-scale production, push filtering to DB query.
+    const events = await base44.asServiceRole.entities.SubscriptionIntegrationEvent.filter(
+      {},
+      "-created_date",
+      500
+    );
     const recentEvents = events.filter(e => new Date(e.created_date) >= threshold);
 
     // Count by source and success

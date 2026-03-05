@@ -7,6 +7,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow } from "@/components/utils/nativeIAPBridge";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function FeatureList({ items }) {
   return (
@@ -23,6 +24,7 @@ function FeatureList({ items }) {
 
 function AppleSubscription() {
   const { t } = useTranslation();
+  const { hasPaid, isTrial } = useCurrentUser();
 
   const freeFeatures = [
     t("subscription.appleFeatureFree1"),
@@ -73,7 +75,7 @@ function AppleSubscription() {
 
     // Fallback so user never gets a dead click
     window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    toast.info("Opened Apple subscriptions in browser.");
+    toast.info(t("subscription.openedAppleSubsInBrowser", "Opened Apple subscriptions in browser."));
   };
 
   const openManage = () => {
@@ -83,7 +85,7 @@ function AppleSubscription() {
     if (openedManage) return;
 
     window.open("https://apps.apple.com/account/subscriptions", "_blank");
-    toast.info("Opened Apple subscription management in browser.");
+    toast.info(t("subscription.openedAppleSubsMgmtInBrowser", "Opened Apple subscription management in browser."));
   };
 
   return (
@@ -140,14 +142,26 @@ function AppleSubscription() {
         </Card>
       </div>
 
-      <Card className="bg-black/30 border-white/10">
-        <CardHeader>
-          <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-[#e8d5b7]/80">
-          {t("subscription.trialEndedBody")}
-        </CardContent>
-      </Card>
+      {!hasPaid && !isTrial && (
+        <Card className="bg-black/30 border-white/10">
+          <CardHeader>
+            <CardTitle className="text-[#e8d5b7]">{t("subscription.trialEndedTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-[#e8d5b7]/80">
+            {t("subscription.trialEndedBody")}
+          </CardContent>
+        </Card>
+      )}
+
+      {(hasPaid || isTrial) && (
+        <Card className="bg-black/30 border-white/10">
+          <CardContent className="pt-6 text-emerald-400 text-center">
+            {hasPaid
+              ? t("subscription.activeSubscription", "✅ Your subscription is active.")
+              : t("subscription.trialActive", "✅ Your free trial is active.")}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

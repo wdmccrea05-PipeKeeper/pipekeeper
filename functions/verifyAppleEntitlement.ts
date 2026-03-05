@@ -103,10 +103,13 @@ Deno.serve(async (req) => {
     }
     
     // Update user to paid if active
+    const effectiveTier = isActive ? tier : 'free';
     await base44.asServiceRole.entities.User.update(userRow.id, {
       subscription_level: isActive ? 'paid' : 'free',
       subscription_status: status,
-      subscription_tier: tier,
+      subscription_tier: effectiveTier,
+      // FIX AI-3: Write entitlement_tier so canonical resolver grants access
+      entitlement_tier: effectiveTier,
       platform: 'ios'
     });
     

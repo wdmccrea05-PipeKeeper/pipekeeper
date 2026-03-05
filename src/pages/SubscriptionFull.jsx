@@ -14,6 +14,7 @@ import {
 import SubscriptionBackupModeModal from "@/components/subscription/SubscriptionBackupModeModal";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { hasPaidAccess, hasProAccess } from "@/components/utils/premiumAccess";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 
@@ -63,6 +64,9 @@ export default function SubscriptionFull() {
   const [selectedInterval, setSelectedInterval] = useState("monthly");
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState(null);
+
+  const alreadySubscribed = hasPaidAccess(user, null);
+  const alreadyPro = hasProAccess(user, null);
 
   useEffect(() => {
     if (!isIOSApp) return;
@@ -125,6 +129,12 @@ export default function SubscriptionFull() {
   const tierPrices = {
     premium: { monthly: 1.99, annual: 19.99 },
     pro: { monthly: 2.99, annual: 29.99 },
+  };
+
+  const getDiscountPct = (tier, prices) => {
+    const p = prices?.[tier];
+    if (!p || !p.monthly || p.monthly === 0) return 0;
+    return Math.max(0, Math.round((1 - (p.annual / 12) / p.monthly) * 100));
   };
 
   const freeFeatures = [
@@ -253,6 +263,32 @@ export default function SubscriptionFull() {
     );
   }
 
+  if (alreadySubscribed) {
+    return (
+      <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
+        <h1 className="text-2xl font-bold text-[#e8d5b7]">
+          {t("subscriptionFull.alreadySubscribed", "You're already subscribed")}
+        </h1>
+        <p className="text-[#e8d5b7]/70">
+          {alreadyPro
+            ? t("subscriptionFull.currentlyOnPro", "You're currently on the Pro plan.")
+            : t("subscriptionFull.currentlyOnPremium", "You're currently on the Premium plan.")}
+        </p>
+        <Button className="w-full max-w-xs mx-auto" onClick={handleManage}>
+          {t("subscriptionFull.manageSubscription", "Manage Subscription")}
+        </Button>
+        <Button variant="secondary" className="w-full max-w-xs mx-auto mt-2" onClick={handleManualRefresh}>
+          {t("subscriptionFull.refreshStatus", "Refresh status")}
+        </Button>
+        {message && (
+          <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
+            {message}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
       <div className="text-center">
@@ -273,7 +309,7 @@ export default function SubscriptionFull() {
            variant={selectedInterval === "annual" ? "default" : "outline"}
            onClick={() => setSelectedInterval("annual")}
          >
-           {t("subscriptionFull.annualSave","Annual")} ({t("subscriptionFull.save","Save")} {Math.round((1 - (tierPrices[selectedTier].annual / 12) / tierPrices[selectedTier].monthly) * 100)}%)
+           {t("subscriptionFull.annualSave","Annual")} ({t("subscriptionFull.save","Save")} {getDiscountPct(selectedTier, tierPrices)}%)
          </Button>
        </div>
 
