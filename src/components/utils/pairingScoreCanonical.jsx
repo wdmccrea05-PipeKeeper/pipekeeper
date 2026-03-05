@@ -126,9 +126,25 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
     return { score: 0, why: "Pipe is dedicated to non-aromatics only." };
   }
 
+  // Soft category gating: pipe has aromatic focus but not "only" — penalize non-aromatics heavily
+  const pipeHasAromaticFocus = nf.wantsHeavyAromatics || nf.wantsLightAromatics || nf.wantsMediumAromatics;
+  const pipeHasNonAromaticFocus = !isUtility && nf.lower.some((x) =>
+    ["english", "virginia", "burley", "balkan", "latakia", "oriental", "virginia/perique", "virginia/burley", "navy flake", "dark fired"].some((k) => x.includes(k))
+  ) && !pipeHasAromaticFocus;
+
+  if (pipeHasAromaticFocus && !aromatic) {
+    return { score: 2, why: "Pipe is focused on aromatics; non-aromatic blends are a poor fit." };
+  }
+  if (pipeHasNonAromaticFocus && aromatic) {
+    return { score: 2, why: "Pipe is focused on non-aromatic blends; aromatics are a poor fit." };
+  }
+
   // Base score
   let score = 4;
   const reasons = [];
+  const isUtility = nf.lower.some((x) =>
+    ["utility", "versatile", "multi", "multiple", "any", "general"].some((k) => x.includes(k))
+  );
 
   // Exact blend name match in focus (strongest signal)
   const blendName = String(blend?.tobacco_name || blend?.name || "").toLowerCase();
