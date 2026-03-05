@@ -172,12 +172,24 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
   const notes = (Array.isArray(blend?.flavor_notes) ? blend.flavor_notes.join(" ") : blend?.flavor_notes) || "";
   const comps = (Array.isArray(blend?.tobacco_components) ? blend.tobacco_components.join(" ") : blend?.tobacco_components) || "";
 
-  const hits =
+  // Direct blend type match to any focus item (strong signal)
+  const blendTypeLower = String(blendType).toLowerCase();
+  const blendTypeMatchCount = nf.lower.filter((f) => {
+    const fClean = f.replace(/[^\w\-\/]/g, ""); // normalize punctuation
+    const btClean = blendTypeLower.replace(/[^\w\-\/]/g, "");
+    return fClean === btClean;
+  }).length;
+
+  let hits =
     countKeywordMatches(nf.lower, blendType) +
     countKeywordMatches(nf.lower, notes) +
     countKeywordMatches(nf.lower, comps);
 
-  if (hits >= 2) {
+  // If blend type directly matches a focus item, boost score significantly
+  if (blendTypeMatchCount > 0) {
+    score += 5;
+    reasons.push("Blend type matches pipe focus.");
+  } else if (hits >= 2) {
     score += 4;
     reasons.push("Strong match to pipe focus keywords.");
   } else if (hits === 1) {
