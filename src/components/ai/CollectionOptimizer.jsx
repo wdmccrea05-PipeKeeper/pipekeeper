@@ -1336,7 +1336,7 @@ ${englishUserText}
                         <div className="flex flex-wrap gap-1 mt-1">
                           {spec?.score_delta != null && spec.score_delta > 0 && (
                             <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
-                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement", "avg score improvement")}
+                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement", { defaultValue: "avg score improvement" })}
                             </Badge>
                           )}
                           {spec?.fills_gap_for && (
