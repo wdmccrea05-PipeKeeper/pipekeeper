@@ -142,9 +142,6 @@ export function scorePipeBlend(pipeVariant, blend, userProfile) {
   // Base score
   let score = 4;
   const reasons = [];
-  const isUtility = nf.lower.some((x) =>
-    ["utility", "versatile", "multi", "multiple", "any", "general"].some((k) => x.includes(k))
-  );
 
   // Exact blend name match in focus (strongest signal)
   const blendName = String(blend?.tobacco_name || blend?.name || "").toLowerCase();
