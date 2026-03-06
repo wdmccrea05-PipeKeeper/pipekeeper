@@ -1,26 +1,31 @@
-"messages": {
-  "login": "Iniciar sesión",
-  "logout": "Cerrar sesión",
-  "register": "Registrarse",
-  "notFound": "Página no encontrada",
-  "welcomeMessage": "Bienvenido a nuestra aplicación",
-  "profile": "Perfil",
-  "settings": "Configuraciones",
-  "dashboard": "Tablero",
-  "save": "Guardar",
-  "delete": "Eliminar",
-  "confirmDelete": "¿Está seguro de que desea eliminar esto?",
-  "cancel": "Cancelar",
-  "update": "Actualizar",
-  "language": "Idioma",
-  "switchLanguage": "Cambiar idioma",
-  "search": "Buscar",
-  "loading": "Cargando...",
-  // ... (additional translations here)
-  "error": "¡Se produjo un error!",
-  "success": "¡Éxito!",
-  "email": "Correo electrónico",
-  "password": "Contraseña",
-  "name": "Nombre",
-  "submit": "Enviar"
-} 
+
+const translations = {
+  messages: {
+    login: "Iniciar sesión",
+    logout: "Cerrar sesión",
+    register: "Registrarse",
+    notFound: "Página no encontrada",
+    welcomeMessage: "Bienvenido a nuestra aplicación",
+    profile: "Perfil",
+    settings: "Configuraciones",
+    dashboard: "Tablero",
+    save: "Guardar",
+    delete: "Eliminar",
+    confirmDelete: "¿Está seguro de que desea eliminar esto?",
+    cancel: "Cancelar",
+    update: "Actualizar",
+    language: "Idioma",
+    switchLanguage: "Cambiar idioma",
+    search: "Buscar",
+    loading: "Cargando...",
+    error: "¡Se produjo un error!",
+    success: "¡Éxito!",
+    email: "Correo electrónico",
+    password: "Contraseña",
+    name: "Nombre",
+    submit: "Enviar",
+    checkYourEmail: "¿Necesita más ayuda? Consulte nuestro",
+  },
+};
+
+export default translations;
