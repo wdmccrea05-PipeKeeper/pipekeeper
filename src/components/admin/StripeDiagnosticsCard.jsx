@@ -117,7 +117,7 @@ export default function StripeDiagnosticsCard() {
 
   const runPing = async () => {
     try {
-      const res = await base44.functions.invoke('adminPing');
+      const res = await base44.functions.invoke('admin/ping');
       if (res.data?.ok) {
         toast.success(t("admin.adminRoutingWorking", "Admin routing is working"));
       } else {
