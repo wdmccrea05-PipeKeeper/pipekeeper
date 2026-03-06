@@ -4,7 +4,9 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { reconcileUserEntitlements } from "../_utils/reconcileEntitlements.js";
+// NOTE: _utils/reconcileEntitlements.js is not used directly here due to no-local-imports rule.
+// reconcileUserEntitlements logic is inlined in reconcileEntitlementsBatch instead.
+// This file is a passthrough to admin/repairEntitlementsBatch which itself inlines logic.
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
