@@ -50,7 +50,7 @@ export default function EntitlementAudit() {
     setBatchLoading(true);
     setBatchResult(null);
     try {
-      const response = await base44.functions.invoke("admin/repairEntitlementsBatch", {
+      const response = await base44.functions.invoke("repairEntitlementsBatch", {
         dryRun,
         batchSize: parseInt(batchSize, 10) || 100,
       });
