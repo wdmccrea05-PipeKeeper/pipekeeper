@@ -196,7 +196,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.costOptional")}</Label>
+              <Label>{t("maintenanceLog.costOptional", "Cost (Optional)")}</Label>
               <Input
                 type="number"
                 step="0.01"
