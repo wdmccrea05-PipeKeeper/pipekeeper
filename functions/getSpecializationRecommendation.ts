@@ -1,27 +1,61 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { requireEntitlement } from './_auth/requireEntitlement.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
+
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check entitlement
-    await requireEntitlement(base44, user, 'PAIRING_ADVANCED');
+    // Inline entitlement check (premium required)
+    const isActiveSub = (s) => {
+      const status = String(s?.status || "").toLowerCase();
+      if (status === "active" || status === "trialing" || status === "trial") return true;
+      if (status === "past_due") {
+        const periodEnd = s?.current_period_end;
+        return !periodEnd || new Date(periodEnd).getTime() > Date.now();
+      }
+      return false;
+    };
+
+    let hasAccess = false;
+    try {
+      const byUserId = await base44.entities.Subscription.filter({ user_id: user.id });
+      if (Array.isArray(byUserId) && byUserId.some(isActiveSub)) hasAccess = true;
+    } catch {}
+
+    if (!hasAccess) {
+      const email = String(user.email || "").trim().toLowerCase();
+      try {
+        const byEmail = await base44.entities.Subscription.filter({ provider: "stripe", user_email: email });
+        if (Array.isArray(byEmail) && byEmail.some(isActiveSub)) hasAccess = true;
+      } catch {}
+    }
+
+    if (!hasAccess) {
+      // Fallback: check denormalized user record
+      try {
+        const users = await base44.asServiceRole.entities.User.filter({ email: String(user.email || "").trim().toLowerCase() });
+        const u = Array.isArray(users) ? users[0] : null;
+        if (u?.data?.subscription_level === "paid" || u?.data?.subscription_tier) hasAccess = true;
+      } catch {}
+    }
+
+    if (!hasAccess) {
+      return Response.json({ error: 'Premium subscription required' }, { status: 403 });
+    }
 
     const { pipeId } = await req.json();
-    
+
     if (!pipeId) {
       return Response.json({ error: 'Pipe ID is required' }, { status: 400 });
     }
 
     // Fetch the pipe
     const pipe = await base44.entities.Pipe.get(pipeId);
-    
+
     if (!pipe || pipe.created_by !== user.email) {
       return Response.json({ error: 'Pipe not found' }, { status: 404 });
     }
@@ -35,7 +69,6 @@ Deno.serve(async (req) => {
 
     const userProfile = profiles?.[0];
 
-    // Build context for AI
     const pipeContext = {
       name: pipe.name,
       shape: pipe.shape,
@@ -63,29 +96,25 @@ Deno.serve(async (req) => {
       notes: userProfile?.notes
     };
 
-    // Inline pairing score computation (mirrors pairingScoreCanonical logic)
-    // NOTE: This function is a server-side mirror of scorePipeBlend() in pairingScoreCanonical.jsx.
-    // If you update the scoring logic in either location, update the other to stay in sync.
-    // Tracked issue: scoring divergence between server-side recommendations and client-side pairings.
     const NON_AROMATIC_TYPES = ["english","balkan","latakia","virginia","burley","oriental","perique"];
 
-    function computePairingScore(pipeObj: any, blend: any): number {
-      const focus: string[] = pipeObj.focus || [];
-      const blendType: string = (blend.blend_type || "").toLowerCase();
+    function computePairingScore(pipeObj, blend) {
+      const focus = pipeObj.focus || [];
+      const blendType = (blend.blend_type || "").toLowerCase();
       const isAromatic = blendType.includes("aromatic");
 
-      const pipeIsAromaticOnly = focus.some((f: string) => f.toLowerCase().includes("aromatic")) && !focus.some((f: string) => NON_AROMATIC_TYPES.includes(f.toLowerCase()));
-      const pipeIsNonAromaticOnly = focus.some((f: string) => NON_AROMATIC_TYPES.includes(f.toLowerCase())) && !focus.some((f: string) => f.toLowerCase().includes("aromatic"));
+      const pipeIsAromaticOnly = focus.some(f => f.toLowerCase().includes("aromatic")) && !focus.some(f => NON_AROMATIC_TYPES.includes(f.toLowerCase()));
+      const pipeIsNonAromaticOnly = focus.some(f => NON_AROMATIC_TYPES.includes(f.toLowerCase())) && !focus.some(f => f.toLowerCase().includes("aromatic"));
 
       if (pipeIsAromaticOnly && !isAromatic) return 0;
       if (pipeIsNonAromaticOnly && isAromatic) return 0;
 
       let score = 4;
 
-      if (focus.some((f: string) => blend.name?.toLowerCase().includes(f.toLowerCase()))) return 10;
+      if (focus.some(f => blend.name?.toLowerCase().includes(f.toLowerCase()))) return 10;
 
       const matchText = [blend.blend_type, blend.flavor_notes, blend.tobacco_components].filter(Boolean).join(" ").toLowerCase();
-      const matchCount = focus.filter((f: string) => matchText.includes(f.toLowerCase())).length;
+      const matchCount = focus.filter(f => matchText.includes(f.toLowerCase())).length;
       if (matchCount >= 2) score += 4;
       else if (matchCount === 1) score += 2;
 
@@ -96,7 +125,6 @@ Deno.serve(async (req) => {
       return Math.max(0, Math.min(10, score));
     }
 
-    // Pre-compute blend scores at current focus
     const blendScoresCurrentFocus = blends.slice(0, 40).map(b => ({
       name: b.name,
       blend_type: b.blend_type,
@@ -104,10 +132,9 @@ Deno.serve(async (req) => {
       current_score: computePairingScore(pipe, b),
     }));
 
-    // Build collection context from other pipes
     const otherPipes = allPipes
-      .filter((p: any) => p.id !== pipeId)
-      .map((p: any) => ({
+      .filter(p => p.id !== pipeId)
+      .map(p => ({
         id: String(p.id),
         name: p.name,
         shape: p.shape,
@@ -190,16 +217,10 @@ Return JSON:
       response_json_schema: {
         type: "object",
         properties: {
-          recommended_specializations: {
-            type: "array",
-            items: { type: "string" }
-          },
+          recommended_specializations: { type: "array", items: { type: "string" } },
           reasoning: { type: "string" },
           collection_fit: { type: "string" },
-          specific_blends: {
-            type: "array",
-            items: { type: "string" }
-          },
+          specific_blends: { type: "array", items: { type: "string" } },
           considerations: { type: "string" },
           alternative_uses: { type: "string" },
           score_projection: {
@@ -237,7 +258,7 @@ Return JSON:
 
   } catch (error) {
     console.error('Specialization recommendation error:', error);
-    return Response.json({ 
+    return Response.json({
       error: error.message || 'Failed to generate recommendation',
       details: error.toString()
     }, { status: 500 });
