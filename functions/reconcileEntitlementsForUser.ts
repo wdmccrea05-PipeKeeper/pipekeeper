@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
 
     // Fallback to Stripe if no Apple subscription
     if (!result) {
-      const stripe = getStripeClient();
+      const stripe = getStripe();
       result = await reconcileFromStripe(base44, user, stripe);
     }
 
