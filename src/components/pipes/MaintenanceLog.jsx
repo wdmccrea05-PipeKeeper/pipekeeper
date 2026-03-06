@@ -191,7 +191,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Input
                 value={formData.performed_by}
                 onChange={(e) => setFormData({ ...formData, performed_by: e.target.value })}
-                placeholder={t("maintenanceLog.performedByPlaceholder")}
+                placeholder={t("maintenanceLog.performedByPlaceholder", "e.g. Self, Professional")}
               />
             </div>
 
