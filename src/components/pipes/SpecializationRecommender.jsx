@@ -103,18 +103,18 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
           {recommendation && (
             <div className="space-y-4 mt-4">
               {/* Recommended Specializations */}
-              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+              <Card className="border-white/20">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-2 mb-3">
-                    <CheckCircle2 className="w-5 h-5 text-purple-600 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E0D8C8] mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-purple-900">{t("specializationRec.recommendedSpecializations")}</h3>
+                      <h3 className="font-semibold text-[#E0D8C8]">{t("specializationRec.recommendedSpecializations", "Recommended Specializations")}</h3>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {recommendation.recommended_specializations?.map((canonical, idx) => {
                           const labelKey = FOCUS_LABEL_KEY[canonical];
                           const label = labelKey ? t(labelKey, canonical) : canonical;
                           return (
-                            <Badge key={idx} className="bg-purple-100 text-purple-800 border-purple-300">
+                            <Badge key={idx} className="bg-white/10 text-[#E0D8C8] border-white/20">
                               {label}
                             </Badge>
                           );
@@ -127,13 +127,13 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Reasoning */}
               {recommendation.reasoning && (
-                <Card>
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-amber-600" />
-                      {t("specializationRec.whyThisWorks")}
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4" />
+                      {t("specializationRec.whyThisWorks", "Why This Works")}
                     </h3>
-                    <p className="text-sm text-stone-300 leading-relaxed">
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
                       {recommendation.reasoning}
                     </p>
                   </CardContent>
@@ -142,10 +142,10 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Collection Fit */}
               {recommendation.collection_fit && (
-                <Card>
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-300 mb-2">{t("specializationRec.collectionFit")}</h3>
-                    <p className="text-sm text-stone-400 leading-relaxed">
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.collectionFit", "Collection Fit")}</h3>
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
                       {recommendation.collection_fit}
                     </p>
                   </CardContent>
@@ -154,12 +154,12 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Specific Blends */}
               {recommendation.specific_blends && recommendation.specific_blends.length > 0 && (
-                <Card className="border-emerald-200 bg-emerald-50/30">
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-emerald-900 mb-2">{t("specializationRec.recommendedBlendsFromCollection")}</h3>
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.recommendedBlendsFromCollection", "Recommended Blends From Your Collection")}</h3>
                     <div className="flex flex-wrap gap-2">
                       {recommendation.specific_blends.map((blend, idx) => (
-                        <Badge key={idx} variant="outline" className="border-emerald-300 text-emerald-800">
+                        <Badge key={idx} variant="outline" className="border-white/20 text-[#E0D8C8]">
                           {blend}
                         </Badge>
                       ))}
@@ -170,13 +170,13 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Considerations */}
               {recommendation.considerations && (
-                <Card className="border-amber-700 bg-amber-950/40">
+                <Card className="border-white/20">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-[#E0D8C8] mt-0.5 shrink-0" />
                       <div>
-                        <h3 className="font-semibold text-amber-400 mb-1">{t("specializationRec.importantConsiderations")}</h3>
-                        <p className="text-sm text-amber-300 leading-relaxed">
+                        <h3 className="font-semibold text-[#E0D8C8] mb-1">{t("specializationRec.importantConsiderations", "Important Considerations")}</h3>
+                        <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
                           {recommendation.considerations}
                         </p>
                       </div>
@@ -187,10 +187,10 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Alternative Uses */}
               {recommendation.alternative_uses && (
-                <Card>
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-stone-300 mb-2">{t("specializationRec.alternativeUses")}</h3>
-                    <p className="text-sm text-stone-400 leading-relaxed">
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2">{t("specializationRec.alternativeUses", "Alternative Uses")}</h3>
+                    <p className="text-sm text-[#E0D8C8]/80 leading-relaxed">
                       {recommendation.alternative_uses}
                     </p>
                   </CardContent>
@@ -199,28 +199,28 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Score Projection */}
               {recommendation.score_projection && (
-                <Card className="border-blue-200 bg-blue-50/30">
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                    <h3 className="font-semibold text-[#E0D8C8] mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
                       {t("specializationRec.scoreProjection", "Score Projection")}
                     </h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="bg-white rounded p-2 border border-blue-200">
-                        <div className="text-xs text-stone-500 mb-1">{t("specializationRec.currentFocus", "Current Focus")}</div>
-                        <div className="font-semibold text-stone-800">
+                      <div className="bg-white/5 rounded p-3 border border-white/10">
+                        <div className="text-xs text-[#E0D8C8]/60 mb-1">{t("specializationRec.currentFocus", "Current Focus")}</div>
+                        <div className="font-semibold text-[#E0D8C8]">
                           {recommendation.score_projection.current_focus_high_compat_count} {t("specializationRec.highCompatBlends", "high-compat blends")}
                         </div>
-                        <div className="text-xs text-stone-500">
+                        <div className="text-xs text-[#E0D8C8]/60">
                           {recommendation.score_projection.current_focus_moderate_compat_count} {t("specializationRec.moderate", "moderate")}
                         </div>
                       </div>
-                      <div className="bg-white rounded p-2 border border-emerald-200">
-                        <div className="text-xs text-stone-500 mb-1">{t("specializationRec.recommendedFocus", "Recommended Focus")}</div>
-                        <div className="font-semibold text-emerald-800">
+                      <div className="bg-white/5 rounded p-3 border border-white/10">
+                        <div className="text-xs text-[#E0D8C8]/60 mb-1">{t("specializationRec.recommendedFocus", "Recommended Focus")}</div>
+                        <div className="font-semibold text-[#E0D8C8]">
                           {recommendation.score_projection.recommended_focus_high_compat_count} {t("specializationRec.highCompatBlends", "high-compat blends")}
                         </div>
-                        <div className="text-xs text-stone-500">
+                        <div className="text-xs text-[#E0D8C8]/60">
                           {recommendation.score_projection.recommended_focus_moderate_compat_count} {t("specializationRec.moderate", "moderate")}
                         </div>
                       </div>
@@ -231,13 +231,13 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Collection Gaps */}
               {recommendation.collection_gaps?.length > 0 && (
-                <Card className="border-orange-200 bg-orange-50/30">
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
                       {t("specializationRec.collectionGaps", "Collection Coverage Gaps")}
                     </h3>
-                    <ul className="text-sm text-orange-800 space-y-1 list-disc list-inside">
+                    <ul className="text-sm text-[#E0D8C8]/80 space-y-1 list-disc list-inside">
                       {recommendation.collection_gaps.map((gap, idx) => (
                         <li key={idx}>{gap}</li>
                       ))}
@@ -248,16 +248,16 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Collection Redundancies */}
               {recommendation.collection_redundancies?.length > 0 && (
-                <Card className="border-yellow-200 bg-yellow-50/30">
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
                       {t("specializationRec.redundancies", "Redundant Specializations")}
                     </h3>
                     {recommendation.collection_redundancies.map((r, idx) => (
                       <div key={idx} className="text-sm mb-2">
-                        <span className="font-medium text-yellow-800">{r.blend_type}: </span>
-                        <span className="text-yellow-700">{r.pipes?.join(", ")}</span>
+                        <span className="font-medium text-[#E0D8C8]">{r.blend_type}: </span>
+                        <span className="text-[#E0D8C8]/70">{r.pipes?.join(", ")}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -266,13 +266,13 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
 
               {/* Reassignment Opportunity */}
               {recommendation.reassignment_opportunity && (
-                <Card className="border-purple-200 bg-purple-50/30">
+                <Card className="border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-600" />
+                    <h3 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
                       {t("specializationRec.reassignmentOpportunity", "Reassignment Opportunity")}
                     </h3>
-                    <p className="text-sm text-purple-800">{recommendation.reassignment_opportunity}</p>
+                    <p className="text-sm text-[#E0D8C8]/80">{recommendation.reassignment_opportunity}</p>
                   </CardContent>
                 </Card>
               )}
@@ -281,17 +281,17 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={handleApply}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  className="flex-1 bg-[#A35C5C] hover:bg-[#8B4A4A]"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  {t("specializationRec.applySpecializations")}
+                  {t("specializationRec.applySpecializations", "Apply Specializations")}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setIsOpen(false)}
                   className="flex-1"
                 >
-                  {t("specializationRec.close")}
+                  {t("specializationRec.close", "Close")}
                 </Button>
               </div>
             </div>
