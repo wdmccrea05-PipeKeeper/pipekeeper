@@ -92,11 +92,11 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-purple-600" />
-              {t("specializationRec.specializationRecommendation")}
+              <Target className="w-5 h-5 text-[#E0D8C8]" />
+              {t("specializationRec.specializationRecommendation", "Specialization Recommendation")}
             </DialogTitle>
             <DialogDescription>
-              {t("specializationRec.aiAnalysisFor")} {pipe.name}
+              {t("specializationRec.aiAnalysisFor", "AI analysis for")} {pipe.name}
             </DialogDescription>
           </DialogHeader>
 
