@@ -188,7 +188,7 @@ export default function UserReport() {
                 setIsSyncing(true);
                 const res = await base44.functions.invoke('backfillStripeCustomers', {});
                 if (res?.data?.ok) {
-                  toast.success(t("userReport.backfillComplete","Backfill complete: {{created}} created, {{updated}} updated",{created: res.data.created, updated: res.data.updated}));
+                  toast.success(t("userReport.backfillComplete","Backfill complete: {{created}} created, {{updated}} updated",{created: res.data.createdUsers ?? res.data.created ?? 0, updated: res.data.updatedUsers ?? res.data.updated ?? 0}));
                 } else {
                   toast.error(res?.data?.error || t("userReport.backfillFailed","Backfill failed"));
                 }
