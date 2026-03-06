@@ -178,7 +178,10 @@ Deno.serve(async (req) => {
           if (sampleFixes.length < 10) {
             sampleFixes.push({
               email: userEntity.email,
-              before: { tier: userEntity.subscription_tier, level: userEntity.subscription_level },
+              before: {
+                tier: userEntity.subscription_tier || userEntity.data?.subscription_tier || "free",
+                level: userEntity.subscription_level || userEntity.data?.subscription_level || "free",
+              },
               after: { tier: result.finalTier, level: result.finalLevel },
               providerUsed: result.providerUsed,
             });
