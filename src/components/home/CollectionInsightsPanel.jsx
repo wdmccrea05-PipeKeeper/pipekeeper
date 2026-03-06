@@ -241,17 +241,14 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               </TabsContent>
 
               <TabsContent value="trends" className="mt-0">
-                {hasPro ? (
+                <ProFeatureLock featureName="Trends Report">
                   <TrendsReport 
                     logs={logs} 
                     pipes={pipes} 
                     blends={blends} 
                     user={user}
                   />
-                ) : (
-                  <ProFeatureLock featureName="Trends Report">
-                  </ProFeatureLock>
-                )}
+                </ProFeatureLock>
               </TabsContent>
 
               <TabsContent value="aging" className="mt-0">
