@@ -95,7 +95,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
   const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
     queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', 1000),
-    enabled: !!user?.email && hasPro,
+    enabled: !!user?.email,
   });
 
   return (
