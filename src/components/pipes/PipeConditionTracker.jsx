@@ -89,8 +89,8 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             step={5}
             className="mb-2"
           />
-          <p className="text-xs text-stone-500">
-            {condition.cake_level}% - {t("conditionTracker.optimalRange")}
+          <p className="text-xs text-[#E0D8C8]/60">
+            {condition.cake_level}% - {t("conditionTracker.optimalRange", "Optimal range: 30–70%")}
           </p>
         </div>
 
