@@ -111,8 +111,8 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             step={5}
             className="mb-2"
           />
-          <p className="text-xs text-stone-500">
-            {condition.stem_oxidation}% {t("conditionTracker.oxidation")}
+          <p className="text-xs text-[#E0D8C8]/60">
+            {condition.stem_oxidation}% {t("conditionTracker.oxidation", "oxidation")}
           </p>
         </div>
 
