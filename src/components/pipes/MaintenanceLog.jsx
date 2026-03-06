@@ -181,7 +181,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t("maintenanceLog.descriptionPlaceholder")}
+                placeholder={t("maintenanceLog.descriptionPlaceholder", "Describe the maintenance performed…")}
                 rows={3}
               />
             </div>
