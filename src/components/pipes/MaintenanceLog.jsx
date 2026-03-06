@@ -210,7 +210,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                 {t("forms.cancel")}
               </Button>
-              <Button type="submit">{t("maintenanceLog.saveEntry")}</Button>
+              <Button type="submit">{t("maintenanceLog.saveEntry", "Save Entry")}</Button>
             </div>
           </form>
         </DialogContent>
