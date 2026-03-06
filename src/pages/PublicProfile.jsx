@@ -318,15 +318,20 @@ export default function PublicProfilePage() {
         <Card className="bg-white/95 mb-6">
           <CardContent className="p-6">
             <div className="flex items-start gap-6">
-              <Avatar 
-                className="w-24 h-24 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => profile.avatar_url && setExpandedImage(profile.avatar_url)}
-              >
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="bg-amber-200 text-amber-800 text-2xl">
-                  {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
+              {(() => {
+                const avatarSrc = profile.avatar_url || profileOwner?.avatar_url;
+                return (
+                  <Avatar 
+                    className="w-24 h-24 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => avatarSrc && setExpandedImage(avatarSrc)}
+                  >
+                    <AvatarImage src={avatarSrc} />
+                    <AvatarFallback className="bg-amber-200 text-amber-800 text-2xl">
+                      {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                );
+              })()}
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <h1 className="text-2xl font-bold text-stone-800">
