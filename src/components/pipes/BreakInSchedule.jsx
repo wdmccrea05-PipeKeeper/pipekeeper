@@ -225,7 +225,7 @@ export default function BreakInSchedule({ pipe, blends }) {
                   {t("breakInSchedule.regenerating")}
                 </>
               ) : (
-                t("optimizer.regenerate")
+                t("optimizer.regenerate", "Regenerate")
               )}
             </Button>
           </DialogFooter>
