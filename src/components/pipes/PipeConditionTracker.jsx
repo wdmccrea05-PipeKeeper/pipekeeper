@@ -117,7 +117,7 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
         </div>
 
         <div>
-          <Label className="mb-2 block">{t("conditionTracker.generalWear")}</Label>
+          <Label className="mb-2 block">{t("conditionTracker.generalWear", "General Wear")}</Label>
           <Slider
             value={[condition.wear_level]}
             onValueChange={([value]) => handleUpdate('wear_level', value)}
@@ -125,11 +125,11 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
             step={5}
             className="mb-2"
           />
-          <p className="text-xs text-stone-500">
-            {condition.wear_level}% {t("conditionTracker.wear")} - {
-              condition.wear_level < 20 ? t("conditionTracker.minimalWear") :
-              condition.wear_level < 50 ? t("conditionTracker.lightWear") :
-              condition.wear_level < 75 ? t("conditionTracker.moderateWear") : t("conditionTracker.heavyWear")
+          <p className="text-xs text-[#E0D8C8]/60">
+            {condition.wear_level}% {t("conditionTracker.wear", "wear")} - {
+              condition.wear_level < 20 ? t("conditionTracker.minimalWear", "Minimal Wear") :
+              condition.wear_level < 50 ? t("conditionTracker.lightWear", "Light Wear") :
+              condition.wear_level < 75 ? t("conditionTracker.moderateWear", "Moderate Wear") : t("conditionTracker.heavyWear", "Heavy Wear")
             }
           </p>
         </div>
