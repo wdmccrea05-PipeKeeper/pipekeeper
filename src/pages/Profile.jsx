@@ -191,7 +191,7 @@ export default function ProfilePage() {
     },
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
-      toast.success(t("notifications.saved"));
+      toast.success(t("notifications.saved", "Saved successfully"));
       // Force refetch to ensure UI reflects database state
       await queryClient.invalidateQueries({ queryKey: ["user-profile", userId, email] });
       // Wait for refetch to complete
