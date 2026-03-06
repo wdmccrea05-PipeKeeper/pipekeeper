@@ -28,7 +28,7 @@ export default function ReconcileEntitlementsCard() {
     setResult(null);
     
     try {
-      const response = await base44.functions.invoke("adminReconcileEntitlements", {
+      const response = await base44.functions.invoke("reconcileEntitlementsForUser", {
         email: email.trim(),
       });
 
