@@ -153,8 +153,9 @@ Deno.serve(async (req) => {
     // Platform is informational ONLY - never let it override actual entitlement
     let result: ReconcileResult | null = null;
 
-    // Check Apple IAP first if iOS platform
-    if (user.platform === "ios") {
+    // Check Apple IAP first if iOS platform (platform is stored in user.data.platform)
+    const platform = user.data?.platform || user.platform;
+    if (platform === "ios") {
       result = await reconcileFromApple(base44, user);
     }
 
