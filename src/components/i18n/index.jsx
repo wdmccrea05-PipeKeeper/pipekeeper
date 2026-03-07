@@ -29,17 +29,29 @@ import zhHansDocs from './locales/zh-Hans.docs';
 import deEnums from './locales/de.enums';
 import frEnums from './locales/fr.enums';
 
+// UI overflow files — namespaces from root translations.js not yet in main locale files
+import enUI from './locales/en.ui';
+import esUI from './locales/es.ui';
+import frUI from './locales/fr.ui';
+import deUI from './locales/de.ui';
+import itUI from './locales/it.ui';
+import ptBRUI from './locales/pt-BR.ui';
+import nlUI from './locales/nl.ui';
+import plUI from './locales/pl.ui';
+import jaUI from './locales/ja.ui';
+import zhHansUI from './locales/zh-Hans.ui';
+
 const docsLocales = {
-  en: enDocs,
-  es: esDocs,
-  fr: { ...frDocs, ...frEnums },
-  de: { ...deDocs, ...deEnums },
-  it: itDocs,
-  'pt-BR': ptBRDocs,
-  nl: nlDocs,
-  pl: plDocs,
-  ja: jaDocs,
-  'zh-Hans': zhHansDocs,
+  en: { ...enDocs, ...enUI },
+  es: { ...esDocs, ...esUI },
+  fr: { ...frDocs, ...frEnums, ...frUI },
+  de: { ...deDocs, ...deEnums, ...deUI },
+  it: { ...itDocs, ...itUI },
+  'pt-BR': { ...ptBRDocs, ...ptBRUI },
+  nl: { ...nlDocs, ...nlUI },
+  pl: { ...plDocs, ...plUI },
+  ja: { ...jaDocs, ...jaUI },
+  'zh-Hans': { ...zhHansDocs, ...zhHansUI },
 };
 
 // Deep merge: source keys overwrite target only when target is missing the key
@@ -78,7 +90,7 @@ const rawLocales = {
 
 // Merge homeContent + docs translations into each language pack
 // Priority: locale file wins > homeContent > docs (English fallback handles missing doc keys)
-const translations = Object.fromEntries(
+export const translations = Object.fromEntries(
   Object.entries(rawLocales).map(([lang, pack]) => {
     const withHome = deepMerge(pack, (homeTranslations[lang] || {}));
     const withDocs = deepMerge(withHome, (docsLocales[lang] || {}));
