@@ -779,6 +779,13 @@ const translations = {
     mostCommonDay: "Dia mais comum",
     vsPrevPeriod: "vs período anterior",
     noSessionsLogged: "Nenhuma sessão registrada para este período.",
+    session: "sessão", sessions: "sessões",
+    morning: "Manhã", afternoon: "Tarde", evening: "Noite", night: "Madrugada",
+    noSessionsLoggedTitle: "Nenhuma sessão registrada",
+    viewAllTime: "Ver todo o tempo", lastUsed: "Último uso",
+    topPipes: "Melhores cachimbos", topBlends: "Melhores misturas", downloadPDF: "Baixar PDF",
+    overview: "Visão geral", usage: "Uso", taste: "Sabor", geometry: "Geometria",
+    period: "Período", summary: "Resumo",
   },
   ui: {
     selectPlaceholder: "Selecionar...", searchPlaceholder: "Pesquisar...",
