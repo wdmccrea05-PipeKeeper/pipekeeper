@@ -779,6 +779,13 @@ const translations = {
     mostCommonDay: "Meest voorkomende dag",
     vsPrevPeriod: "vs vorige periode",
     noSessionsLogged: "Geen sessies geregistreerd voor deze periode.",
+    session: "sessie", sessions: "sessies",
+    morning: "Ochtend", afternoon: "Middag", evening: "Avond", night: "Nacht",
+    noSessionsLoggedTitle: "Geen sessies geregistreerd",
+    viewAllTime: "Alle tijd bekijken", lastUsed: "Laatst gebruikt",
+    topPipes: "Top pijpen", topBlends: "Top mengsels", downloadPDF: "PDF downloaden",
+    overview: "Overzicht", usage: "Gebruik", taste: "Smaak", geometry: "Geometrie",
+    period: "Periode", summary: "Samenvatting",
   },
   ui: {
     selectPlaceholder: "Selecteren...", searchPlaceholder: "Zoeken...",
