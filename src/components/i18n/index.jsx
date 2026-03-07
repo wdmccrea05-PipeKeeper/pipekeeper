@@ -27,6 +27,7 @@ import zhHansDocs from './locales/zh-Hans.docs';
 
 // Supplementary files for languages that exceeded the main file size limit
 import deEnums from './locales/de.enums';
+import frEnums from './locales/fr.enums';
 
 const docsLocales = {
   en: enDocs,
