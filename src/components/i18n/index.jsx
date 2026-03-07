@@ -14,16 +14,16 @@ import { homeTranslations } from './homeContent.jsx';
 // Documentation files — split out to keep main locale files under the size limit
 // Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
 // verificationHelp, supportFull, inviteFull, appleSupport, termsOfService, privacyPolicy
-import enDocs from './locales/en.docs.jsx';
-import esDocs from './locales/es.docs.jsx';
-import frDocs from './locales/fr.docs.jsx';
-import deDocs from './locales/de.docs.jsx';
-import itDocs from './locales/it.docs.jsx';
-import ptBRDocs from './locales/pt-BR.docs.jsx';
-import nlDocs from './locales/nl.docs.jsx';
-import plDocs from './locales/pl.docs.jsx';
-import jaDocs from './locales/ja.docs.jsx';
-import zhHansDocs from './locales/zh-Hans.docs.jsx';
+import enDocs from './locales/en.docs.js';
+import esDocs from './locales/es.docs.js';
+import frDocs from './locales/fr.docs.js';
+import deDocs from './locales/de.docs.js';
+import itDocs from './locales/it.docs.js';
+import ptBRDocs from './locales/pt-BR.docs.js';
+import nlDocs from './locales/nl.docs.js';
+import plDocs from './locales/pl.docs.js';
+import jaDocs from './locales/ja.docs.js';
+import zhHansDocs from './locales/zh-Hans.docs.js';
 
 const docsLocales = {
   en: enDocs,
