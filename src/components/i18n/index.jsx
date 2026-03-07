@@ -25,11 +25,14 @@ import plDocs from './locales/pl.docs';
 import jaDocs from './locales/ja.docs';
 import zhHansDocs from './locales/zh-Hans.docs';
 
+// Supplementary files for languages that exceeded the main file size limit
+import deEnums from './locales/de.enums';
+
 const docsLocales = {
   en: enDocs,
   es: esDocs,
   fr: frDocs,
-  de: deDocs,
+  de: { ...deDocs, ...deEnums },
   it: itDocs,
   'pt-BR': ptBRDocs,
   nl: nlDocs,
