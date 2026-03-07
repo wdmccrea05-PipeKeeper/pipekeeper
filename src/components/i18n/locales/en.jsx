@@ -3,8 +3,9 @@
 //           faqExtended, verificationHelp, supportFull, inviteFull, appleSupport
 
 const docs = {
-  // howTo, troubleshooting (full Q&A), faqExtended, verificationHelp, supportFull, inviteFull,
-  // appleSupport, termsOfService, privacyPolicy → moved to en.docs.js
+  // Full howTo steps, troubleshooting Q&A, faqExtended, verificationHelp, supportFull,
+  // inviteFull, appleSupport, termsOfService, privacyPolicy → moved to en.docs.js
+  // The i18n index merges docs files so all keys remain available.
 
   howTo: {
     pageTitle: "How To",
