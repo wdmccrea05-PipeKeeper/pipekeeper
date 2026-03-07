@@ -72,12 +72,14 @@ const rawLocales = {
   'zh-Hans': zhHans,
 };
 
-// Merge homeContent translations into each language pack
+// Merge homeContent + docs translations into each language pack
+// Priority: locale file wins > homeContent > docs (English fallback handles missing doc keys)
 const translations = Object.fromEntries(
-  Object.entries(rawLocales).map(([lang, pack]) => [
-    lang,
-    deepMerge(pack, (homeTranslations[lang] || {})),
-  ])
+  Object.entries(rawLocales).map(([lang, pack]) => {
+    const withHome = deepMerge(pack, (homeTranslations[lang] || {}));
+    const withDocs = deepMerge(withHome, (docsLocales[lang] || {}));
+    return [lang, withDocs];
+  })
 );
 
 function getNestedValue(obj, path) {
