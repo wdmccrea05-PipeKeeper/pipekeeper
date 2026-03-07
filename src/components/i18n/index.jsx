@@ -34,6 +34,7 @@ const docsLocales = {
   es: esDocs,
   fr: frDocs,
   de: { ...deDocs, ...deEnums },
+  fr: { ...frDocs, ...frEnums },
   it: itDocs,
   'pt-BR': ptBRDocs,
   nl: nlDocs,
