@@ -32,9 +32,8 @@ import frEnums from './locales/fr.enums';
 const docsLocales = {
   en: enDocs,
   es: esDocs,
-  fr: frDocs,
-  de: { ...deDocs, ...deEnums },
   fr: { ...frDocs, ...frEnums },
+  de: { ...deDocs, ...deEnums },
   it: itDocs,
   'pt-BR': ptBRDocs,
   nl: nlDocs,
