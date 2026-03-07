@@ -11,6 +11,33 @@ import ja from './locales/ja.jsx';
 import zhHans from './locales/zh-Hans.jsx';
 import { homeTranslations } from './homeContent.jsx';
 
+// Documentation files — split out to keep main locale files under the size limit
+// Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
+// verificationHelp, supportFull, inviteFull, appleSupport, termsOfService, privacyPolicy
+import enDocs from './locales/en.docs.jsx';
+import esDocs from './locales/es.docs.jsx';
+import frDocs from './locales/fr.docs.jsx';
+import deDocs from './locales/de.docs.jsx';
+import itDocs from './locales/it.docs.jsx';
+import ptBRDocs from './locales/pt-BR.docs.jsx';
+import nlDocs from './locales/nl.docs.jsx';
+import plDocs from './locales/pl.docs.jsx';
+import jaDocs from './locales/ja.docs.jsx';
+import zhHansDocs from './locales/zh-Hans.docs.jsx';
+
+const docsLocales = {
+  en: enDocs,
+  es: esDocs,
+  fr: frDocs,
+  de: deDocs,
+  it: itDocs,
+  'pt-BR': ptBRDocs,
+  nl: nlDocs,
+  pl: plDocs,
+  ja: jaDocs,
+  'zh-Hans': zhHansDocs,
+};
+
 // Deep merge: source keys overwrite target only when target is missing the key
 function deepMerge(target, source) {
   if (!source || typeof source !== 'object') return target;
