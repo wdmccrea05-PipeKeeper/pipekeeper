@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 import { translate } from '@/components/i18n/safeTranslation';
+import { logClientError } from '@/components/utils/clientErrorLogger';
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -56,13 +57,10 @@ class GlobalErrorBoundary extends React.Component {
     }
 
     // Send to logging endpoint (non-blocking)
-    try {
-      fetch('/api/log-client-error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(errorDetails),
-      }).catch(() => {});
-    } catch {}
+    logClientError(error, {
+      type: 'errorBoundary',
+      componentStack: errorInfo?.componentStack?.slice(0, 500),
+    });
   }
 
   render() {
