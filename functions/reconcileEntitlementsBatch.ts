@@ -136,6 +136,17 @@ Deno.serve(async (req) => {
     const stripe = getStripe();
     const users = await base44.asServiceRole.entities.User.list("-created_date", batchSize);
 
+    // Pre-fetch ALL local subscriptions in one batch — avoids N Stripe API calls for free users
+    const allLocalSubs = await base44.asServiceRole.entities.Subscription.list("-created_date", 1000);
+    const localSubsByUserId = {};
+    for (const sub of (allLocalSubs || [])) {
+      const uid = sub.user_id;
+      if (uid) {
+        if (!localSubsByUserId[uid]) localSubsByUserId[uid] = [];
+        localSubsByUserId[uid].push(sub);
+      }
+    }
+
     let scanned = 0;
     let fixed = 0;
     let unchanged = 0;
@@ -145,7 +156,7 @@ Deno.serve(async (req) => {
 
     for (const userEntity of users) {
       try {
-        const result = await reconcileUser(base44, userEntity, stripe);
+        const result = await reconcileUser(base44, userEntity, stripe, localSubsByUserId);
         scanned++;
 
         if (result.changed) {
