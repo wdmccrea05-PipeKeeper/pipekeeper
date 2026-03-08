@@ -35,8 +35,11 @@ Deno.serve(async (req) => {
           usersWithNestedData++;
         }
         
-        // Check for missing entitlement fields
-        if (!u.data?.entitlement_tier && !u.data?.subscription_tier) {
+        // Check for missing entitlement fields — only flag if user has a paid subscription
+        // (free users without a data blob are normal until they first login/sync)
+        const hasPaidTierOnUser = u.entitlement_tier === 'premium' || u.entitlement_tier === 'pro' ||
+          u.subscription_tier === 'premium' || u.subscription_tier === 'pro';
+        if (!u.data?.entitlement_tier && !u.data?.subscription_tier && hasPaidTierOnUser) {
           usersWithMissingEntitlements++;
         }
         
@@ -95,16 +98,17 @@ Deno.serve(async (req) => {
       let activePaidSubs = 0;
       
       for (const sub of allSubs) {
-        const status = (sub.data?.status || '').toLowerCase();
+        // Check top-level fields (canonical), not data blob
+        const status = (sub.status || sub.data?.status || '').toLowerCase();
         const isActive = ['active', 'trialing', 'trial'].includes(status);
         
         if (isActive) {
           activePaidSubs++;
           
-          if (!sub.data?.user_id) {
+          if (!sub.user_id && !sub.data?.user_id) {
             subsWithoutUserId++;
           }
-          if (!sub.data?.user_email) {
+          if (!sub.user_email && !sub.data?.user_email) {
             subsWithoutUserEmail++;
           }
         }
@@ -286,8 +290,9 @@ Deno.serve(async (req) => {
       
       const subsByEmail = {};
       for (const sub of allSubs) {
-        const email = (sub.data?.user_email || '').toLowerCase();
-        const status = (sub.data?.status || '').toLowerCase();
+        // Use top-level fields (canonical), fall back to data blob
+        const email = (sub.user_email || sub.data?.user_email || '').toLowerCase();
+        const status = (sub.status || sub.data?.status || '').toLowerCase();
         const isActive = ['active', 'trialing', 'trial'].includes(status);
         
         if (isActive && email) {
@@ -301,7 +306,8 @@ Deno.serve(async (req) => {
       
       for (const u of allUsers) {
         const email = (u.email || '').toLowerCase();
-        const userTier = u.data?.entitlement_tier || u.data?.subscription_tier || 'free';
+        // Check top-level entitlement_tier first (canonical), then data blob
+        const userTier = u.entitlement_tier || u.data?.entitlement_tier || u.data?.subscription_tier || 'free';
         const hasSub = subsByEmail[email] && subsByEmail[email].length > 0;
         
         if (hasSub && userTier === 'free') {
@@ -310,7 +316,7 @@ Deno.serve(async (req) => {
             email,
             userTier,
             subCount: subsByEmail[email].length,
-            subTiers: subsByEmail[email].map(s => s.data?.tier)
+            subTiers: subsByEmail[email].map(s => s.tier || s.data?.tier)
           });
         }
       }
@@ -390,7 +396,8 @@ Deno.serve(async (req) => {
         let appleSubsWithoutUserId = 0;
         
         for (const sub of appleSubs) {
-          if (!sub.data?.user_id) {
+          // Check top-level user_id field (canonical), not data blob
+          if (!sub.user_id) {
             appleSubsWithoutUserId++;
           }
         }
