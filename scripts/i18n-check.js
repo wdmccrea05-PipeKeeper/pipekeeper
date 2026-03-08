@@ -1,0 +1,298 @@
+#!/usr/bin/env node
+/**
+ * i18n Regression Guard
+ *
+ * Scans src/pages/* and src/components/* for newly introduced hardcoded
+ * user-facing strings in JSX so they can be caught before they reach
+ * production.  Reuses the proper-noun allowlist and exclude patterns from
+ * src/components/i18n/auditConfig.json.jsx.
+ *
+ * Usage:
+ *   npm run i18n:check          # warn mode (default)
+ *   npm run i18n:check -- --fail-on-findings   # exit 1 when findings exist
+ *
+ * See docs/i18n-check.md for full documentation.
+ */
+
+import { readFileSync, readdirSync, statSync } from 'fs';
+import { join, relative, resolve, sep } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const ROOT = resolve(__dirname, '..');
+
+// ─── Load auditConfig ────────────────────────────────────────────────────────
+// The file is a .jsx but its content is plain JSON so we strip any leading
+// comment lines and parse the first JSON object we encounter.
+function loadAuditConfig() {
+  const configPath = join(ROOT, 'src/components/i18n/auditConfig.json.jsx');
+  try {
+    const raw = readFileSync(configPath, 'utf8');
+    const jsonStart = raw.indexOf('{');
+    const jsonEnd = raw.lastIndexOf('}') + 1;
+    if (jsonStart >= 0 && jsonEnd > jsonStart) {
+      return JSON.parse(raw.slice(jsonStart, jsonEnd));
+    }
+  } catch {
+    // Config file unavailable – fall back to built-in defaults
+  }
+  return { properNounAllowlist: [], excludePatterns: [] };
+}
+
+const auditConfig = loadAuditConfig();
+
+// ─── Directories to scan ─────────────────────────────────────────────────────
+const SCAN_ROOTS = [
+  join(ROOT, 'src/pages'),
+  join(ROOT, 'src/components'),
+];
+
+// ─── Exclusion rules ─────────────────────────────────────────────────────────
+// Per-problem-statement requirements
+const EXCLUDED_DIRS = [
+  join(ROOT, 'src/components/admin'),
+  join(ROOT, 'src/components/debug'),
+];
+
+// Pages whose basenames start with any of these prefixes are excluded
+const EXCLUDED_PAGE_PREFIXES = [
+  'Admin',
+  'SubscriptionEventsLog',
+  'SubscriptionE2ETest',
+];
+
+// Patterns from auditConfig that also mark files as excluded
+const CONFIG_EXCLUDE_PATTERNS = (auditConfig.excludePatterns || []).map(
+  (p) => new RegExp(p),
+);
+
+function isExcluded(filePath) {
+  const rel = relative(ROOT, filePath);
+
+  // Exclude based on auditConfig patterns
+  if (CONFIG_EXCLUDE_PATTERNS.some((re) => re.test(rel))) return true;
+
+  // Exclude admin / debug component directories
+  if (EXCLUDED_DIRS.some((dir) => filePath.startsWith(dir + sep))) return true;
+
+  // Exclude specific page files by name prefix
+  const basename = filePath.split('/').pop() || '';
+  if (
+    filePath.includes('/src/pages/') &&
+    EXCLUDED_PAGE_PREFIXES.some((prefix) => basename.startsWith(prefix))
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+// ─── Allowlist ───────────────────────────────────────────────────────────────
+// Strings that should never be flagged (proper nouns, brand names, etc.)
+const PROPER_NOUN_ALLOWLIST = new Set(
+  (auditConfig.properNounAllowlist || []).map((s) => s.toLowerCase()),
+);
+
+// Additional generic terms that are safe to leave un-translated
+const GENERIC_ALLOWLIST = new Set([
+  // HTML / technical
+  'px', 'em', 'rem', 'vh', 'vw', '%',
+  // Single-letter / punctuation-only strings are skipped by length check
+]);
+
+function isAllowlisted(text) {
+  const lower = text.trim().toLowerCase();
+  if (PROPER_NOUN_ALLOWLIST.has(lower)) return true;
+  if (GENERIC_ALLOWLIST.has(lower)) return true;
+  return false;
+}
+
+// ─── Detection patterns ──────────────────────────────────────────────────────
+// Each rule has a name, a regex with a capture group for the flagged text, and
+// an optional severity ('warn' | 'error').
+
+const RULES = [
+  {
+    name: 'jsx-text-content',
+    // Matches ">  Some Text  <" in JSX (not a translation call, not a variable)
+    // Captures text between JSX tags that looks like a human-readable sentence
+    pattern: />\s*([A-Z][a-zA-Z0-9 '",.:!?()&/-]{4,}[a-zA-Z.!?])\s*</g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-placeholder',
+    // placeholder="Hardcoded string"
+    pattern: /\bplaceholder=["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-aria-label',
+    // aria-label="Hardcoded string"
+    pattern: /\baria-label=["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-title-attr',
+    // title="Hardcoded string"
+    pattern: /\btitle=["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-alt-text',
+    // alt="Hardcoded string"
+    pattern: /\balt=["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+  {
+    name: 'toast-hardcoded',
+    // toast.success("Hardcoded") or toast.error("Hardcoded")
+    pattern: /\btoast\.[a-z]+\(\s*["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+];
+
+// Short patterns likely to be false positives (CSS classes, code fragments, etc.)
+const IGNORE_PATTERNS = [
+  /^[a-z]/, // starts lowercase — not a user-facing string
+  /^https?:\/\//, // URLs
+  /^\s*\/\//, // comments
+  /^[{(<[\]>)}\s]*$/, // only punctuation
+  /^\d/, // starts with a digit
+  /^[A-Z_]+$/, // ALL_CAPS constants
+  /^[a-zA-Z0-9_-]+\.[a-zA-Z]{2,4}$/, // file names / extensions
+  /^[a-z][a-zA-Z0-9.]+$/, // camelCase or dotted identifiers
+];
+
+function shouldIgnoreText(text) {
+  const trimmed = text.trim();
+  if (trimmed.length < 4) return true;
+  if (IGNORE_PATTERNS.some((re) => re.test(trimmed))) return true;
+  return false;
+}
+
+// ─── File scanner ─────────────────────────────────────────────────────────────
+function collectFiles(dir, files = []) {
+  if (!statSync(dir, { throwIfNoEntry: false })) return files;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectFiles(full, files);
+    } else if (/\.(jsx|js|tsx|ts)$/.test(entry.name)) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+function scanFile(filePath) {
+  const findings = [];
+  const source = readFileSync(filePath, 'utf8');
+  const lines = source.split('\n');
+
+  for (const rule of RULES) {
+    // Reset lastIndex for global regexes
+    rule.pattern.lastIndex = 0;
+
+    let match;
+    while ((match = rule.pattern.exec(source)) !== null) {
+      const text = match[1].trim();
+
+      if (shouldIgnoreText(text)) continue;
+      if (isAllowlisted(text)) continue;
+
+      // Determine line number from match offset
+      const offset = match.index;
+      let lineNum = 1;
+      let chars = 0;
+      for (let i = 0; i < lines.length; i++) {
+        chars += lines[i].length + 1; // +1 for the newline
+        if (chars > offset) {
+          lineNum = i + 1;
+          break;
+        }
+      }
+
+      findings.push({
+        file: relative(ROOT, filePath),
+        line: lineNum,
+        rule: rule.name,
+        severity: rule.severity,
+        text,
+      });
+    }
+  }
+
+  return findings;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+function main() {
+  const failOnFindings = process.argv.includes('--fail-on-findings');
+
+  const allFiles = [];
+  for (const scanRoot of SCAN_ROOTS) {
+    collectFiles(scanRoot, allFiles);
+  }
+
+  const includedFiles = allFiles.filter((f) => !isExcluded(f));
+  const allFindings = [];
+
+  for (const filePath of includedFiles) {
+    const findings = scanFile(filePath);
+    allFindings.push(...findings);
+  }
+
+  // ── Output ──────────────────────────────────────────────────────────────────
+  const warnCount = allFindings.filter((f) => f.severity === 'warn').length;
+  const errorCount = allFindings.filter((f) => f.severity === 'error').length;
+
+  if (allFindings.length === 0) {
+    console.log('✅  i18n check passed — no hardcoded user-facing strings found.\n');
+    console.log(`   Scanned ${includedFiles.length} files across src/pages and src/components.`);
+    process.exit(0);
+  }
+
+  console.log('⚠️   i18n Regression Guard — Hardcoded String Report');
+  console.log('='.repeat(60));
+  console.log(`   Files scanned : ${includedFiles.length}`);
+  console.log(`   Findings      : ${allFindings.length} (${errorCount} errors, ${warnCount} warnings)\n`);
+
+  // Group by file for readability
+  const byFile = {};
+  for (const f of allFindings) {
+    if (!byFile[f.file]) byFile[f.file] = [];
+    byFile[f.file].push(f);
+  }
+
+  for (const [file, findings] of Object.entries(byFile).sort()) {
+    console.log(`📄  ${file}`);
+    for (const finding of findings) {
+      const icon = finding.severity === 'error' ? '❌' : '⚠️ ';
+      console.log(`  ${icon}  line ${finding.line}  [${finding.rule}]`);
+      console.log(`      "${finding.text}"`);
+    }
+    console.log();
+  }
+
+  console.log('─'.repeat(60));
+  console.log('How to fix flagged strings:');
+  console.log('  1. Add a translation key to translations.js (all languages).');
+  console.log('     Example:  common: { saveButton: "Save" }');
+  console.log('  2. Import useTranslation in the component:');
+  console.log('     const { t } = useTranslation();');
+  console.log('  3. Replace the raw string with a t() call:');
+  console.log('     Before: <Button>Save</Button>');
+  console.log('     After:  <Button>{t("common.saveButton")}</Button>');
+  console.log('  4. If a string is a proper noun or brand name, add it to');
+  console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
+  console.log('─'.repeat(60));
+  console.log();
+
+  if (failOnFindings || errorCount > 0) {
+    process.exit(1);
+  }
+  // Warning mode: exit 0 so CI is not blocked
+  process.exit(0);
+}
+
+main();
