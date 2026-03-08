@@ -483,8 +483,6 @@ const enUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "Help Center",
     findAnswers: "Find answers, guides, and support for your PipeKeeper collection.",
@@ -518,4 +516,6 @@ const enUI = {
     topicPhotos: "Photos",
     topicTerms: "Glossary & Terms",
   },
+};
+
 export default enUI;

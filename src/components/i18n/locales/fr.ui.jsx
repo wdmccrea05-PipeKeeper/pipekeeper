@@ -483,8 +483,6 @@ const frUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "Centre d'aide",
     findAnswers: "Trouvez des réponses, des guides et du support pour votre collection PipeKeeper.",
@@ -518,4 +516,6 @@ const frUI = {
     topicPhotos: "Photos",
     topicTerms: "Glossaire et termes",
   },
+};
+
 export default frUI;

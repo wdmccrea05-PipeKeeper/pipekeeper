@@ -483,8 +483,6 @@ const nlUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "Helpcentrum",
     findAnswers: "Vind antwoorden, handleidingen en ondersteuning voor uw PipeKeeper-collectie.",
@@ -518,4 +516,6 @@ const nlUI = {
     topicPhotos: "Foto's",
     topicTerms: "Woordenlijst & Termen",
   },
+};
+
 export default nlUI;

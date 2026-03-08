@@ -478,8 +478,6 @@ const jaUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "ヘルプセンター",
     findAnswers: "PipeKeeperコレクションの回答、ガイド、サポートを見つけてください。",
@@ -513,4 +511,6 @@ const jaUI = {
     topicPhotos: "写真",
     topicTerms: "用語集と用語",
   },
+};
+
 export default jaUI;

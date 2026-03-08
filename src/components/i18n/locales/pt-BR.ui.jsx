@@ -483,8 +483,6 @@ const ptBRUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "Central de Ajuda",
     findAnswers: "Encontre respostas, guias e suporte para sua coleção PipeKeeper.",
@@ -518,4 +516,6 @@ const ptBRUI = {
     topicPhotos: "Fotos",
     topicTerms: "Glossário e Termos",
   },
+};
+
 export default ptBRUI;

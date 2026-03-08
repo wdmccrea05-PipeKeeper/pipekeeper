@@ -478,8 +478,6 @@ const zhHansUI = {
     submitReport: "Submit Report",
     reportSubmitted: "Report submitted. Thank you for helping keep our community safe.",
   },
-};
-
   helpCenter: {
     helpCenter: "帮助中心",
     findAnswers: "查找有关您的PipeKeeper收藏的答案、指南和支持。",
@@ -513,4 +511,6 @@ const zhHansUI = {
     topicPhotos: "照片",
     topicTerms: "词汇表和术语",
   },
+};
+
 export default zhHansUI;
