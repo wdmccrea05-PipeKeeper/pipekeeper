@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
+import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
@@ -86,8 +87,8 @@ export default function TobaccoDetailPage() {
       }
 
       try {
-        const arr = await base44.entities.TobaccoBlend.filter({ id: blendId, created_by: user.email });
-        if (Array.isArray(arr) && arr.length) return arr[0];
+        const item = await scopedEntities.TobaccoBlend.getForUser(user.email, blendId);
+        if (item) return item;
       } catch (e) {
         console.warn("TobaccoBlend.filter failed", {
           blendId,
@@ -125,7 +126,7 @@ export default function TobaccoDetailPage() {
     queryKey: ['pipes', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+        const result = await scopedEntities.Pipe.listForUser(user?.email);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Pipes load error:', err);
@@ -174,7 +175,7 @@ export default function TobaccoDetailPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.TobaccoBlend.delete(blendId),
+    mutationFn: () => scopedEntities.TobaccoBlend.delete(blendId),
     onSuccess: () => {
       window.location.href = createPageUrl('Tobacco');
     },
