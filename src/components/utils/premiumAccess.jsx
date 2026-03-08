@@ -36,12 +36,13 @@ export function getEntitlementTier(user, subscription) {
   }
 
   // 1) Server authoritative / canonical (most important)
+  // Check BOTH top-level and nested data blob — server writes to data blob first
   const fromUserEntitlement =
+    user?.data?.entitlement_tier ??
     user?.entitlement_tier ??
     user?.entitlementTier ??
     user?.entitlement ??
-    user?.tier ??
-    user?.data?.entitlement_tier;
+    user?.tier;
 
   const t1 = normalizeTier(fromUserEntitlement);
   if (t1 !== "free") return t1;
