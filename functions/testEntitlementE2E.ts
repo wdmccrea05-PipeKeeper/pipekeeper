@@ -254,8 +254,8 @@ Deno.serve(async (req) => {
       let orphanedSubs = 0;
       
       for (const sub of allSubs) {
-        const email = (sub.data?.user_email || '').toLowerCase();
-        const status = (sub.data?.status || '').toLowerCase();
+        const email = (sub.user_email || sub.data?.user_email || '').toLowerCase();
+        const status = (sub.status || sub.data?.status || '').toLowerCase();
         const isActive = ['active', 'trialing', 'trial'].includes(status);
         
         if (isActive && email && !userEmails.has(email)) {
