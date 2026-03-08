@@ -499,7 +499,7 @@ const itUI = {
     termsOfService: "Termini di servizio",
     privacyPolicy: "Informativa sulla privacy",
     subscriptionBilling: "Abbonamento e fatturazione",
-    cantFind: "Non riesci a trovare quello che cerci?",
+    cantFind: "Non riesci a trovare quello che cerchi?",
     topicWhatIsPipeKeeper: "Cos'è PipeKeeper?",
     topicPrivacy: "Privacy e dati",
     topicSubscription: "Abbonamenti",
