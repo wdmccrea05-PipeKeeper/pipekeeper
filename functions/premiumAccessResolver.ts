@@ -24,10 +24,15 @@ export function getEntitlementTier(user, subscription) {
   if (user?.role === "admin") return "pro";
 
   // Check user object first (server-authoritative)
+  // Canonical top-level field takes priority; nested data blob is a fallback
+  // for users whose entitlement was written by older paths that only updated data.*
   if (user?.tier) return normalizeTier(user.tier);
   // FIX BUG-07: Check snake_case fields (written by all server-side paths)
   if (user?.entitlement_tier) return normalizeTier(user.entitlement_tier);
   if (user?.entitlementTier) return normalizeTier(user.entitlementTier);
+  // FIX: Also check nested data blob (fallback for users whose data was written
+  // before top-level entitlement_tier writes were added to all code paths)
+  if (user?.data?.entitlement_tier) return normalizeTier(user.data.entitlement_tier);
   if (user?.subscription_tier) return normalizeTier(user.subscription_tier);
   if (user?.subscriptionTier) return normalizeTier(user.subscriptionTier);
 

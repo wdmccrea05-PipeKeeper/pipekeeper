@@ -38,16 +38,21 @@ Deno.serve(async (req) => {
         const activeSub = sortedSubs[0];
         const expectedTier = activeSub.tier || 'premium';
 
-        // Check if user's entitlement_tier matches
+        // Check if user's entitlement_tier matches (check both top-level and data blob)
         const userDataObj = userData.data || {};
-        const currentEntitlementTier = userDataObj.entitlement_tier;
+        const currentEntitlementTier = userData.entitlement_tier || userDataObj.entitlement_tier;
 
         if (currentEntitlementTier !== expectedTier) {
-          // Update user with correct entitlement tier
+          // Update user with correct entitlement tier at both top-level and nested data blob
           await base44.asServiceRole.entities.User.update(userData.id, {
+            // Canonical entitlement field (primary source of truth)
+            entitlement_tier: expectedTier,
+            // Legacy fields kept for backward compatibility
+            subscription_tier: expectedTier,
             data: {
               ...userDataObj,
-              entitlement_tier: expectedTier
+              entitlement_tier: expectedTier,
+              subscription_tier: expectedTier,
             }
           });
 

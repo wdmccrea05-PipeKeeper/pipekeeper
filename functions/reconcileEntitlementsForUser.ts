@@ -186,17 +186,31 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Update user if entitlements changed
+    // Update user if entitlements changed (also triggers when entitlement_tier is missing
+    // so that a one-time backfill of the canonical field occurs on next reconcile call)
+    const canonicalTier = result.subscription_tier || "free";
     const needsUpdate =
       user.subscription_level !== result.subscription_level ||
       user.subscription_status !== result.subscription_status ||
-      user.subscription_tier !== result.subscription_tier;
+      user.subscription_tier !== result.subscription_tier ||
+      user.entitlement_tier !== canonicalTier;
 
     if (needsUpdate) {
       await base44.asServiceRole.entities.User.update(user.id, {
+        // Canonical entitlement fields (primary source of truth)
+        entitlement_tier: canonicalTier,
+        // Legacy fields kept for backward compatibility
         subscription_level: result.subscription_level,
         subscription_status: result.subscription_status,
         subscription_tier: result.subscription_tier,
+        // Nested data blob sync so all read paths see the same value
+        data: {
+          ...(user.data || {}),
+          entitlement_tier: canonicalTier,
+          subscription_tier: result.subscription_tier,
+          subscription_level: result.subscription_level,
+          subscription_status: result.subscription_status,
+        },
       });
       result.updated = true;
       console.log(`[reconcile] Updated ${result.email}: ${result.source} → level=${result.subscription_level} tier=${result.subscription_tier}`);
