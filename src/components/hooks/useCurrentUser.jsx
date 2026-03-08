@@ -11,11 +11,16 @@ import {
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/AuthContext";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 export function useCurrentUser() {
   const queryClient = useQueryClient();
+
+  // Use the user already fetched by AuthContext to avoid a duplicate base44.auth.me() call
+  // on startup. The queryFn still runs on explicit invalidateQueries/refetch calls.
+  const { user: authUser, isLoadingAuth } = useAuth();
 
   const {
     data: user,
@@ -26,16 +31,16 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: async () => {
       try {
-        const authUser = await base44.auth.me();
-        if (!authUser?.email) return null;
+        const freshUser = await base44.auth.me();
+        if (!freshUser?.email) return null;
 
-        const email = normEmail(authUser.email);
-        const userId = authUser.id || authUser.auth_user_id;
+        const email = normEmail(freshUser.email);
+        const userId = freshUser.id || freshUser.auth_user_id;
 
         // Use auth user directly - all relevant fields are already included
         // (Base44's auth.me() includes all user entity fields)
         return {
-          ...authUser,
+          ...freshUser,
           id: userId,
           email,
         };
@@ -46,7 +51,29 @@ export function useCurrentUser() {
         throw error;
       }
     },
-    staleTime: 0,
+    // Seed the cache with the user already fetched by AuthContext so no duplicate
+    // base44.auth.me() call is made on startup. Explicit invalidateQueries/refetch
+    // calls still trigger the queryFn to get fresh data.
+    // When authUser is null (not logged in), initialData is undefined so the queryFn
+    // will run — but AuthenticatedApp blocks rendering until auth is resolved, so this
+    // case only occurs when an explicit refetch is triggered post-logout.
+    initialData: authUser
+      ? {
+          ...authUser,
+          id: authUser.id || authUser.auth_user_id,
+          email: authUser.email ? normEmail(authUser.email) : authUser.email,
+        }
+      : undefined,
+    // Mark initialData as fresh as-of now. AuthenticatedApp blocks child rendering
+    // until auth completes, so the delta between auth fetch and hook mount is negligible
+    // (sub-second). Together with staleTime below this prevents an immediate re-fetch.
+    initialDataUpdatedAt: authUser ? Date.now() : 0,
+    // Keep data fresh for 5 minutes to avoid redundant background refetches.
+    staleTime: 5 * 60 * 1000,
+    // Don't start the query until auth has resolved so the initialData is available.
+    // If auth completes with no user (logged-out state), the queryFn runs and correctly
+    // handles the 401 from base44.auth.me() while AuthenticatedApp redirects to login.
+    enabled: !isLoadingAuth,
     retry: 2,
   });
 
