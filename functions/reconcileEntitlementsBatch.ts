@@ -22,83 +22,65 @@ function getTierPriority(tier) {
   return 1;
 }
 
-async function reconcileUser(base44, userEntity, stripe) {
+async function reconcileUser(base44, userEntity, stripe, localSubsByUserId) {
   const email = normEmail(userEntity.email);
-  const currentTier = userEntity.subscription_tier || "free";
+  const currentTier = userEntity.entitlement_tier || userEntity.data?.entitlement_tier || userEntity.subscription_tier || "free";
   const currentLevel = userEntity.subscription_level || "free";
   const currentStatus = userEntity.subscription_status || "";
   let stripeCustomerId = userEntity.stripe_customer_id || null;
 
-  const wasEverPaid = currentLevel === "paid" ||
-    currentTier === "premium" ||
-    currentTier === "pro" ||
-    isActiveStatus(currentStatus);
+  // Check if user already has entitlement fields set correctly in data blob
+  const hasDataBlob = !!(userEntity.data?.entitlement_tier);
+  const dataBlobTier = userEntity.data?.entitlement_tier || "free";
+
+  // Check local Subscription entity first (avoids Stripe API call for most users)
+  const localSubs = localSubsByUserId[userEntity.id] || [];
+  const localActiveSub = localSubs
+    .filter(s => isActiveStatus(s.status))
+    .sort((a, b) => getTierPriority(b.tier) - getTierPriority(a.tier))[0] || null;
 
   let stripeTier = null;
   let stripeStatus = null;
   let appleTier = null;
   let appleStatus = null;
 
-  // === STRIPE CHECK ===
-  try {
-    let customer = null;
-    if (stripeCustomerId) {
-      customer = { id: stripeCustomerId };
+  // Set from local Subscription entity (fast path — no external API calls)
+  if (localActiveSub) {
+    if (localActiveSub.provider === "apple") {
+      appleTier = localActiveSub.tier || "premium";
+      appleStatus = localActiveSub.status;
     } else {
-      const customers = await stripe.customers.list({ email, limit: 1 });
-      customer = customers.data?.[0] || null;
+      stripeTier = localActiveSub.tier || "premium";
+      stripeStatus = localActiveSub.status;
+      if (localActiveSub.stripe_customer_id) stripeCustomerId = localActiveSub.stripe_customer_id;
     }
-
-    if (customer?.id) {
-      stripeCustomerId = customer.id;
-      const subsResponse = await stripe.subscriptions.list({
-        customer: customer.id,
-        status: "all",
-        limit: 10,
-        expand: ["data.items.data.price"],
-      });
-
-      if (subsResponse.data?.length > 0) {
-        const activeSub = subsResponse.data.find(s => s.status === "active" || s.status === "trialing");
-        const bestSub = activeSub || null;
-
-        if (bestSub) {
-          stripeStatus = bestSub.status;
-          const priceId = bestSub.items?.data?.[0]?.price?.id;
-          const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
-          const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
-          if (priceId === proMonthly || priceId === proAnnual) {
-            stripeTier = "pro";
-          } else if (isActiveStatus(bestSub.status)) {
-            stripeTier = "premium";
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.warn(`[reconcileEntitlementsBatch] Stripe check failed for ${email}:`, e?.message);
   }
 
-  // === APPLE CHECK ===
-  try {
-    const appleSubs = await base44.asServiceRole.entities.Subscription.filter({
-      user_id: userEntity.id,
-      provider: "apple",
-    });
-    if (Array.isArray(appleSubs) && appleSubs.length > 0) {
-      const activeSub = appleSubs.find(s => isActiveStatus(s.status));
+  // Only hit Stripe API if user has a stripe_customer_id but no local subscription found
+  if (!localActiveSub && stripeCustomerId) {
+    try {
+      const subsResponse = await stripe.subscriptions.list({
+        customer: stripeCustomerId,
+        status: "all",
+        limit: 5,
+        expand: ["data.items.data.price"],
+      });
+      const activeSub = subsResponse.data?.find(s => s.status === "active" || s.status === "trialing");
       if (activeSub) {
-        appleStatus = activeSub.status;
-        appleTier = activeSub.tier || "premium";
+        stripeStatus = activeSub.status;
+        const priceId = activeSub.items?.data?.[0]?.price?.id;
+        const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
+        const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+        stripeTier = (priceId === proMonthly || priceId === proAnnual) ? "pro" : "premium";
       }
+    } catch (e) {
+      console.warn(`[reconcileEntitlementsBatch] Stripe check failed for ${email}:`, e?.message);
     }
-  } catch (e) {
-    console.warn(`[reconcileEntitlementsBatch] Apple check failed for ${email}:`, e?.message);
   }
 
   // === RESOLVE FINAL TIER ===
   let finalTier = "free";
-  let finalStatus = "";
+  let finalStatus = "inactive";
   let providerUsed = "none";
 
   const stripeActive = stripeTier && isActiveStatus(stripeStatus);
@@ -114,18 +96,21 @@ async function reconcileUser(base44, userEntity, stripe) {
     finalTier = stripeTier; finalStatus = stripeStatus; providerUsed = "stripe";
   } else if (appleActive) {
     finalTier = appleTier; finalStatus = appleStatus; providerUsed = "apple";
-  } else if (wasEverPaid) {
-    finalTier = currentTier; finalStatus = currentStatus; providerUsed = "preserved";
   } else {
-    finalTier = "free"; finalStatus = "inactive"; providerUsed = "none";
+    // Preserve existing paid tier if no active subscription found (don't downgrade)
+    finalTier = currentTier !== "free" ? currentTier : "free";
+    finalStatus = currentStatus || "inactive";
+    providerUsed = currentTier !== "free" ? "preserved" : "none";
   }
 
   const finalLevel = finalTier === "free" ? "free" : "paid";
 
+  // Only mark changed if data blob is missing OR tier is wrong
   const changed =
-    finalTier !== currentTier ||
+    !hasDataBlob ||
+    dataBlobTier !== finalTier ||
+    finalTier !== (userEntity.subscription_tier || "free") ||
     finalLevel !== currentLevel ||
-    finalStatus !== currentStatus ||
     (stripeCustomerId && !userEntity.stripe_customer_id);
 
   return { finalTier, finalLevel, finalStatus, stripeCustomerId, providerUsed, changed };
