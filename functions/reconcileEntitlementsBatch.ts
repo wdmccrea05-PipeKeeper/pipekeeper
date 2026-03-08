@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
     console.log(`[reconcileEntitlementsBatch] Starting: dryRun=${dryRun}, batchSize=${batchSize}`);
 
     const stripe = getStripe();
-    const users = await base44.asServiceRole.entities.User.list("-created_date", batchSize);
+    const skip = cursor ? parseInt(cursor, 10) : 0;
+    const users = await base44.asServiceRole.entities.User.list("-created_date", batchSize, skip);
 
     // Pre-fetch ALL local subscriptions in one batch — avoids N Stripe API calls for free users
     const allLocalSubs = await base44.asServiceRole.entities.Subscription.list("-created_date", 1000);
@@ -211,7 +212,7 @@ Deno.serve(async (req) => {
       unchanged,
       errorsCount,
       hasMore: users.length === batchSize,
-      nextCursor: users.length === batchSize ? users[users.length - 1]?.id : null,
+      nextCursor: users.length === batchSize ? String(skip + batchSize) : null,
       sampleFixes,
       sampleErrors,
     });
