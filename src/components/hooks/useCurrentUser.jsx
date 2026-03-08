@@ -125,7 +125,7 @@ export function useCurrentUser() {
       }
     },
     enabled: !!(userId || email),
-    staleTime: 60_000,
+    staleTime: 0,
   });
 
   // Ensure user record exists with platform info
@@ -170,8 +170,8 @@ export function useCurrentUser() {
 
     const sessionKey = `pk_subscription_sync_${user.email}`;
     const lastSync = sessionStorage.getItem(sessionKey);
-    const FIVE_MINUTES = 5 * 60 * 1000;
-    if (lastSync && Date.now() - Number(lastSync) < FIVE_MINUTES) return;
+    const ONE_MINUTE = 60 * 1000;
+    if (lastSync && Date.now() - Number(lastSync) < ONE_MINUTE) return;
 
     let cancelled = false;
 
