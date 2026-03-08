@@ -149,9 +149,20 @@ Deno.serve(async (req) => {
     }
 
     const updates = {
+      // Canonical entitlement field (primary source of truth)
+      entitlement_tier: result.finalTier,
+      // Legacy fields kept for backward compatibility
       subscription_tier: result.finalTier,
       subscription_level: result.finalLevel,
       subscription_status: result.finalStatus,
+      // Nested data blob sync so all read paths see the same value
+      data: {
+        ...(userRow.data || {}),
+        entitlement_tier: result.finalTier,
+        subscription_tier: result.finalTier,
+        subscription_level: result.finalLevel,
+        subscription_status: result.finalStatus,
+      },
     };
     if (result.stripeCustomerId && !userRow.stripe_customer_id) {
       updates.stripe_customer_id = result.stripeCustomerId;

@@ -50,6 +50,13 @@ Deno.serve(async (req) => {
     cleanData.subscription_status = normalizedTier === 'free' ? 'inactive' : 'active';
 
     await base44.asServiceRole.entities.User.update(targetUser.id, {
+      // Canonical entitlement fields (top-level, read by backend resolver and frontend)
+      entitlement_tier: normalizedTier,
+      // Legacy fields kept for backward compatibility
+      subscription_tier: normalizedTier,
+      subscription_level: normalizedTier === 'free' ? 'free' : 'paid',
+      subscription_status: normalizedTier === 'free' ? 'inactive' : 'active',
+      // Nested data blob sync
       data: cleanData
     });
 
