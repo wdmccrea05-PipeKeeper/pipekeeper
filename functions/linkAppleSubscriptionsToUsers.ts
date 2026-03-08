@@ -28,12 +28,12 @@ Deno.serve(async (req) => {
 
     for (const sub of appleSubs) {
       try {
-        // Skip if already has user_id
-        if (sub.data?.user_id) {
+        // Skip if already has user_id (check top-level field, not data blob)
+        if (sub.user_id) {
           continue;
         }
 
-        const email = (sub.data?.user_email || '').toLowerCase();
+        const email = (sub.user_email || sub.data?.user_email || '').toLowerCase();
         if (!email) {
           notFound++;
           results.push({
@@ -61,12 +61,9 @@ Deno.serve(async (req) => {
         
         console.log(`[linkAppleSubscriptionsToUsers] Linking subscription ${sub.id} to user ${matchedUser.id}`);
 
-        // Update subscription with user_id
+        // Update subscription with user_id (top-level field, not data blob)
         await base44.asServiceRole.entities.Subscription.update(sub.id, {
-          data: {
-            ...sub.data,
-            user_id: matchedUser.id
-          }
+          user_id: matchedUser.id,
         });
 
         linked++;

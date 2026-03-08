@@ -141,8 +141,9 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const dryRun = body.dryRun !== false;
-    const batchSize = Math.min(body.batchSize || 100, 500);
+    // Accept both camelCase and snake_case for dry_run/dryRun
+    const dryRun = (body.dryRun ?? body.dry_run) !== false;
+    const batchSize = Math.min(body.batchSize || body.batch_size || 100, 500);
     const cursor = body.cursor || null;
 
     console.log(`[reconcileEntitlementsBatch] Starting: dryRun=${dryRun}, batchSize=${batchSize}`);
@@ -169,6 +170,15 @@ Deno.serve(async (req) => {
               subscription_tier: result.finalTier,
               subscription_level: result.finalLevel,
               subscription_status: result.finalStatus,
+              // Write canonical entitlement_tier (top-level AND data blob) so resolver finds it
+              entitlement_tier: result.finalTier,
+              data: {
+                ...(userEntity.data || {}),
+                entitlement_tier: result.finalTier,
+                subscription_tier: result.finalTier,
+                subscription_level: result.finalLevel,
+                subscription_status: result.finalStatus,
+              },
             };
             if (result.stripeCustomerId && !userEntity.stripe_customer_id) {
               updates.stripe_customer_id = result.stripeCustomerId;
