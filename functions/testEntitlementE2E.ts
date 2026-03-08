@@ -260,9 +260,11 @@ Deno.serve(async (req) => {
       for (const sub of allSubs) {
         const email = (sub.user_email || sub.data?.user_email || '').toLowerCase();
         const status = (sub.status || sub.data?.status || '').toLowerCase();
-        const isActive = ['active', 'trialing', 'trial'].includes(status);
+        const isActive = ['active', 'trialing'].includes(status);
+        const periodEnd = sub.current_period_end || sub.data?.current_period_end;
+        const isExpired = periodEnd && new Date(periodEnd) < new Date();
         
-        if (isActive && email && !userEmails.has(email)) {
+        if (isActive && !isExpired && email && !userEmails.has(email)) {
           orphanedSubs++;
         }
       }
