@@ -110,7 +110,7 @@ export default function BatchPipeMeasurements({ user, onComplete }) {
               pipeId: pipe.id,
               pipeName: pipe.name,
               status: "skipped",
-              message: "No photos or dimensions available",
+              message: t('batchPipes.noPhotosOrDimensions'),
             });
             continue;
           }
@@ -186,7 +186,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
               pipeId: pipe.id,
               pipeName: pipe.name,
               status: "skipped",
-              message: "No confident suggestions available",
+              message: t('batchPipes.noConfidentSuggestions'),
             });
           } else if (dryRun) {
             batchResults.push({
@@ -311,7 +311,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
               </span>
               <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
             </div>
-            <p className="text-xs text-[#e8d5b7]/70">Current: {progress.currentPipe}</p>
+            <p className="text-xs text-[#e8d5b7]/70">{t('batchPipes.currentPipeLabel', { name: progress.currentPipe })}</p>
           </div>
         )}
 
@@ -320,24 +320,24 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
           <div className="border border-[#e8d5b7]/20 rounded-lg p-4 bg-[#1a2c42]/50 space-y-3">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-[#e8d5b7]/70">Total Pipes:</span>
+                <span className="text-[#e8d5b7]/70">{t('batchPipes.totalPipesLabel')}</span>
                 <span className="ml-2 font-semibold text-[#e8d5b7]">{results.total}</span>
               </div>
               <div>
-                <span className="text-[#e8d5b7]/70">Eligible:</span>
+                <span className="text-[#e8d5b7]/70">{t('batchPipes.eligibleLabel')}</span>
                 <span className="ml-2 font-semibold text-[#e8d5b7]">{results.eligible}</span>
               </div>
               <div>
-                <span className="text-[#e8d5b7]/70">Updated:</span>
+                <span className="text-[#e8d5b7]/70">{t('batchPipes.updatedLabel')}</span>
                 <span className="ml-2 font-semibold text-green-400">{results.updated}</span>
               </div>
               <div>
-                <span className="text-[#e8d5b7]/70">Skipped:</span>
+                <span className="text-[#e8d5b7]/70">{t('batchPipes.skippedLabel')}</span>
                 <span className="ml-2 font-semibold text-[#e8d5b7]/60">{results.skipped}</span>
               </div>
               {results.failed > 0 && (
                 <div>
-                  <span className="text-[#e8d5b7]/70">Failed:</span>
+                  <span className="text-[#e8d5b7]/70">{t('batchPipes.failedLabel')}</span>
                   <span className="ml-2 font-semibold text-red-400">{results.failed}</span>
                 </div>
               )}
@@ -346,7 +346,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
             {/* Detailed Results */}
             {results.details && results.details.length > 0 && (
               <div className="border-t border-[#e8d5b7]/10 pt-3 max-h-96 overflow-y-auto space-y-2">
-                <h4 className="text-sm font-semibold text-[#e8d5b7] mb-2">Details:</h4>
+                <h4 className="text-sm font-semibold text-[#e8d5b7] mb-2">{t('batchPipes.detailsLabel')}</h4>
                 {results.details.map((detail, idx) => (
                   <div
                     key={idx}
@@ -358,7 +358,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
                       {detail.status === "skipped" && <AlertCircle className="w-3 h-3 text-[#e8d5b7]/50" />}
                       {detail.status === "failed" && <XCircle className="w-3 h-3 text-red-400" />}
                       <span className="font-semibold text-[#e8d5b7]">
-                        {detail.pipeName || "Unknown pipe"}
+                        {detail.pipeName || t('batchPipes.unknownPipe')}
                       </span>
                       <Badge
                         variant={
@@ -375,7 +375,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
                     </div>
                     {detail.fieldsChanged && (
                       <p className="text-[#e8d5b7]/70 mt-1">
-                        Fields: {detail.fieldsChanged.join(", ")}
+                        {t('batchPipes.fieldsLabel', { fields: detail.fieldsChanged.join(", ") })}
                       </p>
                     )}
                     {detail.updates && (
@@ -388,7 +388,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
                       </div>
                     )}
                     {detail.message && <p className="text-[#e8d5b7]/60 mt-1">{detail.message}</p>}
-                    {detail.errorMessage && <p className="text-red-400 mt-1">Error: {detail.errorMessage}</p>}
+                    {detail.errorMessage && <p className="text-red-400 mt-1">{t('batchPipes.errorLabel', { error: detail.errorMessage })}</p>}
                   </div>
                 ))}
               </div>

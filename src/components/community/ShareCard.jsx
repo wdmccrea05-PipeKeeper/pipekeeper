@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Download, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const PIPE_ICON = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/15563e4ee_PipeiconUpdated-fotor-20260110195319.png";
 
 export default function ShareCard({ item, type, open, onClose }) {
+  const { t } = useTranslation();
   const cardRef = useRef(null);
 
   const handleDownload = async () => {
@@ -26,9 +28,9 @@ export default function ShareCard({ item, type, open, onClose }) {
       a.click();
       URL.revokeObjectURL(url);
       
-      toast.success('Share card downloaded');
+      toast.success(t('shareCard.downloadSuccess'));
     } catch (error) {
-      toast.error('Failed to generate share card');
+      toast.error(t('shareCard.downloadError'));
     }
   };
 
@@ -47,15 +49,17 @@ export default function ShareCard({ item, type, open, onClose }) {
         await navigator.share({
           files: [file],
           title: `${item.name} - PipeKeeper`,
-          text: type === 'pipe' ? `Check out my ${item.name} pipe` : `Check out ${item.name} tobacco`,
+          text: type === 'pipe'
+            ? t('shareCard.shareTextPipe', { name: item.name })
+            : t('shareCard.shareTextTobacco', { name: item.name }),
         });
-        toast.success('Shared successfully');
+        toast.success(t('shareCard.shareSuccess'));
       } else {
         handleDownload();
       }
     } catch (error) {
       if (error.name !== 'AbortError') {
-        toast.error('Failed to share');
+        toast.error(t('shareCard.shareError'));
       }
     }
   };
@@ -66,7 +70,7 @@ export default function ShareCard({ item, type, open, onClose }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Card</DialogTitle>
+          <DialogTitle>{t('shareCard.title')}</DialogTitle>
         </DialogHeader>
 
         <div ref={cardRef} className="bg-gradient-to-br from-[#1A2B3A] to-[#243548] p-6 rounded-2xl">
@@ -82,7 +86,7 @@ export default function ShareCard({ item, type, open, onClose }) {
               )}
               <div>
                 <p className="text-[#E0D8C8]/50 text-xs uppercase tracking-wider">
-                  {type === 'pipe' ? 'Pipe' : 'Tobacco'}
+                  {type === 'pipe' ? t('shareCard.pipeType') : t('shareCard.tobaccoType')}
                 </p>
               </div>
             </div>
@@ -113,15 +117,15 @@ export default function ShareCard({ item, type, open, onClose }) {
             <div className="space-y-1 text-sm text-[#E0D8C8]/70">
               {type === 'pipe' ? (
                 <>
-                  {item.maker && <p>Maker: {item.maker}</p>}
-                  {item.shape && <p>Shape: {item.shape}</p>}
-                  {item.bowl_material && <p>Material: {item.bowl_material}</p>}
+                  {item.maker && <p>{t('shareCard.makerLabel')} {item.maker}</p>}
+                  {item.shape && <p>{t('shareCard.shapeLabel')} {item.shape}</p>}
+                  {item.bowl_material && <p>{t('shareCard.materialLabel')} {item.bowl_material}</p>}
                 </>
               ) : (
                 <>
-                  {item.manufacturer && <p>Manufacturer: {item.manufacturer}</p>}
-                  {item.blend_type && <p>Blend: {item.blend_type}</p>}
-                  {item.strength && <p>Strength: {item.strength}</p>}
+                  {item.manufacturer && <p>{t('shareCard.manufacturerLabel')} {item.manufacturer}</p>}
+                  {item.blend_type && <p>{t('shareCard.blendLabel')} {item.blend_type}</p>}
+                  {item.strength && <p>{t('shareCard.strengthLabel')} {item.strength}</p>}
                 </>
               )}
             </div>
@@ -129,7 +133,7 @@ export default function ShareCard({ item, type, open, onClose }) {
             {/* Footer */}
             <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
               <p className="text-[#E0D8C8]/50 text-xs">
-                Shared from PipeKeeper
+                {t('shareCard.sharedFrom')}
               </p>
               <div className="w-6 h-6 bg-white/10 rounded" />
             </div>
@@ -139,11 +143,11 @@ export default function ShareCard({ item, type, open, onClose }) {
         <div className="flex gap-2">
           <Button onClick={handleDownload} variant="outline" className="flex-1">
             <Download className="w-4 h-4 mr-2" />
-            Download
+            {t('shareCard.download')}
           </Button>
           <Button onClick={handleShare} className="flex-1">
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {t('common.share')}
           </Button>
         </div>
       </DialogContent>
