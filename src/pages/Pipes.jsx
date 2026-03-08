@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from "@/api/base44Client";
+import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
@@ -50,7 +50,7 @@ export default function PipesPage() {
     queryKey: ['pipes', user?.email, sortBy],
     queryFn: async () => {
       try {
-        const result = await base44.entities.Pipe.filter({ created_by: user?.email }, '-created_date');
+        const result = await scopedEntities.Pipe.listForUser(user?.email, '-created_date');
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Pipes load error:', err);
@@ -69,7 +69,7 @@ export default function PipesPage() {
       if (!limitCheck.canCreate) {
         throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
-      return base44.entities.Pipe.create(data);
+      return scopedEntities.Pipe.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });

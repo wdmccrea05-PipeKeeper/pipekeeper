@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
+import { scopedEntities } from "@/components/api/scopedEntities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries } from "@/components/utils/cacheInvalidation";
@@ -110,8 +111,8 @@ export default function PipeDetailPage() {
 
       // 3) Fallback: filter by id with ownership check
       try {
-        const byString = await base44.entities.Pipe.filter({ id: pipeId, created_by: user.email });
-        if (Array.isArray(byString) && byString.length) return byString[0];
+        const byString = await scopedEntities.Pipe.getForUser(user.email, pipeId);
+        if (byString) return byString;
       } catch (e) {
         console.warn("Pipe.filter({id: string}) failed", {
           pipeId,
@@ -124,8 +125,8 @@ export default function PipeDetailPage() {
 
       if (numericId !== null) {
         try {
-          const byNum = await base44.entities.Pipe.filter({ id: numericId, created_by: user.email });
-          if (Array.isArray(byNum) && byNum.length) return byNum[0];
+          const byNum = await scopedEntities.Pipe.getForUser(user.email, numericId);
+          if (byNum) return byNum;
         } catch (e) {
           console.warn("Pipe.filter({id: number}) failed", {
             numericId,
@@ -148,7 +149,7 @@ export default function PipeDetailPage() {
     queryKey: ['blends', user?.email],
     queryFn: async () => {
       try {
-        const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+        const result = await scopedEntities.TobaccoBlend.listForUser(user?.email);
         return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Blends load error:', err);
@@ -181,7 +182,7 @@ export default function PipeDetailPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.Pipe.delete(pipeId),
+    mutationFn: () => scopedEntities.Pipe.delete(pipeId),
     onSuccess: () => {
       invalidatePipeQueries(queryClient, user?.email);
       window.location.href = createPageUrl('Pipes');
