@@ -48,12 +48,14 @@ Deno.serve(async (req) => {
       
       if (!hasEntitlementFields) {
         console.log('[ensureUserRecord] Adding missing entitlement fields to existing user');
+        // NEVER overwrite existing paid tier — only set 'free' if truly unset
+        const existingTier = existing.entitlement_tier || existing.data?.entitlement_tier || null;
         await base44.asServiceRole.entities.User.update(existing.id, {
           data: {
             ...existing.data,
-            entitlement_tier: 'free',
-            subscription_tier: 'free',
-            subscription_status: 'free',
+            entitlement_tier: existingTier || 'free',
+            subscription_tier: existingTier || 'free',
+            subscription_status: existing.subscription_status || existing.data?.subscription_status || 'free',
             platform: platformFromBody,
             last_login: new Date().toISOString()
           }
