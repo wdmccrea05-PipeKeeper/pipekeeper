@@ -216,7 +216,7 @@ const zhHansUI = {
     recommended: "推荐",
     agingProgress: "陈化进度",
     optional: "可选",
-    upgradeInOptimizeTab: "通过"优化"标签升级以解锁假设分析。",
+    upgradeInOptimizeTab: '通过"优化"标签升级以解锁假设分析。',
     addFirstPipe: "添加您的第一根烟斗",
     addFirstBlend: "添加您的第一个混合烟草",
     identify: "识别",
