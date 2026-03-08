@@ -34,7 +34,7 @@ export async function logClientError(error, context = {}) {
       message: sanitizeError(error),
       stack: error?.stack?.slice(0, MAX_ERROR_LENGTH),
       route: window.location.pathname,
-      language: localStorage.getItem('language') || 'unknown',
+      language: localStorage.getItem('pk_lang') || 'unknown',
       userAgent: navigator.userAgent?.slice(0, 200),
       userEmail: user?.email || 'anonymous',
       context: JSON.stringify(context).slice(0, 500),
