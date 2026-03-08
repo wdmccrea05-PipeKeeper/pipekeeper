@@ -100,9 +100,13 @@ Deno.serve(async (req) => {
       for (const sub of allSubs) {
         // Check top-level fields (canonical), not data blob
         const status = (sub.status || sub.data?.status || '').toLowerCase();
-        const isActive = ['active', 'trialing', 'trial'].includes(status);
+        const isActive = ['active', 'trialing'].includes(status);
         
-        if (isActive) {
+        // Exclude expired subscriptions (period_end in the past)
+        const periodEnd = sub.current_period_end || sub.data?.current_period_end;
+        const isExpired = periodEnd && new Date(periodEnd) < new Date();
+        
+        if (isActive && !isExpired) {
           activePaidSubs++;
           
           if (!sub.user_id && !sub.data?.user_id) {
