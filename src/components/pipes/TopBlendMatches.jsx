@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // Simple string similarity function (Levenshtein-based)
 const stringSimilarity = (str1, str2) => {
@@ -27,6 +28,7 @@ const stringSimilarity = (str1, str2) => {
 };
 
 export default function TopBlendMatches({ pipe, blends, userProfile }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -185,12 +187,12 @@ For each of the 3 recommendations, provide:
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Finding Matches...
+                {t("topBlendMatches.findingMatches")}
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Get Top 3 Matches
+                {t("topBlendMatches.getTop3")}
               </>
             )}
           </Button>
@@ -199,7 +201,7 @@ For each of the 3 recommendations, provide:
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#D1A75D]" />
-                <span className="text-sm font-medium text-[#E0D8C8]">Top 3 Matches</span>
+                <span className="text-sm font-medium text-[#E0D8C8]">{t("topBlendMatches.top3Matches")}</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -208,7 +210,7 @@ For each of the 3 recommendations, provide:
                   size="sm"
                   className="text-[#E0D8C8]/70 hover:text-[#E0D8C8]"
                 >
-                  {collapsed ? 'Show' : 'Hide'}
+                  {collapsed ? t("topBlendMatches.show") : t("topBlendMatches.hide")}
                 </Button>
                 <Button
                   onClick={findMatches}

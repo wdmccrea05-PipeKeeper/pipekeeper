@@ -4,8 +4,10 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Crop, RotateCw, ZoomIn, Check, X, Lock, Unlock, Grid3x3, RefreshCw, Maximize2 } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function ImageCropper({ imageUrl, onSave, onCancel }) {
+  const { t } = useTranslation();
   const [crop, setCrop] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -428,9 +430,9 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[95dvh] overflow-hidden flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Crop & Adjust Image</DialogTitle>
+          <DialogTitle>{t("imageCropper.title")}</DialogTitle>
           <p className="text-xs sm:text-sm text-stone-500">
-            Drag to move • Drag corners to resize • Use sliders to zoom and rotate
+            {t("imageCropper.dragHint")}
           </p>
         </DialogHeader>
         
@@ -439,7 +441,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
           <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-              <span className="text-xs sm:text-sm font-semibold text-amber-900">Final Result Preview (16:9 ratio)</span>
+              <span className="text-xs sm:text-sm font-semibold text-amber-900">{t("imageCropper.previewTitle")}</span>
             </div>
             <div className="relative bg-white rounded-lg border-2 border-dashed border-amber-400 aspect-video flex items-center justify-center overflow-hidden">
               {imageLoaded && (
@@ -484,7 +486,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               </div>
             </div>
             <p className="text-xs text-amber-700 mt-2 text-center">
-              This is how your cropped image will appear in the app
+              {t("imageCropper.previewDesc")}
             </p>
           </div>
 
@@ -514,15 +516,15 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               4:3
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={() => setPresetRatio(1)} className="text-xs sm:text-sm px-2 sm:px-3">
-              Square
+              {t("imageCropper.square")}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={fitToCanvas} className="text-xs sm:text-sm px-2 sm:px-3">
               <Maximize2 className="w-3 h-3 mr-1" />
-              Max
+              {t("imageCropper.max")}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={resetCrop} className="text-xs sm:text-sm px-2 sm:px-3">
               <RefreshCw className="w-3 h-3 mr-1" />
-              Reset
+              {t("imageCropper.reset")}
             </Button>
           </div>
 
@@ -531,7 +533,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <ZoomIn className="w-4 h-4 text-amber-600" />
-                  Zoom
+                  {t("imageCropper.zoom")}
                 </label>
                 <span className="text-sm font-mono text-stone-600">{zoom.toFixed(1)}x</span>
               </div>
@@ -549,7 +551,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <RotateCw className="w-4 h-4 text-amber-600" />
-                  Rotation
+                  {t("imageCropper.rotation")}
                 </label>
                 <span className="text-sm font-mono text-stone-600">{rotation}°</span>
               </div>
@@ -584,7 +586,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               />
               <label className="font-medium flex items-center gap-1 cursor-pointer" onClick={() => setAspectRatioLocked(!aspectRatioLocked)}>
                 {aspectRatioLocked ? <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" /> : <Unlock className="w-3 h-3 sm:w-4 sm:h-4 text-stone-400" />}
-                <span className="hidden sm:inline">Lock Ratio</span>
+                <span className="hidden sm:inline">{t("imageCropper.lockRatio")}</span>
               </label>
             </div>
             <div className="flex items-center gap-2">
@@ -594,25 +596,25 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
               />
               <label className="font-medium flex items-center gap-1 cursor-pointer" onClick={() => setShowGrid(!showGrid)}>
                 <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
-                <span className="hidden sm:inline">Grid</span>
+                <span className="hidden sm:inline">{t("imageCropper.grid")}</span>
               </label>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center justify-center gap-2 text-xs text-stone-500">
             <Crop className="w-4 h-4" />
-            <span>Drag to move • Drag handles to resize • {aspectRatioLocked ? 'Aspect locked' : 'Free-form'}</span>
+            <span>{t("imageCropper.dragHandlesHint", { status: aspectRatioLocked ? t("imageCropper.aspectLocked") : t("imageCropper.freeForm") })}</span>
           </div>
         </div>
 
         <DialogFooter className="flex-shrink-0 border-t mt-4 pt-4 gap-2">
           <Button variant="outline" onClick={onCancel}>
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t("forms.cancel")}
           </Button>
           <Button onClick={handleSave} className="bg-amber-700 hover:bg-amber-800">
             <Check className="w-4 h-4 mr-2" />
-            Apply Crop
+            {t("imageCropper.applyCrop")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,8 +6,10 @@ import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
 import { getAvailableBrands } from "@/components/tobacco/TobaccoLogoLibrary";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLogo }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
@@ -125,18 +127,18 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Browse Logo Library</DialogTitle>
+          <DialogTitle>{t("logoLibraryBrowser.title")}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
           {/* Add Custom Logo */}
           <div className="border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2">
-            <p className="text-sm font-medium text-amber-800">Add Custom Logo</p>
+            <p className="text-sm font-medium text-amber-800">{t("logoLibraryBrowser.addCustomLogo")}</p>
             <div className="flex gap-2">
               <Input
                 value={newBrandName}
                 onChange={(e) => setNewBrandName(e.target.value)}
-                placeholder="Brand name..."
+                placeholder={t("logoLibraryBrowser.brandNamePlaceholder")}
                 className="flex-1"
               />
               <label className={`inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -149,7 +151,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Upload Logo
+                    {t("logoLibraryBrowser.uploadLogo")}
                   </>
                 )}
                 <input
@@ -169,7 +171,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search brands..."
+              placeholder={t("logoLibraryBrowser.searchPlaceholder")}
               className="pl-10"
             />
           </div>
@@ -228,7 +230,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             {filteredBrands.length === 0 && (
               <div className="text-center py-12 text-stone-500">
                 <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No brands found matching "{searchQuery}"</p>
+                <p>{t("logoLibraryBrowser.noBrandsFound", { query: searchQuery })}</p>
               </div>
             )}
           </div>

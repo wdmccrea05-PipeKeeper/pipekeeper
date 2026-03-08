@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ZoomIn, RotateCw, Check, X } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AvatarCropper({ image, onCropComplete, onCancel, aspectRatio = 1, cropShape = "round" }) {
+  const { t } = useTranslation();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -208,10 +210,10 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
     <Dialog open={true} onOpenChange={onCancel}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Profile Picture</DialogTitle>
-          <DialogDescription className="sr-only">Crop and adjust your profile picture</DialogDescription>
+          <DialogTitle>{t("avatarCropper.title")}</DialogTitle>
+          <DialogDescription className="sr-only">{t("avatarCropper.srDesc")}</DialogDescription>
           <p className="text-sm text-stone-500">
-            Drag to move • Zoom • Rotate • Crop
+            {t("avatarCropper.dragHint")}
           </p>
         </DialogHeader>
         
@@ -220,7 +222,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
           <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-semibold text-amber-900">Final Profile Picture Preview</span>
+              <span className="text-sm font-semibold text-amber-900">{t("avatarCropper.previewTitle")}</span>
             </div>
             <div className="flex justify-center">
               <div className={`relative ${cropShape === "round" ? "rounded-full" : "rounded-lg"} border-4 border-dashed border-amber-400 bg-white overflow-hidden`} style={{ width: '120px', height: '120px' }}>
@@ -275,7 +277,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
               </div>
             </div>
             <p className="text-xs text-amber-700 mt-2 text-center">
-              This is how your profile picture will appear
+              {t("avatarCropper.previewDesc")}
             </p>
           </div>
 
@@ -301,7 +303,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <ZoomIn className="w-4 h-4 text-amber-600" />
-                  Zoom
+                  {t("avatarCropper.zoom")}
                 </label>
                 <span className="text-sm font-mono text-stone-600">{zoom.toFixed(1)}x</span>
               </div>
@@ -319,7 +321,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <RotateCw className="w-4 h-4 text-amber-600" />
-                  Rotation
+                  {t("avatarCropper.rotation")}
                 </label>
                 <span className="text-sm font-mono text-stone-600">{rotation}°</span>
               </div>
@@ -349,11 +351,11 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, aspectR
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t("forms.cancel")}
           </Button>
           <Button onClick={handleSave} className="bg-amber-700 hover:bg-amber-800">
             <Check className="w-4 h-4 mr-2" />
-            Apply
+            {t("avatarCropper.apply")}
           </Button>
         </DialogFooter>
       </DialogContent>
