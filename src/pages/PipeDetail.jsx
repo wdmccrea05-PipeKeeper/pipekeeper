@@ -373,7 +373,7 @@ export default function PipeDetailPage() {
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-stone-400 text-center">
                     <PipeShapeIcon shape={pipe.shape} className="w-24 h-24 mb-4" />
-                    <p>{pipe.shape || t("pipesExtended.noPhoto")}</p>
+                    <p>{pipe.shape ? t(`shapes.${pipe.shape}`, pipe.shape) : t("pipesExtended.noPhoto")}</p>
                   </div>
                 </div>
               )}
@@ -462,42 +462,42 @@ export default function PipeDetailPage() {
             <div className="flex flex-wrap gap-2">
               {pipe.shape && pipe.shape !== 'Unknown' && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {pipe.shape}
+                  {t(`shapes.${pipe.shape}`, pipe.shape)}
                 </Badge>
               )}
               {pipe.bowlStyle && pipe.bowlStyle !== 'Unknown' && (
                 <Badge className="bg-purple-700 text-purple-100 border-purple-600/50">
-                  {pipe.bowlStyle}
+                  {t(`bowlStyles.${pipe.bowlStyle}`, pipe.bowlStyle)}
                 </Badge>
               )}
               {pipe.shankShape && pipe.shankShape !== 'Unknown' && (
                 <Badge className="bg-teal-700 text-teal-100 border-teal-600/50">
-                  {t("pipesExtended.shank")} {pipe.shankShape}
+                  {t("pipesExtended.shank")} {t(`shankShapes.${pipe.shankShape}`, pipe.shankShape)}
                 </Badge>
               )}
               {pipe.bend && pipe.bend !== 'Unknown' && (
                 <Badge className="bg-indigo-700 text-indigo-100 border-indigo-600/50">
-                  {pipe.bend}
+                  {t(`bends.${pipe.bend}`, pipe.bend)}
                 </Badge>
               )}
               {pipe.sizeClass && pipe.sizeClass !== 'Unknown' && pipe.sizeClass !== 'Standard' && (
                 <Badge className="bg-orange-700 text-orange-100 border-orange-600/50">
-                  {pipe.sizeClass}
+                  {t(`sizeClasses.${pipe.sizeClass}`, pipe.sizeClass)}
                 </Badge>
               )}
               {pipe.bowl_material && (
                 <Badge className="bg-slate-700 text-slate-100 border-slate-600/50">
-                  {pipe.bowl_material}
+                  {t(`materials.${pipe.bowl_material}`, pipe.bowl_material)}
                 </Badge>
               )}
               {pipe.chamber_volume && (
                 <Badge className="bg-amber-700 text-amber-100 border-amber-600/50">
-                  {pipe.chamber_volume} {t("formsExtended.chamberVolume")}
+                  {t(`sizes.${pipe.chamber_volume}`, pipe.chamber_volume)} {t("formsExtended.chamberVolume")}
                 </Badge>
               )}
               {pipe.condition && (
                 <Badge className="bg-blue-700 text-blue-100 border-blue-600/50">
-                  {pipe.condition}
+                  {t(`conditions.${pipe.condition}`, pipe.condition)}
                 </Badge>
               )}
             </div>
@@ -592,19 +592,19 @@ export default function PipeDetailPage() {
                   {pipe.stem_material && (
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.stemMaterial")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{pipe.stem_material}</p>
+                      <p className="font-medium text-[#E0D8C8]">{t(`stemMaterials.${pipe.stem_material}`, pipe.stem_material)}</p>
                     </div>
                   )}
                   {pipe.finish && (
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.finish")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{pipe.finish}</p>
+                      <p className="font-medium text-[#E0D8C8]">{t(`finishes.${pipe.finish}`, pipe.finish)}</p>
                     </div>
                   )}
                   {pipe.filter_type && (
                     <div>
                       <p className="text-xs text-[#E0D8C8]/60">{t("pipesExtended.filterType")}</p>
-                      <p className="font-medium text-[#E0D8C8]">{pipe.filter_type}</p>
+                      <p className="font-medium text-[#E0D8C8]">{t(`filterTypes.${pipe.filter_type}`, pipe.filter_type)}</p>
                     </div>
                   )}
                 </div>

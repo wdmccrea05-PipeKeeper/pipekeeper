@@ -112,7 +112,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           key: tileKey,
           pipe_id: pv.id,
           bowl_variant_id: pv.bowl_variant_id || null,
-          name: variant?.variant_name || pv.variant_name || pv.name || 'Unknown',
+          name: variant?.variant_name || pv.variant_name || pv.name || t('common.unknown'),
           focus: Array.isArray(variant?.focus) ? variant.focus : [],
           chamber_volume: variant?.chamber_volume,
           bowl_diameter_mm: variant?.bowl_diameter_mm,
@@ -131,7 +131,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
         };
       }
     }).sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
-  }, [pipeVariants, allPipes, pairingsByVariant]);
+  }, [pipeVariants, allPipes, pairingsByVariant, t]);
 
   if (isAppleBuild) return null;
 

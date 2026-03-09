@@ -641,6 +641,136 @@ const frUI = {
     gotIt: "Compris — merci !",
   },
 
+  shapes: {
+    Billiard: "Billiard", Dublin: "Dublin", Apple: "Apple", Pot: "Pot", Bulldog: "Bulldog",
+    Rhodesian: "Rhodesian", Bent: "Courbée", Brandy: "Brandy", Calabash: "Calebasse",
+    Canadian: "Canadian", Cavalier: "Cavalier", Chimney: "Cheminée", Churchwarden: "Churchwarden",
+    Freehand: "Freehand", Horn: "Corne", Liverpool: "Liverpool", Lovat: "Lovat",
+    Lumberman: "Lumberman", Nautilus: "Nautilus", Pear: "Poire", Poker: "Poker",
+    Prince: "Prince", Viking: "Viking", Volcano: "Volcan", Acorn: "Gland",
+    Blowfish: "Blowfish", Other: "Autre", Unknown: "Inconnu",
+    "Bent Billiard": "Billiard courbé", "Bent Apple": "Apple courbée", "Bent Dublin": "Dublin courbé",
+    Tomato: "Tomate", Egg: "Œuf", Cutty: "Cutty", "Devil Anse": "Devil Anse",
+    Hawkbill: "Hawkbill", Diplomat: "Diplomate", Cherrywood: "Cerisier",
+    "Cherry Wood": "Cerisier", Duke: "Duke", Don: "Don", Tankard: "Tankard",
+    Nosewarmer: "Chauffe-nez", "Vest Pocket": "De poche", MacArthur: "MacArthur",
+    "Reverse Calabash": "Calebasse inversée", Author: "Author", Tomahawk: "Tomahawk",
+    Bullmoose: "Bullmoose", Bullcap: "Bullcap", Hungarian: "Hongrois",
+    "Oom Paul": "Oom Paul", "Oom Paul (Hungarian)": "Oom Paul (Hongrois)",
+    Panel: "Paneauté", Sitter: "Sitter", Woodstock: "Woodstock", Zulu: "Zulu",
+    Tyrolean: "Tyrolien",
+  },
+
+  materials: {
+    Briar: "Bruyère", Meerschaum: "Écume de mer", Corn: "Épi de maïs",
+    "Corn Cob": "Épi de maïs", Clay: "Argile", Cherry: "Cerisier",
+    "Cherry Wood": "Cerisier", Olive: "Olivier", "Olive Wood": "Olivier",
+    Morta: "Morta", Other: "Autre", Unknown: "Inconnu",
+  },
+
+  blendTypes: {
+    "Virginia": "Virginia", "Virginia/Perique": "Virginia/Perique",
+    "English": "Anglais", "English Aromatic": "Anglais Aromatique",
+    "Balkan": "Balkanique", "Aromatic": "Aromatique", "Burley": "Burley",
+    "Burley-based": "Base Burley", "Virginia/Burley": "Virginia/Burley",
+    "Virginia/Oriental": "Virginia/Oriental", "Latakia Blend": "Mélange Latakia",
+    "Oriental/Turkish": "Oriental/Turc", "Navy Flake": "Navy Flake",
+    "Dark Fired": "Dark Fired", "Dark Fired Kentucky": "Dark Fired Kentucky",
+    "Cavendish": "Cavendish", "Codger Blend": "Mélange Codger",
+    "Full English/Oriental": "Anglais/Oriental complet", "Kentucky": "Kentucky",
+    "Lakeland": "Lakeland", "American": "Américain", "Perique": "Perique",
+    "Shag": "Shag", "Other": "Autre",
+  },
+
+  strengths: {
+    "Mild": "Léger", "Mild-Medium": "Léger-Moyen", "Medium": "Moyen",
+    "Medium-Full": "Moyen-Fort", "Full": "Fort",
+  },
+
+  conditions: {
+    "Mint": "Comme neuf", "Excellent": "Excellent", "Very Good": "Très bon",
+    "Good": "Bon", "Fair": "Passable", "Poor": "Mauvais",
+    "Estate - Unrestored": "Estate - Non restauré",
+  },
+
+  sizes: {
+    "Small": "Petit", "Medium": "Moyen", "Large": "Grand", "Extra Large": "Très grand",
+  },
+
+  filterTypes: {
+    "None": "Aucun", "6mm": "6mm", "9mm": "9mm", "Stinger": "Stinger", "Other": "Autre",
+  },
+
+  bends: {
+    "Straight": "Droite", "1/4 Bent": "1/4 courbé", "1/2 Bent": "1/2 courbé",
+    "3/4 Bent": "3/4 courbé", "Full Bent": "Entièrement courbé", "S-Bend": "Courbure en S",
+    "Unknown": "Inconnu",
+  },
+
+  bowlStyles: {
+    "Cylindrical (Straight Wall)": "Cylindrique (paroi droite)",
+    "Conical (Tapered)": "Conique (effilé)",
+    "Rounded / Ball": "Arrondi / Sphérique", "Oval / Egg": "Ovale / Œuf",
+    "Squat / Pot": "Trapu / Pot", "Chimney (Tall)": "Cheminée (haute)",
+    "Paneled": "Paneauté", "Faceted / Multi-Panel": "Facetté / Multi-paneau",
+    "Horn-Shaped": "En forme de corne", "Freeform": "Forme libre", "Unknown": "Inconnu",
+  },
+
+  shankShapes: {
+    "Round": "Ronde", "Diamond": "Diamant", "Square": "Carrée", "Oval": "Ovale",
+    "Paneled / Faceted": "Paneautée / Facettée",
+    "Military / Army Mount": "Monture militaire",
+    "Freeform": "Forme libre", "Unknown": "Inconnu",
+  },
+
+  sizeClasses: {
+    "Vest Pocket": "De poche", "Small": "Petite", "Standard": "Standard",
+    "Large": "Grande", "Magnum / XL": "Magnum / XL",
+    "Churchwarden": "Churchwarden", "MacArthur": "MacArthur", "Unknown": "Inconnue",
+  },
+
+  stemMaterials: {
+    "Acrylic": "Acrylique", "Amber": "Ambre", "Bone": "Os",
+    "Cumberland": "Cumberland", "Ebonite": "Ébonite", "Horn": "Corne",
+    "Lucite": "Lucite", "Metal": "Métal", "Other": "Autre", "Vulcanite": "Vulcanite",
+  },
+
+  finishes: {
+    "Smooth": "Lisse", "Sandblast": "Sablée", "Rusticated": "Rustiquée",
+    "Partially Rusticated": "Partiellement rustiquée",
+    "Carved": "Sculptée", "Natural": "Naturel", "Other": "Autre",
+  },
+
+  cuts: {
+    "Ribbon": "Ruban", "Flake": "Galette", "Broken Flake": "Galette brisée",
+    "Ready Rubbed": "Prêt à rouler", "Plug": "Plug", "Coin": "Pièce",
+    "Cube Cut": "Coupe en cubes", "Crumble Cake": "Gâteau émietté",
+    "Shag": "Shag", "Rope": "Corde", "Twist": "Twist", "Other": "Autre",
+  },
+
+  roomNotes: {
+    "Pleasant": "Agréable", "Neutral": "Neutre",
+    "Strong": "Fort", "Very Strong": "Très fort",
+  },
+
+  productionStatuses: {
+    "Current Production": "Production courante", "Discontinued": "Abandonné",
+    "Limited Edition": "Édition limitée", "Vintage": "Vintage",
+  },
+
+  agingPotentials: {
+    "Poor": "Faible", "Fair": "Passable", "Good": "Bon", "Excellent": "Excellent",
+  },
+
+  flavorNotes: {
+    "Earthy": "Terreux", "Sweet": "Sucré", "Nutty": "Noisette", "Woody": "Boisé",
+    "Smoky": "Fumé", "Spicy": "Épicé", "Fruity": "Fruité", "Floral": "Floral",
+    "Tangy": "Acidulé", "Creamy": "Crémeux", "Peppery": "Poivré",
+    "Chocolate": "Chocolat", "Coffee": "Café", "Vanilla": "Vanille",
+    "Honey": "Miel", "Leather": "Cuir", "Grass": "Herbe", "Hay": "Foin",
+    "Citrus": "Agrumes", "Plum": "Prune", "Fig": "Figue", "Raisin": "Raisin sec",
+  },
+
 };
 
 export default frUI;

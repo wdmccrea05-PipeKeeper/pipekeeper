@@ -513,7 +513,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {CONDITIONS.map(cond => <SelectItem key={cond} value={cond}>{cond}</SelectItem>)}
+                {CONDITIONS.map(cond => <SelectItem key={cond} value={cond}>{t(`conditions.${cond}`, cond)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -538,7 +538,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
+                {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -551,7 +551,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {BOWL_STYLES.map(style => <SelectItem key={style} value={style}>{style}</SelectItem>)}
+                {BOWL_STYLES.map(style => <SelectItem key={style} value={style}>{t(`bowlStyles.${style}`, style)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -564,7 +564,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {SHANK_SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
+                {SHANK_SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shankShapes.${shape}`, shape)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -577,7 +577,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {BENDS.map(bend => <SelectItem key={bend} value={bend}>{bend}</SelectItem>)}
+                {BENDS.map(bend => <SelectItem key={bend} value={bend}>{t(`bends.${bend}`, bend)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -590,7 +590,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {SIZE_CLASSES.map(size => <SelectItem key={size} value={size}>{size}</SelectItem>)}
+                {SIZE_CLASSES.map(size => <SelectItem key={size} value={size}>{t(`sizeClasses.${size}`, size)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -654,7 +654,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {FINISHES.map(finish => <SelectItem key={finish} value={finish}>{finish}</SelectItem>)}
+                {FINISHES.map(finish => <SelectItem key={finish} value={finish}>{t(`finishes.${finish}`, finish)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -667,7 +667,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {CHAMBER_VOLUMES.map(vol => <SelectItem key={vol} value={vol}>{vol}</SelectItem>)}
+                {CHAMBER_VOLUMES.map(vol => <SelectItem key={vol} value={vol}>{t(`sizes.${vol}`, vol)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -680,7 +680,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {FILTER_TYPES.map(filter => <SelectItem key={filter} value={filter}>{filter}</SelectItem>)}
+                {FILTER_TYPES.map(filter => <SelectItem key={filter} value={filter}>{t(`filterTypes.${filter}`, filter)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>

@@ -1511,6 +1511,7 @@ const enUI = {
     pouch: "pouch",
     bowl: "bowl",
     bulkPlural: "bulk",
+    outOf5: "out of 5",
   },
   formsExtended: {
     material: "Material",
@@ -2143,6 +2144,90 @@ const enUI = {
   strengths: {
     "Mild": "Mild", "Mild-Medium": "Mild-Medium", "Medium": "Medium",
     "Medium-Full": "Medium-Full", "Full": "Full",
+  },
+
+  conditions: {
+    "Mint": "Mint", "Excellent": "Excellent", "Very Good": "Very Good",
+    "Good": "Good", "Fair": "Fair", "Poor": "Poor",
+    "Estate - Unrestored": "Estate - Unrestored",
+  },
+
+  sizes: {
+    "Small": "Small", "Medium": "Medium", "Large": "Large", "Extra Large": "Extra Large",
+  },
+
+  filterTypes: {
+    "None": "None", "6mm": "6mm", "9mm": "9mm", "Stinger": "Stinger", "Other": "Other",
+  },
+
+  bends: {
+    "Straight": "Straight", "1/4 Bent": "1/4 Bent", "1/2 Bent": "1/2 Bent",
+    "3/4 Bent": "3/4 Bent", "Full Bent": "Full Bent", "S-Bend": "S-Bend",
+    "Unknown": "Unknown",
+  },
+
+  bowlStyles: {
+    "Cylindrical (Straight Wall)": "Cylindrical (Straight Wall)",
+    "Conical (Tapered)": "Conical (Tapered)",
+    "Rounded / Ball": "Rounded / Ball", "Oval / Egg": "Oval / Egg",
+    "Squat / Pot": "Squat / Pot", "Chimney (Tall)": "Chimney (Tall)",
+    "Paneled": "Paneled", "Faceted / Multi-Panel": "Faceted / Multi-Panel",
+    "Horn-Shaped": "Horn-Shaped", "Freeform": "Freeform", "Unknown": "Unknown",
+  },
+
+  shankShapes: {
+    "Round": "Round", "Diamond": "Diamond", "Square": "Square", "Oval": "Oval",
+    "Paneled / Faceted": "Paneled / Faceted",
+    "Military / Army Mount": "Military / Army Mount",
+    "Freeform": "Freeform", "Unknown": "Unknown",
+  },
+
+  sizeClasses: {
+    "Vest Pocket": "Vest Pocket", "Small": "Small", "Standard": "Standard",
+    "Large": "Large", "Magnum / XL": "Magnum / XL",
+    "Churchwarden": "Churchwarden", "MacArthur": "MacArthur", "Unknown": "Unknown",
+  },
+
+  stemMaterials: {
+    "Acrylic": "Acrylic", "Amber": "Amber", "Bone": "Bone",
+    "Cumberland": "Cumberland", "Ebonite": "Ebonite", "Horn": "Horn",
+    "Lucite": "Lucite", "Metal": "Metal", "Other": "Other", "Vulcanite": "Vulcanite",
+  },
+
+  finishes: {
+    "Smooth": "Smooth", "Sandblast": "Sandblast", "Rusticated": "Rusticated",
+    "Partially Rusticated": "Partially Rusticated",
+    "Carved": "Carved", "Natural": "Natural", "Other": "Other",
+  },
+
+  cuts: {
+    "Ribbon": "Ribbon", "Flake": "Flake", "Broken Flake": "Broken Flake",
+    "Ready Rubbed": "Ready Rubbed", "Plug": "Plug", "Coin": "Coin",
+    "Cube Cut": "Cube Cut", "Crumble Cake": "Crumble Cake",
+    "Shag": "Shag", "Rope": "Rope", "Twist": "Twist", "Other": "Other",
+  },
+
+  roomNotes: {
+    "Pleasant": "Pleasant", "Neutral": "Neutral",
+    "Strong": "Strong", "Very Strong": "Very Strong",
+  },
+
+  productionStatuses: {
+    "Current Production": "Current Production", "Discontinued": "Discontinued",
+    "Limited Edition": "Limited Edition", "Vintage": "Vintage",
+  },
+
+  agingPotentials: {
+    "Poor": "Poor", "Fair": "Fair", "Good": "Good", "Excellent": "Excellent",
+  },
+
+  flavorNotes: {
+    "Earthy": "Earthy", "Sweet": "Sweet", "Nutty": "Nutty", "Woody": "Woody",
+    "Smoky": "Smoky", "Spicy": "Spicy", "Fruity": "Fruity", "Floral": "Floral",
+    "Tangy": "Tangy", "Creamy": "Creamy", "Peppery": "Peppery",
+    "Chocolate": "Chocolate", "Coffee": "Coffee", "Vanilla": "Vanilla",
+    "Honey": "Honey", "Leather": "Leather", "Grass": "Grass", "Hay": "Hay",
+    "Citrus": "Citrus", "Plum": "Plum", "Fig": "Fig", "Raisin": "Raisin",
   },
 };
 
