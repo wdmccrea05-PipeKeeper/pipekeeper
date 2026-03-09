@@ -396,17 +396,17 @@ export default function TobaccoDetailPage() {
             <div className="flex flex-wrap gap-2">
               {blend.blend_type && (
                 <Badge className={colorClass}>
-                  {blend.blend_type}
+                  {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
                 </Badge>
               )}
               {blend.strength && (
                 <Badge className="bg-stone-100 text-stone-700 border-stone-200">
-                  {blend.strength}
+                  {t(`strengths.${blend.strength}`, blend.strength)}
                 </Badge>
               )}
               {blend.cut && (
                 <Badge className="bg-amber-50 text-amber-700 border-amber-200">
-                  {blend.cut}
+                  {t(`cuts.${blend.cut}`, blend.cut)}
                 </Badge>
               )}
               {blend.production_status && (
@@ -415,7 +415,7 @@ export default function TobaccoDetailPage() {
                     ? 'bg-rose-100 text-rose-800 border-rose-200'
                     : 'bg-blue-100 text-blue-800 border-blue-200'
                 }>
-                  {blend.production_status}
+                  {t(`productionStatuses.${blend.production_status}`, blend.production_status)}
                 </Badge>
               )}
               {blend.room_note && (
@@ -462,7 +462,7 @@ export default function TobaccoDetailPage() {
               <Card className="border-white/10">
                 <CardContent className="p-4">
                   <p className="text-xs text-[#E0D8C8]/70 mb-1">{t("tobaccoExtended.agingPotential")}</p>
-                  <p className="font-medium text-[#E0D8C8]">{blend.aging_potential}</p>
+                  <p className="font-medium text-[#E0D8C8]">{t(`agingPotentials.${blend.aging_potential}`, blend.aging_potential)}</p>
                 </CardContent>
               </Card>
             )}

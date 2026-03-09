@@ -113,17 +113,17 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite }) {
               )}
               {blend.blend_type && (
                 <Badge variant="secondary" className={`${colorClass} text-xs`}>
-                  {blend.blend_type}
+                  {t(`blendTypes.${blend.blend_type}`, blend.blend_type)}
                 </Badge>
               )}
               {blend.strength && (
                <Badge variant="secondary" className="bg-slate-700 text-slate-100 border-slate-600/50 text-xs">
-                 {blend.strength}
+                 {t(`strengths.${blend.strength}`, blend.strength)}
                </Badge>
               )}
               {blend.cut && (
                <Badge variant="secondary" className="bg-amber-700 text-amber-100 border-amber-600/50 text-xs hidden sm:inline-flex">
-                 {blend.cut}
+                 {t(`cuts.${blend.cut}`, blend.cut)}
                </Badge>
               )}
               {(blend.tin_total_quantity_oz || 0) > 0 && (
