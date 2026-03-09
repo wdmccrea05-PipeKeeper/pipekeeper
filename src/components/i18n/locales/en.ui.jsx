@@ -1200,6 +1200,29 @@ const enUI = {
     germany: "Germany",
     ireland: "Ireland",
     japan: "Japan",
+    canada: "Canada",
+    unitedKingdom: "United Kingdom",
+    australia: "Australia",
+    newZealand: "New Zealand",
+    spain: "Spain",
+    netherlands: "Netherlands",
+    belgium: "Belgium",
+    switzerland: "Switzerland",
+    austria: "Austria",
+    sweden: "Sweden",
+    norway: "Norway",
+    finland: "Finland",
+    southKorea: "South Korea",
+  },
+
+  community: {
+    notFollowingYet: "Not Following Anyone",
+    notFollowingYetDesc: "Discover and follow pipe enthusiasts in the community to see their collections",
+    exploreCommunity: "Explore Community",
+  },
+
+  communityExtended: {
+    inbox: "Inbox",
   },
 
   import: {

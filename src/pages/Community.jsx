@@ -256,7 +256,7 @@ function CommunityPageInner() {
               </TabsTrigger>
               <TabsTrigger value="inbox" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4 relative">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox", "Inbox")}</span>
+                <span className="hidden sm:inline ml-2">{t("communityExtended.inbox")}</span>
                 {unreadInboxCount > 0 && (
                   <Badge className="absolute -top-1 -right-0 sm:relative sm:top-0 sm:right-0 sm:ml-1 bg-rose-600 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 min-w-[14px] sm:min-w-[16px]">
                     {unreadInboxCount}
@@ -341,26 +341,26 @@ function CommunityPageInner() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__ALL__">{t("communityExtended.allCountries")}</SelectItem>
-                          <SelectItem value="United States">{t("countries.unitedStates","United States")}</SelectItem>
-                          <SelectItem value="Canada">{t("countries.canada","Canada")}</SelectItem>
-                          <SelectItem value="United Kingdom">{t("countries.unitedKingdom","United Kingdom")}</SelectItem>
-                          <SelectItem value="Ireland">{t("countries.ireland","Ireland")}</SelectItem>
-                          <SelectItem value="Australia">{t("countries.australia","Australia")}</SelectItem>
-                          <SelectItem value="New Zealand">{t("countries.newZealand","New Zealand")}</SelectItem>
-                          <SelectItem value="Germany">{t("countries.germany","Germany")}</SelectItem>
-                          <SelectItem value="France">{t("countries.france","France")}</SelectItem>
-                          <SelectItem value="Italy">{t("countries.italy","Italy")}</SelectItem>
-                          <SelectItem value="Spain">{t("countries.spain","Spain")}</SelectItem>
-                          <SelectItem value="Netherlands">{t("countries.netherlands","Netherlands")}</SelectItem>
-                          <SelectItem value="Belgium">{t("countries.belgium","Belgium")}</SelectItem>
-                          <SelectItem value="Switzerland">{t("countries.switzerland","Switzerland")}</SelectItem>
-                          <SelectItem value="Austria">{t("countries.austria","Austria")}</SelectItem>
-                          <SelectItem value="Denmark">{t("countries.denmark","Denmark")}</SelectItem>
-                          <SelectItem value="Sweden">{t("countries.sweden","Sweden")}</SelectItem>
-                          <SelectItem value="Norway">{t("countries.norway","Norway")}</SelectItem>
-                          <SelectItem value="Finland">{t("countries.finland","Finland")}</SelectItem>
-                          <SelectItem value="Japan">{t("countries.japan","Japan")}</SelectItem>
-                          <SelectItem value="South Korea">{t("countries.southKorea","South Korea")}</SelectItem>
+                          <SelectItem value="United States">{t("countries.unitedStates")}</SelectItem>
+                          <SelectItem value="Canada">{t("countries.canada")}</SelectItem>
+                          <SelectItem value="United Kingdom">{t("countries.unitedKingdom")}</SelectItem>
+                          <SelectItem value="Ireland">{t("countries.ireland")}</SelectItem>
+                          <SelectItem value="Australia">{t("countries.australia")}</SelectItem>
+                          <SelectItem value="New Zealand">{t("countries.newZealand")}</SelectItem>
+                          <SelectItem value="Germany">{t("countries.germany")}</SelectItem>
+                          <SelectItem value="France">{t("countries.france")}</SelectItem>
+                          <SelectItem value="Italy">{t("countries.italy")}</SelectItem>
+                          <SelectItem value="Spain">{t("countries.spain")}</SelectItem>
+                          <SelectItem value="Netherlands">{t("countries.netherlands")}</SelectItem>
+                          <SelectItem value="Belgium">{t("countries.belgium")}</SelectItem>
+                          <SelectItem value="Switzerland">{t("countries.switzerland")}</SelectItem>
+                          <SelectItem value="Austria">{t("countries.austria")}</SelectItem>
+                          <SelectItem value="Denmark">{t("countries.denmark")}</SelectItem>
+                          <SelectItem value="Sweden">{t("countries.sweden")}</SelectItem>
+                          <SelectItem value="Norway">{t("countries.norway")}</SelectItem>
+                          <SelectItem value="Finland">{t("countries.finland")}</SelectItem>
+                          <SelectItem value="Japan">{t("countries.japan")}</SelectItem>
+                          <SelectItem value="South Korea">{t("countries.southKorea")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Input
@@ -695,12 +695,12 @@ function CommunityPageInner() {
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
                   <Users className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>{t("community.notFollowingYet","Not Following Anyone")}</p>
-                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc","Discover and follow pipe enthusiasts in the community to see their collections")}</p>
+                  <p>{t("community.notFollowingYet")}</p>
+                  <p className="text-sm mt-2">{t("community.notFollowingYetDesc")}</p>
                   <a href={createPageUrl('Community')}>
                     <Button className="mt-4" onClick={() => setActiveTab('discover')}>
                       <Search className="w-4 h-4 mr-2" />
-                      {t("community.exploreCommunity","Explore Community")}
+                      {t("community.exploreCommunity")}
                     </Button>
                   </a>
                 </CardContent>
