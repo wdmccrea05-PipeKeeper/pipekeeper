@@ -3,12 +3,12 @@
  * Detects iOS wrapper vs web/Android to control Stripe vs Apple IAP flows
  */
 
-export function isIOSWrapper(): boolean {
+export function isIOSWrapper() {
   // Check for iOS wrapper indicators
   if (typeof window === "undefined") return false;
 
   // Check for webkit bridge (iOS wrapper)
-  if ((window as any).webkit) return true;
+  if (window.webkit) return true;
 
   // Check user agent
   const ua = navigator.userAgent.toLowerCase();
@@ -20,11 +20,11 @@ export function isIOSWrapper(): boolean {
   return isIOSUA || isIOSPlatform;
 }
 
-export function isWebOrAndroid(): boolean {
+export function isWebOrAndroid() {
   return !isIOSWrapper();
 }
 
-export function getPlatformType(): "ios_wrapper" | "web" | "android" {
+export function getPlatformType() {
   if (typeof window === "undefined") return "web";
 
   if (isIOSWrapper()) return "ios_wrapper";
