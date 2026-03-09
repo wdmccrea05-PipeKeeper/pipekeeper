@@ -63,7 +63,7 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
               <button
                 onClick={handleDismiss}
                 className="text-[#E0D8C8]/50 hover:text-[#E0D8C8] transition-colors"
-                aria-label="Dismiss checklist"
+                aria-label={t("quickStart.dismiss")}
               >
                 <X className="w-5 h-5" />
               </button>

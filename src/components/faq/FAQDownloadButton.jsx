@@ -1,8 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function FAQDownloadButton({ faqContent }) {
+  const { t } = useTranslation();
   const handleDownload = () => {
     const formattedContent = faqContent.map(section => {
       const sectionTitle = section.title;
@@ -31,7 +33,7 @@ export default function FAQDownloadButton({ faqContent }) {
   return (
     <Button onClick={handleDownload} className="bg-amber-700 hover:bg-amber-800">
       <Download className="w-4 h-4 mr-2" />
-      Download FAQ
+      {t("faq.downloadBtn")}
     </Button>
   );
 }

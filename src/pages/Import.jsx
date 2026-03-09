@@ -175,7 +175,7 @@ export default function ImportPage() {
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("supportFull.backToHome")}
             </Button>
           </a>
           <UpgradePrompt 

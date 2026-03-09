@@ -358,7 +358,7 @@ export default function PublicProfilePage() {
                 {!profile.privacy_hide_collection_counts && (
                   <div className="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
                     <div className="flex items-center gap-1">
-                      <img src={PIPE_IMAGE} alt="Pipes" className="w-4 h-4 opacity-60" />
+                      <img src={PIPE_IMAGE} alt={t("publicProfile.pipesAlt")} className="w-4 h-4 opacity-60" />
                       <span>{pipes.length} {t("publicProfile.pipes")}</span>
                     </div>
                     <div className="flex items-center gap-1">
@@ -496,7 +496,7 @@ export default function PublicProfilePage() {
             {pipes.length === 0 && (
               <Card className="bg-white/95">
                 <CardContent className="py-12 text-center text-stone-500">
-                  <img src={PIPE_IMAGE} alt="No pipes" className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                  <img src={PIPE_IMAGE} alt={t("publicProfile.noPipesAlt")} className="w-16 h-16 mx-auto mb-4 opacity-30" />
                   <p>{t("publicProfile.noPipesInCollection")}</p>
                 </CardContent>
               </Card>
@@ -670,7 +670,7 @@ export default function PublicProfilePage() {
         imageUrl={expandedImage}
         isOpen={!!expandedImage}
         onClose={() => setExpandedImage(null)}
-        alt="Profile image"
+        alt={t("publicProfile.profileImageAlt")}
       />
 
       {/* Report User Dialog */}

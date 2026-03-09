@@ -96,6 +96,7 @@ const enUI = {
     failedToEstimate: "Failed to estimate values",
     estimating: "Estimating...",
     runAiValuation: "Run AI Valuation",
+    aiDisclaimer: "AI estimates are based on public marketplace data. Actual values vary by condition, age, and market demand. Not investment advice.",
   },
   tobacconist: {
     collectionOptimizationFeatureName: "Collection Optimization",
@@ -303,6 +304,15 @@ const enUI = {
     name: "Name",
     description: "Description",
     close: "Close",
+    moreInfo: "More info",
+    viewDetails: "View Details",
+    backToHome: "Back to Home",
+    pipesAlt: "Pipes",
+    noPipesAlt: "No pipes",
+    profileImageAlt: "Profile image",
+    dataFetchError: "Data fetch error - contact support",
+    clickToUpload: "Click to upload",
+    uploading: "Uploading...",
   },
   layout: {
     appTitle: "PipeKeeper",
@@ -404,6 +414,16 @@ const enUI = {
   error: {
     somethingWentWrong: "Something went wrong",
     unexpectedErrorRefresh: "We've encountered an unexpected error. Please try refreshing the page.",
+    renderingItem: "Error rendering item",
+  },
+
+  errorBoundary: {
+    title: "Something went wrong",
+    body: "Please close and reopen the app. If the problem persists, contact support.",
+    message: "An unexpected error occurred",
+    reload: "Reload page",
+    translationErrorDetected: "Translation error detected",
+    errorDetails: "Error details",
   },
 
   aiIdentifier: {
@@ -1043,6 +1063,79 @@ const enUI = {
     testsFailed: "❌ {n} tests FAILED",
     warningsFound: "⚠️ {n} warnings",
     allTestsPassed: "🎉 All tests passed!",
+  },
+
+  tobaccoSearch: {
+    placeholder: "Search by blend name or manufacturer (e.g. 'Orlik Golden Sliced')",
+    searchBtn: "Search",
+    avgRating: "Avg Rating",
+    noResults: "No results found. Try searching for a different blend name.",
+  },
+
+  conditionTracker: {
+    conditionTracking: "Condition Tracking",
+    overallCondition: "Overall Condition",
+    selectCondition: "Select condition",
+    cakeLevel: "Cake Level",
+    optimalRange: "Optimal range: 30–70%",
+    stemOxidation: "Stem Oxidation",
+    good: "Good",
+    thin: "Thin",
+    thick: "Thick",
+    heavyOxidation: "Heavy Oxidation",
+    moderateOxidation: "Moderate Oxidation",
+    conditionMint: "Mint",
+    conditionExcellent: "Excellent",
+    conditionVeryGood: "Very Good",
+    conditionGood: "Good",
+    conditionFair: "Fair",
+    conditionPoor: "Poor",
+    conditionEstateUnrestored: "Estate - Unrestored",
+  },
+
+  quickStart: {
+    title: "Quick Start",
+    progress: "{completed} of {total} complete",
+    addPipe: "Add your first pipe",
+    addCellarItem: "Add a cellar item",
+    addBlend: "Add a tobacco blend",
+    addNote: "Add a pipe note",
+    viewInsights: "View collection insights",
+    dismiss: "Dismiss checklist",
+  },
+
+  bulkLogoUpload: {
+    title: "Bulk Logo Upload",
+    description: "Upload multiple tobacco brand logos at once. The manufacturer name will be extracted from each filename.",
+    clickToUpload: "Click to upload",
+    uploading: "Uploading...",
+  },
+
+  faq: {
+    downloadBtn: "Download FAQ",
+  },
+
+  pipes: {
+    customSpecializationPlaceholder: "Custom specialization...",
+  },
+
+  nav: {
+    pipes: "Pipes",
+  },
+
+  publicProfile: {
+    pipesAlt: "Pipes",
+    noPipesAlt: "No pipes",
+    profileImageAlt: "Profile image",
+  },
+
+  bowls: {
+    bowlAlt: "Bowl",
+    bowlPreviewAlt: "Bowl preview",
+  },
+
+  cellarDrift: {
+    viewDetails: "View Details",
   },
 };
 

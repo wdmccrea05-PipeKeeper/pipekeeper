@@ -72,7 +72,7 @@ export default function CellarDriftAlert({ blends, user }) {
             onClick={() => setShowReport(true)}
             className="border-amber-300 text-amber-900 hover:bg-amber-100"
           >
-            View Details
+            {t("cellarDrift.viewDetails", "View Details")}
           </Button>
         </div>
       </div>

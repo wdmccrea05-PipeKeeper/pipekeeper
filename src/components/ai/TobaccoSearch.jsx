@@ -183,7 +183,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
                     </div>
                     {blend.typical_rating && (
                       <div className="text-right shrink-0">
-                        <p className="text-xs text-stone-400">Avg Rating</p>
+                        <p className="text-xs text-stone-400">{t("tobaccoSearch.avgRating")}</p>
                         <p className="font-bold text-amber-400 flex items-center justify-end gap-1 mt-1">
                           ⭐ {blend.typical_rating}/5
                         </p>
@@ -199,7 +199,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
 
       {!loading && results.length === 0 && query && (
         <p className="text-sm text-stone-500 text-center py-4">
-          No results found. Try searching for a different blend name.
+          {t("tobaccoSearch.noResults")}
         </p>
       )}
     </div>

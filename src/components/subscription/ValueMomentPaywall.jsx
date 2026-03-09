@@ -49,7 +49,7 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
             <button
               onClick={onDismiss}
               className="absolute top-4 right-4 text-[#E0D8C8]/60 hover:text-[#E0D8C8] transition-colors z-10"
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <X className="w-6 h-6" />
             </button>
