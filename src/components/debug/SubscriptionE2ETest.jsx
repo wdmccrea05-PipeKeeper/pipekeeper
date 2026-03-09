@@ -15,6 +15,7 @@ import {
   isTrialingAccess,
   getPlanLabel 
 } from "@/components/utils/premiumAccess";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 /**
  * End-to-End Subscription & Feature Unlocking Test
@@ -23,6 +24,7 @@ import {
 export default function SubscriptionE2ETest() {
   const [testResults, setTestResults] = useState([]);
   const [testing, setTesting] = useState(false);
+  const { t } = useTranslation();
   
   const { user, subscription, hasPaid, hasPro, isTrial, provider, tier, planLabel, isLoading } = useCurrentUser();
   const entitlements = useEntitlements();
@@ -199,7 +201,7 @@ export default function SubscriptionE2ETest() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2 text-slate-900">
-              🧪 Current User E2E Test
+              🧪 {t('debug.currentUserTestTitle', 'Current User E2E Test')}
               {testing && <Loader2 className="w-4 h-4 animate-spin" />}
             </CardTitle>
           <div className="flex gap-2">
@@ -230,12 +232,12 @@ export default function SubscriptionE2ETest() {
           {testing ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Running Tests...
+              {t('debug.runningTests', 'Running Tests...')}
             </>
           ) : (
             <>
               <RefreshCw className="w-4 h-4 mr-2" />
-              Re-run Tests
+              {t('debug.rerunTests', 'Re-run Tests')}
             </>
           )}
         </Button>
@@ -293,12 +295,12 @@ export default function SubscriptionE2ETest() {
         {/* Summary */}
         {testResults.length > 0 && (
           <div className="bg-slate-800 text-white rounded-lg p-3 text-xs">
-            <p className="font-semibold mb-1">Test Summary:</p>
-            <p>✅ {passCount} tests passed</p>
-            {warningCount > 0 && <p>⚠️ {warningCount} warnings</p>}
-            {failCount > 0 && <p>❌ {failCount} tests FAILED</p>}
+            <p className="font-semibold mb-1">{t('debug.testSummary', 'Test Summary:')}</p>
+            <p>{t('debug.testsPassed', '✅ {n} tests passed', { n: passCount })}</p>
+            {warningCount > 0 && <p>{t('debug.warningsFound', '⚠️ {n} warnings', { n: warningCount })}</p>}
+            {failCount > 0 && <p>{t('debug.testsFailed', '❌ {n} tests FAILED', { n: failCount })}</p>}
             {failCount === 0 && warningCount === 0 && (
-              <p className="text-green-400 mt-2 font-semibold">🎉 All tests passed!</p>
+              <p className="text-green-400 mt-2 font-semibold">{t('debug.allTestsPassed', '🎉 All tests passed!')}</p>
             )}
           </div>
         )}

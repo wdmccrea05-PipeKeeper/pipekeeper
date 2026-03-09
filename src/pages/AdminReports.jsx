@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
 import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
@@ -18,6 +19,7 @@ import ReconcileEntitlementsBatchCard from '@/components/admin/ReconcileEntitlem
 
 export default function AdminReports() {
   const { user, isAdmin } = useCurrentUser();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState(null);
   const [backfilling, setBackfilling] = useState(false);
@@ -34,10 +36,10 @@ export default function AdminReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
-      toast.success('Report updated');
+      toast.success(t('admin.reportUpdated', 'Report updated'));
       setSelectedReport(null);
     },
-    onError: () => toast.error('Failed to update report'),
+    onError: () => toast.error(t('admin.failedToUpdateReport', 'Failed to update report')),
   });
 
   const hideContentMutation = useMutation({
@@ -46,9 +48,9 @@ export default function AdminReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments'] });
-      toast.success('Content hidden');
+      toast.success(t('admin.contentHidden', 'Content hidden'));
     },
-    onError: () => toast.error('Failed to hide content'),
+    onError: () => toast.error(t('admin.failedToHideContent', 'Failed to hide content')),
   });
 
   const blockUserMutation = useMutation({
@@ -64,19 +66,19 @@ export default function AdminReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
-      toast.success('User blocked');
+      toast.success(t('admin.userBlocked', 'User blocked'));
       setSelectedReport(null);
     },
-    onError: () => toast.error('Failed to block user'),
+    onError: () => toast.error(t('admin.failedToBlockUser', 'Failed to block user')),
   });
 
   const handleBackfillStripe = async () => {
     setBackfilling(true);
     try {
       const result = await base44.functions.invoke('syncStripeSubscriptions');
-      toast.success(result.data?.message || 'Stripe backfill completed');
+      toast.success(result.data?.message || t('admin.stripeBackfillCompleted', 'Stripe backfill completed'));
     } catch (error) {
-      toast.error('Backfill failed: ' + (error.message || 'Unknown error'));
+      toast.error(t('admin.backfillFailedMsg', 'Backfill failed: {error}', { error: error.message || t('common.unknown', 'Unknown') }));
     } finally {
       setBackfilling(false);
     }
@@ -88,8 +90,8 @@ export default function AdminReports() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-stone-500">Only administrators can access this page.</p>
+            <h2 className="text-xl font-semibold mb-2">{t('admin.accessDenied', 'Access Denied')}</h2>
+            <p className="text-stone-500">{t('admin.adminOnly', 'Only administrators can access this page.')}</p>
           </CardContent>
         </Card>
       </div>
@@ -135,7 +137,7 @@ export default function AdminReports() {
               </span>
             </CardTitle>
             <p className="text-xs text-stone-400 mt-1">
-              Reported: {new Date(report.created_date).toLocaleDateString()}
+              {t('admin.reportedDate', 'Reported:')} {new Date(report.created_date).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -143,19 +145,19 @@ export default function AdminReports() {
       <CardContent>
         <div className="space-y-3">
           <div>
-            <p className="text-sm font-medium text-stone-700">Reporter:</p>
+            <p className="text-sm font-medium text-stone-700">{t('admin.reporterLabel', 'Reporter:')}</p>
             <p className="text-sm text-stone-600">{report.reporter_email}</p>
           </div>
           
           {report.reported_user_email && (
             <div>
-              <p className="text-sm font-medium text-stone-700">Reported User:</p>
+              <p className="text-sm font-medium text-stone-700">{t('admin.reportedUserLabel', 'Reported User:')}</p>
               <p className="text-sm text-stone-600">{report.reported_user_email}</p>
             </div>
           )}
           
           <div>
-            <p className="text-sm font-medium text-stone-700">Reason:</p>
+            <p className="text-sm font-medium text-stone-700">{t('admin.reasonLabel', 'Reason:')}</p>
             <p className="text-sm text-stone-600">{report.reason}</p>
           </div>
 
@@ -167,7 +169,7 @@ export default function AdminReports() {
                 onClick={() => handleAction(report, 'review')}
               >
                 <Eye className="w-4 h-4 mr-1" />
-                Review
+                {t('admin.reviewBtn', 'Review')}
               </Button>
               
               {report.comment_id && (
@@ -177,7 +179,7 @@ export default function AdminReports() {
                   onClick={() => handleAction(report, 'hide')}
                 >
                   <EyeOff className="w-4 h-4 mr-1" />
-                  Hide Content
+                  {t('admin.hideContentBtn', 'Hide Content')}
                 </Button>
               )}
               
@@ -188,7 +190,7 @@ export default function AdminReports() {
                   onClick={() => handleAction(report, 'block')}
                 >
                   <XCircle className="w-4 h-4 mr-1" />
-                  Block User
+                  {t('admin.blockUserBtn', 'Block User')}
                 </Button>
               )}
               
@@ -198,7 +200,7 @@ export default function AdminReports() {
                 onClick={() => handleAction(report, 'dismiss')}
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
-                Dismiss
+                {t('admin.dismissBtn', 'Dismiss')}
               </Button>
             </div>
           )}
@@ -212,7 +214,7 @@ export default function AdminReports() {
                   onClick={() => handleAction(report, 'hide')}
                 >
                   <EyeOff className="w-4 h-4 mr-1" />
-                  Hide Content
+                  {t('admin.hideContentBtn', 'Hide Content')}
                 </Button>
               )}
               
@@ -223,7 +225,7 @@ export default function AdminReports() {
                   onClick={() => handleAction(report, 'block')}
                 >
                   <XCircle className="w-4 h-4 mr-1" />
-                  Block User
+                  {t('admin.blockUserBtn', 'Block User')}
                 </Button>
               )}
               
@@ -232,7 +234,7 @@ export default function AdminReports() {
                 variant="secondary"
                 onClick={() => handleAction(report, 'dismiss')}
               >
-                Dismiss
+                {t('admin.dismissBtn', 'Dismiss')}
               </Button>
             </div>
           )}
@@ -247,8 +249,8 @@ export default function AdminReports() {
        <div className="mb-8">
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
            <div>
-             <h1 className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">Content Moderation</h1>
-             <p className="text-sm sm:text-base text-[#E0D8C8]/70">Review and manage abuse reports</p>
+             <h1 className="text-2xl sm:text-3xl font-bold text-[#E0D8C8] mb-2">{t('admin.contentModeration', 'Content Moderation')}</h1>
+             <p className="text-sm sm:text-base text-[#E0D8C8]/70">{t('admin.reviewManageReports', 'Review and manage abuse reports')}</p>
            </div>
            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
              <Button
@@ -256,7 +258,7 @@ export default function AdminReports() {
                variant="outline"
                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
              >
-               User Subscription Report
+               {t('admin.userSubscriptionReport', 'User Subscription Report')}
              </Button>
              <Button
                onClick={handleBackfillStripe}
@@ -264,7 +266,7 @@ export default function AdminReports() {
                variant="outline"
                className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
              >
-               {backfilling ? 'Syncing...' : 'Backfill Stripe'}
+               {backfilling ? t('admin.syncing', 'Syncing...') : t('admin.backfillStripe', 'Backfill Stripe')}
              </Button>
            </div>
          </div>
@@ -275,27 +277,27 @@ export default function AdminReports() {
          <Tabs defaultValue="pending" className="w-full">
            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6">
              <TabsTrigger value="pending" className="text-xs sm:text-sm">
-               Pending ({pendingReports.length})
+               {t('admin.tabPending', 'Pending ({count})', { count: pendingReports.length })}
              </TabsTrigger>
              <TabsTrigger value="reviewed" className="text-xs sm:text-sm">
-               Reviewed ({reviewedReports.length})
+               {t('admin.tabReviewed', 'Reviewed ({count})', { count: reviewedReports.length })}
              </TabsTrigger>
              <TabsTrigger value="actioned" className="text-xs sm:text-sm">
-               Actioned ({actionedReports.length})
+               {t('admin.tabActioned', 'Actioned ({count})', { count: actionedReports.length })}
              </TabsTrigger>
              <TabsTrigger value="dismissed" className="text-xs sm:text-sm">
-               Dismissed ({dismissedReports.length})
+               {t('admin.tabDismissed', 'Dismissed ({count})', { count: dismissedReports.length })}
              </TabsTrigger>
            </TabsList>
 
           <TabsContent value="pending">
             {isLoading ? (
-              <p className="text-[#E0D8C8]/70 text-center py-8">Loading...</p>
+              <p className="text-[#E0D8C8]/70 text-center py-8">{t('common.loading', 'Loading...')}</p>
             ) : pendingReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
-                  <p className="text-[#E0D8C8]/70">No pending reports</p>
+                  <p className="text-[#E0D8C8]/70">{t('admin.noPendingReports', 'No pending reports')}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -307,7 +309,7 @@ export default function AdminReports() {
             {reviewedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-[#E0D8C8]/70">No reviewed reports</p>
+                  <p className="text-[#E0D8C8]/70">{t('admin.noReviewedReports', 'No reviewed reports')}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -319,7 +321,7 @@ export default function AdminReports() {
             {actionedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-[#E0D8C8]/70">No actioned reports</p>
+                  <p className="text-[#E0D8C8]/70">{t('admin.noActionedReports', 'No actioned reports')}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -331,7 +333,7 @@ export default function AdminReports() {
             {dismissedReports.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <p className="text-[#E0D8C8]/70">No dismissed reports</p>
+                  <p className="text-[#E0D8C8]/70">{t('admin.noDismissedReports', 'No dismissed reports')}</p>
                 </CardContent>
               </Card>
             ) : (
