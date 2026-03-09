@@ -215,6 +215,30 @@ const RULES = [
     minLength: 2,
     bypassIgnorePatterns: true,
   },
+  {
+    name: 't-default-value-literal',
+    // Catches t("some.key", { defaultValue: "English text" }) calls where
+    // defaultValue is used as an inline English fallback instead of adding
+    // the key to the locale file.  This is the object-options variant of the
+    // t-fallback-literal antipattern.
+    //
+    // Matches both double-quoted and single-quoted defaultValue strings and
+    // captures the first 80 chars for reporting.
+    pattern: /\bt\(\s*['"][^'"]+['"]\s*,\s*\{[^}]*defaultValue\s*:\s*["']([^"']{2,80})["'][^}]*\}/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 't-or-fallback-literal',
+    // Catches t("some.key") || "English fallback" where a t() call is guarded
+    // by an OR-expression with a raw string literal.  This indicates that the
+    // component relies on an inline English fallback instead of a locale key.
+    pattern: /\bt\([^)]+\)\s*\|\|\s*["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+    minLength: 4,
+    bypassIgnorePatterns: true,
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)

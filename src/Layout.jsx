@@ -245,10 +245,10 @@ export default function Layout({ children, currentPageName }) {
   const { user, isLoading: userLoading, error: userError, hasPremium, hasPaid, hasPro, isAdmin, subscription, isLoading: subLoading } = useCurrentUser();
 
   const adminNavItems = useMemo(() => isAdmin ? [
-    { name: t("nav.subscriptionSupport") || "Subscription Support", page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
-    { name: t("nav.userReport") || "User Report", page: "UserReport", icon: Users, isIconComponent: true },
-    { name: t("nav.contentModeration") || "Content Moderation", page: "AdminReports", icon: Shield, isIconComponent: true },
-    { name: t("nav.eventsLog") || "Events Log", page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
+    { name: t("nav.subscriptionSupport"), page: "SubscriptionSupport", icon: Settings, isIconComponent: true },
+    { name: t("nav.userReport"), page: "UserReport", icon: Users, isIconComponent: true },
+    { name: t("nav.contentModeration"), page: "AdminReports", icon: Shield, isIconComponent: true },
+    { name: t("nav.eventsLog"), page: "SubscriptionEventsLog", icon: FileText, isIconComponent: true },
   ] : [], [isAdmin, lang]);
 
   // Block render until subscription is loaded (prevents Apple fallback race)

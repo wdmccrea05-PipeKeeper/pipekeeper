@@ -228,10 +228,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports", {defaultValue: "Reports"})}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.reports")}</h3>
                         <InfoTooltip text={t("insights.reportsTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle", {defaultValue: "Export your collection and smoking logs"})}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.reportsSubtitle")}</p>
                     </div>
                     <SmokingLogReportExporter user={user} />
                     <AgingReportExporter user={user} />
@@ -265,10 +265,10 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                   <>
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard", {defaultValue: "Aging Dashboard"})}</h3>
+                        <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("insights.agingDashboard")}</h3>
                         <InfoTooltip text={t("insights.agingTooltip")} />
                       </div>
-                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle", {defaultValue: "Track cellared tobacco aging progress"})}</p>
+                      <p className="text-sm text-[#A4B0C4]">{t("insights.agingSubtitle")}</p>
                     </div>
                     <CellarAgingDashboard user={user} />
                   </>

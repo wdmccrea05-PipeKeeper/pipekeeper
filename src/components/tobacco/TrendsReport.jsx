@@ -170,7 +170,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
       .sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
     
     const mostCommonTime = Object.entries(timeOfDay)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || t('trends.nA', { defaultValue: 'N/A' });
+      .sort(([, a], [, b]) => b - a)[0]?.[0] || t('trends.nA');
 
     const window = TIME_WINDOWS[timeWindow];
     let daysInPeriod;
@@ -257,7 +257,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
     const goToCombo = [topShape?.[0], topBowlStyle?.[0], topShankShape?.[0]]
       .filter(Boolean)
-      .join(' + ') || t('trends.nA', { defaultValue: 'N/A' });
+      .join(' + ') || t('trends.nA');
 
     return {
       shapes: Object.entries(shapes).sort(([, a], [, b]) => b - a).slice(0, 5),
