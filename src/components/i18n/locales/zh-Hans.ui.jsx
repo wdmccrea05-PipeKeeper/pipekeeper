@@ -617,7 +617,16 @@ const zhHansUI = {
     modifySubscription: "需要修改您的订阅吗？",
     emailSupport: "联系支持",
     unlockNote: "如果您刚刚订阅，您的功能将在1–2分钟内自动解锁。如果没有，请联系支持。",
+    bannerFallback: "由于平台问题，订阅管理暂时受限。新订阅正常运行。如需更改，请联系支持。",
   },
+  foundingMember: {
+    title: "感谢您成为早期支持者",
+    para1: "感谢您订阅PipeKeeper Premium并从一开始就支持这款应用。",
+    para2: "作为创始会员，您将继续享有完整的Premium访问权限，包括今天可用的所有功能。您目前可以访问的任何内容都不会被删除或限制。",
+    para3: "您的支持真正有助于塑造PipeKeeper的未来。",
+    gotIt: "明白了 — 谢谢！",
+  },
+
 };
 
 export default zhHansUI;

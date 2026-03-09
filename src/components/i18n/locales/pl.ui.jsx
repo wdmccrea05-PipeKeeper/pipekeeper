@@ -617,7 +617,16 @@ const plUI = {
     modifySubscription: "Chcesz zmodyfikować subskrypcję?",
     emailSupport: "Kontakt z pomocą techniczną",
     unlockNote: "Jeśli właśnie subskrybowałeś, Twoje funkcje powinny zostać odblokowane automatycznie w ciągu 1–2 minut. Jeśli nie, skontaktuj się z pomocą techniczną.",
+    bannerFallback: "Zarządzanie subskrypcjami jest tymczasowo ograniczone z powodu problemu z platformą. Nowe subskrypcje działają normalnie. Skontaktuj się z pomocą techniczną w celu wprowadzenia zmian.",
   },
+  foundingMember: {
+    title: "Dziękujemy za bycie wczesnym wspierającym",
+    para1: "Dziękujemy za subskrypcję PipeKeeper Premium i za wspieranie aplikacji od samego początku.",
+    para2: "Jako członek założyciel będziesz nadal korzystać z pełnego dostępu Premium, w tym wszystkich dostępnych dziś funkcji. Nic, do czego masz obecnie dostęp, nie zostanie usunięte ani ograniczone.",
+    para3: "Twoje wsparcie naprawdę pomaga kształtować przyszłość PipeKeeper.",
+    gotIt: "Rozumiem — dziękuję!",
+  },
+
 };
 
 export default plUI;

@@ -622,7 +622,16 @@ const itUI = {
     modifySubscription: "Hai bisogno di modificare il tuo abbonamento?",
     emailSupport: "Contatta il supporto",
     unlockNote: "Se ti sei appena abbonato, le tue funzionalità si sblocheranno automaticamente entro 1–2 minuti. Altrimenti, contatta il supporto.",
+    bannerFallback: "La gestione degli abbonamenti è temporaneamente limitata a causa di un problema della piattaforma. I nuovi abbonamenti funzionano normalmente. Contatta il supporto per le modifiche.",
   },
+  foundingMember: {
+    title: "Grazie per essere un sostenitore precoce",
+    para1: "Grazie per esserti iscritto a PipeKeeper Premium e per aver supportato l'app fin dall'inizio.",
+    para2: "Come membro fondatore, continuerai a godere di accesso completo a Premium, incluse tutte le funzionalità disponibili oggi. Nulla a cui hai attualmente accesso verrà rimosso o limitato.",
+    para3: "Il tuo supporto contribuisce davvero a plasmare il futuro di PipeKeeper.",
+    gotIt: "Capito — grazie!",
+  },
+
 };
 
 export default itUI;

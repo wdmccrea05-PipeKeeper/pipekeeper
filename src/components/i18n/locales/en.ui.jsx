@@ -536,6 +536,15 @@ const enUI = {
     modifySubscription: "Need to modify your subscription?",
     emailSupport: "Email Support",
     unlockNote: "If you just subscribed, your features should unlock automatically within 1–2 minutes. If not, contact support.",
+    bannerFallback: "Subscription management is temporarily limited due to a platform issue. New subscriptions work normally. Contact support for changes.",
+  },
+
+  foundingMember: {
+    title: "Thank You for Being an Early Supporter",
+    para1: "Thanks for subscribing to PipeKeeper Premium and for supporting the app early on.",
+    para2: "As a founding member, you'll continue to enjoy full Premium access, including all features available today. Nothing you currently have access to will be removed or restricted.",
+    para3: "Your support truly helps shape the future of PipeKeeper.",
+    gotIt: "Got it — thanks!",
   },
 
   quickPipeIdentifier: {
