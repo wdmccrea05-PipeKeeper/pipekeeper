@@ -115,8 +115,12 @@ const RULES = [
   {
     name: 'jsx-text-content',
     // Matches ">  Some Text  <" in JSX (not a translation call, not a variable)
-    // Captures text between JSX tags that looks like a human-readable sentence
-    pattern: />\s*([A-Z][a-zA-Z0-9 '",.:!?()&/-]{4,}[a-zA-Z.!?])\s*</g,
+    // Captures text between JSX tags that looks like a human-readable sentence.
+    // End class extended to include ':' and ')' to catch labels like "Flavors:"
+    // and format strings like "PNG, JPG, WEBP, SVG (multiple files)".
+    // Middle class extended with '_' so instruction text with underscores is caught.
+    // Minimum middle-char count reduced to 3 so 5-char strings like "Clear" are caught.
+    pattern: />\s*([A-Z][a-zA-Z0-9 '",.:\s!?()&/_-]{3,}[a-zA-Z.!?:)])\s*</g,
     severity: 'warn',
   },
   {
@@ -149,6 +153,23 @@ const RULES = [
     pattern: /\btoast\.[a-z]+\(\s*["']([A-Z][^"']{3,})["']/g,
     severity: 'warn',
   },
+  {
+    name: 'jsx-text-before-expr',
+    // Catches text that appears before a JSX expression: > Some label: {value}
+    // This catches partially-translated lines like "Processed: {count}" and
+    // inline labels like "Errors:" that are followed by {expressions}.
+    pattern: />\s*([A-Z][a-zA-Z0-9 '",.!?()&/_-]{2,}[a-zA-Z.!?:])\s*\{/g,
+    severity: 'warn',
+  },
+  {
+    name: 'jsx-kbd-content',
+    // Catches text inside <kbd> elements (keyboard hint labels like "Esc").
+    // Symbol-only keys (↑↓, ↵, etc.) are filtered out by shouldIgnoreText.
+    // minLength: 2 allows 3-char strings like "Esc" to be detected.
+    pattern: /<kbd[^>]*>([A-Za-z][a-zA-Z0-9 ]*)<\/kbd>/g,
+    severity: 'warn',
+    minLength: 2,
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)
@@ -163,9 +184,9 @@ const IGNORE_PATTERNS = [
   /^[a-z][a-zA-Z0-9.]+$/, // camelCase or dotted identifiers
 ];
 
-function shouldIgnoreText(text) {
+function shouldIgnoreText(text, minLength = 4) {
   const trimmed = text.trim();
-  if (trimmed.length < 4) return true;
+  if (trimmed.length < minLength) return true;
   if (IGNORE_PATTERNS.some((re) => re.test(trimmed))) return true;
   return false;
 }
@@ -197,7 +218,7 @@ function scanFile(filePath) {
     while ((match = rule.pattern.exec(source)) !== null) {
       const text = match[1].trim();
 
-      if (shouldIgnoreText(text)) continue;
+      if (shouldIgnoreText(text, rule.minLength ?? 4)) continue;
       if (isAllowlisted(text)) continue;
 
       // Determine line number from match offset

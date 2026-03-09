@@ -97,6 +97,10 @@ const enUI = {
     estimating: "Estimating...",
     runAiValuation: "Run AI Valuation",
     aiDisclaimer: "AI estimates are based on public marketplace data. Actual values vary by condition, age, and market demand. Not investment advice.",
+    processedFailed: "Processed: {processed} | Failed: {failed}",
+    confidence: "Confidence: {confidence}",
+    errors: "Errors:",
+    processingFailed: "Processing failed",
   },
   tobacconist: {
     collectionOptimizationFeatureName: "Collection Optimization",
@@ -313,6 +317,7 @@ const enUI = {
     dataFetchError: "Data fetch error - contact support",
     clickToUpload: "Click to upload",
     uploading: "Uploading...",
+    other: "Other",
   },
   layout: {
     appTitle: "PipeKeeper",
@@ -424,6 +429,8 @@ const enUI = {
     reload: "Reload page",
     translationErrorDetected: "Translation error detected",
     errorDetails: "Error details",
+    language: "Language:",
+    route: "Route:",
   },
 
   aiIdentifier: {
@@ -1070,6 +1077,7 @@ const enUI = {
     searchBtn: "Search",
     avgRating: "Avg Rating",
     noResults: "No results found. Try searching for a different blend name.",
+    flavors: "Flavors:",
   },
 
   conditionTracker: {
@@ -1109,6 +1117,19 @@ const enUI = {
     description: "Upload multiple tobacco brand logos at once. The manufacturer name will be extracted from each filename.",
     clickToUpload: "Click to upload",
     uploading: "Uploading...",
+    filenameFormatLabel: "Filename Format:",
+    filenameFormatDesc: 'Use the manufacturer name as the filename (e.g., "Peterson.png", "Cornell_and_Diehl.png"). Underscores and hyphens will be converted to spaces.',
+    orDragAndDrop: "or drag and drop",
+    acceptedFormats: "PNG, JPG, WEBP, SVG (multiple files)",
+    selectedFiles: "Selected Files ({count})",
+    andNMore: "... and {n} more",
+    uploadLogosBtn: "Upload {count} Logos",
+    uploadLogosBtnSingular: "Upload 1 Logo",
+    clear: "Clear",
+    uploadResults: "Upload Results ({success}/{total} successful)",
+    logoAdded: "Logo added",
+    logoUpdated: "Logo updated",
+    uploadFailed: "Upload failed",
   },
 
   faq: {
@@ -1136,6 +1157,26 @@ const enUI = {
 
   cellarDrift: {
     viewDetails: "View Details",
+  },
+
+  search: {
+    hintTitle: "Start typing to search",
+    hintSubtitle: "Search pipes, tobacco, makers, shapes, and more",
+    kbdNavigate: "Navigate",
+    kbdSelect: "Select",
+    kbdClose: "Close",
+    kbdEsc: "Esc",
+  },
+
+  countries: {
+    italy: "Italy",
+    denmark: "Denmark",
+    england: "England",
+    unitedStates: "United States",
+    france: "France",
+    germany: "Germany",
+    ireland: "Ireland",
+    japan: "Japan",
   },
 };
 
