@@ -181,6 +181,17 @@ const RULES = [
     severity: 'warn',
     minLength: 2,
   },
+  {
+    name: 't-fallback-literal',
+    // Catches t("some.key", "English fallback string") calls where the second
+    // argument is a plain string literal rather than an interpolation object.
+    // This pattern indicates that the component is relying on an inline English
+    // fallback instead of a locale key, which is the antipattern we want to eliminate.
+    // Captures the fallback string (the second argument) for reporting.
+    // Matches both uppercase- and lowercase-starting fallbacks (e.g. "or drag and drop").
+    pattern: /\bt\(\s*["'][^"']+["']\s*,\s*["']([A-Za-z][^"']{2,})["']\s*\)/g,
+    severity: 'warn',
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)
@@ -315,7 +326,11 @@ function main() {
   console.log('  3. Replace the raw string with a t() call:');
   console.log('     Before: <Button>Save</Button>');
   console.log('     After:  <Button>{t("common.saveButton")}</Button>');
-  console.log('  4. If a string is a proper noun or brand name, add it to');
+  console.log('  4. For t-fallback-literal findings: ensure the locale key exists,');
+  console.log('     then remove the inline English fallback string:');
+  console.log('     Before: {t("common.saveButton", "Save")}');
+  console.log('     After:  {t("common.saveButton")}');
+  console.log('  5. If a string is a proper noun or brand name, add it to');
   console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
   console.log('─'.repeat(60));
   console.log();

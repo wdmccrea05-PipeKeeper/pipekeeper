@@ -63,7 +63,7 @@ export default function BulkLogoUploadPage() {
             filename: file.name,
             manufacturer: manufacturerName,
             status: 'updated',
-            message: t("bulkLogoUpload.logoUpdated", "Logo updated")
+            message: t("bulkLogoUpload.logoUpdated")
           });
         } else {
           // Create new entry
@@ -76,7 +76,7 @@ export default function BulkLogoUploadPage() {
             filename: file.name,
             manufacturer: manufacturerName,
             status: 'success',
-            message: t("bulkLogoUpload.logoAdded", "Logo added")
+            message: t("bulkLogoUpload.logoAdded")
           });
         }
       } catch (error) {
@@ -84,7 +84,7 @@ export default function BulkLogoUploadPage() {
           filename: file.name,
           manufacturer: manufacturerName,
           status: 'error',
-          message: error.message || t("bulkLogoUpload.uploadFailed", "Upload failed")
+          message: error.message || t("bulkLogoUpload.uploadFailed")
         });
       }
 
@@ -112,7 +112,7 @@ export default function BulkLogoUploadPage() {
             </p>
             <div className="mt-3 p-4 bg-amber-900/20 rounded-xl border border-amber-600/30">
               <p className="text-xs text-[#e8d5b7]/90">
-                <strong>{t("bulkLogoUpload.filenameFormatLabel", "Filename Format:")}</strong> {t("bulkLogoUpload.filenameFormatDesc", 'Use the manufacturer name as the filename (e.g., "Peterson.png", "Cornell_and_Diehl.png"). Underscores and hyphens will be converted to spaces.')}
+                <strong>{t("bulkLogoUpload.filenameFormatLabel")}</strong> {t("bulkLogoUpload.filenameFormatDesc")}
               </p>
             </div>
           </CardHeader>
@@ -124,9 +124,9 @@ export default function BulkLogoUploadPage() {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-[#e8d5b7]/60" />
                     <div className="text-sm text-[#e8d5b7]/70">
-                      <span className="font-semibold text-[#e8d5b7]">{t("bulkLogoUpload.clickToUpload")}</span> {t("bulkLogoUpload.orDragAndDrop", "or drag and drop")}
+                      <span className="font-semibold text-[#e8d5b7]">{t("bulkLogoUpload.clickToUpload")}</span> {t("bulkLogoUpload.orDragAndDrop")}
                     </div>
-                    <p className="text-xs text-[#e8d5b7]/50">{t("bulkLogoUpload.acceptedFormats", "PNG, JPG, WEBP, SVG (multiple files)")}</p>
+                    <p className="text-xs text-[#e8d5b7]/50">{t("bulkLogoUpload.acceptedFormats")}</p>
                   </div>
                 </div>
                 <input
@@ -189,7 +189,7 @@ export default function BulkLogoUploadPage() {
                   <>
                     <Upload className="w-4 h-4 mr-2" />
                     {files.length === 1
-                      ? t("bulkLogoUpload.uploadLogosBtnSingular", "Upload 1 Logo")
+                      ? t("bulkLogoUpload.uploadLogosBtnSingular")
                       : t("bulkLogoUpload.uploadLogosBtn", { count: files.length })}
                   </>
                 )}
@@ -200,7 +200,7 @@ export default function BulkLogoUploadPage() {
                 disabled={uploading}
                 className="border-[#e8d5b7]/30 text-[#e8d5b7] hover:bg-[#1a2c42]/50 rounded-xl"
               >
-                {t("bulkLogoUpload.clear", "Clear")}
+                {t("bulkLogoUpload.clear")}
               </Button>
             </div>
 
