@@ -10,7 +10,20 @@ permissions:
   id-token: write
 
 jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - name: Release gate (i18n check + critical-path tests)
+        run: npm run release:check
+
   build:
+    needs: release-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
