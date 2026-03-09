@@ -16,8 +16,8 @@
     "i18n:audit": "node scripts/i18n-check.js"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.3",
-    "@base44/vite-plugin": "^0.2.12",
+    "@base44/sdk": "^0.8.0",
+    "@base44/vite-plugin": "^1.0.0",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
     "@playwright/test": "^1.40.0",
