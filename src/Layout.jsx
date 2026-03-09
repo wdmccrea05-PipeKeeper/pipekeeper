@@ -645,7 +645,7 @@ export default function Layout({ children, currentPageName }) {
                 }}
                 className="text-[#E0D8C8] p-2 -mr-2 hover:bg-[#A35C5C]/20 rounded-lg active:scale-95 transition-all duration-200"
                 style={{ WebkitTapHighlightColor: "transparent" }}
-                aria-label={t("layout.toggleMenu","Toggle menu")}
+                aria-label={t("layout.toggleMenu")}
               >
                 {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>

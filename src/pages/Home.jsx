@@ -67,10 +67,10 @@ export default function Home() {
       {/* 1. HERO */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold font-serif text-[#E0D8C8]">
-            {t("home.title", "Pipe & Tobacco Collection")}
+            {t("home.title")}
           </h1>
         <p className="text-lg text-[#E0D8C8]/80 max-w-3xl mx-auto">
-           {t("home.subtitle", "Manage your pipes and tobacco blends with AI-powered search, photo identification, pairing suggestions, and market valuations.")}
+           {t("home.subtitle")}
          </p>
       </div>
 
@@ -79,8 +79,8 @@ export default function Home() {
         <div className="border-l-4 border-amber-500 bg-[#223447] rounded-r-xl p-4 flex items-center gap-3">
           <Crown className="w-5 h-5 text-amber-400 shrink-0" />
           <div>
-            <div className="font-semibold text-amber-400">{t("subscription.proBadge", "Pro Active")}</div>
-            <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting", "Thank you for supporting PipeKeeper")}</div>
+            <div className="font-semibold text-amber-400">{t("subscription.proBadge")}</div>
+            <div className="text-sm text-[#E0D8C8]/70">{t("subscription.thankYouSupporting")}</div>
           </div>
           {planLabel && <span className="ml-auto text-xs text-[#E0D8C8]/50 shrink-0 truncate max-w-[60px]">{planLabel}</span>}
         </div>
@@ -98,14 +98,14 @@ export default function Home() {
           <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
             <div className="flex items-start justify-between mb-1">
               <div>
-                <h2 className="text-2xl font-bold">{t("home.pipeCollectionTitle", "Pipe Collection")}</h2>
-                <p className="text-sm opacity-60 mt-0.5">{t("home.pipeCollectionSubtitle", "Track and value your pipes")}</p>
+                <h2 className="text-2xl font-bold">{t("home.pipeCollectionTitle")}</h2>
+                <p className="text-sm opacity-60 mt-0.5">{t("home.pipeCollectionSubtitle")}</p>
               </div>
               <div className="flex gap-1">
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh", "Refresh")}>
+                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh")}>
                   <RefreshCw className="w-4 h-4" />
                 </a>
-                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view", "View")}>
+                <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view")}>
                    <img src={PIPE_ICON} alt={t("nav.pipes")} className="w-4 h-4 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
                  </a>
               </div>
@@ -113,16 +113,16 @@ export default function Home() {
             <div className="flex flex-col gap-3 mt-5 flex-1">
               <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{pipes.length}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection", "Pipes in Collection")}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.pipesInCollection")}</div>
               </a>
               <a href={createPageUrl("Pipes")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{hideHomeValues ? "••••" : formatCurrency(totalPipeValue)}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue")}</div>
               </a>
             </div>
             <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
               <a href={createPageUrl("Pipes")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
-                {t("home.viewCollection", "View Collection")}
+                {t("home.viewCollection")}
               </a>
               <span className="opacity-60">→</span>
             </div>
@@ -139,14 +139,14 @@ export default function Home() {
           <div className="relative flex flex-col flex-1 p-6 text-[#F5F1E7]">
             <div className="flex items-start justify-between mb-1">
               <div>
-                <h2 className="text-2xl font-bold">{t("home.tobaccoCellarTitle", "Tobacco Cellar")}</h2>
-                <p className="text-sm opacity-60 mt-0.5">{t("home.tobaccoCellarSubtitle", "Manage your blends")}</p>
+                <h2 className="text-2xl font-bold">{t("home.tobaccoCellarTitle")}</h2>
+                <p className="text-sm opacity-60 mt-0.5">{t("home.tobaccoCellarSubtitle")}</p>
               </div>
               <div className="flex gap-1">
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh", "Refresh")}>
+                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.refresh")}>
                   <RefreshCw className="w-4 h-4" />
                 </a>
-                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view", "View")}>
+                <a href={createPageUrl("Tobacco")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view")}>
                   <Leaf className="w-4 h-4" />
                 </a>
               </div>
@@ -154,20 +154,20 @@ export default function Home() {
             <div className="flex flex-col gap-3 mt-5 flex-1">
               <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{blends.length}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.tobaccoBlends", "Tobacco Blends")}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.tobaccoBlends")}</div>
               </a>
               <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{formatWeight(totalCellaredOz, 'oz')}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.cellared", "Cellared")}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.cellared")}</div>
               </a>
               <a href={createPageUrl("Tobacco")} className="bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors block">
                 <div className="text-3xl font-bold">{hideHomeValues ? "••••" : `≈ ${formatCurrency(Math.round(totalTobaccoValue))}`}</div>
-                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue", "Collection Value")}</div>
+                <div className="text-sm opacity-60 mt-0.5">{t("home.collectionValue")}</div>
               </a>
             </div>
             <div className="mt-5 pt-4 border-t border-white/20 flex items-center justify-between">
               <a href={createPageUrl("Tobacco")} className="text-[#F5F1E7] font-medium hover:underline text-sm">
-                {t("home.viewCellar", "View Cellar")}
+                {t("home.viewCellar")}
               </a>
               <span className="opacity-60">→</span>
             </div>
@@ -180,7 +180,7 @@ export default function Home() {
         <PKCard className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-            <h2 className="text-xl font-semibold">{t("home.favorites", "Favorites")}</h2>
+            <h2 className="text-xl font-semibold">{t("home.favorites")}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {favoritePipes.map(item => (
@@ -210,9 +210,9 @@ export default function Home() {
         {/* Recent Pipes */}
         <PKCard className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t("home.recentPipes", "Recent Pipes")}</h2>
+            <h2 className="text-xl font-semibold">{t("home.recentPipes")}</h2>
             <a href={createPageUrl("Pipes")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8]">
-              {t("home.viewAll", "View All")} →
+              {t("home.viewAll")} →
             </a>
           </div>
           <div className="space-y-3">
@@ -240,9 +240,9 @@ export default function Home() {
         {/* Recent Tobacco */}
         <PKCard className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">{t("home.recentTobacco", "Recent Tobacco")}</h2>
+            <h2 className="text-xl font-semibold">{t("home.recentTobacco")}</h2>
             <a href={createPageUrl("Tobacco")} className="text-sm text-[#E0D8C8]/70 hover:text-[#E0D8C8]">
-              {t("home.viewAll", "View All")} →
+              {t("home.viewAll")} →
             </a>
           </div>
           <div className="space-y-3">
@@ -270,8 +270,8 @@ export default function Home() {
         <PKCard className="p-4 flex items-center gap-4 hover:bg-[#2a3f57] transition-colors cursor-pointer">
           <Sparkles className="w-8 h-8 text-amber-400 shrink-0" />
           <div className="flex-1">
-            <div className="font-semibold">{t("home.bulkImport", "Bulk Import")}</div>
-            <div className="text-sm opacity-70">{t("home.importDesc", "Import pipes & tobacco from CSV")}</div>
+            <div className="font-semibold">{t("home.bulkImport")}</div>
+            <div className="text-sm opacity-70">{t("home.importDesc")}</div>
           </div>
           <ArrowRight className="w-5 h-5 opacity-50 shrink-0" />
         </PKCard>

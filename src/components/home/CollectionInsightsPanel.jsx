@@ -122,27 +122,27 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
               <>
                 <TabsTrigger value="log" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BookOpen className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.log", "Log")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.log")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="reference" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <Grid3x3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid", "Pairings")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.pairingGrid")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="rotation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <CalendarClock className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.rotation", "Rotation")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.rotation")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.stats", "Stats")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.stats")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="trends" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.trends", "Trends")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.trends")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="aging" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 relative">
                   <Clock className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.aging", "Aging")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.aging")}</span>
                   {agingAlertCount > 0 && (
                     <div className="absolute -top-1 -right-1 flex items-center justify-center">
                       <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
@@ -151,7 +151,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user }) {
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0">
                   <FileText className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">{t("insights.reports", "Reports")}</span>
+                  <span className="truncate w-full text-center leading-tight">{t("insights.reports")}</span>
                 </TabsTrigger>
               </>
             )}

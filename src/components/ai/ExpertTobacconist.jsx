@@ -38,7 +38,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <CardTitle className="text-base sm:text-xl text-[#E0D8C8] leading-tight">{t("tobacconist.title")}</CardTitle>
-              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional", "Optional")}</Badge>
+              <Badge variant="outline" className="text-xs border-[#E0D8C8]/30 text-[#E0D8C8]/80 shrink-0">{t("tobacconist.optional")}</Badge>
               <InfoTooltip text={t("tobacconist.tooltipText")} />
             </div>
             <p className="text-sm text-[#E0D8C8]/70">{t("tobacconist.subtitle")}</p>
@@ -146,7 +146,7 @@ export default function ExpertTobacconist({ pipes, blends, isPaidUser, user, use
               )
             ) : (
               <p className="text-sm text-[#E0D8C8]/60 text-center py-4">
-                {t("tobacconist.upgradeInOptimizeTab", "Upgrade via the Optimize tab to unlock What-If analysis.")}
+                {t("tobacconist.upgradeInOptimizeTab")}
               </p>
             )}
           </TabsContent>
