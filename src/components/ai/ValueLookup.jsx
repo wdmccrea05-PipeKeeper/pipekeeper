@@ -99,7 +99,7 @@ Provide a detailed valuation in JSON format with:
       setValuation(result);
     } catch (err) {
       console.error('Error looking up value:', err);
-      toast.error(t("errors.valueLookupFailed", { defaultValue: "Failed to look up value. Please try again." }));
+      toast.error(t("errors.valueLookupFailed"));
     } finally {
       setLoading(false);
     }
@@ -127,8 +127,8 @@ Provide a detailed valuation in JSON format with:
   if (!hasPremium) {
     return (
       <UpgradePrompt
-        featureName={t("matching.marketValueLookup", { defaultValue: "Market Value Lookup" })}
-        description={t("matching.searchMarketDesc", { defaultValue: "Search recent market data, auctions, and estate pipe sales to estimate current value" })}
+        featureName={t("matching.marketValueLookup")}
+        description={t("matching.searchMarketDesc")}
       />
     );
   }
@@ -140,9 +140,9 @@ Provide a detailed valuation in JSON format with:
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
             <DollarSign className="w-8 h-8 text-emerald-600" />
           </div>
-          <h3 className="text-lg font-semibold text-stone-800 mb-2">{t("matching.marketValueLookup", {defaultValue: "Market Value Lookup"})}</h3>
+          <h3 className="text-lg font-semibold text-stone-800 mb-2">{t("matching.marketValueLookup")}</h3>
           <p className="text-stone-600 mb-6 max-w-md mx-auto">
-            {t("matching.searchMarketDesc", {defaultValue: "Search recent market data, auctions, and estate pipe sales to estimate current value"})}
+            {t("matching.searchMarketDesc")}
           </p>
           <Button
             onClick={lookupValue}

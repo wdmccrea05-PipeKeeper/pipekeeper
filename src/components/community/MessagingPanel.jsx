@@ -94,7 +94,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       toast.success(t("messaging.messageSent"));
     },
     onError: () => {
-      toast.error(t("messaging.failedToSend", { defaultValue: "Failed to send message. Please try again." }));
+      toast.error(t("messaging.failedToSend"));
     },
   });
 
@@ -116,7 +116,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       toast.success(t("messaging.messageDeleted"));
     },
     onError: () => {
-      toast.error(t("messaging.cannotDeleteOtherMessage", { defaultValue: "You can only delete your own messages" }));
+      toast.error(t("messaging.cannotDeleteOtherMessage"));
     },
   });
 

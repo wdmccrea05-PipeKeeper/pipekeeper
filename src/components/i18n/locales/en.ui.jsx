@@ -81,6 +81,8 @@ const enUI = {
     upgradeToUnlockValuation: "Upgrade to Pro to unlock AI-assisted valuation and predictive insights.",
     valuedWithProAccess: "This blend was valued when you had Pro access. Upgrade to Pro to run new valuations.",
     aiValuationFeatureName: "AI-assisted valuation",
+    aiAssistedValuation: "AI Assisted Valuation",
+    evidenceSources: "Evidence sources",
   },
   tobaccoEstimator: {
     cardTitle: "AI Tobacco Valuation",
@@ -254,6 +256,13 @@ const enUI = {
     clarificationHelps: "Help the AI understand your preferences better.",
     refineRecommendations: "Refine Recommendations",
     inRegularRotation: "In Regular Rotation",
+    analyzePipeGeometry: "Analyze Pipe Geometry",
+    analyzePipeGeometryTooltip: "Use AI to identify shape, bowl style, and shank characteristics from photos",
+    classifyGeometryFromPhotos: "Classify geometry from photos",
+    breakInSchedulesTooltip: "Progressive tobacco recommendations to break in new pipes properly",
+    breakInSchedulesDesc: "Personalized break-in recommendations generated per pipe",
+    scoreImprovement: "Score Improvement",
+    clarificationPlaceholder: "E.g., 'This pipe smokes hot with aromatics', 'I prefer it for English blends', 'Too wet for this type'...",
   },
   pipeDetailTabs: {
     focusUpdated: "Focus updated - AI recommendations will refresh",
@@ -350,6 +359,12 @@ const enUI = {
     appTitle: "PipeKeeper",
     admin: "Admin",
     toggleMenu: "Toggle menu",
+  },
+  ageGate: {
+    title: "Adults Only",
+    intendedForAdults: "PipeKeeper is intended for adult users only.",
+    disclaimer: "This app is a collection management tool for pipe smoking enthusiasts. It does not sell or facilitate the purchase of tobacco products.",
+    confirmAge: "I confirm I am of legal age",
   },
   aiUpdates: {
     pairingsRevertSuccess: "Pairings reverted to previous version",
@@ -460,6 +475,8 @@ const enUI = {
     comparableSales: "Comparable Sales",
     importantNotes: "Important Notes",
     searchAgain: "Search Again",
+    top3Matches: "Top 3 Matches",
+    checkAnyBlend: "Check Any Blend",
   },
   error: {
     somethingWentWrong: "Something went wrong",
@@ -591,6 +608,19 @@ const enUI = {
     top3Matches: "Top 3 Matches",
     show: "Show",
     hide: "Hide",
+  },
+
+  pairingGrid: {
+    title: "Pairing Reference Grid",
+    tooltipText: "View scored pairings for all pipes and tobaccos in your collection",
+    subtitle: "Quick-reference matrix of pipe-tobacco compatibility scores",
+    focus: "Focus:",
+    dim: "Dim:",
+    topMatches: "Top 3 Matches",
+    checkAnyBlend: "Check Any Blend",
+    selectABlend: "Select a blend...",
+    getScore: "Calculate Score",
+    noScore: "—",
   },
 
   logoLibraryBrowser: {
@@ -1231,7 +1261,23 @@ const enUI = {
   },
 
   nav: {
+    home: "Home",
     pipes: "Pipes",
+    tobacco: "Tobacco",
+    cellar: "Cellar",
+    community: "Community",
+    profile: "Profile",
+    help: "Help",
+    faq: "FAQ",
+    support: "Support",
+    terms: "Terms",
+    privacy: "Privacy",
+    subscriptionSupport: "Subscription Support",
+    userReport: "User Report",
+    contentModeration: "Content Moderation",
+    eventsLog: "Events Log",
+    quickAccess: "Quick Access",
+    syncing: "Syncing...",
     goHome: "Go to Home",
   },
 
@@ -1280,6 +1326,18 @@ const enUI = {
   },
 
   search: {
+    trigger: "Search...",
+    openAria: "Open search",
+    commandInputPlaceholder: "Type to search pipes, tobacco, makers...",
+    noResultsFound: "No results found",
+    noResultsMessage: "Try searching for a pipe name, maker, tobacco blend, or shape",
+    sectionPipes: "Pipes",
+    sectionTobacco: "Tobacco",
+    sectionQuickActions: "Quick Actions",
+    actionViewStats: "View Collection Stats",
+    actionExportData: "Export Collection Data",
+    actionAddPipe: "Add New Pipe",
+    actionAddBlend: "Add New Blend",
     hintTitle: "Start typing to search",
     hintSubtitle: "Search pipes, tobacco, makers, shapes, and more",
     kbdNavigate: "Navigate",
@@ -1368,6 +1426,8 @@ const enUI = {
     noFriendsWithMessaging: "None of your friends have messaging enabled yet. Ask them to enable it in their Profile settings.",
     chatDescription: "Chat conversation",
     inboxDescription: "Message inbox",
+    failedToSend: "Failed to send message. Please try again.",
+    cannotDeleteOtherMessage: "You can only delete your own messages",
   },
   appleBlocked: {
     defaultTitle: "Not available on iOS",
@@ -1460,6 +1520,7 @@ const enUI = {
   },
   errors: {
     recommendationFailed: "Failed to get recommendation",
+    valueLookupFailed: "Failed to look up value. Please try again.",
   },
   specializationRec: {
     analyzing: "Analyzing...",
@@ -1700,6 +1761,7 @@ const enUI = {
     noSessionsLogged: "No sessions logged for this period.",
     session: "session",
     sessions: "sessions",
+    nA: "N/A",
     failedToGenerateImage: "Failed to generate image",
     myPipeKeeperTrends: "My PipeKeeper Trends",
     imageDownloaded: "Image downloaded",

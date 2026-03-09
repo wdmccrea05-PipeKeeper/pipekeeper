@@ -166,7 +166,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 border-b bg-[#243548]">
           <div className="flex-1">
-            <div className="text-sm font-semibold text-white">{t("matching.recommendationsFor", {defaultValue: "Recommendations for"})}</div>
+            <div className="text-sm font-semibold text-white">{t("matching.recommendationsFor")}</div>
             <div className="text-xs text-[#E0D8C8]">{pipe.name}</div>
           </div>
 
@@ -210,7 +210,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
 
         <div className="p-4 space-y-4">
           <div>
-            <div className="text-xs font-bold text-white mb-2">{t("matching.top3Matches", {defaultValue: "Top 3 Matches"})}</div>
+            <div className="text-xs font-bold text-white mb-2">{t("matching.top3Matches")}</div>
             {top3.length ? (
               <div className="flex flex-col gap-2">
                 {top3.map((r, idx) => (
@@ -226,7 +226,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
           </div>
 
           <div className="pt-3 border-t border-[#E0D8C8]/20">
-            <div className="text-xs font-semibold text-white mb-2">{t("matching.checkAnyBlend", {defaultValue: "Check Any Blend"})}</div>
+            <div className="text-xs font-semibold text-white mb-2">{t("matching.checkAnyBlend")}</div>
             <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder={t("matching.selectBlend")} />

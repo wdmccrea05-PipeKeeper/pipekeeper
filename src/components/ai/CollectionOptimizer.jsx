@@ -1092,7 +1092,7 @@ ${englishUserText}
               {conversationMessages.length > 0 ? t("tobacconist.continueConversation") : t("tobacconist.chatWithTobacconist")}
             </label>
             <Textarea
-              placeholder={t("tobacconist.askExpertPlaceholder", {defaultValue: "Ask about pairings, recommendations, or your collection..."})}
+              placeholder={t("tobacconist.askExpertPlaceholder")}
               value={conversationMessages.length > 0 ? whatIfFollowUp : whatIfQuery}
               onChange={(e) => (conversationMessages.length > 0 ? setWhatIfFollowUp(e.target.value) : setWhatIfQuery(e.target.value))}
               className="min-h-[80px] bg-white text-stone-900 placeholder:text-stone-500"
@@ -1382,7 +1382,7 @@ ${englishUserText}
                         <div className="flex flex-wrap gap-1 mt-1">
                           {spec?.score_delta != null && spec.score_delta > 0 && (
                             <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">
-                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement", { defaultValue: "avg score improvement" })}
+                              +{spec.score_delta.toFixed(1)} {t("optimizer.avgScoreImprovement")}
                             </Badge>
                           )}
                           {spec?.fills_gap_for && (
@@ -1620,7 +1620,7 @@ ${englishUserText}
 
                                 {spec.score_delta != null && (
                                   <div className="bg-blue-50 rounded-lg p-2 border border-blue-100 mb-2">
-                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement", { defaultValue: "Score Improvement" })}:</p>
+                                    <p className="text-xs font-medium text-blue-800">{t("tobacconist.scoreImprovement")}:</p>
                                     <p className="text-xs text-blue-900 font-semibold">{spec.score_delta > 0 ? '+' : ''}{spec.score_delta.toFixed(1)}</p>
                                   </div>
                                 )}
@@ -1664,7 +1664,7 @@ ${englishUserText}
                                       <p className="text-sm font-medium text-amber-900 mb-2">{t("tobacconist.whyUnsure")}</p>
                                       <p className="text-xs text-amber-800 mb-3">{t("tobacconist.clarificationHelps")}</p>
                                       <Textarea
-                                        placeholder={t("tobacconist.clarificationPlaceholder", {defaultValue: "E.g., 'This pipe smokes hot with aromatics', 'I prefer it for English blends', 'Too wet for this type'..."})}
+                                        placeholder={t("tobacconist.clarificationPlaceholder")}
                                         value={pipeFeedback[variantKey] || ""}
                                         onChange={(e) => setPipeFeedback({ ...pipeFeedback, [variantKey]: e.target.value })}
                                         className="min-h-[70px] text-sm bg-white text-stone-900 placeholder:text-stone-500"
@@ -1815,11 +1815,11 @@ ${englishUserText}
               <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
                 <CardContent className="p-4 space-y-3">
                   <p className="text-sm text-stone-900">
-                    {t("tobacconist.askExpertInstructions", {defaultValue: "Ask questions about collection strategy, hypothetical purchases, or pairing advice."})}
+                    {t("tobacconist.askExpertInstructions")}
                   </p>
 
                   <Textarea
-                    placeholder={t("tobacconist.askPlaceholder", {defaultValue: "What if I added a larger billiard? Which tobacco should I try next?"})}
+                    placeholder={t("tobacconist.askPlaceholder")}
                     value={whatIfQuery}
                     onChange={(e) => setWhatIfQuery(e.target.value)}
                     className="min-h-[70px] bg-white text-stone-900 placeholder:text-stone-500"
