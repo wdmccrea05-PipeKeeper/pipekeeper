@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 import { 
   isIOSCompanion, 
   openAppleManageSubscriptions, 
@@ -16,6 +17,7 @@ import {
 export default function SubscriptionProviderCard({ me }) {
   const qc = useQueryClient();
   const ios = isIOSCompanion();
+  const { t } = useTranslation();
 
   const { data: summary, isLoading, error: fetchError, refetch } = useQuery({
     queryKey: ["subscription-summary", me?.id],
@@ -41,7 +43,7 @@ export default function SubscriptionProviderCard({ me }) {
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      setError("Unable to open Stripe portal. Please contact support.");
+      setError(t('admin.unableToOpenStripePortal', 'Unable to open Stripe portal. Please contact support.'));
     }
   };
 
@@ -51,7 +53,7 @@ export default function SubscriptionProviderCard({ me }) {
 
   const continueApplePurchase = () => {
     if (!doubleBillAck) {
-      setError("Please confirm you understand you may be billed twice if your web subscription is still active.");
+      setError(t('admin.doubleBillingAckText', 'I understand that if my web subscription is still active, starting an Apple subscription may cause double billing.'));
       return;
     }
     setError(null);
@@ -75,12 +77,12 @@ export default function SubscriptionProviderCard({ me }) {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {fetchError?.message || summary?.error || "Failed to load subscription information"}
+              {fetchError?.message || summary?.error || t('admin.providerCardFailed', 'Failed to load subscription information')}
             </AlertDescription>
           </Alert>
           <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Retry
+            {t('admin.retry', 'Retry')}
           </Button>
         </CardContent>
       </Card>
@@ -109,7 +111,7 @@ export default function SubscriptionProviderCard({ me }) {
       <CardContent className="p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-[#E0D8C8]">Subscription Management</h3>
+            <h3 className="text-lg font-semibold text-[#E0D8C8]">{t('admin.subscriptionManagement', 'Subscription Management')}</h3>
             <div className="flex items-center gap-2 mt-2">
               <Badge className={providerColors[provider]}>
                 {provider === "stripe" ? "Stripe" : provider === "apple" ? "Apple" : provider}
@@ -139,7 +141,7 @@ export default function SubscriptionProviderCard({ me }) {
         {provider === "apple" && ios && (
           <Button onClick={manageApple} className="w-full">
             <ExternalLink className="w-4 h-4 mr-2" />
-            Manage in Apple Subscriptions
+            {t('admin.manageAppleSubscriptions', 'Manage in Apple Subscriptions')}
           </Button>
         )}
 
@@ -147,14 +149,14 @@ export default function SubscriptionProviderCard({ me }) {
           <div className="space-y-3">
             <Button onClick={openStripePortal} className="w-full">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Manage on Web
+              {t('admin.manageOnWeb', 'Manage on Web')}
             </Button>
 
             {can_switch_to_apple && (
               <div className="border border-white/10 rounded-lg p-4 space-y-3 bg-white/5">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-[#E0D8C8]">
-                    Switch to Apple Billing (Optional)
+                    {t('admin.switchToAppleBillingTitle', 'Switch to Apple Billing (Optional)')}
                   </div>
                   <Switch checked={showSwitch} onCheckedChange={setShowSwitch} />
                 </div>
@@ -164,13 +166,12 @@ export default function SubscriptionProviderCard({ me }) {
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription className="text-xs">
-                        Apple subscriptions are separate from web subscriptions. To avoid double billing, 
-                        cancel your web subscription first, then purchase through Apple.
+                        {t('admin.appleDoubleBillingAlert', 'Apple subscriptions are separate from web subscriptions. To avoid double billing, cancel your web subscription first, then purchase through Apple.')}
                       </AlertDescription>
                     </Alert>
 
                     <div className="flex items-center gap-2">
-                      <label className="text-sm text-[#E0D8C8]">Tier:</label>
+                      <label className="text-sm text-[#E0D8C8]">{t('admin.tierLabel', 'Tier:')}</label>
                       <select
                         className="flex-1 border border-white/20 rounded px-3 py-2 bg-[#1A2B3A] text-[#E0D8C8]"
                         value={switchTier}
@@ -189,8 +190,7 @@ export default function SubscriptionProviderCard({ me }) {
                         className="mt-1"
                       />
                       <span className="text-xs text-[#E0D8C8]/80">
-                        I understand that if my web subscription is still active, starting an Apple 
-                        subscription may cause double billing.
+                        {t('admin.doubleBillingAckText', 'I understand that if my web subscription is still active, starting an Apple subscription may cause double billing.')}
                       </span>
                     </label>
 
@@ -200,13 +200,13 @@ export default function SubscriptionProviderCard({ me }) {
                         onClick={openStripePortal}
                         className="flex-1"
                       >
-                        Open Web Management
+                        {t('admin.openWebManagement', 'Open Web Management')}
                       </Button>
                       <Button 
                         onClick={continueApplePurchase}
                         className="flex-1"
                       >
-                        Continue to Apple Purchase
+                        {t('admin.continueToApplePurchase', 'Continue to Apple Purchase')}
                       </Button>
                     </div>
                   </div>
@@ -218,19 +218,19 @@ export default function SubscriptionProviderCard({ me }) {
 
         {provider === "none" && (
           <div className="space-y-3">
-            <p className="text-sm text-[#E0D8C8]/70">No active subscription found.</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t('admin.noActiveSubscription', 'No active subscription found.')}</p>
             {ios ? (
               <div className="flex gap-2">
                 <Button onClick={() => startApplePurchaseFlow("premium")} className="flex-1">
-                  Buy Premium (Apple)
+                  {t('admin.buyPremiumApple', 'Buy Premium (Apple)')}
                 </Button>
                 <Button onClick={() => startApplePurchaseFlow("pro")} className="flex-1">
-                  Buy Pro (Apple)
+                  {t('admin.buyProApple', 'Buy Pro (Apple)')}
                 </Button>
               </div>
             ) : (
               <p className="text-sm text-[#E0D8C8]/70">
-                Visit the Subscription page to start a plan.
+                {t('admin.visitSubscriptionPage', 'Visit the Subscription page to start a plan.')}
               </p>
             )}
           </div>
@@ -240,8 +240,7 @@ export default function SubscriptionProviderCard({ me }) {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              You have an active subscription, but provider information is unavailable. 
-              Please contact support.
+              {t('admin.unknownProviderAlert', 'You have an active subscription, but provider information is unavailable. Please contact support.')}
             </AlertDescription>
           </Alert>
         )}
