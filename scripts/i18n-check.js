@@ -170,6 +170,17 @@ const RULES = [
     severity: 'warn',
     minLength: 2,
   },
+  {
+    name: 'jsx-strong-content',
+    // Catches literal text inside <strong> or <b> inline elements.
+    // This catches field-label patterns like <strong>name</strong> or
+    // <strong>Filename Format:</strong> that are missed by jsx-text-content
+    // because the text may be lowercase or contain no leading uppercase letter.
+    // Excludes expressions ({...}) and tag content (< >) to avoid false positives.
+    pattern: /<(?:strong|b)(?:\s[^>]*)?>([A-Za-z][^{}<>]+)<\/(?:strong|b)>/g,
+    severity: 'warn',
+    minLength: 2,
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)

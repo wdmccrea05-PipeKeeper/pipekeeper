@@ -200,7 +200,7 @@ export default function GlobalSearchCommand({ open, onClose }) {
                   )}
                 </div>
                 <span className="text-xs text-stone-400 uppercase tracking-wide">
-                  {result.type}
+                  {t(`search.type_${result.type}`, result.type)}
                 </span>
               </button>
             ))}
