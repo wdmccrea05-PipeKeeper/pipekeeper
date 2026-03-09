@@ -14,32 +14,32 @@ import { homeTranslations } from './homeContent.jsx';
 // Documentation files — split out to keep main locale files under the size limit
 // Each docs file contains: howTo (steps), troubleshooting (full Q&A), faqExtended,
 // verificationHelp, supportFull, inviteFull, appleSupport, termsOfService, privacyPolicy
-import enDocs from './locales/en.docs';
-import esDocs from './locales/es.docs';
-import frDocs from './locales/fr.docs';
-import deDocs from './locales/de.docs';
-import itDocs from './locales/it.docs';
-import ptBRDocs from './locales/pt-BR.docs';
-import nlDocs from './locales/nl.docs';
-import plDocs from './locales/pl.docs';
-import jaDocs from './locales/ja.docs';
-import zhHansDocs from './locales/zh-Hans.docs';
+import enDocs from './locales/en.docs.jsx';
+import esDocs from './locales/es.docs.jsx';
+import frDocs from './locales/fr.docs.jsx';
+import deDocs from './locales/de.docs.jsx';
+import itDocs from './locales/it.docs.jsx';
+import ptBRDocs from './locales/pt-BR.docs.jsx';
+import nlDocs from './locales/nl.docs.jsx';
+import plDocs from './locales/pl.docs.jsx';
+import jaDocs from './locales/ja.docs.jsx';
+import zhHansDocs from './locales/zh-Hans.docs.jsx';
 
 // Supplementary files for languages that exceeded the main file size limit
-import deEnums from './locales/de.enums';
-import frEnums from './locales/fr.enums';
+import deEnums from './locales/de.enums.jsx';
+import frEnums from './locales/fr.enums.jsx';
 
 // UI overflow files — namespaces from root translations.js not yet in main locale files
-import enUI from './locales/en.ui';
-import esUI from './locales/es.ui';
-import frUI from './locales/fr.ui';
-import deUI from './locales/de.ui';
-import itUI from './locales/it.ui';
-import ptBRUI from './locales/pt-BR.ui';
-import nlUI from './locales/nl.ui';
-import plUI from './locales/pl.ui';
-import jaUI from './locales/ja.ui';
-import zhHansUI from './locales/zh-Hans.ui';
+import enUI from './locales/en.ui.jsx';
+import esUI from './locales/es.ui.jsx';
+import frUI from './locales/fr.ui.jsx';
+import deUI from './locales/de.ui.jsx';
+import itUI from './locales/it.ui.jsx';
+import ptBRUI from './locales/pt-BR.ui.jsx';
+import nlUI from './locales/nl.ui.jsx';
+import plUI from './locales/pl.ui.jsx';
+import jaUI from './locales/ja.ui.jsx';
+import zhHansUI from './locales/zh-Hans.ui.jsx';
 
 const docsLocales = {
   en: { ...enDocs, ...enUI },
