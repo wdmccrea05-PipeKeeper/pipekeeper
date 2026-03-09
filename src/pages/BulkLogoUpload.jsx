@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { safeUpdate } from "@/components/utils/safeUpdate";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function BulkLogoUploadPage() {
+  const { t } = useTranslation();
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState([]);
@@ -104,9 +106,9 @@ export default function BulkLogoUploadPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="border-[#e8d5b7]/30 bg-[#243548]/50 backdrop-blur-sm rounded-2xl shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl text-[#e8d5b7]">Bulk Logo Upload</CardTitle>
+            <CardTitle className="text-2xl text-[#e8d5b7]">{t("bulkLogoUpload.title")}</CardTitle>
             <p className="text-sm text-[#e8d5b7]/70 mt-2">
-              Upload multiple tobacco brand logos at once. The manufacturer name will be extracted from each filename.
+              {t("bulkLogoUpload.description")}
             </p>
             <div className="mt-3 p-4 bg-amber-900/20 rounded-xl border border-amber-600/30">
               <p className="text-xs text-[#e8d5b7]/90">
@@ -123,7 +125,7 @@ export default function BulkLogoUploadPage() {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-[#e8d5b7]/60" />
                     <div className="text-sm text-[#e8d5b7]/70">
-                      <span className="font-semibold text-[#e8d5b7]">Click to upload</span> or drag and drop
+                      <span className="font-semibold text-[#e8d5b7]">{t("bulkLogoUpload.clickToUpload")}</span> or drag and drop
                     </div>
                     <p className="text-xs text-[#e8d5b7]/50">PNG, JPG, WEBP, SVG (multiple files)</p>
                   </div>
@@ -165,7 +167,7 @@ export default function BulkLogoUploadPage() {
             {uploading && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-[#e8d5b7]">
-                  <span>Uploading...</span>
+                  <span>{t("bulkLogoUpload.uploading")}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
@@ -182,7 +184,7 @@ export default function BulkLogoUploadPage() {
                 {uploading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading...
+                    {t("bulkLogoUpload.uploading")}
                   </>
                 ) : (
                   <>

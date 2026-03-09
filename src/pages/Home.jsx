@@ -106,7 +106,7 @@ export default function Home() {
                   <RefreshCw className="w-4 h-4" />
                 </a>
                 <a href={createPageUrl("Pipes")} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" aria-label={t("common.view", "View")}>
-                   <img src={PIPE_ICON} alt="Pipes" className="w-4 h-4 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
+                   <img src={PIPE_ICON} alt={t("nav.pipes")} className="w-4 h-4 object-contain" style={{ filter: "invert(1) sepia(0.35) saturate(0.4) hue-rotate(350deg) brightness(0.9) opacity(0.9)" }} />
                  </a>
               </div>
             </div>

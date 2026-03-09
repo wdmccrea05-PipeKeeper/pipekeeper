@@ -2,6 +2,7 @@
  * SafeRender utilities for rendering potentially unsafe/unknown object shapes
  * Prevents "Objects are not valid as a React child" errors
  */
+import { translate } from '@/components/i18n/safeTranslation';
 
 export function safeToString(val) {
   if (val == null) return "";
@@ -30,7 +31,7 @@ export function safeArrayMap(arr, renderFn) {
       return renderFn(item, idx);
     } catch (e) {
       console.warn("[SafeRender] Map error:", e, item);
-      return <span key={idx} className="text-xs text-red-500">Error rendering item</span>;
+      return <span key={idx} className="text-xs text-red-500">{translate("error.renderingItem")}</span>;
     }
   });
 }

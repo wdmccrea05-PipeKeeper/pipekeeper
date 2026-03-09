@@ -344,14 +344,14 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
                         <span className="text-xs font-semibold text-amber-900">{t("bowls.preview", "Preview")}</span>
                       </div>
                       <div className="flex justify-center">
-                        <img src={bowlForm.photo} alt="Bowl preview" className="w-24 h-24 object-cover rounded-lg border-2 border-amber-400" />
+                        <img src={bowlForm.photo} alt={t("bowls.bowlPreviewAlt", "Bowl preview")} className="w-24 h-24 object-cover rounded-lg border-2 border-amber-400" />
                       </div>
                     </div>
                   )}
                   <div className="flex gap-3 items-start">
                     {bowlForm.photo ? (
                       <div className="relative">
-                        <img src={bowlForm.photo} alt="Bowl" className="w-20 h-20 object-cover rounded-lg border border-amber-200" />
+                        <img src={bowlForm.photo} alt={t("bowls.bowlAlt", "Bowl")} className="w-20 h-20 object-cover rounded-lg border border-amber-200" />
                         <button
                           type="button"
                           onClick={() => setBowlForm({ ...bowlForm, photo: "" })}

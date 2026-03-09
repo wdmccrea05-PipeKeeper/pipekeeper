@@ -13,6 +13,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { translate } from '@/components/i18n/safeTranslation';
 
 const RUNTIME_GUARD_ENABLED = true;
 const MAX_ITEMS_PER_PAGE = 1000;
@@ -28,7 +29,7 @@ function assertScoped(entityName, operation, hasScope) {
     if (import.meta.env?.DEV) {
       throw new Error(error);
     } else {
-      toast.error('Data fetch error - contact support');
+      toast.error(translate('common.dataFetchError'));
       return true; // Signal to return empty
     }
   }

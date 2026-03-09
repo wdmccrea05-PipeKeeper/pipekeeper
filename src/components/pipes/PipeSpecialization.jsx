@@ -193,7 +193,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
-                placeholder="Custom specialization..."
+                placeholder={t("pipes.customSpecializationPlaceholder")}
                 className="flex-1 px-2 py-1.5 text-sm border border-blue-200 rounded bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:border-blue-400"
               />
               <Button

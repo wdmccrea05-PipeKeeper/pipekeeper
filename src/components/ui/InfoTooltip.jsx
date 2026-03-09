@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function InfoTooltip({ text, className }) {
+  const { t } = useTranslation();
   const [show, setShow] = useState(false);
 
   return (
@@ -16,7 +18,7 @@ export default function InfoTooltip({ text, className }) {
           "text-[#1a2c42]/60 hover:text-[#1a2c42] transition-colors",
           className
         )}
-        aria-label="More info"
+        aria-label={t("common.moreInfo")}
       >
         <Info className="w-4 h-4" />
       </button>

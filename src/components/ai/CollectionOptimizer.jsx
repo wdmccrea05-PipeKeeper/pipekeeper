@@ -52,7 +52,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { FormattedTobacconistResponse } from "@/components/utils/formatTobacconistResponse";
 import { getPipeVariantKey, expandPipesToVariants } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useTranslation, translate } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
 
 /**
@@ -119,7 +119,7 @@ class PKErrorBoundary extends React.Component {
       return (
         <div className="p-4">
           <div className="rounded-lg border border-rose-300 bg-rose-50 p-4">
-            <div className="font-semibold text-rose-900">Something went wrong</div>
+            <div className="font-semibold text-rose-900">{translate("error.somethingWentWrong")}</div>
             <div className="mt-2 text-sm text-rose-800">
               {String(this.state.error?.message || this.state.error || "An unknown error occurred")}
             </div>

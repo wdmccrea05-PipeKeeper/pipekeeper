@@ -206,7 +206,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
               <div className="flex items-start gap-2">
                 <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-[#e8d5b7]/70">
-                  AI estimates are based on public marketplace data. Actual values vary by condition, age, and market demand. Not investment advice.
+                  {t("tobaccoEstimator.aiDisclaimer")}
                 </p>
               </div>
             </div>

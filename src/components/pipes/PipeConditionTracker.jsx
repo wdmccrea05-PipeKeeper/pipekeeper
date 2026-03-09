@@ -61,13 +61,13 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
               <SelectValue placeholder={t("conditionTracker.selectCondition", "Select condition")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Mint">Mint</SelectItem>
-              <SelectItem value="Excellent">Excellent</SelectItem>
-              <SelectItem value="Very Good">Very Good</SelectItem>
-              <SelectItem value="Good">Good</SelectItem>
-              <SelectItem value="Fair">Fair</SelectItem>
-              <SelectItem value="Poor">Poor</SelectItem>
-              <SelectItem value="Estate - Unrestored">Estate - Unrestored</SelectItem>
+              <SelectItem value="Mint">{t("conditionTracker.conditionMint")}</SelectItem>
+              <SelectItem value="Excellent">{t("conditionTracker.conditionExcellent")}</SelectItem>
+              <SelectItem value="Very Good">{t("conditionTracker.conditionVeryGood")}</SelectItem>
+              <SelectItem value="Good">{t("conditionTracker.conditionGood")}</SelectItem>
+              <SelectItem value="Fair">{t("conditionTracker.conditionFair")}</SelectItem>
+              <SelectItem value="Poor">{t("conditionTracker.conditionPoor")}</SelectItem>
+              <SelectItem value="Estate - Unrestored">{t("conditionTracker.conditionEstateUnrestored")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
