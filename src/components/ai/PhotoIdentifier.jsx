@@ -195,7 +195,7 @@ Provide detailed identification results including geometry fields that can be us
         {lowConfidence && (
           <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
-            <span>{t("quickPipeIdentifier.lowConfidenceWarning")} Consider providing additional photos or context.</span>
+            <span>{t("quickPipeIdentifier.lowConfidenceWarning")} {t("quickPipeIdentifier.lowConfidenceHint")}</span>
           </div>
         )}
       </CardContent>

@@ -51,9 +51,9 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
     const bowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
     return bowls.map((b, i) => ({
       id: b.bowl_variant_id || `bowl_${i}`,
-      name: b.name || `Bowl ${i + 1}`,
+      name: b.name || `${t("matching.bowlVariant")} ${i + 1}`,
     }));
-  }, [pipe]);
+  }, [pipe, t]);
 
   const hasBowls = bowlOptions.length > 0;
   // If has bowls, default to first bowl. Otherwise default to main (null).

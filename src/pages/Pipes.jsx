@@ -240,7 +240,7 @@ export default function PipesPage() {
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value={ALL_SHAPES}>{t("pipes.allShapes")}</SelectItem>
-                 {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{shape}</SelectItem>)}
+                 {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
                </SelectContent>
              </Select>
              <Select
@@ -252,7 +252,7 @@ export default function PipesPage() {
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value={ALL_MATERIALS}>{t("pipes.allMaterials")}</SelectItem>
-                 {MATERIALS.map(material => <SelectItem key={material} value={material}>{material}</SelectItem>)}
+                 {MATERIALS.map(material => <SelectItem key={material} value={material}>{t(`materials.${material}`, material)}</SelectItem>)}
                </SelectContent>
              </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -312,7 +312,7 @@ export default function PipesPage() {
               pipes.length === 0 
                 ? t("pipesPage.startCollectionDesc")
                 : searchQuery 
-                  ? t("pipesPage.noMatchSearch", `No pipes match "${searchQuery}". Try adjusting your search or filters.`)
+                  ? t("pipesPage.noMatchSearch")
                   : t("pipesPage.noMatchFilters")
             }
             actionLabel={pipes.length === 0 ? t("pipesPage.addFirstPipe") : null}

@@ -164,7 +164,7 @@ export default function TobaccoPage() {
     },
     onSuccess: (count) => {
       invalidateBlendQueries(queryClient, user?.email);
-      toast.success(t("tobaccoPage.successfullyUpdated", `Successfully updated ${count} blend${count !== 1 ? 's' : ''}!`));
+      toast.success(t("tobaccoPage.successfullyUpdated", { count }));
       exitQuickEdit();
     },
     onError: (error) => {
@@ -349,7 +349,7 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={null}>{t("tobacco.allTypes")}</SelectItem>
-              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+              {BLEND_TYPES.map(type => <SelectItem key={type} value={type}>{t(`blendTypes.${type}`, type)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={strengthFilter} onValueChange={setStrengthFilter}>
@@ -358,7 +358,7 @@ export default function TobaccoPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={null}>{t("tobacco.allStrengths")}</SelectItem>
-              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{strength}</SelectItem>)}
+              {STRENGTHS.map(strength => <SelectItem key={strength} value={strength}>{t(`strengths.${strength}`, strength)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -410,7 +410,7 @@ export default function TobaccoPage() {
               blends.length === 0 
                 ? t("tobaccoPage.buildCellarDesc")
                 : searchQuery 
-                  ? t("tobaccoPage.noMatchSearch", `No blends match "${searchQuery}". Try adjusting your search or filters.`)
+                  ? t("tobaccoPage.noMatchSearch")
                   : t("tobaccoPage.noMatchFilters")
             }
             actionLabel={blends.length === 0 ? t("tobaccoPage.addFirstBlend") : null}
